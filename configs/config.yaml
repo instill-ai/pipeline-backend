@@ -1,0 +1,38 @@
+server:
+  port: 8080
+  https:
+    enabled: false
+    cert: /ssl/tls.crt
+    key: /ssl/tls.key
+  corsorigins:
+    - http://localhost
+    - https://instill-inc.tech
+    - https://instill.tech
+database:
+  username: postgres
+  password: password
+  host: localhost
+  port: 5432
+  databasename: pipeline
+  timezone: Etc/UTC
+  pool:
+    idleconnections: 5
+    maxconnections: 10
+    connlifetime: 30 # In minutes
+cache:
+  redis:
+    redisoptions:
+      addr: localhost:6379
+temporal:
+  clientoptions:
+    namespace: pipeline
+    hostport: localhost:7233
+vdo:
+  scheme: https
+  host: localhost
+  port: 8443
+  path: inference/models/%s/versions/%s/outputs
+modelbackend:
+  scheme: https
+  host: localhost
+  port: 8445
