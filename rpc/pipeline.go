@@ -11,8 +11,10 @@ import (
 	"strings"
 	"time"
 
+	configs "github.com/instill-ai/pipeline-backend/configs"
 	database "github.com/instill-ai/pipeline-backend/internal/db"
 	metadataUtil "github.com/instill-ai/pipeline-backend/internal/grpc/metadata"
+	paginate "github.com/instill-ai/pipeline-backend/internal/paginate"
 	structUtil "github.com/instill-ai/pipeline-backend/internal/struct/util"
 	"github.com/instill-ai/pipeline-backend/pkg/model"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
@@ -39,11 +41,13 @@ func getUsername(ctx context.Context) (string, error) {
 
 type pipelineServiceHandlers struct {
 	pipelineService service.PipelineService
+	paginateTocken  paginate.TokenGenerator
 }
 
 func NewPipelineServiceHandlers(pipelineService service.PipelineService) pb.PipelineServer {
 	return &pipelineServiceHandlers{
 		pipelineService: pipelineService,
+		paginateTocken:  paginate.TokenGeneratorWithSalt(configs.Config.Server.Paginate.Salt),
 	}
 }
 
@@ -89,18 +93,33 @@ func (s *pipelineServiceHandlers) ListPipelines(ctx context.Context, in *pb.List
 		return &pb.ListPipelinesResponse{}, err
 	}
 
-	pipelines, err := s.pipelineService.ListPipelines(model.ListPipelineQuery{
+	cursor, err := s.paginateTocken.Decode(in.PageToken)
+	if err != nil {
+		return nil, err
+	}
+
+	query := model.ListPipelineQuery{
 		Namespace:  username,
-		WithRecipe: in.WithRecipe,
-	})
+		WithRecipe: in.View == pb.ListPipelinesRequest_WITH_RECIPE,
+		PageSize:   in.PageSize,
+		Cursor:     cursor,
+	}
+
+	pipelines, _, min, err := s.pipelineService.ListPipelines(query)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp pb.ListPipelinesResponse
 
+	var nextCorsor uint64
 	for _, pipeline := range pipelines {
 		resp.Contents = append(resp.Contents, marshalPipeline(&pipeline))
+		nextCorsor = pipeline.Id
+	}
+
+	if min != nextCorsor {
+		resp.NextPageToken = s.paginateTocken.Encode(nextCorsor)
 	}
 
 	return &resp, nil

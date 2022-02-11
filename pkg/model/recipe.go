@@ -8,22 +8,22 @@ import (
 )
 
 type Recipe struct {
-	DataSource         *DataSource           `json:"data_source,omitempty"`
-	DataDestination    *DataDestination      `json:"data_destination,omitempty"`
-	VisualDataOperator []*VisualDataOperator `json:"visual_data_operator,omitempty"`
-	LogicOperator      []*LogicOperator      `json:"logic_operator,omitempty"`
+	Source        *Source          `json:"source,omitempty"`
+	Destination   *Destination     `json:"destination,omitempty"`
+	Model         []*Model         `json:"model,omitempty"`
+	LogicOperator []*LogicOperator `json:"logic_operator,omitempty"`
 }
 
-type DataSource struct {
+type Source struct {
 	Type string `json:"type,omitempty"`
 }
 
-type DataDestination struct {
+type Destination struct {
 	Type string `json:"type,omitempty"`
 }
 
-type VisualDataOperator struct {
-	ModelId string `json:"model_id,omitempty"`
+type Model struct {
+	Name    string `json:"model_name,omitempty"`
 	Version int32  `json:"version,omitempty"`
 }
 

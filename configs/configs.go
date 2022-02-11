@@ -37,6 +37,9 @@ type ServerConfig struct {
 		Key     string `koanf:"key"`
 	}
 	CORSOrigins []string `koanf:"corsorigins"`
+	Paginate    struct {
+		Salt string `koanf:"salt"`
+	}
 }
 
 // Configs related to database
