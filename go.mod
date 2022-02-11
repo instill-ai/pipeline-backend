@@ -9,7 +9,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
-	github.com/instill-ai/protogen-go v0.0.0-20220207154630-9f931a0df897
+	github.com/instill-ai/protogen-go v0.0.0-20220210175245-e6c93ae50935
 	github.com/instill-ai/visual-data-pipeline v0.0.0-20220206172802-0ec790b4d99a
 	github.com/knadh/koanf v1.4.0
 	github.com/rs/xid v1.2.1

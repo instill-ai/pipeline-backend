@@ -72,9 +72,9 @@ func TriggerTemporalWorkflow(pipelineName string, recipe *model.Recipe, uid stri
 // NOTE: Before migrate inference-backend into pipeline-backend, there is one more criteria is only 1 VDO
 func IsDirect(recipe *model.Recipe) bool {
 
-	return (strings.ToLower(recipe.DataSource.Type) == definition.DataSourceKindHTTP &&
-		strings.ToLower(recipe.DataDestination.Type) == definition.DataDestinationKindHTTP &&
-		len(recipe.VisualDataOperator) == 1 &&
+	return (strings.ToLower(recipe.Source.Type) == definition.DataSourceKindHTTP &&
+		strings.ToLower(recipe.Destination.Type) == definition.DataDestinationKindHTTP &&
+		len(recipe.Model) == 1 &&
 		(recipe.LogicOperator == nil || len(recipe.LogicOperator) == 0))
 }
 
@@ -85,18 +85,18 @@ func recipeToDSLConfig(recipe *model.Recipe, requestId string) worker.Workflow {
 	var rootSequenceElement []*worker.Statement
 
 	// Extracting data source
-	logger.Debug(fmt.Sprintf("The data source configuration is: %+v", recipe.DataSource))
+	logger.Debug(fmt.Sprintf("The data source configuration is: %+v", recipe.Source))
 
 	// Extracting visual data operator
-	logger.Debug(fmt.Sprintf("The visual data operator configuration is: %+v", recipe.VisualDataOperator))
-	for _, vdo := range recipe.VisualDataOperator {
+	logger.Debug(fmt.Sprintf("The visual data operator configuration is: %+v", recipe.Model))
+	for _, vdo := range recipe.Model {
 		visualDataOpActivity := worker.ActivityInvocation{
 			Name:      "VisualDataOperatorActivity",
 			Arguments: []string{"VDOModelId", "VDOVersion", "VDORequestId"},
 			Result:    "visualDataOperatorResult",
 		}
 
-		dslConfigVariables["VDOModelId"] = vdo.ModelId
+		dslConfigVariables["VDOModelId"] = vdo.Name
 		dslConfigVariables["VDOVersion"] = strconv.FormatInt(int64(vdo.Version), 10)
 		dslConfigVariables["VDORequestId"] = requestId
 
@@ -107,7 +107,7 @@ func recipeToDSLConfig(recipe *model.Recipe, requestId string) worker.Workflow {
 	logger.Debug(fmt.Sprintf("The data logic operator configuration is: %+v", recipe.LogicOperator))
 
 	// Extracting data destination
-	logger.Debug(fmt.Sprintf("The data destination configuration is: %+v", recipe.DataDestination))
+	logger.Debug(fmt.Sprintf("The data destination configuration is: %+v", recipe.Destination))
 
 	return worker.Workflow{
 		Variables: dslConfigVariables,

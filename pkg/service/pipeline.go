@@ -30,7 +30,7 @@ import (
 
 type PipelineService interface {
 	CreatePipeline(pipeline model.Pipeline) (model.Pipeline, error)
-	ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, error)
+	ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error)
 	GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error)
 	UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error)
 	DeletePipeline(namespace string, pipelineName string) error
@@ -73,7 +73,7 @@ func (p *pipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipelin
 	}
 }
 
-func (p *pipelineService) ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, error) {
+func (p *pipelineService) ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error) {
 	return p.pipelineRepository.ListPipelines(query)
 }
 
@@ -137,12 +137,12 @@ func (p *pipelineService) TriggerPipeline(namespace string, trigger pipelinePB.T
 			return nil, status.Errorf(codes.Internal, "Error while decode request:", err.Error())
 		}
 
-		vdo := pipeline.Recipe.VisualDataOperator[0]
+		vdo := pipeline.Recipe.Model[0]
 		vdoEndpoint := fmt.Sprintf("%s://%s:%d/%s",
 			configs.Config.VDO.Scheme,
 			configs.Config.VDO.Host,
 			configs.Config.VDO.Port,
-			fmt.Sprintf(configs.Config.VDO.Path, vdo.ModelId, strconv.FormatInt(int64(vdo.Version), 10)))
+			fmt.Sprintf(configs.Config.VDO.Path, vdo.Name, strconv.FormatInt(int64(vdo.Version), 10)))
 
 		client := &http.Client{}
 
@@ -207,12 +207,12 @@ func (p *pipelineService) TriggerPipeline(namespace string, trigger pipelinePB.T
 
 func (p *pipelineService) TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (interface{}, error) {
 
-	vdo := pipeline.Recipe.VisualDataOperator[0]
+	vdo := pipeline.Recipe.Model[0]
 	vdoEndpoint := fmt.Sprintf("%s://%s:%d/%s",
 		configs.Config.VDO.Scheme,
 		configs.Config.VDO.Host,
 		configs.Config.VDO.Port,
-		fmt.Sprintf(configs.Config.VDO.Path, vdo.ModelId, strconv.FormatInt(int64(vdo.Version), 10)))
+		fmt.Sprintf(configs.Config.VDO.Path, vdo.Name, strconv.FormatInt(int64(vdo.Version), 10)))
 
 	httpCode, respBody, err := httpUtils.MultiPart(vdoEndpoint, nil, nil, "contents", "file", buf.Bytes())
 	if err != nil {
