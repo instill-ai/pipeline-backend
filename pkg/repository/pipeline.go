@@ -69,18 +69,23 @@ func (r *pipelineRepository) CreatePipeline(pipeline model.Pipeline) error {
 func (r *pipelineRepository) ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error) {
 	var pipelines []model.Pipeline
 
+	var count int64
+	r.DB.Model(&model.Pipeline{}).Where("namespace = ?", query.Namespace).Count(&count)
+
 	var min uint64
 	var max uint64
-	rows, err := r.DB.Model(&model.Pipeline{}).
-		Select("MIN(id) AS min, MAX(id) as max").
-		Where("namespace = ?", query.Namespace).
-		Rows()
-	if err != nil {
-		return nil, 0, 0, status.Errorf(codes.Internal, "Error when query min & max value", err.Error())
-	}
-	if rows.Next() {
-		if err := rows.Scan(&min, &max); err != nil {
-			return nil, 0, 0, status.Errorf(codes.Internal, "Can not fetch the min & max value: %s", err.Error())
+	if count > 0 {
+		rows, err := r.DB.Model(&model.Pipeline{}).
+			Select("MIN(id) AS min, MAX(id) as max").
+			Where("namespace = ?", query.Namespace).
+			Rows()
+		if err != nil {
+			return nil, 0, 0, status.Errorf(codes.Internal, "Error when query min & max value", err.Error())
+		}
+		if rows.Next() {
+			if err := rows.Scan(&min, &max); err != nil {
+				return nil, 0, 0, status.Errorf(codes.Internal, "Can not fetch the min & max value: %s", err.Error())
+			}
 		}
 	}
 
