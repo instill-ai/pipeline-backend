@@ -18,11 +18,12 @@ import (
 	cache "github.com/instill-ai/pipeline-backend/internal/cache"
 	database "github.com/instill-ai/pipeline-backend/internal/db"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
+	modelPB "github.com/instill-ai/pipeline-backend/internal/modelservice/model"
 	"github.com/instill-ai/pipeline-backend/internal/temporal"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/rpc"
-	pb "github.com/instill-ai/protogen-go/pipeline"
+	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -98,15 +99,29 @@ func main() {
 		grpcServerOpts = append(grpcServerOpts, grpc.Creds(creds))
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var modelClientDialOpts grpc.DialOption
+	if configs.Config.ModelService.TLS {
+		modelClientDialOpts = grpc.WithTransportCredentials(creds)
+	} else {
+		modelClientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelService.Host, configs.Config.ModelService.Port), modelClientDialOpts)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+
+	modelServiceClient := modelPB.NewModelClient(clientConn)
+
 	pipelineRepository := repository.NewPipelineRepository(db)
-	pipelineService := service.NewPipelineService(pipelineRepository)
+	pipelineService := service.NewPipelineService(pipelineRepository, modelServiceClient)
 	pipelineHandler := rpc.NewPipelineServiceHandlers(pipelineService)
 
 	grpcS := grpc.NewServer(grpcServerOpts...)
-	pb.RegisterPipelineServer(grpcS, pipelineHandler)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	pipelinePB.RegisterPipelineServer(grpcS, pipelineHandler)
 
 	gwS := runtime.NewServeMux(
 		runtime.WithForwardResponseOption(httpResponseModifier),
@@ -134,7 +149,7 @@ func main() {
 		dialOpts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	}
 
-	if err := pb.RegisterPipelineHandlerFromEndpoint(ctx, gwS, fmt.Sprintf(":%v", configs.Config.Server.Port), dialOpts); err != nil {
+	if err := pipelinePB.RegisterPipelineHandlerFromEndpoint(ctx, gwS, fmt.Sprintf(":%v", configs.Config.Server.Port), dialOpts); err != nil {
 		logger.Fatal(err.Error())
 	}
 

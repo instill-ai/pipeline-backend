@@ -24,8 +24,7 @@ type AppConfig struct {
 	Database     DatabaseConfig     `koanf:"database"`
 	Temporal     TemporalConfig     `koanf:"temporal"`
 	Cache        CacheConfig        `koanf:"cache"`
-	VDO          VDOConfig          `koanf:"vdo"`
-	ModelBackend ModelBackendConfig `koanf:"modelbackend"`
+	ModelService ModelServiceConfig `koanf:"modelservice"`
 }
 
 // ServerConfig defines HTTP server configurations
@@ -68,17 +67,10 @@ type CacheConfig struct {
 	}
 }
 
-type VDOConfig struct {
-	Scheme string `koanf:"scheme"`
-	Host   string `koanf:"host"`
-	Port   int    `koanf:"port"`
-	Path   string `koanf:"path"`
-}
-
-type ModelBackendConfig struct {
-	Scheme string `koanf:"scheme"`
-	Host   string `koanf:"host"`
-	Port   int    `koanf:"port"`
+type ModelServiceConfig struct {
+	TLS  bool   `koanf:"tls"`
+	Host string `koanf:"host"`
+	Port int    `koanf:"port"`
 }
 
 // Init - Assign global config to decoded config struct

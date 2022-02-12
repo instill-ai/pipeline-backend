@@ -3,29 +3,19 @@ package service
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"io"
+	"log"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gogo/status"
-	"github.com/instill-ai/pipeline-backend/configs"
-	"github.com/instill-ai/pipeline-backend/internal/cache"
-	httpUtils "github.com/instill-ai/pipeline-backend/internal/http"
-	structUtil "github.com/instill-ai/pipeline-backend/internal/struct/util"
+	modelPB "github.com/instill-ai/pipeline-backend/internal/modelservice/model"
 	"github.com/instill-ai/pipeline-backend/internal/temporal"
 	model "github.com/instill-ai/pipeline-backend/pkg/model"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
-	workerModel "github.com/instill-ai/visual-data-pipeline/pkg/models"
-	"github.com/rs/xid"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type PipelineService interface {
@@ -34,18 +24,20 @@ type PipelineService interface {
 	GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error)
 	UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error)
 	DeletePipeline(namespace string, pipelineName string) error
-	TriggerPipeline(namespace string, trigger pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error)
 	ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error
 	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (interface{}, error)
+	ValidateModel(namespace string, selectedModel []*model.Model) error
 }
 
 type pipelineService struct {
 	pipelineRepository repository.PipelineRepository
+	modelServiceClient modelPB.ModelClient
 }
 
-func NewPipelineService(r repository.PipelineRepository) PipelineService {
+func NewPipelineService(r repository.PipelineRepository, modelServiceClient modelPB.ModelClient) PipelineService {
 	return &pipelineService{
 		pipelineRepository: r,
+		modelServiceClient: modelServiceClient,
 	}
 }
 
@@ -60,6 +52,11 @@ func (p *pipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipelin
 
 	if existingPipeline, _ := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); existingPipeline.Name != "" {
 		return model.Pipeline{}, status.Errorf(codes.FailedPrecondition, "The name %s is existing in your namespace", pipeline.Name)
+	}
+
+	err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
+	if err != nil {
+		return model.Pipeline{}, err
 	}
 
 	if err := p.pipelineRepository.CreatePipeline(pipeline); err != nil {
@@ -126,107 +123,89 @@ func (p *pipelineService) ValidateTriggerPipeline(namespace string, pipelineName
 	return nil
 }
 
-func (p *pipelineService) TriggerPipeline(namespace string, trigger pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error) {
-
-	// TODO: The model that pipeline used is offline
+func (p *pipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline model.Pipeline) (interface{}, error) {
 
 	if temporal.IsDirect(pipeline.Recipe) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 
-		body, err := json.Marshal(trigger)
+		stream, err := p.modelServiceClient.PredictModelByUpload(ctx)
+		defer stream.CloseSend()
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "Error while decode request:", err.Error())
+			return nil, err
 		}
 
-		vdo := pipeline.Recipe.Model[0]
-		vdoEndpoint := fmt.Sprintf("%s://%s:%d/%s",
-			configs.Config.VDO.Scheme,
-			configs.Config.VDO.Host,
-			configs.Config.VDO.Port,
-			fmt.Sprintf(configs.Config.VDO.Path, vdo.Name, strconv.FormatInt(int64(vdo.Version), 10)))
-
-		client := &http.Client{}
-
-		proxyReq, err := http.NewRequest(http.MethodPost, vdoEndpoint, bytes.NewReader(body))
+		err = stream.Send(&modelPB.PredictModelRequest{
+			Name:    pipeline.Recipe.Model[0].Name,
+			Version: pipeline.Recipe.Model[0].Version,
+			Type:    0,
+		})
 		if err != nil {
-			return &structpb.Struct{}, status.Error(codes.PermissionDenied, "You are not allowed to trigger this pipeline")
+			status.Errorf(codes.Internal, "cannot send data info to server: %s", err.Error())
 		}
 
-		proxyReq.Header = make(http.Header)
-		proxyReq.Header["Content-Type"] = []string{"application/json"}
+		const chunkSize = 64 * 1024
+		buf := make([]byte, chunkSize)
 
-		var resp *http.Response
-		resp, err = client.Do(proxyReq)
+		for {
+			n, err := image.Read(buf)
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return nil, err
+			}
+
+			err = stream.Send(&modelPB.PredictModelRequest{Content: buf[:n]})
+			if err != nil {
+				status.Errorf(codes.Internal, "cannot send chunk to server: %s", err)
+			}
+		}
+		res, err := stream.CloseAndRecv()
 		if err != nil {
-			return &structpb.Struct{}, status.Error(codes.Internal, err.Error())
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != 200 {
-			return &structpb.Struct{}, status.Error(codes.Internal, "Inference error")
+			log.Fatal("cannot receive response: ", err)
+			status.Errorf(codes.Internal, "cannot receive response: %s", err.Error())
 		}
 
-		var respBody []byte
-		if respBody, err = ioutil.ReadAll(resp.Body); err != nil {
-			return &structpb.Struct{}, status.Error(codes.Internal, err.Error())
-		}
-
-		if obj, err := structUtil.BytesToInterface(respBody); err != nil {
-			return &structpb.Struct{}, status.Error(codes.Internal, "Can not process response")
-		} else {
-			return obj, nil
-		}
+		return res, nil
 	} else {
-		buf := new(bytes.Buffer)
-		enc := gob.NewEncoder(buf)
-		httpBodyCache := workerModel.VDOHttpBodyCache{
-			ContentType: "application/json",
-			Body:        trigger,
-		}
-
-		// Serialized struct
-		gob.Register(pipelinePB.TriggerPipelineRequest{})
-		if err := enc.Encode(httpBodyCache); err != nil {
-			return &structpb.Struct{}, status.Errorf(codes.Internal, "Error when deserialize trigger content: %+v", err)
-		}
-
-		uid := xid.New().String()
-
-		if err := cache.Redis.Set(context.Background(), uid, buf.Bytes(), 10*time.Minute).Err(); err != nil {
-			return &structpb.Struct{}, status.Error(codes.Internal, err.Error())
-		}
-
-		result, _ := temporal.TriggerTemporalWorkflow(pipeline.Name, pipeline.Recipe, uid, namespace)
-
-		if obj, err := structUtil.BytesToInterface([]byte(result["visualDataOperatorResult"])); err != nil {
-			return &structpb.Struct{}, status.Error(codes.Internal, "Can not process response")
-		} else {
-			return obj, nil
-		}
+		return nil, nil
 	}
 }
 
-func (p *pipelineService) TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (interface{}, error) {
+func (p *pipelineService) ValidateModel(namespace string, selectedModels []*model.Model) error {
 
-	vdo := pipeline.Recipe.Model[0]
-	vdoEndpoint := fmt.Sprintf("%s://%s:%d/%s",
-		configs.Config.VDO.Scheme,
-		configs.Config.VDO.Host,
-		configs.Config.VDO.Port,
-		fmt.Sprintf(configs.Config.VDO.Path, vdo.Name, strconv.FormatInt(int64(vdo.Version), 10)))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	httpCode, respBody, err := httpUtils.MultiPart(vdoEndpoint, nil, nil, "contents", "file", buf.Bytes())
+	supportModelResp, err := p.modelServiceClient.ListModels(ctx, &modelPB.ListModelRequest{})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed unexpectadely while writing to byte buffer: %s", err.Error())
+		return err
 	}
 
-	if httpCode != 200 {
-		return nil, status.Error(codes.Internal, "failed to perform inference")
+	hasInvalidModel := false
+	invalidErrorString := ""
+	for _, selectedModel := range selectedModels {
+		matchModel := false
+		for _, supportModel := range supportModelResp.Models {
+			if selectedModel.Name == supportModel.Name {
+				for _, supportVersion := range supportModel.Versions {
+					if selectedModel.Version == supportVersion.Version {
+						matchModel = true
+						break
+					}
+				}
+			}
+		}
+		if !matchModel {
+			hasInvalidModel = true
+			invalidErrorString += fmt.Sprintf("The model %s and version %d you specified is not applicable\n", selectedModel.Name, selectedModel.Version)
+		}
 	}
 
-	var obj interface{}
-	if obj, err = structUtil.BytesToInterface(respBody); err != nil {
-		return nil, status.Error(codes.Internal, "Can not process response")
+	if hasInvalidModel {
+		return status.Error(codes.InvalidArgument, invalidErrorString)
+	} else {
+		return nil
 	}
-
-	return obj, nil
 }

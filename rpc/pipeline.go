@@ -5,8 +5,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -14,18 +16,21 @@ import (
 	configs "github.com/instill-ai/pipeline-backend/configs"
 	database "github.com/instill-ai/pipeline-backend/internal/db"
 	metadataUtil "github.com/instill-ai/pipeline-backend/internal/grpc/metadata"
+	"github.com/instill-ai/pipeline-backend/internal/logger"
+	modelPB "github.com/instill-ai/pipeline-backend/internal/modelservice/model"
 	paginate "github.com/instill-ai/pipeline-backend/internal/paginate"
-	structUtil "github.com/instill-ai/pipeline-backend/internal/struct/util"
 	"github.com/instill-ai/pipeline-backend/pkg/model"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	pb "github.com/instill-ai/protogen-go/pipeline"
+	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/anypb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 func getUsername(ctx context.Context) (string, error) {
@@ -44,26 +49,26 @@ type pipelineServiceHandlers struct {
 	paginateTocken  paginate.TokenGenerator
 }
 
-func NewPipelineServiceHandlers(pipelineService service.PipelineService) pb.PipelineServer {
+func NewPipelineServiceHandlers(pipelineService service.PipelineService) pipelinePB.PipelineServer {
 	return &pipelineServiceHandlers{
 		pipelineService: pipelineService,
 		paginateTocken:  paginate.TokenGeneratorWithSalt(configs.Config.Server.Paginate.Salt),
 	}
 }
 
-func (s *pipelineServiceHandlers) Liveness(ctx context.Context, in *emptypb.Empty) (*pb.HealthCheckResponse, error) {
-	return &pb.HealthCheckResponse{Status: "ok", Code: pb.HealthCheckResponse_SERVING}, nil
+func (s *pipelineServiceHandlers) Liveness(ctx context.Context, in *emptypb.Empty) (*pipelinePB.HealthCheckResponse, error) {
+	return &pipelinePB.HealthCheckResponse{Status: "ok", Code: pipelinePB.HealthCheckResponse_SERVING}, nil
 }
 
-func (s *pipelineServiceHandlers) Readiness(ctx context.Context, in *emptypb.Empty) (*pb.HealthCheckResponse, error) {
-	return &pb.HealthCheckResponse{Status: "ok", Code: pb.HealthCheckResponse_SERVING}, nil
+func (s *pipelineServiceHandlers) Readiness(ctx context.Context, in *emptypb.Empty) (*pipelinePB.HealthCheckResponse, error) {
+	return &pipelinePB.HealthCheckResponse{Status: "ok", Code: pipelinePB.HealthCheckResponse_SERVING}, nil
 }
 
-func (s *pipelineServiceHandlers) CreatePipeline(ctx context.Context, in *pb.CreatePipelineRequest) (*pb.PipelineInfo, error) {
+func (s *pipelineServiceHandlers) CreatePipeline(ctx context.Context, in *pipelinePB.CreatePipelineRequest) (*pipelinePB.PipelineInfo, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
-		return &pb.PipelineInfo{}, err
+		return &pipelinePB.PipelineInfo{}, err
 	}
 
 	// Covert to model
@@ -86,11 +91,11 @@ func (s *pipelineServiceHandlers) CreatePipeline(ctx context.Context, in *pb.Cre
 	return marshalPipeline(&pipeline), nil
 }
 
-func (s *pipelineServiceHandlers) ListPipelines(ctx context.Context, in *pb.ListPipelinesRequest) (*pb.ListPipelinesResponse, error) {
+func (s *pipelineServiceHandlers) ListPipelines(ctx context.Context, in *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
-		return &pb.ListPipelinesResponse{}, err
+		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	cursor, err := s.paginateTocken.Decode(in.PageToken)
@@ -100,7 +105,7 @@ func (s *pipelineServiceHandlers) ListPipelines(ctx context.Context, in *pb.List
 
 	query := model.ListPipelineQuery{
 		Namespace:  username,
-		WithRecipe: in.View == pb.ListPipelinesRequest_WITH_RECIPE,
+		WithRecipe: in.View == pipelinePB.ListPipelinesRequest_WITH_RECIPE,
 		PageSize:   in.PageSize,
 		Cursor:     cursor,
 	}
@@ -110,7 +115,7 @@ func (s *pipelineServiceHandlers) ListPipelines(ctx context.Context, in *pb.List
 		return nil, err
 	}
 
-	var resp pb.ListPipelinesResponse
+	var resp pipelinePB.ListPipelinesResponse
 
 	var nextCorsor uint64
 	for _, pipeline := range pipelines {
@@ -125,11 +130,11 @@ func (s *pipelineServiceHandlers) ListPipelines(ctx context.Context, in *pb.List
 	return &resp, nil
 }
 
-func (s *pipelineServiceHandlers) GetPipeline(ctx context.Context, in *pb.GetPipelineRequest) (*pb.PipelineInfo, error) {
+func (s *pipelineServiceHandlers) GetPipeline(ctx context.Context, in *pipelinePB.GetPipelineRequest) (*pipelinePB.PipelineInfo, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
-		return &pb.PipelineInfo{}, err
+		return &pipelinePB.PipelineInfo{}, err
 	}
 
 	pipeline, err := s.pipelineService.GetPipelineByName(username, in.Name)
@@ -140,11 +145,11 @@ func (s *pipelineServiceHandlers) GetPipeline(ctx context.Context, in *pb.GetPip
 	return marshalPipeline(&pipeline), nil
 }
 
-func (s *pipelineServiceHandlers) UpdatePipeline(ctx context.Context, in *pb.UpdatePipelineRequest) (*pb.PipelineInfo, error) {
+func (s *pipelineServiceHandlers) UpdatePipeline(ctx context.Context, in *pipelinePB.UpdatePipelineRequest) (*pipelinePB.PipelineInfo, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
-		return &pb.PipelineInfo{}, err
+		return &pipelinePB.PipelineInfo{}, err
 	}
 
 	// Covert to model
@@ -176,7 +181,7 @@ func (s *pipelineServiceHandlers) UpdatePipeline(ctx context.Context, in *pb.Upd
 	return marshalPipeline(&pipeline), nil
 }
 
-func (s *pipelineServiceHandlers) DeletePipeline(ctx context.Context, in *pb.DeletePipelineRequest) (*emptypb.Empty, error) {
+func (s *pipelineServiceHandlers) DeletePipeline(ctx context.Context, in *pipelinePB.DeletePipelineRequest) (*emptypb.Empty, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -193,34 +198,7 @@ func (s *pipelineServiceHandlers) DeletePipeline(ctx context.Context, in *pb.Del
 	return &emptypb.Empty{}, nil
 }
 
-func (s *pipelineServiceHandlers) TriggerPipeline(ctx context.Context, in *pb.TriggerPipelineRequest) (*structpb.Struct, error) {
-
-	username, err := getUsername(ctx)
-	if err != nil {
-		return &structpb.Struct{}, err
-	}
-
-	pipeline, err := s.pipelineService.GetPipelineByName(username, in.Name)
-	if err != nil {
-		return &structpb.Struct{}, err
-	}
-
-	if err := s.pipelineService.ValidateTriggerPipeline(username, in.Name, pipeline); err != nil {
-		return &structpb.Struct{}, err
-	}
-
-	if obj, err := s.pipelineService.TriggerPipeline(username, *in, pipeline); err != nil {
-		return &structpb.Struct{}, err
-	} else {
-		ret, err := structUtil.StructToProtobufStruct(obj)
-		if err != nil {
-			return &structpb.Struct{}, status.Error(codes.Internal, err.Error())
-		}
-		return ret, nil
-	}
-}
-
-func (s *pipelineServiceHandlers) TriggerPipelineByUpload(stream pb.Pipeline_TriggerPipelineByUploadServer) error {
+func (s *pipelineServiceHandlers) TriggerPipelineByUpload(stream pipelinePB.Pipeline_TriggerPipelineByUploadServer) error {
 
 	username, err := getUsername(stream.Context())
 	if err != nil {
@@ -271,17 +249,17 @@ func (s *pipelineServiceHandlers) TriggerPipelineByUpload(stream pb.Pipeline_Tri
 		return err
 	}
 
-	ret, err := structUtil.StructToProtobufStruct(obj)
-	if err != nil {
-		return status.Error(codes.Internal, err.Error())
-	}
+	fmt.Printf("%+v\n", obj)
+	fmt.Println(reflect.TypeOf(obj))
 
-	stream.SendAndClose(ret)
+	stream.SendAndClose(&anypb.Any{})
 
 	return nil
 }
 
 func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+
+	logger, _ := logger.GetZapLogger()
 
 	contentType := r.Header.Get("Content-Type")
 
@@ -312,7 +290,32 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 
 		db := database.GetConnection()
 		pipelineRepository := repository.NewPipelineRepository(db)
-		pipelineService := service.NewPipelineService(pipelineRepository)
+
+		// Create tls based credential.
+		var creds credentials.TransportCredentials
+		var err error
+		if configs.Config.Server.HTTPS.Enabled {
+			creds, err = credentials.NewServerTLSFromFile(configs.Config.Server.HTTPS.Cert, configs.Config.Server.HTTPS.Key)
+			if err != nil {
+				logger.Fatal(fmt.Sprintf("failed to create credentials: %v", err))
+			}
+		}
+
+		var modelClientDialOpts grpc.DialOption
+		if configs.Config.ModelService.TLS {
+			modelClientDialOpts = grpc.WithTransportCredentials(creds)
+		} else {
+			modelClientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
+		}
+
+		clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelService.Host, configs.Config.ModelService.Port), modelClientDialOpts)
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+
+		modelServiceClient := modelPB.NewModelClient(clientConn)
+
+		pipelineService := service.NewPipelineService(pipelineRepository, modelServiceClient)
 
 		pipeline, err := pipelineService.GetPipelineByName(username, pipelineName)
 		if err != nil {
