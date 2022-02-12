@@ -70,7 +70,6 @@ func (r *pipelineRepository) ListPipelines(query model.ListPipelineQuery) ([]mod
 	var pipelines []model.Pipeline
 
 	var count int64
-	// TODO: This is workaround before we adopt keto
 	r.DB.Model(&model.Pipeline{}).Where("namespace = ?", query.Namespace).Count(&count)
 
 	var min uint64
