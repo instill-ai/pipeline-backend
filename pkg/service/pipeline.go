@@ -191,8 +191,11 @@ func (p *pipelineService) ValidateModel(namespace string, selectedModels []*mode
 			if selectedModel.Name == supportModel.Name {
 				for _, supportVersion := range supportModel.Versions {
 					if selectedModel.Version == supportVersion.Version {
-						matchModel = true
-						break
+						// Hard coded for temporary testing, should have a enum for this status
+						if supportVersion.Status == modelPB.UpdateModelInfo_ONLINE.String() {
+							matchModel = true
+							break
+						}
 					}
 				}
 			}
