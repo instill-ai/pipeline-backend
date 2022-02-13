@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/gogo/status"
-	modelPB "github.com/instill-ai/pipeline-backend/internal/modelservice/model"
 	"github.com/instill-ai/pipeline-backend/internal/temporal"
 	model "github.com/instill-ai/pipeline-backend/pkg/model"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	modelPB "github.com/instill-ai/protogen-go/model"
 	"google.golang.org/grpc/codes"
 )
 
