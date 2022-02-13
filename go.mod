@@ -10,10 +10,10 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
 	github.com/instill-ai/protogen-go v0.0.0-20220213004242-22035920e455
-	github.com/instill-ai/visual-data-pipeline v0.0.0-20220206172802-0ec790b4d99a
+	github.com/instill-ai/vdp v0.1.1-alpha
 	github.com/knadh/koanf v1.4.0
 	go.temporal.io/sdk v1.13.0
-	go.uber.org/zap v1.20.0
+	go.uber.org/zap v1.21.0
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1

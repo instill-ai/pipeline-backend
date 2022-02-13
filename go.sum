@@ -599,8 +599,8 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/instill-ai/protogen-go v0.0.0-20220121071429-f56fdeee9a34/go.mod h1:q2Pq4P0AY/59RGibT4nSDnOsA4wD4XhLueFRoGYNBjk=
 github.com/instill-ai/protogen-go v0.0.0-20220213004242-22035920e455 h1:S6yPwy7MobsYt0WRQ/Jh9wE96K79Tx335gONJr12QKM=
 github.com/instill-ai/protogen-go v0.0.0-20220213004242-22035920e455/go.mod h1:q2Pq4P0AY/59RGibT4nSDnOsA4wD4XhLueFRoGYNBjk=
-github.com/instill-ai/visual-data-pipeline v0.0.0-20220206172802-0ec790b4d99a h1:5uyiPnD/Tu7mOE0IsP9ljaE9ugAVcCeYEmwCY0omEbI=
-github.com/instill-ai/visual-data-pipeline v0.0.0-20220206172802-0ec790b4d99a/go.mod h1:vjvUIkmDrp0DhTlqGXhjWEzrg+E+0SZqcVQONenB6j8=
+github.com/instill-ai/vdp v0.1.1-alpha h1:ixG1xoimp60q2E3SC/5sqW/PiYGb2GYG+/e7qTLgLb4=
+github.com/instill-ai/vdp v0.1.1-alpha/go.mod h1:OcW7cT58iSmvAoHmTMYxkBj/oEvxYy04BVqakzEO6jA=
 github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56/go.mod h1:ymszkNOg6tORTn+6F6j+Jc8TOr5osrynvN6ivFWZ2GA=
 github.com/jackc/chunkreader v1.0.0 h1:4s39bBR8ByfqH+DKm8rQA3E1LHZWB9XWcrz8fqaZbe0=
 github.com/jackc/chunkreader v1.0.0/go.mod h1:RT6O25fNZIuasFJRyZ4R/Y2BbhasbmZXF9QQ7T3kePo=
@@ -1054,8 +1054,9 @@ go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee/go.mod h1:vJERXedbb3MVM5f9E
 go.uber.org/zap v1.9.1/go.mod h1:vwi/ZaCAaUcBkycHslxD9B2zi4UTXhF60s6SWpuDF0Q=
 go.uber.org/zap v1.10.0/go.mod h1:vwi/ZaCAaUcBkycHslxD9B2zi4UTXhF60s6SWpuDF0Q=
 go.uber.org/zap v1.13.0/go.mod h1:zwrFLgMcdUuIBviXEYEH1YKNaOBnKXsx2IPda5bBwHM=
-go.uber.org/zap v1.20.0 h1:N4oPlghZwYG55MlU6LXk/Zp00FVNE9X9wrYO8CEs4lc=
 go.uber.org/zap v1.20.0/go.mod h1:wjWOCqI0f2ZZrJF/UufIOkiC8ii6tm1iqIsLo76RfJw=
+go.uber.org/zap v1.21.0 h1:WefMeulhovoZ2sYXz7st6K0sLj7bBhpiFaud4r4zST8=
+go.uber.org/zap v1.21.0/go.mod h1:wjWOCqI0f2ZZrJF/UufIOkiC8ii6tm1iqIsLo76RfJw=
 golang.org/x/crypto v0.0.0-20171113213409-9f005a07e0d3/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20181009213950-7c1a557ab941/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=

@@ -11,7 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/definition"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/model"
-	worker "github.com/instill-ai/visual-data-pipeline/pkg/temporal"
+	worker "github.com/instill-ai/vdp/pkg/temporal"
 	"go.temporal.io/sdk/client"
 )
 
