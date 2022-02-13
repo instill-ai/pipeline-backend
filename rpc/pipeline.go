@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -17,11 +16,11 @@ import (
 	database "github.com/instill-ai/pipeline-backend/internal/db"
 	metadataUtil "github.com/instill-ai/pipeline-backend/internal/grpc/metadata"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
-	modelPB "github.com/instill-ai/pipeline-backend/internal/modelservice/model"
 	paginate "github.com/instill-ai/pipeline-backend/internal/paginate"
 	"github.com/instill-ai/pipeline-backend/pkg/model"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	modelPB "github.com/instill-ai/protogen-go/model"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -29,8 +28,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/anypb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 func getUsername(ctx context.Context) (string, error) {
@@ -249,10 +248,7 @@ func (s *pipelineServiceHandlers) TriggerPipelineByUpload(stream pipelinePB.Pipe
 		return err
 	}
 
-	fmt.Printf("%+v\n", obj)
-	fmt.Println(reflect.TypeOf(obj))
-
-	stream.SendAndClose(&anypb.Any{})
+	stream.SendAndClose(obj.(*structpb.Struct))
 
 	return nil
 }

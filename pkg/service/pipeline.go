@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/gogo/status"
-	modelPB "github.com/instill-ai/pipeline-backend/internal/modelservice/model"
 	"github.com/instill-ai/pipeline-backend/internal/temporal"
 	model "github.com/instill-ai/pipeline-backend/pkg/model"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	modelPB "github.com/instill-ai/protogen-go/model"
 	"google.golang.org/grpc/codes"
 )
 
@@ -191,8 +191,11 @@ func (p *pipelineService) ValidateModel(namespace string, selectedModels []*mode
 			if selectedModel.Name == supportModel.Name {
 				for _, supportVersion := range supportModel.Versions {
 					if selectedModel.Version == supportVersion.Version {
-						matchModel = true
-						break
+						// Hard coded for temporary testing, should have a enum for this status
+						if supportVersion.Status == modelPB.UpdateModelInfo_ONLINE.String() {
+							matchModel = true
+							break
+						}
 					}
 				}
 			}
