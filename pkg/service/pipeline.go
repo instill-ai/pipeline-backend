@@ -86,6 +86,11 @@ func (p *pipelineService) UpdatePipeline(pipeline model.Pipeline) (model.Pipelin
 		return model.Pipeline{}, status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", pipeline.Name)
 	}
 
+	err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
+	if err != nil {
+		return model.Pipeline{}, err
+	}
+
 	if err := p.pipelineRepository.UpdatePipeline(pipeline); err != nil {
 		return model.Pipeline{}, err
 	}
@@ -138,7 +143,6 @@ func (p *pipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 		err = stream.Send(&modelPB.PredictModelRequest{
 			Name:    pipeline.Recipe.Model[0].Name,
 			Version: pipeline.Recipe.Model[0].Version,
-			Type:    0,
 		})
 		if err != nil {
 			status.Errorf(codes.Internal, "cannot send data info to server: %s", err.Error())
@@ -191,8 +195,7 @@ func (p *pipelineService) ValidateModel(namespace string, selectedModels []*mode
 			if selectedModel.Name == supportModel.Name {
 				for _, supportVersion := range supportModel.Versions {
 					if selectedModel.Version == supportVersion.Version {
-						// Hard coded for temporary testing, should have a enum for this status
-						if supportVersion.Status == modelPB.UpdateModelInfo_ONLINE.String() {
+						if supportVersion.Status == modelPB.ModelStatus_ONLINE {
 							matchModel = true
 							break
 						}
