@@ -29,17 +29,11 @@ func marshalRecipeModel(v []*model.Model) []*pb.Model {
 	return ret
 }
 
-func marshalRecipeLogicOperator(l []*model.LogicOperator) []*pb.LogicOperator {
-	var ret []*pb.LogicOperator
-	return ret
-}
-
 func marshalRecipe(recipe *model.Recipe) *pb.Recipe {
 	return &pb.Recipe{
-		Source:        marshalRecipeSource(recipe.Source),
-		Destination:   marshalRecipeDestination(recipe.Destination),
-		Model:         marshalRecipeModel(recipe.Model),
-		LogicOperator: marshalRecipeLogicOperator(recipe.LogicOperator),
+		Source:      marshalRecipeSource(recipe.Source),
+		Destination: marshalRecipeDestination(recipe.Destination),
+		Model:       marshalRecipeModel(recipe.Model),
 	}
 }
 
