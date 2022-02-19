@@ -49,6 +49,9 @@ func (p *pipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipelin
 	}
 
 	// TODO: validation
+	if pipeline.Name == "" {
+		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name not specify")
+	}
 
 	if existingPipeline, _ := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); existingPipeline.Name != "" {
 		return model.Pipeline{}, status.Errorf(codes.FailedPrecondition, "The name %s is existing in your namespace", pipeline.Name)
@@ -81,14 +84,19 @@ func (p *pipelineService) GetPipelineByName(namespace string, pipelineName strin
 func (p *pipelineService) UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error) {
 
 	// TODO: validation
+	if pipeline.Name == "" {
+		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name not specify")
+	}
 
 	if existingPipeline, _ := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); existingPipeline.Name == "" {
 		return model.Pipeline{}, status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", pipeline.Name)
 	}
 
-	err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
-	if err != nil {
-		return model.Pipeline{}, err
+	if pipeline.Recipe != nil && pipeline.Recipe.Model != nil && len(pipeline.Recipe.Model) > 0 {
+		err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
+		if err != nil {
+			return model.Pipeline{}, err
+		}
 	}
 
 	if err := p.pipelineRepository.UpdatePipeline(pipeline); err != nil {

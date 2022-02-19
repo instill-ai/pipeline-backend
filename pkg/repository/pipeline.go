@@ -80,13 +80,16 @@ func (r *pipelineRepository) ListPipelines(query model.ListPipelineQuery) ([]mod
 			Where("namespace = ?", query.Namespace).
 			Rows()
 		if err != nil {
+			rows.Close()
 			return nil, 0, 0, status.Errorf(codes.Internal, "Error when query min & max value", err.Error())
 		}
 		if rows.Next() {
 			if err := rows.Scan(&min, &max); err != nil {
+				rows.Close()
 				return nil, 0, 0, status.Errorf(codes.Internal, "Can not fetch the min & max value: %s", err.Error())
 			}
 		}
+		rows.Close()
 	}
 
 	cursor := query.Cursor

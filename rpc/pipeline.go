@@ -74,9 +74,11 @@ func (s *pipelineServiceHandlers) CreatePipeline(ctx context.Context, in *pipeli
 	entity := model.Pipeline{
 		Name:        in.Name,
 		Description: in.Description,
-		Recipe:      unmarshalRecipe(in.Recipe),
 		Active:      in.Active,
 		Namespace:   username,
+	}
+	if in.Recipe != nil {
+		entity.Recipe = unmarshalRecipe(in.Recipe)
 	}
 
 	pipeline, err := s.pipelineService.CreatePipeline(entity)
