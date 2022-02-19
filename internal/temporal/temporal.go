@@ -72,8 +72,8 @@ func TriggerTemporalWorkflow(pipelineName string, recipe *model.Recipe, uid stri
 // NOTE: Before migrate inference-backend into pipeline-backend, there is one more criteria is only 1 VDO
 func IsDirect(recipe *model.Recipe) bool {
 
-	return (strings.ToLower(recipe.Source.Type) == definition.DataSourceKindHTTP &&
-		strings.ToLower(recipe.Destination.Type) == definition.DataDestinationKindHTTP &&
+	return (strings.ToLower(recipe.Source.Type) == definition.DataSourceKindDirect &&
+		strings.ToLower(recipe.Destination.Type) == definition.DataDestinationKindDirect &&
 		len(recipe.Model) == 1 &&
 		(recipe.LogicOperator == nil || len(recipe.LogicOperator) == 0))
 }
