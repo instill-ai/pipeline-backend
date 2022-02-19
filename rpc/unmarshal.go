@@ -28,17 +28,11 @@ func unmarshalRecipeModel(v []*pb.Model) []*model.Model {
 	return ret
 }
 
-func unmarshalRecipeLogicOperator(l []*pb.LogicOperator) []*model.LogicOperator {
-	var ret []*model.LogicOperator
-	return ret
-}
-
 func unmarshalRecipe(recipe *pb.Recipe) *model.Recipe {
 	return &model.Recipe{
-		Source:        unmarshalRecipeSource(recipe.Source),
-		Destination:   unmarshalDataDestination(recipe.Destination),
-		Model:         unmarshalRecipeModel(recipe.Model),
-		LogicOperator: unmarshalRecipeLogicOperator(recipe.LogicOperator),
+		Source:      unmarshalRecipeSource(recipe.Source),
+		Destination: unmarshalDataDestination(recipe.Destination),
+		Model:       unmarshalRecipeModel(recipe.Model),
 	}
 }
 
