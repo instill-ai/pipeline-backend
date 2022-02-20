@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.1.0-alpha...v0.2.0-alpha) (2022-02-14)
+
+
+### Features
+
+* add model validation while creating pipeline and files ([#5](https://github.com/instill-ai/pipeline-backend/issues/5)) ([8bb7af3](https://github.com/instill-ai/pipeline-backend/commit/8bb7af3e342a0fba865b7c7568aaa258766f6d8e))
+
+
+### Bug Fixes
+
+* fix vdp import path ([#8](https://github.com/instill-ai/pipeline-backend/issues/8)) ([d119411](https://github.com/instill-ai/pipeline-backend/commit/d119411d04c768992860d943081a275284b330bc))
+
 ## [0.1.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.0.0-alpha...v0.1.0-alpha) (2022-02-11)
 
 
