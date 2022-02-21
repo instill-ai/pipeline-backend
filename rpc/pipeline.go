@@ -19,7 +19,7 @@ import (
 	paginate "github.com/instill-ai/pipeline-backend/internal/paginate"
 	"github.com/instill-ai/pipeline-backend/pkg/model"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
+	pipelineService "github.com/instill-ai/pipeline-backend/pkg/service"
 	modelPB "github.com/instill-ai/protogen-go/model"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
 	"google.golang.org/grpc"
@@ -44,11 +44,11 @@ func getUsername(ctx context.Context) (string, error) {
 }
 
 type pipelineServiceHandlers struct {
-	pipelineService service.PipelineService
+	pipelineService pipelineService.Services
 	paginateTocken  paginate.TokenGenerator
 }
 
-func NewPipelineServiceHandlers(pipelineService service.PipelineService) pipelinePB.PipelineServer {
+func NewPipelineServiceHandlers(pipelineService pipelineService.Services) pipelinePB.PipelineServer {
 	return &pipelineServiceHandlers{
 		pipelineService: pipelineService,
 		paginateTocken:  paginate.TokenGeneratorWithSalt(configs.Config.Server.Paginate.Salt),
@@ -313,7 +313,7 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 
 		modelServiceClient := modelPB.NewModelClient(clientConn)
 
-		pipelineService := service.NewPipelineService(pipelineRepository, modelServiceClient)
+		pipelineService := pipelineService.NewPipelineService(pipelineRepository, modelServiceClient)
 
 		pipeline, err := pipelineService.GetPipelineByName(username, pipelineName)
 		if err != nil {
