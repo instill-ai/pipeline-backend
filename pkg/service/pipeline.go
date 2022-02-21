@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-type PipelineService interface {
+type Services interface {
 	CreatePipeline(pipeline model.Pipeline) (model.Pipeline, error)
 	ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error)
 	GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error)
@@ -29,19 +29,19 @@ type PipelineService interface {
 	ValidateModel(namespace string, selectedModel []*model.Model) error
 }
 
-type pipelineService struct {
+type PipelineService struct {
 	pipelineRepository repository.PipelineRepository
 	modelServiceClient modelPB.ModelClient
 }
 
-func NewPipelineService(r repository.PipelineRepository, modelServiceClient modelPB.ModelClient) PipelineService {
-	return &pipelineService{
+func NewPipelineService(r repository.PipelineRepository, modelServiceClient modelPB.ModelClient) Services {
+	return &PipelineService{
 		pipelineRepository: r,
 		modelServiceClient: modelServiceClient,
 	}
 }
 
-func (p *pipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipeline, error) {
+func (p *PipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipeline, error) {
 
 	// Validate the naming rule of pipeline
 	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.Name); !match {
@@ -73,15 +73,15 @@ func (p *pipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipelin
 	}
 }
 
-func (p *pipelineService) ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error) {
+func (p *PipelineService) ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error) {
 	return p.pipelineRepository.ListPipelines(query)
 }
 
-func (p *pipelineService) GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error) {
+func (p *PipelineService) GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error) {
 	return p.pipelineRepository.GetPipelineByName(namespace, pipelineName)
 }
 
-func (p *pipelineService) UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error) {
+func (p *PipelineService) UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error) {
 
 	// TODO: validation
 	if pipeline.Name == "" {
@@ -110,11 +110,11 @@ func (p *pipelineService) UpdatePipeline(pipeline model.Pipeline) (model.Pipelin
 	}
 }
 
-func (p *pipelineService) DeletePipeline(namespace string, pipelineName string) error {
+func (p *PipelineService) DeletePipeline(namespace string, pipelineName string) error {
 	return p.pipelineRepository.DeletePipeline(namespace, pipelineName)
 }
 
-func (p *pipelineService) ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error {
+func (p *PipelineService) ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error {
 
 	// Specified pipeline not exists
 	if pipeline.Name == "" {
@@ -136,7 +136,8 @@ func (p *pipelineService) ValidateTriggerPipeline(namespace string, pipelineName
 	return nil
 }
 
-func (p *pipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline model.Pipeline) (interface{}, error) {
+
+func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline model.Pipeline) (interface{}, error) {
 
 	if temporal.IsDirect(pipeline.Recipe) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -185,7 +186,7 @@ func (p *pipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 	}
 }
 
-func (p *pipelineService) ValidateModel(namespace string, selectedModels []*model.Model) error {
+func (p *PipelineService) ValidateModel(namespace string, selectedModels []*model.Model) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
