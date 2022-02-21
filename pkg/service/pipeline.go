@@ -30,14 +30,14 @@ type Services interface {
 }
 
 type PipelineService struct {
-	pipelineRepository repository.PipelineRepository
-	modelServiceClient modelPB.ModelClient
+	PipelineRepository repository.Operations
+	ModelServiceClient modelPB.ModelClient
 }
 
-func NewPipelineService(r repository.PipelineRepository, modelServiceClient modelPB.ModelClient) Services {
+func NewPipelineService(r repository.Operations, modelServiceClient modelPB.ModelClient) Services {
 	return &PipelineService{
-		pipelineRepository: r,
-		modelServiceClient: modelServiceClient,
+		PipelineRepository: r,
+		ModelServiceClient: modelServiceClient,
 	}
 }
 
@@ -62,7 +62,7 @@ func (p *PipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipelin
 		return model.Pipeline{}, err
 	}
 
-	if err := p.pipelineRepository.CreatePipeline(pipeline); err != nil {
+	if err := p.PipelineRepository.CreatePipeline(pipeline); err != nil {
 		return model.Pipeline{}, err
 	}
 
@@ -74,11 +74,11 @@ func (p *PipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipelin
 }
 
 func (p *PipelineService) ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error) {
-	return p.pipelineRepository.ListPipelines(query)
+	return p.PipelineRepository.ListPipelines(query)
 }
 
 func (p *PipelineService) GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error) {
-	return p.pipelineRepository.GetPipelineByName(namespace, pipelineName)
+	return p.PipelineRepository.GetPipelineByName(namespace, pipelineName)
 }
 
 func (p *PipelineService) UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error) {
@@ -99,7 +99,7 @@ func (p *PipelineService) UpdatePipeline(pipeline model.Pipeline) (model.Pipelin
 		}
 	}
 
-	if err := p.pipelineRepository.UpdatePipeline(pipeline); err != nil {
+	if err := p.PipelineRepository.UpdatePipeline(pipeline); err != nil {
 		return model.Pipeline{}, err
 	}
 
@@ -111,7 +111,7 @@ func (p *PipelineService) UpdatePipeline(pipeline model.Pipeline) (model.Pipelin
 }
 
 func (p *PipelineService) DeletePipeline(namespace string, pipelineName string) error {
-	return p.pipelineRepository.DeletePipeline(namespace, pipelineName)
+	return p.PipelineRepository.DeletePipeline(namespace, pipelineName)
 }
 
 func (p *PipelineService) ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error {
@@ -143,7 +143,7 @@ func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		stream, err := p.modelServiceClient.PredictModelByUpload(ctx)
+		stream, err := p.ModelServiceClient.PredictModelByUpload(ctx)
 		defer stream.CloseSend()
 		if err != nil {
 			return nil, err
@@ -191,7 +191,7 @@ func (p *PipelineService) ValidateModel(namespace string, selectedModels []*mode
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	supportModelResp, err := p.modelServiceClient.ListModels(ctx, &modelPB.ListModelRequest{})
+	supportModelResp, err := p.ModelServiceClient.ListModels(ctx, &modelPB.ListModelRequest{})
 	if err != nil {
 		return err
 	}
