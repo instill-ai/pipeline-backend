@@ -81,7 +81,7 @@ func (r *PipelineRepository) ListPipelines(query model.ListPipelineQuery) ([]mod
 			Rows()
 		if err != nil {
 			rows.Close()
-			return nil, 0, 0, status.Errorf(codes.Internal, "Error when query min & max value", err.Error())
+			return nil, 0, 0, status.Errorf(codes.Internal, "Error when query min & max value: %s", err.Error())
 		}
 		if rows.Next() {
 			if err := rows.Scan(&min, &max); err != nil {
