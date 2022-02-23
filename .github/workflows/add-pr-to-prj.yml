@@ -1,4 +1,4 @@
-name: Add PR to project
+name: Add PR to Project
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.botGitHubToken }}
           ORGANIZATION: instill-ai
-          PROJECT_NUMBER: 5  # Visual Datat Preparation (VDP) project
+          PROJECT_NUMBER: 5  # Visual Data Preparation (VDP) project
         run: |
           gh api graphql -f query='
             query($org: String!, $number: Int!) {
