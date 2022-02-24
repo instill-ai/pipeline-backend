@@ -1,5 +1,14 @@
 # Changelog
 
+### [0.2.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.2.0-alpha...v0.2.1-alpha) (2022-02-24)
+
+
+### Bug Fixes
+
+* add support URL/base64 endpoint ([#29](https://github.com/instill-ai/pipeline-backend/issues/29)) ([21f6c6d](https://github.com/instill-ai/pipeline-backend/commit/21f6c6d665c48cd78d2d41036ab50a50663a98bc))
+* change struct definition from private to public ([#23](https://github.com/instill-ai/pipeline-backend/issues/23)) ([ffee642](https://github.com/instill-ai/pipeline-backend/commit/ffee6425c6c0f9833bde2dd7c47baae548326d26))
+* expose all structs inside pkg folder ([#25](https://github.com/instill-ai/pipeline-backend/issues/25)) ([345639f](https://github.com/instill-ai/pipeline-backend/commit/345639f70bf1fcfb6d0c1a049f5cfa0620840e3a))
+
 ## [0.2.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.1.0-alpha...v0.2.0-alpha) (2022-02-14)
 
 
