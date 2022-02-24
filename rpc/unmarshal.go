@@ -58,6 +58,5 @@ func unmarshalPipelineTriggerContent(content *pb.TriggerPipelineContent) *model.
 	return &model.TriggerPipelineContent{
 		Url:    content.Url,
 		Base64: content.Base64,
-		Chunk:  content.Chunk,
 	}
 }
