@@ -15,6 +15,7 @@ import (
 	model "github.com/instill-ai/pipeline-backend/pkg/model"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	modelPB "github.com/instill-ai/protogen-go/model"
+	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
 	"google.golang.org/grpc/codes"
 )
 
@@ -24,6 +25,7 @@ type Services interface {
 	GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error)
 	UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error)
 	DeletePipeline(namespace string, pipelineName string) error
+	TriggerPipeline(namespace string, trigger pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error)
 	ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error
 	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (interface{}, error)
 	ValidateModel(namespace string, selectedModel []*model.Model) error
@@ -43,23 +45,29 @@ func NewPipelineService(r repository.Operations, modelServiceClient modelPB.Mode
 
 func (p *PipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipeline, error) {
 
+	// TODO: more validation
+	if pipeline.Name == "" {
+		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name is not specified")
+	}
+
 	// Validate the naming rule of pipeline
 	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.Name); !match {
 		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The name of pipeline is invalid")
 	}
 
-	// TODO: validation
-	if pipeline.Name == "" {
-		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name not specify")
+	if len(pipeline.Name) > 100 {
+		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The length of the name is greater than 100")
 	}
 
 	if existingPipeline, _ := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); existingPipeline.Name != "" {
 		return model.Pipeline{}, status.Errorf(codes.FailedPrecondition, "The name %s is existing in your namespace", pipeline.Name)
 	}
 
-	err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
-	if err != nil {
-		return model.Pipeline{}, err
+	if pipeline.Recipe != nil && pipeline.Recipe.Model != nil && len(pipeline.Recipe.Model) > 0 {
+		err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
+		if err != nil {
+			return model.Pipeline{}, err
+		}
 	}
 
 	if err := p.PipelineRepository.CreatePipeline(pipeline); err != nil {
@@ -136,6 +144,41 @@ func (p *PipelineService) ValidateTriggerPipeline(namespace string, pipelineName
 	return nil
 }
 
+func (p *PipelineService) TriggerPipeline(namespace string, trigger pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error) {
+
+	// TODO: The model that pipeline used is offline
+
+	if temporal.IsDirect(pipeline.Recipe) {
+
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancel()
+
+		vdo := pipeline.Recipe.Model[0]
+
+		var contents []*modelPB.ImageRequest
+		for _, content := range trigger.Contents {
+			contents = append(contents, &modelPB.ImageRequest{
+				Url:    content.Url,
+				Base64: content.Base64,
+			})
+		}
+
+		ret, err := p.ModelServiceClient.PredictModel(ctx, &modelPB.PredictModelImageRequest{
+			Name:     vdo.Name,
+			Version:  vdo.Version,
+			Contents: contents,
+		})
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "cannot make inference: %s", err.Error())
+		}
+
+		fmt.Printf("%+v\n", ret)
+
+		return ret, nil
+	} else {
+		return nil, nil
+	}
+}
 
 func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline model.Pipeline) (interface{}, error) {
 

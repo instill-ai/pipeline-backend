@@ -9,8 +9,8 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
-	github.com/instill-ai/protogen-go v0.0.0-20220219173653-3c0c45e11858
-	github.com/instill-ai/vdp v0.1.1-alpha
+	github.com/instill-ai/protogen-go v0.1.1-alpha
+	github.com/instill-ai/vdp v0.1.2-alpha
 	github.com/knadh/koanf v1.4.0
 	go.temporal.io/sdk v1.13.0
 	go.uber.org/zap v1.21.0

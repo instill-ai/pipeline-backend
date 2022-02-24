@@ -199,6 +199,29 @@ func (s *pipelineServiceHandlers) DeletePipeline(ctx context.Context, in *pipeli
 	return &emptypb.Empty{}, nil
 }
 
+func (s *pipelineServiceHandlers) TriggerPipeline(ctx context.Context, in *pipelinePB.TriggerPipelineRequest) (*structpb.Struct, error) {
+
+	username, err := getUsername(ctx)
+	if err != nil {
+		return &structpb.Struct{}, err
+	}
+
+	pipeline, err := s.pipelineService.GetPipelineByName(username, in.Name)
+	if err != nil {
+		return &structpb.Struct{}, err
+	}
+
+	if err := s.pipelineService.ValidateTriggerPipeline(username, in.Name, pipeline); err != nil {
+		return &structpb.Struct{}, err
+	}
+
+	if obj, err := s.pipelineService.TriggerPipeline(username, *in, pipeline); err != nil {
+		return &structpb.Struct{}, err
+	} else {
+		return obj.(*structpb.Struct), nil
+	}
+}
+
 func (s *pipelineServiceHandlers) TriggerPipelineByUpload(stream pipelinePB.Pipeline_TriggerPipelineByUploadServer) error {
 
 	username, err := getUsername(stream.Context())
