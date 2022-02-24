@@ -47,7 +47,7 @@ func (p *PipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipelin
 
 	// TODO: more validation
 	if pipeline.Name == "" {
-		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name not specify")
+		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name is not specified")
 	}
 
 	// Validate the naming rule of pipeline
