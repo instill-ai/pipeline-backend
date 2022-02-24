@@ -56,7 +56,7 @@ func (p *PipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipelin
 	}
 
 	if len(pipeline.Name) > 100 {
-		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The length of the name is greater than 38")
+		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The length of the name is greater than 100")
 	}
 
 	if existingPipeline, _ := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); existingPipeline.Name != "" {
