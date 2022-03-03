@@ -43,7 +43,9 @@ func MultiPart(endpoint string, header map[string][]string, extParams map[string
 	if err != nil {
 		return 500, nil, err
 	}
-	part.Write(fileContent)
+	if _, err := part.Write(fileContent); err != nil {
+		return 500, nil, err
+	}
 
 	for key, val := range extParams {
 		_ = writer.WriteField(key, val)

@@ -75,7 +75,9 @@ func checkExist(databaseConfig configs.DatabaseConfig) error {
 func main() {
 	mydir, _ := os.Getwd()
 
-	configs.Init()
+	if err := configs.Init(); err != nil {
+		panic(err)
+	}
 
 	databaseConfig := configs.Config.Database
 

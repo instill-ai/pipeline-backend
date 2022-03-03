@@ -87,7 +87,9 @@ func (s *pipelineServiceHandlers) CreatePipeline(ctx context.Context, in *pipeli
 	}
 
 	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
-	grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusCreated)))
+	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusCreated))); err != nil {
+		return nil, err
+	}
 
 	return marshalPipeline(&pipeline), nil
 }
@@ -194,7 +196,9 @@ func (s *pipelineServiceHandlers) DeletePipeline(ctx context.Context, in *pipeli
 	}
 
 	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
-	grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent)))
+	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent))); err != nil {
+		return &emptypb.Empty{}, err
+	}
 
 	return &emptypb.Empty{}, nil
 }
@@ -215,7 +219,7 @@ func (s *pipelineServiceHandlers) TriggerPipeline(ctx context.Context, in *pipel
 		return &structpb.Struct{}, err
 	}
 
-	if obj, err := s.pipelineService.TriggerPipeline(username, *in, pipeline); err != nil {
+	if obj, err := s.pipelineService.TriggerPipeline(username, in, pipeline); err != nil {
 		return &structpb.Struct{}, err
 	} else {
 		return obj.(*structpb.Struct), nil
@@ -278,6 +282,17 @@ func (s *pipelineServiceHandlers) TriggerPipelineByUpload(stream pipelinePB.Pipe
 	return nil
 }
 
+func errorResponse(w http.ResponseWriter, status int, title string, detail string) {
+	w.Header().Add("Content-Type", "application/json+problem")
+	w.WriteHeader(status)
+	obj, _ := json.Marshal(model.Error{
+		Status: int32(status),
+		Title:  title,
+		Detail: detail,
+	})
+	_, _ = w.Write(obj)
+}
+
 func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 
 	logger, _ := logger.GetZapLogger()
@@ -289,24 +304,10 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 		pipelineName := pathParams["name"]
 
 		if username == "" {
-			w.Header().Add("Content-Type", "application/json+problem")
-			w.WriteHeader(422)
-			obj, _ := json.Marshal(model.Error{
-				Status: 422,
-				Title:  "Required parameter missing",
-				Detail: "Required parameter Jwt-Sub not found in your header",
-			})
-			w.Write(obj)
+			errorResponse(w, 422, "Required parameter missing", "Required parameter Jwt-Sub not found in your header")
 		}
 		if pipelineName == "" {
-			w.Header().Add("Content-Type", "application/json+problem")
-			w.WriteHeader(422)
-			obj, _ := json.Marshal(model.Error{
-				Status: 422,
-				Title:  "Required parameter missing",
-				Detail: "Required parameter pipeline id not found in your path",
-			})
-			w.Write(obj)
+			errorResponse(w, 422, "Required parameter missing", "Required parameter pipeline name not found in your path")
 		}
 
 		db := database.GetConnection()
@@ -340,27 +341,16 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 
 		pipeline, err := pipelineService.GetPipelineByName(username, pipelineName)
 		if err != nil {
-			w.Header().Add("Content-Type", "application/json+problem")
-			w.WriteHeader(400)
-			obj, _ := json.Marshal(model.Error{
-				Status: 400,
-				Title:  "Required parameter missing",
-				Detail: "Required parameter pipeline id not found in your path",
-			})
-			w.Write(obj)
+			errorResponse(w, 400, "Pipeline not found", "Pipeline not found")
 		}
 
-		r.ParseMultipartForm(4 << 20)
+		if err := r.ParseMultipartForm(4 << 20); err != nil {
+			errorResponse(w, 500, "Internal Error", "Error while reading file from request")
+		}
+
 		file, _, err := r.FormFile("contents")
 		if err != nil {
-			w.Header().Add("Content-Type", "application/json+problem")
-			w.WriteHeader(400)
-			obj, _ := json.Marshal(model.Error{
-				Status: 500,
-				Title:  "Internal Error",
-				Detail: "Error while reading file from request",
-			})
-			w.Write(obj)
+			errorResponse(w, 500, "Internal Error", "Error while reading file from request")
 		}
 		defer file.Close()
 
@@ -376,13 +366,7 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 			buf.Write(part[:count])
 		}
 		if err != io.EOF {
-			w.Header().Add("Content-Type", "application/json+problem")
-			w.WriteHeader(400)
-			obj, _ := json.Marshal(model.Error{
-				Status: 400,
-				Title:  "Error Reading",
-			})
-			w.Write(obj)
+			errorResponse(w, 500, "Internal Error", "Error while reading response from multipart")
 		}
 
 		var obj interface{}
@@ -391,12 +375,12 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 			return
 		}
 
-		w.Header().Add("Content-Type", "application/json+problem")
+		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(200)
 		ret, _ := json.Marshal(obj)
-		w.Write(ret)
+		_, _ = w.Write(ret)
 	} else {
-		w.Header().Add("Content-Type", "application/json+problem")
+		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(405)
 	}
 }

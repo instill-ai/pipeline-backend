@@ -195,5 +195,5 @@ func main() {
 	cache.Close()
 	temporal.Close()
 
-	logger.Sync()
+	_ = logger.Sync()
 }
