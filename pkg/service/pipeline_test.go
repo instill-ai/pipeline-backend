@@ -5,7 +5,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/instill-ai/pipeline-backend/pkg/model"
-	service "github.com/instill-ai/pipeline-backend/pkg/service"
 	modelPB "github.com/instill-ai/protogen-go/model"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
 	"github.com/stretchr/testify/assert"
@@ -35,7 +34,7 @@ func TestPipelineService_CreatePipeline(t *testing.T) {
 
 		rpcModelClient := NewMockModelClient(ctrl)
 
-		pipelineService := service.PipelineService{
+		pipelineService := PipelineService{
 			PipelineRepository: mockPipelineRepository,
 			ModelServiceClient: rpcModelClient,
 		}
@@ -68,7 +67,7 @@ func TestPipelineService_UpdatePipeline(t *testing.T) {
 
 		rpcModelClient := NewMockModelClient(ctrl)
 
-		pipelineService := service.PipelineService{
+		pipelineService := PipelineService{
 			PipelineRepository: mockPipelineRepository,
 			ModelServiceClient: rpcModelClient,
 		}
@@ -123,7 +122,7 @@ func TestPipelineService_TriggerPipeline(t *testing.T) {
 				Contents: modelContents,
 			}))
 
-		pipelineService := service.PipelineService{
+		pipelineService := PipelineService{
 			PipelineRepository: mockPipelineRepository,
 			ModelServiceClient: rpcModelClient,
 		}

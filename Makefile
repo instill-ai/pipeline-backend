@@ -26,5 +26,5 @@ build-server:
 .PHONY: test
 test:
 	@$(GOTEST) -v -coverpkg=./... -coverprofile=coverage.out ./...
-	# @$(GOCOVER) -func=coverage.out
+	@$(GOCOVER) -func=coverage.out
 	@$(GOCOVER) -html=coverage.out
