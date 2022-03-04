@@ -88,12 +88,16 @@ func Init() error {
 		logger.Fatal(err.Error())
 	}
 
-	k.Load(env.Provider("CFG_", ".", func(s string) string {
+	if err := k.Load(env.Provider("CFG_", ".", func(s string) string {
 		return strings.Replace(strings.ToLower(
 			strings.TrimPrefix(s, "CFG_")), "_", ".", -1)
-	}), nil)
+	}), nil); err != nil {
+		return err
+	}
 
-	k.Unmarshal("", &Config)
+	if err := k.Unmarshal("", &Config); err != nil {
+		return err
+	}
 
 	return ValidateConfig(&Config)
 }

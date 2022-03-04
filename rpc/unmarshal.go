@@ -35,28 +35,3 @@ func unmarshalRecipe(recipe *pb.Recipe) *model.Recipe {
 		Model:       unmarshalRecipeModel(recipe.Model),
 	}
 }
-
-func unmarshalPipeline(pipeline *pb.PipelineInfo) *model.Pipeline {
-	ret := &model.Pipeline{
-		Id:          pipeline.Id,
-		Name:        pipeline.Name,
-		Description: pipeline.Description,
-		Active:      pipeline.Active,
-		CreatedAt:   pipeline.CreatedAt.AsTime(),
-		UpdatedAt:   pipeline.UpdatedAt.AsTime(),
-		FullName:    pipeline.FullName,
-	}
-
-	if pipeline.Recipe != nil {
-		ret.Recipe = unmarshalRecipe(pipeline.Recipe)
-	}
-
-	return ret
-}
-
-func unmarshalPipelineTriggerContent(content *pb.TriggerPipelineContent) *model.TriggerPipelineContent {
-	return &model.TriggerPipelineContent{
-		Url:    content.Url,
-		Base64: content.Base64,
-	}
-}

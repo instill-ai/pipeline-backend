@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -25,7 +24,7 @@ type Services interface {
 	GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error)
 	UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error)
 	DeletePipeline(namespace string, pipelineName string) error
-	TriggerPipeline(namespace string, trigger pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error)
+	TriggerPipeline(namespace string, trigger *pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error)
 	ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error
 	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (interface{}, error)
 	ValidateModel(namespace string, selectedModel []*model.Model) error
@@ -144,7 +143,7 @@ func (p *PipelineService) ValidateTriggerPipeline(namespace string, pipelineName
 	return nil
 }
 
-func (p *PipelineService) TriggerPipeline(namespace string, trigger pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error) {
+func (p *PipelineService) TriggerPipeline(namespace string, trigger *pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error) {
 
 	// TODO: The model that pipeline used is offline
 
@@ -187,7 +186,9 @@ func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 		defer cancel()
 
 		stream, err := p.ModelServiceClient.PredictModelByUpload(ctx)
-		defer stream.CloseSend()
+		defer func() {
+			_ = stream.CloseSend()
+		}()
 		if err != nil {
 			return nil, err
 		}
@@ -197,7 +198,7 @@ func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 			Version: pipeline.Recipe.Model[0].Version,
 		})
 		if err != nil {
-			status.Errorf(codes.Internal, "cannot send data info to server: %s", err.Error())
+			return nil, status.Errorf(codes.Internal, "cannot send data info to server: %s", err.Error())
 		}
 
 		const chunkSize = 64 * 1024
@@ -214,13 +215,12 @@ func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 
 			err = stream.Send(&modelPB.PredictModelRequest{Content: buf[:n]})
 			if err != nil {
-				status.Errorf(codes.Internal, "cannot send chunk to server: %s", err)
+				return nil, status.Errorf(codes.Internal, "cannot send chunk to server: %s", err)
 			}
 		}
 		res, err := stream.CloseAndRecv()
 		if err != nil {
-			log.Fatal("cannot receive response: ", err)
-			status.Errorf(codes.Internal, "cannot receive response: %s", err.Error())
+			return nil, status.Errorf(codes.Internal, "cannot receive response: %s", err.Error())
 		}
 
 		return res, nil

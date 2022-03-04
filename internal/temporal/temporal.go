@@ -63,7 +63,9 @@ func TriggerTemporalWorkflow(pipelineName string, recipe *model.Recipe, uid stri
 	// Use the WorkflowExecution to get the result
 	// Get is blocking call and will wait for the Workflow to complete
 	var workflowResult map[string]string
-	we.Get(context.Background(), &workflowResult)
+	if err := we.Get(context.Background(), &workflowResult); err != nil {
+		return nil, err
+	}
 
 	return workflowResult, nil
 }
