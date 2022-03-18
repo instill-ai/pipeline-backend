@@ -1,6 +1,6 @@
-# Pipeline-backend
+# pipeline-backend
 
-The pipeline-backend manages all pipeline resources and talks to [Visual Data Preparation (VDP)](https://github.com/instill-ai/vdp) for pipeline orchestration.
+The pipeline-backend manages all pipeline resources working with [Visual Data Preparation (VDP)](https://github.com/instill-ai/vdp).
 
 ## Development
 

@@ -3,7 +3,6 @@ module github.com/instill-ai/pipeline-backend
 go 1.17
 
 require (
-	github.com/bochengyang/zapadapter v0.0.0-20220121170652-8b0c7573d884
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gogo/status v1.1.0
 	github.com/golang-migrate/migrate/v4 v4.15.1
@@ -12,6 +11,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
 	github.com/instill-ai/protogen-go v0.1.1-alpha
 	github.com/instill-ai/vdp v0.1.2-alpha
+	github.com/instill-ai/x v0.1.0-alpha
 	github.com/knadh/koanf v1.4.0
 	github.com/stretchr/testify v1.7.0
 	go.temporal.io/sdk v1.13.0
