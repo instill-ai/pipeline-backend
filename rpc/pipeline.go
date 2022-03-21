@@ -268,12 +268,12 @@ func (s *pipelineServiceHandlers) TriggerPipelineBinaryFileUpload(stream pipelin
 		}
 	}
 
-	var obj interface{}
+	var obj *modelPB.TriggerModelBinaryFileUploadResponse
 	if obj, err = s.pipelineService.TriggerPipelineByUpload(username, buf, pipeline); err != nil {
 		return err
 	}
 
-	stream.SendAndClose(obj.(*pipelinePB.TriggerPipelineBinaryFileUploadResponse))
+	stream.SendAndClose(&pipelinePB.TriggerPipelineBinaryFileUploadResponse{Output: obj.Output})
 
 	return nil
 }

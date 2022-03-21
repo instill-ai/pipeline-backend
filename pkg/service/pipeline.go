@@ -28,7 +28,7 @@ type Services interface {
 	DeletePipeline(namespace string, pipelineName string) error
 	TriggerPipeline(namespace string, trigger *pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (*modelPB.TriggerModelResponse, error)
 	ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error
-	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (interface{}, error)
+	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error)
 	ValidateModel(namespace string, selectedModel []*model.Model) error
 }
 
@@ -188,7 +188,7 @@ func (p *PipelineService) TriggerPipeline(namespace string, req *pipelinePB.Trig
 
 }
 
-func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline model.Pipeline) (interface{}, error) {
+func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline model.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
 
 	if temporal.IsDirect(pipeline.Recipe) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
