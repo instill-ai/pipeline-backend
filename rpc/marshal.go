@@ -1,9 +1,11 @@
 package rpc
 
 import (
-	"github.com/instill-ai/pipeline-backend/pkg/model"
-	pb "github.com/instill-ai/protogen-go/pipeline"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/model"
+
+	pb "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
 func marshalRecipeSource(d *model.Source) *pb.Source {
@@ -33,12 +35,12 @@ func marshalRecipe(recipe *model.Recipe) *pb.Recipe {
 	return &pb.Recipe{
 		Source:      marshalRecipeSource(recipe.Source),
 		Destination: marshalRecipeDestination(recipe.Destination),
-		Model:       marshalRecipeModel(recipe.Model),
+		Models:      marshalRecipeModel(recipe.Model),
 	}
 }
 
-func marshalPipeline(pipeline *model.Pipeline) *pb.PipelineInfo {
-	ret := &pb.PipelineInfo{
+func marshalPipeline(pipeline *model.Pipeline) *pb.Pipeline {
+	ret := &pb.Pipeline{
 		Id:          pipeline.Id,
 		Name:        pipeline.Name,
 		Description: pipeline.Description,

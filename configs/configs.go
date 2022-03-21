@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 	"go.temporal.io/sdk/client"
+
+	"github.com/instill-ai/pipeline-backend/internal/logger"
 )
 
 // Config - Global variable to export

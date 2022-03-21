@@ -4,10 +4,12 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/instill-ai/pipeline-backend/pkg/model"
-	modelPB "github.com/instill-ai/protogen-go/model"
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/instill-ai/pipeline-backend/pkg/model"
+
+	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
 const NAMESPACE = "local-user"
@@ -87,6 +89,7 @@ func TestPipelineService_TriggerPipeline(t *testing.T) {
 			Name:    "yolov4",
 			Version: 1,
 		})
+
 		normalPipeline := model.Pipeline{
 			Name:        "awesome",
 			Description: "awesome pipeline",
@@ -102,32 +105,31 @@ func TestPipelineService_TriggerPipeline(t *testing.T) {
 			},
 		}
 
+		var modelInputs []*modelPB.Input
+		modelInputs = append(modelInputs, &modelPB.Input{
+			Type: &modelPB.Input_ImageUrl{ImageUrl: "https://artifacts.instill.tech/dog.jpg"},
+		})
+
 		mockPipelineRepository := NewMockOperations(ctrl)
 		rpcModelClient := NewMockModelClient(ctrl)
 
-		var triggerContents []*pipelinePB.TriggerPipelineContent
-		triggerContents = append(triggerContents, &pipelinePB.TriggerPipelineContent{
-			Url: "https://artifacts.instill.tech/dog.jpg",
-		})
-		var modelContents []*modelPB.ImageRequest
-		modelContents = append(modelContents, &modelPB.ImageRequest{
-			Url: "https://artifacts.instill.tech/dog.jpg",
-		})
+		rpcModelClient.EXPECT().TriggerModel(gomock.Any(), gomock.Eq(&modelPB.TriggerModelRequest{
+			Name:    "yolov4",
+			Version: 1,
+			Inputs:  modelInputs,
+		}))
 
-		rpcModelClient.
-			EXPECT().
-			PredictModel(gomock.Any(), gomock.Eq(&modelPB.PredictModelImageRequest{
-				Name:     "yolov4",
-				Version:  1,
-				Contents: modelContents,
-			}))
+		var pipelineInputs []*pipelinePB.Input
+		pipelineInputs = append(pipelineInputs, &pipelinePB.Input{
+			Type: &pipelinePB.Input_ImageUrl{ImageUrl: "https://artifacts.instill.tech/dog.jpg"},
+		})
 
 		pipelineService := PipelineService{
 			PipelineRepository: mockPipelineRepository,
 			ModelServiceClient: rpcModelClient,
 		}
 
-		_, err := pipelineService.TriggerPipeline(NAMESPACE, &pipelinePB.TriggerPipelineRequest{Contents: triggerContents}, normalPipeline)
+		_, err := pipelineService.TriggerPipeline(NAMESPACE, &pipelinePB.TriggerPipelineRequest{Inputs: pipelineInputs}, normalPipeline)
 
 		assert.NoError(t, err)
 	})

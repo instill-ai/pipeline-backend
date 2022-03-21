@@ -24,7 +24,7 @@ type Destination struct {
 
 type Model struct {
 	Name    string `json:"model_name,omitempty"`
-	Version int32  `json:"version,omitempty"`
+	Version uint64 `json:"version,omitempty"`
 }
 
 type LogicOperator struct {

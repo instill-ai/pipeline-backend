@@ -2,7 +2,8 @@ package rpc
 
 import (
 	"github.com/instill-ai/pipeline-backend/pkg/model"
-	pb "github.com/instill-ai/protogen-go/pipeline"
+
+	pb "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
 func unmarshalRecipeSource(d *pb.Source) *model.Source {
@@ -32,6 +33,6 @@ func unmarshalRecipe(recipe *pb.Recipe) *model.Recipe {
 	return &model.Recipe{
 		Source:      unmarshalRecipeSource(recipe.Source),
 		Destination: unmarshalDataDestination(recipe.Destination),
-		Model:       unmarshalRecipeModel(recipe.Model),
+		Model:       unmarshalRecipeModel(recipe.Models),
 	}
 }
