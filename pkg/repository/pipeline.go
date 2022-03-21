@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/instill-ai/pipeline-backend/internal/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/model"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
+
+	"github.com/instill-ai/pipeline-backend/internal/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/model"
 )
 
 type Operations interface {

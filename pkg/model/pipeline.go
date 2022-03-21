@@ -36,7 +36,7 @@ type Pipeline struct {
 type ListPipelineQuery struct {
 	WithRecipe bool
 	Namespace  string
-	PageSize   int32
+	PageSize   uint64
 	Cursor     uint64
 }
 

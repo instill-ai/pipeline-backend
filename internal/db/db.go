@@ -5,9 +5,10 @@ import (
 	"sync"
 	"time"
 
-	configs "github.com/instill-ai/pipeline-backend/configs"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	configs "github.com/instill-ai/pipeline-backend/configs"
 )
 
 var db *gorm.DB

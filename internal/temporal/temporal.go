@@ -6,13 +6,15 @@ import (
 	"strconv"
 	"strings"
 
+	"go.temporal.io/sdk/client"
+
 	"github.com/instill-ai/pipeline-backend/configs"
 	"github.com/instill-ai/pipeline-backend/internal/definition"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/model"
-	worker "github.com/instill-ai/vdp/pkg/temporal"
 	"github.com/instill-ai/x/zapadapter"
-	"go.temporal.io/sdk/client"
+
+	worker "github.com/instill-ai/vdp/pkg/temporal"
 )
 
 var c client.Client

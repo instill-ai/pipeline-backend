@@ -10,12 +10,14 @@ import (
 	"time"
 
 	"github.com/gogo/status"
-	"github.com/instill-ai/pipeline-backend/internal/temporal"
-	model "github.com/instill-ai/pipeline-backend/pkg/model"
-	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	modelPB "github.com/instill-ai/protogen-go/model"
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
 	"google.golang.org/grpc/codes"
+
+	"github.com/instill-ai/pipeline-backend/internal/temporal"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
+
+	model "github.com/instill-ai/pipeline-backend/pkg/model"
+	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
 type Services interface {
@@ -24,18 +26,18 @@ type Services interface {
 	GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error)
 	UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error)
 	DeletePipeline(namespace string, pipelineName string) error
-	TriggerPipeline(namespace string, trigger *pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error)
+	TriggerPipeline(namespace string, trigger *pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (*modelPB.TriggerModelResponse, error)
 	ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error
-	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (interface{}, error)
+	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error)
 	ValidateModel(namespace string, selectedModel []*model.Model) error
 }
 
 type PipelineService struct {
 	PipelineRepository repository.Operations
-	ModelServiceClient modelPB.ModelClient
+	ModelServiceClient modelPB.ModelServiceClient
 }
 
-func NewPipelineService(r repository.Operations, modelServiceClient modelPB.ModelClient) Services {
+func NewPipelineService(r repository.Operations, modelServiceClient modelPB.ModelServiceClient) Services {
 	return &PipelineService{
 		PipelineRepository: r,
 		ModelServiceClient: modelServiceClient,
@@ -143,49 +145,56 @@ func (p *PipelineService) ValidateTriggerPipeline(namespace string, pipelineName
 	return nil
 }
 
-func (p *PipelineService) TriggerPipeline(namespace string, trigger *pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (interface{}, error) {
+func (p *PipelineService) TriggerPipeline(namespace string, req *pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (*modelPB.TriggerModelResponse, error) {
 
 	// TODO: The model that pipeline used is offline
-
 	if temporal.IsDirect(pipeline.Recipe) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
 
-		vdo := pipeline.Recipe.Model[0]
+		m := pipeline.Recipe.Model[0]
 
-		var contents []*modelPB.ImageRequest
-		for _, content := range trigger.Contents {
-			contents = append(contents, &modelPB.ImageRequest{
-				Url:    content.Url,
-				Base64: content.Base64,
-			})
+		var inputs []*modelPB.Input
+		for _, input := range req.Inputs {
+			if len(input.GetImageUrl()) > 0 {
+				inputs = append(inputs, &modelPB.Input{
+					Type: &modelPB.Input_ImageUrl{
+						ImageUrl: input.GetImageUrl(),
+					},
+				})
+			} else if len(input.GetImageBase64()) > 0 {
+				inputs = append(inputs, &modelPB.Input{
+					Type: &modelPB.Input_ImageBase64{
+						ImageBase64: input.GetImageBase64(),
+					},
+				})
+			}
 		}
 
-		ret, err := p.ModelServiceClient.PredictModel(ctx, &modelPB.PredictModelImageRequest{
-			Name:     vdo.Name,
-			Version:  vdo.Version,
-			Contents: contents,
+		ret, err := p.ModelServiceClient.TriggerModel(ctx, &modelPB.TriggerModelRequest{
+			Name:    m.Name,
+			Version: m.Version,
+			Inputs:  inputs,
 		})
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "cannot make inference: %s", err.Error())
 		}
 
-		fmt.Printf("%+v\n", ret)
-
 		return ret, nil
-	} else {
-		return nil, nil
 	}
+
+	return nil, nil
+
 }
 
-func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline model.Pipeline) (interface{}, error) {
+func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline model.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
 
 	if temporal.IsDirect(pipeline.Recipe) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		stream, err := p.ModelServiceClient.PredictModelByUpload(ctx)
+		stream, err := p.ModelServiceClient.TriggerModelBinaryFileUpload(ctx)
 		defer func() {
 			_ = stream.CloseSend()
 		}()
@@ -193,7 +202,7 @@ func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 			return nil, err
 		}
 
-		err = stream.Send(&modelPB.PredictModelRequest{
+		err = stream.Send(&modelPB.TriggerModelBinaryFileUploadRequest{
 			Name:    pipeline.Recipe.Model[0].Name,
 			Version: pipeline.Recipe.Model[0].Version,
 		})
@@ -213,7 +222,7 @@ func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 				return nil, err
 			}
 
-			err = stream.Send(&modelPB.PredictModelRequest{Content: buf[:n]})
+			err = stream.Send(&modelPB.TriggerModelBinaryFileUploadRequest{Bytes: buf[:n]})
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, "cannot send chunk to server: %s", err)
 			}
@@ -234,7 +243,7 @@ func (p *PipelineService) ValidateModel(namespace string, selectedModels []*mode
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	supportModelResp, err := p.ModelServiceClient.ListModels(ctx, &modelPB.ListModelRequest{})
+	supportModelResp, err := p.ModelServiceClient.ListModel(ctx, &modelPB.ListModelRequest{})
 	if err != nil {
 		return err
 	}
@@ -245,9 +254,9 @@ func (p *PipelineService) ValidateModel(namespace string, selectedModels []*mode
 		matchModel := false
 		for _, supportModel := range supportModelResp.Models {
 			if selectedModel.Name == supportModel.Name {
-				for _, supportVersion := range supportModel.Versions {
+				for _, supportVersion := range supportModel.ModelVersions {
 					if selectedModel.Version == supportVersion.Version {
-						if supportVersion.Status == modelPB.ModelStatus_ONLINE {
+						if supportVersion.Status == modelPB.ModelVersion_STATUS_ONLINE {
 							matchModel = true
 							break
 						}

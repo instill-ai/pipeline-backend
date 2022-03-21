@@ -10,26 +10,29 @@ import (
 	"strings"
 	"syscall"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/instill-ai/pipeline-backend/configs"
-	cache "github.com/instill-ai/pipeline-backend/internal/cache"
-	database "github.com/instill-ai/pipeline-backend/internal/db"
-	"github.com/instill-ai/pipeline-backend/internal/logger"
-	"github.com/instill-ai/pipeline-backend/internal/temporal"
-	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
-	"github.com/instill-ai/pipeline-backend/rpc"
-	modelPB "github.com/instill-ai/protogen-go/model"
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/instill-ai/pipeline-backend/configs"
+	"github.com/instill-ai/pipeline-backend/internal/logger"
+	"github.com/instill-ai/pipeline-backend/internal/temporal"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/pipeline-backend/rpc"
+
+	cache "github.com/instill-ai/pipeline-backend/internal/cache"
+	database "github.com/instill-ai/pipeline-backend/internal/db"
+	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
 func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handler {
@@ -47,6 +50,7 @@ func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handl
 func main() {
 
 	logger, _ := logger.GetZapLogger()
+	defer logger.Sync() //nolint
 	grpc_zap.ReplaceGrpcLoggerV2(logger)
 
 	if err := configs.Init(); err != nil {
@@ -74,7 +78,7 @@ func main() {
 		grpc_zap.WithDecider(func(fullMethodName string, err error) bool {
 			// will not log gRPC calls if it was a call to liveness or readiness and no error was raised
 			if err == nil {
-				if match, _ := regexp.MatchString("instill.pipeline.Pipeline/.*ness$", fullMethodName); match {
+				if match, _ := regexp.MatchString("instill.pipeline.v1alpha.PipelineService/.*ness$", fullMethodName); match {
 					return false
 				}
 			}
@@ -114,21 +118,20 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 
-	modelServiceClient := modelPB.NewModelClient(clientConn)
+	modelServiceClient := modelPB.NewModelServiceClient(clientConn)
 
 	pipelineRepository := repository.NewPipelineRepository(db)
 	pipelineService := service.NewPipelineService(pipelineRepository, modelServiceClient)
 	pipelineHandler := rpc.NewPipelineServiceHandlers(pipelineService)
 
 	grpcS := grpc.NewServer(grpcServerOpts...)
-	pipelinePB.RegisterPipelineServer(grpcS, pipelineHandler)
+	pipelinePB.RegisterPipelineServiceServer(grpcS, pipelineHandler)
 
 	gwS := runtime.NewServeMux(
 		runtime.WithForwardResponseOption(httpResponseModifier),
 		runtime.WithIncomingHeaderMatcher(customMatcher),
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames:   true,
 				EmitUnpopulated: true,
 			},
 			UnmarshalOptions: protojson.UnmarshalOptions{
@@ -137,7 +140,7 @@ func main() {
 		}),
 	)
 
-	// Register custom route for  GET /hello/{name}
+	// Register custom route for POST multipart form data
 	if err := gwS.HandlePath("POST", "/pipelines/{name}/upload/outputs", appendCustomHeaderMiddleware(rpc.HandleUploadOutput)); err != nil {
 		panic(err)
 	}
@@ -149,7 +152,7 @@ func main() {
 		dialOpts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	}
 
-	if err := pipelinePB.RegisterPipelineHandlerFromEndpoint(ctx, gwS, fmt.Sprintf(":%v", configs.Config.Server.Port), dialOpts); err != nil {
+	if err := pipelinePB.RegisterPipelineServiceHandlerFromEndpoint(ctx, gwS, fmt.Sprintf(":%v", configs.Config.Server.Port), dialOpts); err != nil {
 		logger.Fatal(err.Error())
 	}
 
@@ -190,10 +193,9 @@ func main() {
 
 	logger.Info("Shutting down server...")
 
-	grpcS.GracefulStop()
-	database.Close(db)
-	cache.Close()
+	// grpcS.GracefulStop()
 	temporal.Close()
+	cache.Close()
+	database.Close(db)
 
-	_ = logger.Sync()
 }
