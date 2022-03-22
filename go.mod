@@ -9,7 +9,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
-	github.com/instill-ai/protogen-go v0.1.4-alpha
+	github.com/instill-ai/protogen-go v0.1.5-alpha
 	github.com/instill-ai/vdp v0.1.3-alpha.0.20220320033117-c3e0db375b45
 	github.com/instill-ai/x v0.1.0-alpha
 	github.com/knadh/koanf v1.4.0
