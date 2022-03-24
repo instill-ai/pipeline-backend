@@ -1,4 +1,4 @@
-package model
+package datamodel
 
 import (
 	"database/sql/driver"

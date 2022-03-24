@@ -11,7 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/configs"
 	"github.com/instill-ai/pipeline-backend/internal/definition"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/model"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/x/zapadapter"
 
 	worker "github.com/instill-ai/vdp/pkg/temporal"
@@ -41,7 +41,7 @@ func Close() {
 	}
 }
 
-func TriggerTemporalWorkflow(pipelineName string, recipe *model.Recipe, uid string, userName string) (map[string]string, error) {
+func TriggerTemporalWorkflow(pipelineName string, recipe *datamodel.Recipe, uid string, userName string) (map[string]string, error) {
 	logger, _ := logger.GetZapLogger()
 
 	dslWorkflow := recipeToDSLConfig(recipe, uid)
@@ -74,7 +74,7 @@ func TriggerTemporalWorkflow(pipelineName string, recipe *model.Recipe, uid stri
 
 // Direct trigger: DS/DD kind are HTTP and no LO defined
 // NOTE: Before migrate inference-backend into pipeline-backend, there is one more criteria is only 1 VDO
-func IsDirect(recipe *model.Recipe) bool {
+func IsDirect(recipe *datamodel.Recipe) bool {
 
 	return (strings.ToLower(recipe.Source.Type) == definition.DataSourceKindDirect &&
 		strings.ToLower(recipe.Destination.Type) == definition.DataDestinationKindDirect &&
@@ -82,7 +82,7 @@ func IsDirect(recipe *model.Recipe) bool {
 		(recipe.LogicOperator == nil || len(recipe.LogicOperator) == 0))
 }
 
-func recipeToDSLConfig(recipe *model.Recipe, requestId string) worker.Workflow {
+func recipeToDSLConfig(recipe *datamodel.Recipe, requestId string) worker.Workflow {
 	logger, _ := logger.GetZapLogger()
 
 	dslConfigVariables := make(map[string]string)

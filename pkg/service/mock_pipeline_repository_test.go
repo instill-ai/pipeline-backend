@@ -9,7 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	model "github.com/instill-ai/pipeline-backend/pkg/model"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 )
 
 // MockOperations is a mock of Operations interface.
@@ -36,7 +36,7 @@ func (m *MockOperations) EXPECT() *MockOperationsMockRecorder {
 }
 
 // CreatePipeline mocks base method.
-func (m *MockOperations) CreatePipeline(pipeline model.Pipeline) error {
+func (m *MockOperations) CreatePipeline(pipeline datamodel.Pipeline) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePipeline", pipeline)
 	ret0, _ := ret[0].(error)
@@ -64,10 +64,10 @@ func (mr *MockOperationsMockRecorder) DeletePipeline(namespace, pipelineName int
 }
 
 // GetPipelineByName mocks base method.
-func (m *MockOperations) GetPipelineByName(namespace, pipelineName string) (model.Pipeline, error) {
+func (m *MockOperations) GetPipelineByName(namespace, pipelineName string) (datamodel.Pipeline, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPipelineByName", namespace, pipelineName)
-	ret0, _ := ret[0].(model.Pipeline)
+	ret0, _ := ret[0].(datamodel.Pipeline)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -79,10 +79,10 @@ func (mr *MockOperationsMockRecorder) GetPipelineByName(namespace, pipelineName 
 }
 
 // ListPipelines mocks base method.
-func (m *MockOperations) ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error) {
+func (m *MockOperations) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListPipelines", query)
-	ret0, _ := ret[0].([]model.Pipeline)
+	ret0, _ := ret[0].([]datamodel.Pipeline)
 	ret1, _ := ret[1].(uint64)
 	ret2, _ := ret[2].(uint64)
 	ret3, _ := ret[3].(error)
@@ -96,7 +96,7 @@ func (mr *MockOperationsMockRecorder) ListPipelines(query interface{}) *gomock.C
 }
 
 // UpdatePipeline mocks base method.
-func (m *MockOperations) UpdatePipeline(pipeline model.Pipeline) error {
+func (m *MockOperations) UpdatePipeline(pipeline datamodel.Pipeline) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePipeline", pipeline)
 	ret0, _ := ret[0].(error)

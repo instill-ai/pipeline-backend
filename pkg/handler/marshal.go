@@ -1,29 +1,29 @@
-package rpc
+package handler
 
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/model"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
-	pb "github.com/instill-ai/protogen-go/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
-func marshalRecipeSource(d *model.Source) *pb.Source {
-	return &pb.Source{
+func marshalRecipeSource(d *datamodel.Source) *pipelinePB.Source {
+	return &pipelinePB.Source{
 		Type: d.Type,
 	}
 }
 
-func marshalRecipeDestination(d *model.Destination) *pb.Destination {
-	return &pb.Destination{
+func marshalRecipeDestination(d *datamodel.Destination) *pipelinePB.Destination {
+	return &pipelinePB.Destination{
 		Type: d.Type,
 	}
 }
 
-func marshalRecipeModel(v []*model.Model) []*pb.Model {
-	var ret []*pb.Model
+func marshalRecipeModel(v []*datamodel.Model) []*pipelinePB.Model {
+	var ret []*pipelinePB.Model
 	for _, vv := range v {
-		ret = append(ret, &pb.Model{
+		ret = append(ret, &pipelinePB.Model{
 			Name:    vv.Name,
 			Version: vv.Version,
 		})
@@ -31,16 +31,16 @@ func marshalRecipeModel(v []*model.Model) []*pb.Model {
 	return ret
 }
 
-func marshalRecipe(recipe *model.Recipe) *pb.Recipe {
-	return &pb.Recipe{
+func marshalRecipe(recipe *datamodel.Recipe) *pipelinePB.Recipe {
+	return &pipelinePB.Recipe{
 		Source:      marshalRecipeSource(recipe.Source),
 		Destination: marshalRecipeDestination(recipe.Destination),
 		Models:      marshalRecipeModel(recipe.Model),
 	}
 }
 
-func marshalPipeline(pipeline *model.Pipeline) *pb.Pipeline {
-	ret := &pb.Pipeline{
+func marshalPipeline(pipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
+	ret := &pipelinePB.Pipeline{
 		Id:          pipeline.Id,
 		Name:        pipeline.Name,
 		Description: pipeline.Description,

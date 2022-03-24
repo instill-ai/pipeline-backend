@@ -13,107 +13,107 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/instill-ai/pipeline-backend/internal/temporal"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
-	model "github.com/instill-ai/pipeline-backend/pkg/model"
 	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
-type Services interface {
-	CreatePipeline(pipeline model.Pipeline) (model.Pipeline, error)
-	ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error)
-	GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error)
-	UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error)
+type Service interface {
+	CreatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error)
+	ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error)
+	GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error)
+	UpdatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error)
 	DeletePipeline(namespace string, pipelineName string) error
-	TriggerPipeline(namespace string, trigger *pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (*modelPB.TriggerModelResponse, error)
-	ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error
-	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline model.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error)
-	ValidateModel(namespace string, selectedModel []*model.Model) error
+	TriggerPipeline(namespace string, trigger *pipelinePB.TriggerPipelineRequest, pipeline datamodel.Pipeline) (*modelPB.TriggerModelResponse, error)
+	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error)
+	ValidateModel(namespace string, selectedModel []*datamodel.Model) error
+	ValidateTriggerPipeline(namespace string, pipelineName string, pipeline datamodel.Pipeline) error
 }
 
 type PipelineService struct {
-	PipelineRepository repository.Operations
+	PipelineRepository repository.Repository
 	ModelServiceClient modelPB.ModelServiceClient
 }
 
-func NewPipelineService(r repository.Operations, modelServiceClient modelPB.ModelServiceClient) Services {
+func NewPipelineService(r repository.Repository, modelServiceClient modelPB.ModelServiceClient) Service {
 	return &PipelineService{
 		PipelineRepository: r,
 		ModelServiceClient: modelServiceClient,
 	}
 }
 
-func (p *PipelineService) CreatePipeline(pipeline model.Pipeline) (model.Pipeline, error) {
+func (p *PipelineService) CreatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error) {
 
 	// TODO: more validation
 	if pipeline.Name == "" {
-		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name is not specified")
+		return datamodel.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name is not specified")
 	}
 
 	// Validate the naming rule of pipeline
 	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.Name); !match {
-		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The name of pipeline is invalid")
+		return datamodel.Pipeline{}, status.Error(codes.FailedPrecondition, "The name of pipeline is invalid")
 	}
 
 	if len(pipeline.Name) > 100 {
-		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The length of the name is greater than 100")
+		return datamodel.Pipeline{}, status.Error(codes.FailedPrecondition, "The length of the name is greater than 100")
 	}
 
 	if existingPipeline, _ := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); existingPipeline.Name != "" {
-		return model.Pipeline{}, status.Errorf(codes.FailedPrecondition, "The name %s is existing in your namespace", pipeline.Name)
+		return datamodel.Pipeline{}, status.Errorf(codes.FailedPrecondition, "The name %s is existing in your namespace", pipeline.Name)
 	}
 
 	if pipeline.Recipe != nil && pipeline.Recipe.Model != nil && len(pipeline.Recipe.Model) > 0 {
 		err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
 		if err != nil {
-			return model.Pipeline{}, err
+			return datamodel.Pipeline{}, err
 		}
 	}
 
 	if err := p.PipelineRepository.CreatePipeline(pipeline); err != nil {
-		return model.Pipeline{}, err
+		return datamodel.Pipeline{}, err
 	}
 
 	if createdPipeline, err := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); err != nil {
-		return model.Pipeline{}, err
+		return datamodel.Pipeline{}, err
 	} else {
 		return createdPipeline, nil
 	}
 }
 
-func (p *PipelineService) ListPipelines(query model.ListPipelineQuery) ([]model.Pipeline, uint64, uint64, error) {
+func (p *PipelineService) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
 	return p.PipelineRepository.ListPipelines(query)
 }
 
-func (p *PipelineService) GetPipelineByName(namespace string, pipelineName string) (model.Pipeline, error) {
+func (p *PipelineService) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
 	return p.PipelineRepository.GetPipelineByName(namespace, pipelineName)
 }
 
-func (p *PipelineService) UpdatePipeline(pipeline model.Pipeline) (model.Pipeline, error) {
+func (p *PipelineService) UpdatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error) {
 
 	// TODO: validation
 	if pipeline.Name == "" {
-		return model.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name not specify")
+		return datamodel.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name not specify")
 	}
 
 	if existingPipeline, _ := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); existingPipeline.Name == "" {
-		return model.Pipeline{}, status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", pipeline.Name)
+		return datamodel.Pipeline{}, status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", pipeline.Name)
 	}
 
 	if pipeline.Recipe != nil && pipeline.Recipe.Model != nil && len(pipeline.Recipe.Model) > 0 {
 		err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
 		if err != nil {
-			return model.Pipeline{}, err
+			return datamodel.Pipeline{}, err
 		}
 	}
 
 	if err := p.PipelineRepository.UpdatePipeline(pipeline); err != nil {
-		return model.Pipeline{}, err
+		return datamodel.Pipeline{}, err
 	}
 
 	if updatedPipeline, err := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); err != nil {
-		return model.Pipeline{}, err
+		return datamodel.Pipeline{}, err
 	} else {
 		return updatedPipeline, nil
 	}
@@ -123,7 +123,7 @@ func (p *PipelineService) DeletePipeline(namespace string, pipelineName string) 
 	return p.PipelineRepository.DeletePipeline(namespace, pipelineName)
 }
 
-func (p *PipelineService) ValidateTriggerPipeline(namespace string, pipelineName string, pipeline model.Pipeline) error {
+func (p *PipelineService) ValidateTriggerPipeline(namespace string, pipelineName string, pipeline datamodel.Pipeline) error {
 
 	// Specified pipeline not exists
 	if pipeline.Name == "" {
@@ -145,7 +145,7 @@ func (p *PipelineService) ValidateTriggerPipeline(namespace string, pipelineName
 	return nil
 }
 
-func (p *PipelineService) TriggerPipeline(namespace string, req *pipelinePB.TriggerPipelineRequest, pipeline model.Pipeline) (*modelPB.TriggerModelResponse, error) {
+func (p *PipelineService) TriggerPipeline(namespace string, req *pipelinePB.TriggerPipelineRequest, pipeline datamodel.Pipeline) (*modelPB.TriggerModelResponse, error) {
 
 	// TODO: The model that pipeline used is offline
 	if temporal.IsDirect(pipeline.Recipe) {
@@ -188,7 +188,7 @@ func (p *PipelineService) TriggerPipeline(namespace string, req *pipelinePB.Trig
 
 }
 
-func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline model.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
+func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
 
 	if temporal.IsDirect(pipeline.Recipe) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -238,7 +238,7 @@ func (p *PipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 	}
 }
 
-func (p *PipelineService) ValidateModel(namespace string, selectedModels []*model.Model) error {
+func (p *PipelineService) ValidateModel(namespace string, selectedModels []*datamodel.Model) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
