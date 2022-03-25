@@ -1,4 +1,4 @@
-package rpc
+package handler
 
 import (
 	"bufio"
@@ -19,21 +19,21 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
+	"github.com/instill-ai/pipeline-backend/configs"
+	"github.com/instill-ai/pipeline-backend/internal/db"
+	"github.com/instill-ai/pipeline-backend/internal/grpc/metadatautil"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/model"
+	"github.com/instill-ai/pipeline-backend/internal/paginate"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
 
-	configs "github.com/instill-ai/pipeline-backend/configs"
-	database "github.com/instill-ai/pipeline-backend/internal/db"
-	metadataUtil "github.com/instill-ai/pipeline-backend/internal/grpc/metadata"
-	paginate "github.com/instill-ai/pipeline-backend/internal/paginate"
-	pipelineService "github.com/instill-ai/pipeline-backend/pkg/service"
 	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
 func getUsername(ctx context.Context) (string, error) {
-	if metadatas, ok := metadataUtil.ExtractFromMetadata(ctx, "Username"); ok {
+	if metadatas, ok := metadatautil.ExtractFromMetadata(ctx, "Username"); ok {
 		if len(metadatas) == 0 {
 			return "", status.Error(codes.FailedPrecondition, "Username not found in your request")
 		}
@@ -43,27 +43,27 @@ func getUsername(ctx context.Context) (string, error) {
 	}
 }
 
-type pipelineServiceHandlers struct {
-	pipelineService pipelineService.Services
-	paginateTocken  paginate.TokenGenerator
+type pipelineServiceHandler struct {
+	service        service.Service
+	paginateTocken paginate.TokenGenerator
 }
 
-func NewPipelineServiceHandlers(pipelineService pipelineService.Services) pipelinePB.PipelineServiceServer {
-	return &pipelineServiceHandlers{
-		pipelineService: pipelineService,
-		paginateTocken:  paginate.TokenGeneratorWithSalt(configs.Config.Server.Paginate.Salt),
+func NewPipelineServiceHandler(service service.Service) pipelinePB.PipelineServiceServer {
+	return &pipelineServiceHandler{
+		service:        service,
+		paginateTocken: paginate.TokenGeneratorWithSalt(configs.Config.Server.Paginate.Salt),
 	}
 }
 
-func (s *pipelineServiceHandlers) Liveness(ctx context.Context, in *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
+func (s *pipelineServiceHandler) Liveness(ctx context.Context, in *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
 	return &pipelinePB.LivenessResponse{Status: pipelinePB.LivenessResponse_SERVING_STATUS_SERVING}, nil
 }
 
-func (s *pipelineServiceHandlers) Readiness(ctx context.Context, in *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
+func (s *pipelineServiceHandler) Readiness(ctx context.Context, in *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
 	return &pipelinePB.ReadinessResponse{Status: pipelinePB.ReadinessResponse_SERVING_STATUS_SERVING}, nil
 }
 
-func (s *pipelineServiceHandlers) CreatePipeline(ctx context.Context, in *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+func (s *pipelineServiceHandler) CreatePipeline(ctx context.Context, in *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -71,7 +71,7 @@ func (s *pipelineServiceHandlers) CreatePipeline(ctx context.Context, in *pipeli
 	}
 
 	// Covert to model
-	entity := model.Pipeline{
+	entity := datamodel.Pipeline{
 		Name:        in.Name,
 		Description: in.Description,
 		Active:      in.Active,
@@ -81,7 +81,7 @@ func (s *pipelineServiceHandlers) CreatePipeline(ctx context.Context, in *pipeli
 		entity.Recipe = unmarshalRecipe(in.Recipe)
 	}
 
-	pipeline, err := s.pipelineService.CreatePipeline(entity)
+	pipeline, err := s.service.CreatePipeline(entity)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (s *pipelineServiceHandlers) CreatePipeline(ctx context.Context, in *pipeli
 	return &pipelinePB.CreatePipelineResponse{Pipeline: marshalPipeline(&pipeline)}, nil
 }
 
-func (s *pipelineServiceHandlers) ListPipeline(ctx context.Context, in *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
+func (s *pipelineServiceHandler) ListPipeline(ctx context.Context, in *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -106,14 +106,14 @@ func (s *pipelineServiceHandlers) ListPipeline(ctx context.Context, in *pipeline
 		return nil, err
 	}
 
-	query := model.ListPipelineQuery{
+	query := datamodel.ListPipelineQuery{
 		Namespace:  username,
 		WithRecipe: in.View == pipelinePB.ListPipelineRequest_VIEW_RECIPE,
 		PageSize:   in.PageSize,
 		Cursor:     cursor,
 	}
 
-	pipelines, _, min, err := s.pipelineService.ListPipelines(query)
+	pipelines, _, min, err := s.service.ListPipelines(query)
 	if err != nil {
 		return nil, err
 	}
@@ -133,14 +133,14 @@ func (s *pipelineServiceHandlers) ListPipeline(ctx context.Context, in *pipeline
 	return &resp, nil
 }
 
-func (s *pipelineServiceHandlers) GetPipeline(ctx context.Context, in *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
+func (s *pipelineServiceHandler) GetPipeline(ctx context.Context, in *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	pipeline, err := s.pipelineService.GetPipelineByName(username, in.Name)
+	pipeline, err := s.service.GetPipelineByName(username, in.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func (s *pipelineServiceHandlers) GetPipeline(ctx context.Context, in *pipelineP
 	return &pipelinePB.GetPipelineResponse{Pipeline: marshalPipeline(&pipeline)}, nil
 }
 
-func (s *pipelineServiceHandlers) UpdatePipeline(ctx context.Context, in *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
+func (s *pipelineServiceHandler) UpdatePipeline(ctx context.Context, in *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -156,7 +156,7 @@ func (s *pipelineServiceHandlers) UpdatePipeline(ctx context.Context, in *pipeli
 	}
 
 	// Covert to model
-	entity := model.Pipeline{
+	entity := datamodel.Pipeline{
 		Name:      in.Name,
 		Namespace: username,
 	}
@@ -176,7 +176,7 @@ func (s *pipelineServiceHandlers) UpdatePipeline(ctx context.Context, in *pipeli
 		}
 	}
 
-	pipeline, err := s.pipelineService.UpdatePipeline(entity)
+	pipeline, err := s.service.UpdatePipeline(entity)
 	if err != nil {
 		return nil, err
 	}
@@ -184,14 +184,14 @@ func (s *pipelineServiceHandlers) UpdatePipeline(ctx context.Context, in *pipeli
 	return &pipelinePB.UpdatePipelineResponse{Pipeline: marshalPipeline(&pipeline)}, nil
 }
 
-func (s *pipelineServiceHandlers) DeletePipeline(ctx context.Context, in *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
+func (s *pipelineServiceHandler) DeletePipeline(ctx context.Context, in *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
-	if err := s.pipelineService.DeletePipeline(username, in.Name); err != nil {
+	if err := s.service.DeletePipeline(username, in.Name); err != nil {
 		return nil, err
 	}
 
@@ -203,30 +203,30 @@ func (s *pipelineServiceHandlers) DeletePipeline(ctx context.Context, in *pipeli
 	return &pipelinePB.DeletePipelineResponse{}, nil
 }
 
-func (s *pipelineServiceHandlers) TriggerPipeline(ctx context.Context, in *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
+func (s *pipelineServiceHandler) TriggerPipeline(ctx context.Context, in *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	pipeline, err := s.pipelineService.GetPipelineByName(username, in.Name)
+	pipeline, err := s.service.GetPipelineByName(username, in.Name)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	if err := s.pipelineService.ValidateTriggerPipeline(username, in.Name, pipeline); err != nil {
+	if err := s.service.ValidateTriggerPipeline(username, in.Name, pipeline); err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	if obj, err := s.pipelineService.TriggerPipeline(username, in, pipeline); err != nil {
+	if obj, err := s.service.TriggerPipeline(username, in, pipeline); err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	} else {
 		return &pipelinePB.TriggerPipelineResponse{Output: obj.Output}, nil
 	}
 }
 
-func (s *pipelineServiceHandlers) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
+func (s *pipelineServiceHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
 
 	username, err := getUsername(stream.Context())
 	if err != nil {
@@ -238,12 +238,12 @@ func (s *pipelineServiceHandlers) TriggerPipelineBinaryFileUpload(stream pipelin
 		return status.Errorf(codes.Unknown, "cannot receive trigger info")
 	}
 
-	pipeline, err := s.pipelineService.GetPipelineByName(username, data.Name)
+	pipeline, err := s.service.GetPipelineByName(username, data.Name)
 	if err != nil {
 		return err
 	}
 
-	if err := s.pipelineService.ValidateTriggerPipeline(username, data.Name, pipeline); err != nil {
+	if err := s.service.ValidateTriggerPipeline(username, data.Name, pipeline); err != nil {
 		return err
 	}
 
@@ -269,7 +269,7 @@ func (s *pipelineServiceHandlers) TriggerPipelineBinaryFileUpload(stream pipelin
 	}
 
 	var obj *modelPB.TriggerModelBinaryFileUploadResponse
-	if obj, err = s.pipelineService.TriggerPipelineByUpload(username, buf, pipeline); err != nil {
+	if obj, err = s.service.TriggerPipelineByUpload(username, buf, pipeline); err != nil {
 		return err
 	}
 
@@ -281,7 +281,7 @@ func (s *pipelineServiceHandlers) TriggerPipelineBinaryFileUpload(stream pipelin
 func errorResponse(w http.ResponseWriter, status int, title string, detail string) {
 	w.Header().Add("Content-Type", "application/json+problem")
 	w.WriteHeader(status)
-	obj, _ := json.Marshal(model.Error{
+	obj, _ := json.Marshal(datamodel.Error{
 		Status: int32(status),
 		Title:  title,
 		Detail: detail,
@@ -306,8 +306,7 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 			errorResponse(w, 422, "Required parameter missing", "Required parameter pipeline name not found in your path")
 		}
 
-		db := database.GetConnection()
-		pipelineRepository := repository.NewPipelineRepository(db)
+		pipelineRepository := repository.NewPipelineRepository(db.GetConnection())
 
 		// Create tls based credential.
 		var creds credentials.TransportCredentials
@@ -333,9 +332,9 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 
 		modelServiceClient := modelPB.NewModelServiceClient(clientConn)
 
-		pipelineService := pipelineService.NewPipelineService(pipelineRepository, modelServiceClient)
+		service := service.NewPipelineService(pipelineRepository, modelServiceClient)
 
-		pipeline, err := pipelineService.GetPipelineByName(username, pipelineName)
+		pipeline, err := service.GetPipelineByName(username, pipelineName)
 		if err != nil {
 			errorResponse(w, 400, "Pipeline not found", "Pipeline not found")
 		}
@@ -366,7 +365,7 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 		}
 
 		var obj interface{}
-		if obj, err = pipelineService.TriggerPipelineByUpload(username, *buf, pipeline); err != nil {
+		if obj, err = service.TriggerPipelineByUpload(username, *buf, pipeline); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

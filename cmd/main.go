@@ -25,9 +25,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/configs"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/internal/temporal"
+	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	"github.com/instill-ai/pipeline-backend/rpc"
 
 	cache "github.com/instill-ai/pipeline-backend/internal/cache"
 	database "github.com/instill-ai/pipeline-backend/internal/db"
@@ -122,7 +122,7 @@ func main() {
 
 	pipelineRepository := repository.NewPipelineRepository(db)
 	pipelineService := service.NewPipelineService(pipelineRepository, modelServiceClient)
-	pipelineHandler := rpc.NewPipelineServiceHandlers(pipelineService)
+	pipelineHandler := handler.NewPipelineServiceHandler(pipelineService)
 
 	grpcS := grpc.NewServer(grpcServerOpts...)
 	pipelinePB.RegisterPipelineServiceServer(grpcS, pipelineHandler)
@@ -143,7 +143,7 @@ func main() {
 	)
 
 	// Register custom route for POST multipart form data
-	if err := gwS.HandlePath("POST", "/pipelines/{name}/upload/outputs", appendCustomHeaderMiddleware(rpc.HandleUploadOutput)); err != nil {
+	if err := gwS.HandlePath("POST", "/pipelines/{name}/upload/outputs", appendCustomHeaderMiddleware(handler.HandleUploadOutput)); err != nil {
 		panic(err)
 	}
 

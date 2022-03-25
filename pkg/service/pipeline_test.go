@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/instill-ai/pipeline-backend/pkg/model"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
@@ -18,7 +18,7 @@ func TestPipelineService_CreatePipeline(t *testing.T) {
 	t.Run("normal", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
-		normalPipeline := model.Pipeline{
+		normalPipeline := datamodel.Pipeline{
 			Name:        "awesome",
 			Description: "awesome pipeline",
 			Namespace:   NAMESPACE,
@@ -27,7 +27,7 @@ func TestPipelineService_CreatePipeline(t *testing.T) {
 		mockPipelineRepository.
 			EXPECT().
 			GetPipelineByName(gomock.Eq(NAMESPACE), gomock.Eq(normalPipeline.Name)).
-			Return(model.Pipeline{}, nil).
+			Return(datamodel.Pipeline{}, nil).
 			Times(2)
 		mockPipelineRepository.
 			EXPECT().
@@ -51,7 +51,7 @@ func TestPipelineService_UpdatePipeline(t *testing.T) {
 	t.Run("normal", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
-		normalPipeline := model.Pipeline{
+		normalPipeline := datamodel.Pipeline{
 			Name:        "awesome",
 			Description: "awesome pipeline",
 			Namespace:   NAMESPACE,
@@ -84,22 +84,22 @@ func TestPipelineService_TriggerPipeline(t *testing.T) {
 	t.Run("normal-url", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
-		var recipeModels []*model.Model
-		recipeModels = append(recipeModels, &model.Model{
+		var recipeModels []*datamodel.Model
+		recipeModels = append(recipeModels, &datamodel.Model{
 			Name:    "yolov4",
 			Version: 1,
 		})
 
-		normalPipeline := model.Pipeline{
+		normalPipeline := datamodel.Pipeline{
 			Name:        "awesome",
 			Description: "awesome pipeline",
 			Namespace:   NAMESPACE,
-			Recipe: &model.Recipe{
-				Source: &model.Source{
+			Recipe: &datamodel.Recipe{
+				Source: &datamodel.Source{
 					Type: "direct",
 				},
 				Model: recipeModels,
-				Destination: &model.Destination{
+				Destination: &datamodel.Destination{
 					Type: "direct",
 				},
 			},

@@ -1,4 +1,4 @@
-package model
+package datamodel
 
 type Error struct {
 	Status int32 `json:"status,omitempty"`
