@@ -20,12 +20,12 @@ type Repository interface {
 	DeletePipeline(namespace string, pipelineName string) error
 }
 
-type PipelineRepository struct {
+type pipelineRepository struct {
 	DB *gorm.DB
 }
 
 func NewPipelineRepository(db *gorm.DB) Repository {
-	return &PipelineRepository{
+	return &pipelineRepository{
 		DB: db,
 	}
 }
@@ -53,7 +53,7 @@ var GetPipelineWithRecipeSelectField = []string{
 	`CONCAT(namespace, '/', name) as full_name`,
 }
 
-func (r *PipelineRepository) CreatePipeline(pipeline datamodel.Pipeline) error {
+func (r *pipelineRepository) CreatePipeline(pipeline datamodel.Pipeline) error {
 	l, _ := logger.GetZapLogger()
 
 	// We ignore the full_name column since it's a virtual column
@@ -67,7 +67,7 @@ func (r *PipelineRepository) CreatePipeline(pipeline datamodel.Pipeline) error {
 	return nil
 }
 
-func (r *PipelineRepository) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
+func (r *pipelineRepository) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
 	var pipelines []datamodel.Pipeline
 
 	var count int64
@@ -117,7 +117,7 @@ func (r *PipelineRepository) ListPipelines(query datamodel.ListPipelineQuery) ([
 	return pipelines, max, min, nil
 }
 
-func (r *PipelineRepository) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
+func (r *pipelineRepository) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
 	var pipeline datamodel.Pipeline
 	if result := r.DB.Model(&datamodel.Pipeline{}).
 		Select(GetPipelineWithRecipeSelectField).
@@ -129,7 +129,7 @@ func (r *PipelineRepository) GetPipelineByName(namespace string, pipelineName st
 	return pipeline, nil
 }
 
-func (r *PipelineRepository) UpdatePipeline(pipeline datamodel.Pipeline) error {
+func (r *pipelineRepository) UpdatePipeline(pipeline datamodel.Pipeline) error {
 	l, _ := logger.GetZapLogger()
 
 	// We ignore the name column since it can not be updated
@@ -143,7 +143,7 @@ func (r *PipelineRepository) UpdatePipeline(pipeline datamodel.Pipeline) error {
 	return nil
 }
 
-func (r *PipelineRepository) DeletePipeline(namespace string, pipelineName string) error {
+func (r *pipelineRepository) DeletePipeline(namespace string, pipelineName string) error {
 	l, _ := logger.GetZapLogger()
 
 	if result := r.DB.Model(&datamodel.Pipeline{}).

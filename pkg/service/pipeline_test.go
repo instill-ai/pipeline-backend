@@ -36,7 +36,7 @@ func TestPipelineService_CreatePipeline(t *testing.T) {
 
 		rpcModelClient := NewMockModelClient(ctrl)
 
-		pipelineService := PipelineService{
+		pipelineService := pipelineService{
 			PipelineRepository: mockPipelineRepository,
 			ModelServiceClient: rpcModelClient,
 		}
@@ -69,7 +69,7 @@ func TestPipelineService_UpdatePipeline(t *testing.T) {
 
 		rpcModelClient := NewMockModelClient(ctrl)
 
-		pipelineService := PipelineService{
+		pipelineService := pipelineService{
 			PipelineRepository: mockPipelineRepository,
 			ModelServiceClient: rpcModelClient,
 		}
@@ -124,7 +124,7 @@ func TestPipelineService_TriggerPipeline(t *testing.T) {
 			Type: &pipelinePB.Input_ImageUrl{ImageUrl: "https://artifacts.instill.tech/dog.jpg"},
 		})
 
-		pipelineService := PipelineService{
+		pipelineService := pipelineService{
 			PipelineRepository: mockPipelineRepository,
 			ModelServiceClient: rpcModelClient,
 		}
