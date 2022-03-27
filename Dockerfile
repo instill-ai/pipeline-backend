@@ -5,12 +5,11 @@ COPY . /go/src
 
 RUN go get -d -v ./...
 
-RUN --mount=type=cache,target=/root/.cache/go-build go build -o /pipeline-backend ./cmd/
-RUN --mount=type=cache,target=/root/.cache/go-build go build -o /pipeline-backend-migrate ./internal/db/migrations
+RUN --mount=type=cache,target=/root/.cache/go-build go build -o /pipeline-backend ./cmd/main
+RUN --mount=type=cache,target=/root/.cache/go-build go build -o /pipeline-backend-migrate ./cmd/migration
 
 FROM gcr.io/distroless/base AS runtime
 
-ENV GIN_MODE=release
 WORKDIR /pipeline-backend
 
 COPY --from=build /pipeline-backend ./

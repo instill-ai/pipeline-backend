@@ -101,7 +101,6 @@ mysql-persistence/
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-
 # built binary
 pipeline-backend
 
