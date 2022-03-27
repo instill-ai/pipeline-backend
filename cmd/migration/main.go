@@ -96,7 +96,7 @@ func main() {
 		"sslmode=disable",
 	)
 
-	m, err := migrate.New(fmt.Sprintf("file:///%s/internal/db/migrations", migrateFolder), dsn)
+	m, err := migrate.New(fmt.Sprintf("file:///%s/internal/db/migration", migrateFolder), dsn)
 
 	if err != nil {
 		panic(err)
