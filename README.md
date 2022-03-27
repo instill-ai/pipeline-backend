@@ -11,17 +11,17 @@ Pre-requirements:
 ### Binary build
 
 ```bash
-$ make
+$ go mod tidy
+$ go build -o pipeline-backend ./cmd/
 ```
 
 ### Docker build
 
 ```bash
-# Build images with BuildKit
-$ DOCKER_BUILDKIT=1 docker build -t instill/pipeline-backend:dev .
+$ make build
 ```
 
-The latest images will be published to Docker Hub [repository](https://hub.docker.com/r/instill/pipeline-backend) at release time.
+The latest images will be published to Docker Hub [repository](https://hub.docker.com/r/instill/pipeline-backend) at release.
 
 ## License
 
