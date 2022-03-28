@@ -121,7 +121,7 @@ func (r *repository) GetPipelineByName(namespace string, pipelineName string) (d
 	var pipeline datamodel.Pipeline
 	if result := r.db.Model(&datamodel.Pipeline{}).
 		Select(GetPipelineWithRecipeSelectField).
-		Where(map[string]interface{}{"name": pipelineName, "namespace": namespace}).
+		Where("name = ? AND namespace = ?", pipelineName, namespace).
 		First(&pipeline); result.Error != nil {
 		return datamodel.Pipeline{}, status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", pipelineName)
 	}
@@ -135,7 +135,7 @@ func (r *repository) UpdatePipeline(pipeline datamodel.Pipeline) error {
 	// We ignore the name column since it can not be updated
 	if result := r.db.Model(&datamodel.Pipeline{}).
 		Omit(`"pipelines"."name"`).
-		Where(map[string]interface{}{"name": pipeline.Name, "namespace": pipeline.Namespace}).
+		Where("name = ? AND namespace = ?", pipeline.Name, pipeline.Namespace).
 		Updates(pipeline); result.Error != nil {
 		l.Error(fmt.Sprintf("Error occur: %v", result.Error))
 		return status.Errorf(codes.Internal, "Error %v", result.Error)
@@ -147,7 +147,7 @@ func (r *repository) DeletePipeline(namespace string, pipelineName string) error
 	l, _ := logger.GetZapLogger()
 
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where(map[string]interface{}{"name": pipelineName, "namespace": namespace}).
+		Where("name = ? AND namespace = ?", pipelineName, namespace).
 		Delete(&datamodel.Pipeline{}); result.Error != nil {
 		l.Error(fmt.Sprintf("Error occur: %v", result.Error))
 		return status.Errorf(codes.Internal, "Error %v", result.Error)
