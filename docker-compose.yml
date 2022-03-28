@@ -20,10 +20,10 @@ services:
     image: instill/pipeline-backend:dev
     restart: on-failure
     environment:
-      CFG_DATABASE_USERNAME: postgres
-      CFG_DATABASE_PASSWORD: password
       CFG_DATABASE_HOST: pg_sql
       CFG_DATABASE_PORT: 5432
+      CFG_DATABASE_USERNAME: postgres
+      CFG_DATABASE_PASSWORD: password
     volumes:
       - ./configs:/pipeline-backend/configs
     entrypoint: ./pipeline-backend-migrate
@@ -38,15 +38,15 @@ services:
     image: instill/pipeline-backend:dev
     restart: unless-stopped
     environment:
-      CFG_SERVER_PORT: 8446
-      CFG_DATABASE_USERNAME: postgres
-      CFG_DATABASE_PASSWORD: password
+      CFG_SERVER_PORT: 8080
       CFG_DATABASE_HOST: pg_sql
       CFG_DATABASE_PORT: 5432
+      CFG_DATABASE_USERNAME: postgres
+      CFG_DATABASE_PASSWORD: password
       CFG_MODELSERVICE_HOST: model-backend
-      CFG_MODELSERVICE_PORT: 8445
+      CFG_MODELSERVICE_PORT: 8081
     ports:
-      - 8446:8446
+      - 8080:8080
     volumes:
       - ./configs:/pipeline-backend/configs
     depends_on:
@@ -60,10 +60,10 @@ services:
     image: instill/model-backend:v0.3.2-alpha
     restart: on-failure
     environment:
-      CFG_DATABASE_USERNAME: postgres
-      CFG_DATABASE_PASSWORD: password
       CFG_DATABASE_HOST: pg_sql
       CFG_DATABASE_PORT: 5432
+      CFG_DATABASE_USERNAME: postgres
+      CFG_DATABASE_PASSWORD: password
     entrypoint: ./model-backend-migrate
     depends_on:
       pg_sql:
@@ -74,15 +74,15 @@ services:
     image: instill/model-backend:v0.3.2-alpha
     restart: unless-stopped
     environment:
-      CFG_DATABASE_USERNAME: postgres
-      CFG_DATABASE_PASSWORD: password
+      CFG_SERVER_PORT: 8081
       CFG_DATABASE_HOST: pg_sql
       CFG_DATABASE_PORT: 5432
-      CFG_SERVER_PORT: 8445
+      CFG_DATABASE_USERNAME: postgres
+      CFG_DATABASE_PASSWORD: password
       CFG_TRITONSERVER_GRPCURI: triton-server:8001
       CFG_TRITONSERVER_MODELSTORE: /model-repository
     ports:
-      - 8445:8445
+      - 8081:8081
     volumes:
       - model_repository:/model-repository
     depends_on:

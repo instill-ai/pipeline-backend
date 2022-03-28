@@ -21,7 +21,7 @@ func GetConnection() *gorm.DB {
 			databaseConfig.Host,
 			databaseConfig.Username,
 			databaseConfig.Password,
-			databaseConfig.DatabaseName,
+			databaseConfig.Name,
 			databaseConfig.Port,
 			databaseConfig.TimeZone,
 		)

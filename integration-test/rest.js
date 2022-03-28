@@ -10,8 +10,8 @@ import {
 
 import * as pipelineConstants from "./consts.js";
 
-const pipelineHost = "http://localhost:8446";
-const modelHost = "http://localhost:8445";
+const pipelineHost = "http://localhost:8080";
+const modelHost = "http://localhost:8081";
 
 const model_name = pipelineConstants.detectionModel.name;
 const det_model = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dummy-det-model.zip`, "b");

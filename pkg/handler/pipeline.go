@@ -311,7 +311,7 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 		// Create tls based credential.
 		var creds credentials.TransportCredentials
 		var err error
-		if configs.Config.Server.HTTPS.Enabled {
+		if configs.Config.Server.HTTPS.Cert != "" && configs.Config.Server.HTTPS.Key != "" {
 			creds, err = credentials.NewServerTLSFromFile(configs.Config.Server.HTTPS.Cert, configs.Config.Server.HTTPS.Key)
 			if err != nil {
 				logger.Fatal(fmt.Sprintf("failed to create credentials: %v", err))
@@ -319,13 +319,13 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 		}
 
 		var modelClientDialOpts grpc.DialOption
-		if configs.Config.ModelService.TLS {
+		if configs.Config.ModelBackend.TLS {
 			modelClientDialOpts = grpc.WithTransportCredentials(creds)
 		} else {
 			modelClientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 		}
 
-		clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelService.Host, configs.Config.ModelService.Port), modelClientDialOpts)
+		clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelBackend.Host, configs.Config.ModelBackend.Port), modelClientDialOpts)
 		if err != nil {
 			logger.Fatal(err.Error())
 		}
