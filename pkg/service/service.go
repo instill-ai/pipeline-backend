@@ -32,19 +32,19 @@ type Service interface {
 	ValidateTriggerPipeline(namespace string, pipelineName string, pipeline datamodel.Pipeline) error
 }
 
-type pipelineService struct {
-	PipelineRepository repository.Repository
-	ModelServiceClient modelPB.ModelServiceClient
+type service struct {
+	repository         repository.Repository
+	modelServiceClient modelPB.ModelServiceClient
 }
 
-func NewPipelineService(r repository.Repository, modelServiceClient modelPB.ModelServiceClient) Service {
-	return &pipelineService{
-		PipelineRepository: r,
-		ModelServiceClient: modelServiceClient,
+func NewService(r repository.Repository, m modelPB.ModelServiceClient) Service {
+	return &service{
+		repository:         r,
+		modelServiceClient: m,
 	}
 }
 
-func (p *pipelineService) CreatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error) {
+func (p *service) CreatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error) {
 
 	// TODO: more validation
 	if pipeline.Name == "" {
@@ -71,7 +71,7 @@ func (p *pipelineService) CreatePipeline(pipeline datamodel.Pipeline) (datamodel
 		}
 	}
 
-	if err := p.PipelineRepository.CreatePipeline(pipeline); err != nil {
+	if err := p.repository.CreatePipeline(pipeline); err != nil {
 		return datamodel.Pipeline{}, err
 	}
 
@@ -82,15 +82,15 @@ func (p *pipelineService) CreatePipeline(pipeline datamodel.Pipeline) (datamodel
 	}
 }
 
-func (p *pipelineService) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
-	return p.PipelineRepository.ListPipelines(query)
+func (p *service) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
+	return p.repository.ListPipelines(query)
 }
 
-func (p *pipelineService) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
-	return p.PipelineRepository.GetPipelineByName(namespace, pipelineName)
+func (p *service) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
+	return p.repository.GetPipelineByName(namespace, pipelineName)
 }
 
-func (p *pipelineService) UpdatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error) {
+func (p *service) UpdatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error) {
 
 	// TODO: validation
 	if pipeline.Name == "" {
@@ -108,7 +108,7 @@ func (p *pipelineService) UpdatePipeline(pipeline datamodel.Pipeline) (datamodel
 		}
 	}
 
-	if err := p.PipelineRepository.UpdatePipeline(pipeline); err != nil {
+	if err := p.repository.UpdatePipeline(pipeline); err != nil {
 		return datamodel.Pipeline{}, err
 	}
 
@@ -119,11 +119,11 @@ func (p *pipelineService) UpdatePipeline(pipeline datamodel.Pipeline) (datamodel
 	}
 }
 
-func (p *pipelineService) DeletePipeline(namespace string, pipelineName string) error {
-	return p.PipelineRepository.DeletePipeline(namespace, pipelineName)
+func (p *service) DeletePipeline(namespace string, pipelineName string) error {
+	return p.repository.DeletePipeline(namespace, pipelineName)
 }
 
-func (p *pipelineService) ValidateTriggerPipeline(namespace string, pipelineName string, pipeline datamodel.Pipeline) error {
+func (p *service) ValidateTriggerPipeline(namespace string, pipelineName string, pipeline datamodel.Pipeline) error {
 
 	// Specified pipeline not exists
 	if pipeline.Name == "" {
@@ -145,7 +145,7 @@ func (p *pipelineService) ValidateTriggerPipeline(namespace string, pipelineName
 	return nil
 }
 
-func (p *pipelineService) TriggerPipeline(namespace string, req *pipelinePB.TriggerPipelineRequest, pipeline datamodel.Pipeline) (*modelPB.TriggerModelResponse, error) {
+func (p *service) TriggerPipeline(namespace string, req *pipelinePB.TriggerPipelineRequest, pipeline datamodel.Pipeline) (*modelPB.TriggerModelResponse, error) {
 
 	// TODO: The model that pipeline used is offline
 	if temporal.IsDirect(pipeline.Recipe) {
@@ -172,7 +172,7 @@ func (p *pipelineService) TriggerPipeline(namespace string, req *pipelinePB.Trig
 			}
 		}
 
-		ret, err := p.ModelServiceClient.TriggerModel(ctx, &modelPB.TriggerModelRequest{
+		ret, err := p.modelServiceClient.TriggerModel(ctx, &modelPB.TriggerModelRequest{
 			Name:    m.Name,
 			Version: m.Version,
 			Inputs:  inputs,
@@ -188,13 +188,13 @@ func (p *pipelineService) TriggerPipeline(namespace string, req *pipelinePB.Trig
 
 }
 
-func (p *pipelineService) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
+func (p *service) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
 
 	if temporal.IsDirect(pipeline.Recipe) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		stream, err := p.ModelServiceClient.TriggerModelBinaryFileUpload(ctx)
+		stream, err := p.modelServiceClient.TriggerModelBinaryFileUpload(ctx)
 		defer func() {
 			_ = stream.CloseSend()
 		}()
@@ -238,12 +238,12 @@ func (p *pipelineService) TriggerPipelineByUpload(namespace string, image bytes.
 	}
 }
 
-func (p *pipelineService) ValidateModel(namespace string, selectedModels []*datamodel.Model) error {
+func (p *service) ValidateModel(namespace string, selectedModels []*datamodel.Model) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	supportModelResp, err := p.ModelServiceClient.ListModel(ctx, &modelPB.ListModelRequest{})
+	supportModelResp, err := p.modelServiceClient.ListModel(ctx, &modelPB.ListModelRequest{})
 	if err != nil {
 		return err
 	}

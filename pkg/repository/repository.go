@@ -20,13 +20,13 @@ type Repository interface {
 	DeletePipeline(namespace string, pipelineName string) error
 }
 
-type pipelineRepository struct {
-	DB *gorm.DB
+type repository struct {
+	db *gorm.DB
 }
 
-func NewPipelineRepository(db *gorm.DB) Repository {
-	return &pipelineRepository{
-		DB: db,
+func NewRepository(db *gorm.DB) Repository {
+	return &repository{
+		db: db,
 	}
 }
 
@@ -53,11 +53,11 @@ var GetPipelineWithRecipeSelectField = []string{
 	`CONCAT(namespace, '/', name) as full_name`,
 }
 
-func (r *pipelineRepository) CreatePipeline(pipeline datamodel.Pipeline) error {
+func (r *repository) CreatePipeline(pipeline datamodel.Pipeline) error {
 	l, _ := logger.GetZapLogger()
 
 	// We ignore the full_name column since it's a virtual column
-	if result := r.DB.Model(&datamodel.Pipeline{}).
+	if result := r.db.Model(&datamodel.Pipeline{}).
 		Omit(`"pipelines"."full_name"`).
 		Create(&pipeline); result.Error != nil {
 		l.Error(fmt.Sprintf("Error occur: %v", result.Error))
@@ -67,16 +67,16 @@ func (r *pipelineRepository) CreatePipeline(pipeline datamodel.Pipeline) error {
 	return nil
 }
 
-func (r *pipelineRepository) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
+func (r *repository) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
 	var pipelines []datamodel.Pipeline
 
 	var count int64
-	r.DB.Model(&datamodel.Pipeline{}).Where("namespace = ?", query.Namespace).Count(&count)
+	r.db.Model(&datamodel.Pipeline{}).Where("namespace = ?", query.Namespace).Count(&count)
 
 	var min uint64
 	var max uint64
 	if count > 0 {
-		rows, err := r.DB.Model(&datamodel.Pipeline{}).
+		rows, err := r.db.Model(&datamodel.Pipeline{}).
 			Select("MIN(id) AS min, MAX(id) as max").
 			Where("namespace = ?", query.Namespace).
 			Rows()
@@ -99,14 +99,14 @@ func (r *pipelineRepository) ListPipelines(query datamodel.ListPipelineQuery) ([
 	}
 
 	if query.WithRecipe {
-		r.DB.Model(&datamodel.Pipeline{}).
+		r.db.Model(&datamodel.Pipeline{}).
 			Select(GetPipelineWithRecipeSelectField).
 			Where("namespace = ? AND id < ?", query.Namespace, cursor).
 			Limit(int(query.PageSize)).
 			Order("id desc").
 			Find(&pipelines)
 	} else {
-		r.DB.Model(&datamodel.Pipeline{}).
+		r.db.Model(&datamodel.Pipeline{}).
 			Select(GetPipelineSelectField).
 			Where("namespace = ? AND id < ?", query.Namespace, cursor).
 			Limit(int(query.PageSize)).
@@ -117,9 +117,9 @@ func (r *pipelineRepository) ListPipelines(query datamodel.ListPipelineQuery) ([
 	return pipelines, max, min, nil
 }
 
-func (r *pipelineRepository) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
+func (r *repository) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
 	var pipeline datamodel.Pipeline
-	if result := r.DB.Model(&datamodel.Pipeline{}).
+	if result := r.db.Model(&datamodel.Pipeline{}).
 		Select(GetPipelineWithRecipeSelectField).
 		Where(map[string]interface{}{"name": pipelineName, "namespace": namespace}).
 		First(&pipeline); result.Error != nil {
@@ -129,11 +129,11 @@ func (r *pipelineRepository) GetPipelineByName(namespace string, pipelineName st
 	return pipeline, nil
 }
 
-func (r *pipelineRepository) UpdatePipeline(pipeline datamodel.Pipeline) error {
+func (r *repository) UpdatePipeline(pipeline datamodel.Pipeline) error {
 	l, _ := logger.GetZapLogger()
 
 	// We ignore the name column since it can not be updated
-	if result := r.DB.Model(&datamodel.Pipeline{}).
+	if result := r.db.Model(&datamodel.Pipeline{}).
 		Omit(`"pipelines"."name"`).
 		Where(map[string]interface{}{"name": pipeline.Name, "namespace": pipeline.Namespace}).
 		Updates(pipeline); result.Error != nil {
@@ -143,10 +143,10 @@ func (r *pipelineRepository) UpdatePipeline(pipeline datamodel.Pipeline) error {
 	return nil
 }
 
-func (r *pipelineRepository) DeletePipeline(namespace string, pipelineName string) error {
+func (r *repository) DeletePipeline(namespace string, pipelineName string) error {
 	l, _ := logger.GetZapLogger()
 
-	if result := r.DB.Model(&datamodel.Pipeline{}).
+	if result := r.db.Model(&datamodel.Pipeline{}).
 		Where(map[string]interface{}{"name": pipelineName, "namespace": namespace}).
 		Delete(&datamodel.Pipeline{}); result.Error != nil {
 		l.Error(fmt.Sprintf("Error occur: %v", result.Error))

@@ -74,10 +74,14 @@ prune:							## Remove all services containers and system prune everything
 build:							## Build local docker image
 	@docker build -t instill/pipeline-backend:dev .
 
+.PHONY: go-gen
+go-gen:       					## Generate codes from "//go:generate" comments in the codebase (e.g., mockgen for unit tests)
+	@go generate ./...
+
 .PHONY: unit-test
 unit-test:       				## Run unit test
 	@go test -v -race -coverpkg=./... -coverprofile=coverage.out ./...
-	@go tool cover -func=coverage.out
+	@go t\ool cover -func=coverage.out
 	@go tool cover -html=coverage.out
 	@rm coverage.out
 

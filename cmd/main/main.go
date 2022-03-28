@@ -120,12 +120,12 @@ func main() {
 
 	modelServiceClient := modelPB.NewModelServiceClient(clientConn)
 
-	pipelineRepository := repository.NewPipelineRepository(db)
-	pipelineService := service.NewPipelineService(pipelineRepository, modelServiceClient)
-	pipelineHandler := handler.NewPipelineServiceHandler(pipelineService)
+	r := repository.NewRepository(db)
+	s := service.NewService(r, modelServiceClient)
+	h := handler.NewHandler(s)
 
 	grpcS := grpc.NewServer(grpcServerOpts...)
-	pipelinePB.RegisterPipelineServiceServer(grpcS, pipelineHandler)
+	pipelinePB.RegisterPipelineServiceServer(grpcS, h)
 
 	gwS := runtime.NewServeMux(
 		runtime.WithForwardResponseOption(httpResponseModifier),
