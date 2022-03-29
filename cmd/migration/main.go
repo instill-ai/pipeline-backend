@@ -13,8 +13,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/configs"
 )
 
-const ExpectedVersion = 4
-
 func checkExist(databaseConfig configs.DatabaseConfig) error {
 	db, err := sql.Open(
 		"postgres",
@@ -40,7 +38,7 @@ func checkExist(databaseConfig configs.DatabaseConfig) error {
 	}
 
 	var rows *sql.Rows
-	rows, err = db.Query(fmt.Sprintf("SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower('%s');", databaseConfig.DatabaseName))
+	rows, err = db.Query(fmt.Sprintf("SELECT datname FROM pg_catalog.pg_database WHERE lower(datname) = lower('%s');", databaseConfig.Name))
 
 	if err != nil {
 		panic(err)
@@ -49,14 +47,14 @@ func checkExist(databaseConfig configs.DatabaseConfig) error {
 	dbExist := false
 	defer rows.Close()
 	for rows.Next() {
-		var database_name string
-		if err := rows.Scan(&database_name); err != nil {
+		var databaseName string
+		if err := rows.Scan(&databaseName); err != nil {
 			panic(err)
 		}
 
-		if databaseConfig.DatabaseName == database_name {
+		if databaseConfig.Name == databaseName {
 			dbExist = true
-			fmt.Printf("Database %s exist\n", database_name)
+			fmt.Printf("Database %s exist\n", databaseName)
 		}
 	}
 
@@ -65,8 +63,8 @@ func checkExist(databaseConfig configs.DatabaseConfig) error {
 	}
 
 	if !dbExist {
-		fmt.Printf("Create database %s\n", databaseConfig.DatabaseName)
-		if _, err := db.Exec(fmt.Sprintf("CREATE DATABASE %s;", databaseConfig.DatabaseName)); err != nil {
+		fmt.Printf("Create database %s\n", databaseConfig.Name)
+		if _, err := db.Exec(fmt.Sprintf("CREATE DATABASE %s;", databaseConfig.Name)); err != nil {
 			return err
 		}
 	}
@@ -75,7 +73,7 @@ func checkExist(databaseConfig configs.DatabaseConfig) error {
 }
 
 func main() {
-	mydir, _ := os.Getwd()
+	migrateFolder, _ := os.Getwd()
 
 	if err := configs.Init(); err != nil {
 		panic(err)
@@ -92,11 +90,11 @@ func main() {
 		databaseConfig.Password,
 		databaseConfig.Host,
 		databaseConfig.Port,
-		databaseConfig.DatabaseName,
+		databaseConfig.Name,
 		"sslmode=disable",
 	)
 
-	m, err := migrate.New(fmt.Sprintf("file:///%s/internal/db/migrations", mydir), dsn)
+	m, err := migrate.New(fmt.Sprintf("file:///%s/internal/db/migration", migrateFolder), dsn)
 
 	if err != nil {
 		panic(err)
@@ -107,6 +105,8 @@ func main() {
 	if err != nil && curVersion != 0 {
 		panic(err)
 	}
+
+	ExpectedVersion := databaseConfig.Version
 
 	fmt.Printf("Expected migration version is %d\n", ExpectedVersion)
 	fmt.Printf("The current schema version is %d, and dirty flag is %t\n", curVersion, dirty)

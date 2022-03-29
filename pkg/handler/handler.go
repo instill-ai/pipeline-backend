@@ -43,27 +43,28 @@ func getUsername(ctx context.Context) (string, error) {
 	}
 }
 
-type pipelineServiceHandler struct {
+type handler struct {
+	pipelinePB.UnimplementedPipelineServiceServer
 	service        service.Service
 	paginateTocken paginate.TokenGenerator
 }
 
-func NewPipelineServiceHandler(service service.Service) pipelinePB.PipelineServiceServer {
-	return &pipelineServiceHandler{
-		service:        service,
+func NewHandler(s service.Service) pipelinePB.PipelineServiceServer {
+	return &handler{
+		service:        s,
 		paginateTocken: paginate.TokenGeneratorWithSalt(configs.Config.Server.Paginate.Salt),
 	}
 }
 
-func (s *pipelineServiceHandler) Liveness(ctx context.Context, in *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
+func (s *handler) Liveness(ctx context.Context, in *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
 	return &pipelinePB.LivenessResponse{Status: pipelinePB.LivenessResponse_SERVING_STATUS_SERVING}, nil
 }
 
-func (s *pipelineServiceHandler) Readiness(ctx context.Context, in *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
+func (s *handler) Readiness(ctx context.Context, in *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
 	return &pipelinePB.ReadinessResponse{Status: pipelinePB.ReadinessResponse_SERVING_STATUS_SERVING}, nil
 }
 
-func (s *pipelineServiceHandler) CreatePipeline(ctx context.Context, in *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+func (s *handler) CreatePipeline(ctx context.Context, in *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -94,7 +95,7 @@ func (s *pipelineServiceHandler) CreatePipeline(ctx context.Context, in *pipelin
 	return &pipelinePB.CreatePipelineResponse{Pipeline: marshalPipeline(&pipeline)}, nil
 }
 
-func (s *pipelineServiceHandler) ListPipeline(ctx context.Context, in *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
+func (s *handler) ListPipeline(ctx context.Context, in *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -133,7 +134,7 @@ func (s *pipelineServiceHandler) ListPipeline(ctx context.Context, in *pipelineP
 	return &resp, nil
 }
 
-func (s *pipelineServiceHandler) GetPipeline(ctx context.Context, in *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
+func (s *handler) GetPipeline(ctx context.Context, in *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -148,7 +149,7 @@ func (s *pipelineServiceHandler) GetPipeline(ctx context.Context, in *pipelinePB
 	return &pipelinePB.GetPipelineResponse{Pipeline: marshalPipeline(&pipeline)}, nil
 }
 
-func (s *pipelineServiceHandler) UpdatePipeline(ctx context.Context, in *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
+func (s *handler) UpdatePipeline(ctx context.Context, in *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -184,7 +185,7 @@ func (s *pipelineServiceHandler) UpdatePipeline(ctx context.Context, in *pipelin
 	return &pipelinePB.UpdatePipelineResponse{Pipeline: marshalPipeline(&pipeline)}, nil
 }
 
-func (s *pipelineServiceHandler) DeletePipeline(ctx context.Context, in *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
+func (s *handler) DeletePipeline(ctx context.Context, in *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -203,7 +204,7 @@ func (s *pipelineServiceHandler) DeletePipeline(ctx context.Context, in *pipelin
 	return &pipelinePB.DeletePipelineResponse{}, nil
 }
 
-func (s *pipelineServiceHandler) TriggerPipeline(ctx context.Context, in *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
+func (s *handler) TriggerPipeline(ctx context.Context, in *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -226,7 +227,7 @@ func (s *pipelineServiceHandler) TriggerPipeline(ctx context.Context, in *pipeli
 	}
 }
 
-func (s *pipelineServiceHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
+func (s *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
 
 	username, err := getUsername(stream.Context())
 	if err != nil {
@@ -306,12 +307,12 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 			errorResponse(w, 422, "Required parameter missing", "Required parameter pipeline name not found in your path")
 		}
 
-		pipelineRepository := repository.NewPipelineRepository(db.GetConnection())
+		pipelineRepository := repository.NewRepository(db.GetConnection())
 
 		// Create tls based credential.
 		var creds credentials.TransportCredentials
 		var err error
-		if configs.Config.Server.HTTPS.Enabled {
+		if configs.Config.Server.HTTPS.Cert != "" && configs.Config.Server.HTTPS.Key != "" {
 			creds, err = credentials.NewServerTLSFromFile(configs.Config.Server.HTTPS.Cert, configs.Config.Server.HTTPS.Key)
 			if err != nil {
 				logger.Fatal(fmt.Sprintf("failed to create credentials: %v", err))
@@ -319,20 +320,20 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 		}
 
 		var modelClientDialOpts grpc.DialOption
-		if configs.Config.ModelService.TLS {
+		if configs.Config.ModelBackend.TLS {
 			modelClientDialOpts = grpc.WithTransportCredentials(creds)
 		} else {
 			modelClientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 		}
 
-		clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelService.Host, configs.Config.ModelService.Port), modelClientDialOpts)
+		clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelBackend.Host, configs.Config.ModelBackend.Port), modelClientDialOpts)
 		if err != nil {
 			logger.Fatal(err.Error())
 		}
 
 		modelServiceClient := modelPB.NewModelServiceClient(clientConn)
 
-		service := service.NewPipelineService(pipelineRepository, modelServiceClient)
+		service := service.NewService(pipelineRepository, modelServiceClient)
 
 		pipeline, err := service.GetPipelineByName(username, pipelineName)
 		if err != nil {

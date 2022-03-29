@@ -1,4 +1,7 @@
-package service
+package service_test
+
+//go:generate mockgen -destination mock_repository_test.go -package $GOPACKAGE github.com/instill-ai/pipeline-backend/pkg/repository Repository
+//go:generate mockgen -destination mock_model_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/model/v1alpha ModelServiceClient
 
 import (
 	"testing"
@@ -7,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
@@ -14,7 +18,7 @@ import (
 
 const NAMESPACE = "local-user"
 
-func TestPipelineService_CreatePipeline(t *testing.T) {
+func TestCreatePipeline(t *testing.T) {
 	t.Run("normal", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
@@ -23,31 +27,28 @@ func TestPipelineService_CreatePipeline(t *testing.T) {
 			Description: "awesome pipeline",
 			Namespace:   NAMESPACE,
 		}
-		mockPipelineRepository := NewMockOperations(ctrl)
-		mockPipelineRepository.
+		mockRepository := NewMockRepository(ctrl)
+		mockRepository.
 			EXPECT().
 			GetPipelineByName(gomock.Eq(NAMESPACE), gomock.Eq(normalPipeline.Name)).
 			Return(datamodel.Pipeline{}, nil).
 			Times(2)
-		mockPipelineRepository.
+		mockRepository.
 			EXPECT().
 			CreatePipeline(normalPipeline).
 			Return(nil)
 
-		rpcModelClient := NewMockModelClient(ctrl)
+		mockModelServiceClient := NewMockModelServiceClient(ctrl)
 
-		pipelineService := PipelineService{
-			PipelineRepository: mockPipelineRepository,
-			ModelServiceClient: rpcModelClient,
-		}
+		s := service.NewService(mockRepository, mockModelServiceClient)
 
-		_, err := pipelineService.CreatePipeline(normalPipeline)
+		_, err := s.CreatePipeline(normalPipeline)
 
 		assert.NoError(t, err)
 	})
 }
 
-func TestPipelineService_UpdatePipeline(t *testing.T) {
+func TestUpdatePipeline(t *testing.T) {
 	t.Run("normal", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
@@ -56,31 +57,28 @@ func TestPipelineService_UpdatePipeline(t *testing.T) {
 			Description: "awesome pipeline",
 			Namespace:   NAMESPACE,
 		}
-		mockPipelineRepository := NewMockOperations(ctrl)
-		mockPipelineRepository.
+		mockRepository := NewMockRepository(ctrl)
+		mockRepository.
 			EXPECT().
 			GetPipelineByName(gomock.Eq(NAMESPACE), gomock.Eq(normalPipeline.Name)).
 			Return(normalPipeline, nil).
 			Times(2)
-		mockPipelineRepository.
+		mockRepository.
 			EXPECT().
 			UpdatePipeline(gomock.Eq(normalPipeline)).
 			Return(nil)
 
-		rpcModelClient := NewMockModelClient(ctrl)
+		mockModelServiceClient := NewMockModelServiceClient(ctrl)
 
-		pipelineService := PipelineService{
-			PipelineRepository: mockPipelineRepository,
-			ModelServiceClient: rpcModelClient,
-		}
+		s := service.NewService(mockRepository, mockModelServiceClient)
 
-		_, err := pipelineService.UpdatePipeline(normalPipeline)
+		_, err := s.UpdatePipeline(normalPipeline)
 
 		assert.NoError(t, err)
 	})
 }
 
-func TestPipelineService_TriggerPipeline(t *testing.T) {
+func TestTriggerPipeline(t *testing.T) {
 	t.Run("normal-url", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
@@ -110,10 +108,10 @@ func TestPipelineService_TriggerPipeline(t *testing.T) {
 			Type: &modelPB.Input_ImageUrl{ImageUrl: "https://artifacts.instill.tech/dog.jpg"},
 		})
 
-		mockPipelineRepository := NewMockOperations(ctrl)
-		rpcModelClient := NewMockModelClient(ctrl)
+		mockRepository := NewMockRepository(ctrl)
+		mockModelServiceClient := NewMockModelServiceClient(ctrl)
 
-		rpcModelClient.EXPECT().TriggerModel(gomock.Any(), gomock.Eq(&modelPB.TriggerModelRequest{
+		mockModelServiceClient.EXPECT().TriggerModel(gomock.Any(), gomock.Eq(&modelPB.TriggerModelRequest{
 			Name:    "yolov4",
 			Version: 1,
 			Inputs:  modelInputs,
@@ -124,12 +122,9 @@ func TestPipelineService_TriggerPipeline(t *testing.T) {
 			Type: &pipelinePB.Input_ImageUrl{ImageUrl: "https://artifacts.instill.tech/dog.jpg"},
 		})
 
-		pipelineService := PipelineService{
-			PipelineRepository: mockPipelineRepository,
-			ModelServiceClient: rpcModelClient,
-		}
+		s := service.NewService(mockRepository, mockModelServiceClient)
 
-		_, err := pipelineService.TriggerPipeline(NAMESPACE, &pipelinePB.TriggerPipelineRequest{Inputs: pipelineInputs}, normalPipeline)
+		_, err := s.TriggerPipeline(NAMESPACE, &pipelinePB.TriggerPipelineRequest{Inputs: pipelineInputs}, normalPipeline)
 
 		assert.NoError(t, err)
 	})

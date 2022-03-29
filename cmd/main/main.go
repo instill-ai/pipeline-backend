@@ -66,7 +66,7 @@ func main() {
 	// Create tls based credential.
 	var creds credentials.TransportCredentials
 	var err error
-	if configs.Config.Server.HTTPS.Enabled {
+	if configs.Config.Server.HTTPS.Cert != "" && configs.Config.Server.HTTPS.Key != "" {
 		creds, err = credentials.NewServerTLSFromFile(configs.Config.Server.HTTPS.Cert, configs.Config.Server.HTTPS.Key)
 		if err != nil {
 			logger.Fatal(fmt.Sprintf("failed to create credentials: %v", err))
@@ -99,7 +99,7 @@ func main() {
 			grpc_recovery.UnaryServerInterceptor(recoveryInterceptorOpt()),
 		)),
 	}
-	if configs.Config.Server.HTTPS.Enabled {
+	if configs.Config.Server.HTTPS.Cert != "" && configs.Config.Server.HTTPS.Key != "" {
 		grpcServerOpts = append(grpcServerOpts, grpc.Creds(creds))
 	}
 
@@ -107,25 +107,25 @@ func main() {
 	defer cancel()
 
 	var modelClientDialOpts grpc.DialOption
-	if configs.Config.ModelService.TLS {
+	if configs.Config.ModelBackend.TLS {
 		modelClientDialOpts = grpc.WithTransportCredentials(creds)
 	} else {
 		modelClientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelService.Host, configs.Config.ModelService.Port), modelClientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelBackend.Host, configs.Config.ModelBackend.Port), modelClientDialOpts)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 
 	modelServiceClient := modelPB.NewModelServiceClient(clientConn)
 
-	pipelineRepository := repository.NewPipelineRepository(db)
-	pipelineService := service.NewPipelineService(pipelineRepository, modelServiceClient)
-	pipelineHandler := handler.NewPipelineServiceHandler(pipelineService)
+	r := repository.NewRepository(db)
+	s := service.NewService(r, modelServiceClient)
+	h := handler.NewHandler(s)
 
 	grpcS := grpc.NewServer(grpcServerOpts...)
-	pipelinePB.RegisterPipelineServiceServer(grpcS, pipelineHandler)
+	pipelinePB.RegisterPipelineServiceServer(grpcS, h)
 
 	gwS := runtime.NewServeMux(
 		runtime.WithForwardResponseOption(httpResponseModifier),
@@ -148,7 +148,7 @@ func main() {
 	}
 
 	var dialOpts []grpc.DialOption
-	if configs.Config.Server.HTTPS.Enabled {
+	if configs.Config.Server.HTTPS.Cert != "" && configs.Config.Server.HTTPS.Key != "" {
 		dialOpts = []grpc.DialOption{grpc.WithTransportCredentials(creds)}
 	} else {
 		dialOpts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -167,7 +167,7 @@ func main() {
 	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 5 seconds.
 	quitSig := make(chan os.Signal, 1)
 
-	if configs.Config.Server.HTTPS.Enabled {
+	if configs.Config.Server.HTTPS.Cert != "" && configs.Config.Server.HTTPS.Key != "" {
 		go func() {
 			if err := httpServer.ListenAndServeTLS(configs.Config.Server.HTTPS.Cert, configs.Config.Server.HTTPS.Key); err != nil {
 				errSig <- err

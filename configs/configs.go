@@ -25,16 +25,15 @@ type AppConfig struct {
 	Database     DatabaseConfig     `koanf:"database"`
 	Temporal     TemporalConfig     `koanf:"temporal"`
 	Cache        CacheConfig        `koanf:"cache"`
-	ModelService ModelServiceConfig `koanf:"modelservice"`
+	ModelBackend ModelBackendConfig `koanf:"modelservice"`
 }
 
 // ServerConfig defines HTTP server configurations
 type ServerConfig struct {
 	Port  int `koanf:"port"`
 	HTTPS struct {
-		Enabled bool   `koanf:"enabled"`
-		Cert    string `koanf:"cert"`
-		Key     string `koanf:"key"`
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
 	}
 	CORSOrigins []string `koanf:"corsorigins"`
 	Paginate    struct {
@@ -44,13 +43,14 @@ type ServerConfig struct {
 
 // Configs related to database
 type DatabaseConfig struct {
-	Username     string `koanf:"username"`
-	Password     string `koanf:"password"`
-	Host         string `koanf:"host"`
-	Port         int    `koanf:"port"`
-	DatabaseName string `koanf:"databasename"`
-	TimeZone     string `koanf:"timezone"`
-	Pool         struct {
+	Username string `koanf:"username"`
+	Password string `koanf:"password"`
+	Host     string `koanf:"host"`
+	Port     int    `koanf:"port"`
+	Name     string `koanf:"name"`
+	Version  uint   `koanf:"version"`
+	TimeZone string `koanf:"timezone"`
+	Pool     struct {
 		IdleConnections int           `koanf:"idleconnections"`
 		MaxConnections  int           `koanf:"maxconnections"`
 		ConnLifeTime    time.Duration `koanf:"connlifetime"`
@@ -68,7 +68,7 @@ type CacheConfig struct {
 	}
 }
 
-type ModelServiceConfig struct {
+type ModelBackendConfig struct {
 	TLS  bool   `koanf:"tls"`
 	Host string `koanf:"host"`
 	Port int    `koanf:"port"`

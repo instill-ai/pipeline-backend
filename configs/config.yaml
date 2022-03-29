@@ -1,9 +1,8 @@
 server:
   port: 8080
   https:
-    enabled: false
-    cert: /ssl/tls.crt
-    key: /ssl/tls.key
+    cert:   # /ssl/tls.crt
+    key:    # /ssl/tls.key
   corsorigins:
     - http://localhost
     - https://instill-inc.tech
@@ -15,7 +14,8 @@ database:
   password: password
   host: localhost
   port: 5432
-  databasename: pipeline
+  name: pipeline
+  version: 4
   timezone: Etc/UTC
   pool:
     idleconnections: 5
@@ -29,7 +29,7 @@ temporal:
   clientoptions:
     namespace: pipeline
     hostport: localhost:7233
-modelservice:
+modelbackend:
   tls: false
   host: localhost
-  port: 8445
+  port: 8081
