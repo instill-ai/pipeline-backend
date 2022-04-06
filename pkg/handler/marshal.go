@@ -41,10 +41,10 @@ func marshalRecipe(recipe *datamodel.Recipe) *pipelinePB.Recipe {
 
 func marshalPipeline(pipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
 	ret := &pipelinePB.Pipeline{
-		Id:          pipeline.Id,
+		Id:          uint64(pipeline.ID),
 		Name:        pipeline.Name,
 		Description: pipeline.Description,
-		Active:      pipeline.Active,
+		Status:      pipelinePB.Pipeline_Status(pipelinePB.Pipeline_Status_value[string(pipeline.Status)]),
 		CreatedAt:   timestamppb.New(pipeline.CreatedAt),
 		UpdatedAt:   timestamppb.New(pipeline.UpdatedAt),
 		FullName:    pipeline.FullName,

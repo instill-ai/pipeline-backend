@@ -1,13 +1,14 @@
 package datamodel
 
 import (
-	"time"
+	"database/sql/driver"
+	"errors"
 
 	"gorm.io/gorm"
 )
 
 type Pipeline struct {
-	Id uint64
+	gorm.Model
 
 	// the name of this Instill Pipeline
 	Name string
@@ -15,16 +16,7 @@ type Pipeline struct {
 	// the more detail of this Instill Pipeline
 	Description string
 
-	Active bool `gorm:"type:tinyint"`
-
-	// the time when entity created
-	CreatedAt time.Time `gorm:"type:timestamp"`
-
-	// the time when entity has been updated
-	UpdatedAt time.Time `gorm:"type:timestamp"`
-
-	// the time when entity has been deleted
-	DeletedAt gorm.DeletedAt
+	Status ValidStatus `sql:"type:valid_status"`
 
 	Recipe *Recipe `gorm:"type:json"`
 
@@ -49,4 +41,28 @@ type TriggerPipelineContent struct {
 	Url    string `json:"url,omitempty"`
 	Base64 string `json:"base64,omitempty"`
 	Chunk  []byte `json:"chunk,omitempty"`
+}
+
+type ValidStatus string
+
+const (
+	StatusInactive ValidStatus = "STATUS_INACTIVE"
+	StatusActive   ValidStatus = "STATUS_ACTIVE"
+	StatusError    ValidStatus = "STATUS_ERROR"
+)
+
+func (p *ValidStatus) Scan(value interface{}) error {
+	switch v := value.(type) {
+	case string:
+		*p = ValidStatus(v)
+	case []byte:
+		*p = ValidStatus(v)
+	default:
+		return errors.New("Incompatible type for ValidStatus")
+	}
+	return nil
+}
+
+func (p ValidStatus) Value() (driver.Value, error) {
+	return string(p), nil
 }

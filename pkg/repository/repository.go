@@ -14,7 +14,7 @@ import (
 
 type Repository interface {
 	CreatePipeline(pipeline datamodel.Pipeline) error
-	ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error)
+	ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint, uint, error)
 	GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error)
 	UpdatePipeline(pipeline datamodel.Pipeline) error
 	DeletePipeline(namespace string, pipelineName string) error
@@ -30,27 +30,27 @@ func NewRepository(db *gorm.DB) Repository {
 	}
 }
 
-var GetPipelineSelectField = []string{
-	`"pipelines"."id" as id`,
-	`"pipelines"."name"`,
-	`"pipelines"."description"`,
-	`"pipelines"."active"`,
-	`"pipelines"."created_at"`,
-	`"pipelines"."updated_at"`,
-	`'Pipeline' as kind`,
-	`CONCAT(namespace, '/', name) as full_name`,
+var GetpipelineelectField = []string{
+	"pipeline.id as id",
+	"pipeline.name",
+	"pipeline.description",
+	"pipeline.status",
+	"pipeline.created_at",
+	"pipeline.updated_at",
+	"Pipeline as kind",
+	"CONCAT(namespace, '/', name) as full_name",
 }
 
 var GetPipelineWithRecipeSelectField = []string{
-	`"pipelines"."id" as id`,
-	`"pipelines"."name"`,
-	`"pipelines"."description"`,
-	`"pipelines"."active"`,
-	`"pipelines"."created_at"`,
-	`"pipelines"."updated_at"`,
-	`"pipelines"."recipe"`,
-	`'Pipeline' as kind`,
-	`CONCAT(namespace, '/', name) as full_name`,
+	"pipeline.id as id",
+	"pipeline.name",
+	"pipeline.description",
+	"pipeline.status",
+	"pipeline.created_at",
+	"pipeline.updated_at",
+	"pipeline.recipe",
+	"Pipeline as kind",
+	"CONCAT(namespace, '/', name) as full_name",
 }
 
 func (r *repository) CreatePipeline(pipeline datamodel.Pipeline) error {
@@ -58,7 +58,7 @@ func (r *repository) CreatePipeline(pipeline datamodel.Pipeline) error {
 
 	// We ignore the full_name column since it's a virtual column
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Omit(`"pipelines"."full_name"`).
+		Omit("pipeline.full_name").
 		Create(&pipeline); result.Error != nil {
 		l.Error(fmt.Sprintf("Error occur: %v", result.Error))
 		return status.Errorf(codes.Internal, "Error %v", result.Error)
@@ -67,14 +67,14 @@ func (r *repository) CreatePipeline(pipeline datamodel.Pipeline) error {
 	return nil
 }
 
-func (r *repository) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
-	var pipelines []datamodel.Pipeline
+func (r *repository) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint, uint, error) {
+	var pipeline []datamodel.Pipeline
 
 	var count int64
 	r.db.Model(&datamodel.Pipeline{}).Where("namespace = ?", query.Namespace).Count(&count)
 
-	var min uint64
-	var max uint64
+	var min uint
+	var max uint
 	if count > 0 {
 		rows, err := r.db.Model(&datamodel.Pipeline{}).
 			Select("MIN(id) AS min, MAX(id) as max").
@@ -104,17 +104,17 @@ func (r *repository) ListPipelines(query datamodel.ListPipelineQuery) ([]datamod
 			Where("namespace = ? AND id < ?", query.Namespace, cursor).
 			Limit(int(query.PageSize)).
 			Order("id desc").
-			Find(&pipelines)
+			Find(&pipeline)
 	} else {
 		r.db.Model(&datamodel.Pipeline{}).
-			Select(GetPipelineSelectField).
+			Select(GetpipelineelectField).
 			Where("namespace = ? AND id < ?", query.Namespace, cursor).
 			Limit(int(query.PageSize)).
 			Order("id desc").
-			Find(&pipelines)
+			Find(&pipeline)
 	}
 
-	return pipelines, max, min, nil
+	return pipeline, max, min, nil
 }
 
 func (r *repository) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
@@ -125,7 +125,6 @@ func (r *repository) GetPipelineByName(namespace string, pipelineName string) (d
 		First(&pipeline); result.Error != nil {
 		return datamodel.Pipeline{}, status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", pipelineName)
 	}
-
 	return pipeline, nil
 }
 
@@ -134,7 +133,7 @@ func (r *repository) UpdatePipeline(pipeline datamodel.Pipeline) error {
 
 	// We ignore the name column since it can not be updated
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Omit(`"pipelines"."name"`).
+		Omit("pipeline.name").
 		Where("name = ? AND namespace = ?", pipeline.Name, pipeline.Namespace).
 		Updates(pipeline); result.Error != nil {
 		l.Error(fmt.Sprintf("Error occur: %v", result.Error))

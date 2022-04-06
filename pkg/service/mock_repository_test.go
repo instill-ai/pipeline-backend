@@ -78,12 +78,12 @@ func (mr *MockRepositoryMockRecorder) GetPipelineByName(arg0, arg1 interface{}) 
 }
 
 // ListPipelines mocks base method.
-func (m *MockRepository) ListPipelines(arg0 datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
+func (m *MockRepository) ListPipelines(arg0 datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint, uint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListPipelines", arg0)
 	ret0, _ := ret[0].([]datamodel.Pipeline)
-	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(uint64)
+	ret1, _ := ret[1].(uint)
+	ret2, _ := ret[2].(uint)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
 }

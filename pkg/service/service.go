@@ -22,7 +22,7 @@ import (
 
 type Service interface {
 	CreatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error)
-	ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error)
+	ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint, uint, error)
 	GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error)
 	UpdatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error)
 	DeletePipeline(namespace string, pipelineName string) error
@@ -82,7 +82,7 @@ func (p *service) CreatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipelin
 	}
 }
 
-func (p *service) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint64, uint64, error) {
+func (p *service) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint, uint, error) {
 	return p.repository.ListPipelines(query)
 }
 
@@ -131,8 +131,8 @@ func (p *service) ValidateTriggerPipeline(namespace string, pipelineName string,
 	}
 
 	// Pipeline is inactive
-	if !pipeline.Active {
-		return status.Error(codes.FailedPrecondition, "This pipeline has been deactivated")
+	if pipeline.Status == datamodel.StatusInactive {
+		return status.Error(codes.FailedPrecondition, "This pipeline is inactive")
 	}
 
 	// Pipeline not belong to this requester

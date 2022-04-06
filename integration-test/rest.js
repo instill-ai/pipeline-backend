@@ -17,6 +17,7 @@ const model_name = pipelineConstants.detectionModel.name;
 const det_model = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dummy-det-model.zip`, "b");
 
 export let options = {
+  setupTimeout: '300s',
   insecureSkipTLSVerify: true,
   thresholds: {
     checks: ["rate == 1.0"],
@@ -94,7 +95,7 @@ export default function (data) {
       {
         name: randomString(100),
         description: randomString(512),
-        active: true,
+        status: "STATUS_ACTIVE",
       },
       pipelineConstants.detectionRecipe
     );
@@ -189,7 +190,7 @@ export default function (data) {
     let updatePipelineEntity = Object.assign(
       {
         description: randomString(512),
-        active: true,
+        status: "STATUS_ACTIVE",
       },
     );
     group("Pipelines API: Update a pipeline", () => {

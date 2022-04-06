@@ -56,6 +56,26 @@ func (mr *MockModelServiceClientMockRecorder) CreateModelBinaryFileUpload(arg0 i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateModelBinaryFileUpload", reflect.TypeOf((*MockModelServiceClient)(nil).CreateModelBinaryFileUpload), varargs...)
 }
 
+// CreateModelByGitHub mocks base method.
+func (m *MockModelServiceClient) CreateModelByGitHub(arg0 context.Context, arg1 *modelv1alpha.CreateModelByGitHubRequest, arg2 ...grpc.CallOption) (*modelv1alpha.CreateModelByGitHubResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateModelByGitHub", varargs...)
+	ret0, _ := ret[0].(*modelv1alpha.CreateModelByGitHubResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateModelByGitHub indicates an expected call of CreateModelByGitHub.
+func (mr *MockModelServiceClientMockRecorder) CreateModelByGitHub(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateModelByGitHub", reflect.TypeOf((*MockModelServiceClient)(nil).CreateModelByGitHub), varargs...)
+}
+
 // DeleteModel mocks base method.
 func (m *MockModelServiceClient) DeleteModel(arg0 context.Context, arg1 *modelv1alpha.DeleteModelRequest, arg2 ...grpc.CallOption) (*modelv1alpha.DeleteModelResponse, error) {
 	m.ctrl.T.Helper()
