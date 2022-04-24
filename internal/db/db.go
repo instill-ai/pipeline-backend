@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 
 	configs "github.com/instill-ai/pipeline-backend/configs"
 )
@@ -31,6 +32,9 @@ func GetConnection() *gorm.DB {
 			PreferSimpleProtocol: true, // disables implicit prepared statement usage
 		}), &gorm.Config{
 			QueryFields: true, // QueryFields mode will select by all fields’ name for current model
+			NamingStrategy: schema.NamingStrategy{
+				SingularTable: true,
+			},
 		})
 
 		if err != nil {

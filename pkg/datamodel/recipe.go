@@ -23,7 +23,7 @@ type Destination struct {
 }
 
 type Model struct {
-	Name    string `json:"model_name,omitempty"`
+	Name    string `json:"model,omitempty"`
 	Version uint64 `json:"version,omitempty"`
 }
 

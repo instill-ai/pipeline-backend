@@ -101,8 +101,8 @@ mysql-persistence/
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# built binary
-pipeline-backend
+# local protogen-go
+protogen-go
 
 # air related files and folders
 .air.toml

@@ -75,7 +75,7 @@ func (s *handler) CreatePipeline(ctx context.Context, in *pipelinePB.CreatePipel
 	entity := datamodel.Pipeline{
 		Name:        in.Name,
 		Description: in.Description,
-		Active:      in.Active,
+		Status:      datamodel.ValidStatus(in.Status.String()),
 		Namespace:   username,
 	}
 	if in.Recipe != nil {
@@ -124,10 +124,10 @@ func (s *handler) ListPipeline(ctx context.Context, in *pipelinePB.ListPipelineR
 	var nextCursor uint64
 	for _, pipeline := range pipelines {
 		resp.Pipelines = append(resp.Pipelines, marshalPipeline(&pipeline))
-		nextCursor = pipeline.Id
+		nextCursor = uint64(pipeline.ID)
 	}
 
-	if min != nextCursor {
+	if uint64(min) != nextCursor {
 		resp.NextPageToken = s.paginateTocken.Encode(nextCursor)
 	}
 
@@ -168,8 +168,8 @@ func (s *handler) UpdatePipeline(ctx context.Context, in *pipelinePB.UpdatePipel
 			switch field {
 			case "description":
 				entity.Description = in.PipelinePatch.Description
-			case "active":
-				entity.Active = in.PipelinePatch.Active
+			case "status":
+				entity.Status = datamodel.ValidStatus(in.PipelinePatch.Status.String())
 			}
 			if strings.Contains(field, "recipe") {
 				entity.Recipe = unmarshalRecipe(in.PipelinePatch.Recipe)

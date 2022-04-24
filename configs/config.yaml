@@ -15,7 +15,7 @@ database:
   host: localhost
   port: 5432
   name: pipeline
-  version: 4
+  version: 6
   timezone: Etc/UTC
   pool:
     idleconnections: 5
