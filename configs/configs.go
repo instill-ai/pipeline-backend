@@ -25,7 +25,7 @@ type AppConfig struct {
 	Database     DatabaseConfig     `koanf:"database"`
 	Temporal     TemporalConfig     `koanf:"temporal"`
 	Cache        CacheConfig        `koanf:"cache"`
-	ModelBackend ModelBackendConfig `koanf:"modelservice"`
+	ModelBackend ModelBackendConfig `koanf:"modelbackend"`
 }
 
 // ServerConfig defines HTTP server configurations
@@ -41,7 +41,7 @@ type ServerConfig struct {
 	}
 }
 
-// Configs related to database
+// DatabaseConfig related to database
 type DatabaseConfig struct {
 	Username string `koanf:"username"`
 	Password string `koanf:"password"`
@@ -57,17 +57,19 @@ type DatabaseConfig struct {
 	}
 }
 
-// Configs related to Temporal
+// TemporalConfig related to Temporal
 type TemporalConfig struct {
 	ClientOptions client.Options `koanf:"clientoptions"`
 }
 
+// CacheConfig related to Redis
 type CacheConfig struct {
 	Redis struct {
 		RedisOptions redis.Options `koanf:"redisoptions"`
 	}
 }
 
+// ModelBackendConfig related to model-backend
 type ModelBackendConfig struct {
 	TLS  bool   `koanf:"tls"`
 	Host string `koanf:"host"`

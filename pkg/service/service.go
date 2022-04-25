@@ -178,7 +178,7 @@ func (p *service) TriggerPipeline(namespace string, req *pipelinePB.TriggerPipel
 			Inputs:  inputs,
 		})
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "cannot make inference: %s", err.Error())
+			return nil, fmt.Errorf("Error model-backend %s: %v", "TriggerModel", err.Error())
 		}
 
 		return ret, nil
@@ -199,7 +199,7 @@ func (p *service) TriggerPipelineByUpload(namespace string, image bytes.Buffer, 
 			_ = stream.CloseSend()
 		}()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error model-backend %s: %v", "TriggerModelBinaryFileUpload", err.Error())
 		}
 
 		err = stream.Send(&modelPB.TriggerModelBinaryFileUploadRequest{
@@ -245,7 +245,7 @@ func (p *service) ValidateModel(namespace string, selectedModels []*datamodel.Mo
 
 	supportModelResp, err := p.modelServiceClient.ListModel(ctx, &modelPB.ListModelRequest{})
 	if err != nil {
-		return err
+		return fmt.Errorf("Error model-backend %s: %v", "ListModel", err.Error())
 	}
 
 	hasInvalidModel := false
