@@ -9,8 +9,6 @@ volumes:
     name: conda-pack
   model_repository:
     name: model-repository
-  pg_sql:
-    name: pg-sql
 
 services:
   pipeline_backend_migrate:
@@ -121,20 +119,16 @@ services:
 
   pg_sql:
     container_name: pg-sql
-    image: bitnami/postgresql:14.1.0
+    image: postgres:14.1-alpine
     restart: unless-stopped
-    environment:
-      POSTGRES_PASSWORD: password
     ports:
       - 5432:5432
-    volumes:
-      - pg_sql:/bitnami/postgresql
-      - ./scripts/postgresql-healthcheck.sh:/scripts/postgresql-healthcheck.sh
+    environment:
+      POSTGRES_PASSWORD: password
     healthcheck:
-      test: ["CMD", "/scripts/postgresql-healthcheck.sh"]
-      interval: 15s
-      timeout: 5s
-      retries: 6
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      timeout: 20s
+      retries: 10
 
   temporal:
     container_name: temporal
