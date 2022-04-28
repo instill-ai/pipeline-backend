@@ -7,15 +7,13 @@ server:
     - http://localhost
     - https://instill-inc.tech
     - https://instill.tech
-  paginate:
-    salt: 3PTkdu4FRvmSezf2
 database:
   username: postgres
   password: password
   host: localhost
   port: 5432
   name: pipeline
-  version: 6
+  version: 1
   timezone: Etc/UTC
   pool:
     idleconnections: 5

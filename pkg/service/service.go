@@ -9,10 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"google.golang.org/grpc/codes"
 
-	"github.com/instill-ai/pipeline-backend/internal/temporal"
+	"github.com/instill-ai/pipeline-backend/internal/constant"
+	"github.com/instill-ai/pipeline-backend/internal/util"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
@@ -20,16 +22,17 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
+// Service interface
 type Service interface {
-	CreatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error)
-	ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint, uint, error)
-	GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error)
-	UpdatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error)
-	DeletePipeline(namespace string, pipelineName string) error
-	TriggerPipeline(namespace string, trigger *pipelinePB.TriggerPipelineRequest, pipeline datamodel.Pipeline) (*modelPB.TriggerModelResponse, error)
-	TriggerPipelineByUpload(namespace string, buf bytes.Buffer, pipeline datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error)
-	ValidateModel(namespace string, selectedModel []*datamodel.Model) error
-	ValidateTriggerPipeline(namespace string, pipelineName string, pipeline datamodel.Pipeline) error
+	CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
+	ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageCursor string) ([]datamodel.Pipeline, string, error)
+	GetPipeline(ownerID uuid.UUID, name string) (*datamodel.Pipeline, error)
+	UpdatePipeline(ownerID uuid.UUID, name string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
+	DeletePipeline(ownerID uuid.UUID, name string) error
+	TriggerPipeline(ownerID uuid.UUID, req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelResponse, error)
+	TriggerPipelineByUpload(ownerID uuid.UUID, image bytes.Buffer, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error)
+	ValidateTriggerPipeline(ownerID uuid.UUID, name string, pipeline *datamodel.Pipeline) error
+	ValidateModel(ownerID uuid.UUID, selectedModel []*datamodel.Model) error
 }
 
 type service struct {
@@ -37,6 +40,7 @@ type service struct {
 	modelServiceClient modelPB.ModelServiceClient
 }
 
+// NewService initiates a service instance
 func NewService(r repository.Repository, m modelPB.ModelServiceClient) Service {
 	return &service{
 		repository:         r,
@@ -44,99 +48,137 @@ func NewService(r repository.Repository, m modelPB.ModelServiceClient) Service {
 	}
 }
 
-func (p *service) CreatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error) {
+func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	// TODO: more validation
+	// Validatation: Required field
 	if pipeline.Name == "" {
-		return datamodel.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name is not specified")
+		return nil, status.Error(codes.FailedPrecondition, "The required field name is not specified")
 	}
 
-	// Validate the naming rule of pipeline
+	// Validatation: Required field
+	if pipeline.Recipe == nil {
+		return nil, status.Error(codes.FailedPrecondition, "The required field recipe is not specified")
+	}
+
+	// Validatation: Naming rule
 	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.Name); !match {
-		return datamodel.Pipeline{}, status.Error(codes.FailedPrecondition, "The name of pipeline is invalid")
+		return nil, status.Error(codes.FailedPrecondition, "The name of pipeline is invalid")
 	}
 
+	// Validation: Name length
 	if len(pipeline.Name) > 100 {
-		return datamodel.Pipeline{}, status.Error(codes.FailedPrecondition, "The length of the name is greater than 100")
+		return nil, status.Error(codes.FailedPrecondition, "The name of pipeline has more than 100 characters")
 	}
 
-	if existingPipeline, _ := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); existingPipeline.Name != "" {
-		return datamodel.Pipeline{}, status.Errorf(codes.FailedPrecondition, "The name %s is existing in your namespace", pipeline.Name)
-	}
-
-	if pipeline.Recipe != nil && pipeline.Recipe.Model != nil && len(pipeline.Recipe.Model) > 0 {
-		err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
+	if pipeline.Recipe != nil && pipeline.Recipe.Models != nil && len(pipeline.Recipe.Models) > 0 {
+		err := s.ValidateModel(pipeline.OwnerID, pipeline.Recipe.Models)
 		if err != nil {
-			return datamodel.Pipeline{}, err
+			return &datamodel.Pipeline{}, err
 		}
 	}
 
-	if err := p.repository.CreatePipeline(pipeline); err != nil {
-		return datamodel.Pipeline{}, err
+	// TODO: Check connectors and model status to assign pipeline status
+
+	if err := s.repository.CreatePipeline(pipeline); err != nil {
+		return nil, err
 	}
 
-	if createdPipeline, err := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); err != nil {
-		return datamodel.Pipeline{}, err
-	} else {
-		return createdPipeline, nil
+	dbPipeline, err := s.GetPipeline(pipeline.OwnerID, pipeline.Name)
+	if err != nil {
+		return nil, err
 	}
+
+	return dbPipeline, nil
 }
 
-func (p *service) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint, uint, error) {
-	return p.repository.ListPipelines(query)
+func (s *service) ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageCursor string) ([]datamodel.Pipeline, string, error) {
+	return s.repository.ListPipeline(ownerID, view, pageSize, pageCursor)
 }
 
-func (p *service) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
-	return p.repository.GetPipelineByName(namespace, pipelineName)
+func (s *service) GetPipeline(ownerID uuid.UUID, name string) (*datamodel.Pipeline, error) {
+
+	// Validatation: Required field
+	if name == "" {
+		return nil, status.Error(codes.FailedPrecondition, "The required field name is not specified")
+	}
+
+	dbPipeline, err := s.repository.GetPipeline(ownerID, name)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Use owner_id to query owner_name in mgmt-backend
+	dbPipeline.FullName = fmt.Sprintf("local-user/%s", dbPipeline.Name)
+
+	return dbPipeline, nil
 }
 
-func (p *service) UpdatePipeline(pipeline datamodel.Pipeline) (datamodel.Pipeline, error) {
+func (s *service) UpdatePipeline(ownerID uuid.UUID, name string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	// TODO: validation
-	if pipeline.Name == "" {
-		return datamodel.Pipeline{}, status.Error(codes.FailedPrecondition, "The required field name not specify")
+	// Validatation: Required field
+	if name == "" {
+		return nil, status.Error(codes.FailedPrecondition, "The required field name not specify")
 	}
 
-	if existingPipeline, _ := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); existingPipeline.Name == "" {
-		return datamodel.Pipeline{}, status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", pipeline.Name)
+	// Validation: Pipeline existence
+	if existingPipeline, _ := s.GetPipeline(ownerID, name); existingPipeline == nil {
+		return nil, status.Errorf(codes.NotFound, "Pipeline name \"%s\" is not found", updatedPipeline.Name)
 	}
 
-	if pipeline.Recipe != nil && pipeline.Recipe.Model != nil && len(pipeline.Recipe.Model) > 0 {
-		err := p.ValidateModel(pipeline.Namespace, pipeline.Recipe.Model)
+	// Validatation: Naming rule
+	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", updatedPipeline.Name); !match {
+		return nil, status.Error(codes.FailedPrecondition, "The updated name of pipeline is invalid")
+	}
+
+	// Validation: Name length
+	if len(updatedPipeline.Name) > 100 {
+		return nil, status.Error(codes.FailedPrecondition, "The updated name of pipeline has more than 100 characters")
+	}
+
+	// Validation: Model instance
+	if updatedPipeline.Recipe != nil && updatedPipeline.Recipe.Models != nil && len(updatedPipeline.Recipe.Models) > 0 {
+		err := s.ValidateModel(updatedPipeline.OwnerID, updatedPipeline.Recipe.Models)
 		if err != nil {
-			return datamodel.Pipeline{}, err
+			return &datamodel.Pipeline{}, err
 		}
 	}
 
-	if err := p.repository.UpdatePipeline(pipeline); err != nil {
-		return datamodel.Pipeline{}, err
+	if err := s.repository.UpdatePipeline(ownerID, name, updatedPipeline); err != nil {
+		return nil, err
 	}
 
-	if updatedPipeline, err := p.GetPipelineByName(pipeline.Namespace, pipeline.Name); err != nil {
-		return datamodel.Pipeline{}, err
-	} else {
-		return updatedPipeline, nil
+	dbPipeline, err := s.GetPipeline(updatedPipeline.OwnerID, updatedPipeline.Name)
+	if err != nil {
+		return nil, err
 	}
+
+	return dbPipeline, nil
 }
 
-func (p *service) DeletePipeline(namespace string, pipelineName string) error {
-	return p.repository.DeletePipeline(namespace, pipelineName)
+func (s *service) DeletePipeline(ownerID uuid.UUID, name string) error {
+	return s.repository.DeletePipeline(ownerID, name)
 }
 
-func (p *service) ValidateTriggerPipeline(namespace string, pipelineName string, pipeline datamodel.Pipeline) error {
+func (s *service) ValidateTriggerPipeline(owerID uuid.UUID, name string, pipeline *datamodel.Pipeline) error {
 
-	// Specified pipeline not exists
+	// Validation: Required field
 	if pipeline.Name == "" {
-		return status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", pipelineName)
+		return status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", name)
 	}
 
-	// Pipeline is inactive
-	if pipeline.Status == datamodel.StatusInactive {
-		return status.Error(codes.FailedPrecondition, "This pipeline is inactive")
+	// Validation: Pipeline is inactivated
+	if pipeline.Status == datamodel.PipelineStatus(pipelinePB.Pipeline_STATUS_INACTIVATED) {
+		return status.Error(codes.FailedPrecondition, "This pipeline is inactivated")
+	}
+
+	// Validation: Pipeline is error
+	if pipeline.Status == datamodel.PipelineStatus(pipelinePB.Pipeline_STATUS_ERROR) {
+		return status.Error(codes.FailedPrecondition, "This pipeline has errors")
 	}
 
 	// Pipeline not belong to this requester
-	if !strings.Contains(pipeline.FullName, namespace) {
+	// TODO: Use owner_id to query owner_name in mgmt-backend
+	if !strings.Contains(pipeline.FullName, "local-user") {
 		return status.Error(codes.PermissionDenied, "You are not allowed to trigger this pipeline")
 	}
 
@@ -145,15 +187,16 @@ func (p *service) ValidateTriggerPipeline(namespace string, pipelineName string,
 	return nil
 }
 
-func (p *service) TriggerPipeline(namespace string, req *pipelinePB.TriggerPipelineRequest, pipeline datamodel.Pipeline) (*modelPB.TriggerModelResponse, error) {
+func (s *service) TriggerPipeline(ownerID uuid.UUID, req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelResponse, error) {
 
-	// TODO: The model that pipeline used is offline
-	if temporal.IsDirect(pipeline.Recipe) {
+	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
+	if util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Source.Name) &&
+		util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Destination.Name) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
 
-		m := pipeline.Recipe.Model[0]
+		m := pipeline.Recipe.Models[0]
 
 		var inputs []*modelPB.Input
 		for _, input := range req.Inputs {
@@ -172,29 +215,33 @@ func (p *service) TriggerPipeline(namespace string, req *pipelinePB.TriggerPipel
 			}
 		}
 
-		ret, err := p.modelServiceClient.TriggerModel(ctx, &modelPB.TriggerModelRequest{
-			Name:    m.Name,
-			Version: m.Version,
-			Inputs:  inputs,
+		resp, err := s.modelServiceClient.TriggerModel(ctx, &modelPB.TriggerModelRequest{
+			ModelName:    m.ModelName,
+			InstanceName: m.InstanceName,
+			Inputs:       inputs,
 		})
+
 		if err != nil {
-			return nil, fmt.Errorf("Error model-backend %s: %v", "TriggerModel", err.Error())
+			return nil, status.Errorf(codes.Internal, "Error model-backend %s: %v", "TriggerModel", err.Error())
 		}
 
-		return ret, nil
+		return resp, nil
 	}
 
 	return nil, nil
 
 }
 
-func (p *service) TriggerPipelineByUpload(namespace string, image bytes.Buffer, pipeline datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
+func (s *service) TriggerPipelineByUpload(ownerID uuid.UUID, image bytes.Buffer, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
 
-	if temporal.IsDirect(pipeline.Recipe) {
+	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
+	if util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Source.Name) &&
+		util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Destination.Name) {
+
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		stream, err := p.modelServiceClient.TriggerModelBinaryFileUpload(ctx)
+		stream, err := s.modelServiceClient.TriggerModelBinaryFileUpload(ctx)
 		defer func() {
 			_ = stream.CloseSend()
 		}()
@@ -203,8 +250,8 @@ func (p *service) TriggerPipelineByUpload(namespace string, image bytes.Buffer, 
 		}
 
 		err = stream.Send(&modelPB.TriggerModelBinaryFileUploadRequest{
-			Name:    pipeline.Recipe.Model[0].Name,
-			Version: pipeline.Recipe.Model[0].Version,
+			ModelName:    pipeline.Recipe.Models[0].ModelName,
+			InstanceName: pipeline.Recipe.Models[0].InstanceName,
 		})
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "cannot send data info to server: %s", err.Error())
@@ -233,17 +280,18 @@ func (p *service) TriggerPipelineByUpload(namespace string, image bytes.Buffer, 
 		}
 
 		return res, nil
-	} else {
-		return nil, nil
 	}
+
+	return nil, nil
+
 }
 
-func (p *service) ValidateModel(namespace string, selectedModels []*datamodel.Model) error {
+func (s *service) ValidateModel(ownerID uuid.UUID, selectedModels []*datamodel.Model) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	supportModelResp, err := p.modelServiceClient.ListModel(ctx, &modelPB.ListModelRequest{})
+	supportModelResp, err := s.modelServiceClient.ListModel(ctx, &modelPB.ListModelRequest{})
 	if err != nil {
 		return fmt.Errorf("Error model-backend %s: %v", "ListModel", err.Error())
 	}
@@ -253,10 +301,10 @@ func (p *service) ValidateModel(namespace string, selectedModels []*datamodel.Mo
 	for _, selectedModel := range selectedModels {
 		matchModel := false
 		for _, supportModel := range supportModelResp.Models {
-			if selectedModel.Name == supportModel.Name {
-				for _, supportVersion := range supportModel.ModelVersions {
-					if selectedModel.Version == supportVersion.Version {
-						if supportVersion.Status == modelPB.ModelVersion_STATUS_ONLINE {
+			if selectedModel.ModelName == supportModel.Name {
+				for _, supportInstance := range supportModel.Instances {
+					if selectedModel.InstanceName == supportInstance.Name {
+						if supportInstance.Status == modelPB.ModelInstance_STATUS_ONLINE {
 							matchModel = true
 							break
 						}
@@ -266,13 +314,14 @@ func (p *service) ValidateModel(namespace string, selectedModels []*datamodel.Mo
 		}
 		if !matchModel {
 			hasInvalidModel = true
-			invalidErrorString += fmt.Sprintf("The model %s and version %d you specified is not applicable\n", selectedModel.Name, selectedModel.Version)
+			invalidErrorString += fmt.Sprintf("The model name %s with its instance %s you specified is not applicable\n", selectedModel.ModelName, selectedModel.InstanceName)
 		}
 	}
 
 	if hasInvalidModel {
 		return status.Error(codes.InvalidArgument, invalidErrorString)
-	} else {
-		return nil
 	}
+
+	return nil
+
 }

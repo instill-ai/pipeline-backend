@@ -17,13 +17,13 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 
+	"github.com/gofrs/uuid"
+	"github.com/gogo/status"
 	"github.com/instill-ai/pipeline-backend/configs"
 	"github.com/instill-ai/pipeline-backend/internal/db"
-	"github.com/instill-ai/pipeline-backend/internal/grpc/metadatautil"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
-	"github.com/instill-ai/pipeline-backend/internal/paginate"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
@@ -32,167 +32,183 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
-func getUsername(ctx context.Context) (string, error) {
-	if metadatas, ok := metadatautil.ExtractFromMetadata(ctx, "Username"); ok {
-		if len(metadatas) == 0 {
-			return "", status.Error(codes.FailedPrecondition, "Username not found in your request")
-		}
-		return metadatas[0], nil
-	} else {
-		return "", status.Error(codes.FailedPrecondition, "Error when extract metadata")
-	}
-}
-
 type handler struct {
 	pipelinePB.UnimplementedPipelineServiceServer
-	service        service.Service
-	paginateTocken paginate.TokenGenerator
+	service service.Service
 }
 
+// NewHandler initiates a handler instance
 func NewHandler(s service.Service) pipelinePB.PipelineServiceServer {
 	return &handler{
-		service:        s,
-		paginateTocken: paginate.TokenGeneratorWithSalt(configs.Config.Server.Paginate.Salt),
+		service: s,
 	}
 }
 
-func (s *handler) Liveness(ctx context.Context, in *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
-	return &pipelinePB.LivenessResponse{Status: pipelinePB.LivenessResponse_SERVING_STATUS_SERVING}, nil
+func (h *handler) Liveness(ctx context.Context, in *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
+	return &pipelinePB.LivenessResponse{
+		HealthCheckResponse: &pipelinePB.HealthCheckResponse{
+			Status: pipelinePB.HealthCheckResponse_SERVING_STATUS_SERVING,
+		},
+	}, nil
 }
 
-func (s *handler) Readiness(ctx context.Context, in *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
-	return &pipelinePB.ReadinessResponse{Status: pipelinePB.ReadinessResponse_SERVING_STATUS_SERVING}, nil
+func (h *handler) Readiness(ctx context.Context, in *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
+	return &pipelinePB.ReadinessResponse{
+		HealthCheckResponse: &pipelinePB.HealthCheckResponse{
+			Status: pipelinePB.HealthCheckResponse_SERVING_STATUS_SERVING,
+		},
+	}, nil
 }
 
-func (s *handler) CreatePipeline(ctx context.Context, in *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
 
-	username, err := getUsername(ctx)
+	ownerID, err := getOwnerID(ctx)
 	if err != nil {
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	// Covert to model
-	entity := datamodel.Pipeline{
-		Name:        in.Name,
-		Description: in.Description,
-		Status:      datamodel.ValidStatus(in.Status.String()),
-		Namespace:   username,
-	}
-	if in.Recipe != nil {
-		entity.Recipe = unmarshalRecipe(in.Recipe)
-	}
-
-	pipeline, err := s.service.CreatePipeline(entity)
+	dbRecipeByte, err := protojson.Marshal(req.Recipe)
 	if err != nil {
-		return nil, err
+		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
+	dbRecipe := datamodel.Recipe{}
+	if err := json.Unmarshal(dbRecipeByte, &dbRecipe); err != nil {
+		return &pipelinePB.CreatePipelineResponse{}, err
+	}
+
+	dbPipeline := &datamodel.Pipeline{
+		OwnerID:     ownerID,
+		Name:        req.Name,
+		Description: req.Description,
+		Recipe:      &dbRecipe,
+	}
+
+	dbPipeline, err = h.service.CreatePipeline(dbPipeline)
+	if err != nil {
+		return &pipelinePB.CreatePipelineResponse{}, err
+	}
+
+	pbPipeline := convertDBPipelineToPBPipeline(dbPipeline)
+	resp := pipelinePB.CreatePipelineResponse{
+		Pipeline: pbPipeline,
+	}
+
+	// Manually set the custom header to have a StatusCreated http response for REST endpoint
 	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusCreated))); err != nil {
 		return nil, err
-	}
-
-	return &pipelinePB.CreatePipelineResponse{Pipeline: marshalPipeline(&pipeline)}, nil
-}
-
-func (s *handler) ListPipeline(ctx context.Context, in *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
-
-	username, err := getUsername(ctx)
-	if err != nil {
-		return &pipelinePB.ListPipelineResponse{}, err
-	}
-
-	cursor, err := s.paginateTocken.Decode(in.PageToken)
-	if err != nil {
-		return nil, err
-	}
-
-	query := datamodel.ListPipelineQuery{
-		Namespace:  username,
-		WithRecipe: in.View == pipelinePB.ListPipelineRequest_VIEW_RECIPE,
-		PageSize:   in.PageSize,
-		Cursor:     cursor,
-	}
-
-	pipelines, _, min, err := s.service.ListPipelines(query)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp pipelinePB.ListPipelineResponse
-
-	var nextCursor uint64
-	for _, pipeline := range pipelines {
-		resp.Pipelines = append(resp.Pipelines, marshalPipeline(&pipeline))
-		nextCursor = uint64(pipeline.ID)
-	}
-
-	if uint64(min) != nextCursor {
-		resp.NextPageToken = s.paginateTocken.Encode(nextCursor)
 	}
 
 	return &resp, nil
 }
 
-func (s *handler) GetPipeline(ctx context.Context, in *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
+func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
 
-	username, err := getUsername(ctx)
+	ownerID, err := getOwnerID(ctx)
+	if err != nil {
+		return &pipelinePB.ListPipelineResponse{}, err
+	}
+
+	dbPipelines, nextPageCursor, err := h.service.ListPipeline(ownerID, req.GetView(), int(req.PageSize), req.PageCursor)
+	if err != nil {
+		return &pipelinePB.ListPipelineResponse{}, err
+	}
+
+	pbPipelines := []*pipelinePB.Pipeline{}
+	for _, dbPipeline := range dbPipelines {
+		pbPipelines = append(pbPipelines, convertDBPipelineToPBPipeline(&dbPipeline))
+	}
+
+	resp := pipelinePB.ListPipelineResponse{
+		Pipelines:      pbPipelines,
+		NextPageCursor: nextPageCursor,
+	}
+
+	return &resp, nil
+}
+
+func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
+
+	ownerID, err := getOwnerID(ctx)
 	if err != nil {
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	pipeline, err := s.service.GetPipelineByName(username, in.Name)
+	dbPipeline, err := h.service.GetPipeline(ownerID, req.GetName())
 	if err != nil {
-		return nil, err
+		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	return &pipelinePB.GetPipelineResponse{Pipeline: marshalPipeline(&pipeline)}, nil
+	pbPipeline := convertDBPipelineToPBPipeline(dbPipeline)
+	resp := pipelinePB.GetPipelineResponse{
+		Pipeline: pbPipeline,
+	}
+
+	return &resp, nil
 }
 
-func (s *handler) UpdatePipeline(ctx context.Context, in *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
+func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
-	username, err := getUsername(ctx)
+	ownerID, err := getOwnerID(ctx)
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	// Covert to model
-	entity := datamodel.Pipeline{
-		Name:      in.Name,
-		Namespace: username,
+	dbPipeline := &datamodel.Pipeline{
+		OwnerID: ownerID,
+		Name:    req.Name,
 	}
-	if in.FieldMask != nil && len(in.FieldMask.Paths) > 0 {
-		entity.UpdatedAt = time.Now()
 
-		for _, field := range in.FieldMask.Paths {
+	if req.FieldMask != nil && len(req.FieldMask.Paths) > 0 {
+		dbPipeline.UpdatedAt = time.Now()
+
+		for _, field := range req.FieldMask.Paths {
 			switch field {
+			case "name":
+				dbPipeline.Name = req.PipelinePatch.Name
 			case "description":
-				entity.Description = in.PipelinePatch.Description
+				dbPipeline.Description = req.PipelinePatch.Description
 			case "status":
-				entity.Status = datamodel.ValidStatus(in.PipelinePatch.Status.String())
+				dbPipeline.Status = datamodel.PipelineStatus(req.PipelinePatch.Status)
 			}
 			if strings.Contains(field, "recipe") {
-				entity.Recipe = unmarshalRecipe(in.PipelinePatch.Recipe)
+
+				dbRecipeByte, err := protojson.Marshal(req.PipelinePatch.Recipe)
+				if err != nil {
+					return &pipelinePB.UpdatePipelineResponse{}, err
+				}
+
+				dbRecipe := datamodel.Recipe{}
+				if err := json.Unmarshal(dbRecipeByte, &dbRecipe); err != nil {
+					return &pipelinePB.UpdatePipelineResponse{}, err
+				}
+
+				dbPipeline.Recipe = &dbRecipe
 			}
 		}
 	}
 
-	pipeline, err := s.service.UpdatePipeline(entity)
+	dbPipeline, err = h.service.UpdatePipeline(ownerID, req.GetName(), dbPipeline)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pipelinePB.UpdatePipelineResponse{Pipeline: marshalPipeline(&pipeline)}, nil
+	pbPipeline := convertDBPipelineToPBPipeline(dbPipeline)
+	resp := pipelinePB.UpdatePipelineResponse{
+		Pipeline: pbPipeline,
+	}
+
+	return &resp, nil
 }
 
-func (s *handler) DeletePipeline(ctx context.Context, in *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
+func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
-	username, err := getUsername(ctx)
+	ownerID, err := getOwnerID(ctx)
 	if err != nil {
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
-	if err := s.service.DeletePipeline(username, in.Name); err != nil {
+	if err := h.service.DeletePipeline(ownerID, req.GetName()); err != nil {
 		return nil, err
 	}
 
@@ -204,47 +220,57 @@ func (s *handler) DeletePipeline(ctx context.Context, in *pipelinePB.DeletePipel
 	return &pipelinePB.DeletePipelineResponse{}, nil
 }
 
-func (s *handler) TriggerPipeline(ctx context.Context, in *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
+func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
 
-	username, err := getUsername(ctx)
+	ownerID, err := getOwnerID(ctx)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	pipeline, err := s.service.GetPipelineByName(username, in.Name)
+	pipeline, err := h.service.GetPipeline(ownerID, req.Name)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	if err := s.service.ValidateTriggerPipeline(username, in.Name, pipeline); err != nil {
+	if err := h.service.ValidateTriggerPipeline(ownerID, req.Name, pipeline); err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	if obj, err := s.service.TriggerPipeline(username, in, pipeline); err != nil {
+	triggerModelResp, err := h.service.TriggerPipeline(ownerID, req, pipeline)
+	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
-	} else {
-		return &pipelinePB.TriggerPipelineResponse{Output: obj.Output}, nil
 	}
+
+	if triggerModelResp == nil {
+		return &pipelinePB.TriggerPipelineResponse{}, nil
+	}
+
+	resp := pipelinePB.TriggerPipelineResponse{
+		Output: triggerModelResp.Output,
+	}
+
+	return &resp, nil
+
 }
 
-func (s *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
+func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
 
-	username, err := getUsername(stream.Context())
+	ownerID, err := getOwnerID(stream.Context())
 	if err != nil {
 		return err
 	}
 
 	data, err := stream.Recv()
 	if err != nil {
-		return status.Errorf(codes.Unknown, "cannot receive trigger info")
+		return status.Errorf(codes.Unknown, "Cannot receive trigger info")
 	}
 
-	pipeline, err := s.service.GetPipelineByName(username, data.Name)
+	pipeline, err := h.service.GetPipeline(ownerID, data.Name)
 	if err != nil {
 		return err
 	}
 
-	if err := s.service.ValidateTriggerPipeline(username, data.Name, pipeline); err != nil {
+	if err := h.service.ValidateTriggerPipeline(ownerID, data.Name, pipeline); err != nil {
 		return err
 	}
 
@@ -270,7 +296,7 @@ func (s *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 	}
 
 	var obj *modelPB.TriggerModelBinaryFileUploadResponse
-	if obj, err = s.service.TriggerPipelineByUpload(username, buf, pipeline); err != nil {
+	if obj, err = h.service.TriggerPipelineByUpload(ownerID, buf, pipeline); err != nil {
 		return err
 	}
 
@@ -290,32 +316,43 @@ func errorResponse(w http.ResponseWriter, status int, title string, detail strin
 	_, _ = w.Write(obj)
 }
 
-func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+// HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
+func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 
 	logger, _ := logger.GetZapLogger()
 
 	contentType := r.Header.Get("Content-Type")
 
 	if strings.Contains(contentType, "multipart/form-data") {
-		username := r.Header.Get("Username")
+
+		ownerIDString := r.Header.Get("owner_id")
 		pipelineName := pathParams["name"]
 
-		if username == "" {
-			errorResponse(w, 422, "Required parameter missing", "Required parameter Jwt-Sub not found in your header")
+		if ownerIDString == "" {
+			errorResponse(w, 400, "Bad Request", "Required parameter Jwt-Sub not found in the header")
+			return
 		}
+
 		if pipelineName == "" {
-			errorResponse(w, 422, "Required parameter missing", "Required parameter pipeline name not found in your path")
+			errorResponse(w, 400, "Bad Request", "Required parameter pipeline name not found in the path")
+			return
+		}
+
+		ownerID, err := uuid.FromString(ownerIDString)
+		if err != nil {
+			errorResponse(w, 400, "Bad Request", "Required parameter Jwt-Sub is not UUID")
+			return
 		}
 
 		pipelineRepository := repository.NewRepository(db.GetConnection())
 
 		// Create tls based credential.
 		var creds credentials.TransportCredentials
-		var err error
 		if configs.Config.Server.HTTPS.Cert != "" && configs.Config.Server.HTTPS.Key != "" {
 			creds, err = credentials.NewServerTLSFromFile(configs.Config.Server.HTTPS.Cert, configs.Config.Server.HTTPS.Key)
 			if err != nil {
 				logger.Fatal(fmt.Sprintf("failed to create credentials: %v", err))
+				return
 			}
 		}
 
@@ -329,24 +366,28 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 		clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelBackend.Host, configs.Config.ModelBackend.Port), modelClientDialOpts)
 		if err != nil {
 			logger.Fatal(err.Error())
+			return
 		}
 
 		modelServiceClient := modelPB.NewModelServiceClient(clientConn)
 
 		service := service.NewService(pipelineRepository, modelServiceClient)
 
-		pipeline, err := service.GetPipelineByName(username, pipelineName)
+		pipeline, err := service.GetPipeline(ownerID, pipelineName)
 		if err != nil {
-			errorResponse(w, 400, "Pipeline not found", "Pipeline not found")
+			errorResponse(w, 400, "Bad Request", "Pipeline not found")
+			return
 		}
 
 		if err := r.ParseMultipartForm(4 << 20); err != nil {
 			errorResponse(w, 500, "Internal Error", "Error while reading file from request")
+			return
 		}
 
 		file, _, err := r.FormFile("contents")
 		if err != nil {
 			errorResponse(w, 500, "Internal Error", "Error while reading file from request")
+			return
 		}
 		defer file.Close()
 
@@ -363,10 +404,11 @@ func HandleUploadOutput(w http.ResponseWriter, r *http.Request, pathParams map[s
 		}
 		if err != io.EOF {
 			errorResponse(w, 500, "Internal Error", "Error while reading response from multipart")
+			return
 		}
 
 		var obj interface{}
-		if obj, err = service.TriggerPipelineByUpload(username, *buf, pipeline); err != nil {
+		if obj, err = service.TriggerPipelineByUpload(ownerID, *buf, pipeline); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

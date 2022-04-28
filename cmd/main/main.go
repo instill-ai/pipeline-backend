@@ -133,7 +133,7 @@ func main() {
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
 				UseProtoNames:   true,
-				EmitUnpopulated: true,
+				EmitUnpopulated: false,
 				UseEnumNumbers:  false,
 			},
 			UnmarshalOptions: protojson.UnmarshalOptions{
@@ -143,7 +143,7 @@ func main() {
 	)
 
 	// Register custom route for POST multipart form data
-	if err := gwS.HandlePath("POST", "/pipelines/{name}/upload/outputs", appendCustomHeaderMiddleware(handler.HandleUploadOutput)); err != nil {
+	if err := gwS.HandlePath("POST", "/pipelines/{name}/upload/outputs", appendCustomHeaderMiddleware(handler.HandleTriggerPipelineBinaryFileUpload)); err != nil {
 		panic(err)
 	}
 

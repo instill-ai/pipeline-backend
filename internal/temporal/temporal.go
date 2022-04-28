@@ -3,13 +3,10 @@ package temporal
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"go.temporal.io/sdk/client"
 
 	"github.com/instill-ai/pipeline-backend/configs"
-	"github.com/instill-ai/pipeline-backend/internal/definition"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/x/zapadapter"
@@ -74,13 +71,12 @@ func TriggerTemporalWorkflow(pipelineName string, recipe *datamodel.Recipe, uid 
 
 // Direct trigger: DS/DD kind are HTTP and no LO defined
 // NOTE: Before migrate inference-backend into pipeline-backend, there is one more criteria is only 1 VDO
-func IsDirect(recipe *datamodel.Recipe) bool {
+// func IsDirect(recipe *datamodel.Recipe) bool {
 
-	return (strings.ToLower(recipe.Source.Type) == definition.DataSourceKindDirect &&
-		strings.ToLower(recipe.Destination.Type) == definition.DataDestinationKindDirect &&
-		len(recipe.Model) == 1 &&
-		(recipe.LogicOperator == nil || len(recipe.LogicOperator) == 0))
-}
+// 	return (strings.ToLower(recipe.Source.Name) == definition.DataSourceKindDirect &&
+// 		strings.ToLower(recipe.Destination.Name) == definition.DataDestinationKindDirect &&
+// 		len(recipe.Models) == 1 && (recipe.Logics == nil || len(recipe.Logics) == 0))
+// }
 
 func recipeToDSLConfig(recipe *datamodel.Recipe, requestId string) worker.Workflow {
 	logger, _ := logger.GetZapLogger()
@@ -92,23 +88,23 @@ func recipeToDSLConfig(recipe *datamodel.Recipe, requestId string) worker.Workfl
 	logger.Debug(fmt.Sprintf("The data source configuration is: %+v", recipe.Source))
 
 	// Extracting visual data operator
-	logger.Debug(fmt.Sprintf("The visual data operator configuration is: %+v", recipe.Model))
-	for _, vdo := range recipe.Model {
+	logger.Debug(fmt.Sprintf("The visual data operator configuration is: %+v", recipe.Models))
+	for _, model := range recipe.Models {
 		visualDataOpActivity := worker.ActivityInvocation{
 			Name:      "VisualDataOperatorActivity",
 			Arguments: []string{"VDOModelId", "VDOVersion", "VDORequestId"},
 			Result:    "visualDataOperatorResult",
 		}
 
-		dslConfigVariables["VDOModelId"] = vdo.Name
-		dslConfigVariables["VDOVersion"] = strconv.FormatInt(int64(vdo.Version), 10)
+		dslConfigVariables["ModelName"] = model.ModelName
+		dslConfigVariables["ModelInstanceName"] = model.InstanceName
 		dslConfigVariables["VDORequestId"] = requestId
 
 		rootSequenceElement = append(rootSequenceElement, &worker.Statement{Activity: &visualDataOpActivity})
 	}
 
 	// Extracting logic operator
-	logger.Debug(fmt.Sprintf("The data logic operator configuration is: %+v", recipe.LogicOperator))
+	logger.Debug(fmt.Sprintf("The data logic operator configuration is: %+v", recipe.Logics))
 
 	// Extracting data destination
 	logger.Debug(fmt.Sprintf("The data destination configuration is: %+v", recipe.Destination))

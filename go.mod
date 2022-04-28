@@ -4,12 +4,13 @@ go 1.17
 
 require (
 	github.com/go-redis/redis/v8 v8.11.4
+	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/gogo/status v1.1.0
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/golang/mock v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
-	github.com/instill-ai/protogen-go v0.1.5-alpha.0.20220406002712-68dad8357630
+	github.com/instill-ai/protogen-go v0.1.5-alpha.0.20220428184514-d00db2869904
 	github.com/instill-ai/vdp v0.1.3-alpha.0.20220320033117-c3e0db375b45
 	github.com/instill-ai/x v0.1.0-alpha
 	github.com/knadh/koanf v1.4.0

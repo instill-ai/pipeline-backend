@@ -1,159 +1,120 @@
 package repository
 
 import (
-	"fmt"
-	"math"
+	"time"
 
+	"github.com/gofrs/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 
-	"github.com/instill-ai/pipeline-backend/internal/logger"
+	"github.com/instill-ai/pipeline-backend/internal/paginate"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+
+	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
+// Repository interface
 type Repository interface {
-	CreatePipeline(pipeline datamodel.Pipeline) error
-	ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint, uint, error)
-	GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error)
-	UpdatePipeline(pipeline datamodel.Pipeline) error
-	DeletePipeline(namespace string, pipelineName string) error
+	CreatePipeline(pipeline *datamodel.Pipeline) error
+	ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageCursor string) ([]datamodel.Pipeline, string, error)
+	GetPipeline(ownerID uuid.UUID, name string) (*datamodel.Pipeline, error)
+	UpdatePipeline(ownerID uuid.UUID, name string, pipeline *datamodel.Pipeline) error
+	DeletePipeline(ownerID uuid.UUID, name string) error
 }
 
 type repository struct {
 	db *gorm.DB
 }
 
+// NewRepository initiates a repository instance
 func NewRepository(db *gorm.DB) Repository {
 	return &repository{
 		db: db,
 	}
 }
 
-var GetpipelineelectField = []string{
-	"pipeline.id as id",
-	"pipeline.name",
-	"pipeline.description",
-	"pipeline.status",
-	"pipeline.created_at",
-	"pipeline.updated_at",
-	"Pipeline as kind",
-	"CONCAT(namespace, '/', name) as full_name",
-}
-
-var GetPipelineWithRecipeSelectField = []string{
-	"pipeline.id as id",
-	"pipeline.name",
-	"pipeline.description",
-	"pipeline.status",
-	"pipeline.created_at",
-	"pipeline.updated_at",
-	"pipeline.recipe",
-	"Pipeline as kind",
-	"CONCAT(namespace, '/', name) as full_name",
-}
-
-func (r *repository) CreatePipeline(pipeline datamodel.Pipeline) error {
-	l, _ := logger.GetZapLogger()
-
-	// We ignore the full_name column since it's a virtual column
-	if result := r.db.Model(&datamodel.Pipeline{}).
-		Omit("pipeline.full_name").
-		Create(&pipeline); result.Error != nil {
-		l.Error(fmt.Sprintf("Error occur: %v", result.Error))
+func (r *repository) CreatePipeline(pipeline *datamodel.Pipeline) error {
+	if result := r.db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
 		return status.Errorf(codes.Internal, "Error %v", result.Error)
 	}
-
 	return nil
 }
 
-func (r *repository) ListPipelines(query datamodel.ListPipelineQuery) ([]datamodel.Pipeline, uint, uint, error) {
-	var pipeline []datamodel.Pipeline
+func (r *repository) ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageCursor string) ([]datamodel.Pipeline, string, error) {
+	queryBuilder := r.db.Model(&datamodel.Pipeline{}).Order("created_at DESC, id DESC")
 
-	var count int64
-	r.db.Model(&datamodel.Pipeline{}).Where("namespace = ?", query.Namespace).Count(&count)
+	if pageSize > 0 {
+		queryBuilder = queryBuilder.Limit(pageSize)
+	}
 
-	var min uint
-	var max uint
-	if count > 0 {
-		rows, err := r.db.Model(&datamodel.Pipeline{}).
-			Select("MIN(id) AS min, MAX(id) as max").
-			Where("namespace = ?", query.Namespace).
-			Rows()
+	if pageCursor != "" {
+		createdAt, uuid, err := paginate.DecodeCursor(pageCursor)
 		if err != nil {
-			rows.Close()
-			return nil, 0, 0, status.Errorf(codes.Internal, "Error when query min & max value: %s", err.Error())
+			return nil, "", status.Errorf(codes.InvalidArgument, "Invalid page cursor: %s", err.Error())
 		}
-		if rows.Next() {
-			if err := rows.Scan(&min, &max); err != nil {
-				rows.Close()
-				return nil, 0, 0, status.Errorf(codes.Internal, "Can not fetch the min & max value: %s", err.Error())
-			}
+		queryBuilder = queryBuilder.Where("(created_at,id) < (?::timestamp, ?)", createdAt, uuid)
+	}
+
+	if view != pipelinePB.PipelineView_PIPELINE_VIEW_FULL {
+		queryBuilder.Omit("pipeline.recipe")
+	}
+
+	var pipelines []datamodel.Pipeline
+	var createdAt time.Time // only using one for all loops, we only need the latest one in the end
+	rows, err := queryBuilder.Rows()
+	if err != nil {
+		return nil, "", err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var item datamodel.Pipeline
+		if err = r.db.ScanRows(rows, &item); err != nil {
+			return nil, "", status.Errorf(codes.Internal, "Error %v", err.Error())
 		}
-		rows.Close()
+		createdAt = item.CreatedAt
+		pipelines = append(pipelines, item)
 	}
 
-	cursor := query.Cursor
-	if cursor <= 0 {
-		cursor = math.MaxInt64
+	if len(pipelines) > 0 {
+		nextPageCursor := paginate.EncodeCursor(createdAt, (pipelines)[len(pipelines)-1].ID.String())
+		return pipelines, nextPageCursor, nil
 	}
 
-	if query.WithRecipe {
-		r.db.Model(&datamodel.Pipeline{}).
-			Select(GetPipelineWithRecipeSelectField).
-			Where("namespace = ? AND id < ?", query.Namespace, cursor).
-			Limit(int(query.PageSize)).
-			Order("id desc").
-			Find(&pipeline)
-	} else {
-		r.db.Model(&datamodel.Pipeline{}).
-			Select(GetpipelineelectField).
-			Where("namespace = ? AND id < ?", query.Namespace, cursor).
-			Limit(int(query.PageSize)).
-			Order("id desc").
-			Find(&pipeline)
-	}
-
-	return pipeline, max, min, nil
+	return nil, "", nil
 }
 
-func (r *repository) GetPipelineByName(namespace string, pipelineName string) (datamodel.Pipeline, error) {
+func (r *repository) GetPipeline(ownerID uuid.UUID, name string) (*datamodel.Pipeline, error) {
 	var pipeline datamodel.Pipeline
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Select(GetPipelineWithRecipeSelectField).
-		Where("name = ? AND namespace = ?", pipelineName, namespace).
+		Where("owner_id = ? AND name = ?", ownerID, name).
 		First(&pipeline); result.Error != nil {
-		return datamodel.Pipeline{}, status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", pipelineName)
+		return nil, status.Errorf(codes.NotFound, "The pipeline name \"%s\" you specified is not found", name)
 	}
-	return pipeline, nil
+	return &pipeline, nil
 }
 
-func (r *repository) UpdatePipeline(pipeline datamodel.Pipeline) error {
-	l, _ := logger.GetZapLogger()
-
-	// We ignore the name column since it can not be updated
+func (r *repository) UpdatePipeline(ownerID uuid.UUID, name string, pipeline *datamodel.Pipeline) error {
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Omit("pipeline.name").
-		Where("name = ? AND namespace = ?", pipeline.Name, pipeline.Namespace).
+		Where("owner_id = ? AND name = ?", ownerID, name).
 		Updates(pipeline); result.Error != nil {
-		l.Error(fmt.Sprintf("Error occur: %v", result.Error))
 		return status.Errorf(codes.Internal, "Error %v", result.Error)
 	}
 	return nil
 }
 
-func (r *repository) DeletePipeline(namespace string, pipelineName string) error {
-	l, _ := logger.GetZapLogger()
+func (r *repository) DeletePipeline(ownerID uuid.UUID, name string) error {
+	result := r.db.Model(&datamodel.Pipeline{}).
+		Where("owner_id = ? AND name = ?", ownerID, name).
+		Delete(&datamodel.Pipeline{})
 
-	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("name = ? AND namespace = ?", pipelineName, namespace).
-		Delete(&datamodel.Pipeline{}); result.Error != nil {
-		l.Error(fmt.Sprintf("Error occur: %v", result.Error))
+	if result.Error != nil {
 		return status.Errorf(codes.Internal, "Error %v", result.Error)
-	} else {
-		if result.RowsAffected == 0 {
-			return status.Errorf(codes.NotFound, "The pipeline name %s does not exist", pipelineName)
-		}
 	}
+
+	if result.RowsAffected == 0 {
+		return status.Errorf(codes.NotFound, "The pipeline with name \"%s\" you specified is not found", name)
+	}
+
 	return nil
 }

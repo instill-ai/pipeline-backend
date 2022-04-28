@@ -26,10 +26,10 @@ func unaryAppendMetadataInterceptor(ctx context.Context, req interface{}, info *
 		return nil, status.Error(codes.Internal, "can not extract metadata")
 	}
 
-	md.Append("Username", "local-user")
+	// TODO: Replace with decoded JWT header
+	md.Append("owner_id", "2a06c2f7-8da9-4046-91ea-240f88a5d729")
 
 	newCtx := metadata.NewIncomingContext(ctx, md)
-
 	h, err := handler(newCtx, req)
 
 	return h, err
@@ -42,7 +42,8 @@ func streamAppendMetadataInterceptor(srv interface{}, stream grpc.ServerStream, 
 		return status.Error(codes.Internal, "can not extract metadata")
 	}
 
-	md.Append("Username", "local-user")
+	// TODO: Replace with decoded JWT header
+	md.Append("owner_id", "2a06c2f7-8da9-4046-91ea-240f88a5d729")
 
 	newCtx := metadata.NewIncomingContext(stream.Context(), md)
 	wrapped := grpc_middleware.WrapServerStream(stream)

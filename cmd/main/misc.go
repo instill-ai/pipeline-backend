@@ -25,6 +25,8 @@ func httpResponseModifier(ctx context.Context, w http.ResponseWriter, p proto.Me
 		// delete the headers to not expose any grpc-metadata in http response
 		delete(md.HeaderMD, "x-http-code")
 		delete(w.Header(), "Grpc-Metadata-X-Http-Code")
+		delete(w.Header(), "Grpc-Metadata-Content-Type")
+		delete(w.Header(), "Grpc-Metadata-Trailer")
 		w.WriteHeader(code)
 	}
 
@@ -37,9 +39,7 @@ func customMatcher(key string) (string, bool) {
 	}
 
 	switch key {
-	case "Request-Id":
-		return key, true
-	case "Username":
+	case "owner_id":
 		return key, true
 	default:
 		return runtime.DefaultHeaderMatcher(key)

@@ -1,23 +1,23 @@
 BEGIN;
-
-CREATE TABLE IF NOT EXISTS pipelines (
-  id SERIAL PRIMARY KEY,
-  ext_id varchar(20) NOT NULL,
-  name varchar(256) NOT NULL,
-  description text,
-  enabled boolean NOT NULL DEFAULT (false),
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  deleted_at timestamp,
-  recipe JSONB,
-  crontab varchar(13)
+CREATE TYPE valid_status AS ENUM (
+  'STATUS_UNSPECIFIED',
+  'STATUS_INACTIVATED',
+  'STATUS_ACTIVATED',
+  'STATUS_ERROR'
 );
-
-COMMENT ON COLUMN pipelines.ext_id IS 'the hash of the id';
-COMMENT ON COLUMN pipelines.name IS 'name of this pipeline';
-COMMENT ON COLUMN pipelines.description IS 'description of this pipeline';
-COMMENT ON COLUMN pipelines.enabled IS 'activate/deactivate pipeline';
-COMMENT ON COLUMN pipelines.recipe IS 'pipeline configration';
-COMMENT ON COLUMN pipelines.crontab IS 'the 6 * crontab format';
-
+CREATE TABLE IF NOT EXISTS public.pipeline (
+  id UUID NOT NULL,
+  owner_id UUID NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(1023) NULL,
+  recipe JSONB NOT NULL,
+  status VALID_STATUS NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL,
+  CONSTRAINT pipeline_pkey PRIMARY KEY (id)
+);
+ALTER TABLE public.pipeline
+ADD CONSTRAINT unique_owner_id_name_deleted_at UNIQUE (owner_id, name, deleted_at);
+CREATE INDEX pipeline_id_created_at_pagination ON public.pipeline (id, created_at);
 COMMIT;
