@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "https://github.com/instill-ai/pipeline-backend/blob/main/configs/models/standard-pipeline.json",
+  "title": "Pipeline",
+  "description": "The standard pipeline data structure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pipeline"
+  ],
+  "properties": {
+    "pipeline": {
+      "$ref": "#/definitions/Pipeline"
+    }
+  },
+  "definitions": {
+    "Pipeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "recipe"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "ID",
+          "description": "The unique ID",
+          "readOnly": true,
+          "instill_order": 0
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The pipeline name",
+          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*$",
+          "minLength": 1,
+          "maxLength": 100,
+          "instill_order": 1
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "description": "The pipeline description",
+          "minLength": 0,
+          "maxLength": 1024,
+          "instill_order": 2
+        },
+        "recipe": {
+          "type": "object",
+          "title": "Recipe",
+          "description": "The pipeline recipe",
+          "$ref": "#/definitions/Recipe",
+          "instill_order": 3
+        },
+        "mode": {
+          "type": "string",
+          "title": "Mode",
+          "description": "The pipeline mode",
+          "enum": [
+            "MODE_UNSPECIFIED",
+            "MODE_SYNC",
+            "MODE_ASYNC"
+          ],
+          "default": "MODE_UNSPECIFIED",
+          "readOnly": true,
+          "instill_order": 4
+        },
+        "status": {
+          "type": "string",
+          "title": "Status",
+          "description": "The pipeline status",
+          "enum": [
+            "STATUS_UNSPECIFIED",
+            "STATUS_INACTIVATED",
+            "STATUS_ACTIVATED",
+            "STATUS_ERROR"
+          ],
+          "default": "STATUS_UNSPECIFIED",
+          "readOnly": true,
+          "instill_order": 5
+        },
+        "owner_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Owner ID",
+          "description": "The pipeline owner ID",
+          "readOnly": true,
+          "instill_order": 6
+        },
+        "full_name": {
+          "type": "string",
+          "title": "Full name",
+          "description": "The pipeline full name",
+          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*/[A-Za-z0-9][a-zA-Z0-9_.-]*$",
+          "readOnly": true,
+          "instill_order": 7
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Created at",
+          "description": "The date when the pipeline is created in the format YYYY-MM-DDTHH:MM::SS",
+          "examples": [
+            "2022-04-29T00:20:06.703547Z"
+          ],
+          "readOnly": true,
+          "instill_order": 8
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Updated at",
+          "description": "The date when the pipeline is updated in the format YYYY-MM-DDTHH:MM::SS",
+          "examples": [
+            "2022-04-29T00:20:06.703547Z"
+          ],
+          "readOnly": true,
+          "instill_order": 9
+        }
+      }
+    },
+    "Recipe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "models",
+        "destination"
+      ],
+      "properties": {
+        "source": {
+          "type": "object",
+          "$ref": "#/definitions/Source",
+          "instill_order": 0
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Model"
+          },
+          "instill_order": 1
+        },
+        "destination": {
+          "type": "object",
+          "$ref": "#/definitions/Destination",
+          "instill_order": 2
+        }
+      }
+    },
+    "Source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The source connector name",
+          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*$",
+          "minLength": 1,
+          "maxLength": 100,
+          "instill_order": 0
+        }
+      }
+    },
+    "Model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "instance_name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The model name",
+          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*$",
+          "minLength": 1,
+          "maxLength": 100,
+          "instill_order": 0
+        },
+        "instance_name": {
+          "type": "string",
+          "title": "Instance name",
+          "description": "The model instance name",
+          "instill_order": 1
+        }
+      }
+    },
+    "Destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "description": "The source connector name",
+          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*$",
+          "minLength": 1,
+          "maxLength": 100,
+          "instill_order": 0
+        }
+      }
+    }
+  }
+}
