@@ -1,27 +1,29 @@
 package handler
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
+	"github.com/gofrs/uuid"
+	"github.com/gogo/status"
+	"github.com/iancoleman/strcase"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/gofrs/uuid"
-	"github.com/gogo/status"
+	fieldmask_utils "github.com/mennanov/fieldmask-utils"
+
 	"github.com/instill-ai/pipeline-backend/configs"
+	"github.com/instill-ai/pipeline-backend/internal/constant"
 	"github.com/instill-ai/pipeline-backend/internal/db"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -67,29 +69,16 @@ func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipe
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	dbRecipeByte, err := protojson.Marshal(req.Recipe)
+	dbPipeline, err := h.service.CreatePipeline(PBPipelineToDBPipeline(ownerID, req.GetPipeline()))
 	if err != nil {
-		return &pipelinePB.CreatePipelineResponse{}, err
+		// Manually set the custom header to have a StatusBadRequest http response for REST endpoint
+		if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusBadRequest))); err != nil {
+			return &pipelinePB.CreatePipelineResponse{Pipeline: &pipelinePB.Pipeline{Recipe: &pipelinePB.Recipe{}}}, err
+		}
+		return &pipelinePB.CreatePipelineResponse{Pipeline: &pipelinePB.Pipeline{}}, err
 	}
 
-	dbRecipe := datamodel.Recipe{}
-	if err := json.Unmarshal(dbRecipeByte, &dbRecipe); err != nil {
-		return &pipelinePB.CreatePipelineResponse{}, err
-	}
-
-	dbPipeline := &datamodel.Pipeline{
-		OwnerID:     ownerID,
-		Name:        req.Name,
-		Description: req.Description,
-		Recipe:      &dbRecipe,
-	}
-
-	dbPipeline, err = h.service.CreatePipeline(dbPipeline)
-	if err != nil {
-		return &pipelinePB.CreatePipelineResponse{}, err
-	}
-
-	pbPipeline := convertDBPipelineToPBPipeline(dbPipeline)
+	pbPipeline := DBPipelineToPBPipeline(dbPipeline)
 	resp := pipelinePB.CreatePipelineResponse{
 		Pipeline: pbPipeline,
 	}
@@ -109,19 +98,19 @@ func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipeline
 		return &pipelinePB.ListPipelineResponse{}, err
 	}
 
-	dbPipelines, nextPageCursor, err := h.service.ListPipeline(ownerID, req.GetView(), int(req.PageSize), req.PageCursor)
+	dbPipelines, NextPageToken, err := h.service.ListPipeline(ownerID, req.GetView(), int(req.GetPageSize()), req.GetPageToken())
 	if err != nil {
 		return &pipelinePB.ListPipelineResponse{}, err
 	}
 
 	pbPipelines := []*pipelinePB.Pipeline{}
 	for _, dbPipeline := range dbPipelines {
-		pbPipelines = append(pbPipelines, convertDBPipelineToPBPipeline(&dbPipeline))
+		pbPipelines = append(pbPipelines, DBPipelineToPBPipeline(&dbPipeline))
 	}
 
 	resp := pipelinePB.ListPipelineResponse{
-		Pipelines:      pbPipelines,
-		NextPageCursor: nextPageCursor,
+		Pipelines:     pbPipelines,
+		NextPageToken: NextPageToken,
 	}
 
 	return &resp, nil
@@ -134,12 +123,14 @@ func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRe
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.GetPipeline(ownerID, req.GetName())
+	displayName := strings.TrimPrefix(req.GetName(), "pipelines/")
+
+	dbPipeline, err := h.service.GetPipelineByDisplayName(displayName, ownerID)
 	if err != nil {
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	pbPipeline := convertDBPipelineToPBPipeline(dbPipeline)
+	pbPipeline := DBPipelineToPBPipeline(dbPipeline)
 	resp := pipelinePB.GetPipelineResponse{
 		Pipeline: pbPipeline,
 	}
@@ -154,51 +145,59 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	dbPipeline := &datamodel.Pipeline{
-		OwnerID: ownerID,
-		Name:    req.Name,
+	reqPipeline := req.GetPipeline()
+	reqUpdateMask := req.GetUpdateMask()
+
+	// Validate the field mask
+	if !reqUpdateMask.IsValid(reqPipeline) {
+		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.FailedPrecondition, "The `update_mask` is invalid")
 	}
 
-	if req.FieldMask != nil && len(req.FieldMask.Paths) > 0 {
-		dbPipeline.UpdatedAt = time.Now()
+	mask, err := fieldmask_utils.MaskFromProtoFieldMask(reqUpdateMask, strcase.ToCamel)
+	if err != nil {
+		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.FailedPrecondition, err.Error())
+	}
 
-		for _, field := range req.FieldMask.Paths {
-			switch field {
-			case "name":
-				dbPipeline.Name = req.PipelinePatch.Name
-			case "description":
-				dbPipeline.Description = req.PipelinePatch.Description
-			case "status":
-				dbPipeline.Status = datamodel.PipelineStatus(req.PipelinePatch.Status)
-			}
-			if strings.Contains(field, "recipe") {
-
-				dbRecipeByte, err := protojson.Marshal(req.PipelinePatch.Recipe)
-				if err != nil {
-					return &pipelinePB.UpdatePipelineResponse{}, err
-				}
-
-				dbRecipe := datamodel.Recipe{}
-				if err := json.Unmarshal(dbRecipeByte, &dbRecipe); err != nil {
-					return &pipelinePB.UpdatePipelineResponse{}, err
-				}
-
-				dbPipeline.Recipe = &dbRecipe
-			}
+	for _, field := range datamodel.OutputOnlyFields {
+		_, ok := mask.Filter(field)
+		if ok {
+			delete(mask, field)
 		}
 	}
 
-	dbPipeline, err = h.service.UpdatePipeline(ownerID, req.GetName(), dbPipeline)
+	getResp, err := h.GetPipeline(ctx, &pipelinePB.GetPipelineRequest{Name: reqPipeline.GetName()})
 	if err != nil {
-		return nil, err
+		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	pbPipeline := convertDBPipelineToPBPipeline(dbPipeline)
-	resp := pipelinePB.UpdatePipelineResponse{
-		Pipeline: pbPipeline,
+	if mask.IsEmpty() {
+		return &pipelinePB.UpdatePipelineResponse{
+			Pipeline: getResp.GetPipeline(),
+		}, nil
 	}
 
-	return &resp, nil
+	pbPipelineToUpdate := getResp.GetPipeline()
+	id, err := uuid.FromString(pbPipelineToUpdate.GetId())
+	if err != nil {
+		return &pipelinePB.UpdatePipelineResponse{}, err
+	}
+
+	// Only the fields mentioned in the field mask will be copied to `pbPipelineToUpdate`, other fields are left intact
+	err = fieldmask_utils.StructToStruct(mask, reqPipeline, pbPipelineToUpdate)
+	if err != nil {
+		return &pipelinePB.UpdatePipelineResponse{}, err
+	}
+
+	dbUserUpdated, err := h.service.UpdatePipeline(id, ownerID, PBPipelineToDBPipeline(ownerID, pbPipelineToUpdate))
+	if err != nil {
+		return &pipelinePB.UpdatePipelineResponse{}, err
+	}
+
+	updateResp := pipelinePB.UpdatePipelineResponse{
+		Pipeline: DBPipelineToPBPipeline(dbUserUpdated),
+	}
+
+	return &updateResp, nil
 }
 
 func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
@@ -208,7 +207,17 @@ func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipe
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
-	if err := h.service.DeletePipeline(ownerID, req.GetName()); err != nil {
+	existPipeline, err := h.GetPipeline(ctx, &pipelinePB.GetPipelineRequest{Name: req.GetName()})
+	if err != nil {
+		return &pipelinePB.DeletePipelineResponse{}, err
+	}
+
+	id, err := uuid.FromString(existPipeline.GetPipeline().Id)
+	if err != nil {
+		return &pipelinePB.DeletePipelineResponse{}, err
+	}
+
+	if err := h.service.DeletePipeline(id, ownerID); err != nil {
 		return nil, err
 	}
 
@@ -227,16 +236,18 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	pipeline, err := h.service.GetPipeline(ownerID, req.Name)
+	displayName := strings.TrimPrefix(req.GetName(), "pipelines/")
+
+	dbPipeline, err := h.service.GetPipelineByDisplayName(displayName, ownerID)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	if err := h.service.ValidateTriggerPipeline(ownerID, req.Name, pipeline); err != nil {
+	if err := h.service.ValidatePipeline(dbPipeline); err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	triggerModelResp, err := h.service.TriggerPipeline(ownerID, req, pipeline)
+	triggerModelResp, err := h.service.TriggerPipeline(req, dbPipeline)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
@@ -265,12 +276,14 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 		return status.Errorf(codes.Unknown, "Cannot receive trigger info")
 	}
 
-	pipeline, err := h.service.GetPipeline(ownerID, data.Name)
+	displayName := strings.TrimPrefix(data.GetName(), "pipelines/")
+
+	dbPipeline, err := h.service.GetPipelineByDisplayName(displayName, ownerID)
 	if err != nil {
 		return err
 	}
 
-	if err := h.service.ValidateTriggerPipeline(ownerID, data.Name, pipeline); err != nil {
+	if err := h.service.ValidatePipeline(dbPipeline); err != nil {
 		return err
 	}
 
@@ -296,7 +309,7 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 	}
 
 	var obj *modelPB.TriggerModelBinaryFileUploadResponse
-	if obj, err = h.service.TriggerPipelineByUpload(ownerID, buf, pipeline); err != nil {
+	if obj, err = h.service.TriggerPipelineBinaryFileUpload(buf, data.GetFileLengths(), dbPipeline); err != nil {
 		return err
 	}
 
@@ -317,24 +330,24 @@ func errorResponse(w http.ResponseWriter, status int, title string, detail strin
 }
 
 // HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
-func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 
 	logger, _ := logger.GetZapLogger()
 
-	contentType := r.Header.Get("Content-Type")
+	contentType := req.Header.Get("Content-Type")
 
 	if strings.Contains(contentType, "multipart/form-data") {
 
-		ownerIDString := r.Header.Get("owner_id")
-		pipelineName := pathParams["name"]
+		ownerIDString := req.Header.Get("owner_id")
+		pipelineDisplayName := pathParams["display_name"]
 
 		if ownerIDString == "" {
 			errorResponse(w, 400, "Bad Request", "Required parameter Jwt-Sub not found in the header")
 			return
 		}
 
-		if pipelineName == "" {
-			errorResponse(w, 400, "Bad Request", "Required parameter pipeline name not found in the path")
+		if pipelineDisplayName == "" {
+			errorResponse(w, 400, "Bad Request", "Required parameter pipeline display_name not found in the path")
 			return
 		}
 
@@ -373,42 +386,25 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, r *http.Reques
 
 		service := service.NewService(pipelineRepository, modelServiceClient)
 
-		pipeline, err := service.GetPipeline(ownerID, pipelineName)
+		dbPipeline, err := service.GetPipelineByDisplayName(pipelineDisplayName, ownerID)
 		if err != nil {
 			errorResponse(w, 400, "Bad Request", "Pipeline not found")
 			return
 		}
 
-		if err := r.ParseMultipartForm(4 << 20); err != nil {
+		if err := req.ParseMultipartForm(4 << 20); err != nil {
 			errorResponse(w, 500, "Internal Error", "Error while reading file from request")
 			return
 		}
 
-		file, _, err := r.FormFile("contents")
+		fileBytes, fileLengths, err := parseImageFormDataInputsToBytes(req)
 		if err != nil {
-			errorResponse(w, 500, "Internal Error", "Error while reading file from request")
-			return
-		}
-		defer file.Close()
-
-		reader := bufio.NewReader(file)
-		buf := bytes.NewBuffer(make([]byte, 0))
-		part := make([]byte, 1024)
-
-		count := 0
-		for {
-			if count, err = reader.Read(part); err != nil {
-				break
-			}
-			buf.Write(part[:count])
-		}
-		if err != io.EOF {
-			errorResponse(w, 500, "Internal Error", "Error while reading response from multipart")
+			errorResponse(w, 500, "Internal Error", "Error while reading files from request")
 			return
 		}
 
 		var obj interface{}
-		if obj, err = service.TriggerPipelineByUpload(ownerID, *buf, pipeline); err != nil {
+		if obj, err = service.TriggerPipelineBinaryFileUpload(*bytes.NewBuffer(fileBytes), fileLengths, dbPipeline); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -421,4 +417,38 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, r *http.Reques
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(405)
 	}
+}
+
+func parseImageFormDataInputsToBytes(req *http.Request) (fileBytes []byte, fileLengths []uint64, err error) {
+	inputs := req.MultipartForm.File["file"]
+	var file multipart.File
+	for _, content := range inputs {
+		file, err = content.Open()
+		defer func() {
+			err = file.Close()
+		}()
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("Unable to open file for image")
+		}
+
+		buff := new(bytes.Buffer)
+		numBytes, err := buff.ReadFrom(file)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Unable to read content body from image")
+		}
+
+		if numBytes > int64(constant.MaxImageSizeBytes) {
+			return nil, nil, fmt.Errorf(
+				"Image size must be smaller than %vMB. Got %vMB",
+				float32(constant.MaxImageSizeBytes)/float32(constant.MB),
+				float32(numBytes)/float32(constant.MB),
+			)
+		}
+
+		fileBytes = append(fileBytes, buff.Bytes()...)
+		fileLengths = append(fileLengths, uint64(buff.Len()))
+	}
+
+	return fileBytes, fileLengths, nil
 }

@@ -2,11 +2,8 @@ export const dogImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/
 
 export const numPipelines = 10
 
-export const detectionModel = {
-  name: "dummy-det",
-  instance_name: "latest",
-  version: 1 // TODO: DEPRECATE THIS
-};
+export const model_name = "dummy-det"
+export const model_instance_name = "latest"
 
 export const detectionRecipe = {
   recipe: {
@@ -14,7 +11,10 @@ export const detectionRecipe = {
       name: "HTTP",
     },
     models: [
-      detectionModel,
+      {
+        name: model_name,
+        instance_name: model_instance_name
+      }
     ],
     destination: {
       name: "HTTP",

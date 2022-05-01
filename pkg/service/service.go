@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -25,14 +24,14 @@ import (
 // Service interface
 type Service interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
-	ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageCursor string) ([]datamodel.Pipeline, string, error)
-	GetPipeline(ownerID uuid.UUID, name string) (*datamodel.Pipeline, error)
-	UpdatePipeline(ownerID uuid.UUID, name string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
-	DeletePipeline(ownerID uuid.UUID, name string) error
-	TriggerPipeline(ownerID uuid.UUID, req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelResponse, error)
-	TriggerPipelineByUpload(ownerID uuid.UUID, image bytes.Buffer, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error)
-	ValidateTriggerPipeline(ownerID uuid.UUID, name string, pipeline *datamodel.Pipeline) error
-	ValidateModel(ownerID uuid.UUID, selectedModel []*datamodel.Model) error
+	ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error)
+	GetPipelineByDisplayName(displayName string, ownerID uuid.UUID) (*datamodel.Pipeline, error)
+	UpdatePipeline(id uuid.UUID, ownerID uuid.UUID, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
+	DeletePipeline(id uuid.UUID, ownerID uuid.UUID) error
+	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelResponse, error)
+	TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error)
+	ValidatePipeline(pipeline *datamodel.Pipeline) error
+	ValidateModel(selectedModel []*datamodel.Model) error
 }
 
 type service struct {
@@ -51,8 +50,8 @@ func NewService(r repository.Repository, m modelPB.ModelServiceClient) Service {
 func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
 	// Validatation: Required field
-	if pipeline.Name == "" {
-		return nil, status.Error(codes.FailedPrecondition, "The required field name is not specified")
+	if pipeline.DisplayName == "" {
+		return nil, status.Error(codes.FailedPrecondition, "The required field display_name is not specified")
 	}
 
 	// Validatation: Required field
@@ -60,21 +59,34 @@ func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipel
 		return nil, status.Error(codes.FailedPrecondition, "The required field recipe is not specified")
 	}
 
-	// Validatation: Naming rule
-	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.Name); !match {
-		return nil, status.Error(codes.FailedPrecondition, "The name of pipeline is invalid")
+	// Validatation: display_name naming rule
+	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.DisplayName); !match {
+		return nil, status.Error(codes.FailedPrecondition, "The display_name of pipeline is invalid")
 	}
 
-	// Validation: Name length
-	if len(pipeline.Name) > 100 {
-		return nil, status.Error(codes.FailedPrecondition, "The name of pipeline has more than 100 characters")
+	// Validation: display_name length
+	if len(pipeline.DisplayName) > 100 {
+		return nil, status.Error(codes.FailedPrecondition, "The display_name of pipeline has more than 100 characters")
 	}
 
+	// Validation: Model availability
 	if pipeline.Recipe != nil && pipeline.Recipe.Models != nil && len(pipeline.Recipe.Models) > 0 {
-		err := s.ValidateModel(pipeline.OwnerID, pipeline.Recipe.Models)
+		err := s.ValidateModel(pipeline.Recipe.Models)
 		if err != nil {
-			return &datamodel.Pipeline{}, err
+			return nil, err
 		}
+	}
+
+	// Determine pipeline mode
+	if util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Source.Name) &&
+		util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Destination.Name) {
+		if pipeline.Recipe.Source.Name == pipeline.Recipe.Destination.Name {
+			pipeline.Mode = datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC)
+		} else {
+			return nil, status.Error(codes.FailedPrecondition, "Source and destination connector must be the same for directness connection type")
+		}
+	} else {
+		pipeline.Mode = datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC)
 	}
 
 	// TODO: Check connectors and model status to assign pipeline status
@@ -83,7 +95,7 @@ func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipel
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipeline(pipeline.OwnerID, pipeline.Name)
+	dbPipeline, err := s.GetPipelineByDisplayName(pipeline.DisplayName, pipeline.OwnerID)
 	if err != nil {
 		return nil, err
 	}
@@ -91,63 +103,52 @@ func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipel
 	return dbPipeline, nil
 }
 
-func (s *service) ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageCursor string) ([]datamodel.Pipeline, string, error) {
-	return s.repository.ListPipeline(ownerID, view, pageSize, pageCursor)
+func (s *service) ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error) {
+	return s.repository.ListPipeline(ownerID, view, pageSize, pageToken)
 }
 
-func (s *service) GetPipeline(ownerID uuid.UUID, name string) (*datamodel.Pipeline, error) {
-
-	// Validatation: Required field
-	if name == "" {
-		return nil, status.Error(codes.FailedPrecondition, "The required field name is not specified")
-	}
-
-	dbPipeline, err := s.repository.GetPipeline(ownerID, name)
+func (s *service) GetPipelineByDisplayName(displayName string, ownerID uuid.UUID) (*datamodel.Pipeline, error) {
+	dbPipeline, err := s.repository.GetPipelineByDisplayName(displayName, ownerID)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO: Use owner_id to query owner_name in mgmt-backend
-	dbPipeline.FullName = fmt.Sprintf("local-user/%s", dbPipeline.Name)
+	dbPipeline.FullName = fmt.Sprintf("local-user/%s", dbPipeline.DisplayName)
 
 	return dbPipeline, nil
 }
 
-func (s *service) UpdatePipeline(ownerID uuid.UUID, name string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
-
-	// Validatation: Required field
-	if name == "" {
-		return nil, status.Error(codes.FailedPrecondition, "The required field name not specify")
-	}
+func (s *service) UpdatePipeline(id uuid.UUID, ownerID uuid.UUID, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
 	// Validation: Pipeline existence
-	if existingPipeline, _ := s.GetPipeline(ownerID, name); existingPipeline == nil {
-		return nil, status.Errorf(codes.NotFound, "Pipeline name \"%s\" is not found", updatedPipeline.Name)
+	if existingPipeline, _ := s.repository.GetPipeline(id, ownerID); existingPipeline == nil {
+		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", id.String())
 	}
 
-	// Validatation: Naming rule
-	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", updatedPipeline.Name); !match {
-		return nil, status.Error(codes.FailedPrecondition, "The updated name of pipeline is invalid")
+	// Validatation: display_name naming rule
+	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", updatedPipeline.DisplayName); !match {
+		return nil, status.Error(codes.FailedPrecondition, "The display_name of pipeline is invalid")
 	}
 
-	// Validation: Name length
-	if len(updatedPipeline.Name) > 100 {
-		return nil, status.Error(codes.FailedPrecondition, "The updated name of pipeline has more than 100 characters")
+	// Validation: display_name length
+	if len(updatedPipeline.DisplayName) > 100 {
+		return nil, status.Error(codes.FailedPrecondition, "The display_name of pipeline has more than 100 characters")
 	}
 
 	// Validation: Model instance
 	if updatedPipeline.Recipe != nil && updatedPipeline.Recipe.Models != nil && len(updatedPipeline.Recipe.Models) > 0 {
-		err := s.ValidateModel(updatedPipeline.OwnerID, updatedPipeline.Recipe.Models)
+		err := s.ValidateModel(updatedPipeline.Recipe.Models)
 		if err != nil {
 			return &datamodel.Pipeline{}, err
 		}
 	}
 
-	if err := s.repository.UpdatePipeline(ownerID, name, updatedPipeline); err != nil {
+	if err := s.repository.UpdatePipeline(id, ownerID, updatedPipeline); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipeline(updatedPipeline.OwnerID, updatedPipeline.Name)
+	dbPipeline, err := s.GetPipelineByDisplayName(updatedPipeline.DisplayName, ownerID)
 	if err != nil {
 		return nil, err
 	}
@@ -155,48 +156,34 @@ func (s *service) UpdatePipeline(ownerID uuid.UUID, name string, updatedPipeline
 	return dbPipeline, nil
 }
 
-func (s *service) DeletePipeline(ownerID uuid.UUID, name string) error {
-	return s.repository.DeletePipeline(ownerID, name)
+func (s *service) DeletePipeline(id uuid.UUID, ownerID uuid.UUID) error {
+	return s.repository.DeletePipeline(id, ownerID)
 }
 
-func (s *service) ValidateTriggerPipeline(owerID uuid.UUID, name string, pipeline *datamodel.Pipeline) error {
+func (s *service) ValidatePipeline(pipeline *datamodel.Pipeline) error {
 
-	// Validation: Required field
-	if pipeline.Name == "" {
-		return status.Errorf(codes.NotFound, "The pipeline name %s you specified is not found", name)
-	}
-
-	// Validation: Pipeline is inactivated
+	// Validation: Pipeline is in inactivated status
 	if pipeline.Status == datamodel.PipelineStatus(pipelinePB.Pipeline_STATUS_INACTIVATED) {
 		return status.Error(codes.FailedPrecondition, "This pipeline is inactivated")
 	}
 
-	// Validation: Pipeline is error
+	// Validation: Pipeline is in error status
 	if pipeline.Status == datamodel.PipelineStatus(pipelinePB.Pipeline_STATUS_ERROR) {
 		return status.Error(codes.FailedPrecondition, "This pipeline has errors")
 	}
 
-	// Pipeline not belong to this requester
-	// TODO: Use owner_id to query owner_name in mgmt-backend
-	if !strings.Contains(pipeline.FullName, "local-user") {
-		return status.Error(codes.PermissionDenied, "You are not allowed to trigger this pipeline")
-	}
-
-	// TODO: The model that pipeline used is offline
-
 	return nil
 }
 
-func (s *service) TriggerPipeline(ownerID uuid.UUID, req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelResponse, error) {
+func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelResponse, error) {
 
 	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
-	if util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Source.Name) &&
-		util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Destination.Name) {
+	if pipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
 
-		m := pipeline.Recipe.Models[0]
+		model := pipeline.Recipe.Models[0]
 
 		var inputs []*modelPB.Input
 		for _, input := range req.Inputs {
@@ -216,8 +203,8 @@ func (s *service) TriggerPipeline(ownerID uuid.UUID, req *pipelinePB.TriggerPipe
 		}
 
 		resp, err := s.modelServiceClient.TriggerModel(ctx, &modelPB.TriggerModelRequest{
-			ModelName:    m.ModelName,
-			InstanceName: m.InstanceName,
+			ModelName:    model.Name,
+			InstanceName: model.InstanceName,
 			Inputs:       inputs,
 		})
 
@@ -232,11 +219,10 @@ func (s *service) TriggerPipeline(ownerID uuid.UUID, req *pipelinePB.TriggerPipe
 
 }
 
-func (s *service) TriggerPipelineByUpload(ownerID uuid.UUID, image bytes.Buffer, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
+func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelBinaryFileUploadResponse, error) {
 
 	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
-	if util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Source.Name) &&
-		util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Destination.Name) {
+	if pipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -250,8 +236,9 @@ func (s *service) TriggerPipelineByUpload(ownerID uuid.UUID, image bytes.Buffer,
 		}
 
 		err = stream.Send(&modelPB.TriggerModelBinaryFileUploadRequest{
-			ModelName:    pipeline.Recipe.Models[0].ModelName,
+			ModelName:    pipeline.Recipe.Models[0].Name,
 			InstanceName: pipeline.Recipe.Models[0].InstanceName,
+			FileLengths:  fileLengths,
 		})
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "cannot send data info to server: %s", err.Error())
@@ -261,7 +248,7 @@ func (s *service) TriggerPipelineByUpload(ownerID uuid.UUID, image bytes.Buffer,
 		buf := make([]byte, chunkSize)
 
 		for {
-			n, err := image.Read(buf)
+			n, err := fileBuf.Read(buf)
 			if err == io.EOF {
 				break
 			}
@@ -286,7 +273,7 @@ func (s *service) TriggerPipelineByUpload(ownerID uuid.UUID, image bytes.Buffer,
 
 }
 
-func (s *service) ValidateModel(ownerID uuid.UUID, selectedModels []*datamodel.Model) error {
+func (s *service) ValidateModel(selectedModels []*datamodel.Model) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -301,7 +288,7 @@ func (s *service) ValidateModel(ownerID uuid.UUID, selectedModels []*datamodel.M
 	for _, selectedModel := range selectedModels {
 		matchModel := false
 		for _, supportModel := range supportModelResp.Models {
-			if selectedModel.ModelName == supportModel.Name {
+			if selectedModel.Name == supportModel.Name {
 				for _, supportInstance := range supportModel.Instances {
 					if selectedModel.InstanceName == supportInstance.Name {
 						if supportInstance.Status == modelPB.ModelInstance_STATUS_ONLINE {
@@ -314,7 +301,7 @@ func (s *service) ValidateModel(ownerID uuid.UUID, selectedModels []*datamodel.M
 		}
 		if !matchModel {
 			hasInvalidModel = true
-			invalidErrorString += fmt.Sprintf("The model name %s with its instance %s you specified is not applicable\n", selectedModel.ModelName, selectedModel.InstanceName)
+			invalidErrorString += fmt.Sprintf("The model name %s with its instance %s you specified is not applicable\n", selectedModel.Name, selectedModel.InstanceName)
 		}
 	}
 

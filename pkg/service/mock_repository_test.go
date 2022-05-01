@@ -51,7 +51,7 @@ func (mr *MockRepositoryMockRecorder) CreatePipeline(arg0 interface{}) *gomock.C
 }
 
 // DeletePipeline mocks base method.
-func (m *MockRepository) DeletePipeline(arg0 uuid.UUID, arg1 string) error {
+func (m *MockRepository) DeletePipeline(arg0, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeletePipeline", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -65,7 +65,7 @@ func (mr *MockRepositoryMockRecorder) DeletePipeline(arg0, arg1 interface{}) *go
 }
 
 // GetPipeline mocks base method.
-func (m *MockRepository) GetPipeline(arg0 uuid.UUID, arg1 string) (*datamodel.Pipeline, error) {
+func (m *MockRepository) GetPipeline(arg0, arg1 uuid.UUID) (*datamodel.Pipeline, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPipeline", arg0, arg1)
 	ret0, _ := ret[0].(*datamodel.Pipeline)
@@ -77,6 +77,21 @@ func (m *MockRepository) GetPipeline(arg0 uuid.UUID, arg1 string) (*datamodel.Pi
 func (mr *MockRepositoryMockRecorder) GetPipeline(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipeline", reflect.TypeOf((*MockRepository)(nil).GetPipeline), arg0, arg1)
+}
+
+// GetPipelineByDisplayName mocks base method.
+func (m *MockRepository) GetPipelineByDisplayName(arg0 string, arg1 uuid.UUID) (*datamodel.Pipeline, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPipelineByDisplayName", arg0, arg1)
+	ret0, _ := ret[0].(*datamodel.Pipeline)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPipelineByDisplayName indicates an expected call of GetPipelineByDisplayName.
+func (mr *MockRepositoryMockRecorder) GetPipelineByDisplayName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByDisplayName", reflect.TypeOf((*MockRepository)(nil).GetPipelineByDisplayName), arg0, arg1)
 }
 
 // ListPipeline mocks base method.
@@ -96,7 +111,7 @@ func (mr *MockRepositoryMockRecorder) ListPipeline(arg0, arg1, arg2, arg3 interf
 }
 
 // UpdatePipeline mocks base method.
-func (m *MockRepository) UpdatePipeline(arg0 uuid.UUID, arg1 string, arg2 *datamodel.Pipeline) error {
+func (m *MockRepository) UpdatePipeline(arg0, arg1 uuid.UUID, arg2 *datamodel.Pipeline) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePipeline", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

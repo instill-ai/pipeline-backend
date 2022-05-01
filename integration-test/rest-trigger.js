@@ -10,9 +10,9 @@ import * as helper from "./helper.js"
 
 export function CheckTriggerImageDirect() {
 
-  var pipeline = Object.assign(
+  var reqBody = Object.assign(
     {
-      name: randomString(10),
+      display_name: randomString(10),
       description: randomString(50),
       status: "STATUS_ACTIVATED",
     },
@@ -21,38 +21,42 @@ export function CheckTriggerImageDirect() {
 
   group("Pipelines API: Trigger a pipeline", () => {
 
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(pipeline), {
+    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
       "POST /pipelines response status is 201": (r) => r.status === 201,
-      "POST /pipelines response pipeline name": (r) => r.json().pipeline.name === pipeline.name,
-      "POST /pipelines response pipeline description": (r) => r.json().pipeline.description === pipeline.description,
     });
 
     var payloadImageURL = {
       inputs: [
         {
-          imageUrl: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/dog.jpg",
         },
         {
-          imageUrl: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/dog.jpg",
+        },
+        {
+          image_url: "https://artifacts.instill.tech/dog.jpg",
+        },
+        {
+          image_url: "https://artifacts.instill.tech/dog.jpg",
         },
       ],
     };
 
-    check(http.request("POST", `${pipelineHost}/pipelines/${pipeline.name}/outputs`, JSON.stringify(payloadImageURL), {
+    check(http.request("POST", `${pipelineHost}/pipelines/${reqBody.display_name}/outputs`, JSON.stringify(payloadImageURL), {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /pipelines/${pipeline.name}/outputs (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /pipelines/${pipeline.name}/outputs (url) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === 1,
-      [`POST /pipelines/${pipeline.name}/outputs (url) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1, // TODO: Fix this in the next model-backend release
-      [`POST /pipelines/${pipeline.name}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].category`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].category === "test",
-      [`POST /pipelines/${pipeline.name}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
-      [`POST /pipelines/${pipeline.name}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].bounding_box`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].bounding_box !== undefined,
+      [`POST /pipelines/${reqBody.display_name}/outputs (url) response status is 200`]: (r) => r.status === 200,
+      [`POST /pipelines/${reqBody.display_name}/outputs (url) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === payloadImageURL.inputs.length,
+      [`POST /pipelines/${reqBody.display_name}/outputs (url) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
+      [`POST /pipelines/${reqBody.display_name}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].category`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].category === "test",
+      [`POST /pipelines/${reqBody.display_name}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
+      [`POST /pipelines/${reqBody.display_name}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].bounding_box`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].bounding_box !== undefined,
     });
 
     var payloadImageBase64 = {
@@ -66,41 +70,42 @@ export function CheckTriggerImageDirect() {
       ],
     };
 
-    check(http.request("POST", `${pipelineHost}/pipelines/${pipeline.name}/outputs`, JSON.stringify(payloadImageBase64), {
+    check(http.request("POST", `${pipelineHost}/pipelines/${reqBody.display_name}/outputs`, JSON.stringify(payloadImageBase64), {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /pipelines/${pipeline.name}/outputs (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /pipelines/${pipeline.name}/outputs (base64) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === 1,
-      [`POST /pipelines/${pipeline.name}/outputs (base64) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1, // TODO: Fix this in the next model-backend release
-      [`POST /pipelines/${pipeline.name}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].category`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].category === "test",
-      [`POST /pipelines/${pipeline.name}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
-      [`POST /pipelines/${pipeline.name}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].bounding_box`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].bounding_box !== undefined,
+      [`POST /pipelines/${reqBody.display_name}/outputs (base64) response status is 200`]: (r) => r.status === 200,
+      [`POST /pipelines/${reqBody.display_name}/outputs (base64) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === payloadImageBase64.inputs.length,
+      [`POST /pipelines/${reqBody.display_name}/outputs (base64) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
+      [`POST /pipelines/${reqBody.display_name}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].category`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].category === "test",
+      [`POST /pipelines/${reqBody.display_name}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
+      [`POST /pipelines/${reqBody.display_name}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].bounding_box`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].bounding_box !== undefined,
     });
 
     const fd = new FormData();
-    fd.append("contents", http.file(constant.dogImg));
-    fd.append("contents", http.file(constant.dogImg));
-    fd.append("contents", http.file(constant.dogImg));
-
-    check(http.request("POST", `${pipelineHost}/pipelines/${pipeline.name}/upload/outputs`, fd.body(), {
+    fd.append("file", http.file(constant.dogImg));
+    fd.append("file", http.file(constant.dogImg));
+    fd.append("file", http.file(constant.dogImg));
+    check(http.request("POST", `${pipelineHost}/pipelines/${reqBody.display_name}/upload/outputs`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
     }), {
-      [`POST /pipelines/${pipeline.name}/outputs (multipart) response status is 200`]: (r) => r.status === 200,
-      [`POST /pipelines/${pipeline.name}/outputs (multipart) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === 1, // TODO: Fix this in the next model-backend release
-      [`POST /pipelines/${pipeline.name}/outputs (multipart) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
+      [`POST /pipelines/${reqBody.display_name}/outputs (multipart) response status is 200`]: (r) => r.status === 200,
+      [`POST /pipelines/${reqBody.display_name}/outputs (multipart) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === fd.parts.length,
+      [`POST /pipelines/${reqBody.display_name}/outputs (multipart) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
+      [`POST /pipelines/${reqBody.display_name}/outputs (multipart) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
     });
+
   });
 
   // Delete the pipeline
-  check(http.request("DELETE", `${pipelineHost}/pipelines/${pipeline.name}`, null, {
+  check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.display_name}`, null, {
     headers: {
       "Content-Type": "application/json",
     },
   }), {
-    [`DELETE /pipelines/${pipeline.name} response status 204`]: (r) => r.status === 204,
+    [`DELETE /pipelines/${reqBody.display_name} response status 204`]: (r) => r.status === 204,
   });
 }

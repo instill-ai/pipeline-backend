@@ -12,10 +12,11 @@ FROM gcr.io/distroless/base AS runtime
 
 WORKDIR /pipeline-backend
 
-COPY --from=build /pipeline-backend ./
-COPY --from=build /pipeline-backend-migrate ./
-COPY --from=build /go/src/configs ./configs
 COPY --from=build /go/src/internal/db/migration ./internal/db/migration
+COPY --from=build /pipeline-backend-migrate ./
+
+COPY --from=build /go/src/configs ./configs
+COPY --from=build /pipeline-backend ./
 
 EXPOSE 8080/tcp
 ENTRYPOINT ["./pipeline-backend"]

@@ -96,7 +96,7 @@ func recipeToDSLConfig(recipe *datamodel.Recipe, requestId string) worker.Workfl
 			Result:    "visualDataOperatorResult",
 		}
 
-		dslConfigVariables["ModelName"] = model.ModelName
+		dslConfigVariables["ModelName"] = model.Name
 		dslConfigVariables["ModelInstanceName"] = model.InstanceName
 		dslConfigVariables["VDORequestId"] = requestId
 

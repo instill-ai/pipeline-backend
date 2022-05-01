@@ -10,10 +10,12 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
-	github.com/instill-ai/protogen-go v0.1.5-alpha.0.20220428184514-d00db2869904
-	github.com/instill-ai/vdp v0.1.3-alpha.0.20220320033117-c3e0db375b45
+	github.com/iancoleman/strcase v0.2.0
+	github.com/instill-ai/protogen-go v0.1.5-alpha.0.20220501205239-e6c02a393f6c
+	github.com/instill-ai/vdp v0.1.6-alpha
 	github.com/instill-ai/x v0.1.0-alpha
 	github.com/knadh/koanf v1.4.0
+	github.com/mennanov/fieldmask-utils v0.5.0
 	github.com/stretchr/testify v1.7.0
 	go.temporal.io/sdk v1.13.1
 	go.uber.org/zap v1.21.0
@@ -51,6 +53,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/stretchr/objx v0.3.0 // indirect

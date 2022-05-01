@@ -1,6 +1,7 @@
 package datamodel
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
@@ -13,12 +14,15 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
+// OutputOnlyFields are Protobuf message fields with OUTPUT_ONLY annotation
+var OutputOnlyFields = []string{"Name", "ID", "Id", "Mode", "OwnerId", "FullName", "CreateTime", "UpdateTime"}
+
 // BaseDynamic contains common columns for all tables with dynamic UUID as primary key generated when creating
 type BaseDynamic struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time `sql:"index"`
+	ID         uuid.UUID      `gorm:"type:uuid;primary_key;<-:create"` // allow read and create
+	CreateTime time.Time      `gorm:"autoCreateTime:nano"`
+	UpdateTime time.Time      `gorm:"autoUpdateTime:nano"`
+	DeleteTime gorm.DeletedAt `sql:"index"`
 }
 
 // BeforeCreate will set a UUID rather than numeric ID.
@@ -35,13 +39,28 @@ func (base *BaseDynamic) BeforeCreate(db *gorm.DB) error {
 type Pipeline struct {
 	BaseDynamic
 	OwnerID     uuid.UUID
-	Name        string
-	Description string
+	DisplayName string
+	Description sql.NullString
+	Mode        PipelineMode
 	Status      PipelineStatus
 	Recipe      *Recipe `gorm:"type:jsonb"`
 
 	// Output-only field
 	FullName string `gorm:"-"`
+}
+
+// PipelineMode is an alias type for Protobuf enum Pipeline.Mode
+type PipelineMode pipelinePB.Pipeline_Mode
+
+// Scan function for custom GORM type PipelineStatus
+func (c *PipelineMode) Scan(value interface{}) error {
+	*c = PipelineMode(pipelinePB.Pipeline_Mode_value[value.(string)])
+	return nil
+}
+
+// Value function for custom GORM type PipelineStatus
+func (c PipelineMode) Value() (driver.Value, error) {
+	return pipelinePB.Pipeline_Mode(c).String(), nil
 }
 
 // PipelineStatus is an alias type for Protobuf enum Pipeline.Status
@@ -68,18 +87,18 @@ type Recipe struct {
 
 // Source is the data model of source connector
 type Source struct {
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 // Destination is the data model of destination connector
 type Destination struct {
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 // Model is the data model of model
 type Model struct {
-	ModelName    string `json:"name,omitempty"`
-	InstanceName string `json:"instance_name,omitempty"`
+	Name         string `json:"name"`
+	InstanceName string `json:"instance_name"`
 }
 
 // Logic is the data model of logic operator

@@ -4,6 +4,7 @@ package service_test
 //go:generate mockgen -destination mock_model_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/model/v1alpha ModelServiceClient
 
 import (
+	"database/sql"
 	"testing"
 
 	uuid "github.com/gofrs/uuid"
@@ -13,10 +14,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
-	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
+var ID = uuid.UUID{}
 var OwnerID = uuid.UUID{}
 
 func TestCreatePipeline(t *testing.T) {
@@ -24,16 +25,28 @@ func TestCreatePipeline(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
 		normalPipeline := datamodel.Pipeline{
-			Name:        "awesome",
-			Description: "awesome pipeline",
+			DisplayName: "awesome",
 			OwnerID:     OwnerID,
-			Recipe:      &datamodel.Recipe{},
+
+			Recipe: &datamodel.Recipe{
+				Source: &datamodel.Source{
+					Name: "HTTP",
+				},
+				Destination: &datamodel.Destination{
+					Name: "HTTP",
+				},
+			},
+
+			Description: sql.NullString{
+				String: "awesome pipeline",
+				Valid:  true,
+			},
 		}
 
 		mockRepository := NewMockRepository(ctrl)
 		mockRepository.
 			EXPECT().
-			GetPipeline(gomock.Eq(normalPipeline.OwnerID), gomock.Eq(normalPipeline.Name)).
+			GetPipelineByDisplayName(gomock.Eq(normalPipeline.DisplayName), gomock.Eq(normalPipeline.OwnerID)).
 			Return(&normalPipeline, nil).
 			Times(1)
 		mockRepository.
@@ -56,26 +69,35 @@ func TestUpdatePipeline(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
 		normalPipeline := datamodel.Pipeline{
-			Name:        "awesome",
-			Description: "awesome pipeline",
+			DisplayName: "awesome",
 			OwnerID:     OwnerID,
+
+			Description: sql.NullString{
+				String: "awesome pipeline",
+				Valid:  true,
+			},
 		}
 		mockRepository := NewMockRepository(ctrl)
 		mockRepository.
 			EXPECT().
-			GetPipeline(gomock.Eq(OwnerID), gomock.Eq(normalPipeline.Name)).
+			GetPipeline(gomock.Eq(ID), gomock.Eq(normalPipeline.OwnerID)).
 			Return(&normalPipeline, nil).
-			Times(2)
+			Times(1)
 		mockRepository.
 			EXPECT().
-			UpdatePipeline(gomock.Eq(OwnerID), gomock.Eq(normalPipeline.Name), gomock.Eq(&normalPipeline)).
+			GetPipelineByDisplayName(gomock.Eq(normalPipeline.DisplayName), gomock.Eq(normalPipeline.OwnerID)).
+			Return(&normalPipeline, nil).
+			Times(1)
+		mockRepository.
+			EXPECT().
+			UpdatePipeline(gomock.Eq(ID), gomock.Eq(OwnerID), gomock.Eq(&normalPipeline)).
 			Return(nil)
 
 		mockModelServiceClient := NewMockModelServiceClient(ctrl)
 
 		s := service.NewService(mockRepository, mockModelServiceClient)
 
-		_, err := s.UpdatePipeline(OwnerID, normalPipeline.Name, &normalPipeline)
+		_, err := s.UpdatePipeline(ID, OwnerID, &normalPipeline)
 
 		assert.NoError(t, err)
 	})
@@ -87,14 +109,19 @@ func TestTriggerPipeline(t *testing.T) {
 
 		var recipeModels []*datamodel.Model
 		recipeModels = append(recipeModels, &datamodel.Model{
-			ModelName:    "yolov4",
+			Name:         "yolov4",
 			InstanceName: "latest",
 		})
 
 		normalPipeline := datamodel.Pipeline{
-			Name:        "awesome",
-			Description: "awesome pipeline",
+			DisplayName: "awesome",
 			OwnerID:     OwnerID,
+
+			Description: sql.NullString{
+				String: "awesome pipeline",
+				Valid:  true,
+			},
+
 			Recipe: &datamodel.Recipe{
 				Source: &datamodel.Source{
 					Name: "HTTP",
@@ -106,19 +133,8 @@ func TestTriggerPipeline(t *testing.T) {
 			},
 		}
 
-		var modelInputs []*modelPB.Input
-		modelInputs = append(modelInputs, &modelPB.Input{
-			Type: &modelPB.Input_ImageUrl{ImageUrl: "https://artifacts.instill.tech/dog.jpg"},
-		})
-
 		mockRepository := NewMockRepository(ctrl)
 		mockModelServiceClient := NewMockModelServiceClient(ctrl)
-
-		mockModelServiceClient.EXPECT().TriggerModel(gomock.Any(), gomock.Eq(&modelPB.TriggerModelRequest{
-			ModelName:    "yolov4",
-			InstanceName: "latest",
-			Inputs:       modelInputs,
-		}))
 
 		var pipelineInputs []*pipelinePB.Input
 		pipelineInputs = append(pipelineInputs, &pipelinePB.Input{
@@ -127,7 +143,7 @@ func TestTriggerPipeline(t *testing.T) {
 
 		s := service.NewService(mockRepository, mockModelServiceClient)
 
-		_, err := s.TriggerPipeline(OwnerID, &pipelinePB.TriggerPipelineRequest{Inputs: pipelineInputs}, &normalPipeline)
+		_, err := s.TriggerPipeline(&pipelinePB.TriggerPipelineRequest{Inputs: pipelineInputs}, &normalPipeline)
 
 		assert.NoError(t, err)
 	})
