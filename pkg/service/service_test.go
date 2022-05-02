@@ -25,8 +25,8 @@ func TestCreatePipeline(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
 		normalPipeline := datamodel.Pipeline{
-			DisplayName: "awesome",
-			OwnerID:     OwnerID,
+			Name:    "awesome",
+			OwnerID: OwnerID,
 
 			Recipe: &datamodel.Recipe{
 				Source: &datamodel.Source{
@@ -46,7 +46,7 @@ func TestCreatePipeline(t *testing.T) {
 		mockRepository := NewMockRepository(ctrl)
 		mockRepository.
 			EXPECT().
-			GetPipelineByDisplayName(gomock.Eq(normalPipeline.DisplayName), gomock.Eq(normalPipeline.OwnerID)).
+			GetPipelineByName(gomock.Eq(normalPipeline.Name), gomock.Eq(normalPipeline.OwnerID)).
 			Return(&normalPipeline, nil).
 			Times(1)
 		mockRepository.
@@ -69,8 +69,8 @@ func TestUpdatePipeline(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
 		normalPipeline := datamodel.Pipeline{
-			DisplayName: "awesome",
-			OwnerID:     OwnerID,
+			Name:    "awesome",
+			OwnerID: OwnerID,
 
 			Description: sql.NullString{
 				String: "awesome pipeline",
@@ -85,7 +85,7 @@ func TestUpdatePipeline(t *testing.T) {
 			Times(1)
 		mockRepository.
 			EXPECT().
-			GetPipelineByDisplayName(gomock.Eq(normalPipeline.DisplayName), gomock.Eq(normalPipeline.OwnerID)).
+			GetPipelineByName(gomock.Eq(normalPipeline.Name), gomock.Eq(normalPipeline.OwnerID)).
 			Return(&normalPipeline, nil).
 			Times(1)
 		mockRepository.
@@ -114,8 +114,8 @@ func TestTriggerPipeline(t *testing.T) {
 		})
 
 		normalPipeline := datamodel.Pipeline{
-			DisplayName: "awesome",
-			OwnerID:     OwnerID,
+			Name:    "awesome",
+			OwnerID: OwnerID,
 
 			Description: sql.NullString{
 				String: "awesome pipeline",

@@ -196,12 +196,12 @@ export function CheckGet() {
       [`GET /pipelines/${reqBody.display_name} response pipeline recipe`]: (r) => r.json().pipeline.recipe !== undefined,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines/this-name-does-not-exist`, null, {
+    check(http.request("GET", `${pipelineHost}/pipelines/this-display_name-does-not-exist`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      "GET /pipelines/this-name-does-not-exist response status is 404": (r) => r.status === 404,
+      "GET /pipelines/this-display_name-does-not-exist response status is 404": (r) => r.status === 404,
     });
 
     // Delete the pipeline
@@ -277,13 +277,13 @@ export function CheckUpdate() {
       [`PATCH /pipelines/${reqBodyUpdate.display_name} response pipeline description`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
     });
 
-    check(http.request("PATCH", `${pipelineHost}/pipelines/this-name-does-not-exist`,
+    check(http.request("PATCH", `${pipelineHost}/pipelines/this-display_name-does-not-exist`,
       JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      "PATCH /pipelines/this-name-does-not-exist response status is 404": (r) => r.status === 404,
+      "PATCH /pipelines/this-display_name-does-not-exist response status is 404": (r) => r.status === 404,
     });
 
     // Delete the pipeline

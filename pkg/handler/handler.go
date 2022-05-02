@@ -123,9 +123,9 @@ func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRe
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	displayName := strings.TrimPrefix(req.GetName(), "pipelines/")
+	name := strings.TrimPrefix(req.GetName(), "pipelines/")
 
-	dbPipeline, err := h.service.GetPipelineByDisplayName(displayName, ownerID)
+	dbPipeline, err := h.service.GetPipelineByName(name, ownerID)
 	if err != nil {
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
@@ -236,9 +236,9 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	displayName := strings.TrimPrefix(req.GetName(), "pipelines/")
+	name := strings.TrimPrefix(req.GetName(), "pipelines/")
 
-	dbPipeline, err := h.service.GetPipelineByDisplayName(displayName, ownerID)
+	dbPipeline, err := h.service.GetPipelineByName(name, ownerID)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
@@ -276,9 +276,9 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 		return status.Errorf(codes.Unknown, "Cannot receive trigger info")
 	}
 
-	displayName := strings.TrimPrefix(data.GetName(), "pipelines/")
+	name := strings.TrimPrefix(data.GetName(), "pipelines/")
 
-	dbPipeline, err := h.service.GetPipelineByDisplayName(displayName, ownerID)
+	dbPipeline, err := h.service.GetPipelineByName(name, ownerID)
 	if err != nil {
 		return err
 	}
@@ -339,15 +339,15 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 	if strings.Contains(contentType, "multipart/form-data") {
 
 		ownerIDString := req.Header.Get("owner_id")
-		pipelineDisplayName := pathParams["display_name"]
+		pipelineName := pathParams["name"]
 
 		if ownerIDString == "" {
 			errorResponse(w, 400, "Bad Request", "Required parameter Jwt-Sub not found in the header")
 			return
 		}
 
-		if pipelineDisplayName == "" {
-			errorResponse(w, 400, "Bad Request", "Required parameter pipeline display_name not found in the path")
+		if pipelineName == "" {
+			errorResponse(w, 400, "Bad Request", "Required parameter pipeline name not found in the path")
 			return
 		}
 
@@ -386,7 +386,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		service := service.NewService(pipelineRepository, modelServiceClient)
 
-		dbPipeline, err := service.GetPipelineByDisplayName(pipelineDisplayName, ownerID)
+		dbPipeline, err := service.GetPipelineByName(pipelineName, ownerID)
 		if err != nil {
 			errorResponse(w, 400, "Bad Request", "Pipeline not found")
 			return

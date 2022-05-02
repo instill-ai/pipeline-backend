@@ -25,7 +25,7 @@ import (
 type Service interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
 	ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error)
-	GetPipelineByDisplayName(displayName string, ownerID uuid.UUID) (*datamodel.Pipeline, error)
+	GetPipelineByName(name string, ownerID uuid.UUID) (*datamodel.Pipeline, error)
 	UpdatePipeline(id uuid.UUID, ownerID uuid.UUID, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
 	DeletePipeline(id uuid.UUID, ownerID uuid.UUID) error
 	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelResponse, error)
@@ -50,8 +50,8 @@ func NewService(r repository.Repository, m modelPB.ModelServiceClient) Service {
 func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
 	// Validatation: Required field
-	if pipeline.DisplayName == "" {
-		return nil, status.Error(codes.FailedPrecondition, "The required field display_name is not specified")
+	if pipeline.Name == "" {
+		return nil, status.Error(codes.FailedPrecondition, "The required field name is not specified")
 	}
 
 	// Validatation: Required field
@@ -59,14 +59,14 @@ func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipel
 		return nil, status.Error(codes.FailedPrecondition, "The required field recipe is not specified")
 	}
 
-	// Validatation: display_name naming rule
-	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.DisplayName); !match {
-		return nil, status.Error(codes.FailedPrecondition, "The display_name of pipeline is invalid")
+	// Validatation: name naming rule
+	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.Name); !match {
+		return nil, status.Error(codes.FailedPrecondition, "The name of pipeline is invalid")
 	}
 
-	// Validation: display_name length
-	if len(pipeline.DisplayName) > 100 {
-		return nil, status.Error(codes.FailedPrecondition, "The display_name of pipeline has more than 100 characters")
+	// Validation: name length
+	if len(pipeline.Name) > 100 {
+		return nil, status.Error(codes.FailedPrecondition, "The name of pipeline has more than 100 characters")
 	}
 
 	// Validation: Model availability
@@ -95,7 +95,7 @@ func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipel
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipelineByDisplayName(pipeline.DisplayName, pipeline.OwnerID)
+	dbPipeline, err := s.GetPipelineByName(pipeline.Name, pipeline.OwnerID)
 	if err != nil {
 		return nil, err
 	}
@@ -107,14 +107,14 @@ func (s *service) ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, 
 	return s.repository.ListPipeline(ownerID, view, pageSize, pageToken)
 }
 
-func (s *service) GetPipelineByDisplayName(displayName string, ownerID uuid.UUID) (*datamodel.Pipeline, error) {
-	dbPipeline, err := s.repository.GetPipelineByDisplayName(displayName, ownerID)
+func (s *service) GetPipelineByName(name string, ownerID uuid.UUID) (*datamodel.Pipeline, error) {
+	dbPipeline, err := s.repository.GetPipelineByName(name, ownerID)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO: Use owner_id to query owner_name in mgmt-backend
-	dbPipeline.FullName = fmt.Sprintf("local-user/%s", dbPipeline.DisplayName)
+	dbPipeline.FullName = fmt.Sprintf("local-user/%s", dbPipeline.Name)
 
 	return dbPipeline, nil
 }
@@ -126,14 +126,14 @@ func (s *service) UpdatePipeline(id uuid.UUID, ownerID uuid.UUID, updatedPipelin
 		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", id.String())
 	}
 
-	// Validatation: display_name naming rule
-	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", updatedPipeline.DisplayName); !match {
-		return nil, status.Error(codes.FailedPrecondition, "The display_name of pipeline is invalid")
+	// Validatation: name naming rule
+	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", updatedPipeline.Name); !match {
+		return nil, status.Error(codes.FailedPrecondition, "The name of pipeline is invalid")
 	}
 
-	// Validation: display_name length
-	if len(updatedPipeline.DisplayName) > 100 {
-		return nil, status.Error(codes.FailedPrecondition, "The display_name of pipeline has more than 100 characters")
+	// Validation: name length
+	if len(updatedPipeline.Name) > 100 {
+		return nil, status.Error(codes.FailedPrecondition, "The name of pipeline has more than 100 characters")
 	}
 
 	// Validation: Model instance
@@ -148,7 +148,7 @@ func (s *service) UpdatePipeline(id uuid.UUID, ownerID uuid.UUID, updatedPipelin
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipelineByDisplayName(updatedPipeline.DisplayName, ownerID)
+	dbPipeline, err := s.GetPipelineByName(updatedPipeline.Name, ownerID)
 	if err != nil {
 		return nil, err
 	}

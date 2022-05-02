@@ -21,10 +21,10 @@ func PBPipelineToDBPipeline(ownerID uuid.UUID, pbPipeline *pipelinePB.Pipeline) 
 	logger, _ := logger.GetZapLogger()
 
 	return &datamodel.Pipeline{
-		OwnerID:     ownerID,
-		DisplayName: pbPipeline.GetDisplayName(),
-		Mode:        datamodel.PipelineMode(pbPipeline.GetMode()),
-		Status:      datamodel.PipelineStatus(pbPipeline.GetStatus()),
+		OwnerID: ownerID,
+		Name:    pbPipeline.GetDisplayName(),
+		Mode:    datamodel.PipelineMode(pbPipeline.GetMode()),
+		Status:  datamodel.PipelineStatus(pbPipeline.GetStatus()),
 
 		BaseDynamic: datamodel.BaseDynamic{
 			ID: func() uuid.UUID {
@@ -79,9 +79,9 @@ func DBPipelineToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline
 	logger, _ := logger.GetZapLogger()
 
 	return &pipelinePB.Pipeline{
-		Name:        fmt.Sprintf("pipelines/%s", dbPipeline.DisplayName),
+		Name:        fmt.Sprintf("pipelines/%s", dbPipeline.Name),
 		Id:          dbPipeline.BaseDynamic.ID.String(),
-		DisplayName: dbPipeline.DisplayName,
+		DisplayName: dbPipeline.Name,
 		Mode:        pipelinePB.Pipeline_Mode(dbPipeline.Mode),
 		Status:      pipelinePB.Pipeline_Status(dbPipeline.Status),
 		OwnerId:     dbPipeline.OwnerID.String(),

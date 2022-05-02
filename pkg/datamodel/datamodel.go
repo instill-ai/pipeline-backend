@@ -39,7 +39,7 @@ func (base *BaseDynamic) BeforeCreate(db *gorm.DB) error {
 type Pipeline struct {
 	BaseDynamic
 	OwnerID     uuid.UUID
-	DisplayName string
+	Name        string
 	Description sql.NullString
 	Mode        PipelineMode
 	Status      PipelineStatus

@@ -19,7 +19,7 @@ type Repository interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) error
 	ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error)
 	GetPipeline(id uuid.UUID, ownerID uuid.UUID) (*datamodel.Pipeline, error)
-	GetPipelineByDisplayName(displayName string, ownerID uuid.UUID) (*datamodel.Pipeline, error)
+	GetPipelineByName(name string, ownerID uuid.UUID) (*datamodel.Pipeline, error)
 	UpdatePipeline(id uuid.UUID, ownerID uuid.UUID, pipeline *datamodel.Pipeline) error
 	DeletePipeline(id uuid.UUID, ownerID uuid.UUID) error
 }
@@ -95,12 +95,12 @@ func (r *repository) GetPipeline(id uuid.UUID, ownerID uuid.UUID) (*datamodel.Pi
 	return &pipeline, nil
 }
 
-func (r *repository) GetPipelineByDisplayName(displayName string, ownerID uuid.UUID) (*datamodel.Pipeline, error) {
+func (r *repository) GetPipelineByName(name string, ownerID uuid.UUID) (*datamodel.Pipeline, error) {
 	var pipeline datamodel.Pipeline
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("display_name = ? AND owner_id = ?", displayName, ownerID).
+		Where("name = ? AND owner_id = ?", name, ownerID).
 		First(&pipeline); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "The pipeline display_name \"%s\" you specified is not found", displayName)
+		return nil, status.Errorf(codes.NotFound, "The pipeline name \"%s\" you specified is not found", name)
 	}
 	return &pipeline, nil
 }
