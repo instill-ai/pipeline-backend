@@ -13,7 +13,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
-	"github.com/iancoleman/strcase"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -63,6 +62,10 @@ func (h *handler) Readiness(ctx context.Context, in *pipelinePB.ReadinessRequest
 }
 
 func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+
+	if err := checkRequiredFields(req.Pipeline); err != nil {
+		return &pipelinePB.CreatePipelineResponse{}, err
+	}
 
 	ownerID, err := getOwnerID(ctx)
 	if err != nil {
@@ -145,27 +148,20 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	reqPipeline := req.GetPipeline()
-	reqUpdateMask := req.GetUpdateMask()
+	pbPipelineReq := req.GetPipeline()
+	pbUpdateMask := req.GetUpdateMask()
 
 	// Validate the field mask
-	if !reqUpdateMask.IsValid(reqPipeline) {
-		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.FailedPrecondition, "The `update_mask` is invalid")
+	if !pbUpdateMask.IsValid(pbPipelineReq) {
+		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.FailedPrecondition, "The update_mask is invalid")
 	}
 
-	mask, err := fieldmask_utils.MaskFromProtoFieldMask(reqUpdateMask, strcase.ToCamel)
+	getResp, err := h.GetPipeline(ctx, &pipelinePB.GetPipelineRequest{Name: pbPipelineReq.GetName()})
 	if err != nil {
-		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.FailedPrecondition, err.Error())
+		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	for _, field := range datamodel.OutputOnlyFields {
-		_, ok := mask.Filter(field)
-		if ok {
-			delete(mask, field)
-		}
-	}
-
-	getResp, err := h.GetPipeline(ctx, &pipelinePB.GetPipelineRequest{Name: reqPipeline.GetName()})
+	mask, err := checkUpdateMaskForOutputOnlyFields(pbUpdateMask)
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
@@ -183,21 +179,21 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 	}
 
 	// Only the fields mentioned in the field mask will be copied to `pbPipelineToUpdate`, other fields are left intact
-	err = fieldmask_utils.StructToStruct(mask, reqPipeline, pbPipelineToUpdate)
+	err = fieldmask_utils.StructToStruct(mask, pbPipelineReq, pbPipelineToUpdate)
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	dbUserUpdated, err := h.service.UpdatePipeline(id, ownerID, PBPipelineToDBPipeline(ownerID, pbPipelineToUpdate))
+	dbPipeline, err := h.service.UpdatePipeline(id, ownerID, PBPipelineToDBPipeline(ownerID, pbPipelineToUpdate))
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	updateResp := pipelinePB.UpdatePipelineResponse{
-		Pipeline: DBPipelineToPBPipeline(dbUserUpdated),
+	resp := pipelinePB.UpdatePipelineResponse{
+		Pipeline: DBPipelineToPBPipeline(dbPipeline),
 	}
 
-	return &updateResp, nil
+	return &resp, nil
 }
 
 func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {

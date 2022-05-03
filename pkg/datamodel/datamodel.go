@@ -14,9 +14,6 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
-// OutputOnlyFields are Protobuf message fields with OUTPUT_ONLY annotation
-var OutputOnlyFields = []string{"Name", "ID", "Id", "Mode", "OwnerId", "FullName", "CreateTime", "UpdateTime"}
-
 // BaseDynamic contains common columns for all tables with dynamic UUID as primary key generated when creating
 type BaseDynamic struct {
 	ID         uuid.UUID      `gorm:"type:uuid;primary_key;<-:create"` // allow read and create

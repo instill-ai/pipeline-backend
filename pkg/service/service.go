@@ -49,16 +49,6 @@ func NewService(r repository.Repository, m modelPB.ModelServiceClient) Service {
 
 func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	// Validatation: Required field
-	if pipeline.Name == "" {
-		return nil, status.Error(codes.FailedPrecondition, "The required field name is not specified")
-	}
-
-	// Validatation: Required field
-	if pipeline.Recipe == nil {
-		return nil, status.Error(codes.FailedPrecondition, "The required field recipe is not specified")
-	}
-
 	// Validatation: name naming rule
 	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.Name); !match {
 		return nil, status.Error(codes.FailedPrecondition, "The name of pipeline is invalid")

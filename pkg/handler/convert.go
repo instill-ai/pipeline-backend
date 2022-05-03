@@ -28,10 +28,10 @@ func PBPipelineToDBPipeline(ownerID uuid.UUID, pbPipeline *pipelinePB.Pipeline) 
 
 		BaseDynamic: datamodel.BaseDynamic{
 			ID: func() uuid.UUID {
-				if pbPipeline.Id == "" {
-					pbPipeline.Id = uuid.UUID{}.String()
+				if pbPipeline.GetId() == "" {
+					return uuid.UUID{}
 				}
-				id, err := uuid.FromString(pbPipeline.Id)
+				id, err := uuid.FromString(pbPipeline.GetId())
 				if err != nil {
 					logger.Fatal(err.Error())
 				}
@@ -39,14 +39,14 @@ func PBPipelineToDBPipeline(ownerID uuid.UUID, pbPipeline *pipelinePB.Pipeline) 
 			}(),
 
 			CreateTime: func() time.Time {
-				if pbPipeline.UpdateTime != nil {
+				if pbPipeline.GetCreateTime() != nil {
 					return pbPipeline.GetCreateTime().AsTime()
 				}
 				return time.Time{}
 			}(),
 
 			UpdateTime: func() time.Time {
-				if pbPipeline.UpdateTime != nil {
+				if pbPipeline.GetUpdateTime() != nil {
 					return pbPipeline.GetUpdateTime().AsTime()
 				}
 				return time.Time{}
@@ -59,7 +59,7 @@ func PBPipelineToDBPipeline(ownerID uuid.UUID, pbPipeline *pipelinePB.Pipeline) 
 		},
 
 		Recipe: func() *datamodel.Recipe {
-			b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.Recipe)
+			b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetRecipe())
 			if err != nil {
 				logger.Fatal(err.Error())
 			}
@@ -88,7 +88,14 @@ func DBPipelineToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline
 		FullName:    dbPipeline.FullName,
 		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
 		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),
-		Description: &dbPipeline.Description.String,
+
+		Description: func() *string {
+			if dbPipeline.Description.Valid {
+				return &dbPipeline.Description.String
+			}
+			emptyStr := ""
+			return &emptyStr
+		}(),
 
 		Recipe: func() *pipelinePB.Recipe {
 			if dbPipeline.Recipe != nil {
