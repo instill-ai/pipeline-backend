@@ -67,7 +67,7 @@ func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipe
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	ownerID, err := getOwnerID(ctx)
+	ownerID, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
@@ -96,7 +96,7 @@ func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipe
 
 func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
 
-	ownerID, err := getOwnerID(ctx)
+	ownerID, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.ListPipelineResponse{}, err
 	}
@@ -121,14 +121,14 @@ func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipeline
 
 func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
 
-	ownerID, err := getOwnerID(ctx)
+	owner, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	name := strings.TrimPrefix(req.GetName(), "pipelines/")
+	id := strings.TrimPrefix(req.GetName(), "pipelines/")
 
-	dbPipeline, err := h.service.GetPipelineByName(name, ownerID)
+	dbPipeline, err := h.service.GetPipelineByID(id, owner)
 	if err != nil {
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
@@ -143,7 +143,7 @@ func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRe
 
 func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
-	ownerID, err := getOwnerID(ctx)
+	ownerID, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
@@ -173,7 +173,7 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 	}
 
 	pbPipelineToUpdate := getResp.GetPipeline()
-	id, err := uuid.FromString(pbPipelineToUpdate.GetId())
+	id, err := uuid.FromString(pbPipelineToUpdate.GetUid())
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
@@ -198,7 +198,7 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 
 func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
-	ownerID, err := getOwnerID(ctx)
+	ownerID, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
@@ -208,7 +208,7 @@ func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipe
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
-	id, err := uuid.FromString(existPipeline.GetPipeline().Id)
+	id, err := uuid.FromString(existPipeline.GetPipeline().Uid)
 	if err != nil {
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
@@ -227,14 +227,14 @@ func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipe
 
 func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
 
-	ownerID, err := getOwnerID(ctx)
+	ownerID, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	name := strings.TrimPrefix(req.GetName(), "pipelines/")
+	id := strings.TrimPrefix(req.GetName(), "pipelines/")
 
-	dbPipeline, err := h.service.GetPipelineByName(name, ownerID)
+	dbPipeline, err := h.service.GetPipelineByID(id, ownerID)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
@@ -262,7 +262,7 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
 
-	ownerID, err := getOwnerID(stream.Context())
+	ownerID, err := getOwner(stream.Context())
 	if err != nil {
 		return err
 	}
@@ -272,9 +272,9 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 		return status.Errorf(codes.Unknown, "Cannot receive trigger info")
 	}
 
-	name := strings.TrimPrefix(data.GetName(), "pipelines/")
+	id := strings.TrimPrefix(data.GetName(), "pipelines/")
 
-	dbPipeline, err := h.service.GetPipelineByName(name, ownerID)
+	dbPipeline, err := h.service.GetPipelineByID(id, ownerID)
 	if err != nil {
 		return err
 	}
@@ -304,7 +304,7 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 		}
 	}
 
-	var obj *modelPB.TriggerModelBinaryFileUploadResponse
+	var obj *modelPB.TriggerModelInstanceBinaryFileUploadResponse
 	if obj, err = h.service.TriggerPipelineBinaryFileUpload(buf, data.GetFileLengths(), dbPipeline); err != nil {
 		return err
 	}
@@ -334,22 +334,16 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 	if strings.Contains(contentType, "multipart/form-data") {
 
-		ownerIDString := req.Header.Get("owner_id")
-		pipelineName := pathParams["name"]
+		ownerString := req.Header.Get("owner")
+		pipelineID := pathParams["id"]
 
-		if ownerIDString == "" {
+		if ownerString == "" {
 			errorResponse(w, 400, "Bad Request", "Required parameter Jwt-Sub not found in the header")
 			return
 		}
 
-		if pipelineName == "" {
-			errorResponse(w, 400, "Bad Request", "Required parameter pipeline name not found in the path")
-			return
-		}
-
-		ownerID, err := uuid.FromString(ownerIDString)
-		if err != nil {
-			errorResponse(w, 400, "Bad Request", "Required parameter Jwt-Sub is not UUID")
+		if pipelineID == "" {
+			errorResponse(w, 400, "Bad Request", "Required parameter pipeline id not found in the path")
 			return
 		}
 
@@ -357,6 +351,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		// Create tls based credential.
 		var creds credentials.TransportCredentials
+		var err error
 		if configs.Config.Server.HTTPS.Cert != "" && configs.Config.Server.HTTPS.Key != "" {
 			creds, err = credentials.NewServerTLSFromFile(configs.Config.Server.HTTPS.Cert, configs.Config.Server.HTTPS.Key)
 			if err != nil {
@@ -382,7 +377,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		service := service.NewService(pipelineRepository, modelServiceClient)
 
-		dbPipeline, err := service.GetPipelineByName(pipelineName, ownerID)
+		dbPipeline, err := service.GetPipelineByID(pipelineID, ownerString)
 		if err != nil {
 			errorResponse(w, 400, "Bad Request", "Pipeline not found")
 			return

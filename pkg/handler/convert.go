@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -17,21 +18,21 @@ import (
 )
 
 // PBPipelineToDBPipeline converts protobuf data model to db data model
-func PBPipelineToDBPipeline(ownerID uuid.UUID, pbPipeline *pipelinePB.Pipeline) *datamodel.Pipeline {
+func PBPipelineToDBPipeline(owner string, pbPipeline *pipelinePB.Pipeline) *datamodel.Pipeline {
 	logger, _ := logger.GetZapLogger()
 
 	return &datamodel.Pipeline{
-		OwnerID: ownerID,
-		Name:    pbPipeline.GetDisplayName(),
-		Mode:    datamodel.PipelineMode(pbPipeline.GetMode()),
-		Status:  datamodel.PipelineStatus(pbPipeline.GetStatus()),
+		Owner: owner,
+		ID:    pbPipeline.GetId(),
+		Mode:  datamodel.PipelineMode(pbPipeline.GetMode()),
+		State: datamodel.PipelineState(pbPipeline.GetState()),
 
 		BaseDynamic: datamodel.BaseDynamic{
-			ID: func() uuid.UUID {
-				if pbPipeline.GetId() == "" {
+			UID: func() uuid.UUID {
+				if pbPipeline.GetUid() == "" {
 					return uuid.UUID{}
 				}
-				id, err := uuid.FromString(pbPipeline.GetId())
+				id, err := uuid.FromString(pbPipeline.GetUid())
 				if err != nil {
 					logger.Fatal(err.Error())
 				}
@@ -78,16 +79,14 @@ func PBPipelineToDBPipeline(ownerID uuid.UUID, pbPipeline *pipelinePB.Pipeline) 
 func DBPipelineToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
 	logger, _ := logger.GetZapLogger()
 
-	return &pipelinePB.Pipeline{
-		Name:        fmt.Sprintf("pipelines/%s", dbPipeline.Name),
-		Id:          dbPipeline.BaseDynamic.ID.String(),
-		DisplayName: dbPipeline.Name,
-		Mode:        pipelinePB.Pipeline_Mode(dbPipeline.Mode),
-		Status:      pipelinePB.Pipeline_Status(dbPipeline.Status),
-		OwnerId:     dbPipeline.OwnerID.String(),
-		FullName:    dbPipeline.FullName,
-		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
-		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),
+	pbPipeline := pipelinePB.Pipeline{
+		Name:       fmt.Sprintf("pipelines/%s", dbPipeline.ID),
+		Uid:        dbPipeline.BaseDynamic.UID.String(),
+		Id:         dbPipeline.ID,
+		Mode:       pipelinePB.Pipeline_Mode(dbPipeline.Mode),
+		State:      pipelinePB.Pipeline_State(dbPipeline.State),
+		CreateTime: timestamppb.New(dbPipeline.CreateTime),
+		UpdateTime: timestamppb.New(dbPipeline.UpdateTime),
 
 		Description: func() *string {
 			if dbPipeline.Description.Valid {
@@ -114,4 +113,11 @@ func DBPipelineToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline
 		}(),
 	}
 
+	if strings.HasPrefix(dbPipeline.Owner, "users/") {
+		pbPipeline.Owner = &pipelinePB.Pipeline_User{User: dbPipeline.Owner}
+	} else if strings.HasPrefix(dbPipeline.Owner, "organizations/") {
+		pbPipeline.Owner = &pipelinePB.Pipeline_Org{Org: dbPipeline.Owner}
+	}
+
+	return &pbPipeline
 }

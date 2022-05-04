@@ -88,16 +88,17 @@ func recipeToDSLConfig(recipe *datamodel.Recipe, requestId string) worker.Workfl
 	logger.Debug(fmt.Sprintf("The data source configuration is: %+v", recipe.Source))
 
 	// Extracting visual data operator
-	logger.Debug(fmt.Sprintf("The visual data operator configuration is: %+v", recipe.Models))
-	for _, model := range recipe.Models {
+	logger.Debug(fmt.Sprintf("The visual data operator configuration is: %+v", recipe.ModelInstances))
+	for _, modelInstance := range recipe.ModelInstances {
 		visualDataOpActivity := worker.ActivityInvocation{
 			Name:      "VisualDataOperatorActivity",
 			Arguments: []string{"VDOModelId", "VDOVersion", "VDORequestId"},
 			Result:    "visualDataOperatorResult",
 		}
 
-		dslConfigVariables["ModelName"] = model.Name
-		dslConfigVariables["ModelInstanceName"] = model.InstanceName
+		// TODO: Revisit here to implement with model-backend
+		dslConfigVariables["ModelName"] = modelInstance + "-model-name"
+		dslConfigVariables["ModelInstanceName"] = modelInstance + "-model-instance-name"
 		dslConfigVariables["VDORequestId"] = requestId
 
 		rootSequenceElement = append(rootSequenceElement, &worker.Statement{Activity: &visualDataOpActivity})

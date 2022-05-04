@@ -51,7 +51,7 @@ func (mr *MockRepositoryMockRecorder) CreatePipeline(arg0 interface{}) *gomock.C
 }
 
 // DeletePipeline mocks base method.
-func (m *MockRepository) DeletePipeline(arg0, arg1 uuid.UUID) error {
+func (m *MockRepository) DeletePipeline(arg0 uuid.UUID, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeletePipeline", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -65,7 +65,7 @@ func (mr *MockRepositoryMockRecorder) DeletePipeline(arg0, arg1 interface{}) *go
 }
 
 // GetPipeline mocks base method.
-func (m *MockRepository) GetPipeline(arg0, arg1 uuid.UUID) (*datamodel.Pipeline, error) {
+func (m *MockRepository) GetPipeline(arg0 uuid.UUID, arg1 string) (*datamodel.Pipeline, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPipeline", arg0, arg1)
 	ret0, _ := ret[0].(*datamodel.Pipeline)
@@ -79,23 +79,23 @@ func (mr *MockRepositoryMockRecorder) GetPipeline(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipeline", reflect.TypeOf((*MockRepository)(nil).GetPipeline), arg0, arg1)
 }
 
-// GetPipelineByName mocks base method.
-func (m *MockRepository) GetPipelineByName(arg0 string, arg1 uuid.UUID) (*datamodel.Pipeline, error) {
+// GetPipelineByID mocks base method.
+func (m *MockRepository) GetPipelineByID(arg0, arg1 string) (*datamodel.Pipeline, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPipelineByName", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetPipelineByID", arg0, arg1)
 	ret0, _ := ret[0].(*datamodel.Pipeline)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetPipelineByName indicates an expected call of GetPipelineByName.
-func (mr *MockRepositoryMockRecorder) GetPipelineByName(arg0, arg1 interface{}) *gomock.Call {
+// GetPipelineByID indicates an expected call of GetPipelineByID.
+func (mr *MockRepositoryMockRecorder) GetPipelineByID(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByName", reflect.TypeOf((*MockRepository)(nil).GetPipelineByName), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByID", reflect.TypeOf((*MockRepository)(nil).GetPipelineByID), arg0, arg1)
 }
 
 // ListPipeline mocks base method.
-func (m *MockRepository) ListPipeline(arg0 uuid.UUID, arg1 pipelinev1alpha.PipelineView, arg2 int, arg3 string) ([]datamodel.Pipeline, string, error) {
+func (m *MockRepository) ListPipeline(arg0 string, arg1 pipelinev1alpha.View, arg2 int, arg3 string) ([]datamodel.Pipeline, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListPipeline", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].([]datamodel.Pipeline)
@@ -111,7 +111,7 @@ func (mr *MockRepositoryMockRecorder) ListPipeline(arg0, arg1, arg2, arg3 interf
 }
 
 // UpdatePipeline mocks base method.
-func (m *MockRepository) UpdatePipeline(arg0, arg1 uuid.UUID, arg2 *datamodel.Pipeline) error {
+func (m *MockRepository) UpdatePipeline(arg0 uuid.UUID, arg1 string, arg2 *datamodel.Pipeline) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePipeline", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

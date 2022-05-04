@@ -39,7 +39,7 @@ func customMatcher(key string) (string, bool) {
 	}
 
 	switch key {
-	case "owner_id":
+	case "owner":
 		return key, true
 	default:
 		return runtime.DefaultHeaderMatcher(key)

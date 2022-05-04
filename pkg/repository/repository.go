@@ -17,11 +17,11 @@ import (
 // Repository interface
 type Repository interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) error
-	ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error)
-	GetPipeline(id uuid.UUID, ownerID uuid.UUID) (*datamodel.Pipeline, error)
-	GetPipelineByName(name string, ownerID uuid.UUID) (*datamodel.Pipeline, error)
-	UpdatePipeline(id uuid.UUID, ownerID uuid.UUID, pipeline *datamodel.Pipeline) error
-	DeletePipeline(id uuid.UUID, ownerID uuid.UUID) error
+	ListPipeline(owner string, view pipelinePB.View, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error)
+	GetPipeline(uid uuid.UUID, owner string) (*datamodel.Pipeline, error)
+	GetPipelineByID(id string, owner string) (*datamodel.Pipeline, error)
+	UpdatePipeline(uid uuid.UUID, owner string, pipeline *datamodel.Pipeline) error
+	DeletePipeline(uid uuid.UUID, owner string) error
 }
 
 type repository struct {
@@ -42,7 +42,7 @@ func (r *repository) CreatePipeline(pipeline *datamodel.Pipeline) error {
 	return nil
 }
 
-func (r *repository) ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineView, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error) {
+func (r *repository) ListPipeline(owner string, view pipelinePB.View, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error) {
 	queryBuilder := r.db.Model(&datamodel.Pipeline{}).Order("create_time DESC, id DESC")
 
 	if pageSize > 0 {
@@ -57,7 +57,7 @@ func (r *repository) ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineVie
 		queryBuilder = queryBuilder.Where("(create_time,id) < (?::timestamp, ?)", createTime, uuid)
 	}
 
-	if view != pipelinePB.PipelineView_PIPELINE_VIEW_FULL {
+	if view != pipelinePB.View_VIEW_FULL {
 		queryBuilder.Omit("pipeline.recipe")
 	}
 
@@ -78,45 +78,45 @@ func (r *repository) ListPipeline(ownerID uuid.UUID, view pipelinePB.PipelineVie
 	}
 
 	if len(pipelines) > 0 {
-		nextPageToken := paginate.EncodeToken(createTime, (pipelines)[len(pipelines)-1].ID.String())
+		nextPageToken := paginate.EncodeToken(createTime, (pipelines)[len(pipelines)-1].UID.String())
 		return pipelines, nextPageToken, nil
 	}
 
 	return nil, "", nil
 }
 
-func (r *repository) GetPipeline(id uuid.UUID, ownerID uuid.UUID) (*datamodel.Pipeline, error) {
+func (r *repository) GetPipeline(uid uuid.UUID, owner string) (*datamodel.Pipeline, error) {
 	var pipeline datamodel.Pipeline
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("id = ? AND owner_id = ?", id, ownerID).
+		Where("uid = ? AND owner = ?", uid, owner).
 		First(&pipeline); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "The pipeline id \"%s\" you specified is not found", id.String())
+		return nil, status.Errorf(codes.NotFound, "The pipeline uid \"%s\" you specified is not found", uid.String())
 	}
 	return &pipeline, nil
 }
 
-func (r *repository) GetPipelineByName(name string, ownerID uuid.UUID) (*datamodel.Pipeline, error) {
+func (r *repository) GetPipelineByID(id string, owner string) (*datamodel.Pipeline, error) {
 	var pipeline datamodel.Pipeline
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("name = ? AND owner_id = ?", name, ownerID).
+		Where("id = ? AND owner = ?", id, owner).
 		First(&pipeline); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "The pipeline name \"%s\" you specified is not found", name)
+		return nil, status.Errorf(codes.NotFound, "The pipeline id \"%s\" you specified is not found", id)
 	}
 	return &pipeline, nil
 }
 
-func (r *repository) UpdatePipeline(id uuid.UUID, ownerID uuid.UUID, pipeline *datamodel.Pipeline) error {
-	if result := r.db.Model(&datamodel.Pipeline{}).Select("*").Omit("ID").
-		Where("id = ? AND owner_id = ?", id, ownerID).
+func (r *repository) UpdatePipeline(uid uuid.UUID, owner string, pipeline *datamodel.Pipeline) error {
+	if result := r.db.Model(&datamodel.Pipeline{}).Select("*").Omit("Uid").
+		Where("uid = ? AND owner = ?", uid, owner).
 		Updates(pipeline); result.Error != nil {
 		return status.Errorf(codes.Internal, "Error %v", result.Error)
 	}
 	return nil
 }
 
-func (r *repository) DeletePipeline(id uuid.UUID, ownerID uuid.UUID) error {
+func (r *repository) DeletePipeline(uid uuid.UUID, owner string) error {
 	result := r.db.Model(&datamodel.Pipeline{}).
-		Where("id = ? AND owner_id = ?", id, ownerID).
+		Where("uid = ? AND owner = ?", uid, owner).
 		Delete(&datamodel.Pipeline{})
 
 	if result.Error != nil {
@@ -124,7 +124,7 @@ func (r *repository) DeletePipeline(id uuid.UUID, ownerID uuid.UUID) error {
 	}
 
 	if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "The pipeline id \"%s\" you specified is not found", id.String())
+		return status.Errorf(codes.NotFound, "The pipeline uid \"%s\" you specified is not found", uid.String())
 	}
 
 	return nil

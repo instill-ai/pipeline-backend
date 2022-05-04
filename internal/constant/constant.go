@@ -1,7 +1,7 @@
 package constant
 
 // ConnectionTypeDirectness is a slice records connector names having the connection-type directness
-var ConnectionTypeDirectness = []string{"HTTP", "gRPC"}
+var ConnectionTypeDirectness = []string{"connectors/http", "connectors/gRPC"}
 
 const (
 	_  = iota

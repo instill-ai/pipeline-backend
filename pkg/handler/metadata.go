@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -18,20 +17,13 @@ func extractFromMetadata(ctx context.Context, key string) ([]string, bool) {
 	return data[strings.ToLower(key)], true
 }
 
-func getOwnerID(ctx context.Context) (uuid.UUID, error) {
-	metadatas, ok := extractFromMetadata(ctx, "owner_id")
+func getOwner(ctx context.Context) (string, error) {
+	metadatas, ok := extractFromMetadata(ctx, "owner")
 	if ok {
 		if len(metadatas) == 0 {
-			return uuid.UUID{}, status.Error(codes.FailedPrecondition, "owner_id not found in your request")
+			return "", status.Error(codes.FailedPrecondition, "owner not found in your request")
 		}
-
-		ownerUUID, err := uuid.FromString(metadatas[0])
-		if err != nil {
-			return uuid.UUID{}, err
-		}
-
-		return ownerUUID, nil
+		return metadatas[0], nil
 	}
-
-	return uuid.UUID{}, status.Error(codes.FailedPrecondition, "Error when extract metadata")
+	return "", status.Error(codes.FailedPrecondition, "Error when extract metadata")
 }

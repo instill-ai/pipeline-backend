@@ -12,10 +12,12 @@ import (
 )
 
 // requiredFields are Protobuf message fields with REQUIRED field_behavior annotation
-var requiredFields = []string{"DisplayName", "Recipe"}
+var requiredFields = []string{"Recipe"}
+
+// var immutableFields = []string{"Id"}
 
 // outputOnlyFields are Protobuf message fields with OUTPUT_ONLY field_behavior annotation for UPDATE rpc
-var outputOnlyFields = []string{"Name", "Id", "Mode", "OwnerId", "FullName", "CreateTime", "UpdateTime"}
+var outputOnlyFields = []string{"Name", "Uid", "Mode", "Owner", "CreateTime", "UpdateTime"}
 
 // Implementation follows https://google.aip.dev/203#required
 func checkRequiredFields(pbPipeline *pipelinePB.Pipeline) error {

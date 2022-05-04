@@ -16,7 +16,7 @@ import (
 
 // BaseDynamic contains common columns for all tables with dynamic UUID as primary key generated when creating
 type BaseDynamic struct {
-	ID         uuid.UUID      `gorm:"type:uuid;primary_key;<-:create"` // allow read and create
+	UID        uuid.UUID      `gorm:"type:uuid;primary_key;<-:create"` // allow read and create
 	CreateTime time.Time      `gorm:"autoCreateTime:nano"`
 	UpdateTime time.Time      `gorm:"autoUpdateTime:nano"`
 	DeleteTime gorm.DeletedAt `sql:"index"`
@@ -28,74 +28,55 @@ func (base *BaseDynamic) BeforeCreate(db *gorm.DB) error {
 	if err != nil {
 		return err
 	}
-	db.Statement.SetColumn("ID", uuid)
+	db.Statement.SetColumn("UID", uuid)
 	return nil
 }
 
 // Pipeline is the data model of the pipeline table
 type Pipeline struct {
 	BaseDynamic
-	OwnerID     uuid.UUID
-	Name        string
+	ID          string
+	Owner       string
 	Description sql.NullString
 	Mode        PipelineMode
-	Status      PipelineStatus
+	State       PipelineState
 	Recipe      *Recipe `gorm:"type:jsonb"`
-
-	// Output-only field
-	FullName string `gorm:"-"`
 }
 
 // PipelineMode is an alias type for Protobuf enum Pipeline.Mode
 type PipelineMode pipelinePB.Pipeline_Mode
 
-// Scan function for custom GORM type PipelineStatus
+// Scan function for custom GORM type PipelineMode
 func (c *PipelineMode) Scan(value interface{}) error {
 	*c = PipelineMode(pipelinePB.Pipeline_Mode_value[value.(string)])
 	return nil
 }
 
-// Value function for custom GORM type PipelineStatus
+// Value function for custom GORM type PipelineMode
 func (c PipelineMode) Value() (driver.Value, error) {
 	return pipelinePB.Pipeline_Mode(c).String(), nil
 }
 
-// PipelineStatus is an alias type for Protobuf enum Pipeline.Status
-type PipelineStatus pipelinePB.Pipeline_Status
+// PipelineState is an alias type for Protobuf enum Pipeline.State
+type PipelineState pipelinePB.Pipeline_State
 
-// Scan function for custom GORM type PipelineStatus
-func (c *PipelineStatus) Scan(value interface{}) error {
-	*c = PipelineStatus(pipelinePB.Pipeline_Status_value[value.(string)])
+// Scan function for custom GORM type PipelineState
+func (c *PipelineState) Scan(value interface{}) error {
+	*c = PipelineState(pipelinePB.Pipeline_State_value[value.(string)])
 	return nil
 }
 
-// Value function for custom GORM type PipelineStatus
-func (c PipelineStatus) Value() (driver.Value, error) {
-	return pipelinePB.Pipeline_Status(c).String(), nil
+// Value function for custom GORM type PipelineState
+func (c PipelineState) Value() (driver.Value, error) {
+	return pipelinePB.Pipeline_State(c).String(), nil
 }
 
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
-	Source      *Source      `json:"source,omitempty"`
-	Destination *Destination `json:"destination,omitempty"`
-	Models      []*Model     `json:"models,omitempty"`
-	Logics      []*Logic     `json:"logics,omitempty"`
-}
-
-// Source is the data model of source connector
-type Source struct {
-	Name string `json:"name"`
-}
-
-// Destination is the data model of destination connector
-type Destination struct {
-	Name string `json:"name"`
-}
-
-// Model is the data model of model
-type Model struct {
-	Name         string `json:"name"`
-	InstanceName string `json:"instance_name"`
+	Source         string   `json:"source,omitempty"`
+	Destination    string   `json:"destination,omitempty"`
+	ModelInstances []string `json:"model_instances,omitempty"`
+	Logics         []string `json:"logics,omitempty"`
 }
 
 // Logic is the data model of logic operator

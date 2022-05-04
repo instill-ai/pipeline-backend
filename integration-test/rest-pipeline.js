@@ -9,9 +9,9 @@ export function CheckCreate() {
 
   var reqBody = Object.assign(
     {
-      display_name: randomString(10),
+      id: randomString(10),
       description: randomString(50),
-      status: "STATUS_ACTIVATED",
+      state: "STATE_ACTIVE",
     },
     constant.detectionRecipe
   )
@@ -25,14 +25,13 @@ export function CheckCreate() {
       },
     }), {
       "POST /pipelines response status is 201": (r) => r.status === 201,
-      "POST /pipelines response pipeline display_name": (r) => r.json().pipeline.display_name === reqBody.display_name,
+      "POST /pipelines response pipeline name": (r) => r.json().pipeline.name === `pipelines/${reqBody.id}`,
+      "POST /pipelines response pipeline uid": (r) => helper.isUUID(r.json().pipeline.uid),
+      "POST /pipelines response pipeline id": (r) => r.json().pipeline.id === reqBody.id,
       "POST /pipelines response pipeline description": (r) => r.json().pipeline.description === reqBody.description,
-      "POST /pipelines response pipeline id": (r) => helper.isUUID(r.json().pipeline.id),
       "POST /pipelines response pipeline recipe": (r) => r.json().pipeline.recipe !== undefined,
-      "POST /pipelines response pipeline status": (r) => r.json().pipeline.status === "STATUS_ACTIVATED",
+      "POST /pipelines response pipeline state": (r) => r.json().pipeline.state === "STATE_ACTIVE",
       "POST /pipelines response pipeline mode": (r) => r.json().pipeline.mode === "MODE_SYNC",
-      "POST /pipelines response pipeline name": (r) => r.json().pipeline.name === `pipelines/${reqBody.display_name}`,
-      "POST /pipelines response pipeline full_name": (r) => r.json().pipeline.full_name === `local-user/${reqBody.display_name}`,
       "POST /pipelines response pipeline create_time": (r) => new Date(r.json().pipeline.create_time).getTime() > new Date().setTime(0),
       "POST /pipelines response pipeline update_time": (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0)
     });
@@ -42,15 +41,15 @@ export function CheckCreate() {
         "Content-Type": "application/json",
       },
     }), {
-      "POST /pipelines re-create the same display_name response status is 400": (r) => r.status === 400
+      "POST /pipelines re-create the same id response status is 400": (r) => r.status === 400
     });
 
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.display_name}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`DELETE /pipelines/${reqBody.display_name} response status 204`]: (r) => r.status === 204,
+      [`DELETE /pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
     });
 
     check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
@@ -58,7 +57,7 @@ export function CheckCreate() {
         "Content-Type": "application/json",
       },
     }), {
-      "POST /pipelines re-create the same display_name after deletion response status is 201": (r) => r.status === 201
+      "POST /pipelines re-create the same id after deletion response status is 201": (r) => r.status === 201
     });
 
     check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify({}), {
@@ -78,12 +77,12 @@ export function CheckCreate() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.display_name}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`DELETE /pipelines/${reqBody.display_name} response status 204`]: (r) => r.status === 204,
+      [`DELETE /pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
     });
 
   });
@@ -95,9 +94,9 @@ export function CheckList() {
   for (var i = 0; i < constant.numPipelines; i++) {
     reqBodies[i] = Object.assign(
       {
-        display_name: randomString(10),
+        id: randomString(10),
         description: randomString(50),
-        status: "STATUS_ACTIVATED",
+        state: "STATE_ACTIVE",
       },
       constant.detectionRecipe
     )
@@ -126,31 +125,31 @@ export function CheckList() {
       [`GET /pipelines response pipelines[0] no recipe`]: (r) => r.json().pipelines[0].recipe === null,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines?view=PIPELINE_VIEW_FULL`, null, {
+    check(http.request("GET", `${pipelineHost}/pipelines?view=VIEW_FULL`, null, {
       headers: {
         "Content-Type": "application/json",
       }
     }), {
-      [`GET /pipelines?view=PIPELINE_VIEW_FULL response status is 200`]: (r) => r.status === 200,
-      [`GET /pipelines?view=PIPELINE_VIEW_FULL response pipelines.length == ${reqBodies.length}`]: (r) => r.json().pipelines.length == reqBodies.length,
-      [`GET /pipelines?view=PIPELINE_VIEW_FULL response pipelines[0] has recipe`]: (r) => r.json().pipelines[0].recipe !== undefined,
+      [`GET /pipelines?view=VIEW_FULL response status is 200`]: (r) => r.status === 200,
+      [`GET /pipelines?view=VIEW_FULL response pipelines.length == ${reqBodies.length}`]: (r) => r.json().pipelines.length == reqBodies.length,
+      [`GET /pipelines?view=VIEW_FULL response pipelines[0] has recipe`]: (r) => r.json().pipelines[0].recipe !== undefined,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines?view=PIPELINE_VIEW_BASIC`, null, {
+    check(http.request("GET", `${pipelineHost}/pipelines?view=VIEW_BASIC`, null, {
       headers: {
         "Content-Type": "application/json",
       }
     }), {
-      [`GET /pipelines?view=PIPELINE_VIEW_BASIC response status is 200`]: (r) => r.status === 200,
-      [`GET /pipelines?view=PIPELINE_VIEW_BASIC response pipelines.length == ${reqBodies.length}`]: (r) => r.json().pipelines.length == reqBodies.length,
-      [`GET /pipelines?view=PIPELINE_VIEW_BASIC response pipelines[0] has no recipe`]: (r) => r.json().pipelines[0].recipe === null,
+      [`GET /pipelines?view=VIEW_BASIC response status is 200`]: (r) => r.status === 200,
+      [`GET /pipelines?view=VIEW_BASIC response pipelines.length == ${reqBodies.length}`]: (r) => r.json().pipelines.length == reqBodies.length,
+      [`GET /pipelines?view=VIEW_BASIC response pipelines[0] has no recipe`]: (r) => r.json().pipelines[0].recipe === null,
     });
 
     // Delete the pipelines
     for (const reqBody of reqBodies) {
       check(http.request(
         "DELETE",
-        `${pipelineHost}/pipelines/${reqBody.display_name}`,
+        `${pipelineHost}/pipelines/${reqBody.id}`,
         JSON.stringify(reqBody), {
         headers: {
           "Content-Type": "application/json",
@@ -166,9 +165,9 @@ export function CheckGet() {
 
   var reqBody = Object.assign(
     {
-      display_name: randomString(10),
+      id: randomString(10),
       description: randomString(50),
-      status: "STATUS_ACTIVATED",
+      state: "STATE_ACTIVE",
     },
     constant.detectionRecipe
   )
@@ -184,33 +183,34 @@ export function CheckGet() {
       "POST /pipelines response status is 201": (r) => r.status === 201,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines/${reqBody.display_name}`, null, {
+    check(http.request("GET", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`GET /pipelines/${reqBody.display_name} response status is 200`]: (r) => r.status === 200,
-      [`GET /pipelines/${reqBody.display_name} response pipeline display_name`]: (r) => r.json().pipeline.display_name === reqBody.display_name,
-      [`GET /pipelines/${reqBody.display_name} response pipeline description`]: (r) => r.json().pipeline.description === reqBody.description,
-      [`GET /pipelines/${reqBody.display_name} response pipeline id`]: (r) => helper.isUUID(r.json().pipeline.id),
-      [`GET /pipelines/${reqBody.display_name} response pipeline recipe`]: (r) => r.json().pipeline.recipe !== undefined,
+      [`GET /pipelines/${reqBody.id} response status is 200`]: (r) => r.status === 200,
+      [`GET /pipelines/${reqBody.id} response pipeline name`]: (r) => r.json().pipeline.name === `pipelines/${reqBody.id}`,
+      [`GET /pipelines/${reqBody.id} response pipeline uid`]: (r) => helper.isUUID(r.json().pipeline.uid),
+      [`GET /pipelines/${reqBody.id} response pipeline id`]: (r) => r.json().pipeline.id === reqBody.id,
+      [`GET /pipelines/${reqBody.id} response pipeline description`]: (r) => r.json().pipeline.description === reqBody.description,
+      [`GET /pipelines/${reqBody.id} response pipeline recipe`]: (r) => r.json().pipeline.recipe !== undefined,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines/this-display_name-does-not-exist`, null, {
+    check(http.request("GET", `${pipelineHost}/pipelines/this-id-does-not-exist`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      "GET /pipelines/this-display_name-does-not-exist response status is 404": (r) => r.status === 404,
+      "GET /pipelines/this-id-does-not-exist response status is 404": (r) => r.status === 404,
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.display_name}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`DELETE /pipelines/${pipeline.display_name} response status 204`]: (r) => r.status === 204,
+      [`DELETE /pipelines/${pipeline.id} response status 204`]: (r) => r.status === 204,
     });
 
   });
@@ -220,9 +220,9 @@ export function CheckUpdate() {
 
   var reqBody = Object.assign(
     {
-      display_name: randomString(10),
+      id: randomString(10),
       description: randomString(50),
-      status: "STATUS_ACTIVATED",
+      state: "STATE_ACTIVE",
     },
     constant.detectionRecipe
   )
@@ -240,59 +240,58 @@ export function CheckUpdate() {
 
     var reqBodyUpdate = Object.assign(
       {
-        display_name: randomString(10),
+        id: randomString(10),
         description: randomString(50),
-        status: "STATUS_INACTIVATED",
+        state: "STATE_INACTIVE",
       },
     )
 
-    check(http.request("PATCH", `${pipelineHost}/pipelines/${reqBody.display_name}`, JSON.stringify(reqBodyUpdate), {
+    check(http.request("PATCH", `${pipelineHost}/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`PATCH /pipelines/${reqBody.display_name} response status is 200`]: (r) => r.status === 200,
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline display_name`]: (r) => r.json().pipeline.display_name === reqBodyUpdate.display_name,
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline description`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline id`]: (r) => helper.isUUID(r.json().pipeline.id),
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline recipe`]: (r) => r.json().pipeline.recipe !== undefined,
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline status`]: (r) => r.json().pipeline.status === "STATUS_INACTIVATED",
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline mode`]: (r) => r.json().pipeline.mode === "MODE_SYNC",
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline name`]: (r) => r.json().pipeline.name === `pipelines/${reqBodyUpdate.display_name}`,
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline full_name`]: (r) => r.json().pipeline.full_name === `local-user/${reqBodyUpdate.display_name}`,
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline create_time`]: (r) => new Date(r.json().pipeline.create_time).getTime() > new Date().setTime(0),
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline update_time`]: (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0),
-      [`PATCH /pipelines/${reqBody.display_name} response pipeline update_time > create_time`]: (r) => new Date(r.json().pipeline.update_time).getTime() > new Date(r.json().pipeline.create_time).getTime()
+      [`PATCH /pipelines/${reqBody.id} response status is 200`]: (r) => r.status === 200,
+      [`PATCH /pipelines/${reqBody.id} response pipeline uid`]: (r) => helper.isUUID(r.json().pipeline.uid),
+      [`PATCH /pipelines/${reqBody.id} response pipeline id`]: (r) => r.json().pipeline.id === reqBodyUpdate.id,
+      [`PATCH /pipelines/${reqBody.id} response pipeline description`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
+      [`PATCH /pipelines/${reqBody.id} response pipeline recipe`]: (r) => r.json().pipeline.recipe !== undefined,
+      [`PATCH /pipelines/${reqBody.id} response pipeline state`]: (r) => r.json().pipeline.state === "STATE_INACTIVE",
+      [`PATCH /pipelines/${reqBody.id} response pipeline mode`]: (r) => r.json().pipeline.mode === "MODE_SYNC",
+      [`PATCH /pipelines/${reqBody.id} response pipeline name`]: (r) => r.json().pipeline.name === `pipelines/${reqBodyUpdate.id}`,
+      [`PATCH /pipelines/${reqBody.id} response pipeline create_time`]: (r) => new Date(r.json().pipeline.create_time).getTime() > new Date().setTime(0),
+      [`PATCH /pipelines/${reqBody.id} response pipeline update_time`]: (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0),
+      [`PATCH /pipelines/${reqBody.id} response pipeline update_time > create_time`]: (r) => new Date(r.json().pipeline.update_time).getTime() > new Date(r.json().pipeline.create_time).getTime()
     });
 
     reqBodyUpdate.description = ""
 
-    check(http.request("PATCH", `${pipelineHost}/pipelines/${reqBodyUpdate.display_name}`,
+    check(http.request("PATCH", `${pipelineHost}/pipelines/${reqBodyUpdate.id}`,
       JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`PATCH /pipelines/${reqBodyUpdate.display_name} response status is 200`]: (r) => r.status === 200,
-      [`PATCH /pipelines/${reqBodyUpdate.display_name} response pipeline description`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
+      [`PATCH /pipelines/${reqBodyUpdate.id} response status is 200`]: (r) => r.status === 200,
+      [`PATCH /pipelines/${reqBodyUpdate.id} response pipeline description`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
     });
 
-    check(http.request("PATCH", `${pipelineHost}/pipelines/this-display_name-does-not-exist`,
+    check(http.request("PATCH", `${pipelineHost}/pipelines/this-id-does-not-exist`,
       JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      "PATCH /pipelines/this-display_name-does-not-exist response status is 404": (r) => r.status === 404,
+      "PATCH /pipelines/this-id-does-not-exist response status is 404": (r) => r.status === 404,
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBodyUpdate.display_name}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBodyUpdate.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`DELETE /pipelines/${reqBodyUpdate.display_name} response status 204`]: (r) => r.status === 204,
+      [`DELETE /pipelines/${reqBodyUpdate.id} response status 204`]: (r) => r.status === 204,
     });
 
   });
