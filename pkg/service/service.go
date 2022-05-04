@@ -24,10 +24,12 @@ import (
 // Service interface
 type Service interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
-	ListPipeline(owner string, view pipelinePB.View, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error)
+	ListPipeline(owner string, view pipelinePB.View, pageSize int, pageToken string) ([]datamodel.Pipeline, string, int64, error)
 	GetPipelineByID(id string, owner string) (*datamodel.Pipeline, error)
 	UpdatePipeline(uid uuid.UUID, owner string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
 	DeletePipeline(uid uuid.UUID, owner string) error
+	UpdatePipelineState(id string, owner string, state datamodel.PipelineState) (*datamodel.Pipeline, error)
+	UpdatePipelineID(id string, owner string, newID string) (*datamodel.Pipeline, error)
 	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceResponse, error)
 	TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceBinaryFileUploadResponse, error)
 	ValidatePipeline(pipeline *datamodel.Pipeline) error
@@ -84,7 +86,7 @@ func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipel
 	return dbPipeline, nil
 }
 
-func (s *service) ListPipeline(owner string, view pipelinePB.View, pageSize int, pageToken string) ([]datamodel.Pipeline, string, error) {
+func (s *service) ListPipeline(owner string, view pipelinePB.View, pageSize int, pageToken string) ([]datamodel.Pipeline, string, int64, error) {
 	return s.repository.ListPipeline(owner, view, pageSize, pageToken)
 }
 
@@ -101,17 +103,7 @@ func (s *service) UpdatePipeline(uid uuid.UUID, owner string, updatedPipeline *d
 
 	// Validation: Pipeline existence
 	if existingPipeline, _ := s.repository.GetPipeline(uid, owner); existingPipeline == nil {
-		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", uid.String())
-	}
-
-	// Validatation: id naming rule
-	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", updatedPipeline.ID); !match {
-		return nil, status.Error(codes.FailedPrecondition, "The id of pipeline is invalid")
-	}
-
-	// Validation: id length
-	if len(updatedPipeline.ID) > 63 {
-		return nil, status.Error(codes.FailedPrecondition, "The id of pipeline has more than 63 characters")
+		return nil, status.Errorf(codes.NotFound, "Pipeline uid \"%s\" is not found", uid.String())
 	}
 
 	if err := s.repository.UpdatePipeline(uid, owner, updatedPipeline); err != nil {
@@ -128,6 +120,40 @@ func (s *service) UpdatePipeline(uid uuid.UUID, owner string, updatedPipeline *d
 
 func (s *service) DeletePipeline(uid uuid.UUID, owner string) error {
 	return s.repository.DeletePipeline(uid, owner)
+}
+
+func (s *service) UpdatePipelineState(id string, owner string, state datamodel.PipelineState) (*datamodel.Pipeline, error) {
+	// TODO: Check if the state transition is valid
+
+	if err := s.repository.UpdatePipelineState(id, owner, state); err != nil {
+		return nil, err
+	}
+
+	dbPipeline, err := s.GetPipelineByID(id, owner)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbPipeline, nil
+}
+
+func (s *service) UpdatePipelineID(id string, owner string, newID string) (*datamodel.Pipeline, error) {
+
+	// Validation: Pipeline existence
+	if existingPipeline, _ := s.repository.GetPipelineByID(id, owner); existingPipeline == nil {
+		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", id)
+	}
+
+	if err := s.repository.UpdatePipelineID(id, owner, newID); err != nil {
+		return nil, err
+	}
+
+	dbPipeline, err := s.GetPipelineByID(newID, owner)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbPipeline, nil
 }
 
 func (s *service) ValidatePipeline(pipeline *datamodel.Pipeline) error {
@@ -183,7 +209,6 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeli
 	}
 
 	return nil, nil
-
 }
 
 func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceBinaryFileUploadResponse, error) {

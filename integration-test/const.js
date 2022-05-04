@@ -1,6 +1,6 @@
 export const dogImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b");
 
-export const numPipelines = 10
+export const numPipelines = 200
 
 export const model_id = "dummy-det"
 export const model_instance_id = "latest"

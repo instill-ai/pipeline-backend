@@ -102,14 +102,3 @@ func (r *Recipe) Value() (driver.Value, error) {
 	valueString, err := json.Marshal(r)
 	return string(valueString), err
 }
-
-type TriggerPipeline struct {
-	Name     string                    `json:"name,omitempty"`
-	Contents []*TriggerPipelineContent `json:"contents,omitempty"`
-}
-
-type TriggerPipelineContent struct {
-	Url    string `json:"url,omitempty"`
-	Base64 string `json:"base64,omitempty"`
-	Chunk  []byte `json:"chunk,omitempty"`
-}

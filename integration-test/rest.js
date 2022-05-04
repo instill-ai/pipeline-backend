@@ -83,8 +83,10 @@ export default function (data) {
   pipeline.CheckList()
   pipeline.CheckGet()
   pipeline.CheckUpdate()
+  pipeline.CheckUpdateState()
+  pipeline.CheckRename()
 
-  trigger.CheckTriggerImageDirect()
+  // trigger.CheckTriggerImageDirect()
 }
 
 export function teardown(data) {

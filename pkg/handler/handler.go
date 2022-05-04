@@ -13,6 +13,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
+	"github.com/iancoleman/strcase"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -45,7 +46,7 @@ func NewHandler(s service.Service) pipelinePB.PipelineServiceServer {
 	}
 }
 
-func (h *handler) Liveness(ctx context.Context, in *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
+func (h *handler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
 	return &pipelinePB.LivenessResponse{
 		HealthCheckResponse: &pipelinePB.HealthCheckResponse{
 			Status: pipelinePB.HealthCheckResponse_SERVING_STATUS_SERVING,
@@ -53,7 +54,7 @@ func (h *handler) Liveness(ctx context.Context, in *pipelinePB.LivenessRequest) 
 	}, nil
 }
 
-func (h *handler) Readiness(ctx context.Context, in *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
+func (h *handler) Readiness(ctx context.Context, req *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
 	return &pipelinePB.ReadinessResponse{
 		HealthCheckResponse: &pipelinePB.HealthCheckResponse{
 			Status: pipelinePB.HealthCheckResponse_SERVING_STATUS_SERVING,
@@ -63,16 +64,27 @@ func (h *handler) Readiness(ctx context.Context, in *pipelinePB.ReadinessRequest
 
 func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
 
+	// Set all OUTPUT_ONLY fields to zero value on the requested payload pipeline resource
+	if err := checkOutputOnlyFields(req.Pipeline); err != nil {
+		return &pipelinePB.CreatePipelineResponse{}, err
+	}
+
+	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkRequiredFields(req.Pipeline); err != nil {
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	ownerID, err := getOwner(ctx)
+	// Return error if resource ID does not follow RFC-1034
+	if err := checkResourceID(req.Pipeline.GetId()); err != nil {
+		return &pipelinePB.CreatePipelineResponse{}, err
+	}
+
+	owner, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.CreatePipeline(PBPipelineToDBPipeline(ownerID, req.GetPipeline()))
+	dbPipeline, err := h.service.CreatePipeline(PBPipelineToDBPipeline(owner, req.GetPipeline()))
 	if err != nil {
 		// Manually set the custom header to have a StatusBadRequest http response for REST endpoint
 		if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusBadRequest))); err != nil {
@@ -96,12 +108,12 @@ func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipe
 
 func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
 
-	ownerID, err := getOwner(ctx)
+	owner, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.ListPipelineResponse{}, err
 	}
 
-	dbPipelines, NextPageToken, err := h.service.ListPipeline(ownerID, req.GetView(), int(req.GetPageSize()), req.GetPageToken())
+	dbPipelines, nextPageToken, totalSize, err := h.service.ListPipeline(owner, req.GetView(), int(req.GetPageSize()), req.GetPageToken())
 	if err != nil {
 		return &pipelinePB.ListPipelineResponse{}, err
 	}
@@ -113,7 +125,8 @@ func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipeline
 
 	resp := pipelinePB.ListPipelineResponse{
 		Pipelines:     pbPipelines,
-		NextPageToken: NextPageToken,
+		NextPageToken: nextPageToken,
+		TotalSize:     totalSize,
 	}
 
 	return &resp, nil
@@ -126,7 +139,10 @@ func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRe
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	id := strings.TrimPrefix(req.GetName(), "pipelines/")
+	id, err := getID(req.Name)
+	if err != nil {
+		return &pipelinePB.GetPipelineResponse{}, err
+	}
 
 	dbPipeline, err := h.service.GetPipelineByID(id, owner)
 	if err != nil {
@@ -143,7 +159,7 @@ func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRe
 
 func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
-	ownerID, err := getOwner(ctx)
+	owner, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
@@ -161,9 +177,16 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	mask, err := checkUpdateMaskForOutputOnlyFields(pbUpdateMask)
+	mask, err := fieldmask_utils.MaskFromProtoFieldMask(pbUpdateMask, strcase.ToCamel)
 	if err != nil {
-		return &pipelinePB.UpdatePipelineResponse{}, err
+		return nil, status.Error(codes.FailedPrecondition, err.Error())
+	}
+
+	for _, field := range outputOnlyFields {
+		_, ok := mask.Filter(field)
+		if ok {
+			delete(mask, field)
+		}
 	}
 
 	if mask.IsEmpty() {
@@ -178,13 +201,23 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
+	// Set all OUTPUT_ONLY fields to zero value on the requested payload pipeline resource
+	if err := checkOutputOnlyFields(pbPipelineReq); err != nil {
+		return &pipelinePB.UpdatePipelineResponse{}, err
+	}
+
+	// Return error if IMMUTABLE fields are intentionally changed
+	if err := checkImmutableFields(pbPipelineReq, pbPipelineToUpdate); err != nil {
+		return &pipelinePB.UpdatePipelineResponse{}, err
+	}
+
 	// Only the fields mentioned in the field mask will be copied to `pbPipelineToUpdate`, other fields are left intact
 	err = fieldmask_utils.StructToStruct(mask, pbPipelineReq, pbPipelineToUpdate)
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.UpdatePipeline(id, ownerID, PBPipelineToDBPipeline(ownerID, pbPipelineToUpdate))
+	dbPipeline, err := h.service.UpdatePipeline(id, owner, PBPipelineToDBPipeline(owner, pbPipelineToUpdate))
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
@@ -198,7 +231,7 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 
 func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
-	ownerID, err := getOwner(ctx)
+	owner, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
@@ -213,7 +246,7 @@ func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipe
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
-	if err := h.service.DeletePipeline(id, ownerID); err != nil {
+	if err := h.service.DeletePipeline(id, owner); err != nil {
 		return nil, err
 	}
 
@@ -225,16 +258,93 @@ func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipe
 	return &pipelinePB.DeletePipelineResponse{}, nil
 }
 
+func (h *handler) ActivatePipeline(ctx context.Context, req *pipelinePB.ActivatePipelineRequest) (*pipelinePB.ActivatePipelineResponse, error) {
+
+	owner, err := getOwner(ctx)
+	if err != nil {
+		return &pipelinePB.ActivatePipelineResponse{}, err
+	}
+
+	id, err := getID(req.Name)
+	if err != nil {
+		return &pipelinePB.ActivatePipelineResponse{}, err
+	}
+
+	dbPipeline, err := h.service.UpdatePipelineState(id, owner, datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE))
+	if err != nil {
+		return &pipelinePB.ActivatePipelineResponse{}, err
+	}
+
+	resp := pipelinePB.ActivatePipelineResponse{
+		Pipeline: DBPipelineToPBPipeline(dbPipeline),
+	}
+
+	return &resp, nil
+}
+
+func (h *handler) DeactivatePipeline(ctx context.Context, req *pipelinePB.DeactivatePipelineRequest) (*pipelinePB.DeactivatePipelineResponse, error) {
+
+	owner, err := getOwner(ctx)
+	if err != nil {
+		return &pipelinePB.DeactivatePipelineResponse{}, err
+	}
+
+	id, err := getID(req.Name)
+	if err != nil {
+		return &pipelinePB.DeactivatePipelineResponse{}, err
+	}
+
+	dbPipeline, err := h.service.UpdatePipelineState(id, owner, datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE))
+	if err != nil {
+		return &pipelinePB.DeactivatePipelineResponse{}, err
+	}
+
+	resp := pipelinePB.DeactivatePipelineResponse{
+		Pipeline: DBPipelineToPBPipeline(dbPipeline),
+	}
+
+	return &resp, nil
+}
+
+func (h *handler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipelineRequest) (*pipelinePB.RenamePipelineResponse, error) {
+
+	owner, err := getOwner(ctx)
+	if err != nil {
+		return &pipelinePB.RenamePipelineResponse{}, err
+	}
+
+	id, err := getID(req.Name)
+	if err != nil {
+		return &pipelinePB.RenamePipelineResponse{}, err
+	}
+
+	newID := req.GetNewPipelineId()
+	if err := checkResourceID(newID); err != nil {
+		return &pipelinePB.RenamePipelineResponse{}, err
+	}
+
+	dbPipeline, err := h.service.UpdatePipelineID(id, owner, newID)
+	if err != nil {
+		return &pipelinePB.RenamePipelineResponse{}, err
+	}
+
+	resp := pipelinePB.RenamePipelineResponse{
+		Pipeline: DBPipelineToPBPipeline(dbPipeline),
+	}
+
+	return &resp, nil
+}
+
 func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
 
-	ownerID, err := getOwner(ctx)
+	owner, err := getOwner(ctx)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
 	id := strings.TrimPrefix(req.GetName(), "pipelines/")
 
-	dbPipeline, err := h.service.GetPipelineByID(id, ownerID)
+	dbPipeline, err := h.service.GetPipelineByID(id, owner)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
@@ -262,7 +372,7 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
 
-	ownerID, err := getOwner(stream.Context())
+	owner, err := getOwner(stream.Context())
 	if err != nil {
 		return err
 	}
@@ -274,7 +384,7 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 
 	id := strings.TrimPrefix(data.GetName(), "pipelines/")
 
-	dbPipeline, err := h.service.GetPipelineByID(id, ownerID)
+	dbPipeline, err := h.service.GetPipelineByID(id, owner)
 	if err != nil {
 		return err
 	}
