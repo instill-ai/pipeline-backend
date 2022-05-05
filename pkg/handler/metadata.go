@@ -20,7 +20,7 @@ func extractFromMetadata(ctx context.Context, key string) ([]string, bool) {
 func getID(name string) (string, error) {
 	id := strings.TrimPrefix(name, "pipelines/")
 	if id == "" {
-		return "", status.Error(codes.FailedPrecondition, "Error when extract resource id")
+		return "", status.Error(codes.InvalidArgument, "Error when extract resource id")
 	}
 	return id, nil
 }
@@ -29,9 +29,9 @@ func getOwner(ctx context.Context) (string, error) {
 	metadatas, ok := extractFromMetadata(ctx, "owner")
 	if ok {
 		if len(metadatas) == 0 {
-			return "", status.Error(codes.FailedPrecondition, "Cannot find `owner` in your request")
+			return "", status.Error(codes.InvalidArgument, "Cannot find `owner` in your request")
 		}
 		return metadatas[0], nil
 	}
-	return "", status.Error(codes.FailedPrecondition, "Error when extract metadata")
+	return "", status.Error(codes.InvalidArgument, "Error when extract metadata")
 }

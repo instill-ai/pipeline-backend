@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"regexp"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -50,23 +49,13 @@ func NewService(r repository.Repository, m modelPB.ModelServiceClient) Service {
 
 func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	// Validatation: name naming rule
-	if match, _ := regexp.MatchString("^[A-Za-z0-9][a-zA-Z0-9_.-]*$", pipeline.ID); !match {
-		return nil, status.Error(codes.FailedPrecondition, "The id of pipeline is invalid")
-	}
-
-	// Validation: name length
-	if len(pipeline.ID) > 63 {
-		return nil, status.Error(codes.FailedPrecondition, "The id of pipeline has more than 63 characters")
-	}
-
 	// Determine pipeline mode
 	if util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Source) &&
 		util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Destination) {
 		if pipeline.Recipe.Source == pipeline.Recipe.Destination {
 			pipeline.Mode = datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC)
 		} else {
-			return nil, status.Error(codes.FailedPrecondition, "Source and destination connector must be the same for directness connection type")
+			return nil, status.Error(codes.InvalidArgument, "Source and destination connector must be the same for directness connection type")
 		}
 	} else {
 		pipeline.Mode = datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC)

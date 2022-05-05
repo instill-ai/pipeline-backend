@@ -169,7 +169,7 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 
 	// Validate the field mask
 	if !pbUpdateMask.IsValid(pbPipelineReq) {
-		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.FailedPrecondition, "The update_mask is invalid")
+		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.InvalidArgument, "The update_mask is invalid")
 	}
 
 	getResp, err := h.GetPipeline(ctx, &pipelinePB.GetPipelineRequest{Name: pbPipelineReq.GetName()})
@@ -179,7 +179,7 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 
 	mask, err := fieldmask_utils.MaskFromProtoFieldMask(pbUpdateMask, strcase.ToCamel)
 	if err != nil {
-		return nil, status.Error(codes.FailedPrecondition, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	for _, field := range outputOnlyFields {

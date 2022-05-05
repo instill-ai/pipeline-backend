@@ -26,11 +26,11 @@ func checkRequiredFields(pbPipeline *pipelinePB.Pipeline) error {
 		switch f.Kind() {
 		case reflect.String:
 			if f.String() == "" {
-				return status.Errorf(codes.FailedPrecondition, "Required field %s is not provided", field)
+				return status.Errorf(codes.InvalidArgument, "Required field %s is not provided", field)
 			}
 		case reflect.Ptr:
 			if f.IsNil() {
-				return status.Errorf(codes.FailedPrecondition, "Required field %s is not provided", field)
+				return status.Errorf(codes.InvalidArgument, "Required field %s is not provided", field)
 			}
 		}
 	}
@@ -73,7 +73,7 @@ func checkImmutableFields(pbPipelineReq *pipelinePB.Pipeline, pbPipelineToUpdate
 // Implementation follows https://google.aip.dev/122#resource-id-segments
 func checkResourceID(id string) error {
 	if match, _ := regexp.MatchString("^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$", id); !match {
-		return status.Error(codes.FailedPrecondition, "The id of pipeline needs to be within ASCII-only 63 characters following RFC-1034 with a regexp (^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$)")
+		return status.Error(codes.InvalidArgument, "The id of pipeline needs to be within ASCII-only 63 characters following RFC-1034 with a regexp (^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$)")
 	}
 	return nil
 }
