@@ -77,7 +77,7 @@ func (r *repository) ListPipeline(owner string, view pipelinePB.View, pageSize i
 	for rows.Next() {
 		var item datamodel.Pipeline
 		if err = r.db.ScanRows(rows, &item); err != nil {
-			return nil, "", 0, status.Errorf(codes.Internal, "Error %v", err.Error())
+			return nil, "", 0, status.Error(codes.Internal, err.Error())
 		}
 		createTime = item.CreateTime
 		pipelines = append(pipelines, item)

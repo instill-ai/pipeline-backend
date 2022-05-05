@@ -201,11 +201,6 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	// Set all OUTPUT_ONLY fields to zero value on the requested payload pipeline resource
-	if err := checkOutputOnlyFields(pbPipelineReq); err != nil {
-		return &pipelinePB.UpdatePipelineResponse{}, err
-	}
-
 	// Return error if IMMUTABLE fields are intentionally changed
 	if err := checkImmutableFields(pbPipelineReq, pbPipelineToUpdate); err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
