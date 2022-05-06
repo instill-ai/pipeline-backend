@@ -1,13 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
-  "$id": "https://github.com/instill-ai/pipeline-backend/blob/main/configs/models/standard-pipeline.json",
+  "$id": "https://github.com/instill-ai/pipeline-backend/blob/main/configs/models/pipeline.json",
   "title": "Pipeline",
-  "description": "The standard pipeline data structure",
+  "description": "Pipeline related data structures",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "pipeline"
-  ],
+  "required": ["pipeline"],
   "properties": {
     "pipeline": {
       "$ref": "#/definitions/Pipeline"
@@ -17,109 +15,135 @@
     "Pipeline": {
       "type": "object",
       "title": "Pipeline",
-      "description": "The specification of a pipeline",
+      "description": "The pipeline data structures",
       "additionalProperties": false,
-      "required": [
-        "name",
-        "recipe"
-      ],
+      "required": ["id", "recipe"],
       "properties": {
-        "id": {
+        "name": {
+          "type": "string",
+          "title": "Resource name",
+          "description": "The resource name",
+          "readOnly": true,
+          "ui_order": 0,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "text"
+        },
+        "uid": {
           "type": "string",
           "format": "uuid",
-          "title": "ID",
-          "description": "The unique ID",
+          "title": "UUID",
+          "description": "The unique UUID",
           "readOnly": true,
-          "instill_order": 0
+          "ui_order": 1,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "text"
         },
-        "name": {
+        "id": {
           "type": "string",
           "title": "Name",
           "description": "The pipeline name",
-          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*$",
+          "pattern": "^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$",
           "minLength": 1,
-          "maxLength": 100,
-          "instill_order": 1
+          "maxLength": 63,
+          "ui_order": 2,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "text",
+          "ui_placeholder": "my-pipeline"
         },
         "description": {
           "type": "string",
           "title": "Description",
-          "description": "The pipeline description",
+          "description": "Fill with a short description of your pipeline",
           "minLength": 0,
-          "maxLength": 1024,
-          "instill_order": 2
+          "maxLength": 1023,
+          "ui_order": 6,
+          "ui_component": "textarea_enable_counter"
         },
         "recipe": {
           "type": "object",
           "title": "Recipe",
           "description": "The pipeline recipe",
           "$ref": "#/definitions/Recipe",
-          "instill_order": 3
+          "additionalProperties": false,
+          "ui_order": 4,
+          "ui_hidden": true,
+          "ui_disabled": true
         },
         "mode": {
           "type": "string",
           "title": "Mode",
           "description": "The pipeline mode",
-          "enum": [
-            "MODE_UNSPECIFIED",
-            "MODE_SYNC",
-            "MODE_ASYNC"
-          ],
+          "enum": ["MODE_UNSPECIFIED", "MODE_SYNC", "MODE_ASYNC"],
           "default": "MODE_UNSPECIFIED",
           "readOnly": true,
-          "instill_order": 4
+          "ui_order": 5,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "select",
+          "ui_enum": ["", "Sync", "Async"]
         },
-        "status": {
+        "state": {
           "type": "string",
-          "title": "Status",
-          "description": "The pipeline status",
+          "title": "State",
+          "description": "The current state of your pipeline. It could be \"Inactive\", \"active\" and \"Error\".",
           "enum": [
-            "STATUS_UNSPECIFIED",
-            "STATUS_INACTIVATED",
-            "STATUS_ACTIVATED",
-            "STATUS_ERROR"
+            "STATE_UNSPECIFIED",
+            "STATE_INACTIVE",
+            "STATE_ACTIVE",
+            "STATE_ERROR"
           ],
-          "default": "STATUS_UNSPECIFIED",
+          "default": "STATE_UNSPECIFIED",
           "readOnly": true,
-          "instill_order": 5
+          "ui_order": 3,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "select",
+          "ui_enum": ["", "Inactive", "Active", "Error"]
         },
-        "owner_id": {
+        "owner": {
           "type": "string",
           "format": "uuid",
           "title": "Owner ID",
-          "description": "The pipeline owner ID",
+          "description": "The pipeline owner resource name",
+          "oneOf": [
+            {"type": "string", "description": "The resource name of a user"},
+            {
+              "type": "string",
+              "description": "The resource name of an organization"
+            }
+          ],
           "readOnly": true,
-          "instill_order": 6
-        },
-        "full_name": {
-          "type": "string",
-          "title": "Full name",
-          "description": "The pipeline full name",
-          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*/[A-Za-z0-9][a-zA-Z0-9_.-]*$",
-          "readOnly": true,
-          "instill_order": 7
+          "ui_order": 7,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "text"
         },
         "create_time": {
           "type": "string",
           "format": "date-time",
-          "title": "Created at",
+          "title": "Create time",
           "description": "The date when the pipeline is created in the format YYYY-MM-DDTHH:MM::SS",
-          "examples": [
-            "2022-04-29T00:20:06.703547Z"
-          ],
+          "examples": ["2022-04-29T00:20:06.703547Z"],
           "readOnly": true,
-          "instill_order": 8
+          "ui_order": 8,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "text"
         },
         "update_time": {
           "type": "string",
           "format": "date-time",
-          "title": "Updated at",
+          "title": "Update time",
           "description": "The date when the pipeline is updated in the format YYYY-MM-DDTHH:MM::SS",
-          "examples": [
-            "2022-04-29T00:20:06.703547Z"
-          ],
+          "examples": ["2022-04-29T01:33:34.910865Z"],
           "readOnly": true,
-          "instill_order": 9
+          "ui_order": 9,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "text"
         }
       }
     },
@@ -128,93 +152,37 @@
       "title": "Recipe",
       "description": "The specification of a recipe",
       "additionalProperties": false,
-      "required": [
-        "source",
-        "models",
-        "destination"
-      ],
+      "required": ["source", "models", "destination"],
       "properties": {
         "source": {
-          "type": "object",
-          "$ref": "#/definitions/Source",
-          "instill_order": 0
+          "type": "string",
+          "title": "Source",
+          "description": "The resource name of the source connector in a recipe",
+          "ui_order": 0,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "text"
         },
-        "models": {
+        "model_instances": {
           "type": "array",
+          "title": "Model instances",
+          "description": "A list of resource names of all the model instances in a recipe",
           "items": {
-            "$ref": "#/definitions/Model"
+            "type": "string"
           },
-          "instill_order": 1
+          "ui_order": 1,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "text"
         },
         "destination": {
-          "type": "object",
-          "$ref": "#/definitions/Destination",
-          "instill_order": 2
-        }
-      }
-    },
-    "Source": {
-      "type": "object",
-      "title": "Source",
-      "description": "The specification of a source connector",
-      "additionalProperties": false,
-      "required": [
-        "name"
-      ],
-      "properties": {
-        "name": {
           "type": "string",
-          "title": "Name",
-          "description": "The source connector name",
-          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*$",
-          "minLength": 1,
-          "maxLength": 100,
-          "instill_order": 0
-        }
-      }
-    },
-    "Model": {
-      "type": "object",
-      "title": "Model",
-      "description": "The specification of a model",
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "instance_name"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "title": "Name",
-          "description": "The model name",
-          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*$",
-          "minLength": 1,
-          "maxLength": 100,
-          "instill_order": 0
-        },
-        "instance_name": {
-          "type": "string",
-          "title": "Instance name",
-          "description": "The model instance name",
-          "instill_order": 1
-        }
-      }
-    },
-    "Destination": {
-      "type": "object",
-      "title": "Destination",
-      "description": "The specification of a destination connector",
-      "additionalProperties": false,
-      "required": [],
-      "properties": {
-        "name": {
-          "type": "string",
-          "title": "Name",
-          "description": "The source connector name",
-          "pattern": "^[A-Za-z0-9][a-zA-Z0-9_.-]*$",
-          "minLength": 1,
-          "maxLength": 100,
-          "instill_order": 0
+          "title": "Destination",
+          "description": "The resource name of the destination connector in a recipe",
+          "ui_order": 2,
+          "ui_hidden": true,
+          "ui_disabled": true,
+          "ui_component": "text"
         }
       }
     }
