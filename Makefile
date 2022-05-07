@@ -1,7 +1,7 @@
 .DEFAULT_GOAL:=help
 
-DEVELOP_SERVICES := pipeline_backend pipeline_backend_migrate
-INSTILL_SERVICES := model_backend_migrate model_backend triton_conda_env
+DEVELOP_SERVICES := pipeline_backend
+INSTILL_SERVICES := model_backend triton_conda_env
 3RD_PARTY_SERVICES := pg_sql triton_server temporal redis redoc_openapi
 VOLUMES := model-repository conda-pack
 

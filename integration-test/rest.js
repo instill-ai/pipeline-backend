@@ -10,10 +10,8 @@ import * as helper from "./helper.js";
 import * as pipeline from './rest-pipeline.js';
 import * as trigger from './rest-trigger.js';
 
-const pipelineHost = "http://localhost:8080/v1alpha";
+const pipelineHost = "http://localhost:8080";
 const modelHost = "http://localhost:8081";
-
-const det_model = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dummy-det-model.zip`, "b");
 
 export let options = {
   setupTimeout: '300s',
@@ -28,37 +26,46 @@ export function setup() {
   {
     group("Model Backend API: Create a detection model", function () {
       let fd = new FormData();
-      fd.append("name", constant.model_id);
-      fd.append("description", randomString(20));
-      fd.append("content", http.file(det_model, "dummy-det-model.zip"));
-
-      check(http.request("POST", `${modelHost}/models/upload`, fd.body(), {
+      let model_description = randomString(20)
+      fd.append("name", "models/" + constant.model_id);
+      fd.append("description", model_description);
+      fd.append("model_definition_name", constant.model_def_name);
+      fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
+      check(http.request("POST", `${modelHost}/v1alpha/models/upload`, fd.body(), {
         headers: {
           "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
         },
       }), {
-        "POST /models/upload (multipart) det response Status": (r) => r.status === 200, // TODO: update status to 201
-        "POST /models/upload (multipart) task det response model.name": (r) => r.json().model.name === constant.model_id,
-        "POST /models/upload (multipart) task det response model.full_name": (r) => r.json().model.full_name === `local-user/${constant.model_id}`,
-        "POST /models/upload (multipart) task det response model.instances.length": (r) => r.json().model.instances.length === 1,
+        "POST /v1alpha/models (multipart) github task det response status": (r) => r.status === 201,
+        "POST /v1alpha/models/upload (multipart) task det response model.name": (r) => r.json().model.name === `models/${constant.model_id}`,
+        "POST /v1alpha/models/upload (multipart) task det response model.uid": (r) => r.json().model.uid !== undefined,
+        "POST /v1alpha/models/upload (multipart) task det response model.id": (r) => r.json().model.id === constant.model_id,
+        "POST /v1alpha/models/upload (multipart) task det response model.description": (r) => r.json().model.description === model_description,
+        "POST /v1alpha/models/upload (multipart) task det response model.model_definition": (r) => r.json().model.model_definition === constant.model_def_name,
+        "POST /v1alpha/models/upload (multipart) task det response model.configuration": (r) => r.json().model.configuration !== undefined,
+        "POST /v1alpha/models/upload (multipart) task det response model.visibility": (r) => r.json().model.visibility === "VISIBILITY_PRIVATE",
+        "POST /v1alpha/models/upload (multipart) task det response model.owner": (r) => r.json().model.user === 'users/local-user',
+        "POST /v1alpha/models/upload (multipart) task det response model.create_time": (r) => r.json().model.create_time !== undefined,
+        "POST /v1alpha/models/upload (multipart) task det response model.update_time": (r) => r.json().model.update_time !== undefined,
       });
 
-      let payload = JSON.stringify({
-        "status": "STATUS_ONLINE",
-      });
-
-      check(http.request("PATCH", `${modelHost}/models/${constant.model_id}/instances/latest`, payload, {
+      check(http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest:deploy`, {}, {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
       }), {
-        [`PATCH /models/${constant.model_id}/instances/latest online task det response status`]: (r) => r.status === 200, // TODO: update status to 201
-        [`PATCH /models/${constant.model_id}/instances/latest online task det response instance.name`]: (r) => r.json().instance.name === "latest",
-        [`PATCH /models/${constant.model_id}/instances/latest online task det response instance.model_definition_id`]: (r) => helper.isUUID(r.json().instance.model_definition_id),
-        [`PATCH /models/${constant.model_id}/instances/latest online task det response instance.created_at`]: (r) => r.json().instance.created_at !== undefined,
-        [`PATCH /models/${constant.model_id}/instances/latest online task det response instance.updated_at`]: (r) => r.json().instance.updated_at !== undefined,
-        [`PATCH /models/${constant.model_id}/instances/latest online task det response instance.status`]: (r) => r.json().instance.status === "STATUS_ONLINE",
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response status`]: (r) => r.status === 200,
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.name`]: (r) => r.json().instance.name === `models/${constant.model_id}/instances/latest`,
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.uid`]: (r) => r.json().instance.uid !== undefined,
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.id`]: (r) => r.json().instance.id === "latest",
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.state`]: (r) => r.json().instance.state === "STATE_ONLINE",
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.task`]: (r) => r.json().instance.task === "TASK_DETECTION",
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.model_definition`]: (r) => r.json().instance.model_definition === constant.model_def_name,
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.create_time`]: (r) => r.json().instance.create_time !== undefined,
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.update_time`]: (r) => r.json().instance.update_time !== undefined,
+        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.configuration`]: (r) => r.json().instance.configuration !== undefined,
       });
+
     });
   }
 }
@@ -73,7 +80,7 @@ export default function (data) {
   // Health check
   {
     group("Pipelines API: Health check", () => {
-      check(http.request("GET", `${pipelineHost}/health/pipeline`), {
+      check(http.request("GET", `${pipelineHost}/v1alpha/health/pipeline`), {
         "GET /health/pipeline response status is 200": (r) => r.status === 200,
       });
     });
@@ -86,17 +93,15 @@ export default function (data) {
   pipeline.CheckUpdateState()
   pipeline.CheckRename()
 
-  // trigger.CheckTriggerImageDirect()
+  trigger.CheckTriggerImageDirect()
 }
 
 export function teardown(data) {
   group("Model Backend API: Delete the detection model", function () {
-    check(http.request("DELETE", `${modelHost}/models/${constant.model_id}`, null, {
-      headers: {
-        "Content-Type": "application/json"
-      },
+    check(http.request("DELETE", `${modelHost}/v1alpha/models/${constant.model_id}`, null, {
+      headers: { "Content-Type": "application/json" }
     }), {
-      "DELETE clean up response status": (r) => r.status === 200 // TODO: update status to 204
+      [`DELETE /v1alpha/models/${constant.model_id} response status is 200`]: (r) => r.status === 200,
     });
   });
 }

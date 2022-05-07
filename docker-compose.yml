@@ -68,6 +68,19 @@ services:
       pg_sql:
         condition: service_healthy
 
+  model_backend_init:
+    container_name: model-backend-init
+    image: instill/model-backend:dev
+    restart: on-failure
+    environment:
+      CFG_DATABASE_HOST: pg_sql
+      CFG_DATABASE_PORT: 5432
+      CFG_DATABASE_USERNAME: postgres
+      CFG_DATABASE_PASSWORD: password
+    entrypoint: ./model-backend-init
+    depends_on:
+      - model_backend_migrate
+
   model_backend:
     container_name: model-backend
     # image: instill/model-backend:v0.3.2-alpha
@@ -88,7 +101,7 @@ services:
     depends_on:
       triton_server:
         condition: service_healthy
-      model_backend_migrate:
+      model_backend_init:
         condition: service_completed_successfully
 
   triton_conda_env:

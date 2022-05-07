@@ -19,7 +19,7 @@ export function CheckCreate() {
     )
 
     // Create a pipeline
-    var resOrigin = http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    var resOrigin = http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -37,7 +37,7 @@ export function CheckCreate() {
       "POST /pipelines response pipeline update_time": (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0)
     });
 
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -45,7 +45,7 @@ export function CheckCreate() {
       "POST /pipelines re-create the same id response status is 400": (r) => r.status === 400
     });
 
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -53,7 +53,7 @@ export function CheckCreate() {
       [`DELETE /pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
     });
 
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -61,7 +61,7 @@ export function CheckCreate() {
       "POST /pipelines re-create the same id after deletion response status is 201": (r) => r.status === 201
     });
 
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify({}), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify({}), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -69,7 +69,7 @@ export function CheckCreate() {
       "POST /pipelines with empty body response status is 400": (r) => r.status === 400,
     });
 
-    check(http.request("POST", `${pipelineHost}/pipelines`, null, {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -78,7 +78,7 @@ export function CheckCreate() {
     });
 
     reqBody.id = null
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -87,7 +87,7 @@ export function CheckCreate() {
     });
 
     reqBody.id = "abcd?*&efg!"
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -96,7 +96,7 @@ export function CheckCreate() {
     });
 
     reqBody.id = randomString(64)
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -105,7 +105,7 @@ export function CheckCreate() {
     });
 
     reqBody.id = "🧡💜我愛潤物科技💚💙"
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -114,7 +114,7 @@ export function CheckCreate() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${resOrigin.json().pipeline.id}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${resOrigin.json().pipeline.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -143,7 +143,7 @@ export function CheckList() {
 
     // Create pipelines
     for (const reqBody of reqBodies) {
-      check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+      check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
         headers: {
           "Content-Type": "application/json",
         },
@@ -152,7 +152,7 @@ export function CheckList() {
       });
     }
 
-    check(http.request("GET", `${pipelineHost}/pipelines`, null, {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines`, null, {
       headers: {
         "Content-Type": "application/json",
       }
@@ -162,7 +162,7 @@ export function CheckList() {
       [`GET /pipelines response pipelines[0] no recipe`]: (r) => r.json().pipelines[0].recipe === null,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines?view=VIEW_FULL`, null, {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?view=VIEW_FULL`, null, {
       headers: {
         "Content-Type": "application/json",
       }
@@ -170,7 +170,7 @@ export function CheckList() {
       [`GET /pipelines?view=VIEW_FULL response pipelines[0] has recipe`]: (r) => r.json().pipelines[0].recipe !== undefined,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines?view=VIEW_BASIC`, null, {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?view=VIEW_BASIC`, null, {
       headers: {
         "Content-Type": "application/json",
       }
@@ -178,7 +178,7 @@ export function CheckList() {
       [`GET /pipelines?view=VIEW_BASIC response pipelines[0] has no recipe`]: (r) => r.json().pipelines[0].recipe === null,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines?page_size=3`, null, {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?page_size=3`, null, {
       headers: {
         "Content-Type": "application/json",
       }
@@ -186,7 +186,7 @@ export function CheckList() {
       [`GET /pipelines?page_size=3 response pipelines.length == 3`]: (r) => r.json().pipelines.length == 3,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines?page_size=101`, null, {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?page_size=101`, null, {
       headers: {
         "Content-Type": "application/json",
       }
@@ -198,7 +198,7 @@ export function CheckList() {
     for (const reqBody of reqBodies) {
       check(http.request(
         "DELETE",
-        `${pipelineHost}/pipelines/${reqBody.id}`,
+        `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`,
         JSON.stringify(reqBody), {
         headers: {
           "Content-Type": "application/json",
@@ -224,7 +224,7 @@ export function CheckGet() {
     )
 
     // Create a pipeline
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -232,7 +232,7 @@ export function CheckGet() {
       "POST /pipelines response status is 201": (r) => r.status === 201,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -245,7 +245,7 @@ export function CheckGet() {
       [`GET /pipelines/${reqBody.id} response pipeline recipe`]: (r) => r.json().pipeline.recipe !== undefined,
     });
 
-    check(http.request("GET", `${pipelineHost}/pipelines/this-id-does-not-exist`, null, {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines/this-id-does-not-exist`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -254,7 +254,7 @@ export function CheckGet() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -279,7 +279,7 @@ export function CheckUpdate() {
     )
 
     // Create a pipeline
-    var resOrigin = http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    var resOrigin = http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -304,7 +304,7 @@ export function CheckUpdate() {
       detectionRecipeUpdate
     )
 
-    check(http.request("PATCH", `${pipelineHost}/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -323,7 +323,7 @@ export function CheckUpdate() {
     });
 
     reqBodyUpdate.description = ""
-    check(http.request("PATCH", `${pipelineHost}/pipelines/${reqBody.id}`,
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`,
       JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
@@ -333,7 +333,7 @@ export function CheckUpdate() {
     });
 
     reqBodyUpdate.description = randomString(10)
-    check(http.request("PATCH", `${pipelineHost}/pipelines/${reqBody.id}`,
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`,
       JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
@@ -343,7 +343,7 @@ export function CheckUpdate() {
     });
 
     reqBodyUpdate.id = randomString(10)
-    check(http.request("PATCH", `${pipelineHost}/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -352,7 +352,7 @@ export function CheckUpdate() {
     });
 
     reqBodyUpdate.id = reqBody.id
-    check(http.request("PATCH", `${pipelineHost}/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -360,7 +360,7 @@ export function CheckUpdate() {
       [`PATCH /pipelines/${reqBody.id} response status for updating IMMUTABLE field with the same id is 200`]: (r) => r.status === 200,
     });
 
-    check(http.request("PATCH", `${pipelineHost}/pipelines/this-id-does-not-exist`,
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/this-id-does-not-exist`,
       JSON.stringify(reqBodyUpdate), {
       headers: {
         "Content-Type": "application/json",
@@ -370,7 +370,7 @@ export function CheckUpdate() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -395,7 +395,7 @@ export function CheckUpdateState() {
     )
 
     // Create a pipeline
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -404,7 +404,7 @@ export function CheckUpdateState() {
       "POST /pipelines response pipeline state UNSPECIFIED": (r) => r.json().pipeline.state === "STATE_UNSPECIFIED",
     });
 
-    check(http.request("POST", `${pipelineHost}/pipelines/${reqBody.id}:activate`, null, {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:activate`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -412,7 +412,7 @@ export function CheckUpdateState() {
       [`POST /pipelines/${reqBody.id}:rename response pipeline state ACTIVE"`]: (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
 
-    check(http.request("POST", `${pipelineHost}/pipelines/${reqBody.id}:deactivate`, null, {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:deactivate`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -421,7 +421,7 @@ export function CheckUpdateState() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -445,7 +445,7 @@ export function CheckRename() {
     )
 
     // Create a pipeline
-    var resOrigin = http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    var resOrigin = http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -457,7 +457,7 @@ export function CheckRename() {
     });
 
     reqBody.new_pipeline_id = randomString(10)
-    check(http.request("POST", `${pipelineHost}/pipelines/${resOrigin.json().pipeline.id}:rename`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${resOrigin.json().pipeline.id}:rename`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -468,7 +468,7 @@ export function CheckRename() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.new_pipeline_id}`, null, {
+    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.new_pipeline_id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },

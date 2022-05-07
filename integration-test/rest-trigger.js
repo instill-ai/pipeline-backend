@@ -20,7 +20,7 @@ export function CheckTriggerImageDirect() {
 
   group("Pipelines API: Trigger a pipeline", () => {
 
-    check(http.request("POST", `${pipelineHost}/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -45,7 +45,7 @@ export function CheckTriggerImageDirect() {
       ],
     };
 
-    check(http.request("POST", `${pipelineHost}/pipelines/${reqBody.id}:trigger`, JSON.stringify(payloadImageURL), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger`, JSON.stringify(payloadImageURL), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -69,7 +69,7 @@ export function CheckTriggerImageDirect() {
       ],
     };
 
-    check(http.request("POST", `${pipelineHost}/pipelines/${reqBody.id}:trigger`, JSON.stringify(payloadImageBase64), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger`, JSON.stringify(payloadImageBase64), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -84,18 +84,13 @@ export function CheckTriggerImageDirect() {
 
     const fd = new FormData();
     fd.append("file", http.file(constant.dogImg));
-    // fd.append("file", http.file(constant.dogImg));
-    // fd.append("file", http.file(constant.dogImg));
-
-    var res = http.request("POST", `${pipelineHost}/pipelines/${reqBody.id}:trigger-multipart`, fd.body(), {
+    fd.append("file", http.file(constant.dogImg));
+    fd.append("file", http.file(constant.dogImg));
+    check(res = http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
-    })
-
-    console.log(JSON.stringify(res))
-
-    check(res, {
+    }), {
       [`POST /pipelines/${reqBody.id}/outputs (multipart) response status is 200`]: (r) => r.status === 200,
       [`POST /pipelines/${reqBody.id}/outputs (multipart) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === fd.parts.length,
       [`POST /pipelines/${reqBody.id}/outputs (multipart) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
@@ -105,7 +100,7 @@ export function CheckTriggerImageDirect() {
   });
 
   // Delete the pipeline
-  check(http.request("DELETE", `${pipelineHost}/pipelines/${reqBody.id}`, null, {
+  check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
     headers: {
       "Content-Type": "application/json",
     },
