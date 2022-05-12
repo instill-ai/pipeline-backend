@@ -63,14 +63,7 @@
           "ui_component": "textarea_enable_counter"
         },
         "recipe": {
-          "type": "object",
-          "title": "Recipe",
-          "description": "The pipeline recipe",
-          "$ref": "#/definitions/Recipe",
-          "additionalProperties": false,
-          "ui_order": 4,
-          "ui_hidden": true,
-          "ui_disabled": true
+          "$ref": "#/definitions/Recipe"
         },
         "mode": {
           "type": "string",
