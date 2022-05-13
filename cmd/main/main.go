@@ -23,6 +23,7 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
 	"github.com/instill-ai/pipeline-backend/configs"
+	"github.com/instill-ai/pipeline-backend/internal/external"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/internal/temporal"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
@@ -31,7 +32,6 @@ import (
 
 	cache "github.com/instill-ai/pipeline-backend/internal/cache"
 	database "github.com/instill-ai/pipeline-backend/internal/db"
-	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
@@ -58,10 +58,13 @@ func main() {
 	}
 
 	db := database.GetConnection()
+	defer database.Close(db)
 
 	cache.Init()
+	defer cache.Close()
 
 	temporal.Init()
+	defer temporal.Close()
 
 	// Create tls based credential.
 	var creds credentials.TransportCredentials
@@ -106,26 +109,16 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	var modelClientDialOpts grpc.DialOption
-	if configs.Config.ModelBackend.TLS {
-		modelClientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		modelClientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelBackend.Host, configs.Config.ModelBackend.Port), modelClientDialOpts)
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
-
-	modelServiceClient := modelPB.NewModelServiceClient(clientConn)
-
-	r := repository.NewRepository(db)
-	s := service.NewService(r, modelServiceClient)
-	h := handler.NewHandler(s)
-
 	grpcS := grpc.NewServer(grpcServerOpts...)
-	pipelinePB.RegisterPipelineServiceServer(grpcS, h)
+	pipelinePB.RegisterPipelineServiceServer(
+		grpcS,
+		handler.NewHandler(
+			service.NewService(
+				repository.NewRepository(db),
+				external.InitConnectorServiceClient(),
+				external.InitModelServiceClient(),
+			)),
+	)
 
 	gwS := runtime.NewServeMux(
 		runtime.WithForwardResponseOption(httpResponseModifier),
@@ -163,10 +156,9 @@ func main() {
 		Handler: grpcHandlerFunc(grpcS, gwS),
 	}
 
-	errSig := make(chan error)
 	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 5 seconds.
 	quitSig := make(chan os.Signal, 1)
-
+	errSig := make(chan error)
 	if configs.Config.Server.HTTPS.Cert != "" && configs.Config.Server.HTTPS.Key != "" {
 		go func() {
 			if err := httpServer.ListenAndServeTLS(configs.Config.Server.HTTPS.Cert, configs.Config.Server.HTTPS.Key); err != nil {
@@ -191,13 +183,7 @@ func main() {
 	case err := <-errSig:
 		logger.Error(fmt.Sprintf("Fatal error: %v\n", err))
 	case <-quitSig:
+		logger.Info("Shutting down server...")
+		grpcS.GracefulStop()
 	}
-
-	logger.Info("Shutting down server...")
-
-	// grpcS.GracefulStop()
-	temporal.Close()
-	cache.Close()
-	database.Close(db)
-
 }

@@ -17,8 +17,8 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
-// PBPipelineToDBPipeline converts protobuf data model to db data model
-func PBPipelineToDBPipeline(owner string, pbPipeline *pipelinePB.Pipeline) *datamodel.Pipeline {
+// PBToDBPipeline converts protobuf data model to db data model
+func PBToDBPipeline(owner string, pbPipeline *pipelinePB.Pipeline) *datamodel.Pipeline {
 	logger, _ := logger.GetZapLogger()
 
 	return &datamodel.Pipeline{
@@ -60,23 +60,25 @@ func PBPipelineToDBPipeline(owner string, pbPipeline *pipelinePB.Pipeline) *data
 		},
 
 		Recipe: func() *datamodel.Recipe {
-			b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetRecipe())
-			if err != nil {
-				logger.Fatal(err.Error())
-			}
+			if pbPipeline.GetRecipe() != nil {
+				b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetRecipe())
+				if err != nil {
+					logger.Fatal(err.Error())
+				}
 
-			recipe := datamodel.Recipe{}
-			if err := json.Unmarshal(b, &recipe); err != nil {
-				logger.Fatal(err.Error())
+				recipe := datamodel.Recipe{}
+				if err := json.Unmarshal(b, &recipe); err != nil {
+					logger.Fatal(err.Error())
+				}
+				return &recipe
 			}
-
-			return &recipe
+			return nil
 		}(),
 	}
 }
 
-// DBPipelineToPBPipeline converts db data model to protobuf data model
-func DBPipelineToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
+// DBToPBPipeline converts db data model to protobuf data model
+func DBToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
 	logger, _ := logger.GetZapLogger()
 
 	pbPipeline := pipelinePB.Pipeline{

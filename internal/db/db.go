@@ -60,7 +60,6 @@ func Close(db *gorm.DB) {
 	// it does not close everything since DB.DB() only returns the master connection.
 	if db != nil {
 		sqlDB, _ := db.DB()
-
 		sqlDB.Close()
 	}
 }

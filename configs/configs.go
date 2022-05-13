@@ -21,11 +21,12 @@ var Config AppConfig
 
 // AppConfig defines
 type AppConfig struct {
-	Server       ServerConfig       `koanf:"server"`
-	Database     DatabaseConfig     `koanf:"database"`
-	Temporal     TemporalConfig     `koanf:"temporal"`
-	Cache        CacheConfig        `koanf:"cache"`
-	ModelBackend ModelBackendConfig `koanf:"modelbackend"`
+	Server           ServerConfig           `koanf:"server"`
+	Database         DatabaseConfig         `koanf:"database"`
+	Temporal         TemporalConfig         `koanf:"temporal"`
+	Cache            CacheConfig            `koanf:"cache"`
+	ConnectorBackend ConnectorBackendConfig `koanf:"connectorbackend"`
+	ModelBackend     ModelBackendConfig     `koanf:"modelbackend"`
 }
 
 // ServerConfig defines HTTP server configurations
@@ -69,11 +70,24 @@ type CacheConfig struct {
 	}
 }
 
+// ConnectorBackendConfig related to connector-backend
+type ConnectorBackendConfig struct {
+	Host  string `koanf:"host"`
+	Port  int    `koanf:"port"`
+	HTTPS struct {
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
+	}
+}
+
 // ModelBackendConfig related to model-backend
 type ModelBackendConfig struct {
-	TLS  bool   `koanf:"tls"`
-	Host string `koanf:"host"`
-	Port int    `koanf:"port"`
+	Host  string `koanf:"host"`
+	Port  int    `koanf:"port"`
+	HTTPS struct {
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
+	}
 }
 
 // Init - Assign global config to decoded config struct

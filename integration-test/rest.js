@@ -10,8 +10,9 @@ import * as helper from "./helper.js";
 import * as pipeline from './rest-pipeline.js';
 import * as trigger from './rest-trigger.js';
 
-const pipelineHost = "http://localhost:8080";
-const modelHost = "http://localhost:8081";
+const pipelineHost = "http://localhost:8081";
+const connectorHost = "http://localhost:8082";
+const modelHost = "http://localhost:8083";
 
 export let options = {
   setupTimeout: '300s',
@@ -22,52 +23,89 @@ export let options = {
 };
 
 export function setup() {
-  // Prepare sample model in model-backend
-  {
-    group("Model Backend API: Create a detection model", function () {
-      let fd = new FormData();
-      let model_description = randomString(20)
-      fd.append("name", "models/" + constant.model_id);
-      fd.append("description", model_description);
-      fd.append("model_definition_name", constant.model_def_name);
-      fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
-      check(http.request("POST", `${modelHost}/v1alpha/models/upload`, fd.body(), {
-        headers: {
-          "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
-        },
-      }), {
-        "POST /v1alpha/models (multipart) github task det response status": (r) => r.status === 201,
-        "POST /v1alpha/models/upload (multipart) task det response model.name": (r) => r.json().model.name === `models/${constant.model_id}`,
-        "POST /v1alpha/models/upload (multipart) task det response model.uid": (r) => r.json().model.uid !== undefined,
-        "POST /v1alpha/models/upload (multipart) task det response model.id": (r) => r.json().model.id === constant.model_id,
-        "POST /v1alpha/models/upload (multipart) task det response model.description": (r) => r.json().model.description === model_description,
-        "POST /v1alpha/models/upload (multipart) task det response model.model_definition": (r) => r.json().model.model_definition === constant.model_def_name,
-        "POST /v1alpha/models/upload (multipart) task det response model.configuration": (r) => r.json().model.configuration !== undefined,
-        "POST /v1alpha/models/upload (multipart) task det response model.visibility": (r) => r.json().model.visibility === "VISIBILITY_PRIVATE",
-        "POST /v1alpha/models/upload (multipart) task det response model.owner": (r) => r.json().model.user === 'users/local-user',
-        "POST /v1alpha/models/upload (multipart) task det response model.create_time": (r) => r.json().model.create_time !== undefined,
-        "POST /v1alpha/models/upload (multipart) task det response model.update_time": (r) => r.json().model.update_time !== undefined,
-      });
 
-      check(http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest:deploy`, {}, {
-        headers: {
-          "Content-Type": "application/json"
-        },
+  group("Connector Backend API: Create a http source connector", function () {
+    check(http.request("POST", `${connectorHost}/v1alpha/source-connectors`,
+      JSON.stringify({
+        "id": "http",
+        "source_connector_definition": "source-connector-definitions/http",
+        "connector": {
+          "configuration": JSON.stringify({
+            "connection_specification": {}
+          })
+        }
       }), {
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response status`]: (r) => r.status === 200,
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.name`]: (r) => r.json().instance.name === `models/${constant.model_id}/instances/latest`,
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.uid`]: (r) => r.json().instance.uid !== undefined,
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.id`]: (r) => r.json().instance.id === "latest",
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.state`]: (r) => r.json().instance.state === "STATE_ONLINE",
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.task`]: (r) => r.json().instance.task === "TASK_DETECTION",
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.model_definition`]: (r) => r.json().instance.model_definition === constant.model_def_name,
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.create_time`]: (r) => r.json().instance.create_time !== undefined,
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.update_time`]: (r) => r.json().instance.update_time !== undefined,
-        [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response instance.configuration`]: (r) => r.json().instance.configuration !== undefined,
-      });
+      headers: { "Content-Type": "application/json" },
+    }), {
+      "POST /v1alpha/source-connectors response status for creating directness HTTP source connector 201": (r) => r.status === 201,
+    })
+  });
 
+  group("Connector Backend API: Create a http destination connector", function () {
+    check(http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
+      JSON.stringify({
+        "id": "http",
+        "destination_connector_definition": "destination-connector-definitions/http",
+        "connector": {
+          "configuration": JSON.stringify({
+            "connection_specification": {}
+          })
+        }
+      }), {
+      headers: { "Content-Type": "application/json" },
+    }), {
+      "POST /v1alpha/destination-connectors response status for creating directness HTTP destination connector 201": (r) => r.status === 201,
+    })
+  });
+
+  group("Connector Backend API: Create a CSV destination connector", function () {
+    check(http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
+      JSON.stringify({
+        "id": constant.dstCSVConnID,
+        "destination_connector_definition": "destination-connector-definitions/destination-csv",
+        "connector": {
+          "configuration": JSON.stringify({
+            "connection_specification": {
+              "supports_incremental": true,
+              "connection_specification": {
+                "destination_path": "/local"
+              },
+              "supported_destination_sync_modes": [2, 1]
+            }
+          })
+        }
+      }), {
+      headers: { "Content-Type": "application/json" },
+    }), {
+      "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
+    })
+  });
+
+  group("Model Backend API: Deploy a detection model", function () {
+    let fd = new FormData();
+    let model_description = randomString(20)
+    fd.append("name", "models/" + constant.model_id);
+    fd.append("description", model_description);
+    fd.append("model_definition_name", constant.model_def_name);
+    fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
+    check(http.request("POST", `${modelHost}/v1alpha/models/upload`, fd.body(), {
+      headers: {
+        "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
+      },
+    }), {
+      "POST /v1alpha/models (multipart) github task det response status": (r) => r.status === 201
     });
-  }
+
+    check(http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest:deploy`, {}, {
+      headers: {
+        "Content-Type": "application/json"
+      },
+    }), {
+      [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response status`]: (r) => r.status === 200
+    });
+
+  });
+
 }
 
 export default function (data) {
@@ -92,11 +130,31 @@ export default function (data) {
   pipeline.CheckUpdate()
   pipeline.CheckUpdateState()
   pipeline.CheckRename()
+  pipeline.CheckLookUp()
 
   trigger.CheckTriggerImageDirect()
 }
 
 export function teardown(data) {
+
+  group("Connector Backend API: Delete the http source connector", function () {
+    check(http.request("DELETE", `${connectorHost}/v1alpha/source-connectors/http`), {
+      [`DELETE /v1alpha/source-connectors/http response status 204`]: (r) => r.status === 204,
+    });
+  });
+
+  group("Connector Backend API: Delete the http destination connector", function () {
+    check(http.request("DELETE", `${connectorHost}/v1alpha/destination-connectors/http`), {
+      [`DELETE /v1alpha/destination-connectors/http response status 204`]: (r) => r.status === 204,
+    });
+  });
+
+  group("Connector Backend API: Delete the csv destination connector", function () {
+    check(http.request("DELETE", `${connectorHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`), {
+      [`DELETE /v1alpha/destination-connectors/${constant.dstCSVConnID} response status 204`]: (r) => r.status === 204,
+    });
+  });
+
   group("Model Backend API: Delete the detection model", function () {
     check(http.request("DELETE", `${modelHost}/v1alpha/models/${constant.model_id}`, null, {
       headers: { "Content-Type": "application/json" }
@@ -104,4 +162,5 @@ export function teardown(data) {
       [`DELETE /v1alpha/models/${constant.model_id} response status is 200`]: (r) => r.status === 200,
     });
   });
+
 }

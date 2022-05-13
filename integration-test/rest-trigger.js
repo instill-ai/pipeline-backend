@@ -15,7 +15,7 @@ export function CheckTriggerImageDirect() {
       description: randomString(50),
       state: "STATE_ACTIVE",
     },
-    constant.detectionRecipe
+    constant.detSyncRecipe
   );
 
   group("Pipelines API: Trigger a pipeline", () => {
@@ -25,7 +25,7 @@ export function CheckTriggerImageDirect() {
         "Content-Type": "application/json",
       },
     }), {
-      "POST /pipelines response status is 201": (r) => r.status === 201,
+      "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
 
     var payloadImageURL = {
@@ -50,12 +50,12 @@ export function CheckTriggerImageDirect() {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /pipelines/${reqBody.id}/outputs (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /pipelines/${reqBody.id}/outputs (url) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === payloadImageURL.inputs.length,
-      [`POST /pipelines/${reqBody.id}/outputs (url) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
-      [`POST /pipelines/${reqBody.id}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].category`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].category === "test",
-      [`POST /pipelines/${reqBody.id}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
-      [`POST /pipelines/${reqBody.id}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].bounding_box`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (url) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (url) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === payloadImageURL.inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (url) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].category`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (url) response output.detection_outputs[0].bounding_box_objects[0].bounding_box`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].bounding_box !== undefined,
     });
 
     var payloadImageBase64 = {
@@ -74,27 +74,27 @@ export function CheckTriggerImageDirect() {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /pipelines/${reqBody.id}/outputs (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === payloadImageBase64.inputs.length,
-      [`POST /pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
-      [`POST /pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].category`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].category === "test",
-      [`POST /pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
-      [`POST /pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].bounding_box`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (base64) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === payloadImageBase64.inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].category`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (base64) response output.detection_outputs[0].bounding_box_objects[0].bounding_box`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].bounding_box !== undefined,
     });
 
     const fd = new FormData();
     fd.append("file", http.file(constant.dogImg));
     fd.append("file", http.file(constant.dogImg));
     fd.append("file", http.file(constant.dogImg));
-    check(res = http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
     }), {
-      [`POST /pipelines/${reqBody.id}/outputs (multipart) response status is 200`]: (r) => r.status === 200,
-      [`POST /pipelines/${reqBody.id}/outputs (multipart) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === fd.parts.length,
-      [`POST /pipelines/${reqBody.id}/outputs (multipart) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
-      [`POST /pipelines/${reqBody.id}/outputs (multipart) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (multipart) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (multipart) response output.detection_outputs.length`]: (r) => r.json().output.detection_outputs.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (multipart) response output.detection_outputs[0].bounding_box_objects.length`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqBody.id}/outputs (multipart) response output.detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output.detection_outputs[0].bounding_box_objects[0].score === 1,
     });
 
   });
@@ -105,6 +105,6 @@ export function CheckTriggerImageDirect() {
       "Content-Type": "application/json",
     },
   }), {
-    [`DELETE /pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
+    [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
   });
 }

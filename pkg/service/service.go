@@ -11,11 +11,10 @@ import (
 	"github.com/gogo/status"
 	"google.golang.org/grpc/codes"
 
-	"github.com/instill-ai/pipeline-backend/internal/constant"
-	"github.com/instill-ai/pipeline-backend/internal/util"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
+	connectorPB "github.com/instill-ai/protogen-go/connector/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
@@ -23,10 +22,11 @@ import (
 // Service interface
 type Service interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
-	ListPipeline(owner string, view pipelinePB.View, pageSize int, pageToken string) ([]datamodel.Pipeline, string, int64, error)
-	GetPipelineByID(id string, owner string) (*datamodel.Pipeline, error)
-	UpdatePipeline(uid uuid.UUID, owner string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
-	DeletePipeline(uid uuid.UUID, owner string) error
+	ListPipeline(owner string, pageSize int, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
+	GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error)
+	GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error)
+	UpdatePipeline(id string, owner string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
+	DeletePipeline(id string, owner string) error
 	UpdatePipelineState(id string, owner string, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner string, newID string) (*datamodel.Pipeline, error)
 	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceResponse, error)
@@ -35,39 +35,45 @@ type Service interface {
 }
 
 type service struct {
-	repository         repository.Repository
-	modelServiceClient modelPB.ModelServiceClient
+	repository             repository.Repository
+	connectorServiceClient connectorPB.ConnectorServiceClient
+	modelServiceClient     modelPB.ModelServiceClient
 }
 
 // NewService initiates a service instance
-func NewService(r repository.Repository, m modelPB.ModelServiceClient) Service {
+func NewService(r repository.Repository, c connectorPB.ConnectorServiceClient, m modelPB.ModelServiceClient) Service {
 	return &service{
-		repository:         r,
-		modelServiceClient: m,
+		repository:             r,
+		connectorServiceClient: c,
+		modelServiceClient:     m,
 	}
 }
 
 func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	// Determine pipeline mode
-	if util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Source) &&
-		util.Contains(constant.ConnectionTypeDirectness, pipeline.Recipe.Destination) {
-		if pipeline.Recipe.Source == pipeline.Recipe.Destination {
-			pipeline.Mode = datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC)
-		} else {
-			return nil, status.Error(codes.InvalidArgument, "Source and destination connector must be the same for directness connection type")
-		}
-	} else {
-		pipeline.Mode = datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC)
+	mode, err := s.determineMode(pipeline.Recipe.Source, pipeline.Recipe.Destination)
+	if err != nil {
+		return nil, err
 	}
 
-	// TODO: Check connectors and model status to assign pipeline status
+	pipeline.Mode = mode
+
+	if err := s.recipeResourceNameToPermalink(pipeline.Recipe); err != nil {
+		return nil, err
+	}
+
+	if pipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
+		pipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE)
+	} else {
+		// TODO: Dispatch job to Temporal for periodical connection state check
+		pipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
+	}
 
 	if err := s.repository.CreatePipeline(pipeline); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipelineByID(pipeline.ID, pipeline.Owner)
+	dbPipeline, err := s.GetPipelineByID(pipeline.ID, pipeline.Owner, false)
 	if err != nil {
 		return nil, err
 	}
@@ -75,31 +81,66 @@ func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipel
 	return dbPipeline, nil
 }
 
-func (s *service) ListPipeline(owner string, view pipelinePB.View, pageSize int, pageToken string) ([]datamodel.Pipeline, string, int64, error) {
-	return s.repository.ListPipeline(owner, view, pageSize, pageToken)
+func (s *service) ListPipeline(owner string, pageSize int, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error) {
+
+	dbPipelines, ps, pt, err := s.repository.ListPipeline(owner, pageSize, pageToken, isBasicView)
+	if err != nil {
+		return nil, 0, "", err
+	}
+
+	if !isBasicView {
+		for _, dbPipeline := range dbPipelines {
+			if err := s.recipeResourcePermalinkToName(dbPipeline.Recipe); err != nil {
+				return nil, 0, "", err
+			}
+		}
+	}
+
+	return dbPipelines, ps, pt, nil
 }
 
-func (s *service) GetPipelineByID(id string, owner string) (*datamodel.Pipeline, error) {
-	dbPipeline, err := s.repository.GetPipelineByID(id, owner)
+func (s *service) GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
+	dbPipeline, err := s.repository.GetPipelineByID(id, owner, isBasicView)
 	if err != nil {
 		return nil, err
+	}
+
+	if !isBasicView {
+		if err := s.recipeResourcePermalinkToName(dbPipeline.Recipe); err != nil {
+			return nil, err
+		}
 	}
 
 	return dbPipeline, nil
 }
 
-func (s *service) UpdatePipeline(uid uuid.UUID, owner string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
+func (s *service) GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
+	dbPipeline, err := s.repository.GetPipelineByUID(uid, owner, isBasicView)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isBasicView {
+		if err := s.recipeResourcePermalinkToName(dbPipeline.Recipe); err != nil {
+			return nil, err
+		}
+	}
+
+	return dbPipeline, nil
+}
+
+func (s *service) UpdatePipeline(id string, owner string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
 	// Validation: Pipeline existence
-	if existingPipeline, _ := s.repository.GetPipeline(uid, owner); existingPipeline == nil {
-		return nil, status.Errorf(codes.NotFound, "Pipeline uid \"%s\" is not found", uid.String())
+	if existingPipeline, _ := s.repository.GetPipelineByID(id, owner, true); existingPipeline == nil {
+		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", id)
 	}
 
-	if err := s.repository.UpdatePipeline(uid, owner, updatedPipeline); err != nil {
+	if err := s.repository.UpdatePipeline(id, owner, updatedPipeline); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipelineByID(updatedPipeline.ID, owner)
+	dbPipeline, err := s.GetPipelineByID(updatedPipeline.ID, owner, false)
 	if err != nil {
 		return nil, err
 	}
@@ -107,18 +148,31 @@ func (s *service) UpdatePipeline(uid uuid.UUID, owner string, updatedPipeline *d
 	return dbPipeline, nil
 }
 
-func (s *service) DeletePipeline(uid uuid.UUID, owner string) error {
-	return s.repository.DeletePipeline(uid, owner)
+func (s *service) DeletePipeline(id string, owner string) error {
+	return s.repository.DeletePipeline(id, owner)
 }
 
 func (s *service) UpdatePipelineState(id string, owner string, state datamodel.PipelineState) (*datamodel.Pipeline, error) {
-	// TODO: Check if the state transition is valid
+
+	dbPipeline, err := s.GetPipelineByID(id, owner, false)
+	if err != nil {
+		return nil, err
+	}
+
+	mode, err := s.determineMode(dbPipeline.Recipe.Source, dbPipeline.Recipe.Destination)
+	if err != nil {
+		return nil, err
+	}
+
+	if mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) && state != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
+		return nil, status.Errorf(codes.InvalidArgument, "Pipeline id \"%s\" is in sync mode which cannot be deactivated", dbPipeline.ID)
+	}
 
 	if err := s.repository.UpdatePipelineState(id, owner, state); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipelineByID(id, owner)
+	dbPipeline, err = s.GetPipelineByID(id, owner, false)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +183,7 @@ func (s *service) UpdatePipelineState(id string, owner string, state datamodel.P
 func (s *service) UpdatePipelineID(id string, owner string, newID string) (*datamodel.Pipeline, error) {
 
 	// Validation: Pipeline existence
-	if existingPipeline, _ := s.repository.GetPipelineByID(id, owner); existingPipeline == nil {
+	if existingPipeline, _ := s.repository.GetPipelineByID(id, owner, true); existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", id)
 	}
 
@@ -137,7 +191,7 @@ func (s *service) UpdatePipelineID(id string, owner string, newID string) (*data
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipelineByID(newID, owner)
+	dbPipeline, err := s.GetPipelineByID(newID, owner, false)
 	if err != nil {
 		return nil, err
 	}

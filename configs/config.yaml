@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
   https:
     cert:   # /ssl/tls.crt
     key:    # /ssl/tls.key
@@ -27,7 +27,15 @@ temporal:
   clientoptions:
     namespace: pipeline
     hostport: localhost:7233
-modelbackend:
-  tls: false
+connectorbackend:
   host: localhost
-  port: 8081
+  port: 8082
+  https:
+    cert:   # /ssl/tls.crt
+    key:    # /ssl/tls.key
+modelbackend:
+  host: localhost
+  port: 8083
+  https:
+    cert:   # /ssl/tls.crt
+    key:    # /ssl/tls.key

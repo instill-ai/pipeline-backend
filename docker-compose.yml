@@ -36,22 +36,72 @@ services:
     image: instill/pipeline-backend:dev
     restart: unless-stopped
     environment:
-      CFG_SERVER_PORT: 8080
+      CFG_SERVER_PORT: 8081
       CFG_DATABASE_HOST: pg_sql
       CFG_DATABASE_PORT: 5432
       CFG_DATABASE_USERNAME: postgres
       CFG_DATABASE_PASSWORD: password
       CFG_MODELSERVICE_HOST: model-backend
-      CFG_MODELSERVICE_PORT: 8081
+      CFG_MODELSERVICE_PORT: 8083
     ports:
-      - 8080:8080
+      - 8081:8081
     volumes:
       - ./configs:/pipeline-backend/configs
     depends_on:
       - pipeline_backend_migrate
       - model_backend
+      - connector_backend
       - temporal
       - redis
+
+  connector_backend_migrate:
+    container_name: connector-backend-migrate
+    build:
+      context: .
+    image: instill/connector-backend:dev
+    restart: on-failure
+    environment:
+      CFG_DATABASE_HOST: pg_sql
+      CFG_DATABASE_PORT: 5432
+      CFG_DATABASE_USERNAME: postgres
+      CFG_DATABASE_PASSWORD: password
+    entrypoint: ./connector-backend-migrate
+    depends_on:
+      pg_sql:
+        condition: service_healthy
+
+  connector_backend_init:
+    container_name: connector-backend-init
+    build:
+      context: .
+    image: instill/connector-backend:dev
+    restart: on-failure
+    environment:
+      CFG_DATABASE_HOST: pg_sql
+      CFG_DATABASE_PORT: 5432
+      CFG_DATABASE_USERNAME: postgres
+      CFG_DATABASE_PASSWORD: password
+    entrypoint: ./connector-backend-init
+    depends_on:
+      - connector_backend_migrate
+
+  connector_backend:
+    container_name: connector-backend
+    build:
+      context: .
+    image: instill/connector-backend:dev
+    restart: unless-stopped
+    environment:
+      CFG_SERVER_PORT: 8082
+      CFG_DATABASE_HOST: pg_sql
+      CFG_DATABASE_PORT: 5432
+      CFG_DATABASE_USERNAME: postgres
+      CFG_DATABASE_PASSWORD: password
+    ports:
+      - 8082:8082
+    depends_on:
+      - connector_backend_init
+
 
   model_backend_migrate:
     container_name: model-backend-migrate
@@ -87,7 +137,7 @@ services:
     image: instill/model-backend:dev
     restart: unless-stopped
     environment:
-      CFG_SERVER_PORT: 8081
+      CFG_SERVER_PORT: 8083
       CFG_DATABASE_HOST: pg_sql
       CFG_DATABASE_PORT: 5432
       CFG_DATABASE_USERNAME: postgres
@@ -95,7 +145,7 @@ services:
       CFG_TRITONSERVER_GRPCURI: triton-server:8001
       CFG_TRITONSERVER_MODELSTORE: /model-repository
     ports:
-      - 8081:8081
+      - 8083:8083
     volumes:
       - model_repository:/model-repository
     depends_on:
