@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.3.1-alpha...v0.4.0-alpha) (2022-05-13)
+
+
+### Features
+
+* integrate with all backends ([0dcdbff](https://github.com/instill-ai/pipeline-backend/commit/0dcdbff578e922804f9a8060ebd20f5e5b151794))
+
+
+### Bug Fixes
+
+* fix model-backend config ([0a92bef](https://github.com/instill-ai/pipeline-backend/commit/0a92bef81834e417f2e43b74cd73d589dd0095ae))
+* refactor JSON Schema ([#48](https://github.com/instill-ai/pipeline-backend/issues/48)) ([d57f2db](https://github.com/instill-ai/pipeline-backend/commit/d57f2db9e1e11ea1e13a8f7f725c70b39ceee03c))
+* use InvalidArgument instead of FailedPrecondition ([54bb2a4](https://github.com/instill-ai/pipeline-backend/commit/54bb2a4036006c6151eb09a3ed909746b0b676f8))
+
 ### [0.3.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.3.0-alpha...v0.3.1-alpha) (2022-03-22)
 
 
