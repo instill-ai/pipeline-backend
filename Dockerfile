@@ -18,5 +18,4 @@ COPY --from=build /pipeline-backend-migrate ./
 COPY --from=build /go/src/configs ./configs
 COPY --from=build /pipeline-backend ./
 
-EXPOSE 8080/tcp
 ENTRYPOINT ["./pipeline-backend"]

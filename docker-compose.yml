@@ -56,8 +56,6 @@ services:
 
   connector_backend_migrate:
     container_name: connector-backend-migrate
-    build:
-      context: .
     image: instill/connector-backend:dev
     restart: on-failure
     environment:
@@ -72,8 +70,6 @@ services:
 
   connector_backend_init:
     container_name: connector-backend-init
-    build:
-      context: .
     image: instill/connector-backend:dev
     restart: on-failure
     environment:
@@ -87,8 +83,6 @@ services:
 
   connector_backend:
     container_name: connector-backend
-    build:
-      context: .
     image: instill/connector-backend:dev
     restart: unless-stopped
     environment:
@@ -101,7 +95,6 @@ services:
       - 8082:8082
     depends_on:
       - connector_backend_init
-
 
   model_backend_migrate:
     container_name: model-backend-migrate
