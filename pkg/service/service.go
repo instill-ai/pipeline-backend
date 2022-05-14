@@ -51,7 +51,7 @@ func NewService(r repository.Repository, c connectorPB.ConnectorServiceClient, m
 
 func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	mode, err := s.determineMode(pipeline.Recipe.Source, pipeline.Recipe.Destination)
+	mode, err := s.getMode(pipeline.Recipe.Source, pipeline.Recipe.Destination)
 	if err != nil {
 		return nil, err
 	}
@@ -154,18 +154,22 @@ func (s *service) DeletePipeline(id string, owner string) error {
 
 func (s *service) UpdatePipelineState(id string, owner string, state datamodel.PipelineState) (*datamodel.Pipeline, error) {
 
+	if state == datamodel.PipelineState(pipelinePB.HealthCheckResponse_SERVING_STATUS_UNSPECIFIED) {
+		return nil, status.Errorf(codes.InvalidArgument, "State update with unspecified is not allowed")
+	}
+
 	dbPipeline, err := s.GetPipelineByID(id, owner, false)
 	if err != nil {
 		return nil, err
 	}
 
-	mode, err := s.determineMode(dbPipeline.Recipe.Source, dbPipeline.Recipe.Destination)
+	mode, err := s.getMode(dbPipeline.Recipe.Source, dbPipeline.Recipe.Destination)
 	if err != nil {
 		return nil, err
 	}
 
-	if mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) && state != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-		return nil, status.Errorf(codes.InvalidArgument, "Pipeline id \"%s\" is in sync mode which cannot be deactivated", dbPipeline.ID)
+	if mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) && state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE) {
+		return nil, status.Errorf(codes.InvalidArgument, "Pipeline id \"%s\" is in the sync mode, which is always active", dbPipeline.ID)
 	}
 
 	if err := s.repository.UpdatePipelineState(id, owner, state); err != nil {

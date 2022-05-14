@@ -12,7 +12,7 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
-func (s *service) determineMode(srcConnRscName string, dstConnRscName string) (datamodel.PipelineMode, error) {
+func (s *service) getMode(srcConnRscName string, dstConnRscName string) (datamodel.PipelineMode, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
