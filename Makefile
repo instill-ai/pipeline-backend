@@ -62,8 +62,7 @@ rm:								## Remove all stopped service containers
 
 .PHONY: down
 down:							## Stop all services and remove all service containers and volumes
-	docker-compose down
-	docker volume rm ${VOLUMES}
+	docker-compose down -v
 
 .PHONY: images
 images:							## List all container images
@@ -76,11 +75,6 @@ ps:								## List all service containers
 .PHONY: top
 top:							## Display all running service processes
 	docker-compose top ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
-
-.PHONY: prune
-prune:							## Remove all services containers and system prune everything
-	make down
-	docker system prune -f --volumes
 
 .PHONY: build
 build:							## Build local docker image
