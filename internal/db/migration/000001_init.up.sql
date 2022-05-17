@@ -25,5 +25,5 @@ CREATE TABLE IF NOT EXISTS public.pipeline (
 );
 CREATE UNIQUE INDEX unique_owner_id_delete_time ON public.pipeline (owner, id)
 WHERE delete_time IS NULL;
-CREATE INDEX pipeline_id_create_time_pagination ON public.pipeline (uid, create_time);
+CREATE INDEX pipeline_uid_create_time_pagination ON public.pipeline (uid, create_time);
 COMMIT;

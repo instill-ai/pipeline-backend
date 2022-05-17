@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 
-	"github.com/instill-ai/pipeline-backend/internal/paginate"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/x/paginate"
 )
 
 // Repository interface
@@ -44,32 +44,36 @@ func (r *repository) CreatePipeline(pipeline *datamodel.Pipeline) error {
 
 func (r *repository) ListPipeline(owner string, pageSize int, pageToken string, isBasicView bool) (pipelines []datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
 
-	queryBuilder := r.db.Model(&datamodel.Pipeline{}).Where("owner = ?", owner).Order("create_time DESC, id DESC")
-
-	if pageSize == 0 {
-		queryBuilder = queryBuilder.Limit(10)
-	} else if pageSize > 0 && pageSize <= 100 {
-		queryBuilder = queryBuilder.Limit(pageSize)
-	} else {
-		queryBuilder = queryBuilder.Limit(100)
+	if result := r.db.Model(&datamodel.Pipeline{}).Where("owner = ?", owner).Count(&totalSize); result.Error != nil {
+		return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
 	}
 
+	queryBuilder := r.db.Model(&datamodel.Pipeline{}).Order("create_time DESC, uid DESC").Where("owner = ?", owner)
+
+	if pageSize == 0 {
+		pageSize = 10
+	} else if pageSize > 100 {
+		pageSize = 100
+	}
+
+	queryBuilder = queryBuilder.Limit(int(pageSize))
+
 	if pageToken != "" {
-		createTime, uuid, err := paginate.DecodeToken(pageToken)
+		createTime, uid, err := paginate.DecodeToken(pageToken)
 		if err != nil {
 			return nil, 0, "", status.Errorf(codes.InvalidArgument, "Invalid page token: %s", err.Error())
 		}
-		queryBuilder = queryBuilder.Where("(create_time,id) < (?::timestamp, ?)", createTime, uuid)
+		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
 	}
 
 	if isBasicView {
 		queryBuilder.Omit("pipeline.recipe")
 	}
 
-	var createTime time.Time // only using one for all loops, we only need the latest one in the end
+	var createTime time.Time
 	rows, err := queryBuilder.Rows()
 	if err != nil {
-		return nil, 0, "", err
+		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -81,13 +85,22 @@ func (r *repository) ListPipeline(owner string, pageSize int, pageToken string, 
 		pipelines = append(pipelines, item)
 	}
 
-	if len(pipelines) > 0 {
-		r.db.Model(&datamodel.Pipeline{}).Where("owner = ?", owner).Count(&totalSize)
-		nextPageToken := paginate.EncodeToken(createTime, (pipelines)[len(pipelines)-1].UID.String())
-		return pipelines, totalSize, nextPageToken, nil
+	lastUID := (pipelines)[len(pipelines)-1].UID
+	lastItem := &datamodel.Pipeline{}
+	if result := r.db.Model(&datamodel.Pipeline{}).
+		Where("owner = ?", owner).
+		Order("create_time ASC, uid ASC").
+		Limit(1).Find(lastItem); result.Error != nil {
+		return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
 	}
 
-	return nil, 0, "", nil
+	if lastItem.UID.String() == lastUID.String() {
+		nextPageToken = ""
+	} else {
+		nextPageToken = paginate.EncodeToken(createTime, lastUID.String())
+	}
+
+	return pipelines, totalSize, nextPageToken, nil
 }
 
 func (r *repository) GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
@@ -120,6 +133,7 @@ func (r *repository) UpdatePipeline(id string, owner string, pipeline *datamodel
 		Updates(pipeline); result.Error != nil {
 		return status.Error(codes.Internal, result.Error.Error())
 	}
+
 	return nil
 }
 

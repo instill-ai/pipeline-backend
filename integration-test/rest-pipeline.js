@@ -161,6 +161,7 @@ export function CheckList() {
       [`GET /v1alpha/pipelines response status is 200`]: (r) => r.status === 200,
       [`GET /v1alpha/pipelines response pipelines.length == 10`]: (r) => r.json().pipelines.length == 10,
       [`GET /v1alpha/pipelines response pipelines[0] no recipe`]: (r) => r.json().pipelines[0].recipe === null,
+      [`GET /v1alpha/pipelines response total_size == 200`]: (r) => r.json().total_size == 200,
     });
 
     check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?view=VIEW_FULL`, null, {
@@ -168,7 +169,7 @@ export function CheckList() {
         "Content-Type": "application/json",
       }
     }), {
-      [`GET /v1alpha/pipelines?view=VIEW_FULL response pipelines[0] has recipe`]: (r) => r.json().pipelines[0].recipe !== undefined,
+      [`GET /v1alpha/pipelines?view=VIEW_FULL response pipelines[0] has recipe`]: (r) => r.json().pipelines[0].recipe !== null,
     });
 
     check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?view=VIEW_BASIC`, null, {
@@ -193,6 +194,14 @@ export function CheckList() {
       }
     }), {
       [`GET /v1alpha/pipelines?page_size=101 response pipelines.length == 100`]: (r) => r.json().pipelines.length == 100,
+    });
+
+    var resFirst100 = http.request("GET", `${pipelineHost}/v1alpha/pipelines?page_size=100`)
+    var resSecond100 = http.request("GET", `${pipelineHost}/v1alpha/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token}`)
+    check(resSecond100, {
+      [`GET /v1alpha/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token} response status 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token} response return 100 results`]: (r) => r.json().pipelines.length == 100,
+      [`GET /v1alpha/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token} response next_page_token is empty`]: (r) => r.json().next_page_token == "",
     });
 
     // Delete the pipelines
