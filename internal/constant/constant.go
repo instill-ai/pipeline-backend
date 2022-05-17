@@ -2,8 +2,8 @@ package constant
 
 // ConnectionTypeDirectness is a slice records connector names having the connection-type directness
 var ConnectionTypeDirectness = []string{
-	"source-connectors/http", "source-connectors/gRPC",
-	"destination-connectors/http", "destination-connectors/gRPC",
+	"source-connectors/source-http", "source-connectors/source-grpc",
+	"destination-connectors/destination-http", "destination-connectors/destination-grpc",
 }
 
 const (

@@ -27,12 +27,10 @@ export function setup() {
   group("Connector Backend API: Create a http source connector", function () {
     check(http.request("POST", `${connectorHost}/v1alpha/source-connectors`,
       JSON.stringify({
-        "id": "http",
-        "source_connector_definition": "source-connector-definitions/http",
+        "id": "source-http",
+        "source_connector_definition": "source-connector-definitions/source-http",
         "connector": {
-          "configuration": JSON.stringify({
-            "connection_specification": {}
-          })
+          "configuration": JSON.stringify({})
         }
       }), {
       headers: { "Content-Type": "application/json" },
@@ -44,12 +42,10 @@ export function setup() {
   group("Connector Backend API: Create a http destination connector", function () {
     check(http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
       JSON.stringify({
-        "id": "http",
-        "destination_connector_definition": "destination-connector-definitions/http",
+        "id": "destination-http",
+        "destination_connector_definition": "destination-connector-definitions/destination-http",
         "connector": {
-          "configuration": JSON.stringify({
-            "connection_specification": {}
-          })
+          "configuration": JSON.stringify({})
         }
       }), {
       headers: { "Content-Type": "application/json" },
@@ -138,14 +134,14 @@ export default function (data) {
 export function teardown(data) {
 
   group("Connector Backend API: Delete the http source connector", function () {
-    check(http.request("DELETE", `${connectorHost}/v1alpha/source-connectors/http`), {
-      [`DELETE /v1alpha/source-connectors/http response status 204`]: (r) => r.status === 204,
+    check(http.request("DELETE", `${connectorHost}/v1alpha/source-connectors/source-http`), {
+      [`DELETE /v1alpha/source-connectors/source-http response status 204`]: (r) => r.status === 204,
     });
   });
 
   group("Connector Backend API: Delete the http destination connector", function () {
-    check(http.request("DELETE", `${connectorHost}/v1alpha/destination-connectors/http`), {
-      [`DELETE /v1alpha/destination-connectors/http response status 204`]: (r) => r.status === 204,
+    check(http.request("DELETE", `${connectorHost}/v1alpha/destination-connectors/destination-http`), {
+      [`DELETE /v1alpha/destination-connectors/destination-http response status 204`]: (r) => r.status === 204,
     });
   });
 

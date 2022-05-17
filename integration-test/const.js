@@ -8,9 +8,9 @@ export const model_instance_id = "latest"
 
 export const detSyncRecipe = {
   recipe: {
-    source: "source-connectors/http",
+    source: "source-connectors/source-http",
     model_instances: [`models/${model_id}/instances/${model_instance_id}`],
-    destination: "destination-connectors/http"
+    destination: "destination-connectors/destination-http"
   },
 };
 
@@ -18,7 +18,7 @@ export const dstCSVConnID = "some-cool-name-for-dst-csv-connector"
 
 export const detAsyncRecipe = {
   recipe: {
-    source: "source-connectors/http",
+    source: "source-connectors/source-http",
     model_instances: [`models/${model_id}/instances/${model_instance_id}`],
     destination:`destination-connectors/${dstCSVConnID}`
   },

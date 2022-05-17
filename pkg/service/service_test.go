@@ -27,8 +27,8 @@ func TestCreatePipeline(t *testing.T) {
 			Owner: Owner,
 
 			Recipe: &datamodel.Recipe{
-				Source:      "source-connectors/http",
-				Destination: "destination-connectors/http",
+				Source:      "source-connectors/source-http",
+				Destination: "destination-connectors/destination-http",
 			},
 
 			Description: sql.NullString{
@@ -120,9 +120,9 @@ func TestCreatePipeline(t *testing.T) {
 // 			},
 
 // 			Recipe: &datamodel.Recipe{
-// 				Source:         "source-connectors/http",
+// 				Source:         "source-connectors/source-http",
 // 				ModelInstances: []string{"models/yolov4/instances/latest"},
-// 				Destination:    "destination-connectors/http",
+// 				Destination:    "destination-connectors/destination-http",
 // 			},
 // 		}
 

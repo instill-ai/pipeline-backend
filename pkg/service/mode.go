@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/gogo/status"
@@ -44,7 +45,8 @@ func (s *service) getMode(srcConnRscName string, dstConnRscName string) (datamod
 	if srcConnType == connectorPB.ConnectionType_CONNECTION_TYPE_DIRECTNESS &&
 		dstConnType == connectorPB.ConnectionType_CONNECTION_TYPE_DIRECTNESS {
 
-		if srcConnDefResp.GetSourceConnectorDefinition().GetId() == dstConnDefResp.GetDestinationConnectorDefinition().GetId() {
+		// Relying on a hardcoding naming rule "source-*" and "destination-*" for directness connectors
+		if strings.Split(srcConnDefResp.GetSourceConnectorDefinition().GetId(), "-")[1] == strings.Split(dstConnDefResp.GetDestinationConnectorDefinition().GetId(), "-")[1] {
 			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC), nil
 		}
 
