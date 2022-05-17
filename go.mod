@@ -13,7 +13,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/instill-ai/protogen-go v0.1.5-alpha.0.20220513161122-ad182a20e3f9
 	github.com/instill-ai/vdp v0.1.6-alpha
-	github.com/instill-ai/x v0.1.0-alpha.0.20220513203325-baab8aaa93b2
+	github.com/instill-ai/x v0.1.0-alpha.0.20220516185949-c80ecc26af91
 	github.com/knadh/koanf v1.4.0
 	github.com/mennanov/fieldmask-utils v0.5.0
 	github.com/stretchr/testify v1.7.0

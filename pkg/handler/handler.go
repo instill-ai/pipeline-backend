@@ -57,17 +57,17 @@ func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipe
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req.Pipeline, append(createRequiredFields, immutableFields...)); err != nil {
-		return &pipelinePB.CreatePipelineResponse{}, err
+		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Set all OUTPUT_ONLY fields to zero value on the requested payload pipeline resource
 	if err := checkfield.CheckCreateOutputOnlyFields(req.Pipeline, outputOnlyFields); err != nil {
-		return &pipelinePB.CreatePipelineResponse{}, err
+		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Return error if resource ID does not follow RFC-1034
 	if err := checkfield.CheckResourceID(req.Pipeline.GetId()); err != nil {
-		return &pipelinePB.CreatePipelineResponse{}, err
+		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx)
@@ -174,7 +174,7 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 
 	pbUpdateMask, err = checkfield.CheckUpdateOutputOnlyFields(pbUpdateMask, outputOnlyFields)
 	if err != nil {
-		return &pipelinePB.UpdatePipelineResponse{}, err
+		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	mask, err := fieldmask_utils.MaskFromProtoFieldMask(pbUpdateMask, strcase.ToCamel)
@@ -192,7 +192,7 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 
 	// Return error if IMMUTABLE fields are intentionally changed
 	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReq, pbPipelineToUpdate, immutableFields); err != nil {
-		return &pipelinePB.UpdatePipelineResponse{}, err
+		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Only the fields mentioned in the field mask will be copied to `pbPipelineToUpdate`, other fields are left intact
@@ -241,7 +241,7 @@ func (h *handler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipe
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, lookUpRequiredFields); err != nil {
-		return &pipelinePB.LookUpPipelineResponse{}, err
+		return &pipelinePB.LookUpPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
@@ -278,7 +278,7 @@ func (h *handler) ActivatePipeline(ctx context.Context, req *pipelinePB.Activate
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, activateRequiredFields); err != nil {
-		return &pipelinePB.ActivatePipelineResponse{}, err
+		return &pipelinePB.ActivatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx)
@@ -307,7 +307,7 @@ func (h *handler) DeactivatePipeline(ctx context.Context, req *pipelinePB.Deacti
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, deactivateRequiredFields); err != nil {
-		return &pipelinePB.DeactivatePipelineResponse{}, err
+		return &pipelinePB.DeactivatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx)
@@ -336,7 +336,7 @@ func (h *handler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipe
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, renameRequiredFields); err != nil {
-		return &pipelinePB.RenamePipelineResponse{}, err
+		return &pipelinePB.RenamePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx)
@@ -351,7 +351,7 @@ func (h *handler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipe
 
 	newID := req.GetNewPipelineId()
 	if err := checkfield.CheckResourceID(newID); err != nil {
-		return &pipelinePB.RenamePipelineResponse{}, err
+		return &pipelinePB.RenamePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	dbPipeline, err := h.service.UpdatePipelineID(id, owner, newID)
@@ -370,7 +370,7 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
-		return &pipelinePB.TriggerPipelineResponse{}, err
+		return &pipelinePB.TriggerPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx)
@@ -423,7 +423,7 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(data, triggerBinaryRequiredFields); err != nil {
-		return err
+		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	id, err := resource.GetResourceNameID(data.GetName())
