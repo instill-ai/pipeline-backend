@@ -49,6 +49,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		service := service.NewService(
 			repository.NewRepository(db.GetConnection()),
+			external.InitUserServiceClient(),
 			external.InitConnectorServiceClient(),
 			external.InitModelServiceClient(),
 		)

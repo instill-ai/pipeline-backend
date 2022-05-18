@@ -3,6 +3,7 @@ package service_test
 //go:generate mockgen -destination mock_repository_test.go -package $GOPACKAGE github.com/instill-ai/pipeline-backend/pkg/repository Repository
 //go:generate mockgen -destination mock_model_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/model/v1alpha ModelServiceClient
 //go:generate mockgen -destination mock_connector_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/connector/v1alpha ConnectorServiceClient
+//go:generate mockgen -destination mock_user_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/mgmt/v1alpha UserServiceClient
 
 import (
 	"database/sql"
@@ -13,10 +14,9 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-)
 
-var ID string
-var Owner = "users/2a06c2f7-8da9-4046-91ea-240f88a5d729"
+	mgmtPB "github.com/instill-ai/protogen-go/mgmt/v1alpha"
+)
 
 func TestCreatePipeline(t *testing.T) {
 	t.Run("normal", func(t *testing.T) {
@@ -24,7 +24,7 @@ func TestCreatePipeline(t *testing.T) {
 
 		normalPipeline := datamodel.Pipeline{
 			ID:    "awesome",
-			Owner: Owner,
+			Owner: "users/local-user",
 
 			Recipe: &datamodel.Recipe{
 				Source:      "source-connectors/source-http",
@@ -40,7 +40,7 @@ func TestCreatePipeline(t *testing.T) {
 		mockRepository := NewMockRepository(ctrl)
 		mockRepository.
 			EXPECT().
-			GetPipelineByID(gomock.Eq(normalPipeline.ID), gomock.Eq(normalPipeline.Owner), false).
+			GetPipelineByID(gomock.Eq(normalPipeline.ID), gomock.Any(), false).
 			Return(&normalPipeline, nil).
 			Times(1)
 		mockRepository.
@@ -48,17 +48,21 @@ func TestCreatePipeline(t *testing.T) {
 			CreatePipeline(gomock.Eq(&normalPipeline)).
 			Return(nil)
 
+		mockUserServiceClient := NewMockUserServiceClient(ctrl)
+		mockUserServiceClient.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&mgmtPB.GetUserResponse{}, nil).Times(2)
+		mockUserServiceClient.EXPECT().LookUpUser(gomock.Any(), gomock.Any()).Return(&mgmtPB.LookUpUserResponse{}, nil).Times(1)
+
 		mockConnectorServiceClient := NewMockConnectorServiceClient(ctrl)
-		mockConnectorServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 		mockConnectorServiceClient.EXPECT().GetSourceConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-		mockConnectorServiceClient.EXPECT().LookUpSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-		mockConnectorServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 		mockConnectorServiceClient.EXPECT().GetDestinationConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+		mockConnectorServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
+		mockConnectorServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
+		mockConnectorServiceClient.EXPECT().LookUpSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 		mockConnectorServiceClient.EXPECT().LookUpDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 
 		mockModelServiceClient := NewMockModelServiceClient(ctrl)
 
-		s := service.NewService(mockRepository, mockConnectorServiceClient, mockModelServiceClient)
+		s := service.NewService(mockRepository, mockUserServiceClient, mockConnectorServiceClient, mockModelServiceClient)
 
 		_, err := s.CreatePipeline(&normalPipeline)
 

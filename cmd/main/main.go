@@ -115,6 +115,7 @@ func main() {
 		handler.NewHandler(
 			service.NewService(
 				repository.NewRepository(db),
+				external.InitUserServiceClient(),
 				external.InitConnectorServiceClient(),
 				external.InitModelServiceClient(),
 			)),

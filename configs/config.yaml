@@ -27,6 +27,12 @@ temporal:
   clientoptions:
     namespace: pipeline
     hostport: localhost:7233
+mgmtbackend:
+  host: localhost
+  port: 8080
+  https:
+    cert:   # /ssl/tls.crt
+    key:    # /ssl/tls.key
 connectorbackend:
   host: localhost
   port: 8082

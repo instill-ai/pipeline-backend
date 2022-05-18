@@ -25,6 +25,7 @@ type AppConfig struct {
 	Database         DatabaseConfig         `koanf:"database"`
 	Temporal         TemporalConfig         `koanf:"temporal"`
 	Cache            CacheConfig            `koanf:"cache"`
+	MgmtBackend      MgmtBackendConfig      `koanf:"mgmtbackend"`
 	ConnectorBackend ConnectorBackendConfig `koanf:"connectorbackend"`
 	ModelBackend     ModelBackendConfig     `koanf:"modelbackend"`
 }
@@ -67,6 +68,16 @@ type TemporalConfig struct {
 type CacheConfig struct {
 	Redis struct {
 		RedisOptions redis.Options `koanf:"redisoptions"`
+	}
+}
+
+// MgmtBackendConfig related to mgmt-backend
+type MgmtBackendConfig struct {
+	Host  string `koanf:"host"`
+	Port  int    `koanf:"port"`
+	HTTPS struct {
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
 	}
 }
 
