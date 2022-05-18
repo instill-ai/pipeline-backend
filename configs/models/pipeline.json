@@ -2,12 +2,14 @@
   "$schema": "https://json-schema.org/draft-07/schema",
   "$id": "https://github.com/instill-ai/pipeline-backend/blob/main/configs/models/pipeline.json",
   "title": "Pipeline",
-  "description": "Pipeline related data structures",
+  "description": "End-to-end data pipeline",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "id",
-    "recipe"
+  "required": ["id", "recipe"],
+  "anyOf": [
+    {"required": ["user"], "not": {"required": ["org"]}},
+    {"required": ["org"], "not": {"required": ["user"]}},
+    {"not": {"required": ["user", "org"]}}
   ],
   "properties": {
     "name": {
@@ -54,28 +56,23 @@
       "ui_component": "textarea_enable_counter"
     },
     "recipe": {
-      "$ref": "#/definitions/Recipe"
+      "type": "object",
+      "$ref": "#/definitions/Recipe",
+      "ui_order": 4,
+      "ui_hidden": true
     },
     "mode": {
       "type": "string",
       "title": "Mode",
       "description": "The pipeline mode",
-      "enum": [
-        "MODE_UNSPECIFIED",
-        "MODE_SYNC",
-        "MODE_ASYNC"
-      ],
+      "enum": ["MODE_UNSPECIFIED", "MODE_SYNC", "MODE_ASYNC"],
       "default": "MODE_UNSPECIFIED",
       "readOnly": true,
       "ui_order": 5,
       "ui_hidden": true,
       "ui_disabled": true,
       "ui_component": "select",
-      "ui_enum": [
-        "",
-        "Sync",
-        "Async"
-      ]
+      "ui_enum": ["", "Sync", "Async"]
     },
     "state": {
       "type": "string",
@@ -93,28 +90,20 @@
       "ui_hidden": true,
       "ui_disabled": true,
       "ui_component": "select",
-      "ui_enum": [
-        "",
-        "Inactive",
-        "Active",
-        "Error"
-      ]
+      "ui_enum": ["", "Inactive", "Active", "Error"]
     },
-    "owner": {
+    "user": {
       "type": "string",
-      "format": "uuid",
-      "title": "Owner ID",
-      "description": "The pipeline owner resource name",
-      "oneOf": [
-        {
-          "type": "string",
-          "description": "The resource name of a user"
-        },
-        {
-          "type": "string",
-          "description": "The resource name of an organization"
-        }
-      ],
+      "description": "The resource name of a user",
+      "readOnly": true,
+      "ui_order": 7,
+      "ui_hidden": true,
+      "ui_disabled": true,
+      "ui_component": "text"
+    },
+    "org": {
+      "type": "string",
+      "description": "The resource name of an organization",
       "readOnly": true,
       "ui_order": 7,
       "ui_hidden": true,
@@ -126,9 +115,7 @@
       "format": "date-time",
       "title": "Create time",
       "description": "The date when the pipeline is created in the format YYYY-MM-DDTHH:MM::SS",
-      "examples": [
-        "2022-04-29T00:20:06.703547Z"
-      ],
+      "examples": ["2022-04-29T00:20:06.703547Z"],
       "readOnly": true,
       "ui_order": 8,
       "ui_hidden": true,
@@ -140,9 +127,7 @@
       "format": "date-time",
       "title": "Update time",
       "description": "The date when the pipeline is updated in the format YYYY-MM-DDTHH:MM::SS",
-      "examples": [
-        "2022-04-29T01:33:34.910865Z"
-      ],
+      "examples": ["2022-04-29T01:33:34.910865Z"],
       "readOnly": true,
       "ui_order": 9,
       "ui_hidden": true,
@@ -156,11 +141,7 @@
       "title": "Recipe",
       "description": "The specification of a recipe",
       "additionalProperties": false,
-      "required": [
-        "source",
-        "model_instances",
-        "destination"
-      ],
+      "required": ["source", "model_instances", "destination"],
       "properties": {
         "source": {
           "type": "string",
