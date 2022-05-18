@@ -32,6 +32,7 @@ type handler struct {
 
 // NewHandler initiates a handler instance
 func NewHandler(s service.Service) pipelinePB.PipelineServiceServer {
+	datamodel.InitJSONSchema()
 	return &handler{
 		service: s,
 	}
@@ -54,6 +55,11 @@ func (h *handler) Readiness(ctx context.Context, req *pipelinePB.ReadinessReques
 }
 
 func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+
+	// Validate JSON Schema
+	if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req.Pipeline, append(createRequiredFields, immutableFields...)); err != nil {

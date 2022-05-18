@@ -36,6 +36,14 @@ export function CheckCreate() {
       "POST /v1alpha/pipelines response pipeline update_time": (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0)
     });
 
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify({}), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }), {
+      "POST /v1alpha/pipelines request body JSON Schema failed status 400": (r) => r.status === 400,
+    });
+
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",

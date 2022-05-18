@@ -23,7 +23,7 @@
     "uid": {
       "type": "string",
       "format": "uuid",
-      "title": "UUID",
+      "title": "UID",
       "description": "The unique UUID",
       "readOnly": true,
       "ui_order": 1,
@@ -158,7 +158,7 @@
       "additionalProperties": false,
       "required": [
         "source",
-        "models",
+        "model_instances",
         "destination"
       ],
       "properties": {

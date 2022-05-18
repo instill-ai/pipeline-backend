@@ -42,6 +42,7 @@ type service struct {
 
 // NewService initiates a service instance
 func NewService(r repository.Repository, c connectorPB.ConnectorServiceClient, m modelPB.ModelServiceClient) Service {
+
 	return &service{
 		repository:             r,
 		connectorServiceClient: c,
