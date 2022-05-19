@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.4.0-alpha...v0.5.0-alpha) (2022-05-19)
+
+
+### Features
+
+* integrate with mgmt-backend ([6514bf4](https://github.com/instill-ai/pipeline-backend/commit/6514bf431975cd84bad5a6f54b4e137f25db5941))
+
+
+### Bug Fixes
+
+* fix list empty case ([5050693](https://github.com/instill-ai/pipeline-backend/commit/5050693177c60ee81e04434efe0036393160e6cf))
+* refactor pipeline JSON schema ([1f88481](https://github.com/instill-ai/pipeline-backend/commit/1f88481b393ed48999d64bf2a44ff68e27c06a5d))
+
 ## [0.4.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.3.1-alpha...v0.4.0-alpha) (2022-05-13)
 
 
