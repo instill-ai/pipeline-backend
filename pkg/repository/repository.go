@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"errors"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/jackc/pgconn"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -37,7 +39,12 @@ func NewRepository(db *gorm.DB) Repository {
 
 func (r *repository) CreatePipeline(pipeline *datamodel.Pipeline) error {
 	if result := r.db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
-		return status.Errorf(codes.InvalidArgument, "%v", result.Error)
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) {
+			if pgErr.Code == "23505" {
+				return status.Errorf(codes.AlreadyExists, pgErr.Message)
+			}
+		}
 	}
 	return nil
 }

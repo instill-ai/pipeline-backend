@@ -49,7 +49,7 @@ export function CheckCreate() {
         "Content-Type": "application/json",
       },
     }), {
-      "POST /v1alpha/pipelines re-create the same id response status is 400": (r) => r.status === 400
+      "POST /v1alpha/pipelines re-create the same id response status is 409": (r) => r.status === 409
     });
 
     check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
