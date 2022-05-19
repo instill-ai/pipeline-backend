@@ -140,7 +140,7 @@ func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRe
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	id, err := resource.GetResourceNameID(req.GetName())
+	id, err := resource.GetNameID(req.GetName())
 	if err != nil {
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
@@ -257,7 +257,7 @@ func (h *handler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipe
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
 
-	uidStr, err := resource.GetResourcePermalinkUID(req.GetPermalink())
+	uidStr, err := resource.GetPermalinkUID(req.GetPermalink())
 	if err != nil {
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
@@ -292,7 +292,7 @@ func (h *handler) ActivatePipeline(ctx context.Context, req *pipelinePB.Activate
 		return &pipelinePB.ActivatePipelineResponse{}, err
 	}
 
-	id, err := resource.GetResourceNameID(req.GetName())
+	id, err := resource.GetNameID(req.GetName())
 	if err != nil {
 		return &pipelinePB.ActivatePipelineResponse{}, err
 	}
@@ -321,7 +321,7 @@ func (h *handler) DeactivatePipeline(ctx context.Context, req *pipelinePB.Deacti
 		return &pipelinePB.DeactivatePipelineResponse{}, err
 	}
 
-	id, err := resource.GetResourceNameID(req.GetName())
+	id, err := resource.GetNameID(req.GetName())
 	if err != nil {
 		return &pipelinePB.DeactivatePipelineResponse{}, err
 	}
@@ -350,7 +350,7 @@ func (h *handler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipe
 		return &pipelinePB.RenamePipelineResponse{}, err
 	}
 
-	id, err := resource.GetResourceNameID(req.GetName())
+	id, err := resource.GetNameID(req.GetName())
 	if err != nil {
 		return &pipelinePB.RenamePipelineResponse{}, err
 	}
@@ -384,7 +384,7 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	id, err := resource.GetResourceNameID(req.GetName())
+	id, err := resource.GetNameID(req.GetName())
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
@@ -432,7 +432,7 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	id, err := resource.GetResourceNameID(data.GetName())
+	id, err := resource.GetNameID(data.GetName())
 	if err != nil {
 		return err
 	}

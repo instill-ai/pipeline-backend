@@ -3,11 +3,11 @@ package external
 import (
 	"fmt"
 
-	"github.com/instill-ai/pipeline-backend/configs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
+	"github.com/instill-ai/pipeline-backend/configs"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 
 	connectorPB "github.com/instill-ai/protogen-go/connector/v1alpha"

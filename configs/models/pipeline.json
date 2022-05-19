@@ -25,7 +25,7 @@
     "uid": {
       "type": "string",
       "format": "uuid",
-      "title": "UID",
+      "title": "UUID",
       "description": "The unique UUID",
       "readOnly": true,
       "ui_order": 1,
