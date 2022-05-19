@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.5.0-alpha...v0.5.1-alpha) (2022-05-19)
+
+
+### Bug Fixes
+
+* fix create dup error code ([5d3a0c9](https://github.com/instill-ai/pipeline-backend/commit/5d3a0c98c480e22f03da43126742466a91f14993))
+
 ## [0.5.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.4.0-alpha...v0.5.0-alpha) (2022-05-19)
 
 
