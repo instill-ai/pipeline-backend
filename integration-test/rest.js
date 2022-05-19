@@ -84,12 +84,12 @@ export function setup() {
     fd.append("description", model_description);
     fd.append("model_definition_name", constant.model_def_name);
     fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
-    check(http.request("POST", `${modelHost}/v1alpha/models/upload`, fd.body(), {
+    check(http.request("POST", `${modelHost}/v1alpha/models:multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
       },
     }), {
-      "POST /v1alpha/models (multipart) github task det response status": (r) => r.status === 201
+      "POST /v1alpha/models:multipart task det response status": (r) => r.status === 201
     });
 
     check(http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest:deploy`, {}, {
@@ -155,7 +155,7 @@ export function teardown(data) {
     check(http.request("DELETE", `${modelHost}/v1alpha/models/${constant.model_id}`, null, {
       headers: { "Content-Type": "application/json" }
     }), {
-      [`DELETE /v1alpha/models/${constant.model_id} response status is 200`]: (r) => r.status === 200,
+      [`DELETE /v1alpha/models/${constant.model_id} response status is 204`]: (r) => r.status === 204,
     });
   });
 

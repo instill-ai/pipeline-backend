@@ -61,7 +61,7 @@ func (s *service) recipeNameToPermalink(recipe *datamodel.Recipe) error {
 			Name: recipe.Source,
 		})
 	if err != nil {
-		return fmt.Errorf("[connector-backend] %s", err)
+		return fmt.Errorf("[connector-backend: GetSourceConnector - Name: %s] %s", recipe.Source, err)
 	}
 
 	srcColID, err := resource.GetResourceCollectionID(recipe.Source)
@@ -77,7 +77,7 @@ func (s *service) recipeNameToPermalink(recipe *datamodel.Recipe) error {
 			Name: recipe.Destination,
 		})
 	if err != nil {
-		return fmt.Errorf("[connector-backend] %s", err)
+		return fmt.Errorf("[connector-backend: GetDestinationConnector - Name: %s] %s", recipe.Destination, err)
 	}
 
 	dstColID, err := resource.GetResourceCollectionID(recipe.Destination)
@@ -95,7 +95,7 @@ func (s *service) recipeNameToPermalink(recipe *datamodel.Recipe) error {
 				Name: modelInstanceRscName,
 			})
 		if err != nil {
-			return fmt.Errorf("[model-backend] %s", err)
+			return fmt.Errorf("[model-backend: GetModelInstance - Name: %s] %s", modelInstanceRscName, err)
 		}
 
 		modelInstColID, err := resource.GetResourceCollectionID(modelInstanceRscName)
@@ -115,7 +115,7 @@ func (s *service) recipeNameToPermalink(recipe *datamodel.Recipe) error {
 				Name: modelRscName,
 			})
 		if err != nil {
-			return fmt.Errorf("[model-backend] %s", err)
+			return fmt.Errorf("[model-backend: GetModel - Name: %s] %s", modelRscName, err)
 		}
 
 		modelColID, err := resource.GetResourceCollectionID(modelRscName)
@@ -140,7 +140,7 @@ func (s *service) recipePermalinkToName(recipe *datamodel.Recipe) error {
 			Permalink: recipe.Source,
 		})
 	if err != nil {
-		return fmt.Errorf("[connector-backend] %s", err)
+		return fmt.Errorf("[connector-backend: LookUpSourceConnector - Permalink: %s] %s", recipe.Source, err)
 	}
 
 	srcColID, err := resource.GetResourceCollectionID(recipe.Source)
@@ -156,7 +156,7 @@ func (s *service) recipePermalinkToName(recipe *datamodel.Recipe) error {
 			Permalink: recipe.Destination,
 		})
 	if err != nil {
-		return fmt.Errorf("[connector-backend] %s", err)
+		return fmt.Errorf("[connector-backend: LookUpDestinationConnector - Permalink: %s] %s", recipe.Destination, err)
 	}
 
 	dstColID, err := resource.GetResourceCollectionID(recipe.Destination)
@@ -174,7 +174,7 @@ func (s *service) recipePermalinkToName(recipe *datamodel.Recipe) error {
 				Permalink: modelInstanceRscPermalink,
 			})
 		if err != nil {
-			return fmt.Errorf("[model-backend] %s", err)
+			return fmt.Errorf("[model-backend: LookUpModelInstance - Permalink: %s] %s", modelInstanceRscPermalink, err)
 		}
 
 		modelInstUID, err := resource.GetResourcePermalinkUID(modelInstanceRscPermalink)
@@ -193,7 +193,7 @@ func (s *service) recipePermalinkToName(recipe *datamodel.Recipe) error {
 				Permalink: modelRscPermalink,
 			})
 		if err != nil {
-			return fmt.Errorf("[model-backend] %s", err)
+			return fmt.Errorf("[model-backend: LookUpModel - Permalink: %s] %s", modelRscPermalink, err)
 		}
 
 		modelColID, err := resource.GetResourceCollectionID(modelRscPermalink)

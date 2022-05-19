@@ -136,8 +136,14 @@ export function CheckList() {
 
   group("Pipelines API: List pipelines", () => {
 
-    const numPipelines = 200
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines`), {
+      [`GET /v1alpha/pipelines response status is 200`]: (r) => r.status === 200,
+      [`GET /v1alpha/pipelines response has pipelines array`]: (r) => Array.isArray(r.json().pipelines),
+      [`GET /v1alpha/pipelines response has total_size 0`]: (r) => r.json().total_size == 0,
+      [`GET /v1alpha/pipelines response has empty next_page_token`]: (r) => r.json().next_page_token == "",
+    });
 
+    const numPipelines = 200
     var reqBodies = [];
     for (var i = 0; i < numPipelines; i++) {
       reqBodies[i] = Object.assign(

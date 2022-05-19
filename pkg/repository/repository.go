@@ -85,19 +85,20 @@ func (r *repository) ListPipeline(owner string, pageSize int, pageToken string, 
 		pipelines = append(pipelines, item)
 	}
 
-	lastUID := (pipelines)[len(pipelines)-1].UID
-	lastItem := &datamodel.Pipeline{}
-	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("owner = ?", owner).
-		Order("create_time ASC, uid ASC").
-		Limit(1).Find(lastItem); result.Error != nil {
-		return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
-	}
-
-	if lastItem.UID.String() == lastUID.String() {
-		nextPageToken = ""
-	} else {
-		nextPageToken = paginate.EncodeToken(createTime, lastUID.String())
+	if len(pipelines) > 0 {
+		lastUID := (pipelines)[len(pipelines)-1].UID
+		lastItem := &datamodel.Pipeline{}
+		if result := r.db.Model(&datamodel.Pipeline{}).
+			Where("owner = ?", owner).
+			Order("create_time ASC, uid ASC").
+			Limit(1).Find(lastItem); result.Error != nil {
+			return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
+		}
+		if lastItem.UID.String() == lastUID.String() {
+			nextPageToken = ""
+		} else {
+			nextPageToken = paginate.EncodeToken(createTime, lastUID.String())
+		}
 	}
 
 	return pipelines, totalSize, nextPageToken, nil

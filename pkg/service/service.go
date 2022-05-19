@@ -63,11 +63,11 @@ func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipel
 
 	ownerRscName := pipeline.Owner
 	if err := s.ownerNameToPermalink(&pipeline.Owner); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := s.recipeNameToPermalink(pipeline.Recipe); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if pipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
@@ -92,7 +92,7 @@ func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipel
 func (s *service) ListPipeline(owner string, pageSize int, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error) {
 
 	if err := s.ownerNameToPermalink(&owner); err != nil {
-		return nil, 0, "", err
+		return nil, 0, "", status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	dbPipelines, ps, pt, err := s.repository.ListPipeline(owner, pageSize, pageToken, isBasicView)
@@ -102,14 +102,14 @@ func (s *service) ListPipeline(owner string, pageSize int, pageToken string, isB
 
 	for _, dbPipeline := range dbPipelines {
 		if err := s.ownerPermalinkToName(&dbPipeline.Owner); err != nil {
-			return nil, 0, "", err
+			return nil, 0, "", status.Errorf(codes.Internal, err.Error())
 		}
 	}
 
 	if !isBasicView {
 		for _, dbPipeline := range dbPipelines {
 			if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
-				return nil, 0, "", err
+				return nil, 0, "", status.Errorf(codes.Internal, err.Error())
 			}
 		}
 	}
@@ -120,7 +120,7 @@ func (s *service) ListPipeline(owner string, pageSize int, pageToken string, isB
 func (s *service) GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
 
 	if err := s.ownerNameToPermalink(&owner); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	dbPipeline, err := s.repository.GetPipelineByID(id, owner, isBasicView)
@@ -129,12 +129,12 @@ func (s *service) GetPipelineByID(id string, owner string, isBasicView bool) (*d
 	}
 
 	if err := s.ownerPermalinkToName(&dbPipeline.Owner); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	if !isBasicView {
 		if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
-			return nil, err
+			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 	}
 
@@ -144,7 +144,7 @@ func (s *service) GetPipelineByID(id string, owner string, isBasicView bool) (*d
 func (s *service) GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
 
 	if err := s.ownerNameToPermalink(&owner); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	dbPipeline, err := s.repository.GetPipelineByUID(uid, owner, isBasicView)
@@ -153,12 +153,12 @@ func (s *service) GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool
 	}
 
 	if err := s.ownerPermalinkToName(&dbPipeline.Owner); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	if !isBasicView {
 		if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
-			return nil, err
+			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 	}
 
