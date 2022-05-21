@@ -31,13 +31,13 @@ all:							## Launch all services
 
 .PHONY: dev
 dev:							## Lunch only dependant services for local development
-	docker-compose up -d ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
+	@docker-compose up -d ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
 	while [ "$$(docker inspect --format '{{ .State.Health.Status }}' pg-sql)" != "healthy" ]; do echo "Check if db is ready..." && sleep 1; done
 	go build -o ${DEV_DB_MIGRATION_BINARY} ./cmd/migration && ${DEV_DB_MIGRATION_BINARY} && rm -rf $(dirname ${DEV_DB_MIGRATION_BINARY})
 
 .PHONY: logs
 logs:							## Tail all logs with -n 10
-	docker-compose logs --follow --tail=10
+	@docker-compose logs --follow --tail=10
 
 .PHONY: pull
 pull:							## Pull all service images
@@ -46,39 +46,39 @@ pull:							## Pull all service images
 
 .PHONY: stop
 stop:							## Stop all components
-	docker-compose stop ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
+	@docker-compose stop ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
 
 .PHONY: start
 start:							## Start all stopped services
-	docker-compose start ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
+	@docker-compose start ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
 
 .PHONY: restart
 restart:						## Restart all services
-	docker-compose restart ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
+	@docker-compose restart ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
 
 .PHONY: rm
 rm:								## Remove all stopped service containers
-	docker-compose rm -f ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
+	@docker-compose rm -f ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
 
 .PHONY: down
 down:							## Stop all services and remove all service containers and volumes
-	docker-compose down -v
+	@docker-compose down -v
 
 .PHONY: images
 images:							## List all container images
-	docker-compose images ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
+	@docker-compose images ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
 
 .PHONY: ps
 ps:								## List all service containers
-	docker-compose ps ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
+	@docker-compose ps ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
 
 .PHONY: top
 top:							## Display all running service processes
-	docker-compose top ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
+	@docker-compose top ${DEVELOP_SERVICES} ${INSTILL_SERVICES} ${3RD_PARTY_SERVICES}
 
 .PHONY: build
 build:							## Build local docker image
-	docker build -t instill/pipeline-backend:dev .
+	@docker build -t instill/pipeline-backend:dev .
 
 .PHONY: go-gen
 go-gen:       					## Generate codes from "//go:generate" comments in the codebase (e.g., mockgen for unit tests)

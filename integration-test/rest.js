@@ -61,13 +61,7 @@ export function setup() {
         "destination_connector_definition": "destination-connector-definitions/destination-csv",
         "connector": {
           "configuration": JSON.stringify({
-            "connection_specification": {
-              "supports_incremental": true,
-              "connection_specification": {
-                "destination_path": "/local"
-              },
-              "supported_destination_sync_modes": [2, 1]
-            }
+            "destination_path": "/local"
           })
         }
       }), {
@@ -80,9 +74,9 @@ export function setup() {
   group("Model Backend API: Deploy a detection model", function () {
     let fd = new FormData();
     let model_description = randomString(20)
-    fd.append("name", "models/" + constant.model_id);
+    fd.append("id", constant.model_id);
     fd.append("description", model_description);
-    fd.append("model_definition_name", constant.model_def_name);
+    fd.append("model_definition", constant.model_def_name);
     fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
     check(http.request("POST", `${modelHost}/v1alpha/models:multipart`, fd.body(), {
       headers: {

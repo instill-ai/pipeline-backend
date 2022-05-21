@@ -89,16 +89,19 @@ services:
       CFG_DATABASE_PORT: 5432
       CFG_DATABASE_USERNAME: postgres
       CFG_DATABASE_PASSWORD: password
-      CFG_MODELSERVICE_HOST: model-backend
-      CFG_MODELSERVICE_PORT: 8083
+      CFG_MGMTBACKEND_HOST: mgmt-backend
+      CFG_MGMTBACKEND_PORT: 8080
+      CFG_MODELBACKEND_HOST: model-backend
+      CFG_MODELBACKEND_PORT: 8083
     ports:
       - 8081:8081
     volumes:
       - ./configs:/pipeline-backend/configs
     depends_on:
       - pipeline_backend_migrate
-      - model_backend
+      - mgmt_backend
       - connector_backend
+      - model_backend
       - temporal
       - redis
 
@@ -139,10 +142,13 @@ services:
       CFG_DATABASE_PORT: 5432
       CFG_DATABASE_USERNAME: postgres
       CFG_DATABASE_PASSWORD: password
+      CFG_MGMTBACKEND_HOST: mgmt-backend
+      CFG_MGMTBACKEND_PORT: 8080
     ports:
       - 8082:8082
     depends_on:
       - connector_backend_init
+      - mgmt_backend
 
   model_backend_migrate:
     container_name: model-backend-migrate
