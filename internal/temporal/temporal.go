@@ -6,7 +6,7 @@ import (
 
 	"go.temporal.io/sdk/client"
 
-	"github.com/instill-ai/pipeline-backend/configs"
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/x/zapadapter"
@@ -23,7 +23,7 @@ func Init() {
 	// The client is a heavyweight object that should be created once per process.
 	var err error
 
-	clientOpts := configs.Config.Temporal.ClientOptions
+	clientOpts := config.Config.Temporal.ClientOptions
 	clientOpts.Logger = zapadapter.NewZapAdapter(logger)
 
 	c, err = client.NewClient(clientOpts)

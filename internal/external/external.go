@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/instill-ai/pipeline-backend/configs"
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 
 	connectorPB "github.com/instill-ai/protogen-go/connector/v1alpha"
@@ -22,8 +22,8 @@ func InitUserServiceClient() mgmtPB.UserServiceClient {
 	var clientDialOpts grpc.DialOption
 	var creds credentials.TransportCredentials
 	var err error
-	if configs.Config.MgmtBackend.HTTPS.Cert != "" && configs.Config.MgmtBackend.HTTPS.Key != "" {
-		creds, err = credentials.NewServerTLSFromFile(configs.Config.MgmtBackend.HTTPS.Cert, configs.Config.MgmtBackend.HTTPS.Key)
+	if config.Config.MgmtBackend.HTTPS.Cert != "" && config.Config.MgmtBackend.HTTPS.Key != "" {
+		creds, err = credentials.NewServerTLSFromFile(config.Config.MgmtBackend.HTTPS.Cert, config.Config.MgmtBackend.HTTPS.Key)
 		if err != nil {
 			logger.Fatal(err.Error())
 		}
@@ -32,7 +32,7 @@ func InitUserServiceClient() mgmtPB.UserServiceClient {
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.MgmtBackend.Host, configs.Config.MgmtBackend.Port), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.Port), clientDialOpts)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -47,8 +47,8 @@ func InitConnectorServiceClient() connectorPB.ConnectorServiceClient {
 	var clientDialOpts grpc.DialOption
 	var creds credentials.TransportCredentials
 	var err error
-	if configs.Config.ConnectorBackend.HTTPS.Cert != "" && configs.Config.ConnectorBackend.HTTPS.Key != "" {
-		creds, err = credentials.NewServerTLSFromFile(configs.Config.ConnectorBackend.HTTPS.Cert, configs.Config.ConnectorBackend.HTTPS.Key)
+	if config.Config.ConnectorBackend.HTTPS.Cert != "" && config.Config.ConnectorBackend.HTTPS.Key != "" {
+		creds, err = credentials.NewServerTLSFromFile(config.Config.ConnectorBackend.HTTPS.Cert, config.Config.ConnectorBackend.HTTPS.Key)
 		if err != nil {
 			logger.Fatal(err.Error())
 		}
@@ -57,7 +57,7 @@ func InitConnectorServiceClient() connectorPB.ConnectorServiceClient {
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ConnectorBackend.Host, configs.Config.ConnectorBackend.Port), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ConnectorBackend.Host, config.Config.ConnectorBackend.Port), clientDialOpts)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -72,8 +72,8 @@ func InitModelServiceClient() modelPB.ModelServiceClient {
 	var clientDialOpts grpc.DialOption
 	var creds credentials.TransportCredentials
 	var err error
-	if configs.Config.ModelBackend.HTTPS.Cert != "" && configs.Config.ModelBackend.HTTPS.Key != "" {
-		creds, err = credentials.NewServerTLSFromFile(configs.Config.ModelBackend.HTTPS.Cert, configs.Config.ModelBackend.HTTPS.Key)
+	if config.Config.ModelBackend.HTTPS.Cert != "" && config.Config.ModelBackend.HTTPS.Key != "" {
+		creds, err = credentials.NewServerTLSFromFile(config.Config.ModelBackend.HTTPS.Cert, config.Config.ModelBackend.HTTPS.Key)
 		if err != nil {
 			logger.Fatal(err.Error())
 		}
@@ -82,7 +82,7 @@ func InitModelServiceClient() modelPB.ModelServiceClient {
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", configs.Config.ModelBackend.Host, configs.Config.ModelBackend.Port), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ModelBackend.Host, config.Config.ModelBackend.Port), clientDialOpts)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}

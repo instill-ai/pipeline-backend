@@ -22,7 +22,7 @@ func InitJSONSchema() {
 	logger, _ := logger.GetZapLogger()
 
 	var err error
-	PipelineJSONSchema, err = jsonschema.Compile("configs/models/pipeline.json")
+	PipelineJSONSchema, err = jsonschema.Compile("config/models/pipeline.json")
 	if err != nil {
 		logger.Fatal(fmt.Sprintf("%#v\n", err.Error()))
 	}

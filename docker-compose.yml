@@ -71,7 +71,7 @@ services:
       CFG_DATABASE_USERNAME: postgres
       CFG_DATABASE_PASSWORD: password
     volumes:
-      - ./configs:/pipeline-backend/configs
+      - ./config:/pipeline-backend/config
     entrypoint: ./pipeline-backend-migrate
     depends_on:
       pg_sql:
@@ -96,7 +96,7 @@ services:
     ports:
       - 8081:8081
     volumes:
-      - ./configs:/pipeline-backend/configs
+      - ./config:/pipeline-backend/config
     depends_on:
       - pipeline_backend_migrate
       - mgmt_backend

@@ -15,7 +15,7 @@ WORKDIR /pipeline-backend
 COPY --from=build /go/src/internal/db/migration ./internal/db/migration
 COPY --from=build /pipeline-backend-migrate ./
 
-COPY --from=build /go/src/configs ./configs
+COPY --from=build /go/src/config ./config
 COPY --from=build /pipeline-backend ./
 
 ENTRYPOINT ["./pipeline-backend"]
