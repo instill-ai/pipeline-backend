@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/rs/cors"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -35,16 +36,22 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
 )
 
-func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handler {
+func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler, CORSOrigins []string) http.Handler {
 	return h2c.NewHandler(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-				grpcServer.ServeHTTP(w, r)
-			} else {
-				gwHandler.ServeHTTP(w, r)
-			}
-		}),
-		&http2.Server{})
+		cors.New(cors.Options{
+			AllowedOrigins:   CORSOrigins,
+			AllowCredentials: true,
+			Debug:            false,
+		}).Handler(
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+					grpcServer.ServeHTTP(w, r)
+				} else {
+					gwHandler.ServeHTTP(w, r)
+				}
+			})),
+		&http2.Server{},
+	)
 }
 
 func main() {
@@ -154,7 +161,7 @@ func main() {
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%v", config.Config.Server.Port),
-		Handler: grpcHandlerFunc(grpcS, gwS),
+		Handler: grpcHandlerFunc(grpcS, gwS, config.Config.Server.CORSOrigins),
 	}
 
 	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 5 seconds.

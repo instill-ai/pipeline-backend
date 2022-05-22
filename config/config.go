@@ -116,9 +116,12 @@ func Init() error {
 		logger.Fatal(err.Error())
 	}
 
-	if err := k.Load(env.Provider("CFG_", ".", func(s string) string {
-		return strings.Replace(strings.ToLower(
-			strings.TrimPrefix(s, "CFG_")), "_", ".", -1)
+	if err := k.Load(env.ProviderWithValue("CFG_", ".", func(s string, v string) (string, interface{}) {
+		key := strings.Replace(strings.ToLower(strings.TrimPrefix(s, "CFG_")), "_", ".", -1)
+		if strings.Contains(v, ",") {
+			return key, strings.Split(strings.TrimSpace(v), ",")
+		}
+		return key, v
 	}), nil); err != nil {
 		return err
 	}
