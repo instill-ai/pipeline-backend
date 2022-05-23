@@ -42,6 +42,7 @@ func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler, CORSOrigin
 			AllowedOrigins:   CORSOrigins,
 			AllowCredentials: true,
 			Debug:            false,
+			AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "HEAD"},
 		}).Handler(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
