@@ -5,6 +5,8 @@ networks:
     name: instill-network
 
 volumes:
+  conenctor_config:
+    name: connector-config
   conda_pack:
     name: conda-pack
   model_repository:
@@ -89,9 +91,11 @@ services:
       CFG_DATABASE_PORT: 5432
       CFG_DATABASE_USERNAME: postgres
       CFG_DATABASE_PASSWORD: password
-      CFG_MGMTBACKEND_HOST: mgmt-backend
+      CFG_MGMTBACKEND_HOST: mgmt_backend
       CFG_MGMTBACKEND_PORT: 8080
-      CFG_MODELBACKEND_HOST: model-backend
+      CFG_CONNECTORBACKEND_HOST: connector_backend
+      CFG_CONNECTORBACKEND_PORT: 8082
+      CFG_MODELBACKEND_HOST: model_backend
       CFG_MODELBACKEND_PORT: 8083
     ports:
       - 8081:8081
@@ -132,6 +136,24 @@ services:
     depends_on:
       - connector_backend_migrate
 
+  connector_backend_worker:
+    container_name: connector-backend-worker
+    image: instill/connector-backend:dev
+    restart: on-failure
+    environment:
+      CFG_DATABASE_HOST: pg_sql
+      CFG_DATABASE_PORT: 5432
+      CFG_DATABASE_USERNAME: postgres
+      CFG_DATABASE_PASSWORD: password
+      CFG_TEMPORAL_CLIENTOPTIONS_HOSTPORT: temporal:7233
+    volumes:
+      - conenctor_config:/connector-config
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: ./connector-backend-worker
+    depends_on:
+      - connector_backend_init
+      - temporal
+
   connector_backend:
     container_name: connector-backend
     image: instill/connector-backend:dev
@@ -142,12 +164,13 @@ services:
       CFG_DATABASE_PORT: 5432
       CFG_DATABASE_USERNAME: postgres
       CFG_DATABASE_PASSWORD: password
-      CFG_MGMTBACKEND_HOST: mgmt-backend
+      CFG_MGMTBACKEND_HOST: mgmt_backend
       CFG_MGMTBACKEND_PORT: 8080
+      CFG_TEMPORAL_CLIENTOPTIONS_HOSTPORT: temporal:7233
     ports:
       - 8082:8082
     depends_on:
-      - connector_backend_init
+      - connector_backend_worker
       - mgmt_backend
 
   model_backend_migrate:
@@ -203,7 +226,7 @@ services:
 
   triton_conda_env:
     container_name: triton-conda-env
-    image: instill/triton-conda-env:v0.1.0-alpha-cpu
+    image: instill/triton-conda-env:v0.2.1-alpha-cpu
     restart: on-failure
     volumes:
       - conda_pack:/conda-pack

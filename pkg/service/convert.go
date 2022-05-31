@@ -9,9 +9,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
-	connectorPB "github.com/instill-ai/protogen-go/connector/v1alpha"
-	mgmtPB "github.com/instill-ai/protogen-go/mgmt/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
+	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
+	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 )
 
 func (s *service) ownerNameToPermalink(owner *string) error {

@@ -9,8 +9,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"google.golang.org/grpc/codes"
 
-	connectorPB "github.com/instill-ai/protogen-go/connector/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
+	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 func (s *service) getMode(srcConnRscName string, dstConnRscName string) (datamodel.PipelineMode, error) {

@@ -26,14 +26,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/external"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
-	"github.com/instill-ai/pipeline-backend/internal/temporal"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	cache "github.com/instill-ai/pipeline-backend/internal/cache"
 	database "github.com/instill-ai/pipeline-backend/internal/db"
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler, CORSOrigins []string) http.Handler {
@@ -71,9 +70,6 @@ func main() {
 	cache.Init()
 	defer cache.Close()
 
-	temporal.Init()
-	defer temporal.Close()
-
 	// Create tls based credential.
 	var creds credentials.TransportCredentials
 	var err error
@@ -89,7 +85,7 @@ func main() {
 		grpc_zap.WithDecider(func(fullMethodName string, err error) bool {
 			// will not log gRPC calls if it was a call to liveness or readiness and no error was raised
 			if err == nil {
-				if match, _ := regexp.MatchString("instill.pipeline.v1alpha.PipelineService/.*ness$", fullMethodName); match {
+				if match, _ := regexp.MatchString("vdp.pipeline.v1alpha.PipelineService/.*ness$", fullMethodName); match {
 					return false
 				}
 			}

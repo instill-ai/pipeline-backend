@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 // PipelineJSONSchema represents the Pipeline JSON Schema for validating the payload

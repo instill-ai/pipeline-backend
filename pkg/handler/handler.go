@@ -21,8 +21,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/checkfield"
 
-	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
+	healthcheckPB "github.com/instill-ai/protogen-go/vdp/healthcheck/v1alpha"
+	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 type handler struct {
@@ -40,16 +41,16 @@ func NewHandler(s service.Service) pipelinePB.PipelineServiceServer {
 
 func (h *handler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
 	return &pipelinePB.LivenessResponse{
-		HealthCheckResponse: &pipelinePB.HealthCheckResponse{
-			Status: pipelinePB.HealthCheckResponse_SERVING_STATUS_SERVING,
+		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{
+			Status: healthcheckPB.HealthCheckResponse_SERVING_STATUS_SERVING,
 		},
 	}, nil
 }
 
 func (h *handler) Readiness(ctx context.Context, req *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
 	return &pipelinePB.ReadinessResponse{
-		HealthCheckResponse: &pipelinePB.HealthCheckResponse{
-			Status: pipelinePB.HealthCheckResponse_SERVING_STATUS_SERVING,
+		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{
+			Status: healthcheckPB.HealthCheckResponse_SERVING_STATUS_SERVING,
 		},
 	}, nil
 }

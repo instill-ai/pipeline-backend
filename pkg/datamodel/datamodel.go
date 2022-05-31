@@ -11,7 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"gorm.io/gorm"
 
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 // BaseDynamic contains common columns for all tables with dynamic UUID as primary key generated when creating

@@ -14,7 +14,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 // PBToDBPipeline converts protobuf data model to db data model

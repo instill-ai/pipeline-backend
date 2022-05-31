@@ -6,7 +6,7 @@ The pipeline-backend manages all pipeline resources working with [Visual Data Pr
 
 Pre-requirements:
 
-- Go v1.17 or later installed on your development machine
+- Go v1.18 or later installed on your development machine
 
 ### Binary build
 

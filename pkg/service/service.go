@@ -14,10 +14,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
-	connectorPB "github.com/instill-ai/protogen-go/connector/v1alpha"
-	mgmtPB "github.com/instill-ai/protogen-go/mgmt/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/model/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/pipeline/v1alpha"
+	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
+	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 // Service interface
@@ -202,7 +202,7 @@ func (s *service) DeletePipeline(id string, owner string) error {
 
 func (s *service) UpdatePipelineState(id string, owner string, state datamodel.PipelineState) (*datamodel.Pipeline, error) {
 
-	if state == datamodel.PipelineState(pipelinePB.HealthCheckResponse_SERVING_STATUS_UNSPECIFIED) {
+	if state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED) {
 		return nil, status.Errorf(codes.InvalidArgument, "State update with unspecified is not allowed")
 	}
 
