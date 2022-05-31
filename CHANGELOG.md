@@ -1,5 +1,17 @@
 # Changelog
 
+### [0.5.2-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.5.1-alpha...v0.5.2-alpha) (2022-05-31)
+
+
+### Features
+
+* add cors support ([c847912](https://github.com/instill-ai/pipeline-backend/commit/c847912a9f5745c5dd807fdecb7be97b77592655))
+
+
+### Miscellaneous Chores
+
+* release 0.5.2-alpha ([3bb261e](https://github.com/instill-ai/pipeline-backend/commit/3bb261eebce009385018004ce20c78ae8ef62ab9))
+
 ### [0.5.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.5.0-alpha...v0.5.1-alpha) (2022-05-19)
 
 
