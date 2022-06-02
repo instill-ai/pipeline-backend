@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema",
-  "$id": "https://github.com/instill-ai/pipeline-backend/blob/main/config/models/pipeline.json",
+  "$id": "https://github.com/instill-ai/pipeline-backend/blob/main/config/model/pipeline.json",
   "title": "Pipeline",
   "description": "End-to-end data pipeline",
   "type": "object",
