@@ -26,13 +26,13 @@ import (
 // Service interface
 type Service interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
-	ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
-	GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error)
-	GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error)
-	UpdatePipeline(id string, owner string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
-	DeletePipeline(id string, owner string) error
-	UpdatePipelineState(id string, owner string, state datamodel.PipelineState) (*datamodel.Pipeline, error)
-	UpdatePipelineID(id string, owner string, newID string) (*datamodel.Pipeline, error)
+	ListPipeline(ownerRscName string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
+	GetPipelineByID(id string, ownerRscName string, isBasicView bool) (*datamodel.Pipeline, error)
+	GetPipelineByUID(uid uuid.UUID, ownerRscName string, isBasicView bool) (*datamodel.Pipeline, error)
+	UpdatePipeline(id string, ownerRscName string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
+	DeletePipeline(id string, ownerRscName string) error
+	UpdatePipelineState(id string, ownerRscName string, state datamodel.PipelineState) (*datamodel.Pipeline, error)
+	UpdatePipelineID(id string, ownerRscName string, newID string) (*datamodel.Pipeline, error)
 	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceResponse, error)
 	TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceBinaryFileUploadResponse, error)
 	ValidatePipeline(pipeline *datamodel.Pipeline) error
@@ -59,7 +59,7 @@ func NewService(r repository.Repository, mu mgmtPB.UserServiceClient, c connecto
 
 func (s *service) CreatePipeline(dbPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	mode, err := s.getMode(dbPipeline.Recipe.Source, dbPipeline.Recipe.Destination)
+	mode, err := s.getModeByConnRscName(dbPipeline.Recipe.Source, dbPipeline.Recipe.Destination)
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +67,12 @@ func (s *service) CreatePipeline(dbPipeline *datamodel.Pipeline) (*datamodel.Pip
 	dbPipeline.Mode = mode
 
 	ownerRscName := dbPipeline.Owner
-	if err := s.ownerNameToPermalink(&dbPipeline.Owner); err != nil {
+	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
+	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
+
+	dbPipeline.Owner = ownerPermalink
 
 	if err := s.recipeNameToPermalink(dbPipeline.Recipe); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -86,29 +89,34 @@ func (s *service) CreatePipeline(dbPipeline *datamodel.Pipeline) (*datamodel.Pip
 		return nil, err
 	}
 
-	dbCreatedPipeline, err := s.GetPipelineByID(dbPipeline.ID, ownerRscName, false)
+	dbCreatedPipeline, err := s.repository.GetPipelineByID(dbPipeline.ID, ownerPermalink, false)
 	if err != nil {
 		return nil, err
 	}
 
+	if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	dbCreatedPipeline.Owner = ownerRscName
+
 	return dbCreatedPipeline, nil
 }
 
-func (s *service) ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error) {
+func (s *service) ListPipeline(ownerRscName string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error) {
 
-	if err := s.ownerNameToPermalink(&owner); err != nil {
+	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
+	if err != nil {
 		return nil, 0, "", status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	dbPipelines, ps, pt, err := s.repository.ListPipeline(owner, pageSize, pageToken, isBasicView)
+	dbPipelines, ps, pt, err := s.repository.ListPipeline(ownerPermalink, pageSize, pageToken, isBasicView)
 	if err != nil {
 		return nil, 0, "", err
 	}
 
 	for _, dbPipeline := range dbPipelines {
-		if err := s.ownerPermalinkToName(&dbPipeline.Owner); err != nil {
-			return nil, 0, "", status.Errorf(codes.Internal, err.Error())
-		}
+		dbPipeline.Owner = ownerRscName
 	}
 
 	if !isBasicView {
@@ -122,20 +130,19 @@ func (s *service) ListPipeline(owner string, pageSize int64, pageToken string, i
 	return dbPipelines, ps, pt, nil
 }
 
-func (s *service) GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
+func (s *service) GetPipelineByID(id string, ownerRscName string, isBasicView bool) (*datamodel.Pipeline, error) {
 
-	if err := s.ownerNameToPermalink(&owner); err != nil {
+	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
+	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	dbPipeline, err := s.repository.GetPipelineByID(id, owner, isBasicView)
+	dbPipeline, err := s.repository.GetPipelineByID(id, ownerPermalink, isBasicView)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := s.ownerPermalinkToName(&dbPipeline.Owner); err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
-	}
+	dbPipeline.Owner = ownerRscName
 
 	if !isBasicView {
 		if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
@@ -146,20 +153,19 @@ func (s *service) GetPipelineByID(id string, owner string, isBasicView bool) (*d
 	return dbPipeline, nil
 }
 
-func (s *service) GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
+func (s *service) GetPipelineByUID(uid uuid.UUID, ownerRscName string, isBasicView bool) (*datamodel.Pipeline, error) {
 
-	if err := s.ownerNameToPermalink(&owner); err != nil {
+	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
+	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	dbPipeline, err := s.repository.GetPipelineByUID(uid, owner, isBasicView)
+	dbPipeline, err := s.repository.GetPipelineByUID(uid, ownerPermalink, isBasicView)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := s.ownerPermalinkToName(&dbPipeline.Owner); err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
-	}
+	dbPipeline.Owner = ownerRscName
 
 	if !isBasicView {
 		if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
@@ -170,58 +176,67 @@ func (s *service) GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool
 	return dbPipeline, nil
 }
 
-func (s *service) UpdatePipeline(id string, owner string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
+func (s *service) UpdatePipeline(id string, ownerRscName string, toUpdPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	ownerRscName := owner
-	if err := s.ownerNameToPermalink(&owner); err != nil {
-		return nil, err
+	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := s.ownerNameToPermalink(&updatedPipeline.Owner); err != nil {
-		return nil, err
-	}
+	toUpdPipeline.Owner = ownerPermalink
 
 	// Validation: Pipeline existence
-	if existingPipeline, _ := s.repository.GetPipelineByID(id, owner, true); existingPipeline == nil {
+	if existingPipeline, _ := s.repository.GetPipelineByID(id, ownerPermalink, true); existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", id)
 	}
 
-	if err := s.repository.UpdatePipeline(id, owner, updatedPipeline); err != nil {
+	if err := s.repository.UpdatePipeline(id, ownerPermalink, toUpdPipeline); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipelineByID(updatedPipeline.ID, ownerRscName, false)
+	dbPipeline, err := s.repository.GetPipelineByID(toUpdPipeline.ID, ownerPermalink, false)
 	if err != nil {
 		return nil, err
 	}
 
+	if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	dbPipeline.Owner = ownerRscName
+
 	return dbPipeline, nil
 }
 
-func (s *service) DeletePipeline(id string, owner string) error {
-	if err := s.ownerNameToPermalink(&owner); err != nil {
-		return err
+func (s *service) DeletePipeline(id string, ownerRscName string) error {
+	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
+	if err != nil {
+		return status.Errorf(codes.InvalidArgument, err.Error())
 	}
-	return s.repository.DeletePipeline(id, owner)
+	return s.repository.DeletePipeline(id, ownerPermalink)
 }
 
-func (s *service) UpdatePipelineState(id string, owner string, state datamodel.PipelineState) (*datamodel.Pipeline, error) {
+func (s *service) UpdatePipelineState(id string, ownerRscName string, state datamodel.PipelineState) (*datamodel.Pipeline, error) {
 
 	if state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED) {
 		return nil, status.Errorf(codes.InvalidArgument, "State update with unspecified is not allowed")
 	}
 
-	ownerRscName := owner
-	if err := s.ownerNameToPermalink(&owner); err != nil {
-		return nil, err
+	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	dbPipeline, err := s.GetPipelineByID(id, ownerRscName, false)
+	dbPipeline, err := s.repository.GetPipelineByID(id, ownerPermalink, false)
 	if err != nil {
 		return nil, err
 	}
 
-	mode, err := s.getMode(dbPipeline.Recipe.Source, dbPipeline.Recipe.Destination)
+	if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	mode, err := s.getModeByConnRscName(dbPipeline.Recipe.Source, dbPipeline.Recipe.Destination)
 	if err != nil {
 		return nil, err
 	}
@@ -230,38 +245,50 @@ func (s *service) UpdatePipelineState(id string, owner string, state datamodel.P
 		return nil, status.Errorf(codes.InvalidArgument, "Pipeline id \"%s\" is in the sync mode, which is always active", dbPipeline.ID)
 	}
 
-	if err := s.repository.UpdatePipelineState(id, owner, state); err != nil {
+	if err := s.repository.UpdatePipelineState(id, ownerPermalink, state); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err = s.GetPipelineByID(id, ownerRscName, false)
+	dbPipeline, err = s.repository.GetPipelineByID(id, ownerPermalink, false)
 	if err != nil {
 		return nil, err
 	}
+
+	if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	dbPipeline.Owner = ownerRscName
 
 	return dbPipeline, nil
 }
 
-func (s *service) UpdatePipelineID(id string, owner string, newID string) (*datamodel.Pipeline, error) {
+func (s *service) UpdatePipelineID(id string, ownerRscName string, newID string) (*datamodel.Pipeline, error) {
 
-	ownerRscName := owner
-	if err := s.ownerNameToPermalink(&owner); err != nil {
-		return nil, err
+	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// Validation: Pipeline existence
-	if existingPipeline, _ := s.repository.GetPipelineByID(id, owner, true); existingPipeline == nil {
+	if existingPipeline, _ := s.repository.GetPipelineByID(id, ownerPermalink, true); existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", id)
 	}
 
-	if err := s.repository.UpdatePipelineID(id, owner, newID); err != nil {
+	if err := s.repository.UpdatePipelineID(id, ownerPermalink, newID); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipelineByID(newID, ownerRscName, false)
+	dbPipeline, err := s.repository.GetPipelineByID(newID, ownerPermalink, false)
 	if err != nil {
 		return nil, err
 	}
+
+	if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	dbPipeline.Owner = ownerRscName
 
 	return dbPipeline, nil
 }
@@ -283,9 +310,12 @@ func (s *service) ValidatePipeline(pipeline *datamodel.Pipeline) error {
 
 func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceResponse, error) {
 
-	if err := s.ownerNameToPermalink(&dbPipeline.Owner); err != nil {
-		return nil, err
+	ownerPermalink, err := s.ownerRscNameToPermalink(dbPipeline.Owner)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
+
+	dbPipeline.Owner = ownerPermalink
 
 	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
 	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
@@ -338,9 +368,12 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 
 func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, dbPipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceBinaryFileUploadResponse, error) {
 
-	if err := s.ownerNameToPermalink(&dbPipeline.Owner); err != nil {
-		return nil, err
+	ownerPermalink, err := s.ownerRscNameToPermalink(dbPipeline.Owner)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
+
+	dbPipeline.Owner = ownerPermalink
 
 	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
 	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
