@@ -1,10 +1,10 @@
 .DEFAULT_GOAL:=help
 
-DEVELOP_SERVICES := pipeline_backend
+DEV := pipeline_backend
 DEP := mgmt_backend connector_backend model_backend triton_conda_env
-DB := pg_sql
+DB := pg_sql redis
 TRITON := triton_server
-TEMPORAL := temporal redis redoc_openapi
+TEMPORAL := temporal
 
 #============================================================================
 

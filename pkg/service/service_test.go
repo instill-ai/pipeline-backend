@@ -4,6 +4,7 @@ package service_test
 //go:generate mockgen -destination mock_model_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/model/v1alpha ModelServiceClient
 //go:generate mockgen -destination mock_connector_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/connector/v1alpha ConnectorServiceClient
 //go:generate mockgen -destination mock_user_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha UserServiceClient
+//go:generate mockgen -destination mock_usage_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/usage/v1alpha UsageServiceClient
 
 import (
 	"database/sql"
@@ -62,7 +63,7 @@ func TestCreatePipeline(t *testing.T) {
 
 		mockModelServiceClient := NewMockModelServiceClient(ctrl)
 
-		s := service.NewService(mockRepository, mockUserServiceClient, mockConnectorServiceClient, mockModelServiceClient)
+		s := service.NewService(mockRepository, mockUserServiceClient, mockConnectorServiceClient, mockModelServiceClient, nil)
 
 		_, err := s.CreatePipeline(&normalPipeline)
 

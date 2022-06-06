@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-redis/redis/v9"
+
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/constant"
 	"github.com/instill-ai/pipeline-backend/internal/db"
 	"github.com/instill-ai/pipeline-backend/internal/external"
@@ -47,11 +50,24 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 			return
 		}
 
+		userServiceClient, userServiceClientConn := external.InitUserServiceClient()
+		defer userServiceClientConn.Close()
+
+		connectorServiceClient, connectorServiceClientConn := external.InitConnectorServiceClient()
+		defer connectorServiceClientConn.Close()
+
+		modelServiceClient, modelServiceClientConn := external.InitModelServiceClient()
+		defer modelServiceClientConn.Close()
+
+		redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
+		defer redisClient.Close()
+
 		service := service.NewService(
 			repository.NewRepository(db.GetConnection()),
-			external.InitUserServiceClient(),
-			external.InitConnectorServiceClient(),
-			external.InitModelServiceClient(),
+			userServiceClient,
+			connectorServiceClient,
+			modelServiceClient,
+			redisClient,
 		)
 
 		dbPipeline, err := service.GetPipelineByID(id, owner, false)

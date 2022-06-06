@@ -13,10 +13,11 @@ import (
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
+	usagePB "github.com/instill-ai/protogen-go/vdp/usage/v1alpha"
 )
 
 // InitUserServiceClient initialises a UserServiceClient instance
-func InitUserServiceClient() mgmtPB.UserServiceClient {
+func InitUserServiceClient() (mgmtPB.UserServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -37,11 +38,11 @@ func InitUserServiceClient() mgmtPB.UserServiceClient {
 		logger.Fatal(err.Error())
 	}
 
-	return mgmtPB.NewUserServiceClient(clientConn)
+	return mgmtPB.NewUserServiceClient(clientConn), clientConn
 }
 
 // InitConnectorServiceClient initialises a ConnectorServiceClient instance
-func InitConnectorServiceClient() connectorPB.ConnectorServiceClient {
+func InitConnectorServiceClient() (connectorPB.ConnectorServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -62,11 +63,11 @@ func InitConnectorServiceClient() connectorPB.ConnectorServiceClient {
 		logger.Fatal(err.Error())
 	}
 
-	return connectorPB.NewConnectorServiceClient(clientConn)
+	return connectorPB.NewConnectorServiceClient(clientConn), clientConn
 }
 
 // InitModelServiceClient initialises a ModelServiceClient instance
-func InitModelServiceClient() modelPB.ModelServiceClient {
+func InitModelServiceClient() (modelPB.ModelServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -87,5 +88,31 @@ func InitModelServiceClient() modelPB.ModelServiceClient {
 		logger.Fatal(err.Error())
 	}
 
-	return modelPB.NewModelServiceClient(clientConn)
+	return modelPB.NewModelServiceClient(clientConn), clientConn
+}
+
+// InitUsageServiceClient initialises a UsageServiceClient instance
+func InitUsageServiceClient() (usagePB.UsageServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger()
+
+	var clientDialOpts grpc.DialOption
+	var usageCreds credentials.TransportCredentials
+	var err error
+	if config.Config.UsageBackend.HTTPS.Cert != "" && config.Config.UsageBackend.HTTPS.Key != "" {
+		usageCreds, err = credentials.NewServerTLSFromFile(config.Config.UsageBackend.HTTPS.Cert, config.Config.UsageBackend.HTTPS.Key)
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+		clientDialOpts = grpc.WithTransportCredentials(usageCreds)
+	} else {
+		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.UsageBackend.Host, config.Config.UsageBackend.Port), clientDialOpts)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+
+	return usagePB.NewUsageServiceClient(clientConn), clientConn
+
 }

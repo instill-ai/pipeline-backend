@@ -12,10 +12,11 @@ FROM gcr.io/distroless/base AS runtime
 
 WORKDIR /pipeline-backend
 
-COPY --from=build /go/src/internal/db/migration ./internal/db/migration
-COPY --from=build /pipeline-backend-migrate ./
-
 COPY --from=build /go/src/config ./config
+COPY --from=build /go/src/release-please ./release-please
+COPY --from=build /go/src/internal/db/migration ./internal/db/migration
+
+COPY --from=build /pipeline-backend-migrate ./
 COPY --from=build /pipeline-backend ./
 
 ENTRYPOINT ["./pipeline-backend"]

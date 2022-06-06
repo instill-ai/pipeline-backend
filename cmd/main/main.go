@@ -10,6 +10,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/go-redis/redis/v9"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rs/cors"
 	"golang.org/x/net/http2"
@@ -29,10 +30,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/pipeline-backend/pkg/usage"
+	"github.com/instill-ai/x/repo"
 
-	cache "github.com/instill-ai/pipeline-backend/internal/cache"
 	database "github.com/instill-ai/pipeline-backend/internal/db"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	usagePB "github.com/instill-ai/protogen-go/vdp/usage/v1alpha"
+	usageclient "github.com/instill-ai/usage-client/usage"
 )
 
 func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler, CORSOrigins []string) http.Handler {
@@ -66,9 +70,6 @@ func main() {
 
 	db := database.GetConnection()
 	defer database.Close(db)
-
-	cache.Init()
-	defer cache.Close()
 
 	// Create tls based credential.
 	var creds credentials.TransportCredentials
@@ -113,16 +114,32 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	userServiceClient, userServiceClientConn := external.InitUserServiceClient()
+	defer userServiceClientConn.Close()
+
+	connectorServiceClient, connectorServiceClientConn := external.InitConnectorServiceClient()
+	defer connectorServiceClientConn.Close()
+
+	modelServiceClient, modelServiceClientConn := external.InitModelServiceClient()
+	defer modelServiceClientConn.Close()
+
+	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
+	defer redisClient.Close()
+
+	repository := repository.NewRepository(db)
+
+	service := service.NewService(
+		repository,
+		userServiceClient,
+		connectorServiceClient,
+		modelServiceClient,
+		redisClient,
+	)
+
 	grpcS := grpc.NewServer(grpcServerOpts...)
 	pipelinePB.RegisterPipelineServiceServer(
 		grpcS,
-		handler.NewHandler(
-			service.NewService(
-				repository.NewRepository(db),
-				external.InitUserServiceClient(),
-				external.InitConnectorServiceClient(),
-				external.InitModelServiceClient(),
-			)),
+		handler.NewHandler(service),
 	)
 
 	gwS := runtime.NewServeMux(
@@ -145,6 +162,30 @@ func main() {
 		panic(err)
 	}
 
+	// Start usage reporter
+	if !config.Config.Server.DisableUsage {
+		version, err := repo.ReadReleaseManifest("release-please/manifest.json")
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+
+		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
+		defer usageServiceClientConn.Close()
+
+		usg := usage.NewUsage(repository, userServiceClient, redisClient)
+		err = usageclient.StartReporter(
+			context.Background(),
+			usageServiceClient,
+			usagePB.Session_SERVICE_PIPELINE,
+			config.Config.Server.Edition,
+			version,
+			usg.RetrieveUsageData)
+		if err != nil {
+			logger.Error(fmt.Sprintf("Unable to start usage reporter: %v\n", err))
+		}
+	}
+
+	// Start gRPC server
 	var dialOpts []grpc.DialOption
 	if config.Config.Server.HTTPS.Cert != "" && config.Config.Server.HTTPS.Key != "" {
 		dialOpts = []grpc.DialOption{grpc.WithTransportCredentials(creds)}

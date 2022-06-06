@@ -117,7 +117,7 @@ func DBToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
 
 	if strings.HasPrefix(dbPipeline.Owner, "users/") {
 		pbPipeline.Owner = &pipelinePB.Pipeline_User{User: dbPipeline.Owner}
-	} else if strings.HasPrefix(dbPipeline.Owner, "organizations/") {
+	} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
 		pbPipeline.Owner = &pipelinePB.Pipeline_Org{Org: dbPipeline.Owner}
 	}
 

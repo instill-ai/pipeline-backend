@@ -17,7 +17,7 @@ import (
 // Repository interface
 type Repository interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) error
-	ListPipeline(owner string, pageSize int, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
+	ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error)
 	GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error)
 	UpdatePipeline(id string, owner string, pipeline *datamodel.Pipeline) error
@@ -49,7 +49,7 @@ func (r *repository) CreatePipeline(pipeline *datamodel.Pipeline) error {
 	return nil
 }
 
-func (r *repository) ListPipeline(owner string, pageSize int, pageToken string, isBasicView bool) (pipelines []datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
+func (r *repository) ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool) (pipelines []datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
 
 	if result := r.db.Model(&datamodel.Pipeline{}).Where("owner = ?", owner).Count(&totalSize); result.Error != nil {
 		return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/env"
@@ -28,6 +28,7 @@ type AppConfig struct {
 	MgmtBackend      MgmtBackendConfig      `koanf:"mgmtbackend"`
 	ConnectorBackend ConnectorBackendConfig `koanf:"connectorbackend"`
 	ModelBackend     ModelBackendConfig     `koanf:"modelbackend"`
+	UsageBackend     UsageBackendConfig     `koanf:"usagebackend"`
 }
 
 // ServerConfig defines HTTP server configurations
@@ -37,10 +38,9 @@ type ServerConfig struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
-	CORSOrigins []string `koanf:"corsorigins"`
-	Paginate    struct {
-		Salt string `koanf:"salt"`
-	}
+	CORSOrigins  []string `koanf:"corsorigins"`
+	Edition      string   `koanf:"edition"`
+	DisableUsage bool     `koanf:"disableusage"`
 }
 
 // DatabaseConfig related to database
@@ -93,6 +93,16 @@ type ConnectorBackendConfig struct {
 
 // ModelBackendConfig related to model-backend
 type ModelBackendConfig struct {
+	Host  string `koanf:"host"`
+	Port  int    `koanf:"port"`
+	HTTPS struct {
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
+	}
+}
+
+// UsageBackendConfig related to usage-backend
+type UsageBackendConfig struct {
 	Host  string `koanf:"host"`
 	Port  int    `koanf:"port"`
 	HTTPS struct {

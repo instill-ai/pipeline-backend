@@ -5,12 +5,15 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
+	"github.com/go-redis/redis/v9"
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"google.golang.org/grpc/codes"
 
+	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
@@ -23,7 +26,7 @@ import (
 // Service interface
 type Service interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
-	ListPipeline(owner string, pageSize int, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
+	ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error)
 	GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error)
 	UpdatePipeline(id string, owner string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
@@ -40,56 +43,58 @@ type service struct {
 	userServiceClient      mgmtPB.UserServiceClient
 	connectorServiceClient connectorPB.ConnectorServiceClient
 	modelServiceClient     modelPB.ModelServiceClient
+	redisClient            *redis.Client
 }
 
 // NewService initiates a service instance
-func NewService(r repository.Repository, u mgmtPB.UserServiceClient, c connectorPB.ConnectorServiceClient, m modelPB.ModelServiceClient) Service {
+func NewService(r repository.Repository, mu mgmtPB.UserServiceClient, c connectorPB.ConnectorServiceClient, m modelPB.ModelServiceClient, rc *redis.Client) Service {
 	return &service{
 		repository:             r,
-		userServiceClient:      u,
+		userServiceClient:      mu,
 		connectorServiceClient: c,
 		modelServiceClient:     m,
+		redisClient:            rc,
 	}
 }
 
-func (s *service) CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
+func (s *service) CreatePipeline(dbPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	mode, err := s.getMode(pipeline.Recipe.Source, pipeline.Recipe.Destination)
+	mode, err := s.getMode(dbPipeline.Recipe.Source, dbPipeline.Recipe.Destination)
 	if err != nil {
 		return nil, err
 	}
 
-	pipeline.Mode = mode
+	dbPipeline.Mode = mode
 
-	ownerRscName := pipeline.Owner
-	if err := s.ownerNameToPermalink(&pipeline.Owner); err != nil {
+	ownerRscName := dbPipeline.Owner
+	if err := s.ownerNameToPermalink(&dbPipeline.Owner); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := s.recipeNameToPermalink(pipeline.Recipe); err != nil {
+	if err := s.recipeNameToPermalink(dbPipeline.Recipe); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if pipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
-		pipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE)
+	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
+		dbPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE)
 	} else {
 		// TODO: Dispatch job to Temporal for periodical connection state check
-		pipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
+		dbPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
 	}
 
-	if err := s.repository.CreatePipeline(pipeline); err != nil {
+	if err := s.repository.CreatePipeline(dbPipeline); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.GetPipelineByID(pipeline.ID, ownerRscName, false)
+	dbCreatedPipeline, err := s.GetPipelineByID(dbPipeline.ID, ownerRscName, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return dbPipeline, nil
+	return dbCreatedPipeline, nil
 }
 
-func (s *service) ListPipeline(owner string, pageSize int, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error) {
+func (s *service) ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error) {
 
 	if err := s.ownerNameToPermalink(&owner); err != nil {
 		return nil, 0, "", status.Errorf(codes.InvalidArgument, err.Error())
@@ -276,10 +281,14 @@ func (s *service) ValidatePipeline(pipeline *datamodel.Pipeline) error {
 	return nil
 }
 
-func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceResponse, error) {
+func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceResponse, error) {
+
+	if err := s.ownerNameToPermalink(&dbPipeline.Owner); err != nil {
+		return nil, err
+	}
 
 	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
-	if pipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
+	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
@@ -302,12 +311,23 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeli
 		}
 
 		resp, err := s.modelServiceClient.TriggerModelInstance(ctx, &modelPB.TriggerModelInstanceRequest{
-			Name:   pipeline.Recipe.ModelInstances[0],
+			Name:   dbPipeline.Recipe.ModelInstances[0],
 			Inputs: inputs,
 		})
 
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "Error model-backend %s: %v", "TriggerModel", err.Error())
+		}
+
+		// Increment trigger image numbers
+		uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
+		if err != nil {
+			return nil, err
+		}
+		if strings.HasPrefix(dbPipeline.Owner, "users/") {
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.image.num", uid), int64(len(inputs)))
+		} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.image.num", uid), int64(len(inputs)))
 		}
 
 		return resp, nil
@@ -316,10 +336,14 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeli
 	return nil, nil
 }
 
-func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceBinaryFileUploadResponse, error) {
+func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, dbPipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceBinaryFileUploadResponse, error) {
+
+	if err := s.ownerNameToPermalink(&dbPipeline.Owner); err != nil {
+		return nil, err
+	}
 
 	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
-	if pipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
+	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -333,7 +357,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 		}
 
 		err = stream.Send(&modelPB.TriggerModelInstanceBinaryFileUploadRequest{
-			Name:        pipeline.Recipe.ModelInstances[0],
+			Name:        dbPipeline.Recipe.ModelInstances[0],
 			FileLengths: fileLengths,
 		})
 		if err != nil {
@@ -360,6 +384,17 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 		res, err := stream.CloseAndRecv()
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "cannot receive response: %s", err.Error())
+		}
+
+		// Increment trigger image numbers
+		uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
+		if err != nil {
+			return nil, err
+		}
+		if strings.HasPrefix(dbPipeline.Owner, "users/") {
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.image.num", uid), int64(len(fileLengths)))
+		} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.image.num", uid), int64(len(fileLengths)))
 		}
 
 		return res, nil

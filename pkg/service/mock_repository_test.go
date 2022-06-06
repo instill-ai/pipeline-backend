@@ -94,7 +94,7 @@ func (mr *MockRepositoryMockRecorder) GetPipelineByUID(arg0, arg1, arg2 interfac
 }
 
 // ListPipeline mocks base method.
-func (m *MockRepository) ListPipeline(arg0 string, arg1 int, arg2 string, arg3 bool) ([]datamodel.Pipeline, int64, string, error) {
+func (m *MockRepository) ListPipeline(arg0 string, arg1 int64, arg2 string, arg3 bool) ([]datamodel.Pipeline, int64, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListPipeline", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].([]datamodel.Pipeline)
