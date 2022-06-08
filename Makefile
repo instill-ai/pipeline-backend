@@ -1,9 +1,9 @@
 .DEFAULT_GOAL:=help
 
 DEV := pipeline_backend
-DEP := mgmt_backend connector_backend model_backend triton_conda_env
+DEP := mgmt_backend connector_backend model_backend
 DB := pg_sql redis
-TRITON := triton_server
+TRITON := triton_server triton_conda_env
 TEMPORAL := temporal
 
 #============================================================================

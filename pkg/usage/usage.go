@@ -27,10 +27,10 @@ type usage struct {
 }
 
 // NewUsage initiates a usage instance
-func NewUsage(r repository.Repository, u mgmtPB.UserServiceClient, rc *redis.Client) Usage {
+func NewUsage(r repository.Repository, mu mgmtPB.UserServiceClient, rc *redis.Client) Usage {
 	return &usage{
 		repository:        r,
-		userServiceClient: u,
+		userServiceClient: mu,
 		redisClient:       rc,
 	}
 }
@@ -40,13 +40,13 @@ func (u *usage) RetrieveUsageData() interface{} {
 	logger, _ := logger.GetZapLogger()
 	ctx := context.Background()
 
-	logger.Info("Retrieve usage data...")
+	logger.Debug("Retrieve usage data...")
 
 	pbPipelineUsageData := []*usagePB.PipelineUsageData_UserUsageData{}
 
 	// Roll over all users and update the metrics with the cached uuid
-	userPageSizeMax := int64(100)
 	userPageToken := ""
+	userPageSizeMax := int64(repository.MaxPageSize)
 	for {
 		userResp, err := u.userServiceClient.ListUser(ctx, &mgmtPB.ListUserRequest{
 			PageSize:  &userPageSizeMax,
@@ -58,14 +58,13 @@ func (u *usage) RetrieveUsageData() interface{} {
 
 		// Roll all pipeline resources on a user
 		for _, user := range userResp.Users {
-			pipePageSizeMax := int64(100)
 			pipePageToken := ""
 			pipeActiveStateNum := int64(0)
 			pipeInactiveStateNum := int64(0)
 			pipeSyncModeNum := int64(0)
 			pipeAsyncModeNum := int64(0)
 			for {
-				dbPipelines, _, pipeNextPageToken, err := u.repository.ListPipeline(fmt.Sprintf("users/%s", user.GetUid()), pipePageSizeMax, pipePageToken, true)
+				dbPipelines, _, pipeNextPageToken, err := u.repository.ListPipeline(fmt.Sprintf("users/%s", user.GetUid()), int64(repository.MaxPageSize), pipePageToken, true)
 				if err != nil {
 					logger.Error(fmt.Sprintf("%s", err))
 				}
@@ -117,7 +116,7 @@ func (u *usage) RetrieveUsageData() interface{} {
 		}
 	}
 
-	logger.Info("Send retrieved usage data...")
+	logger.Debug("Send retrieved usage data...")
 
 	return &usagePB.SessionReport_PipelineUsageData{
 		PipelineUsageData: &usagePB.PipelineUsageData{

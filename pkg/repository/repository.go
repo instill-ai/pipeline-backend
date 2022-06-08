@@ -14,16 +14,22 @@ import (
 	"github.com/instill-ai/x/paginate"
 )
 
+// DefaultPageSize is the default pagination page size when page size is not assigned
+const DefaultPageSize = 10
+
+// MaxPageSize is the maximum pagination page size if the assigned value is over this number
+const MaxPageSize = 100
+
 // Repository interface
 type Repository interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) error
 	ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
-	GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error)
 	GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error)
+	GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error)
 	UpdatePipeline(id string, owner string, pipeline *datamodel.Pipeline) error
-	UpdatePipelineState(id string, owner string, state datamodel.PipelineState) error
-	UpdatePipelineID(id string, owner string, newID string) error
 	DeletePipeline(id string, owner string) error
+	UpdatePipelineID(id string, owner string, newID string) error
+	UpdatePipelineState(id string, owner string, state datamodel.PipelineState) error
 }
 
 type repository struct {
@@ -58,9 +64,9 @@ func (r *repository) ListPipeline(owner string, pageSize int64, pageToken string
 	queryBuilder := r.db.Model(&datamodel.Pipeline{}).Order("create_time DESC, uid DESC").Where("owner = ?", owner)
 
 	if pageSize == 0 {
-		pageSize = 10
-	} else if pageSize > 100 {
-		pageSize = 100
+		pageSize = DefaultPageSize
+	} else if pageSize > MaxPageSize {
+		pageSize = MaxPageSize
 	}
 
 	queryBuilder = queryBuilder.Limit(int(pageSize))
@@ -111,18 +117,6 @@ func (r *repository) ListPipeline(owner string, pageSize int64, pageToken string
 	return pipelines, totalSize, nextPageToken, nil
 }
 
-func (r *repository) GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
-	queryBuilder := r.db.Model(&datamodel.Pipeline{}).Where("uid = ? AND owner = ?", uid, owner)
-	if isBasicView {
-		queryBuilder.Omit("pipeline.recipe")
-	}
-	var pipeline datamodel.Pipeline
-	if result := queryBuilder.First(&pipeline); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "The pipeline uid \"%s\" you specified is not found", uid.String())
-	}
-	return &pipeline, nil
-}
-
 func (r *repository) GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
 	queryBuilder := r.db.Model(&datamodel.Pipeline{}).Where("id = ? AND owner = ?", id, owner)
 	if isBasicView {
@@ -130,7 +124,19 @@ func (r *repository) GetPipelineByID(id string, owner string, isBasicView bool) 
 	}
 	var pipeline datamodel.Pipeline
 	if result := queryBuilder.First(&pipeline); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "The pipeline id \"%s\" you specified is not found", id)
+		return nil, status.Errorf(codes.NotFound, "[GetPipelineByID] The pipeline id \"%s\" you specified is not found", id)
+	}
+	return &pipeline, nil
+}
+
+func (r *repository) GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error) {
+	queryBuilder := r.db.Model(&datamodel.Pipeline{}).Where("uid = ? AND owner = ?", uid, owner)
+	if isBasicView {
+		queryBuilder.Omit("pipeline.recipe")
+	}
+	var pipeline datamodel.Pipeline
+	if result := queryBuilder.First(&pipeline); result.Error != nil {
+		return nil, status.Errorf(codes.NotFound, "[GetPipelineByUID] The pipeline uid \"%s\" you specified is not found", uid.String())
 	}
 	return &pipeline, nil
 }
@@ -140,25 +146,8 @@ func (r *repository) UpdatePipeline(id string, owner string, pipeline *datamodel
 		Where("id = ? AND owner = ?", id, owner).
 		Updates(pipeline); result.Error != nil {
 		return status.Error(codes.Internal, result.Error.Error())
-	}
-
-	return nil
-}
-
-func (r *repository) UpdatePipelineState(id string, owner string, state datamodel.PipelineState) error {
-	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("id = ? AND owner = ?", id, owner).
-		Update("state", state); result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
-	}
-	return nil
-}
-
-func (r *repository) UpdatePipelineID(id string, owner string, newID string) error {
-	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("id = ? AND owner = ?", id, owner).
-		Update("id", newID); result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
+	} else if result.RowsAffected == 0 {
+		return status.Errorf(codes.NotFound, "[UpdatePipeline] The pipeline id \"%s\" you specified is not found", id)
 	}
 	return nil
 }
@@ -173,8 +162,30 @@ func (r *repository) DeletePipeline(id string, owner string) error {
 	}
 
 	if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "The pipeline id \"%s\" you specified is not found", id)
+		return status.Errorf(codes.NotFound, "[DeletePipeline] The pipeline id \"%s\" you specified is not found", id)
 	}
 
+	return nil
+}
+
+func (r *repository) UpdatePipelineID(id string, owner string, newID string) error {
+	if result := r.db.Model(&datamodel.Pipeline{}).
+		Where("id = ? AND owner = ?", id, owner).
+		Update("id", newID); result.Error != nil {
+		return status.Error(codes.Internal, result.Error.Error())
+	} else if result.RowsAffected == 0 {
+		return status.Errorf(codes.NotFound, "[UpdatePipelineID] The pipeline id \"%s\" you specified is not found", id)
+	}
+	return nil
+}
+
+func (r *repository) UpdatePipelineState(id string, owner string, state datamodel.PipelineState) error {
+	if result := r.db.Model(&datamodel.Pipeline{}).
+		Where("id = ? AND owner = ?", id, owner).
+		Update("state", state); result.Error != nil {
+		return status.Error(codes.Internal, result.Error.Error())
+	} else if result.RowsAffected == 0 {
+		return status.Errorf(codes.NotFound, "[UpdatePipelineState] The pipeline id \"%s\" you specified is not found", id)
+	}
 	return nil
 }

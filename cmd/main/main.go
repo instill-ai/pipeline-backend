@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"regexp"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/go-redis/redis/v9"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -34,9 +36,10 @@ import (
 	"github.com/instill-ai/x/repo"
 
 	database "github.com/instill-ai/pipeline-backend/internal/db"
+	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 	usagePB "github.com/instill-ai/protogen-go/vdp/usage/v1alpha"
-	usageclient "github.com/instill-ai/usage-client/usage"
+	usageclient "github.com/instill-ai/usage-client/client"
 )
 
 func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler, CORSOrigins []string) http.Handler {
@@ -58,15 +61,38 @@ func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler, CORSOrigin
 	)
 }
 
+func startReporter(ctx context.Context, usageServiceClient usagePB.UsageServiceClient, r repository.Repository, mu mgmtPB.UserServiceClient, rc *redis.Client) {
+	if config.Config.Server.DisableUsage {
+		return
+	}
+
+	logger, _ := logger.GetZapLogger()
+
+	version, err := repo.ReadReleaseManifest("release-please/manifest.json")
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+
+	go func() {
+		time.Sleep(5 * time.Second)
+
+		usg := usage.NewUsage(r, mu, rc)
+		err = usageclient.StartReporter(ctx, usageServiceClient, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, version, usg.RetrieveUsageData)
+		if err != nil {
+			logger.Error(fmt.Sprintf("unable to start reporter: %v\n", err))
+		}
+	}()
+}
+
 func main() {
+
+	if err := config.Init(); err != nil {
+		log.Fatal(err.Error())
+	}
 
 	logger, _ := logger.GetZapLogger()
 	defer logger.Sync() //nolint
 	grpc_zap.ReplaceGrpcLoggerV2(logger)
-
-	if err := config.Init(); err != nil {
-		logger.Fatal(err.Error())
-	}
 
 	db := database.GetConnection()
 	defer database.Close(db)
@@ -123,6 +149,9 @@ func main() {
 	modelServiceClient, modelServiceClientConn := external.InitModelServiceClient()
 	defer modelServiceClientConn.Close()
 
+	usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
+	defer usageServiceClientConn.Close()
+
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
@@ -163,27 +192,7 @@ func main() {
 	}
 
 	// Start usage reporter
-	if !config.Config.Server.DisableUsage {
-		version, err := repo.ReadReleaseManifest("release-please/manifest.json")
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-
-		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
-		defer usageServiceClientConn.Close()
-
-		usg := usage.NewUsage(repository, userServiceClient, redisClient)
-		err = usageclient.StartReporter(
-			context.Background(),
-			usageServiceClient,
-			usagePB.Session_SERVICE_PIPELINE,
-			config.Config.Server.Edition,
-			version,
-			usg.RetrieveUsageData)
-		if err != nil {
-			logger.Error(fmt.Sprintf("Unable to start usage reporter: %v\n", err))
-		}
-	}
+	startReporter(ctx, usageServiceClient, repository, userServiceClient, redisClient)
 
 	// Start gRPC server
 	var dialOpts []grpc.DialOption

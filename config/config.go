@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -12,8 +13,6 @@ import (
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 	"go.temporal.io/sdk/client"
-
-	"github.com/instill-ai/pipeline-backend/internal/logger"
 )
 
 // Config - Global variable to export
@@ -41,6 +40,7 @@ type ServerConfig struct {
 	CORSOrigins  []string `koanf:"corsorigins"`
 	Edition      string   `koanf:"edition"`
 	DisableUsage bool     `koanf:"disableusage"`
+	Debug        bool     `koanf:"debug"`
 }
 
 // DatabaseConfig related to database
@@ -113,8 +113,6 @@ type UsageBackendConfig struct {
 
 // Init - Assign global config to decoded config struct
 func Init() error {
-	logger, _ := logger.GetZapLogger()
-
 	k := koanf.New(".")
 	parser := yaml.Parser()
 
@@ -123,7 +121,7 @@ func Init() error {
 	flag.Parse()
 
 	if err := k.Load(file.Provider(*fileRelativePath), parser); err != nil {
-		logger.Fatal(err.Error())
+		log.Fatal(err.Error())
 	}
 
 	if err := k.Load(env.ProviderWithValue("CFG_", ".", func(s string, v string) (string, interface{}) {

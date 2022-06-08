@@ -50,7 +50,7 @@ services:
       CFG_DATABASE_PORT: 5432
       CFG_DATABASE_USERNAME: postgres
       CFG_DATABASE_PASSWORD: password
-      CFG_USAGEBACKEND_HOST: usage-backend-cloud
+      CFG_USAGEBACKEND_HOST: usage_backend_cloud
       CFG_USAGEBACKEND_PORT: 8084
     ports:
       - 8080:8080
@@ -93,7 +93,7 @@ services:
       CFG_CONNECTORBACKEND_PORT: 8082
       CFG_MODELBACKEND_HOST: model_backend
       CFG_MODELBACKEND_PORT: 8083
-      CFG_USAGEBACKEND_HOST: usage-backend-cloud
+      CFG_USAGEBACKEND_HOST: usage_backend_cloud
       CFG_USAGEBACKEND_PORT: 8084
     ports:
       - 8081:8081
@@ -209,7 +209,7 @@ services:
       CFG_DATABASE_PORT: 5432
       CFG_DATABASE_USERNAME: postgres
       CFG_DATABASE_PASSWORD: password
-      CFG_TRITONSERVER_GRPCURI: triton-server:8001
+      CFG_TRITONSERVER_GRPCURI: triton_server:8001
       CFG_TRITONSERVER_MODELSTORE: /model-repository
     ports:
       - 8083:8083

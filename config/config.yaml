@@ -9,6 +9,7 @@ server:
     - https://instill.tech
   edition: local-ce:dev
   disableusage: false
+  debug: false
 database:
   username: postgres
   password: password

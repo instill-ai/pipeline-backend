@@ -87,7 +87,7 @@ func (s *service) recipeNameToPermalink(recipe *datamodel.Recipe) error {
 			return err
 		}
 
-		modelInstID, err := resource.GetNameID(modelInstanceRscName)
+		modelInstID, err := resource.GetRscNameID(modelInstanceRscName)
 		if err != nil {
 			return err
 		}

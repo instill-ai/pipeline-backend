@@ -30,8 +30,8 @@ func GetCollectionID(name string) (string, error) {
 	return colID, nil
 }
 
-// GetNameID returns the resource ID given a resource name
-func GetNameID(name string) (string, error) {
+// GetRscNameID returns the resource ID given a resource name
+func GetRscNameID(name string) (string, error) {
 	id := name[strings.LastIndex(name, "/")+1:]
 	if id == "" {
 		return "", status.Errorf(codes.InvalidArgument, "Error when extract resource id from resource name `%s`", name)

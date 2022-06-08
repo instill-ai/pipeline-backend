@@ -12,12 +12,12 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.3
 	github.com/iancoleman/strcase v0.2.0
 	github.com/instill-ai/protogen-go v0.1.5-alpha.0.20220606124550-53f79f9c7d74
-	github.com/instill-ai/usage-client v0.0.0-20220606142220-c17424a565e4
+	github.com/instill-ai/usage-client v0.0.0-20220607201439-d646c37f5b02
 	github.com/instill-ai/x v0.1.0-alpha.0.20220604235252-39fcffc82edb
 	github.com/knadh/koanf v1.4.0
 	github.com/mennanov/fieldmask-utils v0.5.0
 	github.com/rs/cors v1.8.2
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.2
 	go.temporal.io/sdk v1.13.1
 	go.uber.org/zap v1.21.0
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
@@ -69,5 +69,5 @@ require (
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	google.golang.org/genproto v0.0.0-20220317150908-0efb43f6373e // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
