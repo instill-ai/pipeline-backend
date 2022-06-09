@@ -302,7 +302,7 @@ services:
 
   redis:
     container_name: redis
-    image: bitnami/redis:6.2.6-debian-10-r34
+    image: ${REDIS_IMAGE_TAG}
     restart: unless-stopped
     environment:
       - ALLOW_EMPTY_PASSWORD=yes

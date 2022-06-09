@@ -25,6 +25,7 @@ K6BIN := $(if $(shell command -v k6 2> /dev/null),k6,$(shell mktemp -d)/k6)
 
 TRITONSERVER_IMAGE_TAG := $(if $(filter arm64,$(shell uname -m)),instill/tritonserver:22.05-py3-cpu-arm64,nvcr.io/nvidia/tritonserver:22.05-py3)
 TRITONCONDAENV_IMAGE_TAG := $(if $(filter arm64,$(shell uname -m)),instill/triton-conda-env:0.2.2-alpha-cpu-arm64,instill/triton-conda-env:0.2.2-alpha-cpu)
+REDIS_IMAGE_TAG := $(if $(filter arm64,$(shell uname -m)),arm64v8/redis:7.0-alpine,amd64/redis:7.0-alpine)
 
 #============================================================================
 
