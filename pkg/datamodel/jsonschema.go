@@ -3,7 +3,6 @@ package datamodel
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -32,19 +31,29 @@ func InitJSONSchema() {
 //ValidatePipelineJSONSchema validates the Protobuf message data
 func ValidatePipelineJSONSchema(pbPipeline *pipelinePB.Pipeline) error {
 
-	data, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline)
+	b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline)
 	if err != nil {
 		return err
 	}
 
 	var v interface{}
-	if err := json.Unmarshal(data, &v); err != nil {
-		log.Fatal(err)
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
 	}
 
 	if err := PipelineJSONSchema.Validate(v); err != nil {
-		b, _ := json.MarshalIndent(err.(*jsonschema.ValidationError).DetailedOutput(), "", "  ")
-		return fmt.Errorf(string(b))
+		switch e := err.(type) {
+		case *jsonschema.ValidationError:
+			b, err := json.MarshalIndent(e.DetailedOutput(), "", "  ")
+			if err != nil {
+				return err
+			}
+			return fmt.Errorf(string(b))
+		case jsonschema.InvalidJSONTypeError:
+			return e
+		default:
+			return e
+		}
 	}
 
 	return nil
