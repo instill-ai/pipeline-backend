@@ -29,7 +29,7 @@ export function CheckCreate() {
       "POST /v1alpha/pipelines response pipeline uid": (r) => helper.isUUID(r.json().pipeline.uid),
       "POST /v1alpha/pipelines response pipeline id": (r) => r.json().pipeline.id === reqBody.id,
       "POST /v1alpha/pipelines response pipeline description": (r) => r.json().pipeline.description === reqBody.description,
-      "POST /v1alpha/pipelines response pipeline recipe": (r) => r.json().pipeline.recipe !== undefined,
+      "POST /v1alpha/pipelines response pipeline recipe": (r) => helper.validateRecipe(r.json().pipeline.recipe),
       "POST /v1alpha/pipelines response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
       "POST /v1alpha/pipelines response pipeline mode": (r) => r.json().pipeline.mode === "MODE_SYNC",
       "POST /v1alpha/pipelines response pipeline create_time": (r) => new Date(r.json().pipeline.create_time).getTime() > new Date().setTime(0),

@@ -94,7 +94,7 @@ func (s *service) CreatePipeline(dbPipeline *datamodel.Pipeline) (*datamodel.Pip
 		return nil, err
 	}
 
-	if err := s.recipePermalinkToName(dbPipeline.Recipe); err != nil {
+	if err := s.recipePermalinkToName(dbCreatedPipeline.Recipe); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
