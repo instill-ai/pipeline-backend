@@ -8,7 +8,7 @@ server:
     - https://instill-inc.tech
     - https://instill.tech
   edition: local-ce:dev
-  disableusage: false
+  disableusage: true
   debug: false
 database:
   username: postgres

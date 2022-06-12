@@ -62,9 +62,6 @@ func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler, CORSOrigin
 }
 
 func startReporter(ctx context.Context, usageServiceClient usagePB.UsageServiceClient, r repository.Repository, mu mgmtPB.UserServiceClient, rc *redis.Client) {
-	if config.Config.Server.DisableUsage {
-		return
-	}
 
 	logger, _ := logger.GetZapLogger()
 
@@ -75,7 +72,6 @@ func startReporter(ctx context.Context, usageServiceClient usagePB.UsageServiceC
 
 	go func() {
 		time.Sleep(5 * time.Second)
-
 		usg := usage.NewUsage(r, mu, rc)
 		err = usageclient.StartReporter(ctx, usageServiceClient, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, version, usg.RetrieveUsageData)
 		if err != nil {
@@ -149,9 +145,6 @@ func main() {
 	modelServiceClient, modelServiceClientConn := external.InitModelServiceClient()
 	defer modelServiceClientConn.Close()
 
-	usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
-	defer usageServiceClientConn.Close()
-
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
@@ -192,7 +185,11 @@ func main() {
 	}
 
 	// Start usage reporter
-	startReporter(ctx, usageServiceClient, repository, userServiceClient, redisClient)
+	if !config.Config.Server.DisableUsage {
+		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
+		defer usageServiceClientConn.Close()
+		startReporter(ctx, usageServiceClient, repository, userServiceClient, redisClient)
+	}
 
 	// Start gRPC server
 	var dialOpts []grpc.DialOption
