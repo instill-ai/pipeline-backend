@@ -5,8 +5,10 @@ networks:
     name: instill-network
 
 volumes:
-  conenctor_config:
-    name: connector-config
+  vdp:
+    name: vdp
+  airbyte:
+    name: airbyte
   conda_pack:
     name: conda-pack
   model_repository:
@@ -147,7 +149,8 @@ services:
       CFG_DATABASE_PASSWORD: password
       CFG_TEMPORAL_CLIENTOPTIONS_HOSTPORT: temporal:7233
     volumes:
-      - conenctor_config:/connector-config
+      - vdp:/vdp
+      - airbyte:/airbyte
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: ./connector-backend-worker
     depends_on:
@@ -175,7 +178,6 @@ services:
 
   model_backend_migrate:
     container_name: model-backend-migrate
-    # image: instill/model-backend:v0.3.2-alpha
     image: instill/model-backend:dev
     restart: on-failure
     environment:
