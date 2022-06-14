@@ -77,7 +77,7 @@
     "state": {
       "type": "string",
       "title": "State",
-      "description": "The current state of your pipeline. It could be \"Inactive\", \"active\" and \"Error\".",
+      "description": "The current state of your pipeline",
       "enum": [
         "STATE_UNSPECIFIED",
         "STATE_INACTIVE",

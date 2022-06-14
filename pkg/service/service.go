@@ -187,7 +187,7 @@ func (s *service) UpdatePipeline(id string, ownerRscName string, toUpdPipeline *
 
 	// Validation: Pipeline existence
 	if existingPipeline, _ := s.repository.GetPipelineByID(id, ownerPermalink, true); existingPipeline == nil {
-		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", id)
+		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
 
 	if err := s.repository.UpdatePipeline(id, ownerPermalink, toUpdPipeline); err != nil {
@@ -242,7 +242,7 @@ func (s *service) UpdatePipelineState(id string, ownerRscName string, state data
 	}
 
 	if mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) && state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE) {
-		return nil, status.Errorf(codes.InvalidArgument, "Pipeline id \"%s\" is in the sync mode, which is always active", dbPipeline.ID)
+		return nil, status.Errorf(codes.InvalidArgument, "Pipeline id %s is in the sync mode, which is always active", dbPipeline.ID)
 	}
 
 	if err := s.repository.UpdatePipelineState(id, ownerPermalink, state); err != nil {
@@ -272,7 +272,7 @@ func (s *service) UpdatePipelineID(id string, ownerRscName string, newID string)
 
 	// Validation: Pipeline existence
 	if existingPipeline, _ := s.repository.GetPipelineByID(id, ownerPermalink, true); existingPipeline == nil {
-		return nil, status.Errorf(codes.NotFound, "Pipeline id \"%s\" is not found", id)
+		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
 
 	if err := s.repository.UpdatePipelineID(id, ownerPermalink, newID); err != nil {

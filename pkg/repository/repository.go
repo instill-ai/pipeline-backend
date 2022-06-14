@@ -124,7 +124,7 @@ func (r *repository) GetPipelineByID(id string, owner string, isBasicView bool) 
 	}
 	var pipeline datamodel.Pipeline
 	if result := queryBuilder.First(&pipeline); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "[GetPipelineByID] The pipeline id \"%s\" you specified is not found", id)
+		return nil, status.Errorf(codes.NotFound, "[GetPipelineByID] The pipeline id %s you specified is not found", id)
 	}
 	return &pipeline, nil
 }
@@ -136,7 +136,7 @@ func (r *repository) GetPipelineByUID(uid uuid.UUID, owner string, isBasicView b
 	}
 	var pipeline datamodel.Pipeline
 	if result := queryBuilder.First(&pipeline); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "[GetPipelineByUID] The pipeline uid \"%s\" you specified is not found", uid.String())
+		return nil, status.Errorf(codes.NotFound, "[GetPipelineByUID] The pipeline uid %s you specified is not found", uid.String())
 	}
 	return &pipeline, nil
 }
@@ -147,7 +147,7 @@ func (r *repository) UpdatePipeline(id string, owner string, pipeline *datamodel
 		Updates(pipeline); result.Error != nil {
 		return status.Error(codes.Internal, result.Error.Error())
 	} else if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[UpdatePipeline] The pipeline id \"%s\" you specified is not found", id)
+		return status.Errorf(codes.NotFound, "[UpdatePipeline] The pipeline id %s you specified is not found", id)
 	}
 	return nil
 }
@@ -162,7 +162,7 @@ func (r *repository) DeletePipeline(id string, owner string) error {
 	}
 
 	if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[DeletePipeline] The pipeline id \"%s\" you specified is not found", id)
+		return status.Errorf(codes.NotFound, "[DeletePipeline] The pipeline id %s you specified is not found", id)
 	}
 
 	return nil
@@ -174,7 +174,7 @@ func (r *repository) UpdatePipelineID(id string, owner string, newID string) err
 		Update("id", newID); result.Error != nil {
 		return status.Error(codes.Internal, result.Error.Error())
 	} else if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[UpdatePipelineID] The pipeline id \"%s\" you specified is not found", id)
+		return status.Errorf(codes.NotFound, "[UpdatePipelineID] The pipeline id %s you specified is not found", id)
 	}
 	return nil
 }
@@ -185,7 +185,7 @@ func (r *repository) UpdatePipelineState(id string, owner string, state datamode
 		Update("state", state); result.Error != nil {
 		return status.Error(codes.Internal, result.Error.Error())
 	} else if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[UpdatePipelineState] The pipeline id \"%s\" you specified is not found", id)
+		return status.Errorf(codes.NotFound, "[UpdatePipelineState] The pipeline id %s you specified is not found", id)
 	}
 	return nil
 }
