@@ -376,6 +376,46 @@ func (mr *MockModelServiceClientMockRecorder) RenameModel(arg0, arg1 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenameModel", reflect.TypeOf((*MockModelServiceClient)(nil).RenameModel), varargs...)
 }
 
+// TestModelInstance mocks base method.
+func (m *MockModelServiceClient) TestModelInstance(arg0 context.Context, arg1 *modelv1alpha.TestModelInstanceRequest, arg2 ...grpc.CallOption) (*modelv1alpha.TestModelInstanceResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "TestModelInstance", varargs...)
+	ret0, _ := ret[0].(*modelv1alpha.TestModelInstanceResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TestModelInstance indicates an expected call of TestModelInstance.
+func (mr *MockModelServiceClientMockRecorder) TestModelInstance(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TestModelInstance", reflect.TypeOf((*MockModelServiceClient)(nil).TestModelInstance), varargs...)
+}
+
+// TestModelInstanceBinaryFileUpload mocks base method.
+func (m *MockModelServiceClient) TestModelInstanceBinaryFileUpload(arg0 context.Context, arg1 ...grpc.CallOption) (modelv1alpha.ModelService_TestModelInstanceBinaryFileUploadClient, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "TestModelInstanceBinaryFileUpload", varargs...)
+	ret0, _ := ret[0].(modelv1alpha.ModelService_TestModelInstanceBinaryFileUploadClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TestModelInstanceBinaryFileUpload indicates an expected call of TestModelInstanceBinaryFileUpload.
+func (mr *MockModelServiceClientMockRecorder) TestModelInstanceBinaryFileUpload(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TestModelInstanceBinaryFileUpload", reflect.TypeOf((*MockModelServiceClient)(nil).TestModelInstanceBinaryFileUpload), varargs...)
+}
+
 // TriggerModelInstance mocks base method.
 func (m *MockModelServiceClient) TriggerModelInstance(arg0 context.Context, arg1 *modelv1alpha.TriggerModelInstanceRequest, arg2 ...grpc.CallOption) (*modelv1alpha.TriggerModelInstanceResponse, error) {
 	m.ctrl.T.Helper()
