@@ -49,8 +49,5 @@ modelbackend:
     cert:   # /ssl/tls.crt
     key:    # /ssl/tls.key
 usagebackend:
-  host: localhost
-  port: 8084
-  https:
-    cert:  # /ssl/tls.crt
-    key:  # /ssl/tls.crt
+  host: usage.instill.tech
+  port: 443

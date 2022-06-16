@@ -105,10 +105,6 @@ type ModelBackendConfig struct {
 type UsageBackendConfig struct {
 	Host  string `koanf:"host"`
 	Port  int    `koanf:"port"`
-	HTTPS struct {
-		Cert string `koanf:"cert"`
-		Key  string `koanf:"key"`
-	}
 }
 
 // Init - Assign global config to decoded config struct
