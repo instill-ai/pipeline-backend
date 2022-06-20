@@ -10,6 +10,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
 	datamodel "github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	filtering "go.einride.tech/aip/filtering"
 )
 
 // MockRepository is a mock of Repository interface.
@@ -94,9 +95,9 @@ func (mr *MockRepositoryMockRecorder) GetPipelineByUID(arg0, arg1, arg2 interfac
 }
 
 // ListPipeline mocks base method.
-func (m *MockRepository) ListPipeline(arg0 string, arg1 int64, arg2 string, arg3 bool) ([]datamodel.Pipeline, int64, string, error) {
+func (m *MockRepository) ListPipeline(arg0 string, arg1 int64, arg2 string, arg3 bool, arg4 filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListPipeline", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "ListPipeline", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].([]datamodel.Pipeline)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(string)
@@ -105,9 +106,9 @@ func (m *MockRepository) ListPipeline(arg0 string, arg1 int64, arg2 string, arg3
 }
 
 // ListPipeline indicates an expected call of ListPipeline.
-func (mr *MockRepositoryMockRecorder) ListPipeline(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) ListPipeline(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipeline", reflect.TypeOf((*MockRepository)(nil).ListPipeline), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipeline", reflect.TypeOf((*MockRepository)(nil).ListPipeline), arg0, arg1, arg2, arg3, arg4)
 }
 
 // UpdatePipeline mocks base method.

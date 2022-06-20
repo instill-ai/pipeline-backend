@@ -25,7 +25,8 @@ export let options = {
 export function setup() {
 
   group("Connector Backend API: Create a http source connector", function () {
-    check(http.request("POST", `${connectorHost}/v1alpha/source-connectors`,
+
+    var res = http.request("POST", `${connectorHost}/v1alpha/source-connectors`,
       JSON.stringify({
         "id": "source-http",
         "source_connector_definition": "source-connector-definitions/source-http",
@@ -34,13 +35,16 @@ export function setup() {
         }
       }), {
       headers: { "Content-Type": "application/json" },
-    }), {
+    })
+    check(res, {
       "POST /v1alpha/source-connectors response status for creating directness HTTP source connector 201": (r) => r.status === 201,
     })
+
   });
 
   group("Connector Backend API: Create a http destination connector", function () {
-    check(http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
+
+    var res = http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
       JSON.stringify({
         "id": "destination-http",
         "destination_connector_definition": "destination-connector-definitions/destination-http",
@@ -49,13 +53,17 @@ export function setup() {
         }
       }), {
       headers: { "Content-Type": "application/json" },
-    }), {
+    })
+
+    check(res, {
       "POST /v1alpha/destination-connectors response status for creating directness HTTP destination connector 201": (r) => r.status === 201,
     })
+
   });
 
   group("Connector Backend API: Create a CSV destination connector", function () {
-    check(http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
+
+    var res = http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
       JSON.stringify({
         "id": constant.dstCSVConnID,
         "destination_connector_definition": "destination-connector-definitions/destination-csv",
@@ -66,9 +74,12 @@ export function setup() {
         }
       }), {
       headers: { "Content-Type": "application/json" },
-    }), {
+    })
+
+    check(res, {
       "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
     })
+
   });
 
   group("Model Backend API: Deploy a detection model", function () {
@@ -86,11 +97,13 @@ export function setup() {
       "POST /v1alpha/models:multipart task det response status": (r) => r.status === 201
     });
 
-    check(http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest:deploy`, {}, {
+    var res = http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest:deploy`, {}, {
       headers: {
         "Content-Type": "application/json"
       },
-    }), {
+    })
+
+    check(res, {
       [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response status`]: (r) => r.status === 200
     });
 

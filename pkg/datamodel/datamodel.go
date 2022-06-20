@@ -47,28 +47,28 @@ type Pipeline struct {
 type PipelineMode pipelinePB.Pipeline_Mode
 
 // Scan function for custom GORM type PipelineMode
-func (c *PipelineMode) Scan(value interface{}) error {
-	*c = PipelineMode(pipelinePB.Pipeline_Mode_value[value.(string)])
+func (p *PipelineMode) Scan(value interface{}) error {
+	*p = PipelineMode(pipelinePB.Pipeline_Mode_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type PipelineMode
-func (c PipelineMode) Value() (driver.Value, error) {
-	return pipelinePB.Pipeline_Mode(c).String(), nil
+func (p PipelineMode) Value() (driver.Value, error) {
+	return pipelinePB.Pipeline_Mode(p).String(), nil
 }
 
 // PipelineState is an alias type for Protobuf enum Pipeline.State
 type PipelineState pipelinePB.Pipeline_State
 
 // Scan function for custom GORM type PipelineState
-func (c *PipelineState) Scan(value interface{}) error {
-	*c = PipelineState(pipelinePB.Pipeline_State_value[value.(string)])
+func (p *PipelineState) Scan(value interface{}) error {
+	*p = PipelineState(pipelinePB.Pipeline_State_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type PipelineState
-func (c PipelineState) Value() (driver.Value, error) {
-	return pipelinePB.Pipeline_State(c).String(), nil
+func (p PipelineState) Value() (driver.Value, error) {
+	return pipelinePB.Pipeline_State(p).String(), nil
 }
 
 // Recipe is the data model of the pipeline recipe

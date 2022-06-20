@@ -218,6 +218,43 @@ export function CheckList() {
       [`GET /v1alpha/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token} response next_page_token is empty`]: (r) => r.json().next_page_token == "",
     });
 
+    // Filtering
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC`, null, {headers: {"Content-Type": "application/json",}}), {
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    });
+
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE`, null, {headers: {"Content-Type": "application/json",}}), {
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    });
+
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`, null, {headers: {"Content-Type": "application/json",}}), {
+      [`GET /v1alpha/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    });
+
+    // Get UUID for foreign resources
+    var srcConnUid = http.get(`${connectorHost}/v1alpha/source-connectors/source-http`, {}, {headers: {"Content-Type": "application/json"},}).json().source_connector.uid
+    var srcConnPermalink = `source-connectors/${srcConnUid}`
+
+    var dstConnUid = http.get(`${connectorHost}/v1alpha/destination-connectors/destination-http`, {}, {headers: {"Content-Type": "application/json"},}).json().destination_connector.uid
+    var dstConnPermalink = `destination-connectors/${dstConnUid}`
+
+    var modelUid = http.get(`${modelHost}/v1alpha/models/${constant.model_id}`, {}, {headers: {"Content-Type": "application/json"},}).json().model.uid
+    var modelInstUid = http.get(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, {headers: {"Content-Type": "application/json"},}).json().instance.uid
+    var modelInstPermalink = `models/${modelUid}/instances/${modelInstUid}`
+
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22`, null, {headers: {"Content-Type": "application/json",}}), {
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    });
+
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22`, null, {headers: {"Content-Type": "application/json",}}), {
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    });
+
     // Delete the pipelines
     for (const reqBody of reqBodies) {
       check(http.request(

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-redis/redis/v9"
+	"go.einride.tech/aip/filtering"
 
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -64,7 +65,7 @@ func (u *usage) RetrieveUsageData() interface{} {
 			pipeSyncModeNum := int64(0)
 			pipeAsyncModeNum := int64(0)
 			for {
-				dbPipelines, _, pipeNextPageToken, err := u.repository.ListPipeline(fmt.Sprintf("users/%s", user.GetUid()), int64(repository.MaxPageSize), pipePageToken, true)
+				dbPipelines, _, pipeNextPageToken, err := u.repository.ListPipeline(fmt.Sprintf("users/%s", user.GetUid()), int64(repository.MaxPageSize), pipePageToken, true, filtering.Filter{})
 				if err != nil {
 					logger.Error(fmt.Sprintf("%s", err))
 				}

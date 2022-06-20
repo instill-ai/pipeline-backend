@@ -6,9 +6,11 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgconn"
+	"go.einride.tech/aip/filtering"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/x/paginate"
@@ -23,7 +25,7 @@ const MaxPageSize = 100
 // Repository interface
 type Repository interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) error
-	ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
+	ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByID(id string, owner string, isBasicView bool) (*datamodel.Pipeline, error)
 	GetPipelineByUID(uid uuid.UUID, owner string, isBasicView bool) (*datamodel.Pipeline, error)
 	UpdatePipeline(id string, owner string, pipeline *datamodel.Pipeline) error
@@ -55,7 +57,7 @@ func (r *repository) CreatePipeline(pipeline *datamodel.Pipeline) error {
 	return nil
 }
 
-func (r *repository) ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool) (pipelines []datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
+func (r *repository) ListPipeline(owner string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) (pipelines []datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
 
 	if result := r.db.Model(&datamodel.Pipeline{}).Where("owner = ?", owner).Count(&totalSize); result.Error != nil {
 		return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
@@ -81,6 +83,12 @@ func (r *repository) ListPipeline(owner string, pageSize int64, pageToken string
 
 	if isBasicView {
 		queryBuilder.Omit("pipeline.recipe")
+	}
+
+	if expr, err := r.transpileFilter(filter); err != nil {
+		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+	} else if expr != nil {
+		queryBuilder.Clauses(expr)
 	}
 
 	var createTime time.Time
@@ -188,4 +196,11 @@ func (r *repository) UpdatePipelineState(id string, owner string, state datamode
 		return status.Errorf(codes.NotFound, "[UpdatePipelineState] The pipeline id %s you specified is not found", id)
 	}
 	return nil
+}
+
+// TranspileFilter transpiles a parsed AIP filter expression to GORM DB clauses
+func (r *repository) transpileFilter(filter filtering.Filter) (*clause.Expr, error) {
+	return (&Transpiler{
+		filter: filter,
+	}).Transpile()
 }

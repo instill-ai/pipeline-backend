@@ -11,6 +11,7 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
+	"go.einride.tech/aip/filtering"
 	"google.golang.org/grpc/codes"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
@@ -26,7 +27,7 @@ import (
 // Service interface
 type Service interface {
 	CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
-	ListPipeline(ownerRscName string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error)
+	ListPipeline(ownerRscName string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByID(id string, ownerRscName string, isBasicView bool) (*datamodel.Pipeline, error)
 	GetPipelineByUID(uid uuid.UUID, ownerRscName string, isBasicView bool) (*datamodel.Pipeline, error)
 	UpdatePipeline(id string, ownerRscName string, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
@@ -103,14 +104,14 @@ func (s *service) CreatePipeline(dbPipeline *datamodel.Pipeline) (*datamodel.Pip
 	return dbCreatedPipeline, nil
 }
 
-func (s *service) ListPipeline(ownerRscName string, pageSize int64, pageToken string, isBasicView bool) ([]datamodel.Pipeline, int64, string, error) {
+func (s *service) ListPipeline(ownerRscName string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
 
 	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
 	if err != nil {
 		return nil, 0, "", status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	dbPipelines, ps, pt, err := s.repository.ListPipeline(ownerPermalink, pageSize, pageToken, isBasicView)
+	dbPipelines, ps, pt, err := s.repository.ListPipeline(ownerPermalink, pageSize, pageToken, isBasicView, filter)
 	if err != nil {
 		return nil, 0, "", err
 	}

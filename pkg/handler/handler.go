@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/iancoleman/strcase"
+	"go.einride.tech/aip/filtering"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -113,7 +114,31 @@ func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipeline
 		return &pipelinePB.ListPipelineResponse{}, err
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipeline(owner, req.GetPageSize(), req.GetPageToken(), isBasicView)
+	var mode pipelinePB.Pipeline_Mode
+	var state pipelinePB.Pipeline_State
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareFunction("time.now", filtering.NewFunctionOverload("time.now", filtering.TypeTimestamp)),
+		filtering.DeclareIdent("uid", filtering.TypeString),
+		filtering.DeclareIdent("id", filtering.TypeString),
+		filtering.DeclareIdent("description", filtering.TypeString),
+		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeString)),
+		filtering.DeclareEnumIdent("mode", mode.Type()),
+		filtering.DeclareEnumIdent("state", state.Type()),
+		filtering.DeclareIdent("owner", filtering.TypeString),
+		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
+		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
+	}...)
+	if err != nil {
+		return &pipelinePB.ListPipelineResponse{}, err
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return &pipelinePB.ListPipelineResponse{}, err
+	}
+
+	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipeline(owner, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
 		return &pipelinePB.ListPipelineResponse{}, err
 	}
