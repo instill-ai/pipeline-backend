@@ -49,5 +49,6 @@ modelbackend:
     cert:   # /ssl/tls.crt
     key:    # /ssl/tls.key
 usagebackend:
+  tlsenabled: true
   host: usage.instill.tech
   port: 443

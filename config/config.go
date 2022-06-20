@@ -103,8 +103,9 @@ type ModelBackendConfig struct {
 
 // UsageBackendConfig related to usage-backend
 type UsageBackendConfig struct {
-	Host  string `koanf:"host"`
-	Port  int    `koanf:"port"`
+	TLSEnabled bool   `koanf:"tlsenabled"`
+	Host       string `koanf:"host"`
+	Port       int    `koanf:"port"`
 }
 
 // Init - Assign global config to decoded config struct
