@@ -258,7 +258,7 @@ func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipe
 	}
 
 	if err := h.service.DeletePipeline(existPipeline.GetPipeline().GetId(), owner); err != nil {
-		return nil, err
+		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
 	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
