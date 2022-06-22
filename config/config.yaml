@@ -8,12 +8,12 @@ server:
     - https://instill-inc.tech
     - https://instill.tech
   edition: local-ce:dev
-  disableusage: true
-  debug: false
+  disableusage: false
+  debug: true
 database:
   username: postgres
   password: password
-  host: localhost
+  host: pg-sql
   port: 5432
   name: pipeline
   version: 1
@@ -25,25 +25,25 @@ database:
 cache:
   redis:
     redisoptions:
-      addr: localhost:6379
+      addr: redis:6379
 temporal:
   clientoptions:
     namespace: pipeline
-    hostport: localhost:7233
+    hostport: temporal:7233
 mgmtbackend:
-  host: localhost
+  host: mgmt-backend
   port: 8080
   https:
     cert:   # /ssl/tls.crt
     key:    # /ssl/tls.key
 connectorbackend:
-  host: localhost
+  host: connector-backend
   port: 8082
   https:
     cert:   # /ssl/tls.crt
     key:    # /ssl/tls.key
 modelbackend:
-  host: localhost
+  host: model-backend
   port: 8083
   https:
     cert:   # /ssl/tls.crt

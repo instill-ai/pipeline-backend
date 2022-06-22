@@ -1,98 +1,49 @@
 .DEFAULT_GOAL:=help
 
-DEV := pipeline_backend
-DEP := mgmt_backend connector_backend model_backend
-DB := pg_sql redis
-TRITON := triton_server triton_conda_env
-TEMPORAL := temporal
-
 #============================================================================
 
 # Load environment variables for local development
 include .env
 export
 
-ifndef GOPATH
-GOPATH := $(shell go env GOPATH)
-endif
-
-GOBIN := $(if $(shell go env GOBIN),$(shell go env GOBIN),$(GOPATH)/bin)
-PATH := $(GOBIN):$(PATH)
-
-DEV_DB_MIGRATION_BINARY := $(shell mktemp -d)/pipeline-backend-migrate
-
 K6BIN := $(if $(shell command -v k6 2> /dev/null),k6,$(shell mktemp -d)/k6)
-
-TRITONSERVER_IMAGE_TAG := $(if $(filter arm64,$(shell uname -m)),instill/tritonserver:22.05-py3-cpu-arm64,nvcr.io/nvidia/tritonserver:22.05-py3)
-TRITONCONDAENV_IMAGE_TAG := $(if $(filter arm64,$(shell uname -m)),instill/triton-conda-env:0.2.2-alpha-cpu-arm64,instill/triton-conda-env:0.2.2-alpha-cpu)
-REDIS_IMAGE_TAG := $(if $(filter arm64,$(shell uname -m)),arm64v8/redis:7.0-alpine,amd64/redis:7.0-alpine)
 
 #============================================================================
 
-.PHONY: all
-all:							## Launch all services
-	@docker inspect --type=image ${TRITONSERVER_IMAGE_TAG} >/dev/null 2>&1 || printf "\033[1;33mWARNING:\033[0m This may take a while due to the enormous size of the Triton server image, but the image pulling process should be just a one-time effort.\n" && sleep 5
-	@docker-compose up -d
-
 .PHONY: dev
-dev:							## Lunch only dependant services for local development
-	@docker-compose up -d ${DEP} ${DB} ${TRITON} ${TEMPORAL}
-	while [ "$$(docker inspect --format '{{ .State.Health.Status }}' pg-sql)" != "healthy" ]; do echo "Check if db is ready..." && sleep 1; done
-	go build -o ${DEV_DB_MIGRATION_BINARY} ./cmd/migration && ${DEV_DB_MIGRATION_BINARY} && rm -rf $(dirname ${DEV_DB_MIGRATION_BINARY})
+dev:							## Run dev container
+	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
+	echo "Run dev container ${SERVICE_NAME}. To stop it, run \"make stop\"." && \
+	docker run -d --rm -v $(PWD):/${SERVICE_NAME} -v /var/run/docker.sock:/var/run/docker.sock \
+	-p ${SERVICE_PORT}:${SERVICE_PORT} \
+	--network instill-network \
+	--name ${SERVICE_NAME} \
+	instill/${SERVICE_NAME}:dev >/dev/null 2>&1
 
 .PHONY: logs
-logs:							## Tail all logs with -n 10
-	@docker-compose logs --follow --tail=10
-
-.PHONY: pull
-pull:							## Pull all service images
-	@docker inspect --type=image ${TRITONSERVER_IMAGE_TAG} >/dev/null 2>&1 || printf "\033[1;33mWARNING:\033[0m This may take a while due to the enormous size of the Triton server image, but the image pulling process should be just a one-time effort.\n" && sleep 5
-	docker-compose pull
+logs:							## Tail container logs with -n 10
+	@docker logs ${SERVICE_NAME} --follow --tail=10
 
 .PHONY: stop
-stop:							## Stop all components
-	@docker-compose stop
-
-.PHONY: start
-start:							## Start all stopped services
-	@docker-compose start
-
-.PHONY: restart
-restart:						## Restart all services
-	@docker-compose restart
-
-.PHONY: rm
-rm:								## Remove all stopped service containers
-	@docker-compose rm -f
-
-.PHONY: down
-down:							## Stop all services and remove all service containers and volumes
-	@docker-compose down -v
-
-.PHONY: images
-images:							## List all container images
-	@docker-compose images
-
-.PHONY: ps
-ps:								## List all service containers
-	@docker-compose ps
+stop:							## Stop container
+	@docker stop -t 1 ${SERVICE_NAME}
 
 .PHONY: top
 top:							## Display all running service processes
-	@docker-compose top
+	@docker top ${SERVICE_NAME}
 
 .PHONY: build
-build:							## Build local docker image
-	@docker build -t instill/pipeline-backend:dev .
+build:							## Build dev docker image
+	docker build --build-arg SERVICE_NAME=${SERVICE_NAME} -f Dockerfile.dev  -t instill/${SERVICE_NAME}:dev .
 
 .PHONY: go-gen
-go-gen:       					## Generate codes from "//go:generate" comments in the codebase (e.g., mockgen for unit tests)
+go-gen:       					## Generate codes
 	go generate ./...
 
 .PHONY: unit-test
 unit-test:       				## Run unit test
 	@go test -v -race -coverpkg=./... -coverprofile=coverage.out ./...
-	@go t\ool cover -func=coverage.out
+	@go tool cover -func=coverage.out
 	@go tool cover -html=coverage.out
 	@rm coverage.out
 
@@ -109,5 +60,5 @@ integration-test:				## Run integration test
 
 .PHONY: help
 help:       	 				## Show this help
-	@echo "\nMake application using Docker-Compose files."
+	@echo "\nMakefile for locel development"
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m (default: help)\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)

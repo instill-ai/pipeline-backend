@@ -1,0 +1,16 @@
+FROM loadimpact/k6:latest AS k6official
+
+FROM golang:1.18.2
+
+ARG SERVICE_NAME
+
+COPY --from=k6official /usr/bin/k6 /usr/bin/k6
+
+WORKDIR /${SERVICE_NAME}
+COPY . /${SERVICE_NAME}
+
+RUN go get -d -v ./...
+
+RUN go install github.com/cosmtrek/air@latest
+
+ENTRYPOINT ["tail", "-f", "/dev/null"]
