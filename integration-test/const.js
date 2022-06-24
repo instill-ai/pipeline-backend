@@ -5,10 +5,23 @@ export const model_def_name = "model-definitions/local"
 export const model_id = "dummy-det"
 export const model_instance_id = "latest"
 
-export const detSyncRecipe = {
+export const detSyncSingleModelInstRecipe = {
   recipe: {
     source: "source-connectors/source-http",
-    model_instances: [`models/${model_id}/instances/${model_instance_id}`],
+    model_instances: [
+      `models/${model_id}/instances/${model_instance_id}`,
+    ],
+    destination: "destination-connectors/destination-http"
+  },
+};
+
+export const detSyncMultiModelInstRecipe = {
+  recipe: {
+    source: "source-connectors/source-http",
+    model_instances: [
+      `models/${model_id}/instances/${model_instance_id}`,
+      `models/${model_id}/instances/${model_instance_id}`,
+    ],
     destination: "destination-connectors/destination-http"
   },
 };

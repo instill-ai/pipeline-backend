@@ -14,7 +14,7 @@ export function CheckCreate() {
         id: randomString(63),
         description: randomString(50),
       },
-      constant.detSyncRecipe
+      constant.detSyncSingleModelInstRecipe
     )
 
     // Create a pipeline
@@ -152,7 +152,7 @@ export function CheckList() {
           description: randomString(50),
           state: "STATE_ACTIVE",
         },
-        constant.detSyncRecipe
+        constant.detSyncSingleModelInstRecipe
       )
     }
 
@@ -280,7 +280,7 @@ export function CheckGet() {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.detSyncRecipe
+      constant.detSyncSingleModelInstRecipe
     )
 
     // Create a pipeline
@@ -333,7 +333,7 @@ export function CheckUpdate() {
       {
         id: randomString(10),
       },
-      constant.detSyncRecipe
+      constant.detSyncSingleModelInstRecipe
     )
 
     // Create a pipeline
@@ -442,7 +442,7 @@ export function CheckUpdateState() {
       {
         id: randomString(10),
       },
-      constant.detSyncRecipe
+      constant.detSyncSingleModelInstRecipe
     )
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBodySync), {
@@ -528,7 +528,7 @@ export function CheckRename() {
       {
         id: randomString(10),
       },
-      constant.detSyncRecipe
+      constant.detSyncSingleModelInstRecipe
     )
 
     // Create a pipeline
@@ -575,7 +575,7 @@ export function CheckLookUp() {
       {
         id: randomString(10),
       },
-      constant.detSyncRecipe
+      constant.detSyncSingleModelInstRecipe
     )
 
     // Create a pipeline

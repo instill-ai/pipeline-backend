@@ -13,6 +13,7 @@ import (
 	"github.com/gogo/status"
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -34,8 +35,8 @@ type Service interface {
 	DeletePipeline(id string, ownerRscName string) error
 	UpdatePipelineState(id string, ownerRscName string, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, ownerRscName string, newID string) (*datamodel.Pipeline, error)
-	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceResponse, error)
-	TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, pipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceBinaryFileUploadResponse, error)
+	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error)
+	TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error)
 	ValidatePipeline(pipeline *datamodel.Pipeline) error
 }
 
@@ -309,7 +310,7 @@ func (s *service) ValidatePipeline(pipeline *datamodel.Pipeline) error {
 	return nil
 }
 
-func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceResponse, error) {
+func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error) {
 
 	ownerPermalink, err := s.ownerRscNameToPermalink(dbPipeline.Owner)
 	if err != nil {
@@ -318,37 +319,39 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 
 	dbPipeline.Owner = ownerPermalink
 
-	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
-	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
+	var inputs []*modelPB.Input
+	for _, input := range req.Inputs {
+		if len(input.GetImageUrl()) > 0 {
+			inputs = append(inputs, &modelPB.Input{
+				Type: &modelPB.Input_ImageUrl{
+					ImageUrl: input.GetImageUrl(),
+				},
+			})
+		} else if len(input.GetImageBase64()) > 0 {
+			inputs = append(inputs, &modelPB.Input{
+				Type: &modelPB.Input_ImageBase64{
+					ImageBase64: input.GetImageBase64(),
+				},
+			})
+		}
+	}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	var outputs []*structpb.Struct
+	for idx, modelInst := range dbPipeline.Recipe.ModelInstances {
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		var inputs []*modelPB.Input
-		for _, input := range req.Inputs {
-			if len(input.GetImageUrl()) > 0 {
-				inputs = append(inputs, &modelPB.Input{
-					Type: &modelPB.Input_ImageUrl{
-						ImageUrl: input.GetImageUrl(),
-					},
-				})
-			} else if len(input.GetImageBase64()) > 0 {
-				inputs = append(inputs, &modelPB.Input{
-					Type: &modelPB.Input_ImageBase64{
-						ImageBase64: input.GetImageBase64(),
-					},
-				})
-			}
-		}
-
+		// TODO: async call model-backend
 		resp, err := s.modelServiceClient.TriggerModelInstance(ctx, &modelPB.TriggerModelInstanceRequest{
-			Name:   dbPipeline.Recipe.ModelInstances[0],
+			Name:   modelInst,
 			Inputs: inputs,
 		})
-
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "Error model-backend %s: %v", "TriggerModel", err.Error())
+			return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: %v", "TriggerModel", idx, modelInst, err.Error())
 		}
+
+		outputs = append(outputs, resp.Output)
 
 		// Increment trigger image numbers
 		uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
@@ -356,18 +359,29 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 			return nil, err
 		}
 		if strings.HasPrefix(dbPipeline.Owner, "users/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.image.num", uid), int64(len(inputs)))
+			s.redisClient.IncrBy(context.Background(), fmt.Sprintf("user:%s:trigger.image.num", uid), int64(len(inputs)))
 		} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.image.num", uid), int64(len(inputs)))
+			s.redisClient.IncrBy(context.Background(), fmt.Sprintf("org:%s:trigger.image.num", uid), int64(len(inputs)))
 		}
-
-		return resp, nil
 	}
 
-	return nil, nil
+	switch {
+	// If this is a sync trigger (i.e., HTTP, gRPC source and destination connectors), return right away
+	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
+		return &pipelinePB.TriggerPipelineResponse{
+			Output: outputs,
+		}, nil
+	// If this is a async trigger, write to the destination connector
+	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
+		return nil, nil
+	// The default case should never been reached
+	default:
+		return nil, nil
+	}
+
 }
 
-func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, dbPipeline *datamodel.Pipeline) (*modelPB.TriggerModelInstanceBinaryFileUploadResponse, error) {
+func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error) {
 
 	ownerPermalink, err := s.ownerRscNameToPermalink(dbPipeline.Owner)
 	if err != nil {
@@ -376,9 +390,10 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 
 	dbPipeline.Owner = ownerPermalink
 
-	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
-	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
+	var outputs []*structpb.Struct
+	for idx, modelInst := range dbPipeline.Recipe.ModelInstances {
 
+		// TODO: async call model-backend
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
@@ -387,22 +402,24 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 			_ = stream.CloseSend()
 		}()
 		if err != nil {
-			return nil, fmt.Errorf("Error model-backend %s: %v", "TriggerModelBinaryFileUpload", err.Error())
+			return nil, fmt.Errorf("[model-backend] Error %s at %dth model instance %s: cannot init stream: %v", "TriggerModelBinaryFileUpload", idx, modelInst, err.Error())
 		}
 
 		err = stream.Send(&modelPB.TriggerModelInstanceBinaryFileUploadRequest{
-			Name:        dbPipeline.Recipe.ModelInstances[0],
+			Name:        modelInst,
 			FileLengths: fileLengths,
 		})
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "cannot send data info to server: %s", err.Error())
+			return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot send data info to server: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInst, err.Error())
 		}
 
 		const chunkSize = 64 * 1024
 		buf := make([]byte, chunkSize)
 
+		fb := bytes.Buffer{}
+		fb.Write(fileBuf.Bytes())
 		for {
-			n, err := fileBuf.Read(buf)
+			n, err := fb.Read(buf)
 			if err == io.EOF {
 				break
 			}
@@ -412,13 +429,16 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 
 			err = stream.Send(&modelPB.TriggerModelInstanceBinaryFileUploadRequest{Bytes: buf[:n]})
 			if err != nil {
-				return nil, status.Errorf(codes.Internal, "cannot send chunk to server: %s", err)
+				return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot send chunk to server: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInst, err.Error())
 			}
 		}
-		res, err := stream.CloseAndRecv()
+
+		resp, err := stream.CloseAndRecv()
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "cannot receive response: %s", err.Error())
+			return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot receive response: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInst, err.Error())
 		}
+
+		outputs = append(outputs, resp.Output)
 
 		// Increment trigger image numbers
 		uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
@@ -430,10 +450,17 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 		} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
 			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.image.num", uid), int64(len(fileLengths)))
 		}
+	}
 
-		return res, nil
+	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
+	switch {
+	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
+		return &pipelinePB.TriggerPipelineBinaryFileUploadResponse{
+			Output: outputs,
+		}, nil
+	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
+		return nil, nil
 	}
 
 	return nil, nil
-
 }

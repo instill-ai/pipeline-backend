@@ -23,7 +23,6 @@ import (
 	"github.com/instill-ai/x/checkfield"
 
 	healthcheckPB "github.com/instill-ai/protogen-go/vdp/healthcheck/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -493,12 +492,12 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 		}
 	}
 
-	var obj *modelPB.TriggerModelInstanceBinaryFileUploadResponse
-	if obj, err = h.service.TriggerPipelineBinaryFileUpload(buf, data.GetFileLengths(), dbPipeline); err != nil {
+	obj, err := h.service.TriggerPipelineBinaryFileUpload(buf, data.GetFileLengths(), dbPipeline)
+	if err != nil {
 		return err
 	}
 
-	stream.SendAndClose(&pipelinePB.TriggerPipelineBinaryFileUploadResponse{Output: obj.Output})
+	stream.SendAndClose(obj)
 
 	return nil
 }

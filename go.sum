@@ -694,8 +694,8 @@ github.com/imdario/mergo v0.3.10/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH
 github.com/imdario/mergo v0.3.11/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
-github.com/instill-ai/protogen-go v0.1.5-alpha.0.20220620010454-ca08bcdfc4dd h1:m6XdTfydrZwaQHqLIDMn0/hGp2C6e8HxRoO6YclrL+U=
-github.com/instill-ai/protogen-go v0.1.5-alpha.0.20220620010454-ca08bcdfc4dd/go.mod h1:d9ebEdwMX2Las4OScym45qbQM+xcBQITqvq/8anTVas=
+github.com/instill-ai/protogen-go v0.2.0-alpha.0.20220624160723-e497dd0238c5 h1:te67yngw0YVOt1glwJhDDijbnUoePe8I+3qSGjZVLcc=
+github.com/instill-ai/protogen-go v0.2.0-alpha.0.20220624160723-e497dd0238c5/go.mod h1:d9ebEdwMX2Las4OScym45qbQM+xcBQITqvq/8anTVas=
 github.com/instill-ai/usage-client v0.0.0-20220607201439-d646c37f5b02 h1:7dhRYHERy+NbvESpaQ0NPOo3CiiDpvLsARR90Ftkiqw=
 github.com/instill-ai/usage-client v0.0.0-20220607201439-d646c37f5b02/go.mod h1:saH0H46iHHMxBx+znN3CoE4IOylbTlpQUPj0Do06yKo=
 github.com/instill-ai/x v0.1.0-alpha.0.20220604235252-39fcffc82edb h1:70AJVfr463jWkgPQ1w281zsQ1LK/tOW5INTNc+yOBsI=

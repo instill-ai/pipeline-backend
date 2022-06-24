@@ -3,10 +3,8 @@ import http from "k6/http";
 import { sleep, check, group, fail } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
-import { URL } from "https://jslib.k6.io/url/1.0.0/index.js";
 
 import * as constant from "./const.js";
-import * as helper from "./helper.js";
 import * as pipeline from './rest-pipeline.js';
 import * as trigger from './rest-trigger.js';
 
@@ -135,7 +133,9 @@ export default function (data) {
   pipeline.CheckRename()
   pipeline.CheckLookUp()
 
-  trigger.CheckTriggerImageDirect()
+  trigger.CheckTriggerDirectSingleImageSingleModelInst()
+  trigger.CheckTriggerDirectMultiImageSingleModelInst()
+  trigger.CheckTriggerDirectMultiImageMultiModelInst()
 }
 
 export function teardown(data) {
