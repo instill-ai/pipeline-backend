@@ -23,6 +23,7 @@ jobs:
       - name: Build and push (latest)
         uses: docker/build-push-action@v3
         with:
+          platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
@@ -45,6 +46,7 @@ jobs:
         if: github.event_name == 'release'
         uses: docker/build-push-action@v3
         with:
+          platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
