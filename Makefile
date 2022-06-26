@@ -28,6 +28,10 @@ logs:							## Tail container logs with -n 10
 stop:							## Stop container
 	@docker stop -t 1 ${SERVICE_NAME}
 
+.PHONY: rm
+rm:							## Remove container
+	@docker rm -f ${SERVICE_NAME}
+
 .PHONY: top
 top:							## Display all running service processes
 	@docker top ${SERVICE_NAME}
