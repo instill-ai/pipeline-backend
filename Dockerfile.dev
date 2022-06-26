@@ -9,7 +9,9 @@ COPY --from=k6official /usr/bin/k6 /usr/bin/k6
 WORKDIR /${SERVICE_NAME}
 COPY . /${SERVICE_NAME}
 
-RUN go get -d -v ./...
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
 
 RUN go install github.com/cosmtrek/air@latest
 
