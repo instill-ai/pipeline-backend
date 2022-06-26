@@ -67,6 +67,16 @@ func (s *service) CreatePipeline(dbPipeline *datamodel.Pipeline) (*datamodel.Pip
 
 	dbPipeline.Mode = mode
 
+	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
+		dbPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE)
+	} else {
+		// TODO: Dispatch job to Temporal for periodical connection state check
+		dbPipeline.State, err = s.checkState(dbPipeline.Recipe)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	ownerRscName := dbPipeline.Owner
 	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
 	if err != nil {
@@ -82,16 +92,6 @@ func (s *service) CreatePipeline(dbPipeline *datamodel.Pipeline) (*datamodel.Pip
 	}
 
 	dbPipeline.Recipe = recipePermalink
-
-	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
-		dbPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE)
-	} else {
-		// TODO: Dispatch job to Temporal for periodical connection state check
-		dbPipeline.State, err = s.checkState(recipeRscName)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	if err := s.repository.CreatePipeline(dbPipeline); err != nil {
 		return nil, err
@@ -189,6 +189,31 @@ func (s *service) GetPipelineByUID(uid uuid.UUID, ownerRscName string, isBasicVi
 
 func (s *service) UpdatePipeline(id string, ownerRscName string, toUpdPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
+	if toUpdPipeline.Recipe != nil {
+		mode, err := s.checkMode(toUpdPipeline.Recipe)
+		if err != nil {
+			return nil, err
+		}
+
+		toUpdPipeline.Mode = mode
+
+		if toUpdPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
+			toUpdPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE)
+		} else {
+			toUpdPipeline.State, err = s.checkState(toUpdPipeline.Recipe)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		recipePermalink, err := s.recipeNameToPermalink(toUpdPipeline.Recipe)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
+		}
+
+		toUpdPipeline.Recipe = recipePermalink
+	}
+
 	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -209,13 +234,12 @@ func (s *service) UpdatePipeline(id string, ownerRscName string, toUpdPipeline *
 	if err != nil {
 		return nil, err
 	}
+	dbPipeline.Owner = ownerRscName
 
 	recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
-
-	dbPipeline.Owner = ownerRscName
 	dbPipeline.Recipe = recipeRscName
 
 	return dbPipeline, nil
@@ -250,15 +274,20 @@ func (s *service) UpdatePipelineState(id string, ownerRscName string, state data
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	dbPipeline.Recipe = recipeRscName
-
-	mode, err := s.checkMode(dbPipeline.Recipe)
+	mode, err := s.checkMode(recipeRscName)
 	if err != nil {
 		return nil, err
 	}
 
 	if mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) && state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE) {
 		return nil, status.Errorf(codes.InvalidArgument, "Pipeline id %s is in the sync mode, which is always active", dbPipeline.ID)
+	}
+
+	if state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
+		state, err = s.checkState(recipeRscName)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err := s.repository.UpdatePipelineState(id, ownerPermalink, state); err != nil {

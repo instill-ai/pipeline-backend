@@ -55,10 +55,8 @@ func TestCreatePipeline(t *testing.T) {
 		mockConnectorServiceClient := NewMockConnectorServiceClient(ctrl)
 		mockConnectorServiceClient.EXPECT().GetSourceConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 		mockConnectorServiceClient.EXPECT().GetDestinationConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-		mockConnectorServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
-		mockConnectorServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
-		mockConnectorServiceClient.EXPECT().LookUpSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-		mockConnectorServiceClient.EXPECT().LookUpDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+		mockConnectorServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
+		mockConnectorServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
 
 		mockModelServiceClient := NewMockModelServiceClient(ctrl)
 
