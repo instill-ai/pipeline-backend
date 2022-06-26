@@ -250,9 +250,9 @@ export function CheckList() {
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22`, null, {headers: {"Content-Type": "application/json",}}), {
-      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.destination=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22`, null, {headers: {"Content-Type": "application/json",}}), {
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
     // Delete the pipelines
@@ -474,7 +474,7 @@ export function CheckUpdateState() {
       {
         id: randomString(10),
       },
-      constant.detAsyncRecipe
+      constant.detAsyncSingleModelInstRecipe
     )
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBodyAsync), {
@@ -483,7 +483,7 @@ export function CheckUpdateState() {
       },
     }), {
       "POST /v1alpha/pipelines async pipeline creation response status is 201": (r) => r.status === 201,
-      "POST /v1alpha/pipelines async pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_INACTIVE",
+      "POST /v1alpha/pipelines async pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBodyAsync.id}:activate`, null, {

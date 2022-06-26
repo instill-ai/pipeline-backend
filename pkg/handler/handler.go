@@ -419,10 +419,6 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	if err := h.service.ValidatePipeline(dbPipeline); err != nil {
-		return &pipelinePB.TriggerPipelineResponse{}, err
-	}
-
 	triggerModelResp, err := h.service.TriggerPipeline(req, dbPipeline)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
@@ -464,10 +460,6 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
-		return err
-	}
-
-	if err := h.service.ValidatePipeline(dbPipeline); err != nil {
 		return err
 	}
 

@@ -6,7 +6,8 @@ import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
 import * as constant from "./const.js";
 import * as pipeline from './rest-pipeline.js';
-import * as trigger from './rest-trigger.js';
+import * as triggerSync from './rest-trigger-sync.js';
+import * as triggerAsync from './rest-trigger-async.js';
 
 const pipelineHost = "http://pipeline-backend:8081";
 const connectorHost = "http://connector-backend:8082";
@@ -67,7 +68,7 @@ export function setup() {
         "destination_connector_definition": "destination-connector-definitions/destination-csv",
         "connector": {
           "configuration": JSON.stringify({
-            "destination_path": "/local"
+            "destination_path": "/local/some-folder-in-airbyte-volume-local-path"
           })
         }
       }), {
@@ -77,6 +78,8 @@ export function setup() {
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
     })
+
+    sleep(3)
 
   });
 
@@ -133,9 +136,14 @@ export default function (data) {
   pipeline.CheckRename()
   pipeline.CheckLookUp()
 
-  trigger.CheckTriggerDirectSingleImageSingleModelInst()
-  trigger.CheckTriggerDirectMultiImageSingleModelInst()
-  trigger.CheckTriggerDirectMultiImageMultiModelInst()
+  triggerSync.CheckTriggerSyncSingleImageSingleModelInst()
+  triggerSync.CheckTriggerSyncMultiImageSingleModelInst()
+  triggerSync.CheckTriggerSyncMultiImageMultiModelInst()
+
+  triggerAsync.CheckTriggerAsyncSingleImageSingleModelInst()
+  triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
+  triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
+
 }
 
 export function teardown(data) {

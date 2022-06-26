@@ -28,10 +28,23 @@ export const detSyncMultiModelInstRecipe = {
 
 export const dstCSVConnID = "some-cool-name-for-dst-csv-connector"
 
-export const detAsyncRecipe = {
+export const detAsyncSingleModelInstRecipe = {
   recipe: {
     source: "source-connectors/source-http",
-    model_instances: [`models/${model_id}/instances/${model_instance_id}`],
+    model_instances: [
+      `models/${model_id}/instances/${model_instance_id}`
+    ],
+    destination:`destination-connectors/${dstCSVConnID}`
+  },
+};
+
+export const detAsyncMultiModelInstRecipe = {
+  recipe: {
+    source: "source-connectors/source-http",
+    model_instances: [
+      `models/${model_id}/instances/${model_instance_id}`,
+      `models/${model_id}/instances/${model_instance_id}`,
+    ],
     destination:`destination-connectors/${dstCSVConnID}`
   },
 };
