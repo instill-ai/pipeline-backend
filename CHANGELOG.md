@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.6.1-alpha...v0.6.2-alpha) (2022-06-27)
+
+
+### Bug Fixes
+
+* close [#56](https://github.com/instill-ai/pipeline-backend/issues/56) ([c627a53](https://github.com/instill-ai/pipeline-backend/commit/c627a539999d65bc96ac6f88e2bd203548c34825))
+* fix empty description update ([2579f2e](https://github.com/instill-ai/pipeline-backend/commit/2579f2eb6d1b1cd0935feffa3dd5084e3ec0851d))
+
 ## [0.6.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.6.0-alpha...v0.6.1-alpha) (2022-06-27)
 
 
