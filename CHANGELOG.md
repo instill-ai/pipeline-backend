@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.6.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.5.2-alpha...v0.6.0-alpha) (2022-06-26)
+
+
+### Features
+
+* add async pipeline trigger ([6d39b0a](https://github.com/instill-ai/pipeline-backend/commit/6d39b0aac6bf3475cfc29899e47810a38501a9ea))
+* add filter for list pipeline ([ffe8856](https://github.com/instill-ai/pipeline-backend/commit/ffe8856dba23128e190c9a841eba616c80f0ba8e))
+* add usage collection ([7e71744](https://github.com/instill-ai/pipeline-backend/commit/7e71744b6c1dd78612bcb849042d4129b04b017e))
+* support trigger multi model instances ([e3d4263](https://github.com/instill-ai/pipeline-backend/commit/e3d4263caf7f32d0e4bc25783d148a34c26268da))
+
+
+### Bug Fixes
+
+* fix create pipeline recipe resource name ([bab3eaa](https://github.com/instill-ai/pipeline-backend/commit/bab3eaa588be4ce058027967c015ed2dbba2bc5b))
+* fix duration configuration bug ([998eafa](https://github.com/instill-ai/pipeline-backend/commit/998eafaf1d43fd568ae0af8699e7470f99c975cb))
+* fix usage collection ([243e7a1](https://github.com/instill-ai/pipeline-backend/commit/243e7a14298cc4db8981e39e6c1dc078e721826e))
+* fix usage disbale logic ([962823b](https://github.com/instill-ai/pipeline-backend/commit/962823b9822da510efa703f82a0f7a8612ce3348))
+* fix usage-backend non-tls dial ([b864df3](https://github.com/instill-ai/pipeline-backend/commit/b864df3c7461b06059b82b7e09be6bf9e793bc28))
+
 ### [0.5.2-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.5.1-alpha...v0.5.2-alpha) (2022-05-31)
 
 
