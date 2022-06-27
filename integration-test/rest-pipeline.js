@@ -29,7 +29,7 @@ export function CheckCreate() {
       "POST /v1alpha/pipelines response pipeline uid": (r) => helper.isUUID(r.json().pipeline.uid),
       "POST /v1alpha/pipelines response pipeline id": (r) => r.json().pipeline.id === reqBody.id,
       "POST /v1alpha/pipelines response pipeline description": (r) => r.json().pipeline.description === reqBody.description,
-      "POST /v1alpha/pipelines response pipeline recipe": (r) => helper.validateRecipe(r.json().pipeline.recipe),
+      "POST /v1alpha/pipelines response pipeline recipe is valid": (r) => helper.validateRecipe(r.json().pipeline.recipe),
       "POST /v1alpha/pipelines response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
       "POST /v1alpha/pipelines response pipeline mode": (r) => r.json().pipeline.mode === "MODE_SYNC",
       "POST /v1alpha/pipelines response pipeline create_time": (r) => new Date(r.json().pipeline.create_time).getTime() > new Date().setTime(0),
@@ -184,6 +184,7 @@ export function CheckList() {
       }
     }), {
       [`GET /v1alpha/pipelines?view=VIEW_FULL response pipelines[0] has recipe`]: (r) => r.json().pipelines[0].recipe !== null,
+      [`GET /v1alpha/pipelines?view=VIEW_FULL response pipelines[0] recipe is valid`]: (r) => helper.validateRecipe(r.json().pipelines[0].recipe),
     });
 
     check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?view=VIEW_BASIC`, null, {
@@ -375,52 +376,52 @@ export function CheckUpdate() {
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline update_time > create_time`]: (r) => new Date(r.json().pipeline.update_time).getTime() > new Date(r.json().pipeline.create_time).getTime()
     });
 
-    // reqBodyUpdate.description = ""
-    // check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`,
-    //   JSON.stringify(reqBodyUpdate), {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // }), {
-    //   [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline empty description`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
-    // });
+    reqBodyUpdate.description = ""
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`,
+      JSON.stringify(reqBodyUpdate), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }), {
+      [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline empty description`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
+    });
 
-    // reqBodyUpdate.description = randomString(10)
-    // check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`,
-    //   JSON.stringify(reqBodyUpdate), {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // }), {
-    //   [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline non-empty description`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
-    // });
+    reqBodyUpdate.description = randomString(10)
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`,
+      JSON.stringify(reqBodyUpdate), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }), {
+      [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline non-empty description`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
+    });
 
-    // reqBodyUpdate.id = randomString(10)
-    // check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // }), {
-    //   [`PATCH /v1alpha/pipelines/${reqBody.id} response status for updating IMMUTABLE field with different id is 400`]: (r) => r.status === 400,
-    // });
+    reqBodyUpdate.id = randomString(10)
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }), {
+      [`PATCH /v1alpha/pipelines/${reqBody.id} response status for updating IMMUTABLE field with different id is 400`]: (r) => r.status === 400,
+    });
 
-    // reqBodyUpdate.id = reqBody.id
-    // check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // }), {
-    //   [`PATCH /v1alpha/pipelines/${reqBody.id} response status for updating IMMUTABLE field with the same id is 200`]: (r) => r.status === 200,
-    // });
+    reqBodyUpdate.id = reqBody.id
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }), {
+      [`PATCH /v1alpha/pipelines/${reqBody.id} response status for updating IMMUTABLE field with the same id is 200`]: (r) => r.status === 200,
+    });
 
-    // check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/this-id-does-not-exist`,
-    //   JSON.stringify(reqBodyUpdate), {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // }), {
-    //   "PATCH /v1alpha/pipelines/this-id-does-not-exist response status is 404": (r) => r.status === 404,
-    // });
+    check(http.request("PATCH", `${pipelineHost}/v1alpha/pipelines/this-id-does-not-exist`,
+      JSON.stringify(reqBodyUpdate), {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }), {
+      "PATCH /v1alpha/pipelines/this-id-does-not-exist response status is 404": (r) => r.status === 404,
+    });
 
     // Delete the pipeline
     check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {

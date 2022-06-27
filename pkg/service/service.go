@@ -125,12 +125,12 @@ func (s *service) ListPipeline(ownerRscName string, pageSize int64, pageToken st
 	}
 
 	if !isBasicView {
-		for _, dbPipeline := range dbPipelines {
+		for idx, dbPipeline := range dbPipelines {
 			recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 			if err != nil {
 				return nil, 0, "", status.Errorf(codes.Internal, err.Error())
 			}
-			dbPipeline.Recipe = recipeRscName
+			dbPipelines[idx].Recipe = recipeRscName
 		}
 	}
 
