@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gogo/status"
 	"google.golang.org/grpc/codes"
 
+	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
@@ -15,6 +17,8 @@ import (
 )
 
 func (s *service) checkState(recipeRscName *datamodel.Recipe) (datamodel.PipelineState, error) {
+
+	logger, _ := logger.GetZapLogger()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -56,14 +60,17 @@ func (s *service) checkState(recipeRscName *datamodel.Recipe) (datamodel.Pipelin
 	states = append(states, modelInstStates...)
 
 	if contains(states, 3) {
+		logger.Info(fmt.Sprintf("Component state: %v", states))
 		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_ERROR), nil
 	}
 
 	if contains(states, 0) {
+		logger.Info(fmt.Sprintf("Component state: %v", states))
 		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), nil
 	}
 
 	if contains(states, 1) {
+		logger.Info(fmt.Sprintf("Component state: %v", states))
 		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE), nil
 	}
 
