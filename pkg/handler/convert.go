@@ -56,7 +56,7 @@ func PBToDBPipeline(owner string, pbPipeline *pipelinePB.Pipeline) *datamodel.Pi
 
 		Description: sql.NullString{
 			String: pbPipeline.GetDescription(),
-			Valid:  len(pbPipeline.GetDescription()) > 0,
+			Valid:  true,
 		},
 
 		Recipe: func() *datamodel.Recipe {
@@ -82,21 +82,14 @@ func DBToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
 	logger, _ := logger.GetZapLogger()
 
 	pbPipeline := pipelinePB.Pipeline{
-		Name:       fmt.Sprintf("pipelines/%s", dbPipeline.ID),
-		Uid:        dbPipeline.BaseDynamic.UID.String(),
-		Id:         dbPipeline.ID,
-		Mode:       pipelinePB.Pipeline_Mode(dbPipeline.Mode),
-		State:      pipelinePB.Pipeline_State(dbPipeline.State),
-		CreateTime: timestamppb.New(dbPipeline.CreateTime),
-		UpdateTime: timestamppb.New(dbPipeline.UpdateTime),
-
-		Description: func() *string {
-			if dbPipeline.Description.Valid {
-				return &dbPipeline.Description.String
-			}
-			emptyStr := ""
-			return &emptyStr
-		}(),
+		Name:        fmt.Sprintf("pipelines/%s", dbPipeline.ID),
+		Uid:         dbPipeline.BaseDynamic.UID.String(),
+		Id:          dbPipeline.ID,
+		Mode:        pipelinePB.Pipeline_Mode(dbPipeline.Mode),
+		State:       pipelinePB.Pipeline_State(dbPipeline.State),
+		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
+		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),
+		Description: &dbPipeline.Description.String,
 
 		Recipe: func() *pipelinePB.Recipe {
 			if dbPipeline.Recipe != nil {
