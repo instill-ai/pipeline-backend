@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -159,6 +160,8 @@ func main() {
 	)
 
 	grpcS := grpc.NewServer(grpcServerOpts...)
+	reflection.Register(grpcS)
+
 	pipelinePB.RegisterPipelineServiceServer(
 		grpcS,
 		handler.NewHandler(service),
