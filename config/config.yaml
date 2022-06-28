@@ -30,12 +30,6 @@ temporal:
   clientoptions:
     namespace: pipeline
     hostport: temporal:7233
-mgmtbackend:
-  host: mgmt-backend
-  port: 8080
-  https:
-    cert:   # /ssl/tls.crt
-    key:    # /ssl/tls.key
 connectorbackend:
   host: connector-backend
   port: 8082
@@ -45,6 +39,12 @@ connectorbackend:
 modelbackend:
   host: model-backend
   port: 8083
+  https:
+    cert:   # /ssl/tls.crt
+    key:    # /ssl/tls.key
+mgmtbackend:
+  host: mgmt-backend
+  port: 8084
   https:
     cert:   # /ssl/tls.crt
     key:    # /ssl/tls.key
