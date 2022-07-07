@@ -83,6 +83,16 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       [`POST /v1alpha/pipelines/${reqBody.id}:trigger-multipart response output[0].detection_outputs[0].bounding_box_objects[0].score`]: (r) => r.json().output[0].detection_outputs[0].bounding_box_objects[0].score === 1,
     });
 
+    const fdWrong = new FormData();
+    fdWrong.append("file", "some fake binary string that won't work for sure");
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger-multipart`, fd.body(), {
+      headers: {
+        "Content-Type": `multipart/form-data; boundary=${fdWrong.boundary}`,
+      },
+    }), {
+      [`POST /v1alpha/pipelines/${reqBody.id}:trigger-multipart response status is 422 with wrong request file`]: (r) => r.status === 422,
+    });
+
   });
 
   // Delete the pipeline
@@ -208,7 +218,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
     constant.detSyncMultiModelInstRecipe
   );
 
-  group("Pipelines API: Trigger a pipeline", () => {
+  group("Pipelines API: Trigger a pipeline for multiple images and multiple model instances", () => {
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {

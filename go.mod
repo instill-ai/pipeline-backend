@@ -11,9 +11,9 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.3
 	github.com/iancoleman/strcase v0.2.0
-	github.com/instill-ai/protogen-go v0.2.0-alpha.0.20220624160723-e497dd0238c5
+	github.com/instill-ai/protogen-go v0.2.1-alpha
 	github.com/instill-ai/usage-client v0.1.1-alpha
-	github.com/instill-ai/x v0.1.0-alpha.0.20220604235252-39fcffc82edb
+	github.com/instill-ai/x v0.1.0-alpha.0.20220706215306-bceeac65f523
 	github.com/knadh/koanf v1.4.1
 	github.com/mennanov/fieldmask-utils v0.5.0
 	github.com/rs/cors v1.8.2
@@ -27,6 +27,8 @@ require (
 	gorm.io/driver/postgres v1.3.7
 	gorm.io/gorm v1.23.6
 )
+
+require github.com/docker/docker v20.10.17+incompatible // indirect
 
 require (
 	github.com/catalinc/hashcash v0.0.0-20161205220751-e6bc29ff4de9 // indirect

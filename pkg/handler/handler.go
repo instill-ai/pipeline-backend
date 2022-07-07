@@ -475,11 +475,11 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 			return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
 		}
 
-		if data.Bytes == nil {
+		if data.Content == nil {
 			continue
 		}
 
-		if _, err := buf.Write(data.Bytes); err != nil {
+		if _, err := buf.Write(data.Content); err != nil {
 			return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
 		}
 	}

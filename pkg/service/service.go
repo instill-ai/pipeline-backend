@@ -480,7 +480,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 				return nil, err
 			}
 
-			err = stream.Send(&modelPB.TriggerModelInstanceBinaryFileUploadRequest{Bytes: buf[:n]})
+			err = stream.Send(&modelPB.TriggerModelInstanceBinaryFileUploadRequest{Content: buf[:n]})
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot send chunk to server: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInst, err.Error())
 			}
