@@ -444,6 +444,7 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 	}
 
 	data, err := stream.Recv()
+
 	if err != nil {
 		return status.Errorf(codes.Unknown, "Cannot receive trigger info")
 	}
@@ -464,9 +465,13 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 	}
 
 	// Read chuck
+	var fileLengths []uint64
 	buf := bytes.Buffer{}
 	for {
 		data, err := stream.Recv()
+		if len(fileLengths) == 0 {
+			fileLengths = data.GetFileLengths()
+		}
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -474,7 +479,6 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 
 			return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
 		}
-
 		if data.Content == nil {
 			continue
 		}
@@ -484,7 +488,7 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 		}
 	}
 
-	obj, err := h.service.TriggerPipelineBinaryFileUpload(buf, data.GetFileLengths(), dbPipeline)
+	obj, err := h.service.TriggerPipelineBinaryFileUpload(buf, fileLengths, dbPipeline)
 	if err != nil {
 		return err
 	}
