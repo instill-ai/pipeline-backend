@@ -3,9 +3,11 @@ package handler
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
@@ -18,6 +20,7 @@ import (
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/internal/sterr"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/checkfield"
@@ -417,6 +420,27 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
+	}
+
+	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
+		switch {
+		case strings.Contains(dbPipeline.Recipe.Source, "http") && !resource.IsGWProxied(ctx):
+			return &pipelinePB.TriggerPipelineResponse{},
+				sterr.CreateErrorPreconditionFailure(
+					"Trigger a HTTP pipeline with gRPC",
+					"TRIGGER",
+					id,
+					fmt.Sprintf("Pipeline id %s has a source-http connector which cannot be triggered by gRPC", id),
+				).Err()
+		case strings.Contains(dbPipeline.Recipe.Source, "grpc") && resource.IsGWProxied(ctx):
+			return &pipelinePB.TriggerPipelineResponse{},
+				sterr.CreateErrorPreconditionFailure(
+					"Trigger a gRPC pipeline with HTTP",
+					"TRIGGER",
+					id,
+					fmt.Sprintf("Pipeline id %s has a source-grpc connector which cannot be triggered by HTTP", id),
+				).Err()
+		}
 	}
 
 	triggerModelResp, err := h.service.TriggerPipeline(req, dbPipeline)

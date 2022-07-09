@@ -2,6 +2,7 @@ package resource
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/gogo/status"
@@ -58,4 +59,19 @@ func GetOwner(ctx context.Context) (string, error) {
 		return metadatas[0], nil
 	}
 	return "", status.Error(codes.InvalidArgument, "Error when extract `owner` metadata")
+}
+
+// IsGWProxied returns true if it has grpcgateway-user-agent header, otherwise, returns false
+func IsGWProxied(ctx context.Context) bool {
+	metadatas, ok := ExtractFromMetadata(ctx, "grpcgateway-user-agent")
+	if ok {
+		if len(metadatas) == 0 {
+			fmt.Println("")
+			fmt.Println(metadatas)
+			fmt.Println("")
+			return false
+		}
+		return true
+	}
+	return false
 }

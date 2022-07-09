@@ -14,7 +14,7 @@ export function CheckCreate() {
         id: randomString(63),
         description: randomString(50),
       },
-      constant.detSyncSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelInstRecipe
     )
 
     // Create a pipeline
@@ -150,9 +150,8 @@ export function CheckList() {
         {
           id: randomString(10),
           description: randomString(50),
-          state: "STATE_ACTIVE",
         },
-        constant.detSyncSingleModelInstRecipe
+        constant.detSyncHTTPSingleModelInstRecipe
       )
     }
 
@@ -281,7 +280,7 @@ export function CheckGet() {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.detSyncSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelInstRecipe
     )
 
     // Create a pipeline
@@ -334,7 +333,7 @@ export function CheckUpdate() {
       {
         id: randomString(10),
       },
-      constant.detSyncSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelInstRecipe
     )
 
     // Create a pipeline
@@ -352,7 +351,6 @@ export function CheckUpdate() {
       {
         uid: "output-only-to-be-ignored",
         mode: "MODE_ASYNC",
-        state: "STATE_ACTIVE",
         name: "pipelines/some-string-to-be-ignored",
         description: randomString(50),
       },
@@ -443,7 +441,7 @@ export function CheckUpdateState() {
       {
         id: randomString(10),
       },
-      constant.detSyncSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelInstRecipe
     )
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBodySync), {
@@ -529,7 +527,7 @@ export function CheckRename() {
       {
         id: randomString(10),
       },
-      constant.detSyncSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelInstRecipe
     )
 
     // Create a pipeline
@@ -576,7 +574,7 @@ export function CheckLookUp() {
       {
         id: randomString(10),
       },
-      constant.detSyncSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelInstRecipe
     )
 
     // Create a pipeline

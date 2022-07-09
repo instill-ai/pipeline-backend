@@ -21,6 +21,7 @@ func recoveryInterceptorOpt() grpc_recovery.Option {
 
 // CustomInterceptor - append metadatas for unary
 func unaryAppendMetadataInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, status.Error(codes.Internal, "can not extract metadata")

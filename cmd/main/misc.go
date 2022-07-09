@@ -110,7 +110,7 @@ func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.
 			switch v := s.Details()[0].(type) {
 			case *errdetails.PreconditionFailure:
 				switch v.Violations[0].Type {
-				case "UPDATE", "DELETE", "STATE", "RENAME":
+				case "UPDATE", "DELETE", "STATE", "RENAME", "TRIGGER":
 					httpStatus = http.StatusUnprocessableEntity
 				}
 			}

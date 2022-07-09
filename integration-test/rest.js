@@ -30,7 +30,7 @@ export function setup() {
         "id": "source-http",
         "source_connector_definition": "source-connector-definitions/source-http",
         "connector": {
-          "configuration": JSON.stringify({})
+          "configuration": {}
         }
       }), {
       headers: { "Content-Type": "application/json" },
@@ -48,7 +48,7 @@ export function setup() {
         "id": "destination-http",
         "destination_connector_definition": "destination-connector-definitions/destination-http",
         "connector": {
-          "configuration": JSON.stringify({})
+          "configuration": {}
         }
       }), {
       headers: { "Content-Type": "application/json" },
@@ -60,6 +60,43 @@ export function setup() {
 
   });
 
+  group("Connector Backend API: Create a gRPC source connector", function () {
+
+    var res = http.request("POST", `${connectorHost}/v1alpha/source-connectors`,
+      JSON.stringify({
+        "id": "source-grpc",
+        "source_connector_definition": "source-connector-definitions/source-grpc",
+        "connector": {
+          "configuration": {}
+        }
+      }), {
+      headers: { "Content-Type": "application/json" },
+    })
+    check(res, {
+      "POST /v1alpha/source-connectors response status for creating directness gRPC source connector 201": (r) => r.status === 201,
+    })
+
+  });
+
+  group("Connector Backend API: Create a gRPC destination connector", function () {
+
+    var res = http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
+      JSON.stringify({
+        "id": "destination-grpc",
+        "destination_connector_definition": "destination-connector-definitions/destination-grpc",
+        "connector": {
+          "configuration": {}
+        }
+      }), {
+      headers: { "Content-Type": "application/json" },
+    })
+
+    check(res, {
+      "POST /v1alpha/destination-connectors response status for creating directness gRPC destination connector 201": (r) => r.status === 201,
+    })
+
+  });
+
   group("Connector Backend API: Create a CSV destination connector", function () {
 
     var res = http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
@@ -67,9 +104,9 @@ export function setup() {
         "id": constant.dstCSVConnID,
         "destination_connector_definition": "destination-connector-definitions/destination-csv",
         "connector": {
-          "configuration": JSON.stringify({
+          "configuration": {
             "destination_path": "/local/some-folder-in-airbyte-volume-local-path"
-          })
+          }
         }
       }), {
       headers: { "Content-Type": "application/json" },
@@ -78,8 +115,6 @@ export function setup() {
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
     })
-
-    sleep(3)
 
   });
 
@@ -157,6 +192,18 @@ export function teardown(data) {
   group("Connector Backend API: Delete the http destination connector", function () {
     check(http.request("DELETE", `${connectorHost}/v1alpha/destination-connectors/destination-http`), {
       [`DELETE /v1alpha/destination-connectors/destination-http response status 204`]: (r) => r.status === 204,
+    });
+  });
+
+  group("Connector Backend API: Delete the gRPC source connector", function () {
+    check(http.request("DELETE", `${connectorHost}/v1alpha/source-connectors/source-grpc`), {
+      [`DELETE /v1alpha/source-connectors/source-grpc response status 204`]: (r) => r.status === 204,
+    });
+  });
+
+  group("Connector Backend API: Delete the gRPC destination connector", function () {
+    check(http.request("DELETE", `${connectorHost}/v1alpha/destination-connectors/destination-grpc`), {
+      [`DELETE /v1alpha/destination-connectors/destination-grpc response status 204`]: (r) => r.status === 204,
     });
   });
 
