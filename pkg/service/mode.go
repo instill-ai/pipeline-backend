@@ -41,7 +41,7 @@ func (s *service) checkMode(recipeRscName *datamodel.Recipe) (datamodel.Pipeline
 				"GetSourceConnectorDefinition", srcConnResp.GetSourceConnector().GetSourceConnectorDefinition(), err.Error())
 	}
 
-	srcConnType := srcConnDefResp.GetSourceConnectorDefinition().GetConnectorDefinition().GetConnectionType()
+	srcConnDefID := srcConnDefResp.GetSourceConnectorDefinition().GetId()
 
 	dstConnResp, err := s.connectorServiceClient.GetDestinationConnector(ctx,
 		&connectorPB.GetDestinationConnectorRequest{
@@ -63,20 +63,15 @@ func (s *service) checkMode(recipeRscName *datamodel.Recipe) (datamodel.Pipeline
 				"GetDestinationConnectorDefinitionRequest", dstConnResp.GetDestinationConnector().GetDestinationConnectorDefinition(), err.Error())
 	}
 
-	dstConnType := dstConnDefResp.GetDestinationConnectorDefinition().GetConnectorDefinition().GetConnectionType()
+	dstConnDefID := dstConnDefResp.GetDestinationConnectorDefinition().GetId()
 
-	if srcConnType == connectorPB.ConnectionType_CONNECTION_TYPE_DIRECTNESS &&
-		dstConnType == connectorPB.ConnectionType_CONNECTION_TYPE_DIRECTNESS {
-
-		// A hardcoding naming rule "source-*" and "destination-*" for directness connectors
-		if strings.Split(srcConnDefResp.GetSourceConnectorDefinition().GetId(), "-")[1] ==
-			strings.Split(dstConnDefResp.GetDestinationConnectorDefinition().GetId(), "-")[1] {
-			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC), nil
-		}
-
-		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Error(codes.InvalidArgument, "Source and destination connector definition id must be the same if they are both directness connection type")
+	switch {
+	case strings.Contains(srcConnDefID, "http") && strings.Contains(dstConnDefID, "http"):
+		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC), nil
+	case strings.Contains(srcConnDefID, "grpc") && strings.Contains(dstConnDefID, "grpc"):
+		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC), nil
+	default:
+		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC), nil
 	}
 
-	return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC), nil
 }

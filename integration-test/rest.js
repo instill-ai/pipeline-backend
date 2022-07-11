@@ -36,7 +36,7 @@ export function setup() {
       headers: { "Content-Type": "application/json" },
     })
     check(res, {
-      "POST /v1alpha/source-connectors response status for creating directness HTTP source connector 201": (r) => r.status === 201,
+      "POST /v1alpha/source-connectors response status for creating HTTP source connector 201": (r) => r.status === 201,
     })
 
   });
@@ -55,7 +55,7 @@ export function setup() {
     })
 
     check(res, {
-      "POST /v1alpha/destination-connectors response status for creating directness HTTP destination connector 201": (r) => r.status === 201,
+      "POST /v1alpha/destination-connectors response status for creating HTTP destination connector 201": (r) => r.status === 201,
     })
 
   });
@@ -73,7 +73,7 @@ export function setup() {
       headers: { "Content-Type": "application/json" },
     })
     check(res, {
-      "POST /v1alpha/source-connectors response status for creating directness gRPC source connector 201": (r) => r.status === 201,
+      "POST /v1alpha/source-connectors response status for creating gRPC source connector 201": (r) => r.status === 201,
     })
 
   });
@@ -92,7 +92,7 @@ export function setup() {
     })
 
     check(res, {
-      "POST /v1alpha/destination-connectors response status for creating directness gRPC destination connector 201": (r) => r.status === 201,
+      "POST /v1alpha/destination-connectors response status for creating gRPC destination connector 201": (r) => r.status === 201,
     })
 
   });
