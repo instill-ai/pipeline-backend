@@ -212,8 +212,9 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
 
     const fd = new FormData();
     fd.append("file", http.file(constant.dogImg));
-    fd.append("file", http.file(constant.dogImg));
-    fd.append("file", http.file(constant.dogImg));
+    fd.append("file", http.file(constant.catImg));
+    fd.append("file", http.file(constant.bearImg));
+    fd.append("file", http.file(constant.dogRGBAImg));
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
@@ -305,8 +306,9 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
 
     const fd = new FormData();
     fd.append("file", http.file(constant.dogImg));
-    fd.append("file", http.file(constant.dogImg));
-    fd.append("file", http.file(constant.dogImg));
+    fd.append("file", http.file(constant.catImg));
+    fd.append("file", http.file(constant.bearImg));
+    fd.append("file", http.file(constant.dogRGBAImg));
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
