@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.5-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.6.4-alpha...v0.6.5-alpha) (2022-07-19)
+
+
+### Bug Fixes
+
+* complete trigger async binary file route ([5003e5c](https://github.com/instill-ai/pipeline-backend/commit/5003e5c613d28f918ce92835c4636d05ec13b5a9))
+
 ## [0.6.4-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.6.3-alpha...v0.6.4-alpha) (2022-07-11)
 
 
