@@ -443,7 +443,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 
 	dbPipeline.Owner = ownerPermalink
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	var outputs []*structpb.Struct
@@ -454,34 +454,32 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 		defer func() {
 			_ = stream.CloseSend()
 		}()
+
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot init stream: %v", "TriggerModelBinaryFileUpload", idx, modelInst, err.Error())
 		}
 
-		err = stream.Send(&modelPB.TriggerModelInstanceBinaryFileUploadRequest{
+		if err := stream.Send(&modelPB.TriggerModelInstanceBinaryFileUploadRequest{
 			Name:        modelInst,
 			FileLengths: fileLengths,
-		})
-		if err != nil {
+		}); err != nil {
 			return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot send data info to server: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInst, err.Error())
 		}
 
-		const chunkSize = 64 * 1024
-		buf := make([]byte, chunkSize)
-
 		fb := bytes.Buffer{}
 		fb.Write(fileBuf.Bytes())
+		buf := make([]byte, 64*1024)
 		for {
 			n, err := fb.Read(buf)
 			if err == io.EOF {
 				break
-			}
-			if err != nil {
+			} else if err != nil {
 				return nil, err
 			}
 
-			err = stream.Send(&modelPB.TriggerModelInstanceBinaryFileUploadRequest{Content: buf[:n]})
-			if err != nil {
+			if err := stream.Send(&modelPB.TriggerModelInstanceBinaryFileUploadRequest{
+				Content: buf[:n],
+			}); err != nil {
 				return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot send chunk to server: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInst, err.Error())
 			}
 		}
@@ -522,9 +520,11 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 			}
 
 			_, err = s.connectorServiceClient.WriteDestinationConnector(ctx, &connectorPB.WriteDestinationConnectorRequest{
-				Name: dbPipeline.Recipe.Destination,
-				Task: modelInstResp.Instance.GetTask(),
-				Data: outputs[idx],
+				Name:                dbPipeline.Recipe.Destination,
+				Task:                modelInstResp.Instance.GetTask(),
+				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
+				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
+				Data:                outputs[idx],
 			})
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth model instance %s: %v", "WriteDestinationConnector", idx, modelInstRecName, err.Error())

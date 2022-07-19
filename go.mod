@@ -11,7 +11,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.3
 	github.com/iancoleman/strcase v0.2.0
-	github.com/instill-ai/protogen-go v0.2.1-alpha.0.20220710212957-3540038f5779
+	github.com/instill-ai/protogen-go v0.2.1-alpha.0.20220718232229-94fd0d8bc0e3
 	github.com/instill-ai/usage-client v0.1.1-alpha
 	github.com/instill-ai/x v0.1.0-alpha.0.20220706215306-bceeac65f523
 	github.com/knadh/koanf v1.4.1
@@ -28,13 +28,12 @@ require (
 	gorm.io/gorm v1.23.6
 )
 
-require github.com/docker/docker v20.10.17+incompatible // indirect
-
 require (
 	github.com/catalinc/hashcash v0.0.0-20161205220751-e6bc29ff4de9 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/docker/docker v20.10.17+incompatible // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
