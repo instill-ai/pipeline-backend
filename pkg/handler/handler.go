@@ -443,20 +443,12 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		}
 	}
 
-	triggerModelResp, err := h.service.TriggerPipeline(req, dbPipeline)
+	resp, err := h.service.TriggerPipeline(req, dbPipeline)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	if triggerModelResp == nil {
-		return &pipelinePB.TriggerPipelineResponse{}, nil
-	}
-
-	resp := pipelinePB.TriggerPipelineResponse{
-		Output: triggerModelResp.Output,
-	}
-
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -489,30 +481,32 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 	}
 
 	// Read chuck
+	var fileNames []string
 	var fileLengths []uint64
-	buf := bytes.Buffer{}
+	content := bytes.Buffer{}
 	for {
 		data, err := stream.Recv()
-		if len(fileLengths) == 0 {
-			fileLengths = data.GetFileLengths()
-		}
 		if err != nil {
 			if err == io.EOF {
 				break
 			}
-
 			return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
+		}
+		if len(fileNames) == 0 {
+			fileNames = data.GetFileNames()
+		}
+		if len(fileLengths) == 0 {
+			fileLengths = data.GetFileLengths()
 		}
 		if data.Content == nil {
 			continue
 		}
-
-		if _, err := buf.Write(data.Content); err != nil {
+		if _, err := content.Write(data.Content); err != nil {
 			return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
 		}
 	}
 
-	obj, err := h.service.TriggerPipelineBinaryFileUpload(buf, fileLengths, dbPipeline)
+	obj, err := h.service.TriggerPipelineBinaryFileUpload(content, fileNames, fileLengths, dbPipeline)
 	if err != nil {
 		return err
 	}

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,7 +37,7 @@ type Service interface {
 	UpdatePipelineState(id string, ownerRscName string, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, ownerRscName string, newID string) (*datamodel.Pipeline, error)
 	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error)
-	TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error)
+	TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileNames []string, fileLengths []uint64, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error)
 }
 
 type service struct {
@@ -405,6 +406,11 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 	// If this is a async trigger, write to the destination connector
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
 
+		var indices []string
+		for idx := range req.Inputs {
+			indices = append(indices, fmt.Sprintf("%s-%d", strconv.Itoa(idx), time.Now().UnixNano()))
+		}
+
 		for idx, modelInstRecName := range dbPipeline.Recipe.ModelInstances {
 
 			modelInstResp, err := s.modelServiceClient.GetModelInstance(ctx, &modelPB.GetModelInstanceRequest{
@@ -415,9 +421,13 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 			}
 
 			_, err = s.connectorServiceClient.WriteDestinationConnector(ctx, &connectorPB.WriteDestinationConnectorRequest{
-				Name: dbPipeline.Recipe.Destination,
-				Task: modelInstResp.Instance.GetTask(),
-				Data: outputs[idx],
+				Name:                dbPipeline.Recipe.Destination,
+				Task:                modelInstResp.Instance.GetTask(),
+				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
+				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
+				ModelInstance:       modelInstRecName,
+				Indices:             indices,
+				Data:                outputs[idx],
 			})
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth model instance %s: %v", "WriteDestinationConnector", idx, modelInstRecName, err.Error())
@@ -430,7 +440,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 
 }
 
-func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLengths []uint64, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error) {
+func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileNames []string, fileLengths []uint64, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error) {
 
 	if dbPipeline.State != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
@@ -503,8 +513,8 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 		}
 	}
 
-	// Check if this is a direct trigger (i.e., HTTP, gRPC source and destination connectors)
 	switch {
+	// Check if this is a sync trigger (i.e., HTTP, gRPC source and destination connectors)
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
 		return &pipelinePB.TriggerPipelineBinaryFileUploadResponse{
 			Output: outputs,
@@ -524,6 +534,8 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileLeng
 				Task:                modelInstResp.Instance.GetTask(),
 				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
 				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
+				ModelInstance:       modelInstRecName,
+				Indices:             fileNames,
 				Data:                outputs[idx],
 			})
 			if err != nil {

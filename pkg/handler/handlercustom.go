@@ -90,7 +90,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 			return
 		}
 
-		fileBytes, fileLengths, err := parseImageFormDataInputsToBytes(req)
+		content, fileNames, fileLengths, err := parseImageFormDataInputsToBytes(req)
 		if err != nil {
 			st := sterr.CreateErrorPreconditionFailure(
 				"[handler] error while reading file from request",
@@ -103,7 +103,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		}
 
 		var obj interface{}
-		if obj, err = service.TriggerPipelineBinaryFileUpload(*bytes.NewBuffer(fileBytes), fileLengths, dbPipeline); err != nil {
+		if obj, err = service.TriggerPipelineBinaryFileUpload(*bytes.NewBuffer(content), fileNames, fileLengths, dbPipeline); err != nil {
 			// TODO: return ResourceInfo error
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -125,38 +125,39 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 	}
 }
 
-func parseImageFormDataInputsToBytes(req *http.Request) (fileBytes []byte, fileLengths []uint64, err error) {
+func parseImageFormDataInputsToBytes(req *http.Request) (content []byte, fileNames []string, fileLengths []uint64, err error) {
 	inputs := req.MultipartForm.File["file"]
 	var file multipart.File
-	for _, content := range inputs {
-		file, err = content.Open()
+	for _, input := range inputs {
+		file, err = input.Open()
 		defer func() {
 			err = file.Close()
 		}()
 
 		if err != nil {
-			return nil, nil, fmt.Errorf("Unable to open file for image")
+			return nil, nil, nil, fmt.Errorf("Unable to open file for image")
 		}
 
 		buff := new(bytes.Buffer)
 		numBytes, err := buff.ReadFrom(file)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Unable to read content body from image")
+			return nil, nil, nil, fmt.Errorf("Unable to read content body from image")
 		}
 
 		if numBytes > int64(constant.MaxImageSizeBytes) {
-			return nil, nil, fmt.Errorf(
+			return nil, nil, nil, fmt.Errorf(
 				"Image size must be smaller than %vMB. Got %vMB",
 				float32(constant.MaxImageSizeBytes)/float32(constant.MB),
 				float32(numBytes)/float32(constant.MB),
 			)
 		}
 
-		fileBytes = append(fileBytes, buff.Bytes()...)
+		content = append(content, buff.Bytes()...)
+		fileNames = append(fileNames, input.Filename)
 		fileLengths = append(fileLengths, uint64(buff.Len()))
 	}
 
-	return fileBytes, fileLengths, nil
+	return content, fileNames, fileLengths, nil
 }
 
 func errorResponse(w http.ResponseWriter, s *status.Status) {

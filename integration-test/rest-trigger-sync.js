@@ -70,7 +70,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
     });
 
     const fd = new FormData();
-    fd.append("file", http.file(constant.dogImg));
+    fd.append("file", {data: http.file(constant.dogImg), filename: "dog"});
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}:trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
@@ -211,10 +211,10 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
     });
 
     const fd = new FormData();
-    fd.append("file", http.file(constant.dogImg));
-    fd.append("file", http.file(constant.catImg));
-    fd.append("file", http.file(constant.bearImg));
-    fd.append("file", http.file(constant.dogRGBAImg));
+    fd.append("file", {data: http.file(constant.dogImg), filename: "dog"});
+    fd.append("file", {data: http.file(constant.catImg), filename: "cat"});
+    fd.append("file", {data: http.file(constant.bearImg), filename: "bear"});
+    fd.append("file", {data: http.file(constant.dogRGBAImg), filename: "dogRGBA"});
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
@@ -305,10 +305,10 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
     });
 
     const fd = new FormData();
-    fd.append("file", http.file(constant.dogImg));
-    fd.append("file", http.file(constant.catImg));
-    fd.append("file", http.file(constant.bearImg));
-    fd.append("file", http.file(constant.dogRGBAImg));
+    fd.append("file", {data: http.file(constant.dogImg), filename: "dog"});
+    fd.append("file", {data: http.file(constant.catImg), filename: "cat"});
+    fd.append("file", {data: http.file(constant.bearImg), filename: "bear"});
+    fd.append("file", {data: http.file(constant.dogRGBAImg), filename: "dogRGBA"});
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}:trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
