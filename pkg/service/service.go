@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
@@ -425,9 +427,26 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 				Task:                modelInstResp.Instance.GetTask(),
 				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
 				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
-				ModelInstance:       modelInstRecName,
+				Pipeline:            fmt.Sprintf("pipelines/%s", dbPipeline.ID),
 				Indices:             indices,
 				Data:                outputs[idx],
+				Recipe: func() *pipelinePB.Recipe {
+					logger, _ := logger.GetZapLogger()
+
+					if dbPipeline.Recipe != nil {
+						b, err := json.Marshal(dbPipeline.Recipe)
+						if err != nil {
+							logger.Error(err.Error())
+						}
+						pbRecipe := pipelinePB.Recipe{}
+						err = json.Unmarshal(b, &pbRecipe)
+						if err != nil {
+							logger.Error(err.Error())
+						}
+						return &pbRecipe
+					}
+					return nil
+				}(),
 			})
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth model instance %s: %v", "WriteDestinationConnector", idx, modelInstRecName, err.Error())
@@ -534,9 +553,26 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileName
 				Task:                modelInstResp.Instance.GetTask(),
 				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
 				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
-				ModelInstance:       modelInstRecName,
+				Pipeline:            fmt.Sprintf("pipelines/%s", dbPipeline.ID),
 				Indices:             fileNames,
 				Data:                outputs[idx],
+				Recipe: func() *pipelinePB.Recipe {
+					logger, _ := logger.GetZapLogger()
+
+					if dbPipeline.Recipe != nil {
+						b, err := json.Marshal(dbPipeline.Recipe)
+						if err != nil {
+							logger.Error(err.Error())
+						}
+						pbRecipe := pipelinePB.Recipe{}
+						err = json.Unmarshal(b, &pbRecipe)
+						if err != nil {
+							logger.Error(err.Error())
+						}
+						return &pbRecipe
+					}
+					return nil
+				}(),
 			})
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth model instance %s: %v", "WriteDestinationConnector", idx, modelInstRecName, err.Error())
