@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.6.5-alpha...v0.7.0-alpha) (2022-07-29)
+
+
+### Features
+
+* add data association with dst conn ([9233429](https://github.com/instill-ai/pipeline-backend/commit/9233429a1a36eb8d2d864baa454c7b01c997f4f4))
+
 ## [0.6.5-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.6.4-alpha...v0.6.5-alpha) (2022-07-19)
 
 
