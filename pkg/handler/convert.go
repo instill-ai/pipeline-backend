@@ -34,7 +34,7 @@ func PBToDBPipeline(owner string, pbPipeline *pipelinePB.Pipeline) *datamodel.Pi
 				}
 				id, err := uuid.FromString(pbPipeline.GetUid())
 				if err != nil {
-					logger.Fatal(err.Error())
+					logger.Error(err.Error())
 				}
 				return id
 			}(),
@@ -63,12 +63,12 @@ func PBToDBPipeline(owner string, pbPipeline *pipelinePB.Pipeline) *datamodel.Pi
 			if pbPipeline.GetRecipe() != nil {
 				b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetRecipe())
 				if err != nil {
-					logger.Fatal(err.Error())
+					logger.Error(err.Error())
 				}
 
 				recipe := datamodel.Recipe{}
 				if err := json.Unmarshal(b, &recipe); err != nil {
-					logger.Fatal(err.Error())
+					logger.Error(err.Error())
 				}
 				return &recipe
 			}
@@ -95,12 +95,12 @@ func DBToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
 			if dbPipeline.Recipe != nil {
 				b, err := json.Marshal(dbPipeline.Recipe)
 				if err != nil {
-					logger.Fatal(err.Error())
+					logger.Error(err.Error())
 				}
 				pbRecipe := pipelinePB.Recipe{}
 				err = json.Unmarshal(b, &pbRecipe)
 				if err != nil {
-					logger.Fatal(err.Error())
+					logger.Error(err.Error())
 				}
 				return &pbRecipe
 			}
