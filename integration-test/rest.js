@@ -9,9 +9,9 @@ import * as pipeline from './rest-pipeline.js';
 import * as triggerSync from './rest-trigger-sync.js';
 import * as triggerAsync from './rest-trigger-async.js';
 
-const pipelineHost = "http://pipeline-backend:8081";
-const connectorHost = "http://connector-backend:8082";
-const modelHost = "http://model-backend:8083";
+const pipelineHost = __ENV.HOSTNAME ? `http://${__ENV.HOSTNAME}:8081` : "http://pipeline-backend:8081";
+const connectorHost = __ENV.HOSTNAME ? `http://${__ENV.HOSTNAME}:8082` : "http://connector-backend:8082";
+const modelHost = __ENV.HOSTNAME ? `http://${__ENV.HOSTNAME}:8083` : "http://model-backend:8083";
 
 export let options = {
   setupTimeout: '300s',
