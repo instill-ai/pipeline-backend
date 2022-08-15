@@ -15,7 +15,6 @@ import (
 	"github.com/gogo/status"
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
@@ -373,7 +372,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var outputs []*structpb.Struct
+	var multiModelInstOutputs []*pipelinePB.ModelInstanceOutput
 	for idx, modelInstRscName := range dbPipeline.Recipe.ModelInstances {
 
 		// TODO: async call model-backend
@@ -385,7 +384,10 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 			return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: %v", "TriggerModel", idx, modelInstRscName, err.Error())
 		}
 
-		outputs = append(outputs, resp.Output)
+		multiModelInstOutputs = append(multiModelInstOutputs, &pipelinePB.ModelInstanceOutput{
+			Task: resp.Task,
+			BatchOutputs: resp.BatchOutputs,
+		})
 
 		// Increment trigger image numbers
 		uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
@@ -403,7 +405,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 	// If this is a sync trigger (i.e., HTTP, gRPC source and destination connectors), return right away
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
 		return &pipelinePB.TriggerPipelineResponse{
-			Output: outputs,
+			ModelInstanceOutputs: multiModelInstOutputs,
 		}, nil
 	// If this is a async trigger, write to the destination connector
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
@@ -414,22 +416,13 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 		}
 
 		for idx, modelInstRecName := range dbPipeline.Recipe.ModelInstances {
-
-			modelInstResp, err := s.modelServiceClient.GetModelInstance(ctx, &modelPB.GetModelInstanceRequest{
-				Name: modelInstRecName,
-			})
-			if err != nil {
-				return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: %v", "GetModelInstance", idx, modelInstRecName, err.Error())
-			}
-
 			_, err = s.connectorServiceClient.WriteDestinationConnector(ctx, &connectorPB.WriteDestinationConnectorRequest{
-				Name:                dbPipeline.Recipe.Destination,
-				Task:                modelInstResp.Instance.GetTask(),
-				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
-				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
-				Pipeline:            fmt.Sprintf("pipelines/%s", dbPipeline.ID),
-				Indices:             indices,
-				Data:                outputs[idx],
+				Name:                 dbPipeline.Recipe.Destination,
+				SyncMode:             connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
+				DestinationSyncMode:  connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
+				Pipeline:             fmt.Sprintf("pipelines/%s", dbPipeline.ID),
+				Indices:              indices,
+				ModelInstanceOutputs: multiModelInstOutputs,
 				Recipe: func() *pipelinePB.Recipe {
 					logger, _ := logger.GetZapLogger()
 
@@ -475,7 +468,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileName
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	var outputs []*structpb.Struct
+	var multiModelInstOutputs []*pipelinePB.ModelInstanceOutput
 	for idx, modelInst := range dbPipeline.Recipe.ModelInstances {
 
 		// TODO: async call model-backend
@@ -518,7 +511,10 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileName
 			return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot receive response: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInst, err.Error())
 		}
 
-		outputs = append(outputs, resp.Output)
+		multiModelInstOutputs = append(multiModelInstOutputs, &pipelinePB.ModelInstanceOutput{
+			Task: resp.Task,
+			BatchOutputs: resp.BatchOutputs,
+		})
 
 		// Increment trigger image numbers
 		uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
@@ -536,26 +532,17 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileName
 	// Check if this is a sync trigger (i.e., HTTP, gRPC source and destination connectors)
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
 		return &pipelinePB.TriggerPipelineBinaryFileUploadResponse{
-			Output: outputs,
+			ModelInstanceOutputs: multiModelInstOutputs,
 		}, nil
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
 		for idx, modelInstRecName := range dbPipeline.Recipe.ModelInstances {
-
-			modelInstResp, err := s.modelServiceClient.GetModelInstance(ctx, &modelPB.GetModelInstanceRequest{
-				Name: modelInstRecName,
-			})
-			if err != nil {
-				return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: %v", "GetModelInstance", idx, modelInstRecName, err.Error())
-			}
-
 			_, err = s.connectorServiceClient.WriteDestinationConnector(ctx, &connectorPB.WriteDestinationConnectorRequest{
-				Name:                dbPipeline.Recipe.Destination,
-				Task:                modelInstResp.Instance.GetTask(),
-				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
-				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
-				Pipeline:            fmt.Sprintf("pipelines/%s", dbPipeline.ID),
-				Indices:             fileNames,
-				Data:                outputs[idx],
+				Name:                 dbPipeline.Recipe.Destination,
+				SyncMode:             connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
+				DestinationSyncMode:  connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
+				Pipeline:             fmt.Sprintf("pipelines/%s", dbPipeline.ID),
+				Indices:              fileNames,
+				ModelInstanceOutputs: multiModelInstOutputs,
 				Recipe: func() *pipelinePB.Recipe {
 					logger, _ := logger.GetZapLogger()
 

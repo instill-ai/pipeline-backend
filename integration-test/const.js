@@ -28,7 +28,7 @@ export const detSyncGRPCSingleModelInstRecipe = {
   },
 };
 
-export const detSyncMultiModelInstRecipe = {
+export const detSyncHTTPMultiModelInstRecipe = {
   recipe: {
     source: "source-connectors/source-http",
     model_instances: [

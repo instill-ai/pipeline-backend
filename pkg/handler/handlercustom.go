@@ -13,11 +13,13 @@ import (
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/constant"
 	"github.com/instill-ai/pipeline-backend/internal/db"
 	"github.com/instill-ai/pipeline-backend/internal/external"
+	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/internal/sterr"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
@@ -25,6 +27,8 @@ import (
 
 // HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
 func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+
+	logger, _ := logger.GetZapLogger()
 
 	contentType := req.Header.Get("Content-Type")
 
@@ -34,12 +38,14 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 	if owner == "" {
 		st := sterr.CreateErrorBadRequest("[handler] invalid owner field", "owner", "required parameter Jwt-Sub not found in the header")
 		errorResponse(w, st)
+		logger.Error(st.String())
 		return
 	}
 
 	if id == "" {
 		st := sterr.CreateErrorBadRequest("[handler] invalid id field", "id", "required parameter pipeline id not found in the path")
 		errorResponse(w, st)
+		logger.Error(st.String())
 		return
 	}
 
@@ -76,6 +82,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 				err.Error(),
 			)
 			errorResponse(w, st)
+			logger.Error(st.String())
 			return
 		}
 
@@ -87,6 +94,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 				err.Error(),
 			)
 			errorResponse(w, st)
+			logger.Error(st.String())
 			return
 		}
 
@@ -99,20 +107,23 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 				err.Error(),
 			)
 			errorResponse(w, st)
+			logger.Error(st.String())
 			return
 		}
 
-		var obj interface{}
-		if obj, err = service.TriggerPipelineBinaryFileUpload(*bytes.NewBuffer(content), fileNames, fileLengths, dbPipeline); err != nil {
+		obj, err := service.TriggerPipelineBinaryFileUpload(*bytes.NewBuffer(content), fileNames, fileLengths, dbPipeline)
+		if err != nil {
 			// TODO: return ResourceInfo error
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			logger.Error(err.Error())
 			return
 		}
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(200)
-		ret, _ := json.Marshal(obj)
+		ret, _ := protojson.MarshalOptions{UseProtoNames: true}.Marshal(obj)
 		_, _ = w.Write(ret)
+
 	} else {
 		st := sterr.CreateErrorPreconditionFailure(
 			"[handler] content-type not supported",
@@ -121,6 +132,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 			fmt.Sprintf("content-type %s not supported", contentType),
 		)
 		errorResponse(w, st)
+		logger.Error(st.String())
 		return
 	}
 }
