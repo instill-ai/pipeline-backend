@@ -138,9 +138,8 @@ export function CheckList() {
 
     check(http.request("GET", `${pipelineHost}/v1alpha/pipelines`), {
       [`GET /v1alpha/pipelines response status is 200`]: (r) => r.status === 200,
-      [`GET /v1alpha/pipelines response has pipelines array`]: (r) => Array.isArray(r.json().pipelines),
-      [`GET /v1alpha/pipelines response has total_size 0`]: (r) => r.json().total_size == 0,
-      [`GET /v1alpha/pipelines response has empty next_page_token`]: (r) => r.json().next_page_token == "",
+      [`GET /v1alpha/pipelines response next_page_token is empty`]: (r) => r.json().next_page_token === "",
+      [`GET /v1alpha/pipelines response total_size is 0`]: (r) => r.json().total_size == 0,
     });
 
     const numPipelines = 200
@@ -173,7 +172,7 @@ export function CheckList() {
     }), {
       [`GET /v1alpha/pipelines response status is 200`]: (r) => r.status === 200,
       [`GET /v1alpha/pipelines response pipelines.length == 10`]: (r) => r.json().pipelines.length == 10,
-      [`GET /v1alpha/pipelines response pipelines[0] no recipe`]: (r) => r.json().pipelines[0].recipe === null,
+      [`GET /v1alpha/pipelines response pipelines[0].recipe is null`]: (r) => r.json().pipelines[0].recipe === null,
       [`GET /v1alpha/pipelines response total_size == 200`]: (r) => r.json().total_size == 200,
     });
 
@@ -191,7 +190,7 @@ export function CheckList() {
         "Content-Type": "application/json",
       }
     }), {
-      [`GET /v1alpha/pipelines?view=VIEW_BASIC response pipelines[0] has no recipe`]: (r) => r.json().pipelines[0].recipe === null,
+      [`GET /v1alpha/pipelines?view=VIEW_BASIC response pipelines[0].recipe is null`]: (r) => r.json().pipelines[0].recipe === null,
     });
 
     check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?page_size=3`, null, {
@@ -215,7 +214,7 @@ export function CheckList() {
     check(resSecond100, {
       [`GET /v1alpha/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token} response status 200`]: (r) => r.status == 200,
       [`GET /v1alpha/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token} response return 100 results`]: (r) => r.json().pipelines.length == 100,
-      [`GET /v1alpha/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token} response next_page_token is empty`]: (r) => r.json().next_page_token == "",
+      [`GET /v1alpha/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token} response next_page_token is empty`]: (r) => r.json().next_page_token === "",
     });
 
     // Filtering
@@ -302,7 +301,16 @@ export function CheckGet() {
       [`GET /v1alpha/pipelines/${reqBody.id} response pipeline uid`]: (r) => helper.isUUID(r.json().pipeline.uid),
       [`GET /v1alpha/pipelines/${reqBody.id} response pipeline id`]: (r) => r.json().pipeline.id === reqBody.id,
       [`GET /v1alpha/pipelines/${reqBody.id} response pipeline description`]: (r) => r.json().pipeline.description === reqBody.description,
-      [`GET /v1alpha/pipelines/${reqBody.id} response pipeline recipe`]: (r) => r.json().pipeline.recipe !== undefined,
+      [`GET /v1alpha/pipelines/${reqBody.id} response pipeline recipe is null`]: (r) => r.json().pipeline.recipe === null,
+    });
+
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}?view=VIEW_FULL`, null, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }), {
+      [`GET /v1alpha/pipelines/${reqBody.id} response status is 200`]: (r) => r.status === 200,
+      [`GET /v1alpha/pipelines/${reqBody.id} response pipeline recipe is not null`]: (r) => r.json().pipeline.recipe !== null,
     });
 
     check(http.request("GET", `${pipelineHost}/v1alpha/pipelines/this-id-does-not-exist`, null, {
