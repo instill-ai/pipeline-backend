@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.7.0-alpha...v0.7.1-alpha) (2022-08-17)
+
+
+### Bug Fixes
+
+* fix multipart trigger resp fmt inconsist ([0663542](https://github.com/instill-ai/pipeline-backend/commit/06635427edf5a4d18c73dcef53f42daa2324be1b))
+
 ## [0.7.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.6.5-alpha...v0.7.0-alpha) (2022-07-29)
 
 
