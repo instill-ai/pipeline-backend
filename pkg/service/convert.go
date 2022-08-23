@@ -6,12 +6,16 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/protobuf/proto"
+
+	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 func (s *service) ownerRscNameToPermalink(ownerRscName string) (ownerPermalink string, err error) {
@@ -195,4 +199,49 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 	}
 
 	return &recipeRscName, nil
+}
+
+func cvtModelBatchOutputToPipelineBatchOutput(modelBatchOutputs []*modelPB.BatchOutput) []*pipelinePB.BatchOutput {
+
+	logger, _ := logger.GetZapLogger()
+
+	var pipelineBatchOutputs []*pipelinePB.BatchOutput
+	for _, batchOutput := range modelBatchOutputs {
+		switch v := batchOutput.Output.(type) {
+		case *modelPB.BatchOutput_Classification:
+			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
+				Output: &pipelinePB.BatchOutput_Classification{
+					Classification: proto.Clone(v.Classification).(*modelPB.ClassificationOutput),
+				},
+			})
+		case *modelPB.BatchOutput_Detection:
+			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
+				Output: &pipelinePB.BatchOutput_Detection{
+					Detection: proto.Clone(v.Detection).(*modelPB.DetectionOutput),
+				},
+			})
+		case *modelPB.BatchOutput_Keypoint:
+			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
+				Output: &pipelinePB.BatchOutput_Keypoint{
+					Keypoint: proto.Clone(v.Keypoint).(*modelPB.KeypointOutput),
+				},
+			})
+		case *modelPB.BatchOutput_Ocr:
+			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
+				Output: &pipelinePB.BatchOutput_Ocr{
+					Ocr: proto.Clone(v.Ocr).(*modelPB.OcrOutput),
+				},
+			})
+		case *modelPB.BatchOutput_Unspecified:
+			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
+				Output: &pipelinePB.BatchOutput_Unspecified{
+					Unspecified: proto.Clone(v.Unspecified).(*modelPB.UnspecifiedOutput),
+				},
+			})
+		default:
+			logger.Error("CV Task type is not defined")
+		}
+	}
+
+	return pipelineBatchOutputs
 }

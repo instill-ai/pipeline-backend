@@ -113,7 +113,6 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		obj, err := service.TriggerPipelineBinaryFileUpload(*bytes.NewBuffer(content), fileNames, fileLengths, dbPipeline)
 		if err != nil {
-			// TODO: return ResourceInfo error
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			logger.Error(err.Error())
 			return

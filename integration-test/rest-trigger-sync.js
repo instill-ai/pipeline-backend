@@ -5,6 +5,8 @@ import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import { check, group } from "k6";
 import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
+import { pipelineHost } from "./const.js";
+
 import * as constant from "./const.js"
 
 export function CheckTriggerSyncSingleImageSingleModelInst() {
@@ -42,7 +44,11 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
     }), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs.length === payloadImageURL.inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].index === r.json().data_mapping_indices[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category === "test",
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score === 1,
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box !== undefined,
@@ -63,7 +69,11 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
     }), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs.length === payloadImageBase64.inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].index === r.json().data_mapping_indices[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category === "test",
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score === 1,
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box !== undefined,
@@ -77,9 +87,15 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response output[0].detection_outputs.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category === "test",
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box !== undefined,
     });
 
     const fdWrong = new FormData();
@@ -180,7 +196,11 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
     }), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response output[0].detection_outputs.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs.length === payloadImageURL.inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].index === r.json().data_mapping_indices[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category === "test",
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score === 1,
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (url) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box !== undefined,
@@ -204,7 +224,11 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
     }), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response output[0].detection_outputs.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs.length === payloadImageBase64.inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].index === r.json().data_mapping_indices[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category === "test",
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score === 1,
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger (base64) response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box !== undefined,
@@ -222,8 +246,14 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
     }), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response output[0].detection_outputs.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].category === "test",
       [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}:trigger-multipart response model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].batch_outputs[0].detection.bounding_boxes[0].bounding_box !== undefined,
     });
 
     // Delete the pipeline

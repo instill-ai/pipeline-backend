@@ -4,14 +4,12 @@ import { sleep, check, group, fail } from "k6";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
+import { pipelineHost, connectorHost, modelHost } from "./const.js";
+
 import * as constant from "./const.js";
 import * as pipeline from './rest-pipeline.js';
 import * as triggerSync from './rest-trigger-sync.js';
 import * as triggerAsync from './rest-trigger-async.js';
-
-const pipelineHost = __ENV.HOSTNAME ? `http://${__ENV.HOSTNAME}:8081` : "http://pipeline-backend:8081";
-const connectorHost = __ENV.HOSTNAME ? `http://${__ENV.HOSTNAME}:8082` : "http://connector-backend:8082";
-const modelHost = __ENV.HOSTNAME ? `http://${__ENV.HOSTNAME}:8083` : "http://model-backend:8083";
 
 export let options = {
   setupTimeout: '300s',
@@ -105,7 +103,7 @@ export function setup() {
         "destination_connector_definition": "destination-connector-definitions/destination-csv",
         "connector": {
           "configuration": {
-            "destination_path": "/local/some-folder-in-airbyte-volume-local-path"
+            "destination_path": "/local/pipeline-backend-test"
           }
         }
       }), {
@@ -120,12 +118,12 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-        var res = http.request("GET", `${connectorHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`)
-        if (res.json().destination_connector.connector.state === "STATE_CONNECTED") {
-            break
-        }
-        sleep(1)
-        currentTime = new Date().getTime();
+      var res = http.request("GET", `${connectorHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`)
+      if (res.json().destination_connector.connector.state === "STATE_CONNECTED") {
+        break
+      }
+      sleep(1)
+      currentTime = new Date().getTime();
     }
 
   });

@@ -5,6 +5,8 @@ import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import { check, group } from "k6";
 import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
+import { pipelineHost } from "./const.js";
+
 import * as constant from "./const.js"
 
 export function CheckTriggerAsyncSingleImageSingleModelInst() {

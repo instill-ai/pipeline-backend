@@ -2,6 +2,8 @@ import http from "k6/http";
 import { check, group } from "k6";
 import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
+import { pipelineHost, connectorHost, modelHost } from "./const.js";
+
 import * as constant from "./const.js"
 import * as helper from "./helper.js"
 
@@ -218,38 +220,38 @@ export function CheckList() {
     });
 
     // Filtering
-    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC`, null, {headers: {"Content-Type": "application/json",}}), {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC`, null, { headers: { "Content-Type": "application/json", } }), {
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE`, null, {headers: {"Content-Type": "application/json",}}), {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE`, null, { headers: { "Content-Type": "application/json", } }), {
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`, null, {headers: {"Content-Type": "application/json",}}), {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`, null, { headers: { "Content-Type": "application/json", } }), {
       [`GET /v1alpha/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
     // Get UUID for foreign resources
-    var srcConnUid = http.get(`${connectorHost}/v1alpha/source-connectors/source-http`, {}, {headers: {"Content-Type": "application/json"},}).json().source_connector.uid
+    var srcConnUid = http.get(`${connectorHost}/v1alpha/source-connectors/source-http`, {}, { headers: { "Content-Type": "application/json" }, }).json().source_connector.uid
     var srcConnPermalink = `source-connectors/${srcConnUid}`
 
-    var dstConnUid = http.get(`${connectorHost}/v1alpha/destination-connectors/destination-http`, {}, {headers: {"Content-Type": "application/json"},}).json().destination_connector.uid
+    var dstConnUid = http.get(`${connectorHost}/v1alpha/destination-connectors/destination-http`, {}, { headers: { "Content-Type": "application/json" }, }).json().destination_connector.uid
     var dstConnPermalink = `destination-connectors/${dstConnUid}`
 
-    var modelUid = http.get(`${modelHost}/v1alpha/models/${constant.model_id}`, {}, {headers: {"Content-Type": "application/json"},}).json().model.uid
-    var modelInstUid = http.get(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, {headers: {"Content-Type": "application/json"},}).json().instance.uid
+    var modelUid = http.get(`${modelHost}/v1alpha/models/${constant.model_id}`, {}, { headers: { "Content-Type": "application/json" }, }).json().model.uid
+    var modelInstUid = http.get(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, { headers: { "Content-Type": "application/json" }, }).json().instance.uid
     var modelInstPermalink = `models/${modelUid}/instances/${modelInstUid}`
 
-    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22`, null, {headers: {"Content-Type": "application/json",}}), {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22`, null, { headers: { "Content-Type": "application/json", } }), {
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.destination=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22`, null, {headers: {"Content-Type": "application/json",}}), {
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.destination=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22`, null, { headers: { "Content-Type": "application/json", } }), {
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
@@ -327,7 +329,7 @@ export function CheckGet() {
         "Content-Type": "application/json",
       },
     }), {
-      [`DELETE /v1alpha/pipelines/${pipeline.id} response status 204`]: (r) => r.status === 204,
+      [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
     });
 
   });
