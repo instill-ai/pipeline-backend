@@ -4,7 +4,7 @@ server:
     cert:   # /ssl/tls.crt
     key:    # /ssl/tls.key
   corsorigins:
-    - http://localhost
+    - http://localhost:3000
     - https://instill-inc.tech
     - https://instill.tech
   edition: local-ce:dev
