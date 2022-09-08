@@ -120,7 +120,10 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(200)
-		ret, _ := protojson.MarshalOptions{EmitUnpopulated: true, UseProtoNames: true}.Marshal(obj)
+		ret, _ := protojson.MarshalOptions{
+			EmitUnpopulated: true,
+			UseProtoNames:   true,
+		}.Marshal(obj)
 		_, _ = w.Write(ret)
 
 	} else {

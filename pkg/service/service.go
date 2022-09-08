@@ -595,7 +595,10 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileName
 				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth model instance %s: %v", "WriteDestinationConnector", idx, modelInstRecName, err.Error())
 			}
 		}
-		return &pipelinePB.TriggerPipelineBinaryFileUploadResponse{}, nil
+		return &pipelinePB.TriggerPipelineBinaryFileUploadResponse{
+			DataMappingIndices:   dataMappingIndices,
+			ModelInstanceOutputs: nil,
+		}, nil
 
 	}
 
