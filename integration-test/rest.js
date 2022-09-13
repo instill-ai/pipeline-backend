@@ -173,21 +173,21 @@ export default function (data) {
     });
   }
 
-  pipeline.CheckCreate()
-  pipeline.CheckList()
-  pipeline.CheckGet()
-  pipeline.CheckUpdate()
-  pipeline.CheckUpdateState()
-  pipeline.CheckRename()
-  pipeline.CheckLookUp()
+  // pipeline.CheckCreate()
+  // pipeline.CheckList()
+  // pipeline.CheckGet()
+  // pipeline.CheckUpdate()
+  // pipeline.CheckUpdateState()
+  // pipeline.CheckRename()
+  // pipeline.CheckLookUp()
 
   triggerSync.CheckTriggerSyncSingleImageSingleModelInst()
-  triggerSync.CheckTriggerSyncMultiImageSingleModelInst()
-  triggerSync.CheckTriggerSyncMultiImageMultiModelInst()
+  // triggerSync.CheckTriggerSyncMultiImageSingleModelInst()
+  // triggerSync.CheckTriggerSyncMultiImageMultiModelInst()
 
-  triggerAsync.CheckTriggerAsyncSingleImageSingleModelInst()
-  triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
-  triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
+  // triggerAsync.CheckTriggerAsyncSingleImageSingleModelInst()
+  // triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
+  // triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
 
 }
 
