@@ -201,40 +201,40 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 	return &recipeRscName, nil
 }
 
-func cvtModelBatchOutputToPipelineBatchOutput(modelBatchOutputs []*modelPB.BatchOutput) []*pipelinePB.BatchOutput {
+func cvtModelTaskOutputToPipelineTaskOutput(modelTaskOutputs []*modelPB.TaskOutput) []*pipelinePB.TaskOutput {
 
 	logger, _ := logger.GetZapLogger()
 
-	var pipelineBatchOutputs []*pipelinePB.BatchOutput
-	for _, batchOutput := range modelBatchOutputs {
-		switch v := batchOutput.Output.(type) {
-		case *modelPB.BatchOutput_Classification:
-			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
-				Output: &pipelinePB.BatchOutput_Classification{
+	var pipelineTaskOutputs []*pipelinePB.TaskOutput
+	for _, taskOutput := range modelTaskOutputs {
+		switch v := taskOutput.Output.(type) {
+		case *modelPB.TaskOutput_Classification:
+			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
+				Output: &pipelinePB.TaskOutput_Classification{
 					Classification: proto.Clone(v.Classification).(*modelPB.ClassificationOutput),
 				},
 			})
-		case *modelPB.BatchOutput_Detection:
-			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
-				Output: &pipelinePB.BatchOutput_Detection{
+		case *modelPB.TaskOutput_Detection:
+			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
+				Output: &pipelinePB.TaskOutput_Detection{
 					Detection: proto.Clone(v.Detection).(*modelPB.DetectionOutput),
 				},
 			})
-		case *modelPB.BatchOutput_Keypoint:
-			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
-				Output: &pipelinePB.BatchOutput_Keypoint{
+		case *modelPB.TaskOutput_Keypoint:
+			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
+				Output: &pipelinePB.TaskOutput_Keypoint{
 					Keypoint: proto.Clone(v.Keypoint).(*modelPB.KeypointOutput),
 				},
 			})
-		case *modelPB.BatchOutput_Ocr:
-			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
-				Output: &pipelinePB.BatchOutput_Ocr{
+		case *modelPB.TaskOutput_Ocr:
+			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
+				Output: &pipelinePB.TaskOutput_Ocr{
 					Ocr: proto.Clone(v.Ocr).(*modelPB.OcrOutput),
 				},
 			})
-		case *modelPB.BatchOutput_Unspecified:
-			pipelineBatchOutputs = append(pipelineBatchOutputs, &pipelinePB.BatchOutput{
-				Output: &pipelinePB.BatchOutput_Unspecified{
+		case *modelPB.TaskOutput_Unspecified:
+			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
+				Output: &pipelinePB.TaskOutput_Unspecified{
 					Unspecified: proto.Clone(v.Unspecified).(*modelPB.UnspecifiedOutput),
 				},
 			})
@@ -243,5 +243,5 @@ func cvtModelBatchOutputToPipelineBatchOutput(modelBatchOutputs []*modelPB.Batch
 		}
 	}
 
-	return pipelineBatchOutputs
+	return pipelineTaskOutputs
 }
