@@ -391,15 +391,15 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 				logger.Error(fmt.Sprintf("[model-backend] Error %s at %dth model instance %s: %v", "TriggerModel", idx, modelInstance, err.Error()))
 			}
 
-			batchOutputs := cvtModelBatchOutputToPipelineBatchOutput(resp.BatchOutputs)
-			for idx, batchOutput := range batchOutputs {
+			taskOutputs := cvtModelBatchOutputToPipelineBatchOutput(resp.TaskOutputs)
+			for idx, batchOutput := range taskOutputs {
 				batchOutput.Index = dataMappingIndices[idx]
 			}
 
 			modelInstOutputs = append(modelInstOutputs, &pipelinePB.ModelInstanceOutput{
 				ModelInstance: modelInstance,
 				Task:          resp.Task,
-				BatchOutputs:  batchOutputs,
+				TaskOutputs:   taskOutputs,
 			})
 
 			// Increment trigger image numbers
@@ -532,15 +532,15 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileName
 			return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot receive response: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInstance, err.Error())
 		}
 
-		batchOutputs := cvtModelBatchOutputToPipelineBatchOutput(resp.BatchOutputs)
-		for idx, batchOutput := range batchOutputs {
+		taskOutputs := cvtModelBatchOutputToPipelineBatchOutput(resp.TaskOutputs)
+		for idx, batchOutput := range taskOutputs {
 			batchOutput.Index = dataMappingIndices[idx]
 		}
 
 		modelInstOutputs = append(modelInstOutputs, &pipelinePB.ModelInstanceOutput{
 			ModelInstance: modelInstance,
 			Task:          resp.Task,
-			BatchOutputs:  batchOutputs,
+			TaskOutputs:   taskOutputs,
 		})
 
 		// Increment trigger image numbers
