@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.7.2-alpha...v0.8.0-alpha) (2022-09-14)
+
+
+### Features
+
+* add data mapping ([0db4bfe](https://github.com/instill-ai/pipeline-backend/commit/0db4bfe169ee8acb3a1da471d2c807b2b3cf78fc))
+
+
+### Bug Fixes
+
+* fix async trigger block issue ([59f0fb8](https://github.com/instill-ai/pipeline-backend/commit/59f0fb8f8102804ff432c565979e1cf337631bb8)), closes [#67](https://github.com/instill-ai/pipeline-backend/issues/67)
+* fix multipart trigger data_mapping_indices empty ([d3160b4](https://github.com/instill-ai/pipeline-backend/commit/d3160b492a26c7a991b13cfcf3421f7af595eb8b))
+
 ## [0.7.2-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.7.1-alpha...v0.7.2-alpha) (2022-08-21)
 
 
