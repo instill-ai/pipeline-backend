@@ -463,20 +463,20 @@ export function CheckUpdateState() {
       "POST /v1alpha/pipelines sync pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBodySync.id}:deactivate`, null, {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBodySync.id}/deactivate`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /v1alpha/pipelines/${reqBodySync.id}:deactivate response status is 400 for sync pipeline`]: (r) => r.status === 400,
+      [`POST /v1alpha/pipelines/${reqBodySync.id}/deactivate response status is 400 for sync pipeline`]: (r) => r.status === 400,
     });
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBodySync.id}:activate`, null, {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBodySync.id}/activate`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /v1alpha/pipelines/${reqBodySync.id}:activate response status is 200 for sync pipeline`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqBodySync.id}/activate response status is 200 for sync pipeline`]: (r) => r.status === 200,
     });
 
     var reqBodyAsync = Object.assign(
@@ -495,22 +495,22 @@ export function CheckUpdateState() {
       "POST /v1alpha/pipelines async pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBodyAsync.id}:activate`, null, {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBodyAsync.id}/activate`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /v1alpha/pipelines/${reqBodyAsync.id}:activate response status is 200 for async pipeline`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBodyAsync.id}:activate response pipeline state ACTIVE`]: (r) => r.json().pipeline.state === "STATE_ACTIVE",
+      [`POST /v1alpha/pipelines/${reqBodyAsync.id}/activate response status is 200 for async pipeline`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqBodyAsync.id}/activate response pipeline state ACTIVE`]: (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBodyAsync.id}:deactivate`, null, {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBodyAsync.id}/deactivate`, null, {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /v1alpha/pipelines/${reqBodyAsync.id}:deactivate response status is 200 for async pipeline`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBodyAsync.id}:deactivate response pipeline state ACTIVE`]: (r) => r.json().pipeline.state === "STATE_INACTIVE",
+      [`POST /v1alpha/pipelines/${reqBodyAsync.id}/deactivate response status is 200 for async pipeline`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqBodyAsync.id}/deactivate response pipeline state ACTIVE`]: (r) => r.json().pipeline.state === "STATE_INACTIVE",
     });
 
     // Delete the pipelines
@@ -553,14 +553,14 @@ export function CheckRename() {
     });
 
     reqBody.new_pipeline_id = randomString(10)
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${res.json().pipeline.id}:rename`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${res.json().pipeline.id}/rename`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /v1alpha/pipelines/${res.json().pipeline.id}:rename response status is 200"`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${res.json().pipeline.id}:rename response pipeline new name"`]: (r) => r.json().pipeline.name === `pipelines/${reqBody.new_pipeline_id}`,
-      [`POST /v1alpha/pipelines/${res.json().pipeline.id}:rename response pipeline new id"`]: (r) => r.json().pipeline.id === reqBody.new_pipeline_id,
+      [`POST /v1alpha/pipelines/${res.json().pipeline.id}/rename response status is 200"`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${res.json().pipeline.id}/rename response pipeline new name"`]: (r) => r.json().pipeline.name === `pipelines/${reqBody.new_pipeline_id}`,
+      [`POST /v1alpha/pipelines/${res.json().pipeline.id}/rename response pipeline new id"`]: (r) => r.json().pipeline.id === reqBody.new_pipeline_id,
     });
 
     // Delete the pipeline
@@ -598,9 +598,9 @@ export function CheckLookUp() {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
 
-    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines/${res.json().pipeline.uid}:lookUp`), {
-      [`GET /v1alpha/pipelines/${res.json().pipeline.uid}:lookUp response status is 200"`]: (r) => r.status === 200,
-      [`GET /v1alpha/pipelines/${res.json().pipeline.uid}:lookUp response pipeline new name"`]: (r) => r.json().pipeline.name === `pipelines/${reqBody.id}`,
+    check(http.request("GET", `${pipelineHost}/v1alpha/pipelines/${res.json().pipeline.uid}/lookUp`), {
+      [`GET /v1alpha/pipelines/${res.json().pipeline.uid}/lookUp response status is 200"`]: (r) => r.status === 200,
+      [`GET /v1alpha/pipelines/${res.json().pipeline.uid}/lookUp response pipeline new name"`]: (r) => r.json().pipeline.name === `pipelines/${reqBody.id}`,
     });
 
     // Delete the pipeline

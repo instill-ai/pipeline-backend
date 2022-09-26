@@ -33,6 +33,7 @@ export function setup() {
       }), {
       headers: { "Content-Type": "application/json" },
     })
+    console.log("------>>>>> res ", res.status)
     check(res, {
       "POST /v1alpha/source-connectors response status for creating HTTP source connector 201": (r) => r.status === 201,
     })
@@ -135,22 +136,22 @@ export function setup() {
     fd.append("description", model_description);
     fd.append("model_definition", constant.model_def_name);
     fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
-    check(http.request("POST", `${modelHost}/v1alpha/models:multipart`, fd.body(), {
+    check(http.request("POST", `${modelHost}/v1alpha/models/multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
       },
     }), {
-      "POST /v1alpha/models:multipart task det response status": (r) => r.status === 201
+      "POST /v1alpha/models/multipart task det response status": (r) => r.status === 201
     });
 
-    var res = http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest:deploy`, {}, {
+    var res = http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, {
       headers: {
         "Content-Type": "application/json"
       },
     })
 
     check(res, {
-      [`POST /v1alpha/models/${constant.model_id}/instances/latest:deploy online task det response status`]: (r) => r.status === 200
+      [`POST /v1alpha/models/${constant.model_id}/instances/latest/deploy online task det response status`]: (r) => r.status === 200
     });
 
   });
@@ -173,21 +174,21 @@ export default function (data) {
     });
   }
 
-  // pipeline.CheckCreate()
-  // pipeline.CheckList()
-  // pipeline.CheckGet()
-  // pipeline.CheckUpdate()
-  // pipeline.CheckUpdateState()
-  // pipeline.CheckRename()
-  // pipeline.CheckLookUp()
+  pipeline.CheckCreate()
+  pipeline.CheckList()
+  pipeline.CheckGet()
+  pipeline.CheckUpdate()
+  pipeline.CheckUpdateState()
+  pipeline.CheckRename()
+  pipeline.CheckLookUp()
 
   triggerSync.CheckTriggerSyncSingleImageSingleModelInst()
-  // triggerSync.CheckTriggerSyncMultiImageSingleModelInst()
-  // triggerSync.CheckTriggerSyncMultiImageMultiModelInst()
+  triggerSync.CheckTriggerSyncMultiImageSingleModelInst()
+  triggerSync.CheckTriggerSyncMultiImageMultiModelInst()
 
-  // triggerAsync.CheckTriggerAsyncSingleImageSingleModelInst()
-  // triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
-  // triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
+  triggerAsync.CheckTriggerAsyncSingleImageSingleModelInst()
+  triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
+  triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
 
 }
 
