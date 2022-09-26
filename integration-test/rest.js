@@ -33,7 +33,6 @@ export function setup() {
       }), {
       headers: { "Content-Type": "application/json" },
     })
-    console.log("------>>>>> res ", res.status)
     check(res, {
       "POST /v1alpha/source-connectors response status for creating HTTP source connector 201": (r) => r.status === 201,
     })
