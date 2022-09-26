@@ -160,7 +160,7 @@ func main() {
 	)
 
 	// Register custom route for POST multipart form data
-	if err := gwS.HandlePath("POST", "/v1alpha/pipelines/{id}:trigger-multipart", appendCustomHeaderMiddleware(handler.HandleTriggerPipelineBinaryFileUpload)); err != nil {
+	if err := gwS.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-multipart", appendCustomHeaderMiddleware(handler.HandleTriggerPipelineBinaryFileUpload)); err != nil {
 		panic(err)
 	}
 
