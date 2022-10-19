@@ -5,7 +5,7 @@
 ## Local dev
 
 On the local machine, clone `vdp` repository in your workspace, move to the repository folder, and launch all dependent microservices:
-```
+```bash
 $ cd <your-workspace>
 $ git clone https://github.com/instill-ai/vdp.git
 $ cd vdp
@@ -13,7 +13,7 @@ $ make dev PROFILE=pipeline
 ```
 
 Clone `pipeline-backend` repository in your workspace and move to the repository folder:
-```
+```bash
 $ cd <your-workspace>
 $ git clone https://github.com/instill-ai/pipeline-backend.git
 $ cd pipeline-backend
@@ -50,7 +50,7 @@ $ go run ./cmd/worker
 
 ### Run the integration test
 
-``` bash
+```bash
 $ docker exec -it pipeline-backend /bin/bash
 $ make integration-test
 ```
