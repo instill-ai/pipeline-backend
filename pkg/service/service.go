@@ -454,6 +454,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 			for err := range errors {
 				if err != nil {
 					logger.Error(fmt.Sprintf("[connector-backend] Error trigger model instance got error %v", err.Error()))
+					return
 				}
 			}
 
