@@ -430,7 +430,12 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 
 	for err := range errors {
 		if err != nil {
-			return nil, fmt.Errorf("error when trigger model instance %v", err.Error())
+			switch {
+			case strings.Contains(err.Error(), "code = DeadlineExceeded"):
+				return nil, status.Errorf(codes.DeadlineExceeded, "trigger model instance got timeout error")
+			default:
+				return nil, status.Errorf(codes.Internal, fmt.Sprintf("trigger model instance got error %v", err.Error()))
+			}
 		}
 	}
 
