@@ -378,7 +378,10 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 	wg.Add(1)
 
 	var modelInstOutputs []*pipelinePB.ModelInstanceOutput
+	errors := make(chan error)
 	go func() {
+		defer wg.Done()
+
 		for idx, modelInstance := range dbPipeline.Recipe.ModelInstances {
 
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -388,7 +391,9 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 				Inputs: inputs,
 			})
 			if err != nil {
+				errors <- err
 				logger.Error(fmt.Sprintf("[model-backend] Error %s at %dth model instance %s: %v", "TriggerModel", idx, modelInstance, err.Error()))
+				return
 			}
 
 			taskOutputs := cvtModelTaskOutputToPipelineTaskOutput(resp.TaskOutputs)
@@ -405,7 +410,9 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 			// Increment trigger image numbers
 			uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
 			if err != nil {
+				errors <- err
 				logger.Error(err.Error())
+				return
 			}
 			if strings.HasPrefix(dbPipeline.Owner, "users/") {
 				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("user:%s:trigger.image.num", uid), int64(len(inputs)))
@@ -413,13 +420,23 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("org:%s:trigger.image.num", uid), int64(len(inputs)))
 			}
 		}
-		wg.Done()
+		errors <- nil
 	}()
+
+	go func() {
+		wg.Wait()
+		close(errors)
+	}()
+
+	for err := range errors {
+		if err != nil {
+			return nil, fmt.Errorf("error when trigger model instance %v", err.Error())
+		}
+	}
 
 	switch {
 	// If this is a SYNC trigger (i.e., HTTP, gRPC source and destination connectors), return right away
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
-		wg.Wait()
 		return &pipelinePB.TriggerPipelineResponse{
 			DataMappingIndices:   dataMappingIndices,
 			ModelInstanceOutputs: modelInstOutputs,
@@ -427,7 +444,6 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 	// If this is a async trigger, write to the destination connector
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
 		go func() {
-			wg.Wait()
 			for idx, modelInstRecName := range dbPipeline.Recipe.ModelInstances {
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
