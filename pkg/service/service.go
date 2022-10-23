@@ -384,7 +384,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 
 		for idx, modelInstance := range dbPipeline.Recipe.ModelInstances {
 
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			resp, err := s.modelServiceClient.TriggerModelInstance(ctx, &modelPB.TriggerModelInstanceRequest{
 				Name:   modelInstance,
@@ -423,25 +423,23 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 		errors <- nil
 	}()
 
-	go func() {
-		wg.Wait()
-		close(errors)
-	}()
-
-	for err := range errors {
-		if err != nil {
-			switch {
-			case strings.Contains(err.Error(), "code = DeadlineExceeded"):
-				return nil, status.Errorf(codes.DeadlineExceeded, "trigger model instance got timeout error")
-			default:
-				return nil, status.Errorf(codes.Internal, fmt.Sprintf("trigger model instance got error %v", err.Error()))
-			}
-		}
-	}
-
 	switch {
 	// If this is a SYNC trigger (i.e., HTTP, gRPC source and destination connectors), return right away
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
+		go func() {
+			wg.Wait()
+			close(errors)
+		}()
+		for err := range errors {
+			if err != nil {
+				switch {
+				case strings.Contains(err.Error(), "code = DeadlineExceeded"):
+					return nil, status.Errorf(codes.DeadlineExceeded, "trigger model instance got timeout error")
+				default:
+					return nil, status.Errorf(codes.Internal, fmt.Sprintf("trigger model instance got error %v", err.Error()))
+				}
+			}
+		}
 		return &pipelinePB.TriggerPipelineResponse{
 			DataMappingIndices:   dataMappingIndices,
 			ModelInstanceOutputs: modelInstOutputs,
@@ -449,6 +447,16 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 	// If this is a async trigger, write to the destination connector
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
 		go func() {
+			go func() {
+				wg.Wait()
+				close(errors)
+			}()
+			for err := range errors {
+				if err != nil {
+					logger.Error(fmt.Sprintf("[connector-backend] Error trigger model instance got error %v", err.Error()))
+				}
+			}
+
 			for idx, modelInstRecName := range dbPipeline.Recipe.ModelInstances {
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
