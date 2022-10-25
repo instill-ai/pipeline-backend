@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.9.0-alpha...v0.9.1-alpha) (2022-10-25)
+
+
+### Bug Fixes
+
+* fix pipeline trigger model hanging ([#80](https://github.com/instill-ai/pipeline-backend/issues/80)) ([7ba58e5](https://github.com/instill-ai/pipeline-backend/commit/7ba58e510826b202eec4f1aad39c2f120f8a06b0))
+
 ## [0.9.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.8.0-alpha...v0.9.0-alpha) (2022-10-19)
 
 
