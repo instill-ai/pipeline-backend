@@ -232,6 +232,12 @@ func cvtModelTaskOutputToPipelineTaskOutput(modelTaskOutputs []*modelPB.TaskOutp
 					Ocr: proto.Clone(v.Ocr).(*modelPB.OcrOutput),
 				},
 			})
+		case *modelPB.TaskOutput_InstanceSegmentation:
+			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
+				Output: &pipelinePB.TaskOutput_InstanceSegmentation{
+					InstanceSegmentation: proto.Clone(v.InstanceSegmentation).(*modelPB.InstanceSegmentationOutput),
+				},
+			})
 		case *modelPB.TaskOutput_Unspecified:
 			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
 				Output: &pipelinePB.TaskOutput_Unspecified{
