@@ -256,14 +256,15 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
     });
 
+    // Delete the pipeline
+    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }), {
+      [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
+    });
+
   });
 
-  // Delete the pipeline
-  check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }), {
-    [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
-  });
 }
