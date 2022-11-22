@@ -42,12 +42,14 @@ func NewUsage(ctx context.Context, r repository.Repository, mu mgmtPB.UserServic
 
 	version, err := repo.ReadReleaseManifest("release-please/manifest.json")
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Error(err.Error())
+		return nil
 	}
 
 	reporter, err := usageClient.InitReporter(ctx, usc, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, version)
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Error(err.Error())
+		return nil
 	}
 
 	return &usage{
