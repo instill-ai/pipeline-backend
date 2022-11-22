@@ -170,7 +170,9 @@ func main() {
 		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
 		defer usageServiceClientConn.Close()
 		usg = usage.NewUsage(ctx, repository, userServiceClient, redisClient, usageServiceClient)
-		usg.StartReporter(ctx)
+		if usg != nil {
+			usg.StartReporter(ctx)
+		}
 	}
 
 	// Start gRPC server
@@ -217,7 +219,7 @@ func main() {
 	case err := <-errSig:
 		logger.Error(fmt.Sprintf("Fatal error: %v\n", err))
 	case <-quitSig:
-		if !config.Config.Server.DisableUsage {
+		if !config.Config.Server.DisableUsage && usg != nil {
 			usg.TriggerSingleReporter(ctx)
 		}
 		logger.Info("Shutting down server...")
