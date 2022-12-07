@@ -160,7 +160,7 @@ func parseImageFormDataInputsToBytes(req *http.Request) (content []byte, fileNam
 		if numBytes > int64(config.Config.Server.MaxImageSize*constant.MB) {
 			return nil, nil, nil, fmt.Errorf(
 				"Image size must be smaller than %vMB. Got %vMB",
-				float32(config.Config.Server.MaxImageSize*constant.MB)/float32(constant.MB),
+				config.Config.Server.MaxImageSize,
 				float32(numBytes)/float32(constant.MB),
 			)
 		}
