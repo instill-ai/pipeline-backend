@@ -41,6 +41,7 @@ type ServerConfig struct {
 	Edition      string   `koanf:"edition"`
 	DisableUsage bool     `koanf:"disableusage"`
 	Debug        bool     `koanf:"debug"`
+	MaxImageSize int      `koanf:"maximagesize"`
 }
 
 // DatabaseConfig related to database
