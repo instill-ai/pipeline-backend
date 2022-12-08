@@ -134,7 +134,7 @@ func TestCreatePipeline(t *testing.T) {
 
 // 		var pipelineInputs []*pipelinePB.Input
 // 		pipelineInputs = append(pipelineInputs, &pipelinePB.Input{
-// 			Type: &pipelinePB.Input_ImageUrl{ImageUrl: "https://artifacts.instill.tech/dog.jpg"},
+// 			Type: &pipelinePB.Input_ImageUrl{ImageUrl: "https://artifacts.instill.tech/imgs/dog.jpg"},
 // 		})
 
 // 		s := service.NewService(mockRepository, mockConnectorServiceClient, mockModelServiceClient)

@@ -32,7 +32,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
     var payloadImageURL = {
       inputs: [
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         }
       ]
     };
@@ -108,13 +108,13 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
     var payloadImageURL = {
       inputs: [
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         }
       ]
     };
@@ -199,13 +199,13 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
     var payloadImageURL = {
       inputs: [
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         }
       ]
     };

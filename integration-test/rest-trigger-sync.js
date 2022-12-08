@@ -32,7 +32,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
     var payloadImageURL = {
       inputs: [
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         }
       ]
     };
@@ -175,16 +175,16 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
     var payloadImageURL = {
       inputs: [
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
       ],
     };
@@ -292,16 +292,16 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
     var payloadImageURL = {
       inputs: [
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
         {
-          image_url: "https://artifacts.instill.tech/dog.jpg",
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         },
       ],
     };
