@@ -9,4 +9,3 @@ const (
 )
 
 const MaxBatchSize int = 32
-const MaxImageSizeBytes int = 4 * MB
