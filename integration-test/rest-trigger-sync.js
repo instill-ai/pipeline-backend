@@ -80,7 +80,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
     });
 
     const fd = new FormData();
-    fd.append("file", { data: http.file(constant.dogImg), filename: "dog" });
+    fd.append("file", http.file(constant.dogImg, "dog.jpg"));
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
@@ -235,10 +235,10 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
     });
 
     const fd = new FormData();
-    fd.append("file", { data: http.file(constant.dogImg), filename: "dog" });
-    fd.append("file", { data: http.file(constant.catImg), filename: "cat" });
-    fd.append("file", { data: http.file(constant.bearImg), filename: "bear" });
-    fd.append("file", { data: http.file(constant.dogRGBAImg), filename: "dogRGBA" });
+    fd.append("file", http.file(constant.dogImg, "dog.jpg"));
+    fd.append("file", http.file(constant.catImg, "cat.jpg"));
+    fd.append("file", http.file(constant.bearImg, "bear.jpg"));
+    fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
@@ -336,10 +336,10 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
     });
 
     const fd = new FormData();
-    fd.append("file", { data: http.file(constant.dogImg), filename: "dog" });
-    fd.append("file", { data: http.file(constant.catImg), filename: "cat" });
-    fd.append("file", { data: http.file(constant.bearImg), filename: "bear" });
-    fd.append("file", { data: http.file(constant.dogRGBAImg), filename: "dogRGBA" });
+    fd.append("file", http.file(constant.dogImg, "dog.jpg"));
+    fd.append("file", http.file(constant.catImg, "cat.jpg"));
+    fd.append("file", http.file(constant.bearImg, "bear.jpg"));
+    fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
