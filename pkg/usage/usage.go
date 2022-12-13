@@ -117,7 +117,7 @@ func (u *usage) RetrieveUsageData() interface{} {
 				}
 			}
 
-			triggerImageNum, err := u.redisClient.Get(ctx, fmt.Sprintf("user:%s:trigger.image.num", user.GetUid())).Int64()
+			triggerImageNum, err := u.redisClient.Get(ctx, fmt.Sprintf("user:%s:trigger.num", user.GetUid())).Int64()
 			if err == redis.Nil {
 				triggerImageNum = 0
 			} else if err != nil {

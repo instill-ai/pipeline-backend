@@ -415,9 +415,9 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 				return
 			}
 			if strings.HasPrefix(dbPipeline.Owner, "users/") {
-				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("user:%s:trigger.image.num", uid), int64(len(inputs)))
+				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("user:%s:trigger.num", uid), int64(len(inputs)))
 			} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("org:%s:trigger.image.num", uid), int64(len(inputs)))
+				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("org:%s:trigger.num", uid), int64(len(inputs)))
 			}
 		}
 		errors <- nil
@@ -579,9 +579,9 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileName
 			return nil, err
 		}
 		if strings.HasPrefix(dbPipeline.Owner, "users/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.image.num", uid), int64(len(fileLengths)))
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.num", uid), int64(len(fileLengths)))
 		} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.image.num", uid), int64(len(fileLengths)))
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.num", uid), int64(len(fileLengths)))
 		}
 	}
 
