@@ -14,7 +14,9 @@ K6BIN := $(if $(shell command -v k6 2> /dev/null),k6,$(shell mktemp -d)/k6)
 dev:							## Run dev container
 	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
 	echo "Run dev container ${SERVICE_NAME}. To stop it, run \"make stop\"." && \
-	docker run -d --rm -v $(PWD):/${SERVICE_NAME} -v /var/run/docker.sock:/var/run/docker.sock \
+	docker run -d --rm \
+	-v $(PWD):/${SERVICE_NAME} \
+	-v /var/run/docker.sock:/var/run/docker.sock \
 	-p ${SERVICE_PORT}:${SERVICE_PORT} \
 	--network instill-network \
 	--name ${SERVICE_NAME} \
@@ -59,7 +61,7 @@ integration-test:				## Run integration test
 		go install go.k6.io/xk6/cmd/xk6@latest;\
 		xk6 build --with github.com/szkiba/xk6-jose@latest --output ${K6BIN};\
 	fi
-	@TEST_FOLDER_ABS_PATH=${PWD} ${K6BIN} run -e HOSTNAME=$(HOSTNAME) integration-test/rest.js --no-usage-report
+	@TEST_FOLDER_ABS_PATH=${PWD} ${K6BIN} run -e HOST=$(HOST) integration-test/rest.js --no-usage-report
 	@if [ ${K6BIN} != "k6" ]; then rm -rf $(dirname ${K6BIN}); fi
 
 .PHONY: help

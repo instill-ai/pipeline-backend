@@ -1,6 +1,6 @@
-export const pipelineHost = __ENV.HOSTNAME ? `http://${__ENV.HOSTNAME}:8081` : "http://pipeline-backend:8081";
-export const connectorHost = __ENV.HOSTNAME ? `http://${__ENV.HOSTNAME}:8082` : "http://connector-backend:8082";
-export const modelHost = __ENV.HOSTNAME ? `http://${__ENV.HOSTNAME}:8083` : "http://model-backend:8083";
+export const pipelineHost = __ENV.HOST ? `http://${__ENV.HOST}:8081` : "http://pipeline-backend:8081";
+export const connectorHost = __ENV.HOST ? `http://${__ENV.HOST}:8082` : "http://connector-backend:8082";
+export const modelHost = __ENV.HOST ? `http://${__ENV.HOST}:8083` : "http://model-backend:8083";
 
 export const dogImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b");
 export const catImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/cat.jpg`, "b");
@@ -51,7 +51,7 @@ export const detAsyncSingleModelInstRecipe = {
     model_instances: [
       `models/${model_id}/instances/${model_instance_id}`
     ],
-    destination:`destination-connectors/${dstCSVConnID}`
+    destination: `destination-connectors/${dstCSVConnID}`
   },
 };
 
@@ -62,6 +62,6 @@ export const detAsyncMultiModelInstRecipe = {
       `models/${model_id}/instances/${model_instance_id}`,
       `models/${model_id}/instances/${model_instance_id}`,
     ],
-    destination:`destination-connectors/${dstCSVConnID}`
+    destination: `destination-connectors/${dstCSVConnID}`
   },
 };
