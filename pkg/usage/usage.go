@@ -117,9 +117,9 @@ func (u *usage) RetrieveUsageData() interface{} {
 				}
 			}
 
-			triggerImageNum, err := u.redisClient.Get(ctx, fmt.Sprintf("user:%s:trigger.num", user.GetUid())).Int64()
+			triggerNum, err := u.redisClient.Get(ctx, fmt.Sprintf("user:%s:trigger.num", user.GetUid())).Int64()
 			if err == redis.Nil {
-				triggerImageNum = 0
+				triggerNum = 0
 			} else if err != nil {
 				logger.Error(fmt.Sprintf("%s", err))
 			}
@@ -130,7 +130,7 @@ func (u *usage) RetrieveUsageData() interface{} {
 				PipelineInactiveStateNum: pipeInactiveStateNum,
 				PipelineSyncModeNum:      pipeSyncModeNum,
 				PipelineAsyncModeNum:     pipeAsyncModeNum,
-				TriggerImageNum:          triggerImageNum,
+				TriggerNum:               triggerNum,
 			})
 
 		}
