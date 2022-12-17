@@ -61,6 +61,7 @@ integration-test:				## Run integration test
 		go install go.k6.io/xk6/cmd/xk6@latest;\
 		xk6 build --with github.com/szkiba/xk6-jose@latest --output ${K6BIN};\
 	fi
+	echo "environment variable $(HOST)"
 	@TEST_FOLDER_ABS_PATH=${PWD} ${K6BIN} run -e HOST=$(HOST) integration-test/rest.js --no-usage-report
 	@if [ ${K6BIN} != "k6" ]; then rm -rf $(dirname ${K6BIN}); fi
 
