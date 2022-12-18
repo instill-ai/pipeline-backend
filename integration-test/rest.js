@@ -141,7 +141,7 @@ export function setup() {
       },
     }), {
       "POST /v1alpha/models/multipart task det response status": (r) => r.status === 201
-    });
+    }); 
 
     var res = http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, {
       headers: {
@@ -152,6 +152,20 @@ export function setup() {
     check(res, {
       [`POST /v1alpha/models/${constant.model_id}/instances/latest/deploy online task det response status`]: (r) => r.status === 200
     });
+
+    // Check the model instance state being updated in 120 secs (in integration test, model is dummy model without download time but in real use case, time will be longer)
+    let currentTime = new Date().getTime();
+    let timeoutTime = new Date().getTime() + 120000;
+    while (timeoutTime > currentTime) {
+        var res = http.get(`${constant.apiHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
+          headers: genHeader(`application/json`),
+        })
+        if (res.json().instance.state === "STATE_ONLINE") {
+            break
+        }
+        sleep(1)
+        currentTime = new Date().getTime();
+    }     
 
   });
 
