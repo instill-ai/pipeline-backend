@@ -158,7 +158,7 @@ export function setup() {
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
         var res = http.get(`${constant.apiHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
-          headers: genHeader(`application/json`),
+          headers: { "Content-Type": "application/json" },
         })
         if (res.json().instance.state === "STATE_ONLINE") {
             break
