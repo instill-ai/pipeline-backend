@@ -36,6 +36,26 @@ func (m *MockModelServiceClient) EXPECT() *MockModelServiceClientMockRecorder {
 	return m.recorder
 }
 
+// CancelModelOperation mocks base method.
+func (m *MockModelServiceClient) CancelModelOperation(arg0 context.Context, arg1 *modelv1alpha.CancelModelOperationRequest, arg2 ...grpc.CallOption) (*modelv1alpha.CancelModelOperationResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CancelModelOperation", varargs...)
+	ret0, _ := ret[0].(*modelv1alpha.CancelModelOperationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CancelModelOperation indicates an expected call of CancelModelOperation.
+func (mr *MockModelServiceClientMockRecorder) CancelModelOperation(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelModelOperation", reflect.TypeOf((*MockModelServiceClient)(nil).CancelModelOperation), varargs...)
+}
+
 // CreateModel mocks base method.
 func (m *MockModelServiceClient) CreateModel(arg0 context.Context, arg1 *modelv1alpha.CreateModelRequest, arg2 ...grpc.CallOption) (*modelv1alpha.CreateModelResponse, error) {
 	m.ctrl.T.Helper()
@@ -196,6 +216,26 @@ func (mr *MockModelServiceClientMockRecorder) GetModelInstanceCard(arg0, arg1 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModelInstanceCard", reflect.TypeOf((*MockModelServiceClient)(nil).GetModelInstanceCard), varargs...)
 }
 
+// GetModelOperation mocks base method.
+func (m *MockModelServiceClient) GetModelOperation(arg0 context.Context, arg1 *modelv1alpha.GetModelOperationRequest, arg2 ...grpc.CallOption) (*modelv1alpha.GetModelOperationResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetModelOperation", varargs...)
+	ret0, _ := ret[0].(*modelv1alpha.GetModelOperationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetModelOperation indicates an expected call of GetModelOperation.
+func (mr *MockModelServiceClientMockRecorder) GetModelOperation(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModelOperation", reflect.TypeOf((*MockModelServiceClient)(nil).GetModelOperation), varargs...)
+}
+
 // ListModel mocks base method.
 func (m *MockModelServiceClient) ListModel(arg0 context.Context, arg1 *modelv1alpha.ListModelRequest, arg2 ...grpc.CallOption) (*modelv1alpha.ListModelResponse, error) {
 	m.ctrl.T.Helper()
@@ -254,6 +294,26 @@ func (mr *MockModelServiceClientMockRecorder) ListModelInstance(arg0, arg1 inter
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListModelInstance", reflect.TypeOf((*MockModelServiceClient)(nil).ListModelInstance), varargs...)
+}
+
+// ListModelOperation mocks base method.
+func (m *MockModelServiceClient) ListModelOperation(arg0 context.Context, arg1 *modelv1alpha.ListModelOperationRequest, arg2 ...grpc.CallOption) (*modelv1alpha.ListModelOperationResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListModelOperation", varargs...)
+	ret0, _ := ret[0].(*modelv1alpha.ListModelOperationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListModelOperation indicates an expected call of ListModelOperation.
+func (mr *MockModelServiceClientMockRecorder) ListModelOperation(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListModelOperation", reflect.TypeOf((*MockModelServiceClient)(nil).ListModelOperation), varargs...)
 }
 
 // Liveness mocks base method.
