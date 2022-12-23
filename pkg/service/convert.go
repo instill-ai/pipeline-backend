@@ -245,7 +245,7 @@ func cvtModelTaskOutputToPipelineTaskOutput(modelTaskOutputs []*modelPB.TaskOutp
 				},
 			})
 		default:
-			logger.Error("CV Task type is not defined")
+			logger.Error("AI task type is not defined")
 		}
 	}
 
