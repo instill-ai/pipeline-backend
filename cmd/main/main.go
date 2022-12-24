@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -64,21 +65,14 @@ func main() {
 	}
 
 	logger, _ := logger.GetZapLogger()
-	defer logger.Sync() //nolint
+	defer func() {
+		// can't handle the error due to https://github.com/uber-go/zap/issues/880
+		_ = logger.Sync()
+	}()
 	grpc_zap.ReplaceGrpcLoggerV2(logger)
 
 	db := database.GetConnection()
 	defer database.Close(db)
-
-	// Create tls based credential.
-	var creds credentials.TransportCredentials
-	var err error
-	if config.Config.Server.HTTPS.Cert != "" && config.Config.Server.HTTPS.Key != "" {
-		creds, err = credentials.NewServerTLSFromFile(config.Config.Server.HTTPS.Cert, config.Config.Server.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(fmt.Sprintf("failed to create credentials: %v", err))
-		}
-	}
 
 	// Shared options for the logger, with a custom gRPC code to log level function.
 	opts := []grpc_zap.Option{
@@ -106,7 +100,20 @@ func main() {
 			grpc_recovery.UnaryServerInterceptor(recoveryInterceptorOpt()),
 		)),
 	}
+
+
+	// Create tls based credential.
+	var creds credentials.TransportCredentials
+	var tlsConfig *tls.Config
+	var err error
 	if config.Config.Server.HTTPS.Cert != "" && config.Config.Server.HTTPS.Key != "" {
+		tlsConfig = &tls.Config{
+			ClientAuth: tls.RequireAndVerifyClientCert,
+		}
+		creds, err = credentials.NewServerTLSFromFile(config.Config.Server.HTTPS.Cert, config.Config.Server.HTTPS.Key)
+		if err != nil {
+			logger.Fatal(fmt.Sprintf("failed to create credentials: %v", err))
+		}
 		grpcServerOpts = append(grpcServerOpts, grpc.Creds(creds))
 	}
 
@@ -161,7 +168,7 @@ func main() {
 
 	// Register custom route for POST multipart form data
 	if err := gwS.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-multipart", appendCustomHeaderMiddleware(handler.HandleTriggerPipelineBinaryFileUpload)); err != nil {
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 
 	// Start usage reporter
@@ -188,8 +195,9 @@ func main() {
 	}
 
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%v", config.Config.Server.Port),
-		Handler: grpcHandlerFunc(grpcS, gwS, config.Config.Server.CORSOrigins),
+		Addr:      fmt.Sprintf(":%v", config.Config.Server.Port),
+		Handler:   grpcHandlerFunc(grpcS, gwS, config.Config.Server.CORSOrigins),
+		TLSConfig: tlsConfig,
 	}
 
 	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 5 seconds.

@@ -27,7 +27,7 @@ type AppConfig struct {
 	MgmtBackend      MgmtBackendConfig      `koanf:"mgmtbackend"`
 	ConnectorBackend ConnectorBackendConfig `koanf:"connectorbackend"`
 	ModelBackend     ModelBackendConfig     `koanf:"modelbackend"`
-	UsageBackend     UsageBackendConfig     `koanf:"usagebackend"`
+	UsageServer      UsageServerConfig      `koanf:"usageserver"`
 }
 
 // ServerConfig defines HTTP server configurations
@@ -72,16 +72,6 @@ type CacheConfig struct {
 	}
 }
 
-// MgmtBackendConfig related to mgmt-backend
-type MgmtBackendConfig struct {
-	Host  string `koanf:"host"`
-	Port  int    `koanf:"port"`
-	HTTPS struct {
-		Cert string `koanf:"cert"`
-		Key  string `koanf:"key"`
-	}
-}
-
 // ConnectorBackendConfig related to connector-backend
 type ConnectorBackendConfig struct {
 	Host  string `koanf:"host"`
@@ -102,9 +92,19 @@ type ModelBackendConfig struct {
 	}
 }
 
-// UsageBackendConfig related to usage-backend
-type UsageBackendConfig struct {
-	TLSEnabled bool   `koanf:"tlsenabled"`
+// MgmtBackendConfig related to mgmt-backend
+type MgmtBackendConfig struct {
+	Host  string `koanf:"host"`
+	Port  int    `koanf:"port"`
+	HTTPS struct {
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
+	}
+}
+
+// UsageServerConfig related to usage-backend
+type UsageServerConfig struct {
+	TLSEnabled bool `koanf:"tlsenabled"`
 	Host       string `koanf:"host"`
 	Port       int    `koanf:"port"`
 }

@@ -46,7 +46,7 @@ mgmtbackend:
   https:
     cert:
     key:
-usagebackend:
+usageserver:
   tlsenabled: true
   host: usage.instill.tech
   port: 443
