@@ -1,6 +1,17 @@
-export const pipelineHost = __ENV.HOST ? `http://${__ENV.HOST}:8081` : "http://pipeline-backend:8081";
-export const connectorHost = __ENV.HOST ? `http://${__ENV.HOST}:8082` : "http://connector-backend:8082";
-export const modelHost = __ENV.HOST ? `http://${__ENV.HOST}:8083` : "http://model-backend:8083";
+let pHost = __ENV.HOST ? `${__ENV.HOST}` : "pipeline-backend"
+let cHost = __ENV.HOST ? `${__ENV.HOST}` : "connector-backend"
+let mHost = __ENV.HOST ? `${__ENV.HOST}` : "model-backend"
+
+let pPort = 8081
+let cPort = 8082
+let mPort = 8083
+
+if (__ENV.HOST == "api-gateway") { pHost = cHost = mHost = "api-gateway" }
+if (__ENV.HOST == "api-gateway") { pPort = cPort = mPort = 8080 }
+
+export const pipelineHost = `http://${pHost}:${pPort}`;
+export const connectorHost = `http://${cHost}:${cPort}`;
+export const modelHost = `http://${mHost}:${mPort}`;
 
 export const dogImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b");
 export const catImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/cat.jpg`, "b");
