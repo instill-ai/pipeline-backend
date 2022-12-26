@@ -7,7 +7,6 @@ ARG SERVICE_NAME
 COPY --from=k6official /usr/bin/k6 /usr/bin/k6
 
 WORKDIR /${SERVICE_NAME}
-COPY . /${SERVICE_NAME}
 
 COPY go.mod go.sum ./
 RUN go mod download

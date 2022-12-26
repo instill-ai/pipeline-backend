@@ -1,15 +1,13 @@
-let pHost = __ENV.HOSTNAME ? `${__ENV.HOSTNAME}` : "pipeline-backend"
-let cHost = __ENV.HOSTNAME ? `${__ENV.HOSTNAME}` : "connector-backend"
-let mHost = __ENV.HOSTNAME ? `${__ENV.HOSTNAME}` : "model-backend"
+let pHost = __ENV.HOST ? `${__ENV.HOST}` : "pipeline-backend"
+let cHost = __ENV.HOST ? `${__ENV.HOST}` : "connector-backend"
+let mHost = __ENV.HOST ? `${__ENV.HOST}` : "model-backend"
+
 let pPort = 8081
 let cPort = 8082
 let mPort = 8083
-if (__ENV.HOSTNAME == "api-gateway") {
-  pHost = cHost = mHost = "localhost"
-}
-if (__ENV.HOSTNAME == "api-gateway") {
-  pPort = cPort = mPort = 8000
-}
+
+if (__ENV.HOST == "api-gateway") { pHost = cHost = mHost = "api-gateway" }
+if (__ENV.HOST == "api-gateway") { pPort = cPort = mPort = 8080 }
 
 export const pipelineHost = `http://${pHost}:${pPort}`;
 export const connectorHost = `http://${cHost}:${cPort}`;
