@@ -43,7 +43,10 @@ top:							## Display all running service processes
 
 .PHONY: build
 build:							## Build dev docker image
-	docker build --build-arg SERVICE_NAME=${SERVICE_NAME} -f Dockerfile.dev  -t instill/${SERVICE_NAME}:dev .
+	@docker build \
+		--build-arg SERVICE_NAME=${SERVICE_NAME} \
+		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
+		-f Dockerfile.dev  -t instill/${SERVICE_NAME}:dev .
 
 .PHONY: go-gen
 go-gen:       					## Generate codes

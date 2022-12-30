@@ -1,6 +1,8 @@
+ARG GOLANG_VERSION
+
 FROM loadimpact/k6:latest AS k6official
 
-FROM golang:1.18.2
+FROM golang:${GOLANG_VERSION}
 
 ARG SERVICE_NAME
 

@@ -3,15 +3,23 @@ name: Coverage
 on: [push, pull_request]
 
 jobs:
-
   codecov:
     name: codecov
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.botGitHubToken }}
+
+      - name: Load .env file
+        uses: cardinalby/export-env-action@v2
+        with:
+          envFile: .env
+          expand: true
 
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: ${{ env.GOLANG_VERSION }}
 
       - uses: actions/checkout@v3
 

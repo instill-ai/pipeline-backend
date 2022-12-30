@@ -1,4 +1,5 @@
-FROM --platform=$BUILDPLATFORM golang:1.18.2 AS build
+ARG GOLANG_VERSION
+FROM --platform=$BUILDPLATFORM golang:${GOLANG_VERSION} AS build
 
 ARG SERVICE_NAME
 
