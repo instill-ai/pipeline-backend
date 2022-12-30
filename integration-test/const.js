@@ -1,17 +1,26 @@
-let pHost = __ENV.HOST ? `${__ENV.HOST}` : "pipeline-backend"
-let cHost = __ENV.HOST ? `${__ENV.HOST}` : "connector-backend"
-let mHost = __ENV.HOST ? `${__ENV.HOST}` : "model-backend"
+let proto
+let pHost, cHost, mHost
+let pPort, cPort, mPort
 
-let pPort = 8081
-let cPort = 8082
-let mPort = 8083
+if (__ENV.HOST == "localhost") {
+  // api-gateway mode (outside container)
+  proto = "https"
+  pHost = cHost = mHost = "localhost"
+  pPort = cPort = mPort = 8080
+} else {
+  // container mode (inside container)
+  proto = "http"
+  pHost = "pipeline-backend"
+  cHost = "connector-backend"
+  mHost = "model-backend"
+  pPort = 8081
+  cPort = 8082
+  mPort = 8083
+}
 
-if (__ENV.HOST == "api-gateway") { pHost = cHost = mHost = "api-gateway" }
-if (__ENV.HOST == "api-gateway") { pPort = cPort = mPort = 8080 }
-
-export const pipelineHost = `http://${pHost}:${pPort}`;
-export const connectorHost = `http://${cHost}:${cPort}`;
-export const modelHost = `http://${mHost}:${mPort}`;
+export const pipelineHost = `${proto}://${pHost}:${pPort}`;
+export const connectorHost = `${proto}://${cHost}:${cPort}`;
+export const modelHost = `${proto}://${mHost}:${mPort}`;
 
 export const dogImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b");
 export const catImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/cat.jpg`, "b");
