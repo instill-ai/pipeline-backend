@@ -141,7 +141,7 @@ export function setup() {
       },
     }), {
       "POST /v1alpha/models/multipart task det response status": (r) => r.status === 201
-    }); 
+    });
 
     var res = http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, {
       headers: {
@@ -157,15 +157,15 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-        var res = http.get(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
-          headers: { "Content-Type": "application/json" },
-        })
-        if (res.json().instance.state === "STATE_ONLINE") {
-            break
-        }
-        sleep(1)
-        currentTime = new Date().getTime();
-    }     
+      var res = http.get(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
+        headers: { "Content-Type": "application/json" },
+      })
+      if (res.json().instance.state === "STATE_ONLINE") {
+        break
+      }
+      sleep(1)
+      currentTime = new Date().getTime();
+    }
 
   });
 
