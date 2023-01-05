@@ -2,13 +2,18 @@ let proto
 let pHost, cHost, mHost
 let pPort, cPort, mPort
 
-if (__ENV.HOST == "localhost") {
-  // api-gateway mode (outside container)
+if (__ENV.MODE == "api-gateway") {
+  // api-gateway mode
+  proto = "https"
+  pHost = cHost = mHost = "api-gateway"
+  pPort = cPort = mPort = 8080
+} else if (__ENV.MODE == "localhost") {
+  // localhost mode for GitHub Actions
   proto = "https"
   pHost = cHost = mHost = "localhost"
   pPort = cPort = mPort = 8080
 } else {
-  // container mode (inside container)
+  // direct microservice mode
   proto = "http"
   pHost = "pipeline-backend"
   cHost = "connector-backend"
