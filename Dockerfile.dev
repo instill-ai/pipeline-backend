@@ -1,12 +1,7 @@
 ARG GOLANG_VERSION
-
-FROM loadimpact/k6:latest AS k6official
-
 FROM golang:${GOLANG_VERSION}
 
 ARG SERVICE_NAME
-
-COPY --from=k6official /usr/bin/k6 /usr/bin/k6
 
 WORKDIR /${SERVICE_NAME}
 
@@ -14,6 +9,14 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 
-RUN go install github.com/cosmtrek/air@latest
+ARG TARGETOS TARGETARCH
+
+# Install air
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@latest
+
+# Install k6
+ARG K6_VERSION
+ADD https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz
+RUN tar -xf k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz --strip-components 1 -C /usr/bin
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]
