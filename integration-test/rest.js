@@ -135,13 +135,28 @@ export function setup() {
     fd.append("description", model_description);
     fd.append("model_definition", constant.model_def_name);
     fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
-    check(http.request("POST", `${modelHost}/v1alpha/models/multipart`, fd.body(), {
+    let createClsModelRes = http.request("POST", `${modelHost}/v1alpha/models/multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
       },
-    }), {
+    })
+    check(createClsModelRes, {
       "POST /v1alpha/models/multipart task det response status": (r) => r.status === 201
     });
+
+    // Check model creation finished
+    let currentTime = new Date().getTime();
+    let timeoutTime = new Date().getTime() + 120000;
+    while (timeoutTime > currentTime) {
+      let res = http.get(`${modelHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
+        headers: { "Content-Type": "application/json" },
+      })
+      if (res.json().operation.done === true) {
+        break
+      }
+      sleep(1)
+      currentTime = new Date().getTime();
+    }
 
     var res = http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, {
       headers: {
@@ -154,8 +169,8 @@ export function setup() {
     });
 
     // Check the model instance state being updated in 120 secs (in integration test, model is dummy model without download time but in real use case, time will be longer)
-    let currentTime = new Date().getTime();
-    let timeoutTime = new Date().getTime() + 120000;
+    currentTime = new Date().getTime();
+    timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
       var res = http.get(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
         headers: { "Content-Type": "application/json" },
