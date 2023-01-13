@@ -4,12 +4,12 @@ let pPort, cPort, mPort
 
 if (__ENV.MODE == "api-gateway") {
   // api-gateway mode
-  proto = "https"
+  proto = "http"
   pHost = cHost = mHost = "api-gateway"
   pPort = cPort = mPort = 8080
 } else if (__ENV.MODE == "localhost") {
   // localhost mode for GitHub Actions
-  proto = "https"
+  proto = "http"
   pHost = cHost = mHost = "localhost"
   pPort = cPort = mPort = 8080
 } else {
