@@ -356,21 +356,11 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 	dbPipeline.Owner = ownerPermalink
 
 	var dataMappingIndices []string
-	var inputs []*modelPB.Input
-	for _, input := range req.Inputs {
-		if len(input.GetImageUrl()) > 0 {
-			inputs = append(inputs, &modelPB.Input{
-				Type: &modelPB.Input_ImageUrl{
-					ImageUrl: input.GetImageUrl(),
-				},
-			})
-		} else if len(input.GetImageBase64()) > 0 {
-			inputs = append(inputs, &modelPB.Input{
-				Type: &modelPB.Input_ImageBase64{
-					ImageBase64: input.GetImageBase64(),
-				},
-			})
-		}
+	var taskInputs []*modelPB.TaskInput
+	for _, taskInput := range req.TaskInputs {
+		taskInputs = append(taskInputs, &modelPB.TaskInput{
+			Input: taskInput.GetInput(),
+		})
 		dataMappingIndices = append(dataMappingIndices, ulid.Make().String())
 	}
 
@@ -387,8 +377,8 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
 			resp, err := s.modelServiceClient.TriggerModelInstance(ctx, &modelPB.TriggerModelInstanceRequest{
-				Name:   modelInstance,
-				Inputs: inputs,
+				Name:       modelInstance,
+				TaskInputs: taskInputs,
 			})
 			if err != nil {
 				errors <- err
@@ -415,9 +405,9 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 				return
 			}
 			if strings.HasPrefix(dbPipeline.Owner, "users/") {
-				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("user:%s:trigger.num", uid), int64(len(inputs)))
+				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("user:%s:trigger.num", uid), int64(len(taskInputs)))
 			} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("org:%s:trigger.num", uid), int64(len(inputs)))
+				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("org:%s:trigger.num", uid), int64(len(taskInputs)))
 			}
 		}
 		errors <- nil

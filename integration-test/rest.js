@@ -187,7 +187,6 @@ export function setup() {
 }
 
 export default function (data) {
-  let res;
 
   /*
    * Pipelines API - API CALLS

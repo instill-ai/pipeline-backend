@@ -30,11 +30,11 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
     });
 
     var payloadImageURL = {
-      inputs: [
-        {
+      task_inputs: [{
+        detection: {
           image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         }
-      ]
+      }]
     };
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
@@ -43,15 +43,15 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
     });
 
     var payloadImageBase64 = {
-      inputs: [
-        {
-          imageBase64: encoding.b64encode(constant.dogImg, "b"),
+      task_inputs: [{
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
         }
-      ]
+      }]
     };
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
@@ -60,7 +60,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
     });
 
     const fd = new FormData();
@@ -106,17 +106,19 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
     });
 
     var payloadImageURL = {
-      inputs: [
-        {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        },
-        {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        },
-        {
+      task_inputs: [{
+        detection: {
           image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         }
-      ]
+      }, {
+        detection: {
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+        }
+      }, {
+        detection: {
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+        }
+      }]
     };
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
@@ -125,21 +127,25 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
     });
 
     var payloadImageBase64 = {
-      inputs: [
+      task_inputs: [
         {
-          imageBase64: encoding.b64encode(constant.dogImg, "b"),
+          detection: {
+            image_base64: encoding.b64encode(constant.dogImg, "b"),
+          }
         },
         {
-          imageBase64: encoding.b64encode(constant.dogImg, "b"),
-        },
-        {
-          imageBase64: encoding.b64encode(constant.dogImg, "b"),
-        }
-      ]
+          detection: {
+            image_base64: encoding.b64encode(constant.dogImg, "b"),
+          }
+        }, {
+          detection: {
+            image_base64: encoding.b64encode(constant.dogImg, "b"),
+          }
+        }]
     };
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
@@ -148,7 +154,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
     });
 
     const fd = new FormData();
@@ -197,17 +203,23 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
     });
 
     var payloadImageURL = {
-      inputs: [
-        {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        },
-        {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        },
-        {
+      task_inputs: [{
+        detection: {
           image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         }
-      ]
+      }, {
+        detection: {
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+        }
+      }, {
+        detection: {
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+        }
+      }, {
+        detection: {
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+        }
+      }]
     };
 
     check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
@@ -216,19 +228,25 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
     });
 
     var payloadImageBase64 = {
-      inputs: [
+      task_inputs: [
         {
-          imageBase64: encoding.b64encode(constant.dogImg, "b"),
+          detection: {
+            image_base64: encoding.b64encode(constant.dogImg, "b"),
+          }
         },
         {
-          imageBase64: encoding.b64encode(constant.dogImg, "b"),
+          detection: {
+            image_base64: encoding.b64encode(constant.dogImg, "b"),
+          }
         },
         {
-          imageBase64: encoding.b64encode(constant.dogImg, "b"),
+          detection: {
+            image_base64: encoding.b64encode(constant.dogImg, "b"),
+          }
         }
       ]
     };
@@ -239,7 +257,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
     });
 
     const fd = new FormData();
