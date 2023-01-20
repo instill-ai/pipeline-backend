@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.5-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.9.4-alpha...v0.9.5-alpha) (2023-01-20)
+
+
+### Bug Fixes
+
+* fix multipart file already closed issue ([c5b6050](https://github.com/instill-ai/pipeline-backend/commit/c5b6050721054b2969e7bb0368cd9adc2b1e82e4))
+
 ## [0.9.4-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.9.3-alpha...v0.9.4-alpha) (2023-01-14)
 
 
