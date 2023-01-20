@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"mime/multipart"
 	"net/http"
 	"strings"
 
@@ -140,10 +139,11 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 }
 
 func parseImageFormDataInputsToBytes(req *http.Request) (content []byte, fileNames []string, fileLengths []uint64, err error) {
+
 	inputs := req.MultipartForm.File["file"]
-	var file multipart.File
+
 	for _, input := range inputs {
-		file, err = input.Open()
+		file, err := input.Open()
 		defer func() {
 			err = file.Close()
 		}()
