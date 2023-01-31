@@ -80,6 +80,7 @@ func (u *usage) RetrieveUsageData() interface{} {
 		})
 		if err != nil {
 			logger.Error(fmt.Sprintf("[mgmt-backend: ListUser] %s", err))
+			break
 		}
 
 		// Roll all pipeline resources on a user

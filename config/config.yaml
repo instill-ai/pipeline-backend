@@ -26,7 +26,6 @@ cache:
       addr: redis:6379
 temporal:
   clientoptions:
-    namespace: pipeline
     hostport: temporal:7233
 connectorbackend:
   host: connector-backend

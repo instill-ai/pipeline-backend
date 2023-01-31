@@ -101,7 +101,6 @@ func main() {
 		)),
 	}
 
-
 	// Create tls based credential.
 	var creds credentials.TransportCredentials
 	var tlsConfig *tls.Config
