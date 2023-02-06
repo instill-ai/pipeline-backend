@@ -5,18 +5,36 @@ ARG SERVICE_NAME
 
 WORKDIR /${SERVICE_NAME}
 
+# -- DinD
+
+COPY --from=docker:dind-rootless --chown=nobody:nogroup /usr/local/bin/docker /usr/local/bin
+
+# -- install 3rd-party
+
+ARG TARGETOS TARGETARCH K6_VERSION
+
+# air
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@latest
+
+# k6
+ADD https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz
+RUN tar -xf k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz --strip-components 1 -C /usr/bin
+
+# -- set up Go
+
+RUN chown -R nobody:nogroup /go
+ENV GOCACHE /go/.cache/go-build
+ENV GOENV /go/.config/go/env
+
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 
-ARG TARGETOS TARGETARCH
+# -- set up mounting points
 
-# Install air
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@latest
+RUN mkdir /etc/vdp && chown -R nobody:nogroup /etc/vdp
+RUN mkdir /vdp && chown -R nobody:nogroup /vdp
 
-# Install k6
-ARG K6_VERSION
-ADD https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz
-RUN tar -xf k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz --strip-components 1 -C /usr/bin
+USER nobody
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]
