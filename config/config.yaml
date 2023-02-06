@@ -7,7 +7,7 @@ server:
   edition: local-ce:dev
   disableusage: false
   debug: true
-  maximagesize: 12 # MB in unit
+  maxdatasize: 12 # MB in unit
 database:
   username: postgres
   password: password

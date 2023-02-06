@@ -41,7 +41,7 @@ type ServerConfig struct {
 	Edition      string   `koanf:"edition"`
 	DisableUsage bool     `koanf:"disableusage"`
 	Debug        bool     `koanf:"debug"`
-	MaxImageSize int      `koanf:"maximagesize"`
+	MaxDataSize  int      `koanf:"maxdatasize"`
 }
 
 // DatabaseConfig related to database
@@ -102,9 +102,9 @@ type MgmtBackendConfig struct {
 	}
 }
 
-// UsageServerConfig related to usage-backend
+// UsageServerConfig related to usage-server
 type UsageServerConfig struct {
-	TLSEnabled bool `koanf:"tlsenabled"`
+	TLSEnabled bool   `koanf:"tlsenabled"`
 	Host       string `koanf:"host"`
 	Port       int    `koanf:"port"`
 }
