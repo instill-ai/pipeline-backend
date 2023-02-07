@@ -30,14 +30,14 @@ type Usage interface {
 
 type usage struct {
 	repository        repository.Repository
-	userServiceClient mgmtPB.UserServiceClient
+	userServiceClient mgmtPB.MgmtAdminServiceClient
 	redisClient       *redis.Client
 	reporter          usageReporter.Reporter
 	version           string
 }
 
 // NewUsage initiates a usage instance
-func NewUsage(ctx context.Context, r repository.Repository, mu mgmtPB.UserServiceClient, rc *redis.Client, usc usagePB.UsageServiceClient) Usage {
+func NewUsage(ctx context.Context, r repository.Repository, mu mgmtPB.MgmtAdminServiceClient, rc *redis.Client, usc usagePB.UsageServiceClient) Usage {
 	logger, _ := logger.GetZapLogger()
 
 	version, err := repo.ReadReleaseManifest("release-please/manifest.json")

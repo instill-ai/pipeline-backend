@@ -119,7 +119,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	userServiceClient, userServiceClientConn := external.InitUserServiceClient()
+	userServiceClient, userServiceClientConn := external.InitMgmtAdminServiceClient()
 	defer userServiceClientConn.Close()
 
 	connectorServiceClient, connectorServiceClientConn := external.InitConnectorServiceClient()
