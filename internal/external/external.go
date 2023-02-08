@@ -63,8 +63,8 @@ func InitModelServiceClient() (modelPB.ModelServiceClient, *grpc.ClientConn) {
 	return modelPB.NewModelServiceClient(clientConn), clientConn
 }
 
-// InitUserServiceClient initialises a UserServiceClient instance
-func InitUserServiceClient() (mgmtPB.UserServiceClient, *grpc.ClientConn) {
+// InitMgmtAdminServiceClient initialises a MgmtAdminServiceClient instance
+func InitMgmtAdminServiceClient() (mgmtPB.MgmtAdminServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -78,12 +78,12 @@ func InitUserServiceClient() (mgmtPB.UserServiceClient, *grpc.ClientConn) {
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.Port), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.AdminHost, config.Config.MgmtBackend.AdminPort), clientDialOpts)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 
-	return mgmtPB.NewUserServiceClient(clientConn), clientConn
+	return mgmtPB.NewMgmtAdminServiceClient(clientConn), clientConn
 }
 
 // InitUsageServiceClient initialises a UsageServiceClient instance (no mTLS)

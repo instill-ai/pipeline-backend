@@ -41,13 +41,6 @@ $ go run ./cmd/migration
 $ go run ./cmd/main
 ```
 
-### Run the Temporal worker
-
-```bash
-$ docker exec -it pipeline-backend /bin/bash
-$ go run ./cmd/worker
-```
-
 ### Run the integration test
 
 ```bash

@@ -40,8 +40,8 @@ modelbackend:
     cert:
     key:
 mgmtbackend:
-  host: mgmt-backend
-  port: 8084
+  adminhost: mgmt-backend-admin
+  adminport: 3084
   https:
     cert:
     key:

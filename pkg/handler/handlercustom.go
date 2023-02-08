@@ -50,8 +50,8 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 	if strings.Contains(contentType, "multipart/form-data") {
 
-		userServiceClient, userServiceClientConn := external.InitUserServiceClient()
-		defer userServiceClientConn.Close()
+		mgmtAdminServiceClient, mgmtAdminServiceClientConn := external.InitMgmtAdminServiceClient()
+		defer mgmtAdminServiceClientConn.Close()
 
 		connectorServiceClient, connectorServiceClientConn := external.InitConnectorServiceClient()
 		defer connectorServiceClientConn.Close()
@@ -64,7 +64,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		service := service.NewService(
 			repository.NewRepository(db.GetConnection()),
-			userServiceClient,
+			mgmtAdminServiceClient,
 			connectorServiceClient,
 			modelServiceClient,
 			redisClient,
