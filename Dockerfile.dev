@@ -22,13 +22,13 @@ RUN tar -xf k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz --strip-components 1 -C /
 
 # -- set up Go
 
-RUN chown -R nobody:nogroup /go
-ENV GOCACHE /go/.cache/go-build
-ENV GOENV /go/.config/go/env
-
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
+
+RUN chown -R nobody:nogroup /go
+ENV GOCACHE /go/.cache/go-build
+ENV GOENV /go/.config/go/env
 
 # -- set up mounting points
 
