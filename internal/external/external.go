@@ -78,7 +78,7 @@ func InitMgmtAdminServiceClient() (mgmtPB.MgmtAdminServiceClient, *grpc.ClientCo
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.AdminHost, config.Config.MgmtBackend.AdminPort), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.AdminPort), clientDialOpts)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
