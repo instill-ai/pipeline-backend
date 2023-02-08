@@ -26,7 +26,7 @@ func (s *service) ownerRscNameToPermalink(ownerRscName string) (ownerPermalink s
 	defer cancel()
 
 	if strings.Split(ownerRscName, "/")[0] == "users" {
-		user, err := s.userServiceClient.GetUser(ctx, &mgmtPB.GetUserRequest{Name: ownerRscName})
+		user, err := s.mgmtAdminServiceClient.GetUser(ctx, &mgmtPB.GetUserRequest{Name: ownerRscName})
 		if err != nil {
 			return "", fmt.Errorf("[mgmt-backend] %s", err)
 		}

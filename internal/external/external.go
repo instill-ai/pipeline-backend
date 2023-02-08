@@ -63,7 +63,7 @@ func InitModelServiceClient() (modelPB.ModelServiceClient, *grpc.ClientConn) {
 	return modelPB.NewModelServiceClient(clientConn), clientConn
 }
 
-// InitUserServiceClient initialises a UserServiceClient instance
+// InitMgmtAdminServiceClient initialises a MgmtAdminServiceClient instance
 func InitMgmtAdminServiceClient() (mgmtPB.MgmtAdminServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 

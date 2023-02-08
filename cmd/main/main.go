@@ -119,8 +119,8 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	userServiceClient, userServiceClientConn := external.InitMgmtAdminServiceClient()
-	defer userServiceClientConn.Close()
+	mgmtAdminServiceClient, mgmtAdminServiceClientConn := external.InitMgmtAdminServiceClient()
+	defer mgmtAdminServiceClientConn.Close()
 
 	connectorServiceClient, connectorServiceClientConn := external.InitConnectorServiceClient()
 	defer connectorServiceClientConn.Close()
@@ -135,7 +135,7 @@ func main() {
 
 	service := service.NewService(
 		repository,
-		userServiceClient,
+		mgmtAdminServiceClient,
 		connectorServiceClient,
 		modelServiceClient,
 		redisClient,
@@ -175,7 +175,7 @@ func main() {
 	if !config.Config.Server.DisableUsage {
 		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
 		defer usageServiceClientConn.Close()
-		usg = usage.NewUsage(ctx, repository, userServiceClient, redisClient, usageServiceClient)
+		usg = usage.NewUsage(ctx, repository, mgmtAdminServiceClient, redisClient, usageServiceClient)
 		if usg != nil {
 			usg.StartReporter(ctx)
 		}

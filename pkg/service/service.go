@@ -44,7 +44,7 @@ type Service interface {
 
 type service struct {
 	repository             repository.Repository
-	userServiceClient      mgmtPB.MgmtAdminServiceClient
+	mgmtAdminServiceClient mgmtPB.MgmtAdminServiceClient
 	connectorServiceClient connectorPB.ConnectorServiceClient
 	modelServiceClient     modelPB.ModelServiceClient
 	redisClient            *redis.Client
@@ -54,7 +54,7 @@ type service struct {
 func NewService(r repository.Repository, u mgmtPB.MgmtAdminServiceClient, c connectorPB.ConnectorServiceClient, m modelPB.ModelServiceClient, rc *redis.Client) Service {
 	return &service{
 		repository:             r,
-		userServiceClient:      u,
+		mgmtAdminServiceClient: u,
 		connectorServiceClient: c,
 		modelServiceClient:     m,
 		redisClient:            rc,
