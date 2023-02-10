@@ -17,7 +17,6 @@ dev:							## Run dev container
 	@docker run -d --rm \
 		-e DOCKER_HOST=${SOCAT_HOST}:${SOCAT_PORT} \
 		-v $(PWD):/${SERVICE_NAME} \
-		-v vdp:/vdp \
 		-p ${SERVICE_PORT}:${SERVICE_PORT} \
 		--network instill-network \
 		--name ${SERVICE_NAME} \

@@ -18,7 +18,7 @@ RUN mkdir /vdp
 
 FROM gcr.io/distroless/base:nonroot
 
-USER nonroot
+USER nonroot:nonroot
 
 ARG SERVICE_NAME
 
