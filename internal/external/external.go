@@ -34,7 +34,8 @@ func InitConnectorServiceClient() (connectorPB.ConnectorServiceClient, *grpc.Cli
 
 	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ConnectorBackend.Host, config.Config.ConnectorBackend.Port), clientDialOpts)
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Error(err.Error())
+		return nil, nil
 	}
 
 	return connectorPB.NewConnectorServiceClient(clientConn), clientConn
@@ -57,7 +58,8 @@ func InitModelServiceClient() (modelPB.ModelServiceClient, *grpc.ClientConn) {
 
 	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ModelBackend.Host, config.Config.ModelBackend.Port), clientDialOpts)
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Error(err.Error())
+		return nil, nil
 	}
 
 	return modelPB.NewModelServiceClient(clientConn), clientConn
@@ -80,7 +82,8 @@ func InitMgmtAdminServiceClient() (mgmtPB.MgmtAdminServiceClient, *grpc.ClientCo
 
 	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.AdminPort), clientDialOpts)
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Error(err.Error())
+		return nil, nil
 	}
 
 	return mgmtPB.NewMgmtAdminServiceClient(clientConn), clientConn
@@ -101,7 +104,8 @@ func InitUsageServiceClient() (usagePB.UsageServiceClient, *grpc.ClientConn) {
 
 	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.UsageServer.Host, config.Config.UsageServer.Port), clientDialOpts)
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Error(err.Error())
+		return nil, nil
 	}
 
 	return usagePB.NewUsageServiceClient(clientConn), clientConn

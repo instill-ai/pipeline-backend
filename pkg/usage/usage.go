@@ -174,6 +174,6 @@ func (u *usage) TriggerSingleReporter(ctx context.Context) {
 	logger, _ := logger.GetZapLogger()
 	err := usageClient.SingleReporter(ctx, u.reporter, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, u.version, u.RetrieveUsageData())
 	if err != nil {
-		logger.Fatal(err.Error())
+		logger.Error(fmt.Sprintf("unable to trigger single reporter: %v\n", err))
 	}
 }
