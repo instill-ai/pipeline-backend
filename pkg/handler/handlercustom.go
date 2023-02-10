@@ -51,13 +51,19 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 	if strings.Contains(contentType, "multipart/form-data") {
 
 		mgmtAdminServiceClient, mgmtAdminServiceClientConn := external.InitMgmtAdminServiceClient()
-		defer mgmtAdminServiceClientConn.Close()
+		if mgmtAdminServiceClientConn != nil {
+			defer mgmtAdminServiceClientConn.Close()
+		}
 
 		connectorServiceClient, connectorServiceClientConn := external.InitConnectorServiceClient()
-		defer connectorServiceClientConn.Close()
+		if connectorServiceClientConn != nil {
+			defer connectorServiceClientConn.Close()
+		}
 
 		modelServiceClient, modelServiceClientConn := external.InitModelServiceClient()
-		defer modelServiceClientConn.Close()
+		if modelServiceClientConn != nil {
+			defer modelServiceClientConn.Close()
+		}
 
 		redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 		defer redisClient.Close()

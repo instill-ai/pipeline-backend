@@ -120,13 +120,19 @@ func main() {
 	defer cancel()
 
 	mgmtAdminServiceClient, mgmtAdminServiceClientConn := external.InitMgmtAdminServiceClient()
-	defer mgmtAdminServiceClientConn.Close()
+	if mgmtAdminServiceClientConn != nil {
+		defer mgmtAdminServiceClientConn.Close()
+	}
 
 	connectorServiceClient, connectorServiceClientConn := external.InitConnectorServiceClient()
-	defer connectorServiceClientConn.Close()
+	if connectorServiceClientConn != nil {
+		defer connectorServiceClientConn.Close()
+	}
 
 	modelServiceClient, modelServiceClientConn := external.InitModelServiceClient()
-	defer modelServiceClientConn.Close()
+	if modelServiceClientConn != nil {
+		defer modelServiceClientConn.Close()
+	}
 
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
@@ -174,10 +180,12 @@ func main() {
 	var usg usage.Usage
 	if !config.Config.Server.DisableUsage {
 		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
-		defer usageServiceClientConn.Close()
-		usg = usage.NewUsage(ctx, repository, mgmtAdminServiceClient, redisClient, usageServiceClient)
-		if usg != nil {
-			usg.StartReporter(ctx)
+		if usageServiceClientConn != nil {
+			defer usageServiceClientConn.Close()
+			usg = usage.NewUsage(ctx, repository, mgmtAdminServiceClient, redisClient, usageServiceClient)
+			if usg != nil {
+				usg.StartReporter(ctx)
+			}
 		}
 	}
 
