@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.6-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.9.5-alpha...v0.9.6-alpha) (2023-02-10)
+
+
+### Bug Fixes
+
+* fix usage client nil issue when mgmt-backend not ready ([d7c47fd](https://github.com/instill-ai/pipeline-backend/commit/d7c47fdd77e25304e09d36c45fbf763b59483cdf))
+* replace fatal logs with error logs ([#102](https://github.com/instill-ai/pipeline-backend/issues/102)) ([a410b29](https://github.com/instill-ai/pipeline-backend/commit/a410b29ab8c8fe15bae615e0a034cf7028ded34f))
+
 ## [0.9.5-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.9.4-alpha...v0.9.5-alpha) (2023-01-20)
 
 
