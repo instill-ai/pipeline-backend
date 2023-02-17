@@ -244,6 +244,18 @@ func cvtModelTaskOutputToPipelineTaskOutput(modelTaskOutputs []*modelPB.TaskOutp
 					SemanticSegmentation: proto.Clone(v.SemanticSegmentation).(*modelPB.SemanticSegmentationOutput),
 				},
 			})
+		case *modelPB.TaskOutput_TextToImage:
+			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
+				Output: &pipelinePB.TaskOutput_TextToImage{
+					TextToImage: proto.Clone(v.TextToImage).(*modelPB.TextToImageOutput),
+				},
+			})
+		case *modelPB.TaskOutput_TextGeneration:
+			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
+				Output: &pipelinePB.TaskOutput_TextGeneration{
+					TextGeneration: proto.Clone(v.TextGeneration).(*modelPB.TextGenerationOutput),
+				},
+			})
 		case *modelPB.TaskOutput_Unspecified:
 			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
 				Output: &pipelinePB.TaskOutput_Unspecified{
