@@ -374,7 +374,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 
 		for idx, modelInstance := range dbPipeline.Recipe.ModelInstances {
 
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 			defer cancel()
 			resp, err := s.modelServiceClient.TriggerModelInstance(ctx, &modelPB.TriggerModelInstanceRequest{
 				Name:       modelInstance,
@@ -511,7 +511,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(fileBuf bytes.Buffer, fileName
 	for idx, modelInstance := range dbPipeline.Recipe.ModelInstances {
 
 		// TODO: async call model-backend
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 		defer cancel()
 		stream, err := s.modelServiceClient.TriggerModelInstanceBinaryFileUpload(ctx)
 		defer func() {

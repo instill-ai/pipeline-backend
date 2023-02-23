@@ -22,7 +22,7 @@ func (s *service) ownerRscNameToPermalink(ownerRscName string) (ownerPermalink s
 
 	// TODO: implement cache
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if strings.Split(ownerRscName, "/")[0] == "users" {

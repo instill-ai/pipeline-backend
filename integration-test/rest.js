@@ -114,9 +114,9 @@ export function setup() {
       "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
     })
 
-    // Check connector state being updated in 120 secs
+    // Check connector state being updated in 300 secs
     let currentTime = new Date().getTime();
-    let timeoutTime = new Date().getTime() + 120000;
+    let timeoutTime = new Date().getTime() + 300000;
     while (timeoutTime > currentTime) {
       var res = http.request("GET", `${connectorHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`)
       if (res.json().destination_connector.connector.state === "STATE_CONNECTED") {
