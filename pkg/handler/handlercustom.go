@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -15,13 +14,14 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/internal/constant"
 	"github.com/instill-ai/pipeline-backend/internal/db"
 	"github.com/instill-ai/pipeline-backend/internal/external"
 	"github.com/instill-ai/pipeline-backend/internal/logger"
 	"github.com/instill-ai/pipeline-backend/internal/sterr"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+
+	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 )
 
 // HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
@@ -91,9 +91,24 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 			return
 		}
 
+		modelInstance, err := service.GetModelInstanceByName(dbPipeline.Recipe.ModelInstances[0])
+		if err != nil {
+			st := sterr.CreateErrorResourceInfo(
+				codes.NotFound,
+				"[handler] cannot get pipeline by id",
+				"pipelines",
+				fmt.Sprintf("id %s", id),
+				owner,
+				err.Error(),
+			)
+			errorResponse(w, st)
+			logger.Error(st.String())
+			return
+		}
+
 		if err := req.ParseMultipartForm(4 << 20); err != nil {
 			st := sterr.CreateErrorPreconditionFailure(
-				"[handler] error while reading file from request",
+				"[handler] error while get model instance information",
 				"TriggerPipelineBinaryFileUpload",
 				fmt.Sprintf("id %s", id),
 				err.Error(),
@@ -103,7 +118,20 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 			return
 		}
 
-		content, fileNames, fileLengths, err := parseImageFormDataInputsToBytes(req)
+		var inp interface{}
+		switch modelInstance.Task {
+		case modelPB.ModelInstance_TASK_CLASSIFICATION,
+			modelPB.ModelInstance_TASK_DETECTION,
+			modelPB.ModelInstance_TASK_KEYPOINT,
+			modelPB.ModelInstance_TASK_OCR,
+			modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION,
+			modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
+			inp, err = parseImageFormDataInputsToBytes(req)
+		case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
+			inp, err = parseImageFormDataTextToImageInputs(req)
+		case modelPB.ModelInstance_TASK_TEXT_GENERATION:
+			inp, err = parseImageFormDataTextToImageInputs(req)
+		}
 		if err != nil {
 			st := sterr.CreateErrorPreconditionFailure(
 				"[handler] error while reading file from request",
@@ -116,7 +144,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 			return
 		}
 
-		obj, err := service.TriggerPipelineBinaryFileUpload(*bytes.NewBuffer(content), fileNames, fileLengths, dbPipeline)
+		obj, err := service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, inp)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			logger.Error(err.Error())
@@ -142,41 +170,6 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		logger.Error(st.String())
 		return
 	}
-}
-
-func parseImageFormDataInputsToBytes(req *http.Request) (content []byte, fileNames []string, fileLengths []uint64, err error) {
-
-	inputs := req.MultipartForm.File["file"]
-
-	for _, input := range inputs {
-		file, err := input.Open()
-		defer func() {
-			err = file.Close()
-		}()
-
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("Unable to open file for image")
-		}
-
-		buff := new(bytes.Buffer)
-		numBytes, err := buff.ReadFrom(file)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("Unable to read content body from image")
-		}
-		if numBytes > int64(config.Config.Server.MaxDataSize*constant.MB) {
-			return nil, nil, nil, fmt.Errorf(
-				"Image size must be smaller than %vMB. Got %vMB",
-				config.Config.Server.MaxDataSize,
-				float32(numBytes)/float32(constant.MB),
-			)
-		}
-
-		content = append(content, buff.Bytes()...)
-		fileNames = append(fileNames, input.Filename)
-		fileLengths = append(fileLengths, uint64(buff.Len()))
-	}
-
-	return content, fileNames, fileLengths, nil
 }
 
 func errorResponse(w http.ResponseWriter, s *status.Status) {

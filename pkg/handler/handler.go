@@ -1,10 +1,8 @@
 package handler
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -454,64 +452,64 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
 
-	owner, err := resource.GetOwner(stream.Context())
-	if err != nil {
-		return err
-	}
+	// owner, err := resource.GetOwner(stream.Context())
+	// if err != nil {
+	// 	return err
+	// }
 
-	data, err := stream.Recv()
+	// data, err := stream.Recv()
 
-	if err != nil {
-		return status.Errorf(codes.Unknown, "Cannot receive trigger info")
-	}
+	// if err != nil {
+	// 	return status.Errorf(codes.Unknown, "Cannot receive trigger info")
+	// }
 
-	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(data, triggerBinaryRequiredFields); err != nil {
-		return status.Error(codes.InvalidArgument, err.Error())
-	}
+	// // Return error if REQUIRED fields are not provided in the requested payload pipeline resource
+	// if err := checkfield.CheckRequiredFields(data, triggerBinaryRequiredFields); err != nil {
+	// 	return status.Error(codes.InvalidArgument, err.Error())
+	// }
 
-	id, err := resource.GetRscNameID(data.GetName())
-	if err != nil {
-		return err
-	}
+	// id, err := resource.GetRscNameID(data.GetName())
+	// if err != nil {
+	// 	return err
+	// }
 
-	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
-	if err != nil {
-		return err
-	}
+	// dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
+	// if err != nil {
+	// 	return err
+	// }
 
-	// Read chuck
-	var fileNames []string
-	var fileLengths []uint64
-	content := bytes.Buffer{}
-	for {
-		data, err := stream.Recv()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
-		}
-		if len(fileNames) == 0 {
-			fileNames = data.GetFileNames()
-		}
-		if len(fileLengths) == 0 {
-			fileLengths = data.GetFileLengths()
-		}
-		if data.Content == nil {
-			continue
-		}
-		if _, err := content.Write(data.Content); err != nil {
-			return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
-		}
-	}
+	// // Read chuck
+	// var fileNames []string
+	// var fileLengths []uint64
+	// content := bytes.Buffer{}
+	// for {
+	// 	data, err := stream.Recv()
+	// 	if err != nil {
+	// 		if err == io.EOF {
+	// 			break
+	// 		}
+	// 		return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
+	// 	}
+	// 	if len(fileNames) == 0 {
+	// 		fileNames = data.GetFileNames()
+	// 	}
+	// 	if len(fileLengths) == 0 {
+	// 		fileLengths = data.GetFileLengths()
+	// 	}
+	// 	if data.Content == nil {
+	// 		continue
+	// 	}
+	// 	if _, err := content.Write(data.Content); err != nil {
+	// 		return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
+	// 	}
+	// }
 
-	obj, err := h.service.TriggerPipelineBinaryFileUpload(content, fileNames, fileLengths, dbPipeline)
-	if err != nil {
-		return err
-	}
+	// obj, err := h.service.TriggerPipelineBinaryFileUpload(content, fileNames, fileLengths, dbPipeline)
+	// if err != nil {
+	// 	return err
+	// }
 
-	stream.SendAndClose(obj)
+	// stream.SendAndClose(obj)
 
 	return nil
 }
