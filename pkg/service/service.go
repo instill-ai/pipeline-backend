@@ -514,7 +514,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 }
 
 func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB.ModelInstance_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelInstanceOutput, error) {
-	visionInput := input.(VisionInput)
+	visionInput := input.(*VisionInput)
 	var modelInstOutputs []*pipelinePB.ModelInstanceOutput
 	for idx, modelInstance := range dbPipeline.Recipe.ModelInstances {
 
@@ -599,7 +599,6 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 				},
 			}
 		}
-
 		if err := stream.Send(&triggerRequest); err != nil {
 			return modelInstOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot send data info to server: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInstance, err.Error())
 		}
@@ -714,8 +713,96 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 	return modelInstOutputs, nil
 }
 
-func (s *service) TriggerPipelineBinaryFileUpload(dbPipeline *datamodel.Pipeline, task modelPB.ModelInstance_Task, input interface{}) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error) {
+func (s *service) triggerOtherTask(dbPipeline *datamodel.Pipeline, task modelPB.ModelInstance_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelInstanceOutput, error) {
 
+	var modelInstOutputs []*pipelinePB.ModelInstanceOutput
+	for idx, modelInstance := range dbPipeline.Recipe.ModelInstances {
+
+		// TODO: async call model-backend
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+		defer cancel()
+		stream, err := s.modelServiceClient.TriggerModelInstanceBinaryFileUpload(ctx)
+		defer func() {
+			_ = stream.CloseSend()
+		}()
+
+		if err != nil {
+			return modelInstOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot init stream: %v", "TriggerModelBinaryFileUpload", idx, modelInstance, err.Error())
+		}
+
+		var triggerRequest modelPB.TriggerModelInstanceBinaryFileUploadRequest
+		switch task {
+		case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
+			textToImageInput := input.(*TextToImageInput)
+			triggerRequest = modelPB.TriggerModelInstanceBinaryFileUploadRequest{
+				Name: modelInstance,
+				TaskInput: &modelPB.TaskInputStream{
+					Input: &modelPB.TaskInputStream_TextToImage{
+						TextToImage: &modelPB.TextToImageInput{
+							Prompt:   textToImageInput.Prompt,
+							Steps:    &textToImageInput.Steps,
+							CfgScale: &textToImageInput.CfgScale,
+							Seed:     &textToImageInput.Seed,
+							Samples:  &textToImageInput.Samples,
+						},
+					},
+				},
+			}
+		case modelPB.ModelInstance_TASK_TEXT_GENERATION:
+			textGenerationInput := input.(*TextGenerationInput)
+			triggerRequest = modelPB.TriggerModelInstanceBinaryFileUploadRequest{
+				Name: modelInstance,
+				TaskInput: &modelPB.TaskInputStream{
+					Input: &modelPB.TaskInputStream_TextGeneration{
+						TextGeneration: &modelPB.TextGenerationInput{
+							Prompt:        textGenerationInput.Prompt,
+							OutputLen:     &textGenerationInput.OutputLen,
+							BadWordsList:  &textGenerationInput.BadWordsList,
+							StopWordsList: &textGenerationInput.StopWordsList,
+							Topk:          &textGenerationInput.TopK,
+							Seed:          &textGenerationInput.Seed,
+						},
+					},
+				},
+			}
+		}
+
+		if err := stream.Send(&triggerRequest); err != nil {
+			return modelInstOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot send data info to server: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInstance, err.Error())
+		}
+
+		resp, err := stream.CloseAndRecv()
+		if err != nil {
+			return modelInstOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot receive response: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInstance, err.Error())
+		}
+
+		taskOutputs := cvtModelTaskOutputToPipelineTaskOutput(resp.TaskOutputs)
+		for idx, taskOutput := range taskOutputs {
+			taskOutput.Index = dataMappingIndices[idx]
+		}
+
+		modelInstOutputs = append(modelInstOutputs, &pipelinePB.ModelInstanceOutput{
+			ModelInstance: modelInstance,
+			Task:          resp.Task,
+			TaskOutputs:   taskOutputs,
+		})
+
+		// Increment trigger image numbers
+		uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
+		if err != nil {
+			return modelInstOutputs, err
+		}
+		if strings.HasPrefix(dbPipeline.Owner, "users/") {
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.num", uid), 1)
+		} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.num", uid), 1)
+		}
+	}
+
+	return modelInstOutputs, nil
+}
+
+func (s *service) TriggerPipelineBinaryFileUpload(dbPipeline *datamodel.Pipeline, task modelPB.ModelInstance_Task, input interface{}) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error) {
 	if dbPipeline.State != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
 	}
@@ -735,23 +822,37 @@ func (s *service) TriggerPipelineBinaryFileUpload(dbPipeline *datamodel.Pipeline
 		modelPB.ModelInstance_TASK_OCR,
 		modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION,
 		modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
-		inp := input.(VisionInput)
+		inp := input.(*VisionInput)
 		batching = len(inp.FileNames)
 	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE,
 		modelPB.ModelInstance_TASK_TEXT_GENERATION:
 		batching = 1
 	}
-
 	var dataMappingIndices []string
 	for i := 0; i < batching; i++ {
 		dataMappingIndices = append(dataMappingIndices, ulid.Make().String())
 	}
 
-	modelInstOutputs, err := s.triggerVisionTask(dbPipeline, task, input, dataMappingIndices)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+	var modelInstOutputs []*pipelinePB.ModelInstanceOutput
+	switch task {
+	case modelPB.ModelInstance_TASK_CLASSIFICATION,
+		modelPB.ModelInstance_TASK_DETECTION,
+		modelPB.ModelInstance_TASK_KEYPOINT,
+		modelPB.ModelInstance_TASK_OCR,
+		modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION,
+		modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
+		modelInstOutputs, err = s.triggerVisionTask(dbPipeline, task, input, dataMappingIndices)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE,
+		modelPB.ModelInstance_TASK_TEXT_GENERATION:
+		modelInstOutputs, err = s.triggerOtherTask(dbPipeline, task, input, dataMappingIndices)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
 	}
-
+	fmt.Println("----> herereee")
 	switch {
 	// Check if this is a SYNC trigger (i.e., HTTP, gRPC source and destination connectors)
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):

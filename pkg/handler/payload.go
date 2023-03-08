@@ -44,7 +44,6 @@ func parseImageFormDataInputsToBytes(req *http.Request) (visionInput *service.Vi
 		fileNames = append(fileNames, input.Filename)
 		fileLengths = append(fileLengths, uint64(buff.Len()))
 	}
-
 	return &service.VisionInput{
 		Content:     content,
 		FileNames:   fileNames,
@@ -52,7 +51,7 @@ func parseImageFormDataInputsToBytes(req *http.Request) (visionInput *service.Vi
 	}, nil
 }
 
-func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput []service.TextToImageInput, err error) {
+func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput *service.TextToImageInput, err error) {
 	prompts := req.MultipartForm.Value["prompt"]
 	if len(prompts) == 0 {
 		return nil, fmt.Errorf("missing prompt input")
@@ -114,16 +113,16 @@ func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput []
 		return nil, fmt.Errorf("we only allow samples=1 for now and will improve to allow the generation of multiple samples in the future")
 	}
 
-	return []service.TextToImageInput{{
+	return &service.TextToImageInput{
 		Prompt:   prompts[0],
 		Steps:    int64(step),
 		CfgScale: float32(cfgScale),
 		Seed:     int64(seed),
 		Samples:  int64(samples),
-	}}, nil
+	}, nil
 }
 
-func parseTextFormDataTextGenerationInputs(req *http.Request) (textGeneration []service.TextGenerationInput, err error) {
+func parseTextFormDataTextGenerationInputs(req *http.Request) (textGeneration *service.TextGenerationInput, err error) {
 	prompts := req.MultipartForm.Value["prompt"]
 	if len(prompts) != 1 {
 		return nil, fmt.Errorf("only support batchsize 1")
@@ -169,12 +168,12 @@ func parseTextFormDataTextGenerationInputs(req *http.Request) (textGeneration []
 	}
 
 	// TODO: add support for bad/stop words
-	return []service.TextGenerationInput{{
+	return &service.TextGenerationInput{
 		Prompt:        prompts[0],
 		OutputLen:     int64(outputLen),
 		BadWordsList:  badWordsList,
 		StopWordsList: stopWordsList,
 		TopK:          int64(topK),
 		Seed:          int64(seed),
-	}}, nil
+	}, nil
 }
