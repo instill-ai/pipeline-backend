@@ -852,7 +852,6 @@ func (s *service) TriggerPipelineBinaryFileUpload(dbPipeline *datamodel.Pipeline
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 	}
-	fmt.Println("----> herereee")
 	switch {
 	// Check if this is a SYNC trigger (i.e., HTTP, gRPC source and destination connectors)
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):

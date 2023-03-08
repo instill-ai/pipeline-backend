@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ import (
 	"github.com/instill-ai/x/checkfield"
 
 	healthcheckPB "github.com/instill-ai/protogen-go/vdp/healthcheck/v1alpha"
+	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -452,64 +454,167 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
 
-	// owner, err := resource.GetOwner(stream.Context())
-	// if err != nil {
-	// 	return err
-	// }
+	owner, err := resource.GetOwner(stream.Context())
+	if err != nil {
+		return err
+	}
 
-	// data, err := stream.Recv()
+	data, err := stream.Recv()
 
-	// if err != nil {
-	// 	return status.Errorf(codes.Unknown, "Cannot receive trigger info")
-	// }
+	if err != nil {
+		return status.Errorf(codes.Unknown, "Cannot receive trigger info")
+	}
 
-	// // Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	// if err := checkfield.CheckRequiredFields(data, triggerBinaryRequiredFields); err != nil {
-	// 	return status.Error(codes.InvalidArgument, err.Error())
-	// }
+	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
+	if err := checkfield.CheckRequiredFields(data, triggerBinaryRequiredFields); err != nil {
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
 
-	// id, err := resource.GetRscNameID(data.GetName())
-	// if err != nil {
-	// 	return err
-	// }
+	id, err := resource.GetRscNameID(data.GetName())
+	if err != nil {
+		return err
+	}
 
-	// dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
-	// if err != nil {
-	// 	return err
-	// }
+	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
+	if err != nil {
+		return err
+	}
 
-	// // Read chuck
-	// var fileNames []string
-	// var fileLengths []uint64
-	// content := bytes.Buffer{}
-	// for {
-	// 	data, err := stream.Recv()
-	// 	if err != nil {
-	// 		if err == io.EOF {
-	// 			break
-	// 		}
-	// 		return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
-	// 	}
-	// 	if len(fileNames) == 0 {
-	// 		fileNames = data.GetFileNames()
-	// 	}
-	// 	if len(fileLengths) == 0 {
-	// 		fileLengths = data.GetFileLengths()
-	// 	}
-	// 	if data.Content == nil {
-	// 		continue
-	// 	}
-	// 	if _, err := content.Write(data.Content); err != nil {
-	// 		return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
-	// 	}
-	// }
+	var textToImageInput service.TextToImageInput
+	var textGenerationInput service.TextGenerationInput
 
-	// obj, err := h.service.TriggerPipelineBinaryFileUpload(content, fileNames, fileLengths, dbPipeline)
-	// if err != nil {
-	// 	return err
-	// }
+	var allContentFiles []byte
+	var fileLengths []uint64
 
-	// stream.SendAndClose(obj)
+	var modelInstance *modelPB.ModelInstance
+
+	var firstChunk = true
+
+	for {
+		data, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
+		}
+		if firstChunk { // Get one time for first chunk.
+			firstChunk = false
+			pipelineName := data.GetName()
+			pipeline, err := h.service.GetPipelineByID(strings.TrimSuffix(pipelineName, "pipelines/"), owner, false)
+			if err != nil {
+				return status.Errorf(codes.Internal, "do not find the pipeline: %s", err.Error())
+			}
+			if pipeline.Recipe == nil || len(pipeline.Recipe.ModelInstances) == 0 {
+				return status.Errorf(codes.Internal, "there is no model instance in pipeline's recipe")
+			}
+			modelInstance, err = h.service.GetModelInstanceByName(dbPipeline.Recipe.ModelInstances[0])
+			if err != nil {
+				return status.Errorf(codes.Internal, "could not find model instance: %s", err.Error())
+			}
+
+			switch modelInstance.Task {
+			case modelPB.ModelInstance_TASK_CLASSIFICATION:
+				fileLengths = data.TaskInput.GetClassification().FileLengths
+				if data.TaskInput.GetClassification().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.TaskInput.GetClassification().GetContent()...)
+				}
+			case modelPB.ModelInstance_TASK_DETECTION:
+				fileLengths = data.TaskInput.GetDetection().FileLengths
+				if data.TaskInput.GetDetection().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.TaskInput.GetDetection().GetContent()...)
+				}
+			case modelPB.ModelInstance_TASK_KEYPOINT:
+				fileLengths = data.TaskInput.GetKeypoint().FileLengths
+				if data.TaskInput.GetKeypoint().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.TaskInput.GetKeypoint().GetContent()...)
+				}
+			case modelPB.ModelInstance_TASK_OCR:
+				fileLengths = data.TaskInput.GetOcr().FileLengths
+				if data.TaskInput.GetOcr().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.TaskInput.GetOcr().GetContent()...)
+				}
+			case modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION:
+				fileLengths = data.TaskInput.GetInstanceSegmentation().FileLengths
+				if data.TaskInput.GetInstanceSegmentation().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.TaskInput.GetInstanceSegmentation().GetContent()...)
+				}
+			case modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
+				fileLengths = data.TaskInput.GetSemanticSegmentation().FileLengths
+				if data.TaskInput.GetSemanticSegmentation().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.TaskInput.GetSemanticSegmentation().GetContent()...)
+				}
+			case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
+				textToImageInput = service.TextToImageInput{
+					Prompt:   data.TaskInput.GetTextToImage().GetPrompt(),
+					Steps:    data.TaskInput.GetTextToImage().GetSteps(),
+					CfgScale: data.TaskInput.GetTextToImage().GetCfgScale(),
+					Seed:     data.TaskInput.GetTextToImage().GetSeed(),
+					Samples:  data.TaskInput.GetTextToImage().GetSamples(),
+				}
+			case modelPB.ModelInstance_TASK_TEXT_GENERATION:
+				textGenerationInput = service.TextGenerationInput{
+					Prompt:        data.TaskInput.GetTextGeneration().GetPrompt(),
+					OutputLen:     data.TaskInput.GetTextGeneration().GetOutputLen(),
+					BadWordsList:  data.TaskInput.GetTextGeneration().GetBadWordsList(),
+					StopWordsList: data.TaskInput.GetTextGeneration().GetStopWordsList(),
+					TopK:          data.TaskInput.GetTextGeneration().GetTopk(),
+					Seed:          data.TaskInput.GetTextGeneration().GetSeed(),
+				}
+			default:
+				return fmt.Errorf("unsupported task input type")
+			}
+			continue
+		}
+
+		switch modelInstance.Task {
+		case modelPB.ModelInstance_TASK_CLASSIFICATION:
+			allContentFiles = append(allContentFiles, data.TaskInput.GetClassification().Content...)
+		case modelPB.ModelInstance_TASK_DETECTION:
+			allContentFiles = append(allContentFiles, data.TaskInput.GetDetection().Content...)
+		case modelPB.ModelInstance_TASK_KEYPOINT:
+			allContentFiles = append(allContentFiles, data.TaskInput.GetKeypoint().Content...)
+		case modelPB.ModelInstance_TASK_OCR:
+			allContentFiles = append(allContentFiles, data.TaskInput.GetOcr().Content...)
+		case modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION:
+			allContentFiles = append(allContentFiles, data.TaskInput.GetInstanceSegmentation().Content...)
+		case modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
+			allContentFiles = append(allContentFiles, data.TaskInput.GetSemanticSegmentation().Content...)
+		default:
+			return fmt.Errorf("unsupported task input type")
+		}
+
+	}
+
+	var obj *pipelinePB.TriggerPipelineBinaryFileUploadResponse
+	switch modelInstance.Task {
+	case modelPB.ModelInstance_TASK_CLASSIFICATION,
+		modelPB.ModelInstance_TASK_DETECTION,
+		modelPB.ModelInstance_TASK_KEYPOINT,
+		modelPB.ModelInstance_TASK_OCR,
+		modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION,
+		modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
+		if len(fileLengths) == 0 {
+			return status.Errorf(codes.InvalidArgument, "no file lengths")
+		}
+		if len(allContentFiles) == 0 {
+			return status.Errorf(codes.InvalidArgument, "no content files")
+		}
+		visionInput := service.VisionInput{
+			Content:     allContentFiles,
+			FileLengths: fileLengths,
+		}
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &visionInput)
+	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &textToImageInput)
+	case modelPB.ModelInstance_TASK_TEXT_GENERATION:
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &textGenerationInput)
+	}
+	if err != nil {
+		return err
+	}
+
+	stream.SendAndClose(obj)
 
 	return nil
 }
