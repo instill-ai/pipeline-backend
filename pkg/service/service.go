@@ -45,7 +45,7 @@ type TextGenerationInput struct {
 	Seed          int64
 }
 
-type VisionInput struct {
+type ImageInput struct {
 	Content     []byte
 	FileNames   []string
 	FileLengths []uint64
@@ -513,8 +513,8 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, dbPipe
 
 }
 
-func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB.ModelInstance_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelInstanceOutput, error) {
-	visionInput := input.(*VisionInput)
+func (s *service) triggerImageTask(dbPipeline *datamodel.Pipeline, task modelPB.ModelInstance_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelInstanceOutput, error) {
+	imageInput := input.(*ImageInput)
 	var modelInstOutputs []*pipelinePB.ModelInstanceOutput
 	for idx, modelInstance := range dbPipeline.Recipe.ModelInstances {
 
@@ -537,7 +537,7 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 				TaskInput: &modelPB.TaskInputStream{
 					Input: &modelPB.TaskInputStream_Classification{
 						Classification: &modelPB.ClassificationInputStream{
-							FileLengths: visionInput.FileLengths,
+							FileLengths: imageInput.FileLengths,
 						},
 					},
 				},
@@ -548,7 +548,7 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 				TaskInput: &modelPB.TaskInputStream{
 					Input: &modelPB.TaskInputStream_Detection{
 						Detection: &modelPB.DetectionInputStream{
-							FileLengths: visionInput.FileLengths,
+							FileLengths: imageInput.FileLengths,
 						},
 					},
 				},
@@ -559,7 +559,7 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 				TaskInput: &modelPB.TaskInputStream{
 					Input: &modelPB.TaskInputStream_Keypoint{
 						Keypoint: &modelPB.KeypointInputStream{
-							FileLengths: visionInput.FileLengths,
+							FileLengths: imageInput.FileLengths,
 						},
 					},
 				},
@@ -570,7 +570,7 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 				TaskInput: &modelPB.TaskInputStream{
 					Input: &modelPB.TaskInputStream_Ocr{
 						Ocr: &modelPB.OcrInputStream{
-							FileLengths: visionInput.FileLengths,
+							FileLengths: imageInput.FileLengths,
 						},
 					},
 				},
@@ -582,7 +582,7 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 				TaskInput: &modelPB.TaskInputStream{
 					Input: &modelPB.TaskInputStream_InstanceSegmentation{
 						InstanceSegmentation: &modelPB.InstanceSegmentationInputStream{
-							FileLengths: visionInput.FileLengths,
+							FileLengths: imageInput.FileLengths,
 						},
 					},
 				},
@@ -593,7 +593,7 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 				TaskInput: &modelPB.TaskInputStream{
 					Input: &modelPB.TaskInputStream_SemanticSegmentation{
 						SemanticSegmentation: &modelPB.SemanticSegmentationInputStream{
-							FileLengths: visionInput.FileLengths,
+							FileLengths: imageInput.FileLengths,
 						},
 					},
 				},
@@ -603,7 +603,7 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 			return modelInstOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: cannot send data info to server: %v", "TriggerModelInstanceBinaryFileUploadRequest", idx, modelInstance, err.Error())
 		}
 		fb := bytes.Buffer{}
-		fb.Write(visionInput.Content)
+		fb.Write(imageInput.Content)
 		buf := make([]byte, 64*1024)
 		for {
 			n, err := fb.Read(buf)
@@ -704,16 +704,16 @@ func (s *service) triggerVisionTask(dbPipeline *datamodel.Pipeline, task modelPB
 			return modelInstOutputs, err
 		}
 		if strings.HasPrefix(dbPipeline.Owner, "users/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.num", uid), int64(len(visionInput.FileLengths)))
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.num", uid), int64(len(imageInput.FileLengths)))
 		} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.num", uid), int64(len(visionInput.FileLengths)))
+			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.num", uid), int64(len(imageInput.FileLengths)))
 		}
 	}
 
 	return modelInstOutputs, nil
 }
 
-func (s *service) triggerOtherTask(dbPipeline *datamodel.Pipeline, task modelPB.ModelInstance_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelInstanceOutput, error) {
+func (s *service) triggerTextTask(dbPipeline *datamodel.Pipeline, task modelPB.ModelInstance_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelInstanceOutput, error) {
 
 	var modelInstOutputs []*pipelinePB.ModelInstanceOutput
 	for idx, modelInstance := range dbPipeline.Recipe.ModelInstances {
@@ -822,7 +822,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(dbPipeline *datamodel.Pipeline
 		modelPB.ModelInstance_TASK_OCR,
 		modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION,
 		modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
-		inp := input.(*VisionInput)
+		inp := input.(*ImageInput)
 		batching = len(inp.FileNames)
 	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE,
 		modelPB.ModelInstance_TASK_TEXT_GENERATION:
@@ -841,13 +841,13 @@ func (s *service) TriggerPipelineBinaryFileUpload(dbPipeline *datamodel.Pipeline
 		modelPB.ModelInstance_TASK_OCR,
 		modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION,
 		modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
-		modelInstOutputs, err = s.triggerVisionTask(dbPipeline, task, input, dataMappingIndices)
+		modelInstOutputs, err = s.triggerImageTask(dbPipeline, task, input, dataMappingIndices)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE,
 		modelPB.ModelInstance_TASK_TEXT_GENERATION:
-		modelInstOutputs, err = s.triggerOtherTask(dbPipeline, task, input, dataMappingIndices)
+		modelInstOutputs, err = s.triggerTextTask(dbPipeline, task, input, dataMappingIndices)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}

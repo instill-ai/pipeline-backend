@@ -11,7 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 )
 
-func parseImageFormDataInputsToBytes(req *http.Request) (visionInput *service.VisionInput, err error) {
+func parseImageFormDataInputsToBytes(req *http.Request) (ImageInput *service.ImageInput, err error) {
 
 	inputs := req.MultipartForm.File["file"]
 	content := make([]byte, 0, len(inputs))
@@ -44,7 +44,7 @@ func parseImageFormDataInputsToBytes(req *http.Request) (visionInput *service.Vi
 		fileNames = append(fileNames, input.Filename)
 		fileLengths = append(fileLengths, uint64(buff.Len()))
 	}
-	return &service.VisionInput{
+	return &service.ImageInput{
 		Content:     content,
 		FileNames:   fileNames,
 		FileLengths: fileLengths,
@@ -77,7 +77,7 @@ func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput *s
 		return nil, fmt.Errorf("invalid samples input, only support a single samples")
 	}
 
-	step := 10
+	step := constant.DefaultStep
 	if len(stepStr) > 0 {
 		step, err = strconv.Atoi(stepStr[0])
 		if err != nil {
@@ -85,7 +85,7 @@ func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput *s
 		}
 	}
 
-	cfgScale := 7.0
+	cfgScale := constant.DefaultCfgScale
 	if len(cfgScaleStr) > 0 {
 		cfgScale, err = strconv.ParseFloat(cfgScaleStr[0], 32)
 		if err != nil {
@@ -93,7 +93,7 @@ func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput *s
 		}
 	}
 
-	seed := 1024
+	seed := constant.DefaultSeed
 	if len(seedStr) > 0 {
 		seed, err = strconv.Atoi(seedStr[0])
 		if err != nil {
@@ -101,7 +101,7 @@ func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput *s
 		}
 	}
 
-	samples := 1
+	samples := constant.DefaultSamples
 	if len(samplesStr) > 0 {
 		samples, err = strconv.Atoi(samplesStr[0])
 		if err != nil {
@@ -143,7 +143,7 @@ func parseTextFormDataTextGenerationInputs(req *http.Request) (textGeneration *s
 		stopWordsList = stopWordsListInput[0]
 	}
 
-	outputLen := 100
+	outputLen := constant.DefaultOutputLen
 	if len(outputLenInput) > 0 {
 		outputLen, err = strconv.Atoi(outputLenInput[0])
 		if err != nil {
@@ -151,7 +151,7 @@ func parseTextFormDataTextGenerationInputs(req *http.Request) (textGeneration *s
 		}
 	}
 
-	topK := 1
+	topK := constant.DefaultTopK
 	if len(topKInput) > 0 {
 		topK, err = strconv.Atoi(topKInput[0])
 		if err != nil {
@@ -159,7 +159,7 @@ func parseTextFormDataTextGenerationInputs(req *http.Request) (textGeneration *s
 		}
 	}
 
-	seed := 0
+	seed := constant.DefaultSeed
 	if len(seedInput) > 0 {
 		seed, err = strconv.Atoi(seedInput[0])
 		if err != nil {

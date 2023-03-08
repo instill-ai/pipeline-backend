@@ -130,7 +130,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
 			inp, err = parseImageFormDataTextToImageInputs(req)
 		case modelPB.ModelInstance_TASK_TEXT_GENERATION:
-			inp, err = parseImageFormDataTextToImageInputs(req)
+			inp, err = parseTextFormDataTextGenerationInputs(req)
 		}
 		if err != nil {
 			st := sterr.CreateErrorPreconditionFailure(

@@ -600,11 +600,11 @@ func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineServ
 		if len(allContentFiles) == 0 {
 			return status.Errorf(codes.InvalidArgument, "no content files")
 		}
-		visionInput := service.VisionInput{
+		imageInput := service.ImageInput{
 			Content:     allContentFiles,
 			FileLengths: fileLengths,
 		}
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &visionInput)
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &imageInput)
 	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
 		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &textToImageInput)
 	case modelPB.ModelInstance_TASK_TEXT_GENERATION:
