@@ -150,7 +150,7 @@ func main() {
 	grpcS := grpc.NewServer(grpcServerOpts...)
 	reflection.Register(grpcS)
 
-	pipelinePB.RegisterPipelineServiceServer(
+	pipelinePB.RegisterPipelinePublicServiceServer(
 		grpcS,
 		handler.NewHandler(service),
 	)
@@ -197,7 +197,7 @@ func main() {
 		dialOpts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	}
 
-	if err := pipelinePB.RegisterPipelineServiceHandlerFromEndpoint(ctx, gwS, fmt.Sprintf(":%v", config.Config.Server.Port), dialOpts); err != nil {
+	if err := pipelinePB.RegisterPipelinePublicServiceHandlerFromEndpoint(ctx, gwS, fmt.Sprintf(":%v", config.Config.Server.Port), dialOpts); err != nil {
 		logger.Fatal(err.Error())
 	}
 

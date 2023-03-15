@@ -68,17 +68,17 @@ type Service interface {
 
 type service struct {
 	repository             repository.Repository
-	mgmtAdminServiceClient mgmtPB.MgmtAdminServiceClient
-	connectorServiceClient connectorPB.ConnectorServiceClient
-	modelServiceClient     modelPB.ModelServiceClient
+	mgmtServiceClient      mgmtPB.MgmtPrivateServiceClient
+	connectorServiceClient connectorPB.ConnectorPublicServiceClient
+	modelServiceClient     modelPB.ModelPublicServiceClient
 	redisClient            *redis.Client
 }
 
 // NewService initiates a service instance
-func NewService(r repository.Repository, u mgmtPB.MgmtAdminServiceClient, c connectorPB.ConnectorServiceClient, m modelPB.ModelServiceClient, rc *redis.Client) Service {
+func NewService(r repository.Repository, u mgmtPB.MgmtPrivateServiceClient, c connectorPB.ConnectorPublicServiceClient, m modelPB.ModelPublicServiceClient, rc *redis.Client) Service {
 	return &service{
 		repository:             r,
-		mgmtAdminServiceClient: u,
+		mgmtServiceClient:      u,
 		connectorServiceClient: c,
 		modelServiceClient:     m,
 		redisClient:            rc,

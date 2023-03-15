@@ -30,12 +30,12 @@ import (
 )
 
 type handler struct {
-	pipelinePB.UnimplementedPipelineServiceServer
+	pipelinePB.UnimplementedPipelinePublicServiceServer
 	service service.Service
 }
 
 // NewHandler initiates a handler instance
-func NewHandler(s service.Service) pipelinePB.PipelineServiceServer {
+func NewHandler(s service.Service) pipelinePB.PipelinePublicServiceServer {
 	datamodel.InitJSONSchema()
 	return &handler{
 		service: s,
@@ -107,13 +107,13 @@ func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipe
 	return &resp, nil
 }
 
-func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
+func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
 	owner, err := resource.GetOwner(ctx)
 	if err != nil {
-		return &pipelinePB.ListPipelineResponse{}, err
+		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	var mode pipelinePB.Pipeline_Mode
@@ -132,17 +132,17 @@ func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipeline
 		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
 	}...)
 	if err != nil {
-		return &pipelinePB.ListPipelineResponse{}, err
+		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
-		return &pipelinePB.ListPipelineResponse{}, err
+		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipeline(owner, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
-		return &pipelinePB.ListPipelineResponse{}, err
+		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	pbPipelines := []*pipelinePB.Pipeline{}
@@ -150,7 +150,7 @@ func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipeline
 		pbPipelines = append(pbPipelines, DBToPBPipeline(&dbPipeline))
 	}
 
-	resp := pipelinePB.ListPipelineResponse{
+	resp := pipelinePB.ListPipelinesResponse{
 		Pipelines:     pbPipelines,
 		NextPageToken: nextPageToken,
 		TotalSize:     totalSize,
@@ -452,7 +452,7 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 }
 
-func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
+func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerPipelineBinaryFileUploadServer) error {
 
 	owner, err := resource.GetOwner(stream.Context())
 	if err != nil {

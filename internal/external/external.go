@@ -18,7 +18,7 @@ import (
 )
 
 // InitConnectorServiceClient initialises a ConnectorServiceClient instance
-func InitConnectorServiceClient() (connectorPB.ConnectorServiceClient, *grpc.ClientConn) {
+func InitConnectorServiceClient() (connectorPB.ConnectorPublicServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -38,11 +38,11 @@ func InitConnectorServiceClient() (connectorPB.ConnectorServiceClient, *grpc.Cli
 		return nil, nil
 	}
 
-	return connectorPB.NewConnectorServiceClient(clientConn), clientConn
+	return connectorPB.NewConnectorPublicServiceClient(clientConn), clientConn
 }
 
 // InitModelServiceClient initialises a ModelServiceClient instance
-func InitModelServiceClient() (modelPB.ModelServiceClient, *grpc.ClientConn) {
+func InitModelServiceClient() (modelPB.ModelPublicServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -62,11 +62,11 @@ func InitModelServiceClient() (modelPB.ModelServiceClient, *grpc.ClientConn) {
 		return nil, nil
 	}
 
-	return modelPB.NewModelServiceClient(clientConn), clientConn
+	return modelPB.NewModelPublicServiceClient(clientConn), clientConn
 }
 
 // InitMgmtAdminServiceClient initialises a MgmtAdminServiceClient instance
-func InitMgmtAdminServiceClient() (mgmtPB.MgmtAdminServiceClient, *grpc.ClientConn) {
+func InitMgmtAdminServiceClient() (mgmtPB.MgmtPrivateServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -86,7 +86,7 @@ func InitMgmtAdminServiceClient() (mgmtPB.MgmtAdminServiceClient, *grpc.ClientCo
 		return nil, nil
 	}
 
-	return mgmtPB.NewMgmtAdminServiceClient(clientConn), clientConn
+	return mgmtPB.NewMgmtPrivateServiceClient(clientConn), clientConn
 }
 
 // InitUsageServiceClient initialises a UsageServiceClient instance (no mTLS)

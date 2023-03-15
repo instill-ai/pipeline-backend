@@ -11,14 +11,13 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/iancoleman/strcase v0.2.0
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230308122400-51986736325a
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230314172914-1976737846cb
 	github.com/instill-ai/usage-client v0.2.2-alpha
 	github.com/instill-ai/x v0.2.0-alpha
 	github.com/knadh/koanf v1.4.3
 	github.com/mennanov/fieldmask-utils v0.6.0
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/rs/cors v1.8.2
-	github.com/stretchr/testify v1.8.0
 	go.einride.tech/aip v0.58.1
 	go.temporal.io/sdk v1.17.0
 	go.uber.org/zap v1.23.0
@@ -28,6 +27,8 @@ require (
 	gorm.io/driver/postgres v1.3.9
 	gorm.io/gorm v1.23.8
 )
+
+require github.com/stretchr/testify v1.8.0 // indirect
 
 require (
 	github.com/catalinc/hashcash v0.0.0-20220723060415-5e3ec3e24f67 // indirect
