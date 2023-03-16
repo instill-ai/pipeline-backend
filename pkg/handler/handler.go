@@ -107,7 +107,7 @@ func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipe
 	return &resp, nil
 }
 
-func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
+func (h *handler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
