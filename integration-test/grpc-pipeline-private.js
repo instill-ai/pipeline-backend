@@ -18,7 +18,7 @@ client.load(['proto/vdp/pipeline/v1alpha'], 'pipeline_private_service.proto');
 
 export function CheckList() {
 
-  group("Pipelines API: List pipelines", () => {
+  group("Pipelines API: List pipelines by admin", () => {
 
     client.connect(constant.pipelineGRPCHost, {
       plaintext: true
@@ -174,7 +174,7 @@ export function CheckList() {
 
 export function CheckGet() {
 
-  group("Pipelines API: Get a pipeline", () => {
+  group("Pipelines API: Get a pipeline by admin", () => {
 
     client.connect(constant.pipelineGRPCHost, {
       plaintext: true
@@ -231,7 +231,7 @@ export function CheckGet() {
 
 export function CheckLookUp() {
 
-  group("Pipelines API: Look up a pipeline by uid", () => {
+  group("Pipelines API: Look up a pipeline by uid by admin", () => {
 
     client.connect(constant.pipelineGRPCHost, {
       plaintext: true

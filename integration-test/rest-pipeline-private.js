@@ -9,7 +9,7 @@ import * as helper from "./helper.js"
 
 export function CheckList() {
 
-  group("Pipelines API: List pipelines", () => {
+  group("Pipelines API: List pipelines by admin", () => {
 
     check(http.request("GET", `${pipelineHost}/v1alpha/admin/pipelines`), {
       [`GET /v1alpha/admin/pipelines response status is 200`]: (r) => r.status === 200,
@@ -147,7 +147,7 @@ export function CheckList() {
 
 export function CheckGet() {
 
-  group("Pipelines API: Get a pipeline", () => {
+  group("Pipelines API: Get a pipeline by admin", () => {
 
     var reqBody = Object.assign(
       {
@@ -210,7 +210,7 @@ export function CheckGet() {
 
 export function CheckLookUp() {
 
-  group("Pipelines API: Look up a pipeline by uid", () => {
+  group("Pipelines API: Look up a pipeline by uid by admin", () => {
 
     var reqBody = Object.assign(
       {
