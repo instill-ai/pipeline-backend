@@ -59,6 +59,7 @@ unit-test:       				## Run unit test
 
 .PHONY: integration-test
 integration-test:				## Run integration test
+	@TEST_FOLDER_ABS_PATH=${PWD} k6 run -e MODE=$(MODE) integration-test/grpc.js --no-usage-report --quiet
 	@TEST_FOLDER_ABS_PATH=${PWD} k6 run -e MODE=$(MODE) integration-test/rest.js --no-usage-report --quiet
 
 .PHONY: help

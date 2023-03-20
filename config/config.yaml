@@ -1,5 +1,6 @@
 server:
-  port: 8081
+  privateport: 3081
+  publicport: 8081
   https:
     cert:
     key:
@@ -29,19 +30,19 @@ temporal:
     hostport: temporal:7233
 connectorbackend:
   host: connector-backend
-  port: 8082
+  publicport: 8082
   https:
     cert:
     key:
 modelbackend:
   host: model-backend
-  port: 8083
+  publicport: 8083
   https:
     cert:
     key:
 mgmtbackend:
   host: mgmt-backend
-  adminport: 3084
+  privateport: 3084
   https:
     cert:
     key:

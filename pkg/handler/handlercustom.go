@@ -50,19 +50,19 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 	if strings.Contains(contentType, "multipart/form-data") {
 
-		mgmtAdminServiceClient, mgmtAdminServiceClientConn := external.InitMgmtAdminServiceClient()
-		if mgmtAdminServiceClientConn != nil {
-			defer mgmtAdminServiceClientConn.Close()
+		mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient()
+		if mgmtPrivateServiceClientConn != nil {
+			defer mgmtPrivateServiceClientConn.Close()
 		}
 
-		connectorServiceClient, connectorServiceClientConn := external.InitConnectorServiceClient()
-		if connectorServiceClientConn != nil {
-			defer connectorServiceClientConn.Close()
+		connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient()
+		if connectorPublicServiceClientConn != nil {
+			defer connectorPublicServiceClientConn.Close()
 		}
 
-		modelServiceClient, modelServiceClientConn := external.InitModelServiceClient()
-		if modelServiceClientConn != nil {
-			defer modelServiceClientConn.Close()
+		modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient()
+		if modelPublicServiceClientConn != nil {
+			defer modelPublicServiceClientConn.Close()
 		}
 
 		redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
@@ -70,9 +70,9 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		service := service.NewService(
 			repository.NewRepository(db.GetConnection()),
-			mgmtAdminServiceClient,
-			connectorServiceClient,
-			modelServiceClient,
+			mgmtPrivateServiceClient,
+			connectorPublicServiceClient,
+			modelPublicServiceClient,
 			redisClient,
 		)
 

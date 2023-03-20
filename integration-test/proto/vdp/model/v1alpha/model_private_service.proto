@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package vdp.model.v1alpha;
+
+// Google API
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+
+import "../../../vdp/model/v1alpha/model.proto";
+
+// Model service responds to internal access
+service ModelPrivateService {
+
+    // ========== Admin API ========== 
+
+  // ListModelsAdmin method receives a ListModelsAdminRequest message and returns a
+  // ListModelsAdminResponse
+  rpc ListModelsAdmin(ListModelsAdminRequest) returns (ListModelsAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/models"
+    };
+  }
+
+  // GetModelAdmin method receives a GetModelAdminRequest message and returns a
+  // GetModelAdminResponse
+  rpc GetModelAdmin(GetModelAdminRequest) returns (GetModelAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{name=models/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // LookUpModelAdmin method receives a LookUpModelAdminRequest message and
+  // returns a LookUpModelAdminResponse
+  rpc LookUpModelAdmin(LookUpModelAdminRequest)
+      returns (LookUpModelAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{permalink=models/*}/lookUp"
+    };
+    option (google.api.method_signature) = "permalink";
+  }
+}

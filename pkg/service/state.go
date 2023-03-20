@@ -23,7 +23,7 @@ func (s *service) checkState(recipeRscName *datamodel.Recipe) (datamodel.Pipelin
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	srcConnResp, err := s.connectorServiceClient.GetSourceConnector(ctx, &connectorPB.GetSourceConnectorRequest{
+	srcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(ctx, &connectorPB.GetSourceConnectorRequest{
 		Name: recipeRscName.Source,
 	})
 	if err != nil {
@@ -33,7 +33,7 @@ func (s *service) checkState(recipeRscName *datamodel.Recipe) (datamodel.Pipelin
 
 	srcConnState := int(srcConnResp.GetSourceConnector().GetConnector().GetState().Number())
 
-	dstConnResp, err := s.connectorServiceClient.GetDestinationConnector(ctx, &connectorPB.GetDestinationConnectorRequest{
+	dstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(ctx, &connectorPB.GetDestinationConnectorRequest{
 		Name: recipeRscName.Destination,
 	})
 	if err != nil {
@@ -45,7 +45,7 @@ func (s *service) checkState(recipeRscName *datamodel.Recipe) (datamodel.Pipelin
 
 	modelInstStates := make([]int, len(recipeRscName.ModelInstances))
 	for idx, modelInst := range recipeRscName.ModelInstances {
-		modelInstResp, err := s.modelServiceClient.GetModelInstance(ctx, &modelPB.GetModelInstanceRequest{
+		modelInstResp, err := s.modelPublicServiceClient.GetModelInstance(ctx, &modelPB.GetModelInstanceRequest{
 			Name: modelInst,
 		})
 		if err != nil {

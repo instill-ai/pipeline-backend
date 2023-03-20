@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package vdp.model.v1alpha;
+
+// Protocol Buffers Well-Known Types
+import "google/protobuf/struct.proto";
+
+// Protobuf standard
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// Google api
+import "google/api/resource.proto";
+import "google/api/field_behavior.proto";
+
+// ReleaseStage enumerates the release stages
+enum ReleaseStage {
+  // ReleaseStage: UNSPECIFIED
+  RELEASE_STAGE_UNSPECIFIED = 0;
+  // ReleaseStage: ALPHA
+  RELEASE_STAGE_ALPHA = 1;
+  // ReleaseStage: BETA
+  RELEASE_STAGE_BETA = 2;
+  // ReleaseStage: GENERALLY_AVAILABLE
+  RELEASE_STAGE_GENERALLY_AVAILABLE = 3;
+  // ReleaseStage: CUSTOM
+  RELEASE_STAGE_CUSTOM = 4;
+}
+
+///////////////////////////////////////////////////////////////////
+// ModelDefinition represents the definition of a model
+message ModelDefinition {
+  option (google.api.resource) = {
+    type : "api.instill.tech/ModelDefinition"
+    pattern : "model-definitions/{model-definition}"
+  };
+
+  // ModelDefinition resource name. It must have the format of
+  // "model-definitions/{model-definition}"
+  string name = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ModelDefinition ID in UUIDv4
+  string uid = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ModelDefinition resource ID (the last segment of the resource name) used to
+  // construct the resource name.
+  string id = 3 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+
+  // ModelDefinition display official title
+  string title = 4 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ModelDefinition documentation url
+  string documentation_url = 5 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ModelDefinition icon
+  string icon = 6 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ModelDefinition release stage
+  ReleaseStage release_stage = 7 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+
+  // ModelDefinition model specification represents the JSON schema used to
+  // validate the JSON configurations of a model created from a specific model
+  // source. Must be a valid JSON that includes what fields are needed to
+  // create/display a model.
+  google.protobuf.Struct model_spec = 8
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+
+  // ModelDefinition model instance specification represents the JSON schema
+  // used to validate the JSON configurations of a model instance from a
+  // specific model source. Must be a valid JSON that includes what fields are
+  // needed to display a model instance.
+  google.protobuf.Struct model_instance_spec = 9
+      [ (google.api.field_behavior) = REQUIRED ];
+
+  // ModelDefinition create time
+  google.protobuf.Timestamp create_time = 10
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ModelDefinition update time
+  google.protobuf.Timestamp update_time = 11
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}
+
+// View represents a view of any resource. The resource view is implemented by
+// adding a parameter to the method request which allows the client to specify
+// which view of the resource it wants to receive in the response.
+enum View {
+  // View: UNSPECIFIED, equivalent to BASIC.
+  VIEW_UNSPECIFIED = 0;
+  // View: BASIC, server response only include basic information of the resource
+  VIEW_BASIC = 1;
+  // View: FULL, full representation of the resource
+  VIEW_FULL = 2;
+}
+
+// ListModelDefinitionsRequest represents a request to list all supported model
+// definitions
+message ListModelDefinitionsRequest {
+  // Page size: the maximum number of resources to return. The service may
+  // return fewer than this value. If unspecified, at most 10 ModelDefinitions
+  // will be returned. The maximum value is 100; values above 100 will be
+  // coereced to 100.
+  optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
+  // Page token
+  optional string page_token = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  // Definition view (default is VIEW_BASIC)
+  // VIEW_UNSPECIFIED/VIEW_BASIC: omit `ModelDefinition.model_spec` and
+  // `ModelDefinition.model_instance_spec`
+  // VIEW_FULL: show full information
+  optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// ListModelDefinitionsResponse represents a response to list all supported model
+// definitions
+message ListModelDefinitionsResponse {
+  // a list of ModelDefinition instances
+  repeated ModelDefinition model_definitions = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of model definitions
+  int64 total_size = 3;
+}
+
+// GetModelDefinitionRequest represents a request to query a model definition
+message GetModelDefinitionRequest {
+  // Resource name of the model definition.
+  // For example "model-definitions/{uuid}"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/ModelDefinition",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration : {path_param_name : "model_definition.name"}
+    }
+  ];
+  // Definition view (default is VIEW_BASIC)
+  // VIEW_UNSPECIFIED/VIEW_BASIC: omit `ModelDefinition.model_spec` and
+  // `ModelDefinition.model_instance_spec`
+  // VIEW_FULL: show full information
+  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// GetModelDefinitionResponse represents a response for a model definition
+message GetModelDefinitionResponse {
+  // A model definition instance
+  ModelDefinition model_definition = 1;
+}

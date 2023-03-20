@@ -79,7 +79,7 @@ func main() {
 		grpc_zap.WithDecider(func(fullMethodName string, err error) bool {
 			// will not log gRPC calls if it was a call to liveness or readiness and no error was raised
 			if err == nil {
-				if match, _ := regexp.MatchString("vdp.pipeline.v1alpha.PipelineService/.*ness$", fullMethodName); match {
+				if match, _ := regexp.MatchString("vdp.pipeline.v1alpha.PipelinePublicService/.*ness$", fullMethodName); match {
 					return false
 				}
 			}
@@ -119,19 +119,19 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	mgmtAdminServiceClient, mgmtAdminServiceClientConn := external.InitMgmtAdminServiceClient()
-	if mgmtAdminServiceClientConn != nil {
-		defer mgmtAdminServiceClientConn.Close()
+	mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient()
+	if mgmtPrivateServiceClientConn != nil {
+		defer mgmtPrivateServiceClientConn.Close()
 	}
 
-	connectorServiceClient, connectorServiceClientConn := external.InitConnectorServiceClient()
-	if connectorServiceClientConn != nil {
-		defer connectorServiceClientConn.Close()
+	connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient()
+	if connectorPublicServiceClientConn != nil {
+		defer connectorPublicServiceClientConn.Close()
 	}
 
-	modelServiceClient, modelServiceClientConn := external.InitModelServiceClient()
-	if modelServiceClientConn != nil {
-		defer modelServiceClientConn.Close()
+	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient()
+	if modelPublicServiceClientConn != nil {
+		defer modelPublicServiceClientConn.Close()
 	}
 
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
@@ -141,21 +141,45 @@ func main() {
 
 	service := service.NewService(
 		repository,
-		mgmtAdminServiceClient,
-		connectorServiceClient,
-		modelServiceClient,
+		mgmtPrivateServiceClient,
+		connectorPublicServiceClient,
+		modelPublicServiceClient,
 		redisClient,
 	)
 
-	grpcS := grpc.NewServer(grpcServerOpts...)
-	reflection.Register(grpcS)
+	privateGrpcS := grpc.NewServer(grpcServerOpts...)
+	reflection.Register(privateGrpcS)
 
-	pipelinePB.RegisterPipelineServiceServer(
-		grpcS,
-		handler.NewHandler(service),
+	publicGrpcS := grpc.NewServer(grpcServerOpts...)
+	reflection.Register(publicGrpcS)
+
+	pipelinePB.RegisterPipelinePrivateServiceServer(
+		privateGrpcS,
+		handler.NewPrivateHandler(service),
 	)
 
-	gwS := runtime.NewServeMux(
+	pipelinePB.RegisterPipelinePublicServiceServer(
+		publicGrpcS,
+		handler.NewPublicHandler(service),
+	)
+
+	privateServeMux := runtime.NewServeMux(
+		runtime.WithForwardResponseOption(httpResponseModifier),
+		runtime.WithErrorHandler(errorHandler),
+		runtime.WithIncomingHeaderMatcher(customMatcher),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames:   true,
+				EmitUnpopulated: true,
+				UseEnumNumbers:  false,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
+		}),
+	)
+
+	publicServeMux := runtime.NewServeMux(
 		runtime.WithForwardResponseOption(httpResponseModifier),
 		runtime.WithErrorHandler(errorHandler),
 		runtime.WithIncomingHeaderMatcher(customMatcher),
@@ -172,7 +196,7 @@ func main() {
 	)
 
 	// Register custom route for POST multipart form data
-	if err := gwS.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-multipart", appendCustomHeaderMiddleware(handler.HandleTriggerPipelineBinaryFileUpload)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-multipart", appendCustomHeaderMiddleware(handler.HandleTriggerPipelineBinaryFileUpload)); err != nil {
 		logger.Fatal(err.Error())
 	}
 
@@ -182,7 +206,7 @@ func main() {
 		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
 		if usageServiceClientConn != nil {
 			defer usageServiceClientConn.Close()
-			usg = usage.NewUsage(ctx, repository, mgmtAdminServiceClient, redisClient, usageServiceClient)
+			usg = usage.NewUsage(ctx, repository, mgmtPrivateServiceClient, redisClient, usageServiceClient)
 			if usg != nil {
 				usg.StartReporter(ctx)
 			}
@@ -197,13 +221,23 @@ func main() {
 		dialOpts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	}
 
-	if err := pipelinePB.RegisterPipelineServiceHandlerFromEndpoint(ctx, gwS, fmt.Sprintf(":%v", config.Config.Server.Port), dialOpts); err != nil {
+	if err := pipelinePB.RegisterPipelinePrivateServiceHandlerFromEndpoint(ctx, privateServeMux, fmt.Sprintf(":%v", config.Config.Server.PrivatePort), dialOpts); err != nil {
 		logger.Fatal(err.Error())
 	}
 
-	httpServer := &http.Server{
-		Addr:      fmt.Sprintf(":%v", config.Config.Server.Port),
-		Handler:   grpcHandlerFunc(grpcS, gwS, config.Config.Server.CORSOrigins),
+	if err := pipelinePB.RegisterPipelinePublicServiceHandlerFromEndpoint(ctx, publicServeMux, fmt.Sprintf(":%v", config.Config.Server.PublicPort), dialOpts); err != nil {
+		logger.Fatal(err.Error())
+	}
+
+	privateHTTPServer := &http.Server{
+		Addr:      fmt.Sprintf(":%v", config.Config.Server.PrivatePort),
+		Handler:   grpcHandlerFunc(privateGrpcS, privateServeMux, config.Config.Server.CORSOrigins),
+		TLSConfig: tlsConfig,
+	}
+
+	publicHTTPServer := &http.Server{
+		Addr:      fmt.Sprintf(":%v", config.Config.Server.PublicPort),
+		Handler:   grpcHandlerFunc(publicGrpcS, publicServeMux, config.Config.Server.CORSOrigins),
 		TLSConfig: tlsConfig,
 	}
 
@@ -212,13 +246,23 @@ func main() {
 	errSig := make(chan error)
 	if config.Config.Server.HTTPS.Cert != "" && config.Config.Server.HTTPS.Key != "" {
 		go func() {
-			if err := httpServer.ListenAndServeTLS(config.Config.Server.HTTPS.Cert, config.Config.Server.HTTPS.Key); err != nil {
+			if err := privateHTTPServer.ListenAndServeTLS(config.Config.Server.HTTPS.Cert, config.Config.Server.HTTPS.Key); err != nil {
+				errSig <- err
+			}
+		}()
+		go func() {
+			if err := publicHTTPServer.ListenAndServeTLS(config.Config.Server.HTTPS.Cert, config.Config.Server.HTTPS.Key); err != nil {
 				errSig <- err
 			}
 		}()
 	} else {
 		go func() {
-			if err := httpServer.ListenAndServe(); err != nil {
+			if err := privateHTTPServer.ListenAndServe(); err != nil {
+				errSig <- err
+			}
+		}()
+		go func() {
+			if err := publicHTTPServer.ListenAndServe(); err != nil {
 				errSig <- err
 			}
 		}()
@@ -238,6 +282,7 @@ func main() {
 			usg.TriggerSingleReporter(ctx)
 		}
 		logger.Info("Shutting down server...")
-		grpcS.GracefulStop()
+		privateGrpcS.GracefulStop()
+		publicGrpcS.GracefulStop()
 	}
 }

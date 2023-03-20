@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package vdp.model.v1alpha;
+
+// Google api
+import "google/api/field_behavior.proto";
+
+// ClassificationInput represents the input of classification task
+message ClassificationInput {
+  // Input type
+  oneof type {
+    // Image type URL
+    string image_url = 1;
+    // Image type base64
+    string image_base64 = 2;
+  }
+}
+
+// ClassificationInputStream represents the input of classification task when using stream method
+message ClassificationInputStream {
+  // The list of file length for each uploaded binary file
+  repeated uint64 file_lengths = 1 [ (google.api.field_behavior) = REQUIRED ];
+  // Content of images in bytes
+  bytes content = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// ClassificationOutput represents the output of classification task
+message ClassificationOutput {
+  // Classification category
+  string category = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Classification score
+  float score = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}

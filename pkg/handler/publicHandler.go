@@ -29,20 +29,20 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-type handler struct {
-	pipelinePB.UnimplementedPipelineServiceServer
+type publicHandler struct {
+	pipelinePB.UnimplementedPipelinePublicServiceServer
 	service service.Service
 }
 
-// NewHandler initiates a handler instance
-func NewHandler(s service.Service) pipelinePB.PipelineServiceServer {
+// NewPublicHandler initiates a handler instance
+func NewPublicHandler(s service.Service) pipelinePB.PipelinePublicServiceServer {
 	datamodel.InitJSONSchema()
-	return &handler{
+	return &publicHandler{
 		service: s,
 	}
 }
 
-func (h *handler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
+func (h *publicHandler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
 	return &pipelinePB.LivenessResponse{
 		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{
 			Status: healthcheckPB.HealthCheckResponse_SERVING_STATUS_SERVING,
@@ -50,7 +50,7 @@ func (h *handler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest)
 	}, nil
 }
 
-func (h *handler) Readiness(ctx context.Context, req *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
+func (h *publicHandler) Readiness(ctx context.Context, req *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
 	return &pipelinePB.ReadinessResponse{
 		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{
 			Status: healthcheckPB.HealthCheckResponse_SERVING_STATUS_SERVING,
@@ -58,7 +58,7 @@ func (h *handler) Readiness(ctx context.Context, req *pipelinePB.ReadinessReques
 	}, nil
 }
 
-func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+func (h *publicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
 
 	// Validate JSON Schema
 	if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
@@ -107,13 +107,13 @@ func (h *handler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipe
 	return &resp, nil
 }
 
-func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipelineRequest) (*pipelinePB.ListPipelineResponse, error) {
+func (h *publicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
 	owner, err := resource.GetOwner(ctx)
 	if err != nil {
-		return &pipelinePB.ListPipelineResponse{}, err
+		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	var mode pipelinePB.Pipeline_Mode
@@ -132,17 +132,17 @@ func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipeline
 		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
 	}...)
 	if err != nil {
-		return &pipelinePB.ListPipelineResponse{}, err
+		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
-		return &pipelinePB.ListPipelineResponse{}, err
+		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipeline(owner, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(owner, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
-		return &pipelinePB.ListPipelineResponse{}, err
+		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	pbPipelines := []*pipelinePB.Pipeline{}
@@ -150,7 +150,7 @@ func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipeline
 		pbPipelines = append(pbPipelines, DBToPBPipeline(&dbPipeline))
 	}
 
-	resp := pipelinePB.ListPipelineResponse{
+	resp := pipelinePB.ListPipelinesResponse{
 		Pipelines:     pbPipelines,
 		NextPageToken: nextPageToken,
 		TotalSize:     totalSize,
@@ -159,7 +159,7 @@ func (h *handler) ListPipeline(ctx context.Context, req *pipelinePB.ListPipeline
 	return &resp, nil
 }
 
-func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
+func (h *publicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
@@ -186,7 +186,7 @@ func (h *handler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRe
 	return &resp, nil
 }
 
-func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
+func (h *publicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
 	owner, err := resource.GetOwner(ctx)
 	if err != nil {
@@ -247,7 +247,7 @@ func (h *handler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipe
 	return &resp, nil
 }
 
-func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
+func (h *publicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
 	owner, err := resource.GetOwner(ctx)
 	if err != nil {
@@ -271,7 +271,7 @@ func (h *handler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipe
 	return &pipelinePB.DeletePipelineResponse{}, nil
 }
 
-func (h *handler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipelineRequest) (*pipelinePB.LookUpPipelineResponse, error) {
+func (h *publicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipelineRequest) (*pipelinePB.LookUpPipelineResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, lookUpRequiredFields); err != nil {
@@ -308,7 +308,7 @@ func (h *handler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipe
 	return &resp, nil
 }
 
-func (h *handler) ActivatePipeline(ctx context.Context, req *pipelinePB.ActivatePipelineRequest) (*pipelinePB.ActivatePipelineResponse, error) {
+func (h *publicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.ActivatePipelineRequest) (*pipelinePB.ActivatePipelineResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, activateRequiredFields); err != nil {
@@ -337,7 +337,7 @@ func (h *handler) ActivatePipeline(ctx context.Context, req *pipelinePB.Activate
 	return &resp, nil
 }
 
-func (h *handler) DeactivatePipeline(ctx context.Context, req *pipelinePB.DeactivatePipelineRequest) (*pipelinePB.DeactivatePipelineResponse, error) {
+func (h *publicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.DeactivatePipelineRequest) (*pipelinePB.DeactivatePipelineResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, deactivateRequiredFields); err != nil {
@@ -366,7 +366,7 @@ func (h *handler) DeactivatePipeline(ctx context.Context, req *pipelinePB.Deacti
 	return &resp, nil
 }
 
-func (h *handler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipelineRequest) (*pipelinePB.RenamePipelineResponse, error) {
+func (h *publicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipelineRequest) (*pipelinePB.RenamePipelineResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, renameRequiredFields); err != nil {
@@ -400,7 +400,7 @@ func (h *handler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipe
 	return &resp, nil
 }
 
-func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
+func (h *publicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
@@ -452,7 +452,7 @@ func (h *handler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 }
 
-func (h *handler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelineService_TriggerPipelineBinaryFileUploadServer) error {
+func (h *publicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerPipelineBinaryFileUploadServer) error {
 
 	owner, err := resource.GetOwner(stream.Context())
 	if err != nil {

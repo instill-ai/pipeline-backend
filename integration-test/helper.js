@@ -46,3 +46,39 @@ export function validateRecipe(recipe) {
 
   return true
 }
+
+export function validateRecipeGRPC(recipe) {
+  if (!('source' in recipe)) {
+    console.log("Recipe has no source field")
+    return false
+  }
+
+  if (!('modelInstances' in recipe)) {
+    console.log("Recipe has no model_instances field")
+    return false
+  }
+
+  if (!('destination' in recipe)) {
+    console.log("Recipe has no destination field")
+    return false
+  }
+
+  if (isUUID(recipe.source.split('/')[1])) {
+    console.log("Recipe source field should be with resource name not permalink")
+    return false
+  }
+
+  for (const modelInstance of recipe.modelInstances) {
+    if (isUUID(modelInstance.split('/')[1])) {
+      console.log("Recipe model_instance field should be with resource name not permalink")
+      return false
+    }
+  }
+
+  if (isUUID(recipe.destination.split('/')[1])) {
+    console.log("Recipe destination field should be with resource name not permalink")
+    return false
+  }
+
+  return true
+}

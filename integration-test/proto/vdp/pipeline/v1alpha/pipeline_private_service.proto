@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package vdp.pipeline.v1alpha;
+
+// Google API
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+
+import "./pipeline.proto";
+
+// Pipeline service responds to internal access
+service PipelinePrivateService {
+
+  // ListPipelinesAdmin method receives a ListPipelinesAdminRequest message and
+  // returns a ListPipelinesAdminResponse message.
+  rpc ListPipelinesAdmin(ListPipelinesAdminRequest)
+      returns (ListPipelinesAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/pipelines"
+    };
+  }
+
+  // GetPipelineAdmin method receives a GetPipelineAdminRequest message and
+  // returns a GetPipelineAdminResponse message.
+  rpc GetPipelineAdmin(GetPipelineAdminRequest)
+      returns (GetPipelineAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{name=pipelines/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // LookUpPipelineAdmin method receives a LookUpPipelineAdminRequest message
+  // and returns a LookUpPipelineAdminResponse
+  rpc LookUpPipelineAdmin(LookUpPipelineAdminRequest)
+      returns (LookUpPipelineAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{permalink=pipelines/*}/lookUp"
+    };
+    option (google.api.method_signature) = "permalink";
+  }
+}
