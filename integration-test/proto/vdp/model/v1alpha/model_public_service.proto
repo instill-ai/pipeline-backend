@@ -1,0 +1,286 @@
+syntax = "proto3";
+
+package vdp.model.v1alpha;
+
+// Google API
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+
+import "../../../vdp/model/v1alpha/healthcheck.proto";
+import "../../../vdp/model/v1alpha/model_definition.proto";
+import "../../../vdp/model/v1alpha/model.proto";
+
+// Model service responds to external access
+service ModelPublicService {
+  option (google.api.default_host) = "api.instill.tech";
+
+  // Liveness method receives a LivenessRequest message and returns a
+  // LivenessResponse message.
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+  rpc Liveness(LivenessRequest) returns (LivenessResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/__liveness"
+      additional_bindings : [ {get : "/v1alpha/health/model"} ]
+    };
+  }
+
+  // Readiness method receives a ReadinessRequest message and returns a
+  // ReadinessResponse message.
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+  rpc Readiness(ReadinessRequest) returns (ReadinessResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/__readiness"
+      additional_bindings : [ {get : "/v1alpha/ready/model"} ]
+    };
+  }
+
+  // ListModelDefinitions method receives a ListModelDefinitionsRequest message
+  // and returns a ListModelDefinitionsResponse
+  rpc ListModelDefinitions(ListModelDefinitionsRequest)
+      returns (ListModelDefinitionsResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/model-definitions"
+    };
+  }
+
+  // GetModelDefinition method receives a GetModelDefinitionRequest message and
+  // returns a GetModelDefinitionResponse
+  rpc GetModelDefinition(GetModelDefinitionRequest)
+      returns (GetModelDefinitionResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=model-definitions/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // ListModels method receives a ListModelsRequest message and returns a
+  // ListModelsResponse
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/models"
+    };
+  }
+
+  // CreateModel method receives a CreateModelRequest message and returns a
+  // CreateModelResponse
+  rpc CreateModel(CreateModelRequest) returns (CreateModelResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/models"
+      body : "model"
+    };
+    option (google.api.method_signature) = "model";
+  }
+
+  // CreateModelBinaryFileUpload method receives a
+  // CreateModelBinaryFileUploadRequest message and returns a
+  // CreateModelBinaryFileUploadResponse message.
+  //
+  // Endpoint: "POST /v1alpha/models:multipart"
+  rpc CreateModelBinaryFileUpload(stream CreateModelBinaryFileUploadRequest)
+      returns (CreateModelBinaryFileUploadResponse) {
+    option (google.api.method_signature) = "id,model_definition,content";
+  }
+
+  // GetModel method receives a GetModelRequest message and returns a
+  // GetModelResponse
+  rpc GetModel(GetModelRequest) returns (GetModelResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=models/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // UpdateModel method receives a UpdateModelRequest message and returns a
+  // UpdateModelResponse
+  rpc UpdateModel(UpdateModelRequest) returns (UpdateModelResponse) {
+    option (google.api.http) = {
+      patch : "/v1alpha/{model.name=models/*}"
+      body : "model"
+    };
+    option (google.api.method_signature) = "model,update_mask";
+  }
+
+  // DeleteModel method receives a DeleteModelRequest message and returns a
+  // DeleteModelResponse
+  rpc DeleteModel(DeleteModelRequest) returns (DeleteModelResponse) {
+    option (google.api.http) = {
+      delete : "/v1alpha/{name=models/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // LookUpModel method receives a LookUpModelRequest message and returns a
+  // LookUpModelResponse
+  rpc LookUpModel(LookUpModelRequest) returns (LookUpModelResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{permalink=models/*}/lookUp"
+    };
+    option (google.api.method_signature) = "permalink";
+  }
+
+  // RenameModel method rename a model
+  rpc RenameModel(RenameModelRequest) returns (RenameModelResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/{name=models/*}/rename"
+      body : "*"
+    };
+    option (google.api.method_signature) = "name,new_model_id";
+  }
+
+  // PublishModel method receives a PublishModelRequest message and returns a
+  // PublishModelResponse
+  rpc PublishModel(PublishModelRequest) returns (PublishModelResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/{name=models/*}/publish"
+      body : "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // UnpublishModel method receives a UnpublishModelRequest message and returns
+  // a UnpublishModelResponse
+  rpc UnpublishModel(UnpublishModelRequest) returns (UnpublishModelResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/{name=models/*}/unpublish"
+      body : "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // ListModelInstances method receives a ListModelInstancesRequest message and
+  // returns a ListModelInstancesResponse
+  rpc ListModelInstances(ListModelInstancesRequest)
+      returns (ListModelInstancesResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{parent=models/*}/instances"
+    };
+    option (google.api.method_signature) = "parent";
+  }
+
+  // GetModelInstance method receives a GetModelInstanceRequest message and
+  // returns a GetModelInstanceResponse
+  rpc GetModelInstance(GetModelInstanceRequest)
+      returns (GetModelInstanceResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=models/*/instances/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // LookUpModelInstance method receives a LookUpModelInstanceRequest message
+  // and returns a
+  // LookUpModelInstanceResponse
+  rpc LookUpModelInstance(LookUpModelInstanceRequest)
+      returns (LookUpModelInstanceResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{permalink=models/*/instances/*}/lookUp"
+    };
+    option (google.api.method_signature) = "permalink";
+  }
+
+  // DeployModelInstance deploy a model instance to online state
+  rpc DeployModelInstance(DeployModelInstanceRequest)
+      returns (DeployModelInstanceResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/{name=models/*/instances/*}/deploy"
+      body : "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // UndeployModelInstance undeploy a model instance to offline state
+  rpc UndeployModelInstance(UndeployModelInstanceRequest)
+      returns (UndeployModelInstanceResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/{name=models/*/instances/*}/undeploy"
+      body : "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // GetModelInstanceCard method receives a GetModelInstanceCardRequest message
+  // and returns a GetModelInstanceCardResponse
+  rpc GetModelInstanceCard(GetModelInstanceCardRequest)
+      returns (GetModelInstanceCardResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=models/*/instances/*/readme}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  ///////////////////////////////////////////////////////
+  //
+  // TriggerModelInstance method receives a TriggerModelInstanceRequest message
+  // and returns a TriggerModelInstanceResponse message.
+  rpc TriggerModelInstance(TriggerModelInstanceRequest)
+      returns (TriggerModelInstanceResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/{name=models/*/instances/*}/trigger"
+      body : "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // TriggerModelInstanceBinaryFileUpload method receives a
+  // TriggerModelInstanceBinaryFileUploadRequest message and returns a
+  // TriggerModelInstanceBinaryFileUploadResponse message.
+  //
+  // Endpoint: "POST/v1alpha/{name=models/*/instances/*}/trigger-multipart"
+  rpc TriggerModelInstanceBinaryFileUpload(
+      stream TriggerModelInstanceBinaryFileUploadRequest)
+      returns (TriggerModelInstanceBinaryFileUploadResponse) {
+    option (google.api.method_signature) = "name,file";
+  }
+
+  // TestModelInstance method receives a TestModelInstanceRequest message
+  // and returns a TestModelInstanceResponse message.
+  rpc TestModelInstance(TestModelInstanceRequest)
+      returns (TestModelInstanceResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/{name=models/*/instances/*}/test"
+      body : "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // TestModelInstanceBinaryFileUpload method receives a
+  // TestModelInstanceBinaryFileUploadRequest message and returns a
+  // TestModelInstanceBinaryFileUploadResponse message.
+  //
+  // Endpoint: "POST/v1alpha/{name=models/*/instances/*}/test-multipart"
+  rpc TestModelInstanceBinaryFileUpload(
+      stream TestModelInstanceBinaryFileUploadRequest)
+      returns (TestModelInstanceBinaryFileUploadResponse) {
+    option (google.api.method_signature) = "name,file";
+  }
+
+  // GetModelOperation method receives a
+  // GetModelOperationRequest message and returns a
+  // GetModelOperationResponse message.
+  rpc GetModelOperation(GetModelOperationRequest)
+      returns (GetModelOperationResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=operations/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // ListModelOperations method receives a ListModelOperationsRequest message
+  // and returns a ListModelOperationsResponse
+  rpc ListModelOperations(ListModelOperationsRequest) returns (ListModelOperationsResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/operations"
+    };
+  }
+
+  // CancelModelOperation method receives a CancelModelOperationRequest message
+  // and returns a CancelModelOperationResponse
+  rpc CancelModelOperation(CancelModelOperationRequest)
+      returns (CancelModelOperationResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/{name=operations/*}/cancel"
+      body : "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+}

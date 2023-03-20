@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package vdp.connector.v1alpha;
+
+// Google API
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+
+import "./connector.proto";
+
+// Connector service responds to internal access
+service ConnectorPrivateService {
+
+  // *SourceConnector methods
+
+  // ListSourceConnectorsAdmin method receives a ListSourceConnectorsAdminRequest message
+  // and returns a ListSourceConnectorsAdminResponse message.
+  rpc ListSourceConnectorsAdmin(ListSourceConnectorsAdminRequest)
+      returns (ListSourceConnectorsAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/source-connectors"
+    };
+  }
+
+  // GetSourceConnectorAdmin method receives a GetSourceConnectorAdminRequest
+  // message and returns a GetSourceConnectorAdminResponse message.
+  rpc GetSourceConnectorAdmin(GetSourceConnectorAdminRequest)
+      returns (GetSourceConnectorAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{name=source-connectors/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // LookUpSourceConnectorAdmin method receives a
+  // LookUpSourceConnectorAdminRequest message and returns a
+  // LookUpSourceConnectorAdminResponse
+  rpc LookUpSourceConnectorAdmin(LookUpSourceConnectorAdminRequest)
+      returns (LookUpSourceConnectorAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{permalink=source-connectors/*}/lookUp"
+    };
+    option (google.api.method_signature) = "permalink";
+  }
+
+  // *DestinationConnector methods
+
+  // ListDestinationConnectorsAdmin method receives a ListDestinationConnectorsAdminRequest
+  // message and returns a ListDestinationConnectorsResponse message.
+  rpc ListDestinationConnectorsAdmin(ListDestinationConnectorsAdminRequest)
+      returns (ListDestinationConnectorsAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/destination-connectors"
+    };
+  }
+
+  // GetDestinationConnectorAdmin method receives a
+  // GetDestinationConnectorAdminRequest message and returns a
+  // GetDestinationConnectorAdminResponse message.
+  rpc GetDestinationConnectorAdmin(GetDestinationConnectorAdminRequest)
+      returns (GetDestinationConnectorAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{name=destination-connectors/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // LookUpDestinationConnectorAdmin method receives a
+  // LookUpDestinationConnectorAdminRequest message and returns a
+  // LookUpDestinationConnectorAdminResponse
+  rpc LookUpDestinationConnectorAdmin(LookUpDestinationConnectorAdminRequest)
+      returns (LookUpDestinationConnectorAdminResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{permalink=destination-connectors/*}/lookUp"
+    };
+    option (google.api.method_signature) = "permalink";
+  }
+}

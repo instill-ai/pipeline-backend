@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package vdp.model.v1alpha;
+
+// Google api
+import "google/api/field_behavior.proto";
+
+// BoundingBox represents the bounding box data structure
+message BoundingBox {
+  // Bounding box top y-axis value
+  float top = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Bounding box left x-axis value
+  float left = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Bounding box width value
+  float width = 3 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Bounding box height value
+  float height = 4 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}

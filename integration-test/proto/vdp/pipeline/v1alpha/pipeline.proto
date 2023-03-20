@@ -1,0 +1,434 @@
+syntax = "proto3";
+
+package vdp.pipeline.v1alpha;
+
+// Protocol Buffers Well-Known Types
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// Google API
+import "google/api/resource.proto";
+import "google/api/field_behavior.proto";
+
+import "../../../vdp/model/v1alpha/model.proto";
+import "../../../vdp/model/v1alpha/task_classification.proto";
+import "../../../vdp/model/v1alpha/task_detection.proto";
+import "../../../vdp/model/v1alpha/task_keypoint.proto";
+import "../../../vdp/model/v1alpha/task_ocr.proto";
+import "../../../vdp/model/v1alpha/task_instance_segmentation.proto";
+import "../../../vdp/model/v1alpha/task_semantic_segmentation.proto";
+import "../../../vdp/model/v1alpha/task_text_to_image.proto";
+import "../../../vdp/model/v1alpha/task_text_generation.proto";
+import "../../../vdp/model/v1alpha/task_unspecified.proto";
+
+// Pipeline represents a pipeline recipe
+message Recipe {
+  // A source connector resource
+  string source = 1 [
+    (google.api.field_behavior) = IMMUTABLE,
+    (google.api.resource_reference).type = "api.instill.tech/Connector"
+  ];
+  // A destination connector resource
+  string destination = 2 [
+    (google.api.field_behavior) = IMMUTABLE,
+    (google.api.resource_reference).type = "api.instill.tech/Connector"
+  ];
+  // A list of model instance resources
+  repeated string model_instances = 3 [
+    (google.api.field_behavior) = IMMUTABLE,
+    (google.api.resource_reference).type = "api.instill.tech/ModelInstance"
+  ];
+}
+
+// Pipeline represents the content of a pipeline
+message Pipeline {
+  option (google.api.resource) = {
+    type : "api.instill.tech/Pipeline"
+    pattern : "pipelines/{pipeline}"
+  };
+
+  // Mode enumerates the pipeline modes
+  enum Mode {
+    // Mode: UNSPECIFIED
+    MODE_UNSPECIFIED = 0;
+    // Mode: SYNC
+    MODE_SYNC = 1;
+    // Mode: ASYNC
+    MODE_ASYNC = 2;
+  }
+
+  // State enumerates the state of a pipeline
+  enum State {
+    // State: UNSPECIFIED
+    STATE_UNSPECIFIED = 0;
+    // State INACTIVE indicates the pipeline is inactive
+    STATE_INACTIVE = 1;
+    // State ACTIVE indicates the pipeline is active
+    STATE_ACTIVE = 2;
+    // State ERROR indicates the pipeline has error
+    STATE_ERROR = 3;
+  }
+
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Pipeline UUID
+  string uid = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Pipeline resource ID (the last segment of the resource name) used to
+  // construct the resource name. This conforms to RFC-1034, which restricts to
+  // letters, numbers, and hyphen, with the first character a letter, the last a
+  // letter or a number, and a 63 character maximum.
+  string id = 3 [ (google.api.field_behavior) = IMMUTABLE ];
+  // Pipeline description
+  optional string description = 4 [ (google.api.field_behavior) = OPTIONAL ];
+  // Pipeline recipe
+  Recipe recipe = 5 [ (google.api.field_behavior) = IMMUTABLE ];
+  // Pipeline mode
+  Mode mode = 6 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Pipeline state
+  State state = 7 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Pipeline owner
+  oneof owner {
+    // The resource name of a user, e.g., "users/local-user".
+    string user = 8 [
+      (google.api.resource_reference).type = "api.instill.tech/User",
+      (google.api.field_behavior) = OUTPUT_ONLY
+    ];
+    // The resource name of an organization
+    string org = 9 [
+      (google.api.resource_reference).type = "api.instill.tech/Organization",
+      (google.api.field_behavior) = OUTPUT_ONLY
+    ];
+  };
+  // Pipeline creation time
+  google.protobuf.Timestamp create_time = 10
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Pipeline update time
+  google.protobuf.Timestamp update_time = 11
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}
+
+// CreatePipelineRequest represents a request to create a pipeline
+message CreatePipelineRequest {
+  // A pipeline resource to create
+  Pipeline pipeline = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// CreatePipelineResponse represents a response for a pipeline resource
+message CreatePipelineResponse {
+  // The created pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// View represents a view of any resource. The resource view is implemented by
+// adding a parameter to the method request which allows the client to specify
+// which view of the resource it wants to receive in the response.
+enum View {
+  // View: UNSPECIFIED
+  VIEW_UNSPECIFIED = 0;
+  // View: BASIC
+  VIEW_BASIC = 1;
+  // View: FULL
+  VIEW_FULL = 2;
+}
+
+// ListPipelinesRequest represents a request to list pipelines
+message ListPipelinesRequest {
+  // The maximum number of pipelines to return. The service may return fewer
+  // than this value. If unspecified, at most 10 pipelines will be returned. The
+  // maximum value is 100; values above 100 will be coerced to 100.
+  optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
+  // Page token
+  optional string page_token = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  // View view (default is VIEW_BASIC)
+  optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
+  // Filter expression to list pipelines
+  optional string filter = 4 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// ListPipelinesResponse represents a response for a list of pipelines
+message ListPipelinesResponse {
+  // A list of pipeline resources
+  repeated Pipeline pipelines = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of pipeline resources
+  int64 total_size = 3;
+}
+
+// GetPipelineRequest represents a request to query a pipeline
+message GetPipelineRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration : {path_param_name : "pipeline.name"}
+    }
+  ];
+  // Pipeline resource view (default is VIEW_BASIC)
+  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// GetPipelineResponse represents a response for a pipeline resource
+message GetPipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// UpdatePipelineRequest represents a request to update a pipeline
+message UpdatePipelineRequest {
+  // A pipeline resource to update
+  Pipeline pipeline = 1 [ (google.api.field_behavior) = REQUIRED ];
+  // Update mask for a pipeline resource
+  google.protobuf.FieldMask update_mask = 2
+      [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// UpdatePipelineResponse represents a response for a pipeline resource
+message UpdatePipelineResponse {
+  // An updated pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// DeletePipelineRequest represents a request to delete a pipeline resource
+message DeletePipelineRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration : {path_param_name : "pipeline.name"}
+    }
+  ];
+}
+
+// DeletePipelineResponse represents an empty response
+message DeletePipelineResponse {}
+
+// LookUpPipelineRequest represents a request to query a pipeline via permalink
+message LookUpPipelineRequest {
+  // Permalink of a pipeline. For example:
+  // "pipelines/{uid}"
+  string permalink = 1 [ (google.api.field_behavior) = REQUIRED ];
+  // View view (default is VIEW_BASIC)
+  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// LookUpPipelineResponse represents a response for a pipeline resource
+message LookUpPipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// ActivatePipelineRequest represents a request to activate a pipeline
+message ActivatePipelineRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+  ];
+}
+
+// ActivatePipelineResponse represents an activated pipeline
+message ActivatePipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// DeactivatePipelineRequest represents a request to deactivate a pipeline
+message DeactivatePipelineRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+  ];
+}
+
+// DeactivatePipelineResponse represents an inactivated pipeline
+message DeactivatePipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// RenamePipelineRequest represents a request to rename the pipeline resource
+// name
+message RenamePipelineRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+  ];
+  // Pipeline new resource id to replace with the pipeline resource name to be
+  // "pipelines/{new_pipeline_id}"
+  string new_pipeline_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// RenamePipelineResponse represents a renamed pipeline resource
+message RenamePipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
+////////////////////////////////////
+//  Trigger methods
+////////////////////////////////////
+
+// TaskOutput represents the output of a CV Task result from a
+// model instance, extended from model.v1alpha.TaskOutput.
+// Here we don't use a model.v1alpha.TaskOutput type field but explicitly use
+// the replicated oneof field because we want the CV Task output to be at the
+// same message layer like the trigger output of model instance.
+message TaskOutput {
+  // The index of input data in a batch
+  string index = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // The inference task output
+  oneof output {
+    // The classification output
+    model.v1alpha.ClassificationOutput classification = 2
+        [ (google.api.field_behavior) = OUTPUT_ONLY ];
+    // The detection output
+    model.v1alpha.DetectionOutput detection = 3
+        [ (google.api.field_behavior) = OUTPUT_ONLY ];
+    // The keypoint output
+    model.v1alpha.KeypointOutput keypoint = 4
+        [ (google.api.field_behavior) = OUTPUT_ONLY ];
+    // The ocr output
+    model.v1alpha.OcrOutput ocr = 5
+        [ (google.api.field_behavior) = OUTPUT_ONLY ];
+    // The instance segmentation output
+    model.v1alpha.InstanceSegmentationOutput instance_segmentation = 6
+        [ (google.api.field_behavior) = OUTPUT_ONLY ];
+    // The semantic segmentation output
+    model.v1alpha.SemanticSegmentationOutput semantic_segmentation = 7
+        [ (google.api.field_behavior) = OUTPUT_ONLY ];
+    // The text to image output
+    model.v1alpha.TextToImageOutput text_to_image = 8
+        [ (google.api.field_behavior) = OUTPUT_ONLY ];
+    // The text generation
+    model.v1alpha.TextGenerationOutput text_generation = 9
+        [ (google.api.field_behavior) = OUTPUT_ONLY ];
+    // The unspecified task output
+    model.v1alpha.UnspecifiedOutput unspecified = 10
+        [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  }
+}
+
+// ModelInstanceOutput represents one model instance inference result
+message ModelInstanceOutput {
+  // The model instance
+  string model_instance = 1 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.resource_reference).type = "api.instill.tech/ModelInstance"
+  ];
+  // The task type
+  model.v1alpha.ModelInstance.Task task = 2
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // The extended task outputs based on the model instance inference (i.e.,
+  // from a trigger endpoint of model-backend)
+  repeated TaskOutput task_outputs = 3
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}
+
+// TriggerPipelineRequest represents a request to trigger a pipeline
+message TriggerPipelineRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+  ];
+  // Input to the pipeline
+  repeated model.v1alpha.TaskInput task_inputs = 2
+      [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// TriggerPipelineResponse represents a response for the output
+// of a pipeline, i.e., the multiple model instance inference outputs
+message TriggerPipelineResponse {
+  // The data mapping indices stores UUID for each input
+  repeated string data_mapping_indices = 1;
+  // The multiple model instance inference outputs
+  repeated ModelInstanceOutput model_instance_outputs = 2;
+}
+
+// TriggerPipelineBinaryFileUploadRequest represents a request to trigger a
+// pipeline
+message TriggerPipelineBinaryFileUploadRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+  ];
+  // Input to the pipeline
+  model.v1alpha.TaskInputStream task_input = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// TriggerPipelineBinaryFileUploadResponse represents a response for the output
+// of a pipeline, i.e., the multiple model instance inference outputs
+message TriggerPipelineBinaryFileUploadResponse {
+  // The data mapping indices stores UUID for each input
+  repeated string data_mapping_indices = 1;
+  // The multiple model instance inference outputs
+  repeated ModelInstanceOutput model_instance_outputs = 2;
+}
+
+// ========== Admin endpoints
+
+// ListPipelinesAdminRequest represents a request to list all pipelines from all users by admin
+message ListPipelinesAdminRequest {
+  // The maximum number of pipelines to return. The service may return fewer
+  // than this value. If unspecified, at most 10 pipelines will be returned. The
+  // maximum value is 100; values above 100 will be coerced to 100.
+  optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
+  // Page token
+  optional string page_token = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  // View view (default is VIEW_BASIC)
+  optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
+  // Filter expression to list pipelines
+  optional string filter = 4 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// ListPipelinesAdminResponse represents a response for a list of pipelines
+message ListPipelinesAdminResponse {
+  // A list of pipeline resources
+  repeated Pipeline pipelines = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of pipeline resources
+  int64 total_size = 3;
+}
+
+// GetPipelineAdminRequest represents a request to query a user's pipeline by admin
+message GetPipelineAdminRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration : {path_param_name : "pipeline.name"}
+    }
+  ];
+  // Pipeline resource view (default is VIEW_BASIC)
+  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// GetPipelineAdminResponse represents a response for a pipeline resource
+message GetPipelineAdminResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// LookUpPipelineAdminRequest represents a request to query a user's pipeline via permalink by admin 
+message LookUpPipelineAdminRequest {
+  // Permalink of a pipeline. For example:
+  // "pipelines/{uid}"
+  string permalink = 1 [ (google.api.field_behavior) = REQUIRED ];
+  // View view (default is VIEW_BASIC)
+  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// LookUpPipelineAdminResponse represents a response for a pipeline resource
+message LookUpPipelineAdminResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}

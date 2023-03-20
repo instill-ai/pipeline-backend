@@ -12,6 +12,11 @@ if (__ENV.MODE == "api-gateway") {
   proto = "http"
   pHost = cHost = mHost = "localhost"
   pPort = cPort = mPort = 8080
+} else if (__ENV.MODE == "private") {
+  proto = "http"
+  pHost = cHost = mHost = "localhost"
+  cPort = mPort = 8080  
+  pPort = 8081
 } else {
   // direct microservice mode
   proto = "http"
@@ -24,6 +29,7 @@ if (__ENV.MODE == "api-gateway") {
 }
 
 export const pipelineHost = `${proto}://${pHost}:${pPort}`;
+export const pipelineGRPCHost = `${pHost}:${pPort}`;
 export const connectorHost = `${proto}://${cHost}:${cPort}`;
 export const modelHost = `${proto}://${mHost}:${mPort}`;
 
@@ -65,6 +71,17 @@ export const detSyncHTTPMultiModelInstRecipe = {
       `models/${model_id}/instances/${model_instance_id}`,
     ],
     destination: "destination-connectors/destination-http"
+  },
+};
+
+export const detSynGRPCMultiModelInstRecipe = {
+  recipe: {
+    source: "source-connectors/source-grpc",
+    model_instances: [
+      `models/${model_id}/instances/${model_instance_id}`,
+      `models/${model_id}/instances/${model_instance_id}`,
+    ],
+    destination: "destination-connectors/destination-grpc"
   },
 };
 
