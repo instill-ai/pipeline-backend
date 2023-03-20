@@ -64,6 +64,10 @@ type Service interface {
 	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error)
 	TriggerPipelineBinaryFileUpload(pipeline *datamodel.Pipeline, task modelPB.ModelInstance_Task, input interface{}) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error)
 	GetModelInstanceByName(modelInstanceName string) (*modelPB.ModelInstance, error)
+
+	ListPipelineAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
+	GetPipelineByIDAdmin(id string, isBasicView bool) (*datamodel.Pipeline, error)
+	GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
 }
 
 type service struct {
@@ -164,6 +168,26 @@ func (s *service) ListPipeline(ownerRscName string, pageSize int64, pageToken st
 	return dbPipelines, ps, pt, nil
 }
 
+func (s *service) ListPipelineAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
+
+	dbPipelines, ps, pt, err := s.repository.ListPipelineAdmin(pageSize, pageToken, isBasicView, filter)
+	if err != nil {
+		return nil, 0, "", err
+	}
+
+	if !isBasicView {
+		for idx, dbPipeline := range dbPipelines {
+			recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
+			if err != nil {
+				return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+			}
+			dbPipelines[idx].Recipe = recipeRscName
+		}
+	}
+
+	return dbPipelines, ps, pt, nil
+}
+
 func (s *service) GetPipelineByID(id string, ownerRscName string, isBasicView bool) (*datamodel.Pipeline, error) {
 
 	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
@@ -189,6 +213,24 @@ func (s *service) GetPipelineByID(id string, ownerRscName string, isBasicView bo
 	return dbPipeline, nil
 }
 
+func (s *service) GetPipelineByIDAdmin(id string, isBasicView bool) (*datamodel.Pipeline, error) {
+
+	dbPipeline, err := s.repository.GetPipelineByIDAdmin(id, isBasicView)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isBasicView {
+		recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		dbPipeline.Recipe = recipeRscName
+	}
+
+	return dbPipeline, nil
+}
+
 func (s *service) GetPipelineByUID(uid uuid.UUID, ownerRscName string, isBasicView bool) (*datamodel.Pipeline, error) {
 
 	ownerPermalink, err := s.ownerRscNameToPermalink(ownerRscName)
@@ -202,6 +244,24 @@ func (s *service) GetPipelineByUID(uid uuid.UUID, ownerRscName string, isBasicVi
 	}
 
 	dbPipeline.Owner = ownerRscName
+
+	if !isBasicView {
+		recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		dbPipeline.Recipe = recipeRscName
+	}
+
+	return dbPipeline, nil
+}
+
+func (s *service) GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error) {
+
+	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(uid, isBasicView)
+	if err != nil {
+		return nil, err
+	}
 
 	if !isBasicView {
 		recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)

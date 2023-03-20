@@ -79,7 +79,7 @@ func main() {
 		grpc_zap.WithDecider(func(fullMethodName string, err error) bool {
 			// will not log gRPC calls if it was a call to liveness or readiness and no error was raised
 			if err == nil {
-				if match, _ := regexp.MatchString("vdp.pipeline.v1alpha.PipelineService/.*ness$", fullMethodName); match {
+				if match, _ := regexp.MatchString("vdp.pipeline.v1alpha.PipelinePublicService/.*ness$", fullMethodName); match {
 					return false
 				}
 			}
@@ -152,7 +152,12 @@ func main() {
 
 	pipelinePB.RegisterPipelinePublicServiceServer(
 		grpcS,
-		handler.NewHandler(service),
+		handler.NewPublicHandler(service),
+	)
+
+	pipelinePB.RegisterPipelinePrivateServiceServer(
+		grpcS,
+		handler.NewPrivateHandler(service),
 	)
 
 	gwS := runtime.NewServeMux(
@@ -198,6 +203,10 @@ func main() {
 	}
 
 	if err := pipelinePB.RegisterPipelinePublicServiceHandlerFromEndpoint(ctx, gwS, fmt.Sprintf(":%v", config.Config.Server.Port), dialOpts); err != nil {
+		logger.Fatal(err.Error())
+	}
+
+	if err := pipelinePB.RegisterPipelinePrivateServiceHandlerFromEndpoint(ctx, gwS, fmt.Sprintf(":%v", config.Config.Server.Port), dialOpts); err != nil {
 		logger.Fatal(err.Error())
 	}
 

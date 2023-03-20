@@ -31,6 +31,7 @@ if (__ENV.MODE == "api-gateway") {
 export const pipelineHost = `${proto}://${pHost}:${pPort}`;
 export const pipelineGRPCHost = `${pHost}:${pPort}`;
 export const connectorHost = `${proto}://${cHost}:${cPort}`;
+export const connectorGRPCHost = `${cHost}:${cPort}`;
 export const modelHost = `${proto}://${mHost}:${mPort}`;
 
 export const dogImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b");

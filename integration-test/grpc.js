@@ -13,13 +13,15 @@ import {
   randomString
 } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
-import * as pipeline from './grpc-pipeline.js';
+import * as pipeline from './grpc-pipeline-public.js';
+import * as pipelinePrivate from './grpc-pipeline-private.js';
 import * as triggerSync from './grpc-trigger-sync.js';
 import * as triggerAsync from './grpc-trigger-async.js';
 
 const client = new grpc.Client();
 
 client.load(['proto/vdp/pipeline/v1alpha'], 'pipeline_public_service.proto');
+client.load(['proto/vdp/connector/v1alpha'], 'connector_public_service.proto');
 
 import * as constant from "./const.js";
 
@@ -34,92 +36,79 @@ export let options = {
 
 export function setup() {
 
+  client.connect(constant.connectorGRPCHost, {
+    plaintext: true
+  });
+
   group("Connector Backend API: Create a http source connector", function () {
 
-    var res = http.request("POST", `${constant.connectorHost}/v1alpha/source-connectors`,
-      JSON.stringify({
+    var resp = client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateSourceConnector', {
+      source_connector: {
         "id": "source-http",
         "source_connector_definition": "source-connector-definitions/source-http",
         "connector": {
           "configuration": {}
         }
-      }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
-    check(res, {
-      "POST /v1alpha/source-connectors response status for creating HTTP source connector 201": (r) => r.status === 201,
+      }
     })
+    check(resp, {
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateSourceConnector HTTP response StatusOK": (r) => r.status === grpc.StatusOK,
+    });
 
   });
 
   group("Connector Backend API: Create a http destination connector", function () {
 
-    var res = http.request("POST", `${constant.connectorHost}/v1alpha/destination-connectors`,
-      JSON.stringify({
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
+      destination_connector: {
         "id": "destination-http",
         "destination_connector_definition": "destination-connector-definitions/destination-http",
         "connector": {
           "configuration": {}
         }
-      }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
-
-    check(res, {
-      "POST /v1alpha/destination-connectors response status for creating HTTP destination connector 201": (r) => r.status === 201,
-    })
+      }
+    }), {
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector HTTP response StatusOK": (r) => r.status === grpc.StatusOK,
+    });
 
   });
 
   group("Connector Backend API: Create a gRPC source connector", function () {
 
-    var res = http.request("POST", `${constant.connectorHost}/v1alpha/source-connectors`,
-      JSON.stringify({
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateSourceConnector', {
+      source_connector: {
         "id": "source-grpc",
         "source_connector_definition": "source-connector-definitions/source-grpc",
         "connector": {
           "configuration": {}
         }
-      }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
-    check(res, {
-      "POST /v1alpha/source-connectors response status for creating gRPC source connector 201": (r) => r.status === 201,
-    })
+      }
+    }), {
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateSourceConnector gRPC response StatusOK": (r) => r.status === grpc.StatusOK,
+    });
 
   });
 
   group("Connector Backend API: Create a gRPC destination connector", function () {
 
-    var res = http.request("POST", `${constant.connectorHost}/v1alpha/destination-connectors`,
-      JSON.stringify({
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
+      destination_connector: {
         "id": "destination-grpc",
         "destination_connector_definition": "destination-connector-definitions/destination-grpc",
         "connector": {
           "configuration": {}
         }
-      }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
-
-    check(res, {
-      "POST /v1alpha/destination-connectors response status for creating gRPC destination connector 201": (r) => r.status === 201,
-    })
+      }
+    }), {
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector gRPC response StatusOK": (r) => r.status === grpc.StatusOK,
+    });
 
   });
 
   group("Connector Backend API: Create a CSV destination connector", function () {
 
-    var res = http.request("POST", `${constant.connectorHost}/v1alpha/destination-connectors`,
-      JSON.stringify({
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
+      destination_connector: {
         "id": constant.dstCSVConnID,
         "destination_connector_definition": "destination-connector-definitions/destination-csv",
         "connector": {
@@ -127,22 +116,19 @@ export function setup() {
             "destination_path": "/local/pipeline-backend-test"
           }
         }
-      }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
-
-    check(res, {
-      "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
-    })
+      }
+    }), {
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
+    });
 
     // Check connector state being updated in 300 secs
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 300000;
     while (timeoutTime > currentTime) {
-      var res = http.request("GET", `${constant.connectorHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`)
-      if (res.json().destination_connector.connector.state === "STATE_CONNECTED") {
+      var res = client.invoke('vdp.connector.v1alpha.ConnectorPublicService/GetDestinationConnector', {
+        name: `destination_connector/${constant.dstCSVConnID}`
+      })
+      if (res.message.destinationConnector.connector.state === "STATE_CONNECTED") {
         break
       }
       sleep(1)
@@ -211,6 +197,7 @@ export function setup() {
 
   });
 
+  client.close()
 }
 
 export default function (data) {
@@ -248,39 +235,61 @@ export default function (data) {
   triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
   triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
 
+  if (__ENV.MODE == "private") {
+    pipelinePrivate.CheckList()
+    pipelinePrivate.CheckGet()
+    pipelinePrivate.CheckLookUp()
+  }
+
 }
 
 export function teardown(data) {
 
+  client.connect(constant.connectorGRPCHost, {
+    plaintext: true
+  });
+  
   group("Connector Backend API: Delete the http source connector", function () {
-    check(http.request("DELETE", `${constant.connectorHost}/v1alpha/source-connectors/source-http`), {
-      [`DELETE /v1alpha/source-connectors/source-http response status 204`]: (r) => r.status === 204,
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteSourceConnector`, {
+      name: "source-connectors/source-http"
+    }), {
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteSourceConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
 
   group("Connector Backend API: Delete the http destination connector", function () {
-    check(http.request("DELETE", `${constant.connectorHost}/v1alpha/destination-connectors/destination-http`), {
-      [`DELETE /v1alpha/destination-connectors/destination-http response status 204`]: (r) => r.status === 204,
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector`, {
+      name: "destination-connectors/destination-http"
+    }), {
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
 
   group("Connector Backend API: Delete the gRPC source connector", function () {
-    check(http.request("DELETE", `${constant.connectorHost}/v1alpha/source-connectors/source-grpc`), {
-      [`DELETE /v1alpha/source-connectors/source-grpc response status 204`]: (r) => r.status === 204,
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteSourceConnector`, {
+      name: "source-connectors/source-grpc"
+    }), {
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteSourceConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
 
   group("Connector Backend API: Delete the gRPC destination connector", function () {
-    check(http.request("DELETE", `${constant.connectorHost}/v1alpha/destination-connectors/destination-grpc`), {
-      [`DELETE /v1alpha/destination-connectors/destination-grpc response status 204`]: (r) => r.status === 204,
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector`, {
+      name: "destination-connectors/destination-grpc"
+    }), {
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
 
   group("Connector Backend API: Delete the csv destination connector", function () {
-    check(http.request("DELETE", `${constant.connectorHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`), {
-      [`DELETE /v1alpha/destination-connectors/${constant.dstCSVConnID} response status 204`]: (r) => r.status === 204,
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector`, {
+      name: `destination-connectors/${constant.dstCSVConnID}`
+    }), {
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
+
+  client.close();
 
   group("Model Backend API: Delete the detection model", function () {
     check(http.request("DELETE", `${constant.modelHost}/v1alpha/models/${constant.model_id}`, null, {
@@ -291,7 +300,7 @@ export function teardown(data) {
       [`DELETE /v1alpha/models/${constant.model_id} response status is 204`]: (r) => r.status === 204,
     });
   });
-  
+
   group("Connector API: Delete all pipelines created by this test", () => {
 
     client.connect(constant.pipelineGRPCHost, {
@@ -299,8 +308,8 @@ export function teardown(data) {
     });
 
     for (const pipeline of client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
-      pageSize: 1000
-    }, {}).message.pipelines) {
+        pageSize: 1000
+      }, {}).message.pipelines) {
       check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
         name: `pipelines/${pipeline.id}`
       }), {

@@ -1,13 +1,27 @@
 import http from "k6/http";
 
-import { sleep, check, group, fail } from "k6";
-import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
-import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
+import {
+  sleep,
+  check,
+  group,
+  fail
+} from "k6";
+import {
+  FormData
+} from "https://jslib.k6.io/formdata/0.0.2/index.js";
+import {
+  randomString
+} from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
-import { pipelineHost, connectorHost, modelHost } from "./const.js";
+import {
+  pipelineHost,
+  connectorHost,
+  modelHost
+} from "./const.js";
 
 import * as constant from "./const.js";
-import * as pipeline from './rest-pipeline.js';
+import * as pipeline from './rest-pipeline-public.js';
+import * as pipelinePrivate from './rest-pipeline-private.js';
 import * as triggerSync from './rest-trigger-sync.js';
 import * as triggerAsync from './rest-trigger-async.js';
 
@@ -31,8 +45,10 @@ export function setup() {
           "configuration": {}
         }
       }), {
-      headers: { "Content-Type": "application/json" },
-    })
+        headers: {
+          "Content-Type": "application/json"
+        },
+      })
     check(res, {
       "POST /v1alpha/source-connectors response status for creating HTTP source connector 201": (r) => r.status === 201,
     })
@@ -49,8 +65,10 @@ export function setup() {
           "configuration": {}
         }
       }), {
-      headers: { "Content-Type": "application/json" },
-    })
+        headers: {
+          "Content-Type": "application/json"
+        },
+      })
 
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating HTTP destination connector 201": (r) => r.status === 201,
@@ -68,8 +86,10 @@ export function setup() {
           "configuration": {}
         }
       }), {
-      headers: { "Content-Type": "application/json" },
-    })
+        headers: {
+          "Content-Type": "application/json"
+        },
+      })
     check(res, {
       "POST /v1alpha/source-connectors response status for creating gRPC source connector 201": (r) => r.status === 201,
     })
@@ -86,8 +106,10 @@ export function setup() {
           "configuration": {}
         }
       }), {
-      headers: { "Content-Type": "application/json" },
-    })
+        headers: {
+          "Content-Type": "application/json"
+        },
+      })
 
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating gRPC destination connector 201": (r) => r.status === 201,
@@ -107,8 +129,10 @@ export function setup() {
           }
         }
       }), {
-      headers: { "Content-Type": "application/json" },
-    })
+        headers: {
+          "Content-Type": "application/json"
+        },
+      })
 
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
@@ -149,7 +173,9 @@ export function setup() {
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
       let res = http.get(`${modelHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
       })
       if (res.json().operation.done === true) {
         break
@@ -173,7 +199,9 @@ export function setup() {
     timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
       var res = http.get(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
       })
       if (res.json().instance.state === "STATE_ONLINE") {
         break
@@ -217,9 +245,23 @@ export default function (data) {
   triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
   triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
 
+  if (__ENV.MODE == "private") {
+    pipelinePrivate.CheckList()
+    pipelinePrivate.CheckGet()
+    pipelinePrivate.CheckLookUp()
+  }
+
 }
 
 export function teardown(data) {
+
+  group("Connector API: Delete all pipelines created by this test", () => {
+    for (const pipeline of http.request("GET", `${pipelineHost}/v1alpha/pipelines?page_size=100`).json("pipelines")) {
+      check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${pipeline.id}`), {
+        [`DELETE /v1alpha/pipelines response status is 204`]: (r) => r.status === 204,
+      });
+    }
+  });
 
   group("Connector Backend API: Delete the http source connector", function () {
     check(http.request("DELETE", `${connectorHost}/v1alpha/source-connectors/source-http`), {
@@ -253,7 +295,9 @@ export function teardown(data) {
 
   group("Model Backend API: Delete the detection model", function () {
     check(http.request("DELETE", `${modelHost}/v1alpha/models/${constant.model_id}`, null, {
-      headers: { "Content-Type": "application/json" }
+      headers: {
+        "Content-Type": "application/json"
+      }
     }), {
       [`DELETE /v1alpha/models/${constant.model_id} response status is 204`]: (r) => r.status === 204,
     });
