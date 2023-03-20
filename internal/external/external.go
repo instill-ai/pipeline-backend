@@ -17,8 +17,8 @@ import (
 	usagePB "github.com/instill-ai/protogen-go/vdp/usage/v1alpha"
 )
 
-// InitConnectorServiceClient initialises a ConnectorServiceClient instance
-func InitConnectorServiceClient() (connectorPB.ConnectorPublicServiceClient, *grpc.ClientConn) {
+// InitConnectorPublicServiceClient initialises a ConnectorServiceClient instance
+func InitConnectorPublicServiceClient() (connectorPB.ConnectorPublicServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -32,7 +32,7 @@ func InitConnectorServiceClient() (connectorPB.ConnectorPublicServiceClient, *gr
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ConnectorBackend.Host, config.Config.ConnectorBackend.Port), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ConnectorBackend.Host, config.Config.ConnectorBackend.PublicPort), clientDialOpts)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, nil
@@ -41,8 +41,8 @@ func InitConnectorServiceClient() (connectorPB.ConnectorPublicServiceClient, *gr
 	return connectorPB.NewConnectorPublicServiceClient(clientConn), clientConn
 }
 
-// InitModelServiceClient initialises a ModelServiceClient instance
-func InitModelServiceClient() (modelPB.ModelPublicServiceClient, *grpc.ClientConn) {
+// InitModelPublicServiceClient initialises a ModelServiceClient instance
+func InitModelPublicServiceClient() (modelPB.ModelPublicServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -56,7 +56,7 @@ func InitModelServiceClient() (modelPB.ModelPublicServiceClient, *grpc.ClientCon
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ModelBackend.Host, config.Config.ModelBackend.Port), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort), clientDialOpts)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, nil
@@ -65,8 +65,8 @@ func InitModelServiceClient() (modelPB.ModelPublicServiceClient, *grpc.ClientCon
 	return modelPB.NewModelPublicServiceClient(clientConn), clientConn
 }
 
-// InitMgmtAdminServiceClient initialises a MgmtAdminServiceClient instance
-func InitMgmtAdminServiceClient() (mgmtPB.MgmtPrivateServiceClient, *grpc.ClientConn) {
+// InitMgmtPrivateServiceClient initialises a MgmtPrivateServiceClient instance
+func InitMgmtPrivateServiceClient() (mgmtPB.MgmtPrivateServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger()
 
 	var clientDialOpts grpc.DialOption
@@ -80,7 +80,7 @@ func InitMgmtAdminServiceClient() (mgmtPB.MgmtPrivateServiceClient, *grpc.Client
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.AdminPort), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PrivatePort), clientDialOpts)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, nil

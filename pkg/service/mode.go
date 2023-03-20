@@ -20,7 +20,7 @@ func (s *service) checkMode(recipeRscName *datamodel.Recipe) (datamodel.Pipeline
 	srcConnRscName := recipeRscName.Source
 	dstConnRscName := recipeRscName.Destination
 
-	srcConnResp, err := s.connectorServiceClient.GetSourceConnector(ctx,
+	srcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(ctx,
 		&connectorPB.GetSourceConnectorRequest{
 			Name: srcConnRscName,
 		})
@@ -31,7 +31,7 @@ func (s *service) checkMode(recipeRscName *datamodel.Recipe) (datamodel.Pipeline
 
 	}
 
-	srcConnDefResp, err := s.connectorServiceClient.GetSourceConnectorDefinition(ctx,
+	srcConnDefResp, err := s.connectorPublicServiceClient.GetSourceConnectorDefinition(ctx,
 		&connectorPB.GetSourceConnectorDefinitionRequest{
 			Name: srcConnResp.GetSourceConnector().GetSourceConnectorDefinition(),
 		})
@@ -43,7 +43,7 @@ func (s *service) checkMode(recipeRscName *datamodel.Recipe) (datamodel.Pipeline
 
 	srcConnDefID := srcConnDefResp.GetSourceConnectorDefinition().GetId()
 
-	dstConnResp, err := s.connectorServiceClient.GetDestinationConnector(ctx,
+	dstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(ctx,
 		&connectorPB.GetDestinationConnectorRequest{
 			Name: dstConnRscName,
 		})
@@ -53,7 +53,7 @@ func (s *service) checkMode(recipeRscName *datamodel.Recipe) (datamodel.Pipeline
 				"GetDestinationConnector", dstConnRscName, err.Error())
 	}
 
-	dstConnDefResp, err := s.connectorServiceClient.GetDestinationConnectorDefinition(ctx,
+	dstConnDefResp, err := s.connectorPublicServiceClient.GetDestinationConnectorDefinition(ctx,
 		&connectorPB.GetDestinationConnectorDefinitionRequest{
 			Name: dstConnResp.GetDestinationConnector().GetDestinationConnectorDefinition(),
 		})

@@ -140,7 +140,7 @@ func (h *publicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipeline(owner, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(owner, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}

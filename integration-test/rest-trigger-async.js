@@ -5,7 +5,7 @@ import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import { check, group } from "k6";
 import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
-import { pipelineHost } from "./const.js";
+import { pipelinePublicHost } from "./const.js";
 
 import * as constant from "./const.js"
 
@@ -21,7 +21,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
 
   group("Pipelines API: Trigger an async pipeline for single image and single model instance", () => {
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -37,7 +37,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -54,7 +54,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -65,7 +65,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
 
     const fd = new FormData();
     fd.append("file", http.file(constant.dogImg), "dog.jpg");
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
@@ -77,7 +77,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
   });
 
   // Delete the pipeline
-  check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
+  check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, {
     headers: {
       "Content-Type": "application/json",
     },
@@ -97,7 +97,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
 
   group("Pipelines API: Trigger an async pipeline for multiple images and single model instance", () => {
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -121,7 +121,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -148,7 +148,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
         }]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -162,7 +162,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
     fd.append("file", http.file(constant.catImg, "cat.jpg"));
     fd.append("file", http.file(constant.bearImg), "bear.jpg");
     fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
@@ -174,7 +174,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
   });
 
   // Delete the pipeline
-  check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
+  check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, {
     headers: {
       "Content-Type": "application/json",
     },
@@ -194,7 +194,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
 
   group("Pipelines API: Trigger an async pipeline for multiple images and multiple model instances", () => {
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -222,7 +222,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -251,7 +251,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
       ]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -265,7 +265,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
     fd.append("file", http.file(constant.catImg, "cat.jpg"));
     fd.append("file", http.file(constant.bearImg, "bear.jpg"));
     fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
@@ -275,7 +275,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqBody.id}`, null, {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },

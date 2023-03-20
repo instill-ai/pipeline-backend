@@ -18,6 +18,7 @@ require (
 	github.com/mennanov/fieldmask-utils v0.6.0
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/rs/cors v1.8.2
+	github.com/stretchr/testify v1.8.0
 	go.einride.tech/aip v0.58.1
 	go.temporal.io/sdk v1.17.0
 	go.uber.org/zap v1.23.0
@@ -27,8 +28,6 @@ require (
 	gorm.io/driver/postgres v1.3.9
 	gorm.io/gorm v1.23.8
 )
-
-require github.com/stretchr/testify v1.8.0 // indirect
 
 require (
 	github.com/catalinc/hashcash v0.0.0-20220723060415-5e3ec3e24f67 // indirect

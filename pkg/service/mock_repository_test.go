@@ -124,10 +124,10 @@ func (mr *MockRepositoryMockRecorder) GetPipelineByUIDAdmin(arg0, arg1 interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByUIDAdmin", reflect.TypeOf((*MockRepository)(nil).GetPipelineByUIDAdmin), arg0, arg1)
 }
 
-// ListPipeline mocks base method.
-func (m *MockRepository) ListPipeline(arg0 string, arg1 int64, arg2 string, arg3 bool, arg4 filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
+// ListPipelines mocks base method.
+func (m *MockRepository) ListPipelines(arg0 string, arg1 int64, arg2 string, arg3 bool, arg4 filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListPipeline", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "ListPipelines", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].([]datamodel.Pipeline)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(string)
@@ -135,16 +135,16 @@ func (m *MockRepository) ListPipeline(arg0 string, arg1 int64, arg2 string, arg3
 	return ret0, ret1, ret2, ret3
 }
 
-// ListPipeline indicates an expected call of ListPipeline.
-func (mr *MockRepositoryMockRecorder) ListPipeline(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+// ListPipelines indicates an expected call of ListPipelines.
+func (mr *MockRepositoryMockRecorder) ListPipelines(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipeline", reflect.TypeOf((*MockRepository)(nil).ListPipeline), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelines", reflect.TypeOf((*MockRepository)(nil).ListPipelines), arg0, arg1, arg2, arg3, arg4)
 }
 
-// ListPipelineAdmin mocks base method.
-func (m *MockRepository) ListPipelineAdmin(arg0 int64, arg1 string, arg2 bool, arg3 filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
+// ListPipelinesAdmin mocks base method.
+func (m *MockRepository) ListPipelinesAdmin(arg0 int64, arg1 string, arg2 bool, arg3 filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListPipelineAdmin", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "ListPipelinesAdmin", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].([]datamodel.Pipeline)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(string)
@@ -152,10 +152,10 @@ func (m *MockRepository) ListPipelineAdmin(arg0 int64, arg1 string, arg2 bool, a
 	return ret0, ret1, ret2, ret3
 }
 
-// ListPipelineAdmin indicates an expected call of ListPipelineAdmin.
-func (mr *MockRepositoryMockRecorder) ListPipelineAdmin(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+// ListPipelinesAdmin indicates an expected call of ListPipelinesAdmin.
+func (mr *MockRepositoryMockRecorder) ListPipelinesAdmin(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelineAdmin", reflect.TypeOf((*MockRepository)(nil).ListPipelineAdmin), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelinesAdmin", reflect.TypeOf((*MockRepository)(nil).ListPipelinesAdmin), arg0, arg1, arg2, arg3)
 }
 
 // UpdatePipeline mocks base method.

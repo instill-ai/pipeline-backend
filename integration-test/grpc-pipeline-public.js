@@ -18,14 +18,14 @@ export function CheckCreate() {
 
   group("Pipelines API: Create a pipeline", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqBody = Object.assign({
-        id: randomString(63),
-        description: randomString(50),
-      },
+      id: randomString(63),
+      description: randomString(50),
+    },
       constant.detSyncHTTPSingleModelInstRecipe
     )
 
@@ -35,7 +35,6 @@ export function CheckCreate() {
     })
     check(resOrigin, {
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK": (r) => r.status === grpc.StatusOK,
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline name": (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline name": (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline uid": (r) => helper.isUUID(r.message.pipeline.uid),
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline id": (r) => r.message.pipeline.id === reqBody.id,
@@ -116,7 +115,7 @@ export function CheckList() {
 
   group("Pipelines API: List pipelines", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
@@ -130,9 +129,9 @@ export function CheckList() {
     var reqBodies = [];
     for (var i = 0; i < numPipelines; i++) {
       reqBodies[i] = Object.assign({
-          id: randomString(10),
-          description: randomString(50),
-        },
+        id: randomString(10),
+        description: randomString(50),
+      },
         constant.detSyncHTTPSingleModelInstRecipe
       )
     }
@@ -215,26 +214,26 @@ export function CheckList() {
     });
 
     // Get UUID for foreign resources
-    var srcConnUid = http.get(`${constant.connectorHost}/v1alpha/source-connectors/source-http`, {}, {
+    var srcConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/source-connectors/source-http`, {}, {
       headers: {
         "Content-Type": "application/json"
       },
     }).json().source_connector.uid
     var srcConnPermalink = `source-connectors/${srcConnUid}`
 
-    var dstConnUid = http.get(`${constant.connectorHost}/v1alpha/destination-connectors/destination-http`, {}, {
+    var dstConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/destination-connectors/destination-http`, {}, {
       headers: {
         "Content-Type": "application/json"
       },
     }).json().destination_connector.uid
     var dstConnPermalink = `destination-connectors/${dstConnUid}`
 
-    var modelUid = http.get(`${constant.modelHost}/v1alpha/models/${constant.model_id}`, {}, {
+    var modelUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, {
       headers: {
         "Content-Type": "application/json"
       },
     }).json().model.uid
-    var modelInstUid = http.get(`${constant.modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, {
+    var modelInstUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, {
       headers: {
         "Content-Type": "application/json"
       },
@@ -272,14 +271,14 @@ export function CheckGet() {
 
   group("Pipelines API: Get a pipeline", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqBody = Object.assign({
-        id: randomString(10),
-        description: randomString(50),
-      },
+      id: randomString(10),
+      description: randomString(50),
+    },
       constant.detSyncHTTPSingleModelInstRecipe
     )
 
@@ -329,13 +328,13 @@ export function CheckUpdate() {
 
   group("Pipelines API: Update a pipeline", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqBody = Object.assign({
-        id: randomString(10),
-      },
+      id: randomString(10),
+    },
       constant.detSyncHTTPSingleModelInstRecipe
     )
 
@@ -354,7 +353,7 @@ export function CheckUpdate() {
       uid: "output-only-to-be-ignored",
       mode: "MODE_ASYNC",
       description: randomString(50),
-    }, )
+    },)
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline', {
       pipeline: reqBodyUpdate,
@@ -420,13 +419,13 @@ export function CheckUpdateState() {
 
   group("Pipelines API: Update a pipeline state", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqBodySync = Object.assign({
-        id: randomString(10),
-      },
+      id: randomString(10),
+    },
       constant.detSyncHTTPSingleModelInstRecipe
     )
 
@@ -450,8 +449,8 @@ export function CheckUpdateState() {
     });
 
     var reqBodyAsync = Object.assign({
-        id: randomString(10),
-      },
+      id: randomString(10),
+    },
       constant.detAsyncSingleModelInstRecipe
     )
 
@@ -498,13 +497,13 @@ export function CheckRename() {
 
   group("Pipelines API: Rename a pipeline", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqBody = Object.assign({
-        id: randomString(10),
-      },
+      id: randomString(10),
+    },
       constant.detSyncHTTPSingleModelInstRecipe
     )
 
@@ -544,13 +543,13 @@ export function CheckLookUp() {
 
   group("Pipelines API: Look up a pipeline by uid", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqBody = Object.assign({
-        id: randomString(10),
-      },
+      id: randomString(10),
+    },
       constant.detSyncHTTPSingleModelInstRecipe
     )
 

@@ -49,18 +49,18 @@ func TestCreatePipeline(t *testing.T) {
 			CreatePipeline(gomock.Eq(&normalPipeline)).
 			Return(nil)
 
-		mockMgmtAdminServiceClient := NewMockMgmtPrivateServiceClient(ctrl)
-		mockMgmtAdminServiceClient.EXPECT().GetUserAdmin(gomock.Any(), gomock.Any()).Return(&mgmtPB.GetUserAdminResponse{}, nil).Times(1)
+		mockMgmtPrivateServiceClient := NewMockMgmtPrivateServiceClient(ctrl)
+		mockMgmtPrivateServiceClient.EXPECT().GetUserAdmin(gomock.Any(), gomock.Any()).Return(&mgmtPB.GetUserAdminResponse{}, nil).Times(1)
 
-		mockConnectorServiceClient := NewMockConnectorPublicServiceClient(ctrl)
-		mockConnectorServiceClient.EXPECT().GetSourceConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-		mockConnectorServiceClient.EXPECT().GetDestinationConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-		mockConnectorServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
-		mockConnectorServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
+		mockConnectorPublicServiceClient := NewMockConnectorPublicServiceClient(ctrl)
+		mockConnectorPublicServiceClient.EXPECT().GetSourceConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+		mockConnectorPublicServiceClient.EXPECT().GetDestinationConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+		mockConnectorPublicServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
+		mockConnectorPublicServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
 
-		mockModelServiceClient := NewMockModelPublicServiceClient(ctrl)
+		mockModelPublicServiceClient := NewMockModelPublicServiceClient(ctrl)
 
-		s := service.NewService(mockRepository, mockMgmtAdminServiceClient, mockConnectorServiceClient, mockModelServiceClient, nil)
+		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockModelPublicServiceClient, nil)
 
 		_, err := s.CreatePipeline(&normalPipeline)
 

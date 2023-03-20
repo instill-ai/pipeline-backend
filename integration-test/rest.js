@@ -14,13 +14,13 @@ import {
 } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
 import {
-  pipelineHost,
-  connectorHost,
-  modelHost
+  pipelinePublicHost,
+  connectorPublicHost,
+  modelPublicHost
 } from "./const.js";
 
 import * as constant from "./const.js";
-import * as pipeline from './rest-pipeline-public.js';
+import * as pipelinePublic from './rest-pipeline-public.js';
 import * as pipelinePrivate from './rest-pipeline-private.js';
 import * as triggerSync from './rest-trigger-sync.js';
 import * as triggerAsync from './rest-trigger-async.js';
@@ -37,7 +37,7 @@ export function setup() {
 
   group("Connector Backend API: Create a http source connector", function () {
 
-    var res = http.request("POST", `${connectorHost}/v1alpha/source-connectors`,
+    var res = http.request("POST", `${connectorPublicHost}/v1alpha/source-connectors`,
       JSON.stringify({
         "id": "source-http",
         "source_connector_definition": "source-connector-definitions/source-http",
@@ -45,10 +45,10 @@ export function setup() {
           "configuration": {}
         }
       }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
     check(res, {
       "POST /v1alpha/source-connectors response status for creating HTTP source connector 201": (r) => r.status === 201,
     })
@@ -57,7 +57,7 @@ export function setup() {
 
   group("Connector Backend API: Create a http destination connector", function () {
 
-    var res = http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
+    var res = http.request("POST", `${connectorPublicHost}/v1alpha/destination-connectors`,
       JSON.stringify({
         "id": "destination-http",
         "destination_connector_definition": "destination-connector-definitions/destination-http",
@@ -65,10 +65,10 @@ export function setup() {
           "configuration": {}
         }
       }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
 
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating HTTP destination connector 201": (r) => r.status === 201,
@@ -78,7 +78,7 @@ export function setup() {
 
   group("Connector Backend API: Create a gRPC source connector", function () {
 
-    var res = http.request("POST", `${connectorHost}/v1alpha/source-connectors`,
+    var res = http.request("POST", `${connectorPublicHost}/v1alpha/source-connectors`,
       JSON.stringify({
         "id": "source-grpc",
         "source_connector_definition": "source-connector-definitions/source-grpc",
@@ -86,10 +86,10 @@ export function setup() {
           "configuration": {}
         }
       }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
     check(res, {
       "POST /v1alpha/source-connectors response status for creating gRPC source connector 201": (r) => r.status === 201,
     })
@@ -98,7 +98,7 @@ export function setup() {
 
   group("Connector Backend API: Create a gRPC destination connector", function () {
 
-    var res = http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
+    var res = http.request("POST", `${connectorPublicHost}/v1alpha/destination-connectors`,
       JSON.stringify({
         "id": "destination-grpc",
         "destination_connector_definition": "destination-connector-definitions/destination-grpc",
@@ -106,10 +106,10 @@ export function setup() {
           "configuration": {}
         }
       }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
 
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating gRPC destination connector 201": (r) => r.status === 201,
@@ -119,7 +119,7 @@ export function setup() {
 
   group("Connector Backend API: Create a CSV destination connector", function () {
 
-    var res = http.request("POST", `${connectorHost}/v1alpha/destination-connectors`,
+    var res = http.request("POST", `${connectorPublicHost}/v1alpha/destination-connectors`,
       JSON.stringify({
         "id": constant.dstCSVConnID,
         "destination_connector_definition": "destination-connector-definitions/destination-csv",
@@ -129,10 +129,10 @@ export function setup() {
           }
         }
       }), {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
 
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
@@ -142,7 +142,7 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 300000;
     while (timeoutTime > currentTime) {
-      var res = http.request("GET", `${connectorHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`)
+      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`)
       if (res.json().destination_connector.connector.state === "STATE_CONNECTED") {
         break
       }
@@ -159,7 +159,7 @@ export function setup() {
     fd.append("description", model_description);
     fd.append("model_definition", constant.model_def_name);
     fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
-    let createClsModelRes = http.request("POST", `${modelHost}/v1alpha/models/multipart`, fd.body(), {
+    let createClsModelRes = http.request("POST", `${modelPublicHost}/v1alpha/models/multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
       },
@@ -172,7 +172,7 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${modelHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
+      let res = http.get(`${modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
         headers: {
           "Content-Type": "application/json"
         },
@@ -184,7 +184,7 @@ export function setup() {
       currentTime = new Date().getTime();
     }
 
-    var res = http.post(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, {
+    var res = http.post(`${modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, {
       headers: {
         "Content-Type": "application/json"
       },
@@ -198,7 +198,7 @@ export function setup() {
     currentTime = new Date().getTime();
     timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      var res = http.get(`${modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
+      var res = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
         headers: {
           "Content-Type": "application/json"
         },
@@ -223,19 +223,25 @@ export default function (data) {
   // Health check
   {
     group("Pipelines API: Health check", () => {
-      check(http.request("GET", `${pipelineHost}/v1alpha/health/pipeline`), {
+      check(http.request("GET", `${pipelinePublicHost}/v1alpha/health/pipeline`), {
         "GET /health/pipeline response status is 200": (r) => r.status === 200,
       });
     });
   }
 
-  pipeline.CheckCreate()
-  pipeline.CheckList()
-  pipeline.CheckGet()
-  pipeline.CheckUpdate()
-  pipeline.CheckUpdateState()
-  pipeline.CheckRename()
-  pipeline.CheckLookUp()
+  if (__ENV.MODE != "api-gateway" && __ENV.MODE != "localhost") {
+    pipelinePrivate.CheckList()
+    pipelinePrivate.CheckGet()
+    pipelinePrivate.CheckLookUp()
+  }
+
+  pipelinePublic.CheckCreate()
+  pipelinePublic.CheckList()
+  pipelinePublic.CheckGet()
+  pipelinePublic.CheckUpdate()
+  pipelinePublic.CheckUpdateState()
+  pipelinePublic.CheckRename()
+  pipelinePublic.CheckLookUp()
 
   triggerSync.CheckTriggerSyncSingleImageSingleModelInst()
   triggerSync.CheckTriggerSyncMultiImageSingleModelInst()
@@ -245,56 +251,50 @@ export default function (data) {
   triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
   triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
 
-  if (__ENV.MODE != "api-gateway" && __ENV.MODE != "localhost") {
-    pipelinePrivate.CheckList()
-    pipelinePrivate.CheckGet()
-    pipelinePrivate.CheckLookUp()
-  }
-
 }
 
 export function teardown(data) {
 
   group("Connector API: Delete all pipelines created by this test", () => {
-    for (const pipeline of http.request("GET", `${pipelineHost}/v1alpha/pipelines?page_size=100`).json("pipelines")) {
-      check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${pipeline.id}`), {
+    for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?page_size=100`).json("pipelines")) {
+      check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${pipeline.id}`), {
         [`DELETE /v1alpha/pipelines response status is 204`]: (r) => r.status === 204,
       });
     }
   });
 
   group("Connector Backend API: Delete the http source connector", function () {
-    check(http.request("DELETE", `${connectorHost}/v1alpha/source-connectors/source-http`), {
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/source-connectors/source-http`), {
       [`DELETE /v1alpha/source-connectors/source-http response status 204`]: (r) => r.status === 204,
     });
   });
 
   group("Connector Backend API: Delete the http destination connector", function () {
-    check(http.request("DELETE", `${connectorHost}/v1alpha/destination-connectors/destination-http`), {
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/destination-connectors/destination-http`), {
       [`DELETE /v1alpha/destination-connectors/destination-http response status 204`]: (r) => r.status === 204,
     });
   });
 
   group("Connector Backend API: Delete the gRPC source connector", function () {
-    check(http.request("DELETE", `${connectorHost}/v1alpha/source-connectors/source-grpc`), {
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/source-connectors/source-grpc`), {
       [`DELETE /v1alpha/source-connectors/source-grpc response status 204`]: (r) => r.status === 204,
     });
   });
 
   group("Connector Backend API: Delete the gRPC destination connector", function () {
-    check(http.request("DELETE", `${connectorHost}/v1alpha/destination-connectors/destination-grpc`), {
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/destination-connectors/destination-grpc`), {
       [`DELETE /v1alpha/destination-connectors/destination-grpc response status 204`]: (r) => r.status === 204,
     });
   });
 
   group("Connector Backend API: Delete the csv destination connector", function () {
-    check(http.request("DELETE", `${connectorHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`), {
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`), {
       [`DELETE /v1alpha/destination-connectors/${constant.dstCSVConnID} response status 204`]: (r) => r.status === 204,
     });
   });
 
   group("Model Backend API: Delete the detection model", function () {
-    check(http.request("DELETE", `${modelHost}/v1alpha/models/${constant.model_id}`, null, {
+    check(http.request("DELETE", `${modelPublicHost}/v1alpha/models/${constant.model_id}`, null, {
       headers: {
         "Content-Type": "application/json"
       }

@@ -57,7 +57,7 @@ func (h *privateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelineAdmin(req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelinesAdmin(req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}

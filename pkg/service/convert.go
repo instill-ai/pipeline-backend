@@ -26,7 +26,7 @@ func (s *service) ownerRscNameToPermalink(ownerRscName string) (ownerPermalink s
 	defer cancel()
 
 	if strings.Split(ownerRscName, "/")[0] == "users" {
-		user, err := s.mgmtServiceClient.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: ownerRscName})
+		user, err := s.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: ownerRscName})
 		if err != nil {
 			return "", fmt.Errorf("[mgmt-backend] %s", err)
 		}
@@ -46,7 +46,7 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 	recipePermalink := datamodel.Recipe{}
 
 	// Source connector
-	getSrcConnResp, err := s.connectorServiceClient.GetSourceConnector(ctx,
+	getSrcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(ctx,
 		&connectorPB.GetSourceConnectorRequest{
 			Name: recipeRscName.Source,
 		})
@@ -62,7 +62,7 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 	recipePermalink.Source = srcColID + "/" + getSrcConnResp.GetSourceConnector().GetUid()
 
 	// Destination connector
-	getDstConnResp, err := s.connectorServiceClient.GetDestinationConnector(ctx,
+	getDstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(ctx,
 		&connectorPB.GetDestinationConnectorRequest{
 			Name: recipeRscName.Destination,
 		})
@@ -81,7 +81,7 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 	recipePermalink.ModelInstances = make([]string, len(recipeRscName.ModelInstances))
 	for idx, modelInstanceRscName := range recipeRscName.ModelInstances {
 
-		getModelInstResp, err := s.modelServiceClient.GetModelInstance(ctx,
+		getModelInstResp, err := s.modelPublicServiceClient.GetModelInstance(ctx,
 			&modelPB.GetModelInstanceRequest{
 				Name: modelInstanceRscName,
 			})
@@ -101,7 +101,7 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 
 		modelRscName := strings.TrimSuffix(modelInstanceRscName, "/"+modelInstColID+"/"+modelInstID)
 
-		getModelResp, err := s.modelServiceClient.GetModel(ctx,
+		getModelResp, err := s.modelPublicServiceClient.GetModel(ctx,
 			&modelPB.GetModelRequest{
 				Name: modelRscName,
 			})
@@ -128,7 +128,7 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 	recipeRscName := datamodel.Recipe{}
 
 	// Source connector
-	lookUpSrcConnResp, err := s.connectorServiceClient.LookUpSourceConnector(ctx,
+	lookUpSrcConnResp, err := s.connectorPublicServiceClient.LookUpSourceConnector(ctx,
 		&connectorPB.LookUpSourceConnectorRequest{
 			Permalink: recipePermalink.Source,
 		})
@@ -144,7 +144,7 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 	recipeRscName.Source = srcColID + "/" + lookUpSrcConnResp.GetSourceConnector().GetId()
 
 	// Destination connector
-	lookUpDstConnResp, err := s.connectorServiceClient.LookUpDestinationConnector(ctx,
+	lookUpDstConnResp, err := s.connectorPublicServiceClient.LookUpDestinationConnector(ctx,
 		&connectorPB.LookUpDestinationConnectorRequest{
 			Permalink: recipePermalink.Destination,
 		})
@@ -163,7 +163,7 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 	recipeRscName.ModelInstances = make([]string, len(recipePermalink.ModelInstances))
 	for idx, modelInstanceRscPermalink := range recipePermalink.ModelInstances {
 
-		lookUpModelInstResp, err := s.modelServiceClient.LookUpModelInstance(ctx,
+		lookUpModelInstResp, err := s.modelPublicServiceClient.LookUpModelInstance(ctx,
 			&modelPB.LookUpModelInstanceRequest{
 				Permalink: modelInstanceRscPermalink,
 			})
@@ -182,7 +182,7 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 		}
 
 		modelRscPermalink := strings.TrimSuffix(modelInstanceRscPermalink, "/"+modelInstColID+"/"+modelInstUID)
-		lookUpModelResp, err := s.modelServiceClient.LookUpModel(ctx,
+		lookUpModelResp, err := s.modelPublicServiceClient.LookUpModel(ctx,
 			&modelPB.LookUpModelRequest{
 				Permalink: modelRscPermalink,
 			})

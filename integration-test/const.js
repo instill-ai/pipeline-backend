@@ -1,33 +1,38 @@
 let proto
 let pHost, cHost, mHost
-let pPort, cPort, mPort
+let pPrivatePort, pPublicPort, cPublicPort, mPublicPort
 
 if (__ENV.MODE == "api-gateway") {
   // api-gateway mode
   proto = "http"
   pHost = cHost = mHost = "api-gateway"
-  pPort = cPort = mPort = 8080
+  pPrivatePort = 3081
+  pPublicPort = cPublicPort = mPublicPort = 8080
 } else if (__ENV.MODE == "localhost") {
   // localhost mode for GitHub Actions
   proto = "http"
   pHost = cHost = mHost = "localhost"
-  pPort = cPort = mPort = 8080
+  pPrivatePort = 3081
+  pPublicPort = cPublicPort = mPublicPort = 8080
 } else {
   // direct microservice mode
   proto = "http"
   pHost = "pipeline-backend"
   cHost = "connector-backend"
   mHost = "model-backend"
-  pPort = 8081
-  cPort = 8082
-  mPort = 8083
+  pPrivatePort = 3081
+  pPublicPort = 8081
+  cPublicPort = 8082
+  mPublicPort = 8083
 }
 
-export const pipelineHost = `${proto}://${pHost}:${pPort}`;
-export const pipelineGRPCHost = `${pHost}:${pPort}`;
-export const connectorHost = `${proto}://${cHost}:${cPort}`;
-export const connectorGRPCHost = `${cHost}:${cPort}`;
-export const modelHost = `${proto}://${mHost}:${mPort}`;
+export const pipelinePrivateHost = `${proto}://${pHost}:${pPrivatePort}`;
+export const pipelinePublicHost = `${proto}://${pHost}:${pPublicPort}`;
+export const pipelineGRPCPrivateHost = `${pHost}:${pPrivatePort}`;
+export const pipelineGRPCPublicHost = `${pHost}:${pPublicPort}`;
+export const connectorPublicHost = `${proto}://${cHost}:${cPublicPort}`;
+export const connectorGRPCPublicHost = `${cHost}:${cPublicPort}`;
+export const modelPublicHost = `${proto}://${mHost}:${mPublicPort}`;
 
 export const dogImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b");
 export const catImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/cat.jpg`, "b");

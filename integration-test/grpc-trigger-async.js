@@ -11,7 +11,7 @@ import {
 } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
 import {
-  pipelineHost
+  pipelinePublicHost
 } from "./const.js";
 
 import * as constant from "./const.js"
@@ -23,14 +23,14 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
 
   group("Pipelines API: Trigger an async pipeline for single image and single model instance", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqBody = Object.assign({
-        id: randomString(10),
-        description: randomString(50),
-      },
+      id: randomString(10),
+      description: randomString(50),
+    },
       constant.detAsyncSingleModelInstRecipe
     );
 
@@ -87,14 +87,14 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
 
   group("Pipelines API: Trigger an async pipeline for multiple images and single model instance", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqBody = Object.assign({
-        id: randomString(10),
-        description: randomString(50),
-      },
+      id: randomString(10),
+      description: randomString(50),
+    },
       constant.detAsyncSingleModelInstRecipe
     );
 
@@ -130,19 +130,19 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
 
     var payloadImageBase64 = {
       task_inputs: [{
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
-        },
-        {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
-        }, {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
         }
+      },
+      {
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
+        }
+      }, {
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
+        }
+      }
       ]
     };
 
@@ -168,14 +168,14 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
 
   group("Pipelines API: Trigger an async pipeline for multiple images and multiple model instances", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqBody = Object.assign({
-        id: randomString(10),
-        description: randomString(50),
-      },
+      id: randomString(10),
+      description: randomString(50),
+    },
       constant.detAsyncMultiModelInstRecipe
     );
 
@@ -215,20 +215,20 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
 
     var payloadImageBase64 = {
       task_inputs: [{
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
-        },
-        {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
-        },
-        {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
         }
+      },
+      {
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
+        }
+      },
+      {
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
+        }
+      }
       ]
     };
 

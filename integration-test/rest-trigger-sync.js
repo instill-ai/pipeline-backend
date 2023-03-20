@@ -5,7 +5,7 @@ import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import { check, group } from "k6";
 import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
-import { pipelineHost } from "./const.js";
+import { pipelinePublicHost } from "./const.js";
 
 import * as constant from "./const.js"
 
@@ -21,7 +21,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       constant.detSyncHTTPSingleModelInstRecipe
     );
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -37,7 +37,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -62,7 +62,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -81,7 +81,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
 
     const fd = new FormData();
     fd.append("file", http.file(constant.dogImg, "dog.jpg"));
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
@@ -100,7 +100,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
 
     const fdWrong = new FormData();
     fdWrong.append("file", "some fake binary string that won't work for sure");
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fdWrong.boundary}`,
       },
@@ -108,7 +108,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response status is 422 with wrong request file`]: (r) => r.status === 422,
     });
 
-    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}`, null, {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -124,7 +124,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       constant.detSyncGRPCSingleModelInstRecipe
     );
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqGRPC), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqGRPC), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -132,7 +132,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       "POST /v1alpha/pipelines response status is 201 (gRPC pipeline)": (r) => r.status === 201,
     });
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqGRPC.id}/trigger`, JSON.stringify(payloadImageURL), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}/trigger`, JSON.stringify(payloadImageURL), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -140,7 +140,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       [`POST /v1alpha/pipelines/${reqGRPC.id}/trigger (url) response status is 400 (gRPC pipeline triggered by HTTP)`]: (r) => r.status === 422,
     })
 
-    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqGRPC.id}`, null, {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -164,7 +164,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
       constant.detSyncHTTPSingleModelInstRecipe
     );
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -197,7 +197,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
       ]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -229,7 +229,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
       ]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -251,7 +251,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
     fd.append("file", http.file(constant.catImg, "cat.jpg"));
     fd.append("file", http.file(constant.bearImg, "bear.jpg"));
     fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
@@ -269,7 +269,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}`, null, {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -293,7 +293,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
       constant.detSyncHTTPMultiModelInstRecipe
     );
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -326,7 +326,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
         }]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -347,7 +347,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), {
       headers: {
         "Content-Type": "application/json",
       },
@@ -361,7 +361,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
     fd.append("file", http.file(constant.catImg, "cat.jpg"));
     fd.append("file", http.file(constant.bearImg, "bear.jpg"));
     fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    check(http.request("POST", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
@@ -371,7 +371,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelineHost}/v1alpha/pipelines/${reqHTTP.id}`, null, {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, {
       headers: {
         "Content-Type": "application/json",
       },

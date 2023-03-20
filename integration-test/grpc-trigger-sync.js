@@ -18,14 +18,14 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
 
   group("Pipelines API: Trigger a pipeline for single image and single model instance", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqGRPC = Object.assign({
-        id: randomString(10),
-        description: randomString(50),
-      },
+      id: randomString(10),
+      description: randomString(50),
+    },
       constant.detSyncGRPCSingleModelInstRecipe
     );
 
@@ -90,9 +90,9 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
     });
 
     var reqHTTP = Object.assign({
-        id: randomString(10),
-        description: randomString(50),
-      },
+      id: randomString(10),
+      description: randomString(50),
+    },
       constant.detSyncHTTPSingleModelInstRecipe
     );
 
@@ -124,14 +124,14 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
 
   group("Pipelines API: Trigger a pipeline for multiple images and single model instance", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqGRPC = Object.assign({
-        id: randomString(10),
-        description: randomString(50),
-      },
+      id: randomString(10),
+      description: randomString(50),
+    },
       constant.detSyncGRPCSingleModelInstRecipe
     );
 
@@ -143,24 +143,24 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
 
     var payloadImageURL = {
       task_inputs: [{
-          detection: {
-            image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-          }
-        }, {
-          detection: {
-            image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-          }
-        },
-        {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
-        },
-        {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
+        detection: {
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
         }
+      }, {
+        detection: {
+          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+        }
+      },
+      {
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
+        }
+      },
+      {
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
+        }
+      }
       ]
     };
 
@@ -182,15 +182,15 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
 
     var payloadImageBase64 = {
       task_inputs: [{
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          },
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
         },
-        {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          },
-        }
+      },
+      {
+        detection: {
+          image_base64: encoding.b64encode(constant.dogImg, "b"),
+        },
+      }
       ]
     };
 
@@ -225,14 +225,14 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
 
   group("Pipelines API: Trigger a pipeline for multiple images and multiple model instances", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     var reqGRPC = Object.assign({
-        id: randomString(10),
-        description: randomString(50),
-      },
+      id: randomString(10),
+      description: randomString(50),
+    },
       constant.detSynGRPCMultiModelInstRecipe
     );
 

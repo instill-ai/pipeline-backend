@@ -36,7 +36,7 @@ export let options = {
 
 export function setup() {
 
-  client.connect(constant.connectorGRPCHost, {
+  client.connect(constant.connectorGRPCPublicHost, {
     plaintext: true
   });
 
@@ -144,7 +144,7 @@ export function setup() {
     fd.append("description", model_description);
     fd.append("model_definition", constant.model_def_name);
     fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
-    let createClsModelRes = http.request("POST", `${constant.modelHost}/v1alpha/models/multipart`, fd.body(), {
+    let createClsModelRes = http.request("POST", `${constant.modelPublicHost}/v1alpha/models/multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
       },
@@ -157,7 +157,7 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${constant.modelHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
+      let res = http.get(`${constant.modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
         headers: {
           "Content-Type": "application/json"
         },
@@ -169,7 +169,7 @@ export function setup() {
       currentTime = new Date().getTime();
     }
 
-    var res = http.post(`${constant.modelHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, {
+    var res = http.post(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, {
       headers: {
         "Content-Type": "application/json"
       },
@@ -183,7 +183,7 @@ export function setup() {
     currentTime = new Date().getTime();
     timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      var res = http.get(`${constant.modelHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
+      var res = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
         headers: {
           "Content-Type": "application/json"
         },
@@ -209,7 +209,7 @@ export default function (data) {
   // Health check
   {
     group("Pipelines API: Health check", () => {
-      client.connect(constant.pipelineGRPCHost, {
+      client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true
       });
       check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/Liveness', {}), {
@@ -245,10 +245,10 @@ export default function (data) {
 
 export function teardown(data) {
 
-  client.connect(constant.connectorGRPCHost, {
+  client.connect(constant.connectorGRPCPublicHost, {
     plaintext: true
   });
-  
+
   group("Connector Backend API: Delete the http source connector", function () {
     check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteSourceConnector`, {
       name: "source-connectors/source-http"
@@ -292,7 +292,7 @@ export function teardown(data) {
   client.close();
 
   group("Model Backend API: Delete the detection model", function () {
-    check(http.request("DELETE", `${constant.modelHost}/v1alpha/models/${constant.model_id}`, null, {
+    check(http.request("DELETE", `${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, null, {
       headers: {
         "Content-Type": "application/json"
       }
@@ -303,13 +303,13 @@ export function teardown(data) {
 
   group("Connector API: Delete all pipelines created by this test", () => {
 
-    client.connect(constant.pipelineGRPCHost, {
+    client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
 
     for (const pipeline of client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
-        pageSize: 1000
-      }, {}).message.pipelines) {
+      pageSize: 1000
+    }, {}).message.pipelines) {
       check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
         name: `pipelines/${pipeline.id}`
       }), {

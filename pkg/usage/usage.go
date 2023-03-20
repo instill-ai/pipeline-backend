@@ -91,7 +91,7 @@ func (u *usage) RetrieveUsageData() interface{} {
 			pipeSyncModeNum := int64(0)
 			pipeAsyncModeNum := int64(0)
 			for {
-				dbPipelines, _, pipeNextPageToken, err := u.repository.ListPipeline(fmt.Sprintf("users/%s", user.GetUid()), int64(repository.MaxPageSize), pipePageToken, true, filtering.Filter{})
+				dbPipelines, _, pipeNextPageToken, err := u.repository.ListPipelines(fmt.Sprintf("users/%s", user.GetUid()), int64(repository.MaxPageSize), pipePageToken, true, filtering.Filter{})
 				if err != nil {
 					logger.Error(fmt.Sprintf("%s", err))
 				}
