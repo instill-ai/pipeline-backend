@@ -12,11 +12,6 @@ if (__ENV.MODE == "api-gateway") {
   proto = "http"
   pHost = cHost = mHost = "localhost"
   pPort = cPort = mPort = 8080
-} else if (__ENV.MODE == "private") {
-  proto = "http"
-  pHost = cHost = mHost = "localhost"
-  cPort = mPort = 8080  
-  pPort = 8081
 } else {
   // direct microservice mode
   proto = "http"
