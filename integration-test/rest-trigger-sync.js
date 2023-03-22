@@ -137,7 +137,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
         "Content-Type": "application/json",
       },
     }), {
-      [`POST /v1alpha/pipelines/${reqGRPC.id}/trigger (url) response status is 400 (gRPC pipeline triggered by HTTP)`]: (r) => r.status === 422,
+      [`POST /v1alpha/pipelines/${reqGRPC.id}/trigger (url) response status is 422 (gRPC pipeline triggered by HTTP)`]: (r) => r.status === 422,
     })
 
     check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}`, null, {

@@ -12,6 +12,7 @@ import (
 	"github.com/gogo/status"
 	"github.com/iancoleman/strcase"
 	"go.einride.tech/aip/filtering"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -19,17 +20,19 @@ import (
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
-	"github.com/instill-ai/pipeline-backend/internal/sterr"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/checkfield"
+	"github.com/instill-ai/x/sterr"
 
 	healthcheckPB "github.com/instill-ai/protogen-go/vdp/healthcheck/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-type publicHandler struct {
+// PublicHandler handles public API
+type PublicHandler struct {
 	pipelinePB.UnimplementedPipelinePublicServiceServer
 	service service.Service
 }
@@ -37,12 +40,12 @@ type publicHandler struct {
 // NewPublicHandler initiates a handler instance
 func NewPublicHandler(s service.Service) pipelinePB.PipelinePublicServiceServer {
 	datamodel.InitJSONSchema()
-	return &publicHandler{
+	return &PublicHandler{
 		service: s,
 	}
 }
 
-func (h *publicHandler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
+func (h *PublicHandler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
 	return &pipelinePB.LivenessResponse{
 		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{
 			Status: healthcheckPB.HealthCheckResponse_SERVING_STATUS_SERVING,
@@ -50,7 +53,7 @@ func (h *publicHandler) Liveness(ctx context.Context, req *pipelinePB.LivenessRe
 	}, nil
 }
 
-func (h *publicHandler) Readiness(ctx context.Context, req *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
+func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
 	return &pipelinePB.ReadinessResponse{
 		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{
 			Status: healthcheckPB.HealthCheckResponse_SERVING_STATUS_SERVING,
@@ -58,7 +61,7 @@ func (h *publicHandler) Readiness(ctx context.Context, req *pipelinePB.Readiness
 	}, nil
 }
 
-func (h *publicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
 
 	// Validate JSON Schema
 	if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
@@ -107,7 +110,7 @@ func (h *publicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 	return &resp, nil
 }
 
-func (h *publicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
+func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
@@ -159,7 +162,7 @@ func (h *publicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 	return &resp, nil
 }
 
-func (h *publicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
+func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
@@ -186,7 +189,7 @@ func (h *publicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 	return &resp, nil
 }
 
-func (h *publicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
+func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
 	owner, err := resource.GetOwner(ctx)
 	if err != nil {
@@ -247,7 +250,7 @@ func (h *publicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 	return &resp, nil
 }
 
-func (h *publicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
+func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
 	owner, err := resource.GetOwner(ctx)
 	if err != nil {
@@ -271,7 +274,7 @@ func (h *publicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.Dele
 	return &pipelinePB.DeletePipelineResponse{}, nil
 }
 
-func (h *publicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipelineRequest) (*pipelinePB.LookUpPipelineResponse, error) {
+func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipelineRequest) (*pipelinePB.LookUpPipelineResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, lookUpRequiredFields); err != nil {
@@ -308,7 +311,7 @@ func (h *publicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 	return &resp, nil
 }
 
-func (h *publicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.ActivatePipelineRequest) (*pipelinePB.ActivatePipelineResponse, error) {
+func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.ActivatePipelineRequest) (*pipelinePB.ActivatePipelineResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, activateRequiredFields); err != nil {
@@ -337,7 +340,7 @@ func (h *publicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.Ac
 	return &resp, nil
 }
 
-func (h *publicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.DeactivatePipelineRequest) (*pipelinePB.DeactivatePipelineResponse, error) {
+func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.DeactivatePipelineRequest) (*pipelinePB.DeactivatePipelineResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, deactivateRequiredFields); err != nil {
@@ -366,7 +369,7 @@ func (h *publicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.
 	return &resp, nil
 }
 
-func (h *publicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipelineRequest) (*pipelinePB.RenamePipelineResponse, error) {
+func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipelineRequest) (*pipelinePB.RenamePipelineResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, renameRequiredFields); err != nil {
@@ -400,7 +403,9 @@ func (h *publicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 	return &resp, nil
 }
 
-func (h *publicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
+func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
+
+	logger, _ := logger.GetZapLogger()
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
@@ -425,21 +430,36 @@ func (h *publicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
 		switch {
 		case strings.Contains(dbPipeline.Recipe.Source, "http") && !resource.IsGWProxied(ctx):
-			return &pipelinePB.TriggerPipelineResponse{},
-				sterr.CreateErrorPreconditionFailure(
-					"Trigger a HTTP pipeline with gRPC",
-					"TRIGGER",
-					id,
-					fmt.Sprintf("Pipeline id %s has a source-http connector which cannot be triggered by gRPC", id),
-				).Err()
+			st, err := sterr.CreateErrorPreconditionFailure(
+				"[handler] trigger a HTTP pipeline with gRPC",
+				[]*errdetails.PreconditionFailure_Violation{
+					{
+						Type:        "TRIGGER",
+						Subject:     fmt.Sprintf("id %s", id),
+						Description: fmt.Sprintf("Pipeline id %s has a source-http connector which cannot be triggered by gRPC", id),
+					},
+				},
+			)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+			return &pipelinePB.TriggerPipelineResponse{}, st.Err()
+
 		case strings.Contains(dbPipeline.Recipe.Source, "grpc") && resource.IsGWProxied(ctx):
-			return &pipelinePB.TriggerPipelineResponse{},
-				sterr.CreateErrorPreconditionFailure(
-					"Trigger a gRPC pipeline with HTTP",
-					"TRIGGER",
-					id,
-					fmt.Sprintf("Pipeline id %s has a source-grpc connector which cannot be triggered by HTTP", id),
-				).Err()
+			st, err := sterr.CreateErrorPreconditionFailure(
+				"[handler] trigger a HTTP pipeline with HTTP",
+				[]*errdetails.PreconditionFailure_Violation{
+					{
+						Type:        "TRIGGER",
+						Subject:     fmt.Sprintf("id %s", id),
+						Description: fmt.Sprintf("Pipeline id %s has a source-grpc connector which cannot be triggered by HTTP", id),
+					},
+				},
+			)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+			return &pipelinePB.TriggerPipelineResponse{}, st.Err()
 		}
 	}
 
@@ -452,7 +472,7 @@ func (h *publicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 
 }
 
-func (h *publicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerPipelineBinaryFileUploadServer) error {
+func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerPipelineBinaryFileUploadServer) error {
 
 	owner, err := resource.GetOwner(stream.Context())
 	if err != nil {
