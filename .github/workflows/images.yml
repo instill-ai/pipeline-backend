@@ -1,9 +1,7 @@
 name: Build and Push Images
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
   release:
     types: [published]
 
@@ -31,6 +29,7 @@ jobs:
           password: ${{ secrets.botDockerHubPassword }}
 
       - name: Build and push (latest)
+        if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64,linux/arm64
