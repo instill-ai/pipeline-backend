@@ -3,7 +3,7 @@ name: Release Please
 on:
   push:
     branches:
-      - main
+      - rc
 
 jobs:
   release-please:
@@ -19,6 +19,7 @@ jobs:
           token: ${{ secrets.botGitHubToken }}
           release-type: go
           command: manifest
+          default-branch: main
           config-file: release-please/config.json
           manifest-file: release-please/manifest.json
       - uses: actions/checkout@v3

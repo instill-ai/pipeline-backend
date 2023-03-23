@@ -42,6 +42,20 @@ jobs:
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
 
+      - name: Build and push (rc)
+        if: github.ref == 'refs/heads/rc'
+        uses: docker/build-push-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: .
+          push: true
+          build-args: |
+            SERVICE_NAME=pipeline-backend
+            GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+          tags: instill/pipeline-backend:rc
+          cache-from: type=registry,ref=instill/pipeline-backend:buildcache
+          cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
+
       - name: Set Versions
         if: github.event_name == 'release'
         uses: actions/github-script@v6
