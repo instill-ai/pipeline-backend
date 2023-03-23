@@ -1,0 +1,23 @@
+name: PR for rc Branch Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - rc
+
+jobs:
+  head-branch-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check head branch
+      run: |
+        HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
+        ALLOWED_HEAD_BRANCH="main"
+        if [[ "$HEAD_BRANCH" != "$ALLOWED_HRAD_BRANCH" ]]; then
+          echo "Invalid head branch: $HEAD_BRANCH. It must be: $ALLOWED_HEAD_BRANCH"
+          exit 1
+        fi
+        echo "Head branch check passed"
