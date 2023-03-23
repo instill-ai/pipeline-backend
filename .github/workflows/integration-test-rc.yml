@@ -1,0 +1,23 @@
+name: Integration Test (release) # for release-please PR
+
+on:
+  push:
+    branches:
+      - release-please--branches--rc
+
+jobs:
+  backend:
+    name: Integration Test on Backends (release)
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [pipeline, connector, model, mgmt]
+    uses: instill-ai/vdp/.github/workflows/integration-test-backend.yml@main
+    with:
+      component: ${{ matrix.component }}
+      target: rc
+  console:
+    name: Integration Test on Console (release)
+    uses: instill-ai/vdp/.github/workflows/integration-test-console.yml@main
+    with:
+      target: rc
