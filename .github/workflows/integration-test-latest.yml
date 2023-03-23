@@ -1,0 +1,22 @@
+name: Integration Test (latest) # for PR merged into rc branch
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-image:
+    uses: instill-ai/pipeline-backend/.github/workflows/images.yml@main
+    secrets: inherit
+  backend:
+    needs: build-image
+    name: Backend
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [pipeline]
+    uses: instill-ai/vdp/.github/workflows/integration-test-backend.yml@main
+    with:
+      component: ${{ matrix.component }}
+      target: latest
