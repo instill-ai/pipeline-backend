@@ -1,0 +1,21 @@
+name: Integration Test (latest) # for PR merged into rc branch
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - rc
+
+jobs:
+  backend:
+    name: Integration Test (latest)
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [pipeline]
+    uses: instill-ai/vdp/.github/workflows/integration-test-backend.yml@main
+    with:
+      component: ${{ matrix.component }}
+      target: latest
