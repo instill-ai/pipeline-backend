@@ -1,5 +1,7 @@
 # pipeline-backend
 
+[![Integration Test](https://github.com/instill-ai/pipeline-backend/actions/workflows/integration-test.yml/badge.svg)](https://github.com/instill-ai/pipeline-backend/actions/workflows/integration-test.yml)
+
 `pipeline-backend` manages all pipeline resources within [Versatile Data Pipeline (VDP)](https://github.com/instill-ai/vdp) to streamline data from a source connector to models, and to a destination connector at the end.
 
 ## Local dev
@@ -56,7 +58,14 @@ $ make stop
 
 ### CI/CD
 
-The latest images will be published to Docker Hub [repository](https://hub.docker.com/r/instill/pipeline-backend) at release.
+- **pull_request** to the `main` branch will trigger the **`Integration Test`** workflow running the integration test using the image built on the PR head branch.
+- **push** to the `main` branch will trigger
+  - the **`Integration Test`** workflow building and pushing the `:latest` image on the `main` branch, following by running the integration test, and
+  - the **`Release Please`** workflow, which will create and update a PR with respect to the up-to-date `main` branch using [release-please-action](https://github.com/google-github-actions/release-please-action).
+
+Once the release PR is merged to the `main` branch, the [release-please-action](https://github.com/google-github-actions/release-please-action) will tag and release a version correspondingly.
+
+The images are pushed to Docker Hub [repository](https://hub.docker.com/r/instill/pipeline-backend).
 
 ## License
 

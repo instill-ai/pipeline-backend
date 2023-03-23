@@ -15,7 +15,6 @@ jobs:
         uses: cardinalby/export-env-action@v2
         with:
           envFile: .env
-          expand: true
 
       - uses: actions/setup-go@v3
         with:
