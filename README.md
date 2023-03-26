@@ -65,7 +65,7 @@ $ make stop
 
 Once the release PR is merged to the `main` branch, the [release-please-action](https://github.com/google-github-actions/release-please-action) will tag and release a version correspondingly.
 
-The images are published to Docker Hub [repository](https://hub.docker.com/r/instill/pipeline-backend) at each CI/CD step.
+The images are pushed to Docker Hub [repository](https://hub.docker.com/r/instill/pipeline-backend).
 
 ## License
 
