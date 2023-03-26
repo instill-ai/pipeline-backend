@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.9.8-alpha...v0.10.0-alpha) (2023-03-26)
+
+
+### Features
+
+* adopt private/public apis for pipeline ([#111](https://github.com/instill-ai/pipeline-backend/issues/111)) ([14bc109](https://github.com/instill-ai/pipeline-backend/commit/14bc1094bd059b67031dd1844e39beb1eeaa4af3))
+
+
+### Bug Fixes
+
+* support multipart trigger for new tasks ([#109](https://github.com/instill-ai/pipeline-backend/issues/109)) ([0e7e9fa](https://github.com/instill-ai/pipeline-backend/commit/0e7e9fab79aaefb104fabbd2b59e75dfa5f3d2ed))
+
 ## [0.9.8-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.9.7-alpha...v0.9.8-alpha) (2023-02-23)
 
 
