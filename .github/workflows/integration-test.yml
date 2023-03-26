@@ -73,7 +73,6 @@ jobs:
       - name: Build image
         uses: docker/build-push-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
           context: .
           load: true
           build-args: |
