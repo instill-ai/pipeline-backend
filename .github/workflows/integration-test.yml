@@ -80,8 +80,6 @@ jobs:
             SERVICE_NAME=pipeline-backend
             GOLANG_VERSION=${{ env.GOLANG_VERSION }}
           tags: instill/pipeline-backend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Checkout (vdp)
         uses: actions/checkout@v3
