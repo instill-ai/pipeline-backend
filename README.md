@@ -11,7 +11,7 @@ On the local machine, clone `vdp` repository in your workspace, move to the repo
 $ cd <your-workspace>
 $ git clone https://github.com/instill-ai/vdp.git
 $ cd vdp
-$ make dev PROFILE=pipeline
+$ make latest PROFILE=pipeline
 ```
 
 Clone `pipeline-backend` repository in your workspace and move to the repository folder:

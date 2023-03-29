@@ -14,12 +14,12 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/internal/db"
-	"github.com/instill-ai/pipeline-backend/internal/external"
-	"github.com/instill-ai/pipeline-backend/internal/logger"
-	"github.com/instill-ai/pipeline-backend/internal/sterr"
+	"github.com/instill-ai/pipeline-backend/pkg/db"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/x/sterr"
 
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 )
@@ -35,14 +35,32 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 	id := pathParams["id"]
 
 	if owner == "" {
-		st := sterr.CreateErrorBadRequest("[handler] invalid owner field", "owner", "required parameter Jwt-Sub not found in the header")
+		st, err := sterr.CreateErrorBadRequest("[handler] invalid owner field",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "owner",
+					Description: "required parameter Jwt-Sub not found in the header",
+				},
+			})
+		if err != nil {
+			logger.Error(err.Error())
+		}
 		errorResponse(w, st)
 		logger.Error(st.String())
 		return
 	}
 
 	if id == "" {
-		st := sterr.CreateErrorBadRequest("[handler] invalid id field", "id", "required parameter pipeline id not found in the path")
+		st, err := sterr.CreateErrorBadRequest("[handler] invalid id field",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "id",
+					Description: "required parameter pipeline id not found in the path",
+				},
+			})
+		if err != nil {
+			logger.Error(err.Error())
+		}
 		errorResponse(w, st)
 		logger.Error(st.String())
 		return
@@ -78,7 +96,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		dbPipeline, err := service.GetPipelineByID(id, owner, false)
 		if err != nil {
-			st := sterr.CreateErrorResourceInfo(
+			st, err := sterr.CreateErrorResourceInfo(
 				codes.NotFound,
 				"[handler] cannot get pipeline by id",
 				"pipelines",
@@ -86,6 +104,9 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 				owner,
 				err.Error(),
 			)
+			if err != nil {
+				logger.Error(err.Error())
+			}
 			errorResponse(w, st)
 			logger.Error(st.String())
 			return
@@ -93,7 +114,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 		modelInstance, err := service.GetModelInstanceByName(dbPipeline.Recipe.ModelInstances[0])
 		if err != nil {
-			st := sterr.CreateErrorResourceInfo(
+			st, err := sterr.CreateErrorResourceInfo(
 				codes.NotFound,
 				"[handler] cannot get pipeline by id",
 				"pipelines",
@@ -101,18 +122,28 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 				owner,
 				err.Error(),
 			)
+			if err != nil {
+				logger.Error(err.Error())
+			}
 			errorResponse(w, st)
 			logger.Error(st.String())
 			return
 		}
 
 		if err := req.ParseMultipartForm(4 << 20); err != nil {
-			st := sterr.CreateErrorPreconditionFailure(
+			st, err := sterr.CreateErrorPreconditionFailure(
 				"[handler] error while get model instance information",
-				"TriggerPipelineBinaryFileUpload",
-				fmt.Sprintf("id %s", id),
-				err.Error(),
+				[]*errdetails.PreconditionFailure_Violation{
+					{
+						Type:        "TriggerPipelineBinaryFileUpload",
+						Subject:     fmt.Sprintf("id %s", id),
+						Description: err.Error(),
+					},
+				},
 			)
+			if err != nil {
+				logger.Error(err.Error())
+			}
 			errorResponse(w, st)
 			logger.Error(st.String())
 			return
@@ -133,12 +164,19 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 			inp, err = parseTextFormDataTextGenerationInputs(req)
 		}
 		if err != nil {
-			st := sterr.CreateErrorPreconditionFailure(
+			st, err := sterr.CreateErrorPreconditionFailure(
 				"[handler] error while reading file from request",
-				"TriggerPipelineBinaryFileUpload",
-				fmt.Sprintf("id %s", id),
-				err.Error(),
+				[]*errdetails.PreconditionFailure_Violation{
+					{
+						Type:        "TriggerPipelineBinaryFileUpload",
+						Subject:     fmt.Sprintf("id %s", id),
+						Description: err.Error(),
+					},
+				},
 			)
+			if err != nil {
+				logger.Error(err.Error())
+			}
 			errorResponse(w, st)
 			logger.Error(st.String())
 			return
@@ -160,12 +198,19 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		_, _ = w.Write(ret)
 
 	} else {
-		st := sterr.CreateErrorPreconditionFailure(
+		st, err := sterr.CreateErrorPreconditionFailure(
 			"[handler] content-type not supported",
-			"TriggerPipelineBinaryFileUpload",
-			fmt.Sprintf("id %s", id),
-			fmt.Sprintf("content-type %s not supported", contentType),
+			[]*errdetails.PreconditionFailure_Violation{
+				{
+					Type:        "TriggerPipelineBinaryFileUpload",
+					Subject:     fmt.Sprintf("id %s", id),
+					Description: fmt.Sprintf("content-type %s not supported", contentType),
+				},
+			},
 		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
 		errorResponse(w, st)
 		logger.Error(st.String())
 		return

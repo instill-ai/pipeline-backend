@@ -16,20 +16,21 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-type privateHandler struct {
+// PrivateHandler handles private API
+type PrivateHandler struct {
 	pipelinePB.UnimplementedPipelinePrivateServiceServer
 	service service.Service
 }
 
-// NewPublicHandler initiates a handler instance
+// NewPrivateHandler initiates a handler instance
 func NewPrivateHandler(s service.Service) pipelinePB.PipelinePrivateServiceServer {
 	datamodel.InitJSONSchema()
-	return &privateHandler{
+	return &PrivateHandler{
 		service: s,
 	}
 }
 
-func (h *privateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB.ListPipelinesAdminRequest) (*pipelinePB.ListPipelinesAdminResponse, error) {
+func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB.ListPipelinesAdminRequest) (*pipelinePB.ListPipelinesAdminResponse, error) {
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
@@ -76,7 +77,7 @@ func (h *privateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 	return &resp, nil
 }
 
-func (h *privateHandler) GetPipelineAdmin(ctx context.Context, req *pipelinePB.GetPipelineAdminRequest) (*pipelinePB.GetPipelineAdminResponse, error) {
+func (h *PrivateHandler) GetPipelineAdmin(ctx context.Context, req *pipelinePB.GetPipelineAdminRequest) (*pipelinePB.GetPipelineAdminResponse, error) {
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
@@ -98,7 +99,7 @@ func (h *privateHandler) GetPipelineAdmin(ctx context.Context, req *pipelinePB.G
 	return &resp, nil
 }
 
-func (h *privateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelinePB.LookUpPipelineAdminRequest) (*pipelinePB.LookUpPipelineAdminResponse, error) {
+func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelinePB.LookUpPipelineAdminRequest) (*pipelinePB.LookUpPipelineAdminResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, lookUpRequiredFields); err != nil {

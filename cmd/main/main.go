@@ -28,14 +28,15 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/internal/external"
-	"github.com/instill-ai/pipeline-backend/internal/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/middleware"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
 
-	database "github.com/instill-ai/pipeline-backend/internal/db"
+	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -90,14 +91,14 @@ func main() {
 
 	grpcServerOpts := []grpc.ServerOption{
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
-			streamAppendMetadataInterceptor,
+			middleware.StreamAppendMetadataInterceptor,
 			grpc_zap.StreamServerInterceptor(logger, opts...),
-			grpc_recovery.StreamServerInterceptor(recoveryInterceptorOpt()),
+			grpc_recovery.StreamServerInterceptor(middleware.RecoveryInterceptorOpt()),
 		)),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-			unaryAppendMetadataInterceptor,
+			middleware.UnaryAppendMetadataInterceptor,
 			grpc_zap.UnaryServerInterceptor(logger, opts...),
-			grpc_recovery.UnaryServerInterceptor(recoveryInterceptorOpt()),
+			grpc_recovery.UnaryServerInterceptor(middleware.RecoveryInterceptorOpt()),
 		)),
 	}
 
@@ -164,9 +165,9 @@ func main() {
 	)
 
 	privateServeMux := runtime.NewServeMux(
-		runtime.WithForwardResponseOption(httpResponseModifier),
-		runtime.WithErrorHandler(errorHandler),
-		runtime.WithIncomingHeaderMatcher(customMatcher),
+		runtime.WithForwardResponseOption(middleware.HTTPResponseModifier),
+		runtime.WithErrorHandler(middleware.ErrorHandler),
+		runtime.WithIncomingHeaderMatcher(middleware.CustomMatcher),
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
 				UseProtoNames:   true,
@@ -180,9 +181,9 @@ func main() {
 	)
 
 	publicServeMux := runtime.NewServeMux(
-		runtime.WithForwardResponseOption(httpResponseModifier),
-		runtime.WithErrorHandler(errorHandler),
-		runtime.WithIncomingHeaderMatcher(customMatcher),
+		runtime.WithForwardResponseOption(middleware.HTTPResponseModifier),
+		runtime.WithErrorHandler(middleware.ErrorHandler),
+		runtime.WithIncomingHeaderMatcher(middleware.CustomMatcher),
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
 				UseProtoNames:   true,
@@ -196,7 +197,7 @@ func main() {
 	)
 
 	// Register custom route for POST multipart form data
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-multipart", appendCustomHeaderMiddleware(handler.HandleTriggerPipelineBinaryFileUpload)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-multipart", middleware.AppendCustomHeaderMiddleware(handler.HandleTriggerPipelineBinaryFileUpload)); err != nil {
 		logger.Fatal(err.Error())
 	}
 
