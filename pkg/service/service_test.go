@@ -67,7 +67,7 @@ func TestCreatePipeline(t *testing.T) {
 
 		mockModelPublicServiceClient := NewMockModelPublicServiceClient(ctrl)
 
-		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockModelPublicServiceClient, nil)
+		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockModelPublicServiceClient, nil, nil)
 
 		_, err := s.CreatePipeline(&owner, &normalPipeline)
 

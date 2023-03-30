@@ -23,6 +23,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
+	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
@@ -70,6 +71,10 @@ type Service interface {
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByIDAdmin(id string, isBasicView bool) (*datamodel.Pipeline, error)
 	GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
+	// Controller APIs
+	GetResourceState(pipelineName string) (*pipelinePB.Pipeline_State, error)
+	UpdateResourceState(pipelineName string, state pipelinePB.Pipeline_State, progress *int32) error
+	DeleteResourceState(pipelineName string) error
 }
 
 type service struct {
@@ -77,16 +82,24 @@ type service struct {
 	mgmtPrivateServiceClient     mgmtPB.MgmtPrivateServiceClient
 	connectorPublicServiceClient connectorPB.ConnectorPublicServiceClient
 	modelPublicServiceClient     modelPB.ModelPublicServiceClient
+	controllerClient             controllerPB.ControllerPrivateServiceClient
 	redisClient                  *redis.Client
 }
 
 // NewService initiates a service instance
-func NewService(r repository.Repository, u mgmtPB.MgmtPrivateServiceClient, c connectorPB.ConnectorPublicServiceClient, m modelPB.ModelPublicServiceClient, rc *redis.Client) Service {
+func NewService(r repository.Repository,
+	u mgmtPB.MgmtPrivateServiceClient,
+	c connectorPB.ConnectorPublicServiceClient,
+	m modelPB.ModelPublicServiceClient,
+	ct controllerPB.ControllerPrivateServiceClient,
+	rc *redis.Client,
+) Service {
 	return &service{
 		repository:                   r,
 		mgmtPrivateServiceClient:     u,
 		connectorPublicServiceClient: c,
 		modelPublicServiceClient:     m,
+		controllerClient:             ct,
 		redisClient:                  rc,
 	}
 }
@@ -325,6 +338,11 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 
 func (s *service) DeletePipeline(id string, owner *mgmtPB.User) error {
 	ownerPermalink := "users/" + owner.GetUid()
+
+	if err := s.DeleteResourceState(fmt.Sprintf("pipelines/%s", id)); err != nil {
+		return err
+	}
+
 	return s.repository.DeletePipeline(id, ownerPermalink)
 }
 

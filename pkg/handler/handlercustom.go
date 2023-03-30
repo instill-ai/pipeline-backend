@@ -87,15 +87,22 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
+	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient()
+	if controllerServiceClientConn != nil {
+		defer controllerServiceClientConn.Close()
+	}
+
 	service := service.NewService(
 		repository.NewRepository(db.GetConnection()),
 		mgmtPrivateServiceClient,
 		connectorPublicServiceClient,
 		modelPublicServiceClient,
+		controllerServiceClient,
 		redisClient,
 	)
 
 	var owner *mgmtPB.User
+
 
 	// Verify if "jwt-sub" is in the header
 	headerOwnerUId := req.Header.Get(constant.HeaderOwnerUIDKey)
