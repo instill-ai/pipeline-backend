@@ -67,13 +67,13 @@ func GetPermalinkUID(permalink string) (string, error) {
 func GetOwner(ctx context.Context, client mgmtPB.MgmtPrivateServiceClient) (*mgmtPB.User, error) {
 
 	// Verify if "jwt-sub" is in the header
-	headerOwnerUid := GetRequestSingleHeader(ctx, constant.HeaderOwnerUIDKey)
-	if headerOwnerUid != "" {
-		_, err := uuid.FromString(headerOwnerUid)
+	headerOwnerUId := GetRequestSingleHeader(ctx, constant.HeaderOwnerUIDKey)
+	if headerOwnerUId != "" {
+		_, err := uuid.FromString(headerOwnerUId)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "Unauthenticated request")
 		}
-		ownerPermalink := "users/" + headerOwnerUid
+		ownerPermalink := "users/" + headerOwnerUId
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -86,7 +86,7 @@ func GetOwner(ctx context.Context, client mgmtPB.MgmtPrivateServiceClient) (*mgm
 	}
 
 	// Verify "owner-id" in the header if there is no "jwt-sub"
-	headerOwnerId := GetRequestSingleHeader(ctx, "owner-id")
+	headerOwnerId := GetRequestSingleHeader(ctx, constant.HeaderOwnerIDKey)
 	if headerOwnerId != constant.DefaultOwnerID {
 		return nil, status.Error(codes.Unauthenticated, "Unauthenticated request")
 	} else {
