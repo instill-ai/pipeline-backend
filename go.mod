@@ -22,16 +22,18 @@ require (
 	go.einride.tech/aip v0.58.1
 	go.temporal.io/sdk v1.17.0
 	go.uber.org/zap v1.23.0
-	golang.org/x/net v0.7.0
-	google.golang.org/grpc v1.49.0
+	golang.org/x/net v0.8.0
+	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/postgres v1.3.9
 	gorm.io/gorm v1.23.8
 )
 
+require cloud.google.com/go/longrunning v0.3.0 // indirect
+
 require (
 	github.com/catalinc/hashcash v0.0.0-20220723060415-5e3ec3e24f67 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/docker v20.10.17+incompatible // indirect
@@ -67,9 +69,9 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
-	google.golang.org/genproto v0.0.0-20220913154956-18f8339a66a5
+	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

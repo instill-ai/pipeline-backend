@@ -45,6 +45,16 @@ func NewPublicHandler(s service.Service) pipelinePB.PipelinePublicServiceServer 
 	}
 }
 
+// GetService returns the service
+func (h *PublicHandler) GetService() service.Service {
+	return h.service
+}
+
+// SetService sets the service
+func (h *PublicHandler) SetService(s service.Service) {
+	h.service = s
+}
+
 func (h *PublicHandler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
 	return &pipelinePB.LivenessResponse{
 		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{

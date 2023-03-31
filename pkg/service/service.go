@@ -53,6 +53,8 @@ type ImageInput struct {
 
 // Service interface
 type Service interface {
+	GetMgmtPrivateServiceClient() mgmtPB.MgmtPrivateServiceClient
+
 	CreatePipeline(pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
 	ListPipelines(ownerRscName string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByID(id string, ownerRscName string, isBasicView bool) (*datamodel.Pipeline, error)
@@ -87,6 +89,11 @@ func NewService(r repository.Repository, u mgmtPB.MgmtPrivateServiceClient, c co
 		modelPublicServiceClient:     m,
 		redisClient:                  rc,
 	}
+}
+
+// GetMgmtPrivateServiceClient returns the management private service client
+func (h *service) GetMgmtPrivateServiceClient() mgmtPB.MgmtPrivateServiceClient {
+	return h.mgmtPrivateServiceClient
 }
 
 func (s *service) CreatePipeline(dbPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
