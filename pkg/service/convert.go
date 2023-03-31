@@ -13,30 +13,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
-	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
-
-func (s *service) ownerRscNameToPermalink(ownerRscName string) (ownerPermalink string, err error) {
-
-	// TODO: implement cache
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if strings.Split(ownerRscName, "/")[0] == "users" {
-		user, err := s.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: ownerRscName})
-		if err != nil {
-			return "", fmt.Errorf("[mgmt-backend] %s", err)
-		}
-		ownerPermalink = "users/" + user.User.GetUid()
-	} else if strings.Split(ownerRscName, "/")[0] == "orgs" { //nolint
-		// TODO: implement orgs case
-	}
-
-	return ownerPermalink, nil
-}
 
 func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datamodel.Recipe, error) {
 

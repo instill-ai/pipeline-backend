@@ -98,7 +98,7 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.CreatePipeline(PBToDBPipeline(owner.GetName(), req.GetPipeline()))
+	dbPipeline, err := h.service.CreatePipeline(owner, PBToDBPipeline(owner.GetName(), req.GetPipeline()))
 	if err != nil {
 		// Manually set the custom header to have a StatusBadRequest http response for REST endpoint
 		if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusBadRequest))); err != nil {
@@ -153,7 +153,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(owner.GetName(), req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(owner, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
@@ -186,7 +186,7 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.GetPipelineByID(id, owner.GetName(), isBasicView)
+	dbPipeline, err := h.service.GetPipelineByID(id, owner, isBasicView)
 	if err != nil {
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
@@ -248,7 +248,7 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.UpdatePipeline(pbPipelineToUpdate.GetId(), owner.GetName(), PBToDBPipeline(owner.GetName(), pbPipelineToUpdate))
+	dbPipeline, err := h.service.UpdatePipeline(pbPipelineToUpdate.GetId(), owner, PBToDBPipeline(owner.GetName(), pbPipelineToUpdate))
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
@@ -272,7 +272,7 @@ func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.Dele
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
-	if err := h.service.DeletePipeline(existPipeline.GetPipeline().GetId(), owner.GetName()); err != nil {
+	if err := h.service.DeletePipeline(existPipeline.GetPipeline().GetId(), owner); err != nil {
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
@@ -308,7 +308,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.GetPipelineByUID(uid, owner.GetName(), isBasicView)
+	dbPipeline, err := h.service.GetPipelineByUID(uid, owner, isBasicView)
 	if err != nil {
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
@@ -338,7 +338,7 @@ func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.Ac
 		return &pipelinePB.ActivatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.UpdatePipelineState(id, owner.GetName(), datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE))
+	dbPipeline, err := h.service.UpdatePipelineState(id, owner, datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE))
 	if err != nil {
 		return &pipelinePB.ActivatePipelineResponse{}, err
 	}
@@ -367,7 +367,7 @@ func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.
 		return &pipelinePB.DeactivatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.UpdatePipelineState(id, owner.GetName(), datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE))
+	dbPipeline, err := h.service.UpdatePipelineState(id, owner, datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE))
 	if err != nil {
 		return &pipelinePB.DeactivatePipelineResponse{}, err
 	}
@@ -401,7 +401,7 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 		return &pipelinePB.RenamePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	dbPipeline, err := h.service.UpdatePipelineID(id, owner.GetName(), newID)
+	dbPipeline, err := h.service.UpdatePipelineID(id, owner, newID)
 	if err != nil {
 		return &pipelinePB.RenamePipelineResponse{}, err
 	}
@@ -432,7 +432,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.GetPipelineByID(id, owner.GetName(), false)
+	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
@@ -473,7 +473,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		}
 	}
 
-	resp, err := h.service.TriggerPipeline(req, dbPipeline)
+	resp, err := h.service.TriggerPipeline(req, owner, dbPipeline)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
@@ -505,7 +505,7 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 		return err
 	}
 
-	dbPipeline, err := h.service.GetPipelineByID(id, owner.GetName(), false)
+	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
 		return err
 	}
@@ -531,7 +531,7 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 		if firstChunk { // Get one time for first chunk.
 			firstChunk = false
 			pipelineName := data.GetName()
-			pipeline, err := h.service.GetPipelineByID(strings.TrimSuffix(pipelineName, "pipelines/"), owner.GetName(), false)
+			pipeline, err := h.service.GetPipelineByID(strings.TrimSuffix(pipelineName, "pipelines/"), owner, false)
 			if err != nil {
 				return status.Errorf(codes.Internal, "do not find the pipeline: %s", err.Error())
 			}
@@ -634,11 +634,11 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 			Content:     allContentFiles,
 			FileLengths: fileLengths,
 		}
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &imageInput)
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, &imageInput)
 	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &textToImageInput)
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, &textToImageInput)
 	case modelPB.ModelInstance_TASK_TEXT_GENERATION:
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &textGenerationInput)
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, &textGenerationInput)
 	}
 	if err != nil {
 		return err
