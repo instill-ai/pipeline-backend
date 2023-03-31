@@ -29,11 +29,7 @@ require (
 	gorm.io/gorm v1.23.8
 )
 
-require (
-	cloud.google.com/go/longrunning v0.3.0 // indirect
-	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/tools v0.6.0 // indirect
-)
+require cloud.google.com/go/longrunning v0.3.0 // indirect
 
 require (
 	github.com/catalinc/hashcash v0.0.0-20220723060415-5e3ec3e24f67 // indirect
