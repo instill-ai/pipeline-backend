@@ -19,3 +19,7 @@ const DefaultSamples int = 1
 // Constants for text generation task.
 const DefaultOutputLen int = 100
 const DefaultTopK int = 40
+
+// Constants for resource owner
+const DefaultOwnerID string = "local-user"
+const HeaderOwnerUIDKey = "jwt-sub"
