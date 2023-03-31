@@ -58,7 +58,6 @@ func TestCreatePipeline(t *testing.T) {
 			Return(nil)
 
 		mockMgmtPrivateServiceClient := NewMockMgmtPrivateServiceClient(ctrl)
-		mockMgmtPrivateServiceClient.EXPECT().GetUserAdmin(gomock.Any(), gomock.Any()).Return(&mgmtPB.GetUserAdminResponse{}, nil).Times(1)
 
 		mockConnectorPublicServiceClient := NewMockConnectorPublicServiceClient(ctrl)
 		mockConnectorPublicServiceClient.EXPECT().GetSourceConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
