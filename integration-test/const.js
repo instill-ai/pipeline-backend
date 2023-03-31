@@ -44,6 +44,12 @@ export const model_def_name = "model-definitions/local"
 export const model_id = "dummy-det"
 export const model_instance_id = "latest"
 
+export const params = {
+  headers: {
+    "Content-Type": "application/json",
+  },
+};
+
 export const detSyncHTTPSingleModelInstRecipe = {
   recipe: {
     source: "source-connectors/source-http",

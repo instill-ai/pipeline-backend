@@ -30,6 +30,16 @@ func NewPrivateHandler(s service.Service) pipelinePB.PipelinePrivateServiceServe
 	}
 }
 
+// GetService returns the service
+func (h *PrivateHandler) GetService() service.Service {
+	return h.service
+}
+
+// SetService sets the service
+func (h *PrivateHandler) SetService(s service.Service) {
+	h.service = s
+}
+
 func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB.ListPipelinesAdminRequest) (*pipelinePB.ListPipelinesAdminResponse, error) {
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)

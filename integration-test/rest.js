@@ -44,11 +44,7 @@ export function setup() {
         "connector": {
           "configuration": {}
         }
-      }), {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    })
+      }), constant.params)
     check(res, {
       "POST /v1alpha/source-connectors response status for creating HTTP source connector 201": (r) => r.status === 201,
     })
@@ -64,11 +60,7 @@ export function setup() {
         "connector": {
           "configuration": {}
         }
-      }), {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    })
+      }), constant.params)
 
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating HTTP destination connector 201": (r) => r.status === 201,
@@ -85,11 +77,7 @@ export function setup() {
         "connector": {
           "configuration": {}
         }
-      }), {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    })
+      }), constant.params)
     check(res, {
       "POST /v1alpha/source-connectors response status for creating gRPC source connector 201": (r) => r.status === 201,
     })
@@ -105,11 +93,7 @@ export function setup() {
         "connector": {
           "configuration": {}
         }
-      }), {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    })
+      }), constant.params)
 
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating gRPC destination connector 201": (r) => r.status === 201,
@@ -128,11 +112,7 @@ export function setup() {
             "destination_path": "/local/pipeline-backend-test"
           }
         }
-      }), {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    })
+      }), constant.params)
 
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
@@ -172,11 +152,7 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
+      let res = http.get(`${modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, constant.params)
       if (res.json().operation.done === true) {
         break
       }
@@ -184,11 +160,7 @@ export function setup() {
       currentTime = new Date().getTime();
     }
 
-    var res = http.post(`${modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    })
+    var res = http.post(`${modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest/deploy`, {}, constant.params)
 
     check(res, {
       [`POST /v1alpha/models/${constant.model_id}/instances/latest/deploy online task det response status`]: (r) => r.status === 200
@@ -198,11 +170,7 @@ export function setup() {
     currentTime = new Date().getTime();
     timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      var res = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      })
+      var res = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, constant.params)
       if (res.json().instance.state === "STATE_ONLINE") {
         break
       }
@@ -294,11 +262,7 @@ export function teardown(data) {
   });
 
   group("Model Backend API: Delete the detection model", function () {
-    check(http.request("DELETE", `${modelPublicHost}/v1alpha/models/${constant.model_id}`, null, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }), {
+    check(http.request("DELETE", `${modelPublicHost}/v1alpha/models/${constant.model_id}`, null, constant.params), {
       [`DELETE /v1alpha/models/${constant.model_id} response status is 204`]: (r) => r.status === 204,
     });
   });

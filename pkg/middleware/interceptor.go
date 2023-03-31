@@ -8,6 +8,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
+
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 )
@@ -27,8 +29,7 @@ func UnaryAppendMetadataInterceptor(ctx context.Context, req interface{}, info *
 		return nil, status.Error(codes.Internal, "can not extract metadata")
 	}
 
-	// TODO: Replace with decoded JWT header
-	md.Append("owner", "users/local-user")
+	md.Append(constant.HeaderOwnerIDKey, constant.DefaultOwnerID)
 
 	newCtx := metadata.NewIncomingContext(ctx, md)
 	h, err := handler(newCtx, req)
@@ -43,8 +44,7 @@ func StreamAppendMetadataInterceptor(srv interface{}, stream grpc.ServerStream, 
 		return status.Error(codes.Internal, "can not extract metadata")
 	}
 
-	// TODO: Replace with decoded JWT header
-	md.Append("owner", "users/local-user")
+	md.Append(constant.HeaderOwnerIDKey, constant.DefaultOwnerID)
 
 	newCtx := metadata.NewIncomingContext(stream.Context(), md)
 	wrapped := grpc_middleware.WrapServerStream(stream)

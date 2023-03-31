@@ -214,30 +214,14 @@ export function CheckList() {
     });
 
     // Get UUID for foreign resources
-    var srcConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/source-connectors/source-http`, {}, {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    }).json().source_connector.uid
+    var srcConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/source-connectors/source-http`, {}, constant.params).json().source_connector.uid
     var srcConnPermalink = `source-connectors/${srcConnUid}`
 
-    var dstConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/destination-connectors/destination-http`, {}, {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    }).json().destination_connector.uid
+    var dstConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/destination-connectors/destination-http`, {}, constant.params).json().destination_connector.uid
     var dstConnPermalink = `destination-connectors/${dstConnUid}`
 
-    var modelUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    }).json().model.uid
-    var modelInstUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, {
-      headers: {
-        "Content-Type": "application/json"
-      },
-    }).json().instance.uid
+    var modelUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
+    var modelInstUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, constant.params).json().instance.uid
     var modelInstPermalink = `models/${modelUid}/instances/${modelInstUid}`
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {

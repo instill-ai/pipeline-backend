@@ -45,6 +45,16 @@ func NewPublicHandler(s service.Service) pipelinePB.PipelinePublicServiceServer 
 	}
 }
 
+// GetService returns the service
+func (h *PublicHandler) GetService() service.Service {
+	return h.service
+}
+
+// SetService sets the service
+func (h *PublicHandler) SetService(s service.Service) {
+	h.service = s
+}
+
 func (h *PublicHandler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
 	return &pipelinePB.LivenessResponse{
 		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{
@@ -83,12 +93,12 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.CreatePipeline(PBToDBPipeline(owner, req.GetPipeline()))
+	dbPipeline, err := h.service.CreatePipeline(owner, PBToDBPipeline(owner.GetName(), req.GetPipeline()))
 	if err != nil {
 		// Manually set the custom header to have a StatusBadRequest http response for REST endpoint
 		if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusBadRequest))); err != nil {
@@ -114,7 +124,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
@@ -166,7 +176,7 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
@@ -191,7 +201,7 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 
 func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
@@ -238,7 +248,7 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.UpdatePipeline(pbPipelineToUpdate.GetId(), owner, PBToDBPipeline(owner, pbPipelineToUpdate))
+	dbPipeline, err := h.service.UpdatePipeline(pbPipelineToUpdate.GetId(), owner, PBToDBPipeline(owner.GetName(), pbPipelineToUpdate))
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
@@ -252,7 +262,7 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 
 func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
@@ -283,7 +293,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
@@ -318,7 +328,7 @@ func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.Ac
 		return &pipelinePB.ActivatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.ActivatePipelineResponse{}, err
 	}
@@ -347,7 +357,7 @@ func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.
 		return &pipelinePB.DeactivatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.DeactivatePipelineResponse{}, err
 	}
@@ -376,7 +386,7 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 		return &pipelinePB.RenamePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.RenamePipelineResponse{}, err
 	}
@@ -412,7 +422,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		return &pipelinePB.TriggerPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx)
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
@@ -463,7 +473,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		}
 	}
 
-	resp, err := h.service.TriggerPipeline(req, dbPipeline)
+	resp, err := h.service.TriggerPipeline(req, owner, dbPipeline)
 	if err != nil {
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
@@ -474,7 +484,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 
 func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerPipelineBinaryFileUploadServer) error {
 
-	owner, err := resource.GetOwner(stream.Context())
+	owner, err := resource.GetOwner(stream.Context(), h.service.GetMgmtPrivateServiceClient())
 	if err != nil {
 		return err
 	}
@@ -624,11 +634,11 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 			Content:     allContentFiles,
 			FileLengths: fileLengths,
 		}
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &imageInput)
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, &imageInput)
 	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &textToImageInput)
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, &textToImageInput)
 	case modelPB.ModelInstance_TASK_TEXT_GENERATION:
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(dbPipeline, modelInstance.Task, &textGenerationInput)
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, &textGenerationInput)
 	}
 	if err != nil {
 		return err

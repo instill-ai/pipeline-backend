@@ -31,56 +31,32 @@ export function CheckList() {
 
     // Create pipelines
     for (const reqBody of reqBodies) {
-      check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }), {
+      check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
         [`POST /v1alpha/pipelines x${reqBodies.length} response status is 201`]: (r) => r.status === 201
       });
     }
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      }
-    }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines response status is 200`]: (r) => r.status === 200,
       [`GET /v1alpha/admin/pipelines response pipelines.length == 10`]: (r) => r.json().pipelines.length == 10,
       [`GET /v1alpha/admin/pipelines response pipelines[0].recipe is null`]: (r) => r.json().pipelines[0].recipe === null,
       [`GET /v1alpha/admin/pipelines response total_size == 200`]: (r) => r.json().total_size == 200,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?view=VIEW_FULL`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      }
-    }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?view=VIEW_FULL`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?view=VIEW_FULL response pipelines[0] has recipe`]: (r) => r.json().pipelines[0].recipe !== null,
       [`GET /v1alpha/admin/pipelines?view=VIEW_FULL response pipelines[0] recipe is valid`]: (r) => helper.validateRecipe(r.json().pipelines[0].recipe),
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?view=VIEW_BASIC`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      }
-    }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?view=VIEW_BASIC`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?view=VIEW_BASIC response pipelines[0].recipe is null`]: (r) => r.json().pipelines[0].recipe === null,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?page_size=3`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      }
-    }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?page_size=3`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?page_size=3 response pipelines.length == 3`]: (r) => r.json().pipelines.length == 3,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?page_size=101`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      }
-    }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?page_size=101`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?page_size=101 response pipelines.length == 100`]: (r) => r.json().pipelines.length == 100,
     });
 
@@ -93,38 +69,38 @@ export function CheckList() {
     });
 
     // Filtering
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC`, null, { headers: { "Content-Type": "application/json", } }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE`, null, { headers: { "Content-Type": "application/json", } }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`, null, { headers: { "Content-Type": "application/json", } }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/admin/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
     // Get UUID for foreign resources
-    var srcConnUid = http.get(`${connectorPublicHost}/v1alpha/source-connectors/source-http`, {}, { headers: { "Content-Type": "application/json" }, }).json().source_connector.uid
+    var srcConnUid = http.get(`${connectorPublicHost}/v1alpha/source-connectors/source-http`, {}, constant.params).json().source_connector.uid
     var srcConnPermalink = `source-connectors/${srcConnUid}`
 
-    var dstConnUid = http.get(`${connectorPublicHost}/v1alpha/destination-connectors/destination-http`, {}, { headers: { "Content-Type": "application/json" }, }).json().destination_connector.uid
+    var dstConnUid = http.get(`${connectorPublicHost}/v1alpha/destination-connectors/destination-http`, {}, constant.params).json().destination_connector.uid
     var dstConnPermalink = `destination-connectors/${dstConnUid}`
 
-    var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, { headers: { "Content-Type": "application/json" }, }).json().model.uid
-    var modelInstUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, { headers: { "Content-Type": "application/json" }, }).json().instance.uid
+    var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
+    var modelInstUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, constant.params).json().instance.uid
     var modelInstPermalink = `models/${modelUid}/instances/${modelInstUid}`
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22`, null, { headers: { "Content-Type": "application/json", } }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.destination=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22`, null, { headers: { "Content-Type": "application/json", } }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.destination=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.model_instances:%22${modelInstPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
@@ -134,11 +110,7 @@ export function CheckList() {
       check(http.request(
         "DELETE",
         `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`,
-        JSON.stringify(reqBody), {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }), {
+        JSON.stringify(reqBody), constant.params), {
         [`DELETE /v1alpha/pipelines x${reqBodies.length} response status is 204`]: (r) => r.status === 204,
       });
     }
@@ -158,19 +130,11 @@ export function CheckGet() {
     )
 
     // Create a pipeline
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/${reqBody.id}`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/${reqBody.id}`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response status is 200`]: (r) => r.status === 200,
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline name`]: (r) => r.json().pipeline.name === `pipelines/${reqBody.id}`,
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline uid`]: (r) => helper.isUUID(r.json().pipeline.uid),
@@ -179,29 +143,17 @@ export function CheckGet() {
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline recipe is null`]: (r) => r.json().pipeline.recipe === null,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/${reqBody.id}?view=VIEW_FULL`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/${reqBody.id}?view=VIEW_FULL`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response status is 200`]: (r) => r.status === 200,
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline recipe is not null`]: (r) => r.json().pipeline.recipe !== null,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/this-id-does-not-exist`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/this-id-does-not-exist`, null, constant.params), {
       "GET /v1alpha/admin/pipelines/this-id-does-not-exist response status is 404": (r) => r.status === 404,
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.params), {
       [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
     });
 
@@ -220,11 +172,7 @@ export function CheckLookUp() {
     )
 
     // Create a pipeline
-    var res = http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    var res = http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params)
 
     check(res, {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
@@ -236,11 +184,7 @@ export function CheckLookUp() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.params), {
       [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
     });
 

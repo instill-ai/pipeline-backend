@@ -21,11 +21,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
 
   group("Pipelines API: Trigger an async pipeline for single image and single model instance", () => {
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
 
@@ -37,11 +33,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
     });
@@ -54,11 +46,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
     });
@@ -77,11 +65,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
   });
 
   // Delete the pipeline
-  check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }), {
+  check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.params), {
     [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
   });
 }
@@ -97,11 +81,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
 
   group("Pipelines API: Trigger an async pipeline for multiple images and single model instance", () => {
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
 
@@ -121,11 +101,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
     });
@@ -148,11 +124,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
         }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
     });
@@ -174,11 +146,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
   });
 
   // Delete the pipeline
-  check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }), {
+  check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.params), {
     [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
   });
 }
@@ -194,11 +162,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
 
   group("Pipelines API: Trigger an async pipeline for multiple images and multiple model instances", () => {
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
 
@@ -222,11 +186,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
     });
@@ -251,11 +211,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
       ]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqBody.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
     });
@@ -275,11 +231,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.params), {
       [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
     });
 

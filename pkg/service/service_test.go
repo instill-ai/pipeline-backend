@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -22,6 +23,13 @@ import (
 func TestCreatePipeline(t *testing.T) {
 	t.Run("normal", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
+
+		uid := uuid.New()
+		uidstr := uid.String()
+		owner := mgmtPB.User{
+			Name: "users/local-user",
+			Uid:  &uidstr,
+		}
 
 		normalPipeline := datamodel.Pipeline{
 			ID:    "awesome",
@@ -50,7 +58,6 @@ func TestCreatePipeline(t *testing.T) {
 			Return(nil)
 
 		mockMgmtPrivateServiceClient := NewMockMgmtPrivateServiceClient(ctrl)
-		mockMgmtPrivateServiceClient.EXPECT().GetUserAdmin(gomock.Any(), gomock.Any()).Return(&mgmtPB.GetUserAdminResponse{}, nil).Times(1)
 
 		mockConnectorPublicServiceClient := NewMockConnectorPublicServiceClient(ctrl)
 		mockConnectorPublicServiceClient.EXPECT().GetSourceConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
@@ -62,7 +69,7 @@ func TestCreatePipeline(t *testing.T) {
 
 		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockModelPublicServiceClient, nil)
 
-		_, err := s.CreatePipeline(&normalPipeline)
+		_, err := s.CreatePipeline(&owner, &normalPipeline)
 
 		assert.NoError(t, err)
 	})

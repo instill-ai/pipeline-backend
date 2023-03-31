@@ -21,11 +21,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       constant.detSyncHTTPSingleModelInstRecipe
     );
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), constant.params), {
       "POST /v1alpha/pipelines response status is 201 (HTTP pipeline)": (r) => r.status === 201,
     });
 
@@ -37,11 +33,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
@@ -62,11 +54,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
@@ -108,11 +96,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response status is 422 with wrong request file`]: (r) => r.status === 422,
     });
 
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
       [`DELETE /v1alpha/pipelines/${reqHTTP.id} response status 204`]: (r) => r.status === 204,
     });
 
@@ -124,27 +108,15 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       constant.detSyncGRPCSingleModelInstRecipe
     );
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqGRPC), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqGRPC), constant.params), {
       "POST /v1alpha/pipelines response status is 201 (gRPC pipeline)": (r) => r.status === 201,
     });
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}/trigger`, JSON.stringify(payloadImageURL), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqGRPC.id}/trigger (url) response status is 422 (gRPC pipeline triggered by HTTP)`]: (r) => r.status === 422,
     })
 
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}`, null, constant.params), {
       [`DELETE /v1alpha/pipelines/${reqGRPC.id} response status 204`]: (r) => r.status === 204,
     });
 
@@ -164,11 +136,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
       constant.detSyncHTTPSingleModelInstRecipe
     );
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
 
@@ -197,11 +165,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
       ]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response output[0].detection_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
@@ -229,11 +193,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
       ]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response output[0].detection_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
@@ -269,11 +229,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
       [`DELETE /v1alpha/pipelines/${reqHTTP.id} response status 204`]: (r) => r.status === 204,
     });
 
@@ -293,11 +249,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
       constant.detSyncHTTPMultiModelInstRecipe
     );
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
 
@@ -326,11 +278,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
         }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs.length == 2`]: (r) => r.json().model_instance_outputs.length === 2,
     });
@@ -347,11 +295,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs.length == 2`]: (r) => r.json().model_instance_outputs.length === 2,
     });
@@ -371,11 +315,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
     });
 
     // Delete the pipeline
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }), {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
       [`DELETE /v1alpha/pipelines/${reqHTTP.id} response status 204`]: (r) => r.status === 204,
     });
 
