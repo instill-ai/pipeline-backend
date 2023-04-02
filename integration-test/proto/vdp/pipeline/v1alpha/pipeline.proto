@@ -372,6 +372,7 @@ message TriggerPipelineBinaryFileUploadResponse {
   repeated ModelOutput model_outputs = 2;
 }
 
+<<<<<<< HEAD
 // WatchPipelineRequest represents a public request to query
 // a pipeline's current state
 message WatchPipelineRequest {
@@ -392,6 +393,8 @@ message WatchPipelineResponse {
   Pipeline.State state = 1;
 }
 
+=======
+>>>>>>> b8cc93c (chore: update test cases)
 // ========== Private endpoints
 
 // ListPipelinesAdminRequest represents a request to list all pipelines from all users by admin
