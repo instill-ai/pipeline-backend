@@ -241,6 +241,24 @@ export default function (data) {
 }
 
 export function teardown(data) {
+  group("Connector API: Delete all pipelines created by this test", () => {
+
+    client.connect(constant.pipelineGRPCPublicHost, {
+      plaintext: true
+    });
+
+    for (const pipeline of client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
+      pageSize: 1000
+    }, {}).message.pipelines) {
+      check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
+        name: `pipelines/${pipeline.id}`
+      }), {
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      });
+    }
+
+    client.close();
+  });
 
   client.connect(constant.connectorGRPCPublicHost, {
     plaintext: true
@@ -292,24 +310,5 @@ export function teardown(data) {
     check(http.request("DELETE", `${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, null, constant.params), {
       [`DELETE /v1alpha/models/${constant.model_id} response status is 204`]: (r) => r.status === 204,
     });
-  });
-
-  group("Connector API: Delete all pipelines created by this test", () => {
-
-    client.connect(constant.pipelineGRPCPublicHost, {
-      plaintext: true
-    });
-
-    for (const pipeline of client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
-      pageSize: 1000
-    }, {}).message.pipelines) {
-      check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
-        name: `pipelines/${pipeline.id}`
-      }), {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      });
-    }
-
-    client.close();
   });
 }
