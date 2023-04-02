@@ -14,7 +14,7 @@ import * as constant from "./const.js"
 const client = new grpc.Client();
 client.load(['proto/vdp/pipeline/v1alpha'], 'pipeline_public_service.proto');
 
-export function CheckTriggerSyncSingleImageSingleModelInst() {
+export function CheckTriggerSyncSingleImageSingleModel() {
 
   group("Pipelines API: Trigger a pipeline for single image and single model", () => {
 
@@ -120,7 +120,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
 
 }
 
-export function CheckTriggerSyncMultiImageSingleModelInst() {
+export function CheckTriggerSyncMultiImageSingleModel() {
 
   group("Pipelines API: Trigger a pipeline for multiple images and single model", () => {
 
@@ -221,7 +221,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
   });
 }
 
-export function CheckTriggerSyncMultiImageMultiModelInst() {
+export function CheckTriggerSyncMultiImageMultiModel() {
 
   group("Pipelines API: Trigger a pipeline for multiple images and multiple models", () => {
 

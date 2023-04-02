@@ -19,7 +19,7 @@ import * as constant from "./const.js"
 const client = new grpc.Client();
 client.load(['proto/vdp/pipeline/v1alpha'], 'pipeline_public_service.proto');
 
-export function CheckTriggerAsyncSingleImageSingleModelInst() {
+export function CheckTriggerAsyncSingleImageSingleModel() {
 
   group("Pipelines API: Trigger an async pipeline for single image and single model", () => {
 
@@ -82,7 +82,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
   });
 }
 
-export function CheckTriggerAsyncMultiImageSingleModelInst() {
+export function CheckTriggerAsyncMultiImageSingleModel() {
 
 
   group("Pipelines API: Trigger an async pipeline for multiple images and single model", () => {
@@ -164,7 +164,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
   });
 }
 
-export function CheckTriggerAsyncMultiImageMultiModelInst() {
+export function CheckTriggerAsyncMultiImageMultiModel() {
 
   group("Pipelines API: Trigger an async pipeline for multiple images and multiple models", () => {
 

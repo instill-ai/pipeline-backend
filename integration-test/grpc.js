@@ -216,13 +216,13 @@ export default function (data) {
   pipeline.CheckRename()
   pipeline.CheckLookUp()
 
-  // triggerSync.CheckTriggerSyncSingleImageSingleModelInst()
-  // triggerSync.CheckTriggerSyncMultiImageSingleModelInst()
-  // triggerSync.CheckTriggerSyncMultiImageMultiModelInst()
+  triggerSync.CheckTriggerSyncSingleImageSingleModel()
+  triggerSync.CheckTriggerSyncMultiImageSingleModel()
+  triggerSync.CheckTriggerSyncMultiImageMultiModel()
 
-  // triggerAsync.CheckTriggerAsyncSingleImageSingleModelInst()
-  // triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
-  // triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
+  triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
+  triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
+  triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
 
   if (__ENV.MODE != "api-gateway" && __ENV.MODE != "localhost") {
     pipelinePrivate.CheckList()

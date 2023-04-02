@@ -144,4 +144,14 @@ service PipelinePublicService {
       returns (TriggerPipelineBinaryFileUploadResponse) {
     option (google.api.method_signature) = "name,file";
   }
+
+  // WatchPipeline method receives a WatchPipelineRequest message
+  // and returns a WatchPipelineResponse
+  rpc WatchPipeline(WatchPipelineRequest)
+      returns (WatchPipelineResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=pipelines/*}/watch"
+    };
+    option (google.api.method_signature) = "name";
+  }
 }

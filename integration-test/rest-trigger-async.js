@@ -9,7 +9,7 @@ import { pipelinePublicHost } from "./const.js";
 
 import * as constant from "./const.js"
 
-export function CheckTriggerAsyncSingleImageSingleModelInst() {
+export function CheckTriggerAsyncSingleImageSingleModel() {
 
   var reqBody = Object.assign(
     {
@@ -70,7 +70,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
   });
 }
 
-export function CheckTriggerAsyncMultiImageSingleModelInst() {
+export function CheckTriggerAsyncMultiImageSingleModel() {
   var reqBody = Object.assign(
     {
       id: randomString(10),
@@ -151,7 +151,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
   });
 }
 
-export function CheckTriggerAsyncMultiImageMultiModelInst() {
+export function CheckTriggerAsyncMultiImageMultiModel() {
   var reqBody = Object.assign(
     {
       id: randomString(10),

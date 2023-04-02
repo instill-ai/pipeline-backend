@@ -35,7 +35,6 @@ func ValidatePipelineJSONSchema(pbPipeline *pipelinePB.Pipeline) error {
 	if err != nil {
 		return err
 	}
-
 	var v interface{}
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err

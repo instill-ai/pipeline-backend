@@ -35,7 +35,7 @@ message Recipe {
     (google.api.resource_reference).type = "api.instill.tech/Connector"
   ];
   // A list of model resources
-  repeated string model = 3 [
+  repeated string models = 3 [
     (google.api.field_behavior) = IMMUTABLE,
     (google.api.resource_reference).type = "api.instill.tech/Model"
   ];
@@ -370,6 +370,26 @@ message TriggerPipelineBinaryFileUploadResponse {
   repeated string data_mapping_indices = 1;
   // The multiple model inference outputs
   repeated ModelOutput model_outputs = 2;
+}
+
+// WatchPipelineRequest represents a public request to query
+// a pipeline's current state
+message WatchPipelineRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration : {path_param_name : "pipeline.name/watch"}
+    }
+  ];
+}
+
+// WatchPipelineResponse represents a response to fetch a pipeline's
+// current state
+message WatchPipelineResponse {
+  // Retrieved pipeline state
+  Pipeline.State state = 1;
 }
 
 // ========== Private endpoints

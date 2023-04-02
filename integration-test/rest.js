@@ -220,13 +220,13 @@ export default function (data) {
   pipelinePublic.CheckRename()
   pipelinePublic.CheckLookUp()
 
-  triggerSync.CheckTriggerSyncSingleImageSingleModelInst()
-  triggerSync.CheckTriggerSyncMultiImageSingleModelInst()
-  triggerSync.CheckTriggerSyncMultiImageMultiModelInst()
+  triggerSync.CheckTriggerSyncSingleImageSingleModel()
+  triggerSync.CheckTriggerSyncMultiImageSingleModel()
+  triggerSync.CheckTriggerSyncMultiImageMultiModel()
 
-  triggerAsync.CheckTriggerAsyncSingleImageSingleModelInst()
-  triggerAsync.CheckTriggerAsyncMultiImageSingleModelInst()
-  triggerAsync.CheckTriggerAsyncMultiImageMultiModelInst()
+  triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
+  triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
+  triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
 
 }
 

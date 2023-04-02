@@ -9,7 +9,7 @@ import { pipelinePublicHost } from "./const.js";
 
 import * as constant from "./const.js"
 
-export function CheckTriggerSyncSingleImageSingleModelInst() {
+export function CheckTriggerSyncSingleImageSingleModel() {
 
   group("Pipelines API: Trigger a pipeline for single image and single model", () => {
 
@@ -124,7 +124,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
 
 }
 
-export function CheckTriggerSyncMultiImageSingleModelInst() {
+export function CheckTriggerSyncMultiImageSingleModel() {
 
   group("Pipelines API: Trigger a pipeline for multiple images and single model", () => {
 
@@ -237,7 +237,7 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
 
 }
 
-export function CheckTriggerSyncMultiImageMultiModelInst() {
+export function CheckTriggerSyncMultiImageMultiModel() {
 
   group("Pipelines API: Trigger a pipeline for multiple images and multiple models", () => {
 

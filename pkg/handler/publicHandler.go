@@ -72,7 +72,6 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.Readiness
 }
 
 func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
-
 	// Validate JSON Schema
 	if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
