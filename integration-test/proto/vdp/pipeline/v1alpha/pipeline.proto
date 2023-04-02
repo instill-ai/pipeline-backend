@@ -34,10 +34,10 @@ message Recipe {
     (google.api.field_behavior) = IMMUTABLE,
     (google.api.resource_reference).type = "api.instill.tech/Connector"
   ];
-  // A list of model instance resources
-  repeated string model_instances = 3 [
+  // A list of model resources
+  repeated string model = 3 [
     (google.api.field_behavior) = IMMUTABLE,
-    (google.api.resource_reference).type = "api.instill.tech/ModelInstance"
+    (google.api.resource_reference).type = "api.instill.tech/Model"
   ];
 }
 
@@ -275,10 +275,10 @@ message RenamePipelineResponse {
 ////////////////////////////////////
 
 // TaskOutput represents the output of a CV Task result from a
-// model instance, extended from model.v1alpha.TaskOutput.
+// model, extended from model.v1alpha.TaskOutput.
 // Here we don't use a model.v1alpha.TaskOutput type field but explicitly use
 // the replicated oneof field because we want the CV Task output to be at the
-// same message layer like the trigger output of model instance.
+// same message layer like the trigger output of model.
 message TaskOutput {
   // The index of input data in a batch
   string index = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
@@ -314,17 +314,17 @@ message TaskOutput {
   }
 }
 
-// ModelInstanceOutput represents one model instance inference result
-message ModelInstanceOutput {
-  // The model instance
-  string model_instance = 1 [
+// ModelOutput represents one model inference result
+message ModelOutput {
+  // The model
+  string model = 1 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (google.api.resource_reference).type = "api.instill.tech/ModelInstance"
+    (google.api.resource_reference).type = "api.instill.tech/Model"
   ];
   // The task type
-  model.v1alpha.ModelInstance.Task task = 2
+  model.v1alpha.Model.Task task = 2
       [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // The extended task outputs based on the model instance inference (i.e.,
+  // The extended task outputs based on the model inference (i.e.,
   // from a trigger endpoint of model-backend)
   repeated TaskOutput task_outputs = 3
       [ (google.api.field_behavior) = OUTPUT_ONLY ];
@@ -343,12 +343,12 @@ message TriggerPipelineRequest {
 }
 
 // TriggerPipelineResponse represents a response for the output
-// of a pipeline, i.e., the multiple model instance inference outputs
+// of a pipeline, i.e., the multiple model inference outputs
 message TriggerPipelineResponse {
   // The data mapping indices stores UUID for each input
   repeated string data_mapping_indices = 1;
-  // The multiple model instance inference outputs
-  repeated ModelInstanceOutput model_instance_outputs = 2;
+  // The multiple model inference outputs
+  repeated ModelOutput model_outputs = 2;
 }
 
 // TriggerPipelineBinaryFileUploadRequest represents a request to trigger a
@@ -364,15 +364,15 @@ message TriggerPipelineBinaryFileUploadRequest {
 }
 
 // TriggerPipelineBinaryFileUploadResponse represents a response for the output
-// of a pipeline, i.e., the multiple model instance inference outputs
+// of a pipeline, i.e., the multiple model inference outputs
 message TriggerPipelineBinaryFileUploadResponse {
   // The data mapping indices stores UUID for each input
   repeated string data_mapping_indices = 1;
-  // The multiple model instance inference outputs
-  repeated ModelInstanceOutput model_instance_outputs = 2;
+  // The multiple model inference outputs
+  repeated ModelOutput model_outputs = 2;
 }
 
-// ========== Admin endpoints
+// ========== Private endpoints
 
 // ListPipelinesAdminRequest represents a request to list all pipelines from all users by admin
 message ListPipelinesAdminRequest {
@@ -418,7 +418,7 @@ message GetPipelineAdminResponse {
   Pipeline pipeline = 1;
 }
 
-// LookUpPipelineAdminRequest represents a request to query a user's pipeline via permalink by admin 
+// LookUpPipelineAdminRequest represents a request to query a user's pipeline via permalink by admin
 message LookUpPipelineAdminRequest {
   // Permalink of a pipeline. For example:
   // "pipelines/{uid}"

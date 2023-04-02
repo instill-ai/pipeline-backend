@@ -486,9 +486,9 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 			if err != nil {
 				switch {
 				case strings.Contains(err.Error(), "code = DeadlineExceeded"):
-					return nil, status.Errorf(codes.DeadlineExceeded, "trigger model instance got timeout error")
+					return nil, status.Errorf(codes.DeadlineExceeded, "trigger model got timeout error")
 				default:
-					return nil, status.Errorf(codes.Internal, fmt.Sprintf("trigger model instance got error %v", err.Error()))
+					return nil, status.Errorf(codes.Internal, fmt.Sprintf("trigger model got error %v", err.Error()))
 				}
 			}
 		}
@@ -505,12 +505,12 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 			}()
 			for err := range errors {
 				if err != nil {
-					logger.Error(fmt.Sprintf("[model-backend] Error trigger model instance got error %v", err.Error()))
+					logger.Error(fmt.Sprintf("[model-backend] Error trigger model got error %v", err.Error()))
 					return
 				}
 			}
 
-			for idx, modelInstRecName := range dbPipeline.Recipe.Models {
+			for idx, modelRecName := range dbPipeline.Recipe.Models {
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
 				_, err := s.connectorPublicServiceClient.WriteDestinationConnector(ctx, &connectorPB.WriteDestinationConnectorRequest{
@@ -537,7 +537,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 					}(),
 				})
 				if err != nil {
-					logger.Error(fmt.Sprintf("[connector-backend] Error %s at %dth model instance %s: %v", "WriteDestinationConnector", idx, modelInstRecName, err.Error()))
+					logger.Error(fmt.Sprintf("[connector-backend] Error %s at %dth model %s: %v", "WriteDestinationConnector", idx, modelRecName, err.Error()))
 				}
 			}
 		}()
@@ -895,7 +895,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline
 			ModelOutputs:       modelOutputs,
 		}, nil
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
-		for idx, modelInstRecName := range dbPipeline.Recipe.Models {
+		for idx, modelRecName := range dbPipeline.Recipe.Models {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			_, err := s.connectorPublicServiceClient.WriteDestinationConnector(ctx, &connectorPB.WriteDestinationConnectorRequest{
@@ -924,7 +924,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline
 				}(),
 			})
 			if err != nil {
-				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth model instance %s: %v", "WriteDestinationConnector", idx, modelInstRecName, err.Error())
+				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth model %s: %v", "WriteDestinationConnector", idx, modelRecName, err.Error())
 			}
 		}
 		return &pipelinePB.TriggerPipelineBinaryFileUploadResponse{

@@ -6,7 +6,6 @@ package vdp.connector.v1alpha;
 import "google/api/field_behavior.proto";
 
 import "../../../vdp/healthcheck/v1alpha/healthcheck.proto";
-import "../../../vdp/pipeline/v1alpha/pipeline.proto";
 
 // LivenessRequest represents a request to check a service liveness status
 message LivenessRequest {

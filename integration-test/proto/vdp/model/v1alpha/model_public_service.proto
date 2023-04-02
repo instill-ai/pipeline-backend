@@ -147,110 +147,89 @@ service ModelPublicService {
     option (google.api.method_signature) = "name";
   }
 
-  // ListModelInstances method receives a ListModelInstancesRequest message and
-  // returns a ListModelInstancesResponse
-  rpc ListModelInstances(ListModelInstancesRequest)
-      returns (ListModelInstancesResponse) {
+  // DeployModel deploy a model to online state
+  rpc DeployModel(DeployModelRequest)
+      returns (DeployModelResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/{parent=models/*}/instances"
-    };
-    option (google.api.method_signature) = "parent";
-  }
-
-  // GetModelInstance method receives a GetModelInstanceRequest message and
-  // returns a GetModelInstanceResponse
-  rpc GetModelInstance(GetModelInstanceRequest)
-      returns (GetModelInstanceResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=models/*/instances/*}"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // LookUpModelInstance method receives a LookUpModelInstanceRequest message
-  // and returns a
-  // LookUpModelInstanceResponse
-  rpc LookUpModelInstance(LookUpModelInstanceRequest)
-      returns (LookUpModelInstanceResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{permalink=models/*/instances/*}/lookUp"
-    };
-    option (google.api.method_signature) = "permalink";
-  }
-
-  // DeployModelInstance deploy a model instance to online state
-  rpc DeployModelInstance(DeployModelInstanceRequest)
-      returns (DeployModelInstanceResponse) {
-    option (google.api.http) = {
-      post : "/v1alpha/{name=models/*/instances/*}/deploy"
+      post : "/v1alpha/{name=models/*}/deploy"
       body : "*"
     };
     option (google.api.method_signature) = "name";
   }
 
-  // UndeployModelInstance undeploy a model instance to offline state
-  rpc UndeployModelInstance(UndeployModelInstanceRequest)
-      returns (UndeployModelInstanceResponse) {
+  // UndeployModel undeploy a model to offline state
+  rpc UndeployModel(UndeployModelRequest)
+      returns (UndeployModelResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=models/*/instances/*}/undeploy"
+      post : "/v1alpha/{name=models/*}/undeploy"
       body : "*"
     };
     option (google.api.method_signature) = "name";
   }
 
-  // GetModelInstanceCard method receives a GetModelInstanceCardRequest message
-  // and returns a GetModelInstanceCardResponse
-  rpc GetModelInstanceCard(GetModelInstanceCardRequest)
-      returns (GetModelInstanceCardResponse) {
+  // GetModelCard method receives a GetModelCardRequest message
+  // and returns a GetModelCardResponse
+  rpc GetModelCard(GetModelCardRequest)
+      returns (GetModelCardResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/{name=models/*/instances/*/readme}"
+      get : "/v1alpha/{name=models/*/readme}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // WatchModel method receives a WatchModelRequest message
+  // and returns a WatchModelResponse
+  rpc WatchModel(WatchModelRequest)
+      returns (WatchModelResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=models/*}/watch"
     };
     option (google.api.method_signature) = "name";
   }
 
   ///////////////////////////////////////////////////////
   //
-  // TriggerModelInstance method receives a TriggerModelInstanceRequest message
-  // and returns a TriggerModelInstanceResponse message.
-  rpc TriggerModelInstance(TriggerModelInstanceRequest)
-      returns (TriggerModelInstanceResponse) {
+  // TriggerModel method receives a TriggerModelRequest message
+  // and returns a TriggerModelResponse message.
+  rpc TriggerModel(TriggerModelRequest)
+      returns (TriggerModelResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=models/*/instances/*}/trigger"
+      post : "/v1alpha/{name=models/*}/trigger"
       body : "*"
     };
     option (google.api.method_signature) = "name,inputs";
   }
 
-  // TriggerModelInstanceBinaryFileUpload method receives a
-  // TriggerModelInstanceBinaryFileUploadRequest message and returns a
-  // TriggerModelInstanceBinaryFileUploadResponse message.
+  // TriggerModelBinaryFileUpload method receives a
+  // TriggerModelBinaryFileUploadRequest message and returns a
+  // TriggerModelBinaryFileUploadResponse message.
   //
-  // Endpoint: "POST/v1alpha/{name=models/*/instances/*}/trigger-multipart"
-  rpc TriggerModelInstanceBinaryFileUpload(
-      stream TriggerModelInstanceBinaryFileUploadRequest)
-      returns (TriggerModelInstanceBinaryFileUploadResponse) {
+  // Endpoint: "POST/v1alpha/{name=models/*}/trigger-multipart"
+  rpc TriggerModelBinaryFileUpload(
+      stream TriggerModelBinaryFileUploadRequest)
+      returns (TriggerModelBinaryFileUploadResponse) {
     option (google.api.method_signature) = "name,file";
   }
 
-  // TestModelInstance method receives a TestModelInstanceRequest message
-  // and returns a TestModelInstanceResponse message.
-  rpc TestModelInstance(TestModelInstanceRequest)
-      returns (TestModelInstanceResponse) {
+  // TestModel method receives a TestModelRequest message
+  // and returns a TestModelResponse message.
+  rpc TestModel(TestModelRequest)
+      returns (TestModelResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=models/*/instances/*}/test"
+      post : "/v1alpha/{name=models/*}/test"
       body : "*"
     };
     option (google.api.method_signature) = "name,inputs";
   }
 
-  // TestModelInstanceBinaryFileUpload method receives a
-  // TestModelInstanceBinaryFileUploadRequest message and returns a
-  // TestModelInstanceBinaryFileUploadResponse message.
+  // TestModelBinaryFileUpload method receives a
+  // TestModelBinaryFileUploadRequest message and returns a
+  // TestModelBinaryFileUploadResponse message.
   //
-  // Endpoint: "POST/v1alpha/{name=models/*/instances/*}/test-multipart"
-  rpc TestModelInstanceBinaryFileUpload(
-      stream TestModelInstanceBinaryFileUploadRequest)
-      returns (TestModelInstanceBinaryFileUploadResponse) {
+  // Endpoint: "POST/v1alpha/{name=models/*}/test-multipart"
+  rpc TestModelBinaryFileUpload(
+      stream TestModelBinaryFileUploadRequest)
+      returns (TestModelBinaryFileUploadResponse) {
     option (google.api.method_signature) = "name,file";
   }
 

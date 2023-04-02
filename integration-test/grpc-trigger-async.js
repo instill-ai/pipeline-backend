@@ -21,7 +21,7 @@ client.load(['proto/vdp/pipeline/v1alpha'], 'pipeline_public_service.proto');
 
 export function CheckTriggerAsyncSingleImageSingleModelInst() {
 
-  group("Pipelines API: Trigger an async pipeline for single image and single model instance", () => {
+  group("Pipelines API: Trigger an async pipeline for single image and single model", () => {
 
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
@@ -31,7 +31,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
       id: randomString(10),
       description: randomString(50),
     },
-      constant.detAsyncSingleModelInstRecipe
+      constant.detAsyncSingleModelRecipe
     );
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
@@ -85,7 +85,7 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
 export function CheckTriggerAsyncMultiImageSingleModelInst() {
 
 
-  group("Pipelines API: Trigger an async pipeline for multiple images and single model instance", () => {
+  group("Pipelines API: Trigger an async pipeline for multiple images and single model", () => {
 
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
@@ -95,7 +95,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
       id: randomString(10),
       description: randomString(50),
     },
-      constant.detAsyncSingleModelInstRecipe
+      constant.detAsyncSingleModelRecipe
     );
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
@@ -166,7 +166,7 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
 
 export function CheckTriggerAsyncMultiImageMultiModelInst() {
 
-  group("Pipelines API: Trigger an async pipeline for multiple images and multiple model instances", () => {
+  group("Pipelines API: Trigger an async pipeline for multiple images and multiple models", () => {
 
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
@@ -176,7 +176,7 @@ export function CheckTriggerAsyncMultiImageMultiModelInst() {
       id: randomString(10),
       description: randomString(50),
     },
-      constant.detAsyncMultiModelInstRecipe
+      constant.detAsyncMultiModelRecipe
     );
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {

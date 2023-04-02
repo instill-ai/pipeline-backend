@@ -6,9 +6,9 @@ package vdp.connector.v1alpha;
 import "google/api/annotations.proto";
 import "google/api/client.proto";
 
-import "./healthcheck.proto";
-import "./connector_definition.proto";
-import "./connector.proto";
+import "../../../vdp/connector/v1alpha/healthcheck.proto";
+import "../../../vdp/connector/v1alpha/connector_definition.proto";
+import "../../../vdp/connector/v1alpha/connector.proto";
 
 // Connector service responds to external access
 service ConnectorPublicService {
@@ -198,6 +198,16 @@ service ConnectorPublicService {
     option (google.api.method_signature) = "name,new_source_connector_id";
   }
 
+  // WatchSourceConnector method receives a WatchSourceConnectorRequest message
+  // and returns a WatchSourceConnectorResponse
+  rpc WatchSourceConnector(WatchSourceConnectorRequest)
+      returns (WatchSourceConnectorResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=source-connectors/*}/watch"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
   // *DestinationConnector methods
 
   // CreateDestinationConnector method receives a
@@ -315,5 +325,28 @@ service ConnectorPublicService {
       body : "*"
     };
     option (google.api.method_signature) = "name,new_destination_connector_id";
+  }
+
+  // WatchDestinationConnector method receives a WatchDestinationConnectorRequest message
+  // and returns a WatchDestinationConnectorResponse
+  rpc WatchDestinationConnector(WatchDestinationConnectorRequest)
+      returns (WatchDestinationConnectorResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=destination-connectors/*}/watch"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // *Longrunning operation methods
+
+  // GetConnectorOperation method receives a
+  // GetConnectorOperationRequest message and returns a
+  // GetConnectorOperationResponse message.
+  rpc GetConnectorOperation(GetConnectorOperationRequest)
+      returns (GetConnectorOperationResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=operations/*}"
+    };
+    option (google.api.method_signature) = "name";
   }
 }

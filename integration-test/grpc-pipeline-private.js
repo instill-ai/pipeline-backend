@@ -41,7 +41,7 @@ export function CheckList() {
         id: randomString(10),
         description: randomString(50),
       },
-        constant.detSyncHTTPSingleModelInstRecipe
+        constant.detSyncHTTPSingleModelRecipe
       )
     }
 
@@ -130,8 +130,7 @@ export function CheckList() {
     var dstConnPermalink = `destination-connectors/${dstConnUid}`
 
     var modelUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
-    var modelInstUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/instances/latest`, {}, constant.params).json().instance.uid
-    var modelInstPermalink = `models/${modelUid}/instances/${modelInstUid}`
+    var modelPermalink = `models/${modelUid}`
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
       filter: `mode=MODE_SYNC AND recipe.source="${srcConnPermalink}"`
@@ -141,10 +140,10 @@ export function CheckList() {
     });
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-      filter: `mode=MODE_SYNC AND recipe.destination="${dstConnPermalink}" AND recipe.model_instances:"${modelInstPermalink}"`
+      filter: `mode=MODE_SYNC AND recipe.destination="${dstConnPermalink}" AND recipe.models:"${modelPermalink}"`
     }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.destination="${dstConnPermalink}" AND recipe.model_instances:"${modelInstPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.destination="${dstConnPermalink}" AND recipe.model_instances:"${modelInstPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.destination="${dstConnPermalink}" AND recipe.models:"${modelPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.destination="${dstConnPermalink}" AND recipe.models:"${modelPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
     // Delete the pipelines
@@ -178,7 +177,7 @@ export function CheckGet() {
       id: randomString(10),
       description: randomString(50),
     },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     check(clientPublic.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
@@ -239,7 +238,7 @@ export function CheckLookUp() {
     var reqBody = Object.assign({
       id: randomString(10),
     },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Create a pipeline

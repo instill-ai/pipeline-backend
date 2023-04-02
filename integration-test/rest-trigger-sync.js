@@ -11,14 +11,14 @@ import * as constant from "./const.js"
 
 export function CheckTriggerSyncSingleImageSingleModelInst() {
 
-  group("Pipelines API: Trigger a pipeline for single image and single model instance", () => {
+  group("Pipelines API: Trigger a pipeline for single image and single model", () => {
 
     var reqHTTP = Object.assign(
       {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     );
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), constant.params), {
@@ -35,15 +35,15 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.detSyncHTTPSingleModelRecipe.recipe.models[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     var payloadImageBase64 = {
@@ -56,15 +56,15 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.detSyncHTTPSingleModelRecipe.recipe.models[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     const fd = new FormData();
@@ -75,15 +75,15 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === fd.parts.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.detSyncHTTPSingleModelRecipe.recipe.models[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     const fdWrong = new FormData();
@@ -105,7 +105,7 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.detSyncGRPCSingleModelInstRecipe
+      constant.detSyncGRPCSingleModelRecipe
     );
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqGRPC), constant.params), {
@@ -126,14 +126,14 @@ export function CheckTriggerSyncSingleImageSingleModelInst() {
 
 export function CheckTriggerSyncMultiImageSingleModelInst() {
 
-  group("Pipelines API: Trigger a pipeline for multiple images and single model instance", () => {
+  group("Pipelines API: Trigger a pipeline for multiple images and single model", () => {
 
     var reqHTTP = Object.assign(
       {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     );
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), constant.params), {
@@ -167,15 +167,15 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response output[0].detection_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response output[0].detection_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.detSyncHTTPSingleModelRecipe.recipe.models[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     var payloadImageBase64 = {
@@ -195,15 +195,15 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response output[0].detection_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response output[0].detection_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.detSyncHTTPSingleModelRecipe.recipe.models[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     const fd = new FormData();
@@ -217,15 +217,15 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response output[0].detection_outputs.length`]: (r) => r.json().model_instance_outputs[0].task_outputs.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response output[0].detection_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === fd.parts.length,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task`]: (r) => r.json().model_instance_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].model_instance`]: (r) => r.json().model_instance_outputs[0].model_instance === constant.detSyncHTTPSingleModelInstRecipe.recipe.model_instances[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_instance_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.detSyncHTTPSingleModelRecipe.recipe.models[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     // Delete the pipeline
@@ -239,14 +239,14 @@ export function CheckTriggerSyncMultiImageSingleModelInst() {
 
 export function CheckTriggerSyncMultiImageMultiModelInst() {
 
-  group("Pipelines API: Trigger a pipeline for multiple images and multiple model instances", () => {
+  group("Pipelines API: Trigger a pipeline for multiple images and multiple models", () => {
 
     var reqHTTP = Object.assign(
       {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.detSyncHTTPMultiModelInstRecipe
+      constant.detSyncHTTPMultiModelRecipe
     );
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), constant.params), {
@@ -280,7 +280,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_instance_outputs.length == 2`]: (r) => r.json().model_instance_outputs.length === 2,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
     });
 
     var payloadImageBase64 = {
@@ -297,7 +297,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_instance_outputs.length == 2`]: (r) => r.json().model_instance_outputs.length === 2,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
     });
 
     const fd = new FormData();
@@ -311,7 +311,7 @@ export function CheckTriggerSyncMultiImageMultiModelInst() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart (multipart) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart (multipart) response model_instance_outputs.length == 2`]: (r) => r.json().model_instance_outputs.length === 2,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart (multipart) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
     });
 
     // Delete the pipeline

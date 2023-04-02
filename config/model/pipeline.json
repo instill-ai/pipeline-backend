@@ -141,7 +141,7 @@
       "title": "Recipe",
       "description": "The specification of a recipe",
       "additionalProperties": false,
-      "required": ["source", "model_instances", "destination"],
+      "required": ["source", "models", "destination"],
       "properties": {
         "source": {
           "type": "string",
@@ -152,10 +152,10 @@
           "ui_disabled": true,
           "ui_component": "text"
         },
-        "model_instances": {
+        "models": {
           "type": "array",
-          "title": "Model instances",
-          "description": "A list of resource names of all the model instances in a recipe",
+          "title": "Models",
+          "description": "A list of resource names of all the models in a recipe",
           "items": {
             "type": "string"
           },

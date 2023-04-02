@@ -6,7 +6,7 @@ package vdp.connector.v1alpha;
 import "google/api/annotations.proto";
 import "google/api/client.proto";
 
-import "./connector.proto";
+import "../../../vdp/connector/v1alpha/connector.proto";
 
 // Connector service responds to internal access
 service ConnectorPrivateService {
@@ -43,6 +43,15 @@ service ConnectorPrivateService {
     option (google.api.method_signature) = "permalink";
   }
 
+  // CheckSourceConnector method receives a CheckSourceConnectorRequest message and returns a
+  // CheckSourceConnectorResponse
+  rpc CheckSourceConnector(CheckSourceConnectorRequest) returns (CheckSourceConnectorResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{name=source-connectors/*}/check"
+    };
+    option (google.api.method_signature) = "name";
+  };
+
   // *DestinationConnector methods
 
   // ListDestinationConnectorsAdmin method receives a ListDestinationConnectorsAdminRequest
@@ -75,4 +84,13 @@ service ConnectorPrivateService {
     };
     option (google.api.method_signature) = "permalink";
   }
+
+  // CheckDestinationConnector method receives a CheckDestinationConnectorRequest message and returns a
+  // CheckDestinationConnectorResponse
+  rpc CheckDestinationConnector(CheckDestinationConnectorRequest) returns (CheckDestinationConnectorResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{name=destination-connectors/*}/check"
+    };
+    option (google.api.method_signature) = "name";
+  };
 }

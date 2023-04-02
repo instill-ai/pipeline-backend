@@ -6,7 +6,7 @@ package vdp.pipeline.v1alpha;
 import "google/api/annotations.proto";
 import "google/api/client.proto";
 
-import "./pipeline.proto";
+import "../../../vdp/pipeline/v1alpha/pipeline.proto";
 
 // Pipeline service responds to internal access
 service PipelinePrivateService {

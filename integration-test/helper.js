@@ -17,8 +17,8 @@ export function validateRecipe(recipe) {
     return false
   }
 
-  if (!('model_instances' in recipe)) {
-    console.log("Recipe has no model_instances field")
+  if (!('models' in recipe)) {
+    console.log("Recipe has no models field")
     return false
   }
 
@@ -32,9 +32,9 @@ export function validateRecipe(recipe) {
     return false
   }
 
-  for (const modelInstance of recipe.model_instances) {
-    if (isUUID(modelInstance.split('/')[1])) {
-      console.log("Recipe model_instance field should be with resource name not permalink")
+  for (const model of recipe.models) {
+    if (isUUID(model.split('/')[1])) {
+      console.log("Recipe model field should be with resource name not permalink")
       return false
     }
   }
@@ -53,8 +53,8 @@ export function validateRecipeGRPC(recipe) {
     return false
   }
 
-  if (!('modelInstances' in recipe)) {
-    console.log("Recipe has no model_instances field")
+  if (!('models' in recipe)) {
+    console.log("Recipe has no models field")
     return false
   }
 
@@ -68,9 +68,9 @@ export function validateRecipeGRPC(recipe) {
     return false
   }
 
-  for (const modelInstance of recipe.modelInstances) {
-    if (isUUID(modelInstance.split('/')[1])) {
-      console.log("Recipe model_instance field should be with resource name not permalink")
+  for (const model of recipe.models) {
+    if (isUUID(model.split('/')[1])) {
+      console.log("Recipe model field should be with resource name not permalink")
       return false
     }
   }
