@@ -73,10 +73,10 @@ func (p PipelineState) Value() (driver.Value, error) {
 
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
-	Source         string   `json:"source,omitempty"`
-	Destination    string   `json:"destination,omitempty"`
-	ModelInstances []string `json:"model_instances,omitempty"`
-	Logics         []string `json:"logics,omitempty"`
+	Source      string   `json:"source,omitempty"`
+	Destination string   `json:"destination,omitempty"`
+	Models      []string `json:"models,omitempty"`
+	Logics      []string `json:"logics,omitempty"`
 }
 
 // Logic is the data model of logic operator

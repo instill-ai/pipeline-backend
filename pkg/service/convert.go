@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"google.golang.org/protobuf/proto"
@@ -56,30 +55,9 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 
 	recipePermalink.Destination = dstColID + "/" + getDstConnResp.GetDestinationConnector().GetUid()
 
-	// Model instances
-	recipePermalink.ModelInstances = make([]string, len(recipeRscName.ModelInstances))
-	for idx, modelInstanceRscName := range recipeRscName.ModelInstances {
-
-		getModelInstResp, err := s.modelPublicServiceClient.GetModelInstance(ctx,
-			&modelPB.GetModelInstanceRequest{
-				Name: modelInstanceRscName,
-			})
-		if err != nil {
-			return nil, fmt.Errorf("[model-backend] Error %s at instances/%s: %s", "GetModelInstance", modelInstanceRscName, err)
-		}
-
-		modelInstColID, err := resource.GetCollectionID(modelInstanceRscName)
-		if err != nil {
-			return nil, err
-		}
-
-		modelInstID, err := resource.GetRscNameID(modelInstanceRscName)
-		if err != nil {
-			return nil, err
-		}
-
-		modelRscName := strings.TrimSuffix(modelInstanceRscName, "/"+modelInstColID+"/"+modelInstID)
-
+	// Model
+	recipePermalink.Models = make([]string, len(recipeRscName.Models))
+	for idx, modelRscName := range recipeRscName.Models {
 		getModelResp, err := s.modelPublicServiceClient.GetModel(ctx,
 			&modelPB.GetModelRequest{
 				Name: modelRscName,
@@ -93,7 +71,7 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 			return nil, err
 		}
 
-		recipePermalink.ModelInstances[idx] = modelColID + "/" + getModelResp.GetModel().GetUid() + "/" + modelInstColID + "/" + getModelInstResp.GetInstance().GetUid()
+		recipePermalink.Models[idx] = modelColID + "/" + getModelResp.GetModel().GetUid()
 	}
 
 	return &recipePermalink, nil
@@ -138,29 +116,10 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 
 	recipeRscName.Destination = dstColID + "/" + lookUpDstConnResp.GetDestinationConnector().GetId()
 
-	// Model instances
-	recipeRscName.ModelInstances = make([]string, len(recipePermalink.ModelInstances))
-	for idx, modelInstanceRscPermalink := range recipePermalink.ModelInstances {
+	// Models
+	recipeRscName.Models = make([]string, len(recipePermalink.Models))
+	for idx, modelRscPermalink := range recipePermalink.Models {
 
-		lookUpModelInstResp, err := s.modelPublicServiceClient.LookUpModelInstance(ctx,
-			&modelPB.LookUpModelInstanceRequest{
-				Permalink: modelInstanceRscPermalink,
-			})
-		if err != nil {
-			return nil, fmt.Errorf("[model-backend] Error %s at instances/%s: %s", "LookUpModelInstance", modelInstanceRscPermalink, err)
-		}
-
-		modelInstUID, err := resource.GetPermalinkUID(modelInstanceRscPermalink)
-		if err != nil {
-			return nil, err
-		}
-
-		modelInstColID, err := resource.GetCollectionID(modelInstanceRscPermalink)
-		if err != nil {
-			return nil, err
-		}
-
-		modelRscPermalink := strings.TrimSuffix(modelInstanceRscPermalink, "/"+modelInstColID+"/"+modelInstUID)
 		lookUpModelResp, err := s.modelPublicServiceClient.LookUpModel(ctx,
 			&modelPB.LookUpModelRequest{
 				Permalink: modelRscPermalink,
@@ -174,7 +133,7 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 			return nil, err
 		}
 
-		recipeRscName.ModelInstances[idx] = modelColID + "/" + lookUpModelResp.Model.GetId() + "/" + modelInstColID + "/" + lookUpModelInstResp.GetInstance().GetId()
+		recipeRscName.Models[idx] = modelColID + "/" + lookUpModelResp.Model.GetId()
 	}
 
 	return &recipeRscName, nil

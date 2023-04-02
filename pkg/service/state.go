@@ -43,21 +43,21 @@ func (s *service) checkState(recipeRscName *datamodel.Recipe) (datamodel.Pipelin
 
 	dstConnState := int(dstConnResp.GetDestinationConnector().GetConnector().GetState().Number())
 
-	modelInstStates := make([]int, len(recipeRscName.ModelInstances))
-	for idx, modelInst := range recipeRscName.ModelInstances {
-		modelInstResp, err := s.modelPublicServiceClient.GetModelInstance(ctx, &modelPB.GetModelInstanceRequest{
-			Name: modelInst,
+	modelStates := make([]int, len(recipeRscName.Models))
+	for idx, model := range recipeRscName.Models {
+		modelResp, err := s.modelPublicServiceClient.GetModel(ctx, &modelPB.GetModelRequest{
+			Name: model,
 		})
 		if err != nil {
 			return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-				status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model instance %s: %v", "GetModelInstance", idx, modelInst, err.Error())
+				status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model %s: %v", "GetModel", idx, model, err.Error())
 		}
-		modelInstStates[idx] = int(modelInstResp.Instance.State.Number())
+		modelStates[idx] = int(modelResp.Model.State.Number())
 	}
 
 	// State precedence rule (i.e., enum_number state logic) : 3 error (any of) > 0 unspecified (any of) > 1 negative (any of) > 2 positive (all of)
 	states := []int{srcConnState, dstConnState}
-	states = append(states, modelInstStates...)
+	states = append(states, modelStates...)
 
 	if contains(states, 3) {
 		logger.Info(fmt.Sprintf("Component state: %v", states))
