@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 )
 
@@ -144,7 +145,7 @@ func CustomMatcher(key string) (string, bool) {
 	}
 
 	switch key {
-	case "owner":
+	case constant.HeaderOwnerIDKey:
 		return key, true
 	default:
 		return runtime.DefaultHeaderMatcher(key)
