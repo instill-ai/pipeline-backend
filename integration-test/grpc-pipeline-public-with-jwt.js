@@ -24,7 +24,7 @@ export function CheckCreate() {
       id: randomString(63),
       description: randomString(50),
     },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Cannot create a pipeline of a non-exist user
@@ -67,7 +67,7 @@ export function CheckGet() {
       id: randomString(10),
       description: randomString(50),
     },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
@@ -105,7 +105,7 @@ export function CheckUpdate() {
     var reqBody = Object.assign({
       id: randomString(10),
     },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Create a pipeline
@@ -155,7 +155,7 @@ export function CheckUpdateState() {
     var reqBodySync = Object.assign({
       id: randomString(10),
     },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
@@ -201,7 +201,7 @@ export function CheckRename() {
     var reqBody = Object.assign({
       id: randomString(10),
     },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Create a pipeline
@@ -247,7 +247,7 @@ export function CheckLookUp() {
     var reqBody = Object.assign({
       id: randomString(10),
     },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Create a pipeline

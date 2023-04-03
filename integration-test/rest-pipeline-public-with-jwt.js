@@ -15,7 +15,7 @@ export function CheckCreate() {
         id: randomString(63),
         description: randomString(50),
       },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Cannot create a pipeline of a non-exist user
@@ -46,7 +46,7 @@ export function CheckGet() {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Create a pipeline
@@ -75,7 +75,7 @@ export function CheckUpdate() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Create a pipeline
@@ -115,7 +115,7 @@ export function CheckUpdateState() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBodySync), constant.params), {
@@ -155,7 +155,7 @@ export function CheckRename() {
       {
         id: id,
       },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Create a pipeline
@@ -190,7 +190,7 @@ export function CheckLookUp() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSingleModelInstRecipe
+      constant.detSyncHTTPSingleModelRecipe
     )
 
     // Create a pipeline
