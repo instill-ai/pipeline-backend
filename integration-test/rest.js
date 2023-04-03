@@ -21,6 +21,7 @@ import {
 
 import * as constant from "./const.js";
 import * as pipelinePublic from './rest-pipeline-public.js';
+import * as pipelinePublicWithJwt from './rest-pipeline-public-with-jwt.js';
 import * as pipelinePrivate from './rest-pipeline-private.js';
 import * as triggerSync from './rest-trigger-sync.js';
 import * as triggerAsync from './rest-trigger-async.js';
@@ -201,6 +202,14 @@ export default function (data) {
     pipelinePrivate.CheckList()
     pipelinePrivate.CheckGet()
     pipelinePrivate.CheckLookUp()
+
+    pipelinePublicWithJwt.CheckCreate()
+    pipelinePublicWithJwt.CheckList()
+    pipelinePublicWithJwt.CheckGet()
+    pipelinePublicWithJwt.CheckUpdate()
+    pipelinePublicWithJwt.CheckUpdateState()
+    pipelinePublicWithJwt.CheckRename()
+    pipelinePublicWithJwt.CheckLookUp()
   }
 
   pipelinePublic.CheckCreate()

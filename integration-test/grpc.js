@@ -14,6 +14,7 @@ import {
 } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
 import * as pipeline from './grpc-pipeline-public.js';
+import * as pipelineWithJwt from './grpc-pipeline-public-with-jwt.js';
 import * as pipelinePrivate from './grpc-pipeline-private.js';
 import * as triggerSync from './grpc-trigger-sync.js';
 import * as triggerAsync from './grpc-trigger-async.js';
@@ -227,6 +228,14 @@ export default function (data) {
     pipelinePrivate.CheckList()
     pipelinePrivate.CheckGet()
     pipelinePrivate.CheckLookUp()
+
+    pipelineWithJwt.CheckCreate()
+    pipelineWithJwt.CheckList()
+    pipelineWithJwt.CheckGet()
+    pipelineWithJwt.CheckUpdate()
+    pipelineWithJwt.CheckUpdateState()
+    pipelineWithJwt.CheckRename()
+    pipelineWithJwt.CheckLookUp()
   }
 
 }

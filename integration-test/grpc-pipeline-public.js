@@ -63,7 +63,7 @@ export function CheckCreate() {
     check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
       name: `pipelines/${reqBody.id}`
     }), {
-      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector ${reqBody.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.ConnectorPublicService/DeletePipeline ${reqBody.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
@@ -502,6 +502,7 @@ export function CheckRename() {
     });
 
     reqBody.new_pipeline_id = randomString(10)
+
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/RenamePipeline', {
       name: `pipelines/${reqBody.id}`,
       new_pipeline_id: reqBody.new_pipeline_id

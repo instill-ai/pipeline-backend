@@ -393,6 +393,7 @@ export function CheckRename() {
     });
 
     reqBody.new_pipeline_id = randomString(10)
+
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.id}/rename`, JSON.stringify(reqBody), constant.params), {
       [`POST /v1alpha/pipelines/${res.json().pipeline.id}/rename response status is 200"`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${res.json().pipeline.id}/rename response pipeline new name"`]: (r) => r.json().pipeline.name === `pipelines/${reqBody.new_pipeline_id}`,
