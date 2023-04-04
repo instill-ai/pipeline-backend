@@ -155,3 +155,23 @@ func (mr *MockMgmtPrivateServiceClientMockRecorder) UpdateUserAdmin(arg0, arg1 i
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserAdmin", reflect.TypeOf((*MockMgmtPrivateServiceClient)(nil).UpdateUserAdmin), varargs...)
 }
+
+// ValidateToken mocks base method.
+func (m *MockMgmtPrivateServiceClient) ValidateToken(arg0 context.Context, arg1 *mgmtv1alpha.ValidateTokenRequest, arg2 ...grpc.CallOption) (*mgmtv1alpha.ValidateTokenResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ValidateToken", varargs...)
+	ret0, _ := ret[0].(*mgmtv1alpha.ValidateTokenResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidateToken indicates an expected call of ValidateToken.
+func (mr *MockMgmtPrivateServiceClientMockRecorder) ValidateToken(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateToken", reflect.TypeOf((*MockMgmtPrivateServiceClient)(nil).ValidateToken), varargs...)
+}

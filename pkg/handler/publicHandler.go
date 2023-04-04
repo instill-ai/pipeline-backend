@@ -72,7 +72,6 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.Readiness
 }
 
 func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
-
 	// Validate JSON Schema
 	if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -516,7 +515,7 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 	var allContentFiles []byte
 	var fileLengths []uint64
 
-	var modelInstance *modelPB.ModelInstance
+	var model *modelPB.Model
 
 	var firstChunk = true
 
@@ -535,46 +534,46 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 			if err != nil {
 				return status.Errorf(codes.Internal, "do not find the pipeline: %s", err.Error())
 			}
-			if pipeline.Recipe == nil || len(pipeline.Recipe.ModelInstances) == 0 {
-				return status.Errorf(codes.Internal, "there is no model instance in pipeline's recipe")
+			if pipeline.Recipe == nil || len(pipeline.Recipe.Models) == 0 {
+				return status.Errorf(codes.Internal, "there is no model in pipeline's recipe")
 			}
-			modelInstance, err = h.service.GetModelInstanceByName(dbPipeline.Recipe.ModelInstances[0])
+			model, err = h.service.GetModelByName(dbPipeline.Recipe.Models[0])
 			if err != nil {
-				return status.Errorf(codes.Internal, "could not find model instance: %s", err.Error())
+				return status.Errorf(codes.Internal, "could not find model: %s", err.Error())
 			}
 
-			switch modelInstance.Task {
-			case modelPB.ModelInstance_TASK_CLASSIFICATION:
+			switch model.Task {
+			case modelPB.Model_TASK_CLASSIFICATION:
 				fileLengths = data.TaskInput.GetClassification().FileLengths
 				if data.TaskInput.GetClassification().GetContent() != nil {
 					allContentFiles = append(allContentFiles, data.TaskInput.GetClassification().GetContent()...)
 				}
-			case modelPB.ModelInstance_TASK_DETECTION:
+			case modelPB.Model_TASK_DETECTION:
 				fileLengths = data.TaskInput.GetDetection().FileLengths
 				if data.TaskInput.GetDetection().GetContent() != nil {
 					allContentFiles = append(allContentFiles, data.TaskInput.GetDetection().GetContent()...)
 				}
-			case modelPB.ModelInstance_TASK_KEYPOINT:
+			case modelPB.Model_TASK_KEYPOINT:
 				fileLengths = data.TaskInput.GetKeypoint().FileLengths
 				if data.TaskInput.GetKeypoint().GetContent() != nil {
 					allContentFiles = append(allContentFiles, data.TaskInput.GetKeypoint().GetContent()...)
 				}
-			case modelPB.ModelInstance_TASK_OCR:
+			case modelPB.Model_TASK_OCR:
 				fileLengths = data.TaskInput.GetOcr().FileLengths
 				if data.TaskInput.GetOcr().GetContent() != nil {
 					allContentFiles = append(allContentFiles, data.TaskInput.GetOcr().GetContent()...)
 				}
-			case modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION:
+			case modelPB.Model_TASK_INSTANCE_SEGMENTATION:
 				fileLengths = data.TaskInput.GetInstanceSegmentation().FileLengths
 				if data.TaskInput.GetInstanceSegmentation().GetContent() != nil {
 					allContentFiles = append(allContentFiles, data.TaskInput.GetInstanceSegmentation().GetContent()...)
 				}
-			case modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
+			case modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
 				fileLengths = data.TaskInput.GetSemanticSegmentation().FileLengths
 				if data.TaskInput.GetSemanticSegmentation().GetContent() != nil {
 					allContentFiles = append(allContentFiles, data.TaskInput.GetSemanticSegmentation().GetContent()...)
 				}
-			case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
+			case modelPB.Model_TASK_TEXT_TO_IMAGE:
 				textToImageInput = service.TextToImageInput{
 					Prompt:   data.TaskInput.GetTextToImage().GetPrompt(),
 					Steps:    data.TaskInput.GetTextToImage().GetSteps(),
@@ -582,7 +581,7 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 					Seed:     data.TaskInput.GetTextToImage().GetSeed(),
 					Samples:  data.TaskInput.GetTextToImage().GetSamples(),
 				}
-			case modelPB.ModelInstance_TASK_TEXT_GENERATION:
+			case modelPB.Model_TASK_TEXT_GENERATION:
 				textGenerationInput = service.TextGenerationInput{
 					Prompt:        data.TaskInput.GetTextGeneration().GetPrompt(),
 					OutputLen:     data.TaskInput.GetTextGeneration().GetOutputLen(),
@@ -597,18 +596,18 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 			continue
 		}
 
-		switch modelInstance.Task {
-		case modelPB.ModelInstance_TASK_CLASSIFICATION:
+		switch model.Task {
+		case modelPB.Model_TASK_CLASSIFICATION:
 			allContentFiles = append(allContentFiles, data.TaskInput.GetClassification().Content...)
-		case modelPB.ModelInstance_TASK_DETECTION:
+		case modelPB.Model_TASK_DETECTION:
 			allContentFiles = append(allContentFiles, data.TaskInput.GetDetection().Content...)
-		case modelPB.ModelInstance_TASK_KEYPOINT:
+		case modelPB.Model_TASK_KEYPOINT:
 			allContentFiles = append(allContentFiles, data.TaskInput.GetKeypoint().Content...)
-		case modelPB.ModelInstance_TASK_OCR:
+		case modelPB.Model_TASK_OCR:
 			allContentFiles = append(allContentFiles, data.TaskInput.GetOcr().Content...)
-		case modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION:
+		case modelPB.Model_TASK_INSTANCE_SEGMENTATION:
 			allContentFiles = append(allContentFiles, data.TaskInput.GetInstanceSegmentation().Content...)
-		case modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
+		case modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
 			allContentFiles = append(allContentFiles, data.TaskInput.GetSemanticSegmentation().Content...)
 		default:
 			return fmt.Errorf("unsupported task input type")
@@ -617,13 +616,13 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 	}
 
 	var obj *pipelinePB.TriggerPipelineBinaryFileUploadResponse
-	switch modelInstance.Task {
-	case modelPB.ModelInstance_TASK_CLASSIFICATION,
-		modelPB.ModelInstance_TASK_DETECTION,
-		modelPB.ModelInstance_TASK_KEYPOINT,
-		modelPB.ModelInstance_TASK_OCR,
-		modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION,
-		modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
+	switch model.Task {
+	case modelPB.Model_TASK_CLASSIFICATION,
+		modelPB.Model_TASK_DETECTION,
+		modelPB.Model_TASK_KEYPOINT,
+		modelPB.Model_TASK_OCR,
+		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
+		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
 		if len(fileLengths) == 0 {
 			return status.Errorf(codes.InvalidArgument, "no file lengths")
 		}
@@ -634,11 +633,11 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 			Content:     allContentFiles,
 			FileLengths: fileLengths,
 		}
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, &imageInput)
-	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, &textToImageInput)
-	case modelPB.ModelInstance_TASK_TEXT_GENERATION:
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, &textGenerationInput)
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &imageInput)
+	case modelPB.Model_TASK_TEXT_TO_IMAGE:
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &textToImageInput)
+	case modelPB.Model_TASK_TEXT_GENERATION:
+		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &textGenerationInput)
 	}
 	if err != nil {
 		return err

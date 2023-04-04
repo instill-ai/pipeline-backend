@@ -14,7 +14,7 @@ import "google/api/field_behavior.proto";
 // Google type
 import "google/type/date.proto";
 
-import "./spec.proto";
+import "../../../vdp/connector/v1alpha/spec.proto";
 
 // View enumerates the definition views
 enum View {

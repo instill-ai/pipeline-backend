@@ -196,7 +196,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	modelInstance, err := service.GetModelInstanceByName(dbPipeline.Recipe.ModelInstances[0])
+	model, err := service.GetModelByName(dbPipeline.Recipe.Models[0])
 	if err != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.NotFound,
@@ -216,7 +216,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 
 	if err := req.ParseMultipartForm(4 << 20); err != nil {
 		st, err := sterr.CreateErrorPreconditionFailure(
-			"[handler] error while get model instance information",
+			"[handler] error while get model information",
 			[]*errdetails.PreconditionFailure_Violation{
 				{
 					Type:        "TriggerPipelineBinaryFileUpload",
@@ -234,17 +234,17 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 	}
 
 	var inp interface{}
-	switch modelInstance.Task {
-	case modelPB.ModelInstance_TASK_CLASSIFICATION,
-		modelPB.ModelInstance_TASK_DETECTION,
-		modelPB.ModelInstance_TASK_KEYPOINT,
-		modelPB.ModelInstance_TASK_OCR,
-		modelPB.ModelInstance_TASK_INSTANCE_SEGMENTATION,
-		modelPB.ModelInstance_TASK_SEMANTIC_SEGMENTATION:
+	switch model.Task {
+	case modelPB.Model_TASK_CLASSIFICATION,
+		modelPB.Model_TASK_DETECTION,
+		modelPB.Model_TASK_KEYPOINT,
+		modelPB.Model_TASK_OCR,
+		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
+		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
 		inp, err = parseImageFormDataInputsToBytes(req)
-	case modelPB.ModelInstance_TASK_TEXT_TO_IMAGE:
+	case modelPB.Model_TASK_TEXT_TO_IMAGE:
 		inp, err = parseImageFormDataTextToImageInputs(req)
-	case modelPB.ModelInstance_TASK_TEXT_GENERATION:
+	case modelPB.Model_TASK_TEXT_GENERATION:
 		inp, err = parseTextFormDataTextGenerationInputs(req)
 	}
 	if err != nil {
@@ -266,7 +266,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	obj, err := service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, modelInstance.Task, inp)
+	obj, err := service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.Error(err.Error())

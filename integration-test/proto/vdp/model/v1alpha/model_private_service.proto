@@ -11,7 +11,7 @@ import "../../../vdp/model/v1alpha/model.proto";
 // Model service responds to internal access
 service ModelPrivateService {
 
-    // ========== Admin API ========== 
+    // ========== Private API ==========
 
   // ListModelsAdmin method receives a ListModelsAdminRequest message and returns a
   // ListModelsAdminResponse
@@ -39,4 +39,13 @@ service ModelPrivateService {
     };
     option (google.api.method_signature) = "permalink";
   }
+
+  // CheckModel method receives a CheckModelRequest message and returns a
+  // CheckModelResponse
+  rpc CheckModel(CheckModelRequest) returns (CheckModelResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/admin/{name=models/*}/check"
+    };
+    option (google.api.method_signature) = "name";
+  };
 }

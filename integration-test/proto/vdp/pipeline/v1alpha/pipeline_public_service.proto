@@ -6,8 +6,8 @@ package vdp.pipeline.v1alpha;
 import "google/api/annotations.proto";
 import "google/api/client.proto";
 
-import "./healthcheck.proto";
-import "./pipeline.proto";
+import "../../../vdp/pipeline/v1alpha/healthcheck.proto";
+import "../../../vdp/pipeline/v1alpha/pipeline.proto";
 
 // Pipeline service responds to external access
 service PipelinePublicService {
@@ -143,5 +143,15 @@ service PipelinePublicService {
       stream TriggerPipelineBinaryFileUploadRequest)
       returns (TriggerPipelineBinaryFileUploadResponse) {
     option (google.api.method_signature) = "name,file";
+  }
+
+  // WatchPipeline method receives a WatchPipelineRequest message
+  // and returns a WatchPipelineResponse
+  rpc WatchPipeline(WatchPipelineRequest)
+      returns (WatchPipelineResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=pipelines/*}/watch"
+    };
+    option (google.api.method_signature) = "name";
   }
 }

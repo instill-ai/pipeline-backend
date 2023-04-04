@@ -8,7 +8,7 @@ import "google/protobuf/struct.proto";
 // Google API
 import "google/api/field_behavior.proto";
 
-import "./auth.proto";
+import "../../../vdp/connector/v1alpha/auth.proto";
 
 // SupportedSyncModes enumerates sync mode (this needs to be in plural form to
 // match with Airbyte protocol)

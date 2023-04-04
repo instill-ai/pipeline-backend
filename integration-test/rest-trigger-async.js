@@ -9,17 +9,17 @@ import { pipelinePublicHost } from "./const.js";
 
 import * as constant from "./const.js"
 
-export function CheckTriggerAsyncSingleImageSingleModelInst() {
+export function CheckTriggerAsyncSingleImageSingleModel() {
 
   var reqBody = Object.assign(
     {
       id: randomString(10),
       description: randomString(50),
     },
-    constant.detAsyncSingleModelInstRecipe
+    constant.detAsyncSingleModelRecipe
   );
 
-  group("Pipelines API: Trigger an async pipeline for single image and single model instance", () => {
+  group("Pipelines API: Trigger an async pipeline for single image and single model", () => {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
@@ -70,16 +70,16 @@ export function CheckTriggerAsyncSingleImageSingleModelInst() {
   });
 }
 
-export function CheckTriggerAsyncMultiImageSingleModelInst() {
+export function CheckTriggerAsyncMultiImageSingleModel() {
   var reqBody = Object.assign(
     {
       id: randomString(10),
       description: randomString(50),
     },
-    constant.detAsyncSingleModelInstRecipe
+    constant.detAsyncSingleModelRecipe
   );
 
-  group("Pipelines API: Trigger an async pipeline for multiple images and single model instance", () => {
+  group("Pipelines API: Trigger an async pipeline for multiple images and single model", () => {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
@@ -151,16 +151,16 @@ export function CheckTriggerAsyncMultiImageSingleModelInst() {
   });
 }
 
-export function CheckTriggerAsyncMultiImageMultiModelInst() {
+export function CheckTriggerAsyncMultiImageMultiModel() {
   var reqBody = Object.assign(
     {
       id: randomString(10),
       description: randomString(50),
     },
-    constant.detAsyncMultiModelInstRecipe
+    constant.detAsyncMultiModelRecipe
   );
 
-  group("Pipelines API: Trigger an async pipeline for multiple images and multiple model instances", () => {
+  group("Pipelines API: Trigger an async pipeline for multiple images and multiple models", () => {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,

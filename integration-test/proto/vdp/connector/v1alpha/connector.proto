@@ -11,10 +11,11 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 // Google API
 import "google/api/resource.proto";
 import "google/api/field_behavior.proto";
+import "google/longrunning/operations.proto";
 
-import "./spec.proto";
-import "./connector_definition.proto";
 import "../../../vdp/pipeline/v1alpha/pipeline.proto";
+import "../../../vdp/connector/v1alpha/connector_definition.proto";
+import "../../../vdp/connector/v1alpha/spec.proto";
 
 // Connector represents a connector data model
 message Connector {
@@ -535,7 +536,7 @@ message WriteDestinationConnectorRequest {
   repeated string data_mapping_indices = 6
       [ (google.api.field_behavior) = REQUIRED ];
   // JSON data to write
-  repeated pipeline.v1alpha.ModelInstanceOutput model_instance_outputs = 7
+  repeated pipeline.v1alpha.ModelOutput model_outputs = 7
       [ (google.api.field_behavior) = REQUIRED ];
 }
 
@@ -543,7 +544,7 @@ message WriteDestinationConnectorRequest {
 // DestinationConnector resource
 message WriteDestinationConnectorResponse {}
 
-// ========== Admin endpoints
+// ========== Private endpoints
 
 // ListSourceConnectorsAdminRequest represents a request to list
 // SourceConnector resources from all users by admin
@@ -610,6 +611,42 @@ message LookUpSourceConnectorAdminResponse {
   SourceConnector source_connector = 1;
 }
 
+// WatchSourceConnectorRequest represents a public request to query
+// a source connector's current state
+message WatchSourceConnectorRequest {
+  // SourceConnector resource name. It must have the format of
+  // "source-connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/SourceConnector",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration : {path_param_name : "source_connector.name/watch"}
+    }
+  ];
+}
+
+// WatchSourceConnectorResponse represents a response to fetch a source connector's
+// current state
+message WatchSourceConnectorResponse {
+  // Retrieved connector state
+  Connector.State state = 1;
+}
+
+// CheckSourceConnectorRequest represents a private request to query
+// a source connector's current state
+message CheckSourceConnectorRequest {
+  // SourceConnector resource name. It must have the format of
+  // "source-connectors/*"
+  string name = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// CheckSourceConnectorResponse represents a response to fetch a source connector's
+// current state
+message CheckSourceConnectorResponse {
+  // Retrieved longrunning workflow id
+  string workflow_id = 1;
+}
+
 // ListDestinationConnectorsAdminRequest represents a request to list
 // DestinationConnector resources from all users by admin
 message ListDestinationConnectorsAdminRequest {
@@ -674,4 +711,54 @@ message LookUpDestinationConnectorAdminRequest {
 message LookUpDestinationConnectorAdminResponse {
   // DestinationConnector resource
   DestinationConnector destination_connector = 1;
+}
+
+// WatchDestinationConnectorRequest represents a public request to query
+// a destination connector's current state
+message WatchDestinationConnectorRequest {
+  // SourceConnector resource name. It must have the format of
+  // "destination-connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/DestinationConnector",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration : {path_param_name : "destination_connector.name/watch"}
+    }
+  ];
+}
+
+// WatchDestinationConnectorResponse represents a response to fetch a destination connector's
+// current state
+message WatchDestinationConnectorResponse {
+  // Retrieved connector state
+  Connector.State state = 1;
+}
+
+// CheckDestinationConnectorRequest represents a private request to query
+// a destination connector's current state
+message CheckDestinationConnectorRequest {
+  // SourceConnector resource name. It must have the format of
+  // "destination-connectors/*"
+  string name = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// CheckDestinationConnectorResponse represents a response to fetch a destination connector's
+// current state
+message CheckDestinationConnectorResponse {
+  // Retrieved longrunning workflow id
+  string workflow_id = 1;
+}
+
+// GetConnectorOperationRequest represents a request to query a longrunning operation
+message GetConnectorOperationRequest {
+  // The name of the operation resource.
+  string name = 1 [ (google.api.field_behavior) = REQUIRED ];
+  // SourceConnector view (default is VIEW_BASIC)
+  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// GetConnectorOperationResponse represents a response for a longrunning operation
+message GetConnectorOperationResponse {
+  // The retrieved longrunning operation
+  google.longrunning.Operation operation = 1;
 }
