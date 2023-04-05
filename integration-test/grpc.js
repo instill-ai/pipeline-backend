@@ -23,6 +23,7 @@ const client = new grpc.Client();
 
 client.load(['proto/vdp/pipeline/v1alpha'], 'pipeline_public_service.proto');
 client.load(['proto/vdp/connector/v1alpha'], 'connector_public_service.proto');
+client.load(['proto/vdp/model/v1alpha'], 'model_public_service.proto');
 
 import * as constant from "./const.js";
 
@@ -158,8 +159,10 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${constant.modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, constant.params)
-      if (res.json().operation.done === true) {
+      let res = client.invoke('vdp.model.v1alpha.ModelPublicService/WatchModel', {
+        name: `models/${constant.model_id}`
+      }, {})
+      if (res.message.state === "STATE_OFFLINE") {
         break
       }
       sleep(1)
@@ -176,8 +179,10 @@ export function setup() {
     currentTime = new Date().getTime();
     timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      var res = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, constant.params)
-      if (res.json().model.state === "STATE_ONLINE") {
+      let res = client.invoke('vdp.model.v1alpha.ModelPublicService/WatchModel', {
+        name: `models/${constant.model_id}`
+      }, {})
+      if (res.message.state === "STATE_ONLINE") {
         break
       }
       sleep(1)
