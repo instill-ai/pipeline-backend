@@ -157,7 +157,7 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${modelPublicHost}/v1alpha/${constant.model_id}/watch`, {
+      let res = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/watch`, {
         headers: genHeader(`application/json`),
       })
       if (res.json().state === "STATE_OFFLINE") {
@@ -177,7 +177,7 @@ export function setup() {
     currentTime = new Date().getTime();
     timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${modelPublicHost}/v1alpha/${constant.model_id}/watch`, {
+      let res = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/watch`, {
         headers: genHeader(`application/json`),
       })
       if (res.json().state === "STATE_ONLINE") {
