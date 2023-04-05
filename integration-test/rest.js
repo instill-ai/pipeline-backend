@@ -19,6 +19,10 @@ import {
   modelPublicHost
 } from "./const.js";
 
+import {
+  genHeader
+} from "./helper.js"
+
 import * as constant from "./const.js";
 import * as pipelinePublic from './rest-pipeline-public.js';
 import * as pipelinePublicWithJwt from './rest-pipeline-public-with-jwt.js';
@@ -153,7 +157,7 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${constant.apiPublicHost}/v1alpha/${constant.model_id}/watch`, {
+      let res = http.get(`${modelPublicHost}/v1alpha/${constant.model_id}/watch`, {
         headers: genHeader(`application/json`),
       })
       if (res.json().state === "STATE_OFFLINE") {
@@ -173,7 +177,7 @@ export function setup() {
     currentTime = new Date().getTime();
     timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${constant.apiPublicHost}/v1alpha/${constant.model_id}/watch`, {
+      let res = http.get(`${modelPublicHost}/v1alpha/${constant.model_id}/watch`, {
         headers: genHeader(`application/json`),
       })
       if (res.json().state === "STATE_ONLINE") {

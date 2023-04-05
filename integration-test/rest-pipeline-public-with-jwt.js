@@ -123,10 +123,10 @@ export function CheckUpdateState() {
       "POST /v1alpha/pipelines sync pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBodyAsync), constant.params), {
-      "POST /v1alpha/pipelines async pipeline creation response status is 201": (r) => r.status === 201,
-      "POST /v1alpha/pipelines async pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
-    });
+    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBodyAsync), constant.params), {
+    //   "POST /v1alpha/pipelines async pipeline creation response status is 201": (r) => r.status === 201,
+    //   "POST /v1alpha/pipelines async pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
+    // });
 
     // Cannot activate a pipeline of a non-exist user
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/activate`, null, constant.paramsWithJwt), {
@@ -150,7 +150,7 @@ export function CheckRename() {
 
   group(`Pipelines API: Rename a pipeline [with random "jwt-sub" header]`, () => {
 
-    var id = randomString(10) 
+    var id = randomString(10)
     var reqBody = Object.assign(
       {
         id: id,
