@@ -46,6 +46,13 @@ export function CheckCreate() {
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline update_time": (r) => new Date(r.message.pipeline.updateTime).getTime() > new Date().setTime(0)
     });
 
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
+      name: `pipelines/${reqBody.id}`
+    }), {
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create sync response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create sync response pipeline state ACTIVE`]: (r) => r.message.state === "STATE_ACTIVE",
+    })
+
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {}), {
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusInvalidArgument": (r) => r.status === grpc.StatusInvalidArgument,
     });
@@ -419,6 +426,13 @@ export function CheckUpdateState() {
       [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Sync response pipeline state ACTIVE`]: (r) => r.message.pipeline.state === "STATE_ACTIVE",
     })
 
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
+      name: `pipelines/${reqBodySync.id}`
+    }), {
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline Sync response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline Sync response pipeline state ACTIVE`]: (r) => r.message.state === "STATE_ACTIVE",
+    })
+
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline', {
       name: `pipelines/${reqBodySync.id}`
     }), {
@@ -445,6 +459,13 @@ export function CheckUpdateState() {
       [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline async response pipeline state ACTIVE`]: (r) => r.message.pipeline.state === "STATE_ACTIVE",
     });
 
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
+      name: `pipelines/${reqBodyAsync.id}`
+    }), {
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create async response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create async response pipeline state ACTIVE`]: (r) => r.message.state === "STATE_ACTIVE",
+    })
+
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
       name: `pipelines/${reqBodyAsync.id}`
     }), {
@@ -452,12 +473,26 @@ export function CheckUpdateState() {
       [`vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline ${reqBodyAsync.id} response pipeline state ACTIVE`]: (r) => r.message.pipeline.state === "STATE_ACTIVE",
     });
 
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
+      name: `pipelines/${reqBodyAsync.id}`
+    }), {
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline activate async response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline activate async response pipeline state ACTIVE`]: (r) => r.message.state === "STATE_ACTIVE",
+    })
+
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline', {
       name: `pipelines/${reqBodyAsync.id}`
     }), {
       [`vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline ${reqBodyAsync.id} response status is StatusOK for async pipeline`]: (r) => r.status === grpc.StatusOK,
       [`vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline ${reqBodyAsync.id} response pipeline state INACTIVE`]: (r) => r.message.pipeline.state === "STATE_INACTIVE",
     });
+
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
+      name: `pipelines/${reqBodyAsync.id}`
+    }), {
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline deactivate async response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline deactivate async response pipeline state ACTIVE`]: (r) => r.message.state === "STATE_INACTIVE",
+    })
 
     // Delete the pipeline
     check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {

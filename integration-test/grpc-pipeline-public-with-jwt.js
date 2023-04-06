@@ -165,6 +165,13 @@ export function CheckUpdateState() {
       [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Sync response pipeline state ACTIVE`]: (r) => r.message.pipeline.state === "STATE_ACTIVE",
     })
 
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
+      name: `pipelines/${reqBodySync.id}`
+    }), {
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline Sync response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline Sync response pipeline state ACTIVE`]: (r) => r.message.state === "STATE_ACTIVE",
+    })
+
     // Cannot activate a pipeline of a non-exist user
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
       name: `pipelines/${reqBodySync.id}`

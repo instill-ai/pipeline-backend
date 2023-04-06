@@ -5,6 +5,7 @@ package service_test
 //go:generate mockgen -destination mock_connector_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/connector/v1alpha ConnectorPublicServiceClient
 //go:generate mockgen -destination mock_user_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha MgmtPrivateServiceClient
 //go:generate mockgen -destination mock_usage_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/usage/v1alpha UsageServiceClient
+//go:generate mockgen -destination mock_controller_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/controller/v1alpha ControllerPrivateServiceClient
 
 import (
 	"database/sql"
@@ -67,7 +68,11 @@ func TestCreatePipeline(t *testing.T) {
 
 		mockModelPublicServiceClient := NewMockModelPublicServiceClient(ctrl)
 
-		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockModelPublicServiceClient, nil, nil)
+		mockControllerPrivateServiceClient := NewMockControllerPrivateServiceClient(ctrl)
+
+		mockControllerPrivateServiceClient.EXPECT().UpdateResource(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+
+		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockModelPublicServiceClient, mockControllerPrivateServiceClient, nil)
 
 		_, err := s.CreatePipeline(&owner, &normalPipeline)
 

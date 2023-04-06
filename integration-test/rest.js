@@ -127,8 +127,8 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 300000;
     while (timeoutTime > currentTime) {
-      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`)
-      if (res.json().destination_connector.connector.state === "STATE_CONNECTED") {
+      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}/watch`)
+      if (res.json().state === "STATE_CONNECTED") {
         break
       }
       sleep(1)
