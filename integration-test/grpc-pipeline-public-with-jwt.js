@@ -30,7 +30,7 @@ export function CheckCreate() {
     // Cannot create a pipeline of a non-exist user
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
       pipeline: reqBody
-    }, constant.paramsWithJwt), {
+    }, constant.paramsGRPCWithJwt), {
       [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusUnknown`]: (r) => r.status === grpc.StatusUnknown,
     })
 
@@ -47,7 +47,7 @@ export function CheckList() {
     });
 
     // Cannot list pipelines of a non-exist user
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {}, constant.paramsWithJwt), {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {}, constant.paramsGRPCWithJwt), {
       [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response StatusUnknown`]: (r) => r.status === grpc.StatusUnknown,
     })
 
@@ -79,7 +79,7 @@ export function CheckGet() {
     // Cannot get a pipeline of a non-exist user
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline', {
       name: `pipelines/${reqBody.id}`
-    }, constant.paramsWithJwt), {
+    }, constant.paramsGRPCWithJwt), {
       [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline response StatusUnknown`]: (r) => r.status === grpc.StatusUnknown,
     })
 
@@ -129,7 +129,7 @@ export function CheckUpdate() {
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline', {
       pipeline: reqBodyUpdate,
       update_mask: "description"
-    }, constant.paramsWithJwt), {
+    }, constant.paramsGRPCWithJwt), {
       [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response StatusUnknown`]: (r) => r.status === grpc.StatusUnknown,
     })
 
@@ -175,14 +175,14 @@ export function CheckUpdateState() {
     // Cannot activate a pipeline of a non-exist user
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
       name: `pipelines/${reqBodySync.id}`
-    }, constant.paramsWithJwt), {
+    }, constant.paramsGRPCWithJwt), {
       [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline response StatusUnknown`]: (r) => r.status === grpc.StatusUnknown,
     })
 
     // Cannot deactivate a pipeline of a non-exist user
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline', {
       name: `pipelines/${reqBodySync.id}`
-    }, constant.paramsWithJwt), {
+    }, constant.paramsGRPCWithJwt), {
       [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline response StatusUnknown`]: (r) => r.status === grpc.StatusUnknown,
     })
 
@@ -227,7 +227,7 @@ export function CheckRename() {
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/RenamePipeline', {
       name: `pipelines/${reqBody.id}`,
       new_pipeline_id: new_pipeline_id
-    }, constant.paramsWithJwt), {
+    }, constant.paramsGRPCWithJwt), {
       [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/RenamePipeline response StatusUnknown`]: (r) => r.status === grpc.StatusUnknown,
     })
 
@@ -269,7 +269,7 @@ export function CheckLookUp() {
     // Cannot look up a pipeline of a non-exist user
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline', {
       permalink: `pipelines/${res.message.pipeline.uid}`
-    }, constant.paramsWithJwt), {
+    }, constant.paramsGRPCWithJwt), {
       [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline response StatusUnknown`]: (r) => r.status === grpc.StatusUnknown,
     })
 
