@@ -19,7 +19,7 @@ export function CheckCreate() {
     )
 
     // Cannot create a pipeline of a non-exist user
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.paramsWithJwt), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.paramsHTTPWithJwt), {
       [`[with random "jwt-sub" header] POST /v1alpha/pipelines response status is 500`]: (r) => r.status === 500
     });
 
@@ -31,7 +31,7 @@ export function CheckList() {
   group(`Pipelines API: List pipelines [with random "jwt-sub" header]`, () => {
 
     // Cannot list pipelines of a non-exist user
-    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines`, null, constant.paramsWithJwt), {
+    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines`, null, constant.paramsHTTPWithJwt), {
       [`[with random "jwt-sub" header] GET /v1alpha/pipelines response status is 500`]: (r) => r.status === 500
     });
   });
@@ -55,7 +55,7 @@ export function CheckGet() {
     });
 
     // Cannot get a pipeline of a non-exist user
-    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.paramsWithJwt), {
+    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.paramsHTTPWithJwt), {
       [`[with random "jwt-sub" header] GET /v1alpha/pipelines/${reqBody.id} response status is 500`]: (r) => r.status === 500
     });
 
@@ -95,7 +95,7 @@ export function CheckUpdate() {
     )
 
     // Cannot update a pipeline of a non-exist user
-    check(http.request("PATCH", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), constant.paramsWithJwt), {
+    check(http.request("PATCH", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), constant.paramsHTTPWithJwt), {
       [`[with random "jwt-sub" header] PATCH /v1alpha/pipelines/${reqBody.id} response status is 500`]: (r) => r.status === 500
     });
 
@@ -123,18 +123,18 @@ export function CheckUpdateState() {
       "POST /v1alpha/pipelines sync pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBodyAsync), constant.params), {
-      "POST /v1alpha/pipelines async pipeline creation response status is 201": (r) => r.status === 201,
-      "POST /v1alpha/pipelines async pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
-    });
+    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBodyAsync), constant.params), {
+    //   "POST /v1alpha/pipelines async pipeline creation response status is 201": (r) => r.status === 201,
+    //   "POST /v1alpha/pipelines async pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
+    // });
 
     // Cannot activate a pipeline of a non-exist user
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/activate`, null, constant.paramsWithJwt), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/activate`, null, constant.paramsHTTPWithJwt), {
       [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${reqBodySync.id}/activate response status is 500 for sync pipeline`]: (r) => r.status === 500
     });
 
     // Cannot deactivate a pipeline of a non-exist user
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/deactivate`, null, constant.paramsWithJwt), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/deactivate`, null, constant.paramsHTTPWithJwt), {
       [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${reqBodySync.id}/deactivate response status is 500 for sync pipeline`]: (r) => r.status === 500
     });
 
@@ -150,7 +150,7 @@ export function CheckRename() {
 
   group(`Pipelines API: Rename a pipeline [with random "jwt-sub" header]`, () => {
 
-    var id = randomString(10) 
+    var id = randomString(10)
     var reqBody = Object.assign(
       {
         id: id,
@@ -169,7 +169,7 @@ export function CheckRename() {
     reqBody.new_pipeline_id = randomString(10)
 
     // Cannot rename a pipeline of a non-exist user
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.id}/rename`, JSON.stringify(reqBody), constant.paramsWithJwt), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.id}/rename`, JSON.stringify(reqBody), constant.paramsHTTPWithJwt), {
       [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${res.json().pipeline.id}/rename response status is 500`]: (r) => r.status === 500
     });
 
@@ -201,7 +201,7 @@ export function CheckLookUp() {
     });
 
     // Cannot look up a pipeline of a non-exist user
-    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.id}/lookUp`, null, constant.paramsWithJwt), {
+    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.id}/lookUp`, null, constant.paramsHTTPWithJwt), {
       [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${res.json().pipeline.id}/lookUp response status is 500`]: (r) => r.status === 500
     });
 

@@ -135,6 +135,11 @@ func main() {
 		defer modelPublicServiceClientConn.Close()
 	}
 
+	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient()
+	if controllerServiceClientConn != nil {
+		defer controllerServiceClientConn.Close()
+	}
+
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
@@ -145,6 +150,7 @@ func main() {
 		mgmtPrivateServiceClient,
 		connectorPublicServiceClient,
 		modelPublicServiceClient,
+		controllerServiceClient,
 		redisClient,
 	)
 

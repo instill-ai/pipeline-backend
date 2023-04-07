@@ -34,6 +34,11 @@ export function CheckCreate() {
       "POST /v1alpha/pipelines response pipeline update_time": (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0)
     });
 
+    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/watch`, null, constant.params), {
+      "GET /v1alpha/pipelines/watch sync pipeline response status is 201": (r) => r.status === 200,
+      "GET /v1alpha/pipelines/watch sync pipeline response pipeline state ACTIVE": (r) => r.json().state === "STATE_ACTIVE",
+    });
+
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify({}), constant.params), {
       "POST /v1alpha/pipelines request body JSON Schema failed status 400": (r) => r.status === 400,
     });
@@ -330,6 +335,11 @@ export function CheckUpdateState() {
       "POST /v1alpha/pipelines sync pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
 
+    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/watch`, null, constant.params), {
+      "GET /v1alpha/pipelines/watch sync pipeline response status is 201": (r) => r.status === 200,
+      "GET /v1alpha/pipelines/watch sync pipeline response pipeline state ACTIVE": (r) => r.json().state === "STATE_ACTIVE",
+    });
+
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/deactivate`, null, constant.params), {
       [`POST /v1alpha/pipelines/${reqBodySync.id}/deactivate response status is 400 for sync pipeline`]: (r) => r.status === 400,
     });
@@ -350,6 +360,11 @@ export function CheckUpdateState() {
       "POST /v1alpha/pipelines async pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
 
+    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodyAsync.id}/watch`, null, constant.params), {
+      "GET /v1alpha/pipelines/watch sync pipeline response status is 201": (r) => r.status === 200,
+      "GET /v1alpha/pipelines/watch sync pipeline response pipeline state ACTIVE": (r) => r.json().state === "STATE_ACTIVE",
+    });
+
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodyAsync.id}/activate`, null, constant.params), {
       [`POST /v1alpha/pipelines/${reqBodyAsync.id}/activate response status is 200 for async pipeline`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqBodyAsync.id}/activate response pipeline state ACTIVE`]: (r) => r.json().pipeline.state === "STATE_ACTIVE",
@@ -359,6 +374,12 @@ export function CheckUpdateState() {
       [`POST /v1alpha/pipelines/${reqBodyAsync.id}/deactivate response status is 200 for async pipeline`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqBodyAsync.id}/deactivate response pipeline state ACTIVE`]: (r) => r.json().pipeline.state === "STATE_INACTIVE",
     });
+
+    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodyAsync.id}/watch`, null, constant.params), {
+      "GET /v1alpha/pipelines/watch sync pipeline response status is 201": (r) => r.status === 200,
+      "GET /v1alpha/pipelines/watch sync pipeline response pipeline state ACTIVE": (r) => r.json().state === "STATE_INACTIVE",
+    });
+
 
     // Delete the pipelines
     check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}`, null, constant.params), {

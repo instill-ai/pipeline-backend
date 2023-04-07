@@ -50,3 +50,9 @@ usageserver:
   tlsenabled: true
   host: usage.instill.tech
   port: 443
+controller:
+  host: controller
+  port: 3085
+  https:
+    cert:
+    key:

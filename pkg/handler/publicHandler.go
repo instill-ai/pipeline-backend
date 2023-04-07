@@ -647,3 +647,15 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 
 	return nil
 }
+
+func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.WatchPipelineRequest) (*pipelinePB.WatchPipelineResponse, error) {
+	state, err := h.service.GetResourceState(req.GetName())
+
+	if err != nil {
+		return &pipelinePB.WatchPipelineResponse{}, err
+	}
+
+	return &pipelinePB.WatchPipelineResponse{
+		State: *state,
+	}, nil
+}

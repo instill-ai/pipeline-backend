@@ -19,6 +19,10 @@ import {
   modelPublicHost
 } from "./const.js";
 
+import {
+  genHeader
+} from "./helper.js"
+
 import * as constant from "./const.js";
 import * as pipelinePublic from './rest-pipeline-public.js';
 import * as pipelinePublicWithJwt from './rest-pipeline-public-with-jwt.js';
@@ -123,8 +127,8 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 300000;
     while (timeoutTime > currentTime) {
-      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`)
-      if (res.json().destination_connector.connector.state === "STATE_CONNECTED") {
+      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}/watch`)
+      if (res.json().state === "STATE_CONNECTED") {
         break
       }
       sleep(1)
@@ -153,8 +157,10 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, constant.params)
-      if (res.json().operation.done === true) {
+      let res = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/watch`, {
+        headers: genHeader(`application/json`),
+      })
+      if (res.json().state === "STATE_OFFLINE") {
         break
       }
       sleep(1)
@@ -171,8 +177,10 @@ export function setup() {
     currentTime = new Date().getTime();
     timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      var res = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, constant.params)
-      if (res.json().model.state === "STATE_ONLINE") {
+      let res = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/watch`, {
+        headers: genHeader(`application/json`),
+      })
+      if (res.json().state === "STATE_ONLINE") {
         break
       }
       sleep(1)

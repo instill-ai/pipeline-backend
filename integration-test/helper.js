@@ -82,3 +82,9 @@ export function validateRecipeGRPC(recipe) {
 
   return true
 }
+
+export function genHeader(contentType) {
+  return {
+    "Content-Type": `${contentType}`,
+  };
+}

@@ -5,6 +5,7 @@ package service_test
 //go:generate mockgen -destination mock_connector_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/connector/v1alpha ConnectorPublicServiceClient
 //go:generate mockgen -destination mock_user_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha MgmtPrivateServiceClient
 //go:generate mockgen -destination mock_usage_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/usage/v1alpha UsageServiceClient
+//go:generate mockgen -destination mock_controller_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/controller/v1alpha ControllerPrivateServiceClient
 
 import (
 	"database/sql"
@@ -62,12 +63,17 @@ func TestCreatePipeline(t *testing.T) {
 		mockConnectorPublicServiceClient := NewMockConnectorPublicServiceClient(ctrl)
 		mockConnectorPublicServiceClient.EXPECT().GetSourceConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 		mockConnectorPublicServiceClient.EXPECT().GetDestinationConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-		mockConnectorPublicServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
-		mockConnectorPublicServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
+		mockConnectorPublicServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
+		mockConnectorPublicServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 
 		mockModelPublicServiceClient := NewMockModelPublicServiceClient(ctrl)
 
-		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockModelPublicServiceClient, nil)
+		mockControllerPrivateServiceClient := NewMockControllerPrivateServiceClient(ctrl)
+
+		mockControllerPrivateServiceClient.EXPECT().GetResource(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
+		mockControllerPrivateServiceClient.EXPECT().UpdateResource(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+
+		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockModelPublicServiceClient, mockControllerPrivateServiceClient, nil)
 
 		_, err := s.CreatePipeline(&owner, &normalPipeline)
 
