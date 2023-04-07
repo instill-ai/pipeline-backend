@@ -63,13 +63,14 @@ func TestCreatePipeline(t *testing.T) {
 		mockConnectorPublicServiceClient := NewMockConnectorPublicServiceClient(ctrl)
 		mockConnectorPublicServiceClient.EXPECT().GetSourceConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 		mockConnectorPublicServiceClient.EXPECT().GetDestinationConnectorDefinition(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-		mockConnectorPublicServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
-		mockConnectorPublicServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(3)
+		mockConnectorPublicServiceClient.EXPECT().GetSourceConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
+		mockConnectorPublicServiceClient.EXPECT().GetDestinationConnector(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 
 		mockModelPublicServiceClient := NewMockModelPublicServiceClient(ctrl)
 
 		mockControllerPrivateServiceClient := NewMockControllerPrivateServiceClient(ctrl)
 
+		mockControllerPrivateServiceClient.EXPECT().GetResource(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 		mockControllerPrivateServiceClient.EXPECT().UpdateResource(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 
 		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockModelPublicServiceClient, mockControllerPrivateServiceClient, nil)

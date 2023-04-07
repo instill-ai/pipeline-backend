@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gogo/status"
@@ -11,8 +12,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
-	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
+	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -23,36 +23,36 @@ func (s *service) checkState(recipeRscName *datamodel.Recipe) (datamodel.Pipelin
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	srcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(ctx, &connectorPB.GetSourceConnectorRequest{
-		Name: recipeRscName.Source,
-	})
-	if err != nil {
+	var srcConnState int
+	if srcResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
+		Name: fmt.Sprintf("resources/%s/types/source-connectors", strings.Split(recipeRscName.Source, "/")[1]),
+	}); err != nil {
 		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[connector-backend] Error %s at source-connectors/%s: %v", "GetDestinationConnector", recipeRscName.Source, err.Error())
+			status.Errorf(codes.Internal, "[Controller] Error %s at source-connectors/%s: %v", "GetResourceState", recipeRscName.Source, err.Error())
+	} else {
+		srcConnState = int(srcResource.GetResource().GetConnectorState().Number())
 	}
 
-	srcConnState := int(srcConnResp.GetSourceConnector().GetConnector().GetState().Number())
-
-	dstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(ctx, &connectorPB.GetDestinationConnectorRequest{
-		Name: recipeRscName.Destination,
-	})
-	if err != nil {
+	var dstConnState int
+	if dstResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
+		Name: fmt.Sprintf("resources/%s/types/destination-connectors", strings.Split(recipeRscName.Destination, "/")[1]),
+	}); err != nil {
 		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[connector-backend] Error %s at destination-connectors/%s: %v", "GetDestinationConnector", recipeRscName.Destination, err.Error())
+			status.Errorf(codes.Internal, "[Controller] Error %s at source-connectors/%s: %v", "GetResourceState", recipeRscName.Source, err.Error())
+	} else {
+		dstConnState = int(dstResource.GetResource().GetConnectorState().Number())
 	}
-
-	dstConnState := int(dstConnResp.GetDestinationConnector().GetConnector().GetState().Number())
 
 	modelStates := make([]int, len(recipeRscName.Models))
 	for idx, model := range recipeRscName.Models {
-		modelResp, err := s.modelPublicServiceClient.GetModel(ctx, &modelPB.GetModelRequest{
-			Name: model,
-		})
-		if err != nil {
+		if modelResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
+			Name: fmt.Sprintf("resources/%s/types/models", strings.Split(model, "/")[1]),
+		}); err != nil {
 			return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-				status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model %s: %v", "GetModel", idx, model, err.Error())
+				status.Errorf(codes.Internal, "[Controller] Error %s at %dth model %s: %v", "GetResourceState", idx, model, err.Error())
+		} else{
+			modelStates[idx] = int(modelResource.GetResource().GetModelState().Number())
 		}
-		modelStates[idx] = int(modelResp.Model.State.Number())
 	}
 
 	// State precedence rule (i.e., enum_number state logic) : 3 error (any of) > 0 unspecified (any of) > 1 negative (any of) > 2 positive (all of)
