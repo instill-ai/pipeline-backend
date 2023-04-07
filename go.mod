@@ -12,7 +12,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/iancoleman/strcase v0.2.0
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230402125221-c8f1a70b6b8b
-	github.com/instill-ai/usage-client v0.2.2-alpha
+	github.com/instill-ai/usage-client v0.2.3-alpha
 	github.com/instill-ai/x v0.2.0-alpha
 	github.com/knadh/koanf v1.4.3
 	github.com/mennanov/fieldmask-utils v0.6.0
@@ -22,7 +22,7 @@ require (
 	go.einride.tech/aip v0.58.1
 	go.temporal.io/sdk v1.17.0
 	go.uber.org/zap v1.23.0
-	golang.org/x/net v0.8.0
+	golang.org/x/net v0.9.0
 	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/postgres v1.3.9
@@ -69,8 +69,8 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f
 	gopkg.in/yaml.v3 v3.0.1 // indirect
