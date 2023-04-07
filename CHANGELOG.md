@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.10.0-alpha...v0.11.0-alpha) (2023-04-07)
+
+
+### Features
+
+* **controller:** add pipeline state monitoring with controller ([#134](https://github.com/instill-ai/pipeline-backend/issues/134)) ([e77a8d8](https://github.com/instill-ai/pipeline-backend/commit/e77a8d8d3b7f2632d87491a561c3000331fcf892))
+
 ## [0.10.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.9.8-alpha...v0.10.0-alpha) (2023-03-26)
 
 
