@@ -129,7 +129,7 @@ func InitControllerPrivateServiceClient() (controllerPB.ControllerPrivateService
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.Controller.Host, config.Config.Controller.Port), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.Controller.Host, config.Config.Controller.PrivatePort), clientDialOpts)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}

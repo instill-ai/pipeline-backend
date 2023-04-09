@@ -114,7 +114,7 @@ type UsageServerConfig struct {
 // ControllerConfig related to controller
 type ControllerConfig struct {
 	Host  string `koanf:"host"`
-	Port  int    `koanf:"port"`
+	PrivatePort  int    `koanf:"privateport"`
 	HTTPS struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
