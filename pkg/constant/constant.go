@@ -21,6 +21,6 @@ const DefaultOutputLen int = 100
 const DefaultTopK int = 40
 
 // Constants for resource owner
-const DefaultOwnerID string = "local-user"
+const DefaultOwnerID string = "instill-ai"
 const HeaderOwnerUIDKey = "jwt-sub"
 const HeaderOwnerIDKey = "owner-id"
