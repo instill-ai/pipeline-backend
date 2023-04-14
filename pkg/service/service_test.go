@@ -28,13 +28,13 @@ func TestCreatePipeline(t *testing.T) {
 		uid := uuid.New()
 		uidstr := uid.String()
 		owner := mgmtPB.User{
-			Name: "users/local-user",
+			Name: "users/instill-ai",
 			Uid:  &uidstr,
 		}
 
 		normalPipeline := datamodel.Pipeline{
 			ID:    "awesome",
-			Owner: "users/local-user",
+			Owner: "users/instill-ai",
 
 			Recipe: &datamodel.Recipe{
 				Source:      "source-connectors/source-http",
