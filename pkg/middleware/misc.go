@@ -145,6 +145,8 @@ func CustomMatcher(key string) (string, bool) {
 	}
 
 	switch key {
+	case "request-id":
+		return key, true
 	case constant.HeaderOwnerIDKey:
 		return key, true
 	default:
