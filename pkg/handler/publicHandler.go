@@ -537,7 +537,7 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 			if pipeline.Recipe == nil || len(pipeline.Recipe.Models) == 0 {
 				return status.Errorf(codes.Internal, "there is no model in pipeline's recipe")
 			}
-			model, err = h.service.GetModelByName(dbPipeline.Recipe.Models[0])
+			model, err = h.service.GetModelByName(owner, dbPipeline.Recipe.Models[0])
 			if err != nil {
 				return status.Errorf(codes.Internal, "could not find model: %s", err.Error())
 			}
