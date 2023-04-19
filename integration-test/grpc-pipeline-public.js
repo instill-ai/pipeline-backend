@@ -40,6 +40,7 @@ export function CheckCreate() {
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline id": (r) => r.message.pipeline.id === reqBody.id,
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline description": (r) => r.message.pipeline.description === reqBody.description,
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline recipe is valid": (r) => helper.validateRecipeGRPC(r.message.pipeline.recipe),
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline owner is UUID": (r) => helper.isValidOwner(r.message.pipeline.user),
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline state ACTIVE": (r) => r.message.pipeline.state === "STATE_ACTIVE",
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline mode": (r) => r.message.pipeline.mode == "MODE_SYNC",
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline create_time": (r) => new Date(r.message.pipeline.createTime).getTime() > new Date().setTime(0),
@@ -287,6 +288,7 @@ export function CheckGet() {
       [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline id`]: (r) => r.message.pipeline.id === reqBody.id,
       [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline description`]: (r) => r.message.pipeline.description === reqBody.description,
       [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline recipe is null`]: (r) => r.message.pipeline.recipe === null,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.message.pipeline.user),
     });
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline', {
@@ -295,6 +297,7 @@ export function CheckGet() {
     }, {}), {
       [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response StatusOK`]: (r) => r.status === grpc.StatusOK,
       [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline recipe is null`]: (r) => r.message.pipeline.recipe !== null,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.message.pipeline.user),
     });
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline', {
