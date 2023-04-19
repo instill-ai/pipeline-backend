@@ -36,26 +36,6 @@ func (m *MockModelPublicServiceClient) EXPECT() *MockModelPublicServiceClientMoc
 	return m.recorder
 }
 
-// CancelModelOperation mocks base method.
-func (m *MockModelPublicServiceClient) CancelModelOperation(arg0 context.Context, arg1 *modelv1alpha.CancelModelOperationRequest, arg2 ...grpc.CallOption) (*modelv1alpha.CancelModelOperationResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "CancelModelOperation", varargs...)
-	ret0, _ := ret[0].(*modelv1alpha.CancelModelOperationResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CancelModelOperation indicates an expected call of CancelModelOperation.
-func (mr *MockModelPublicServiceClientMockRecorder) CancelModelOperation(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelModelOperation", reflect.TypeOf((*MockModelPublicServiceClient)(nil).CancelModelOperation), varargs...)
-}
-
 // CreateModel mocks base method.
 func (m *MockModelPublicServiceClient) CreateModel(arg0 context.Context, arg1 *modelv1alpha.CreateModelRequest, arg2 ...grpc.CallOption) (*modelv1alpha.CreateModelResponse, error) {
 	m.ctrl.T.Helper()
@@ -234,26 +214,6 @@ func (mr *MockModelPublicServiceClientMockRecorder) ListModelDefinitions(arg0, a
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListModelDefinitions", reflect.TypeOf((*MockModelPublicServiceClient)(nil).ListModelDefinitions), varargs...)
-}
-
-// ListModelOperations mocks base method.
-func (m *MockModelPublicServiceClient) ListModelOperations(arg0 context.Context, arg1 *modelv1alpha.ListModelOperationsRequest, arg2 ...grpc.CallOption) (*modelv1alpha.ListModelOperationsResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "ListModelOperations", varargs...)
-	ret0, _ := ret[0].(*modelv1alpha.ListModelOperationsResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListModelOperations indicates an expected call of ListModelOperations.
-func (mr *MockModelPublicServiceClientMockRecorder) ListModelOperations(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListModelOperations", reflect.TypeOf((*MockModelPublicServiceClient)(nil).ListModelOperations), varargs...)
 }
 
 // ListModels mocks base method.

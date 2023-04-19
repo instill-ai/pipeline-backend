@@ -591,45 +591,6 @@ message GetModelOperationResponse {
   google.longrunning.Operation operation = 1;
 }
 
-// ListModelOperationsRequest represents a request to list all model operations
-// including deploy and undeploy
-message ListModelOperationsRequest {
-  // Page size: the maximum number of resources to return. The service may
-  // return fewer than this value. If unspecified, at most 10 operations will be
-  // returned. The maximum value is 100; values above 100 will be coereced to
-  // 100.
-  optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
-  // Page token
-  string page_token = 2;
-  // Filter expression to list operations
-  optional string filter = 3 [ (google.api.field_behavior) = OPTIONAL ];
-  // View (default is VIEW_BASIC)
-  // VIEW_UNSPECIFIED/VIEW_BASIC: omit `Model.configuration`,
-  // `Model.configuration` VIEW_FULL: show full information
-  optional View view = 4 [ (google.api.field_behavior) = OPTIONAL ];
-}
-
-// ListModelOperationsResponse represents a response for a list of model
-// operations including deploy and undeploy
-message ListModelOperationsResponse {
-  // a list of model operations
-  repeated google.longrunning.Operation operations = 1;
-  // Next page token
-  string next_page_token = 2;
-  // Total count of operations
-  int64 total_size = 3;
-}
-
-// CancelModelOperationRequest represents a request to cancel a model operation
-message CancelModelOperationRequest {
-  // The name of the operation resource.
-  string name = 1 [ (google.api.field_behavior) = REQUIRED ];
-}
-
-// CancelModelOperationResponse represents a response for canceling a model
-// operation
-message CancelModelOperationResponse {}
-
 // ========== Private endpoints
 
 // ListModelsAdminRequest represents a request to list all models from all users by admin
