@@ -28,6 +28,7 @@ export function CheckCreate() {
       "POST /v1alpha/pipelines response pipeline id": (r) => r.json().pipeline.id === reqBody.id,
       "POST /v1alpha/pipelines response pipeline description": (r) => r.json().pipeline.description === reqBody.description,
       "POST /v1alpha/pipelines response pipeline recipe is valid": (r) => helper.validateRecipe(r.json().pipeline.recipe),
+      "POST /v1alpha/pipelines response pipeline user is UUID": (r) => helper.isValidOwner(r.json().pipeline.user),
       "POST /v1alpha/pipelines response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
       "POST /v1alpha/pipelines response pipeline mode": (r) => r.json().pipeline.mode === "MODE_SYNC",
       "POST /v1alpha/pipelines response pipeline create_time": (r) => new Date(r.json().pipeline.create_time).getTime() > new Date().setTime(0),
@@ -224,11 +225,13 @@ export function CheckGet() {
       [`GET /v1alpha/pipelines/${reqBody.id} response pipeline id`]: (r) => r.json().pipeline.id === reqBody.id,
       [`GET /v1alpha/pipelines/${reqBody.id} response pipeline description`]: (r) => r.json().pipeline.description === reqBody.description,
       [`GET /v1alpha/pipelines/${reqBody.id} response pipeline recipe is null`]: (r) => r.json().pipeline.recipe === null,
+      [`GET /v1alpha/pipelines/${reqBody.id} response pipeline user is UUID`]: (r) => helper.isValidOwner(r.json().pipeline.user),
     });
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}?view=VIEW_FULL`, null, constant.params), {
       [`GET /v1alpha/pipelines/${reqBody.id} response status is 200`]: (r) => r.status === 200,
       [`GET /v1alpha/pipelines/${reqBody.id} response pipeline recipe is not null`]: (r) => r.json().pipeline.recipe !== null,
+      [`GET /v1alpha/pipelines/${reqBody.id} response pipeline user is UUID`]: (r) => helper.isValidOwner(r.json().pipeline.user),
     });
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/this-id-does-not-exist`, null, constant.params), {
@@ -279,6 +282,7 @@ export function CheckUpdate() {
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline state (OUTPUT_ONLY)`]: (r) => r.json().pipeline.state === resOrigin.json().pipeline.state,
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline description (OPTIONAL)`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline recipe (IMMUTABLE)`]: (r) => helper.deepEqual(r.json().pipeline.recipe, reqBody.recipe),
+      [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline user is UUID`]: (r) => helper.isValidOwner(r.json().pipeline.user),
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline create_time (OUTPUT_ONLY)`]: (r) => new Date(r.json().pipeline.create_time).getTime() > new Date().setTime(0),
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline update_time (OUTPUT_ONLY)`]: (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0),
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline update_time > create_time`]: (r) => new Date(r.json().pipeline.update_time).getTime() > new Date(r.json().pipeline.create_time).getTime()

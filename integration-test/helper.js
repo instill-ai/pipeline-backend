@@ -11,6 +11,10 @@ export function isUUID(uuid) {
   return regexExp.test(uuid)
 }
 
+export function isValidOwner(user) {
+  return isUUID(user.replace("users/", ""));
+}
+
 export function validateRecipe(recipe) {
   if (!('source' in recipe)) {
     console.log("Recipe has no source field")

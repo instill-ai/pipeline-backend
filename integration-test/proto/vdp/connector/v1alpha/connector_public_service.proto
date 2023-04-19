@@ -337,16 +337,4 @@ service ConnectorPublicService {
     option (google.api.method_signature) = "name";
   }
 
-  // *Longrunning operation methods
-
-  // GetConnectorOperation method receives a
-  // GetConnectorOperationRequest message and returns a
-  // GetConnectorOperationResponse message.
-  rpc GetConnectorOperation(GetConnectorOperationRequest)
-      returns (GetConnectorOperationResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=operations/*}"
-    };
-    option (google.api.method_signature) = "name";
-  }
 }

@@ -140,11 +140,13 @@ export function CheckGet() {
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline id`]: (r) => r.json().pipeline.id === reqBody.id,
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline description`]: (r) => r.json().pipeline.description === reqBody.description,
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline recipe is null`]: (r) => r.json().pipeline.recipe === null,
+      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.json().pipeline.user),
     });
 
     check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/${reqBody.id}?view=VIEW_FULL`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response status is 200`]: (r) => r.status === 200,
       [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline recipe is not null`]: (r) => r.json().pipeline.recipe !== null,
+      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.json().pipeline.user),
     });
 
     check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/this-id-does-not-exist`, null, constant.params), {

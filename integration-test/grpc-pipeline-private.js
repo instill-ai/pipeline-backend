@@ -195,6 +195,7 @@ export function CheckGet() {
       [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline id`]: (r) => r.message.pipeline.id === reqBody.id,
       [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline description`]: (r) => r.message.pipeline.description === reqBody.description,
       [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline recipe is null`]: (r) => r.message.pipeline.recipe === null,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.message.pipeline.user),
     });
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin', {
@@ -203,6 +204,7 @@ export function CheckGet() {
     }, {}), {
       [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} view: "VIEW_FULL" response StatusOK`]: (r) => r.status === grpc.StatusOK,
       [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline recipe is null`]: (r) => r.message.pipeline.recipe !== null,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.message.pipeline.user),
     });
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin', {
