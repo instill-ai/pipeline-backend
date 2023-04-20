@@ -130,9 +130,19 @@ func main() {
 		defer connectorPublicServiceClientConn.Close()
 	}
 
+	connectorPrivateServiceClient, connectorPrivateServiceClientConn := external.InitConnectorPrivateServiceClient()
+	if connectorPrivateServiceClientConn != nil {
+		defer connectorPrivateServiceClientConn.Close()
+	}
+
 	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient()
 	if modelPublicServiceClientConn != nil {
 		defer modelPublicServiceClientConn.Close()
+	}
+
+	modelPrivateServiceClient, modelPrivateServiceClientConn := external.InitModelPrivateServiceClient()
+	if modelPrivateServiceClientConn != nil {
+		defer modelPrivateServiceClientConn.Close()
 	}
 
 	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient()
@@ -149,7 +159,9 @@ func main() {
 		repository,
 		mgmtPrivateServiceClient,
 		connectorPublicServiceClient,
+		connectorPrivateServiceClient,
 		modelPublicServiceClient,
+		modelPrivateServiceClient,
 		controllerServiceClient,
 		redisClient,
 	)

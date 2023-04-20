@@ -30,12 +30,14 @@ temporal:
     hostport: temporal:7233
 connectorbackend:
   host: connector-backend
+  privateport: 3082
   publicport: 8082
   https:
     cert:
     key:
 modelbackend:
   host: model-backend
+  privateport: 3083
   publicport: 8083
   https:
     cert:

@@ -79,9 +79,19 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		defer connectorPublicServiceClientConn.Close()
 	}
 
+	connectorPrivateServiceClient, connectorPrivateServiceClientConn := external.InitConnectorPrivateServiceClient()
+	if connectorPrivateServiceClientConn != nil {
+		defer connectorPrivateServiceClientConn.Close()
+	}
+
 	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient()
 	if modelPublicServiceClientConn != nil {
 		defer modelPublicServiceClientConn.Close()
+	}
+
+	modelPrivateServiceClient, modelPrivateServiceClientConn := external.InitModelPrivateServiceClient()
+	if modelPrivateServiceClientConn != nil {
+		defer modelPrivateServiceClientConn.Close()
 	}
 
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
@@ -96,13 +106,14 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		repository.NewRepository(db.GetConnection()),
 		mgmtPrivateServiceClient,
 		connectorPublicServiceClient,
+		connectorPrivateServiceClient,
 		modelPublicServiceClient,
+		modelPrivateServiceClient,
 		controllerServiceClient,
 		redisClient,
 	)
 
 	var owner *mgmtPB.User
-
 
 	// Verify if "jwt-sub" is in the header
 	headerOwnerUId := req.Header.Get(constant.HeaderOwnerUIDKey)
@@ -203,7 +214,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	model, err := service.GetModelByName(dbPipeline.Recipe.Models[0])
+	model, err := service.GetModelByName(owner, dbPipeline.Recipe.Models[0])
 	if err != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.NotFound,

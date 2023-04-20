@@ -13,11 +13,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datamodel.Recipe, error) {
+func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datamodel.Recipe) (*datamodel.Recipe, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -25,7 +26,7 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 	recipePermalink := datamodel.Recipe{}
 
 	// Source connector
-	getSrcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(ctx,
+	getSrcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(InjectOwnerToContext(ctx, owner),
 		&connectorPB.GetSourceConnectorRequest{
 			Name: recipeRscName.Source,
 		})
@@ -41,7 +42,7 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 	recipePermalink.Source = srcColID + "/" + getSrcConnResp.GetSourceConnector().GetUid()
 
 	// Destination connector
-	getDstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(ctx,
+	getDstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(InjectOwnerToContext(ctx, owner),
 		&connectorPB.GetDestinationConnectorRequest{
 			Name: recipeRscName.Destination,
 		})
@@ -59,7 +60,7 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 	// Model
 	recipePermalink.Models = make([]string, len(recipeRscName.Models))
 	for idx, modelRscName := range recipeRscName.Models {
-		getModelResp, err := s.modelPublicServiceClient.GetModel(ctx,
+		getModelResp, err := s.modelPublicServiceClient.GetModel(InjectOwnerToContext(ctx, owner),
 			&modelPB.GetModelRequest{
 				Name: modelRscName,
 			})
@@ -78,7 +79,7 @@ func (s *service) recipeNameToPermalink(recipeRscName *datamodel.Recipe) (*datam
 	return &recipePermalink, nil
 }
 
-func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*datamodel.Recipe, error) {
+func (s *service) recipePermalinkToNameAdmin(recipePermalink *datamodel.Recipe) (*datamodel.Recipe, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -86,7 +87,69 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 	recipeRscName := datamodel.Recipe{}
 
 	// Source connector
-	lookUpSrcConnResp, err := s.connectorPublicServiceClient.LookUpSourceConnector(ctx,
+	lookUpSrcConnResp, err := s.connectorPrivateServiceClient.LookUpSourceConnectorAdmin(ctx,
+		&connectorPB.LookUpSourceConnectorAdminRequest{
+			Permalink: recipePermalink.Source,
+		})
+	if err != nil {
+		return nil, fmt.Errorf("[connector-backend] Error %s at source-connectors/%s: %s", "LookUpSourceConnector", recipePermalink.Source, err)
+	}
+
+	srcColID, err := resource.GetCollectionID(recipePermalink.Source)
+	if err != nil {
+		return nil, err
+	}
+
+	recipeRscName.Source = srcColID + "/" + lookUpSrcConnResp.GetSourceConnector().GetId()
+
+	// Destination connector
+	lookUpDstConnResp, err := s.connectorPrivateServiceClient.LookUpDestinationConnectorAdmin(ctx,
+		&connectorPB.LookUpDestinationConnectorAdminRequest{
+			Permalink: recipePermalink.Destination,
+		})
+	if err != nil {
+		return nil, fmt.Errorf("[connector-backend] Error %s at destination-connectors/%s: %s", "LookUpDestinationConnector", recipePermalink.Destination, err)
+	}
+
+	dstColID, err := resource.GetCollectionID(recipePermalink.Destination)
+	if err != nil {
+		return nil, err
+	}
+
+	recipeRscName.Destination = dstColID + "/" + lookUpDstConnResp.GetDestinationConnector().GetId()
+
+	// Models
+	recipeRscName.Models = make([]string, len(recipePermalink.Models))
+	for idx, modelRscPermalink := range recipePermalink.Models {
+
+		lookUpModelResp, err := s.modelPrivateServiceClient.LookUpModelAdmin(ctx,
+			&modelPB.LookUpModelAdminRequest{
+				Permalink: modelRscPermalink,
+			})
+		if err != nil {
+			return nil, fmt.Errorf("[model-backend] Error %s at models/%s: %s", "LookUpModel", modelRscPermalink, err)
+		}
+
+		modelColID, err := resource.GetCollectionID(modelRscPermalink)
+		if err != nil {
+			return nil, err
+		}
+
+		recipeRscName.Models[idx] = modelColID + "/" + lookUpModelResp.Model.GetId()
+	}
+
+	return &recipeRscName, nil
+}
+
+func (s *service) recipePermalinkToName(owner *mgmtPB.User, recipePermalink *datamodel.Recipe) (*datamodel.Recipe, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	recipeRscName := datamodel.Recipe{}
+
+	// Source connector
+	lookUpSrcConnResp, err := s.connectorPublicServiceClient.LookUpSourceConnector(InjectOwnerToContext(ctx, owner),
 		&connectorPB.LookUpSourceConnectorRequest{
 			Permalink: recipePermalink.Source,
 		})
@@ -102,7 +165,7 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 	recipeRscName.Source = srcColID + "/" + lookUpSrcConnResp.GetSourceConnector().GetId()
 
 	// Destination connector
-	lookUpDstConnResp, err := s.connectorPublicServiceClient.LookUpDestinationConnector(ctx,
+	lookUpDstConnResp, err := s.connectorPublicServiceClient.LookUpDestinationConnector(InjectOwnerToContext(ctx, owner),
 		&connectorPB.LookUpDestinationConnectorRequest{
 			Permalink: recipePermalink.Destination,
 		})
@@ -121,7 +184,7 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 	recipeRscName.Models = make([]string, len(recipePermalink.Models))
 	for idx, modelRscPermalink := range recipePermalink.Models {
 
-		lookUpModelResp, err := s.modelPublicServiceClient.LookUpModel(ctx,
+		lookUpModelResp, err := s.modelPublicServiceClient.LookUpModel(InjectOwnerToContext(ctx, owner),
 			&modelPB.LookUpModelRequest{
 				Permalink: modelRscPermalink,
 			})

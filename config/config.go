@@ -76,9 +76,10 @@ type CacheConfig struct {
 
 // ConnectorBackendConfig related to connector-backend
 type ConnectorBackendConfig struct {
-	Host       string `koanf:"host"`
-	PublicPort int    `koanf:"publicport"`
-	HTTPS      struct {
+	Host        string `koanf:"host"`
+	PrivatePort int    `koanf:"privateport"`
+	PublicPort  int    `koanf:"publicport"`
+	HTTPS       struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
@@ -86,9 +87,10 @@ type ConnectorBackendConfig struct {
 
 // ModelBackendConfig related to model-backend
 type ModelBackendConfig struct {
-	Host       string `koanf:"host"`
-	PublicPort int    `koanf:"publicport"`
-	HTTPS      struct {
+	Host        string `koanf:"host"`
+	PrivatePort int    `koanf:"privateport"`
+	PublicPort  int    `koanf:"publicport"`
+	HTTPS       struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
@@ -113,9 +115,9 @@ type UsageServerConfig struct {
 
 // ControllerConfig related to controller
 type ControllerConfig struct {
-	Host  string `koanf:"host"`
-	PrivatePort  int    `koanf:"privateport"`
-	HTTPS struct {
+	Host        string `koanf:"host"`
+	PrivatePort int    `koanf:"privateport"`
+	HTTPS       struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
