@@ -120,16 +120,17 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 	if headerOwnerUId != "" {
 		_, err := uuid.FromString(headerOwnerUId)
 		if err != nil {
-			st, err := sterr.CreateErrorResourceInfo(
-				codes.Unauthenticated,
-				"[handler] unauthenticated request",
-				"pipelines",
-				fmt.Sprintf("id %s", id),
-				headerOwnerUId,
+			logger.Error(err.Error())
+			st, e := sterr.CreateErrorResourceInfo(
+				codes.NotFound,
+				"Not found",
+				"user",
+				fmt.Sprintf("uid %s", headerOwnerUId),
+				"",
 				err.Error(),
 			)
-			if err != nil {
-				logger.Error(err.Error())
+			if e != nil {
+				logger.Error(e.Error())
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
@@ -139,16 +140,17 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		ownerPermalink := "users/" + headerOwnerUId
 		resp, err := service.GetMgmtPrivateServiceClient().LookUpUserAdmin(req.Context(), &mgmtPB.LookUpUserAdminRequest{Permalink: ownerPermalink})
 		if err != nil {
-			st, err := sterr.CreateErrorResourceInfo(
-				codes.Unauthenticated,
-				"[handler] unauthenticated request",
-				"pipelines",
-				fmt.Sprintf("id %s", id),
-				ownerPermalink,
+			logger.Error(err.Error())
+			st, e := sterr.CreateErrorResourceInfo(
+				codes.NotFound,
+				"Not found",
+				"user",
+				fmt.Sprintf("uid %s", headerOwnerUId),
+				"",
 				err.Error(),
 			)
-			if err != nil {
-				logger.Error(err.Error())
+			if e != nil {
+				logger.Error(e.Error())
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
@@ -160,13 +162,14 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		// Verify "owner-id" in the header if there is no "jwt-sub"
 		headerOwnerId := req.Header.Get(constant.HeaderOwnerIDKey)
 		if headerOwnerId == "" {
-			st, err := sterr.CreateErrorBadRequest("[handler] invalid owner field",
-				[]*errdetails.BadRequest_FieldViolation{
-					{
-						Field:       "owner",
-						Description: "required parameter Jwt-Sub not found in the header",
-					},
-				})
+			st, err := sterr.CreateErrorResourceInfo(
+				codes.Unauthenticated,
+				"Unauthorized",
+				"pipeline",
+				fmt.Sprintf("id %s", id),
+				"",
+				"",
+			)
 			if err != nil {
 				logger.Error(err.Error())
 			}
@@ -178,16 +181,17 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		ownerName := "users/" + headerOwnerId
 		resp, err := service.GetMgmtPrivateServiceClient().GetUserAdmin(req.Context(), &mgmtPB.GetUserAdminRequest{Name: ownerName})
 		if err != nil {
-			st, err := sterr.CreateErrorResourceInfo(
-				codes.Unauthenticated,
-				"[handler] unauthenticated request",
-				"pipelines",
-				fmt.Sprintf("id %s", id),
-				ownerName,
+			logger.Error(err.Error())
+			st, e := sterr.CreateErrorResourceInfo(
+				codes.NotFound,
+				"Not found",
+				"user",
+				fmt.Sprintf("id %s", headerOwnerId),
+				"",
 				err.Error(),
 			)
-			if err != nil {
-				logger.Error(err.Error())
+			if e != nil {
+				logger.Error(e.Error())
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
