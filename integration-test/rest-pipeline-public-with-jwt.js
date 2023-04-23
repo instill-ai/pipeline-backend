@@ -20,7 +20,7 @@ export function CheckCreate() {
 
     // Cannot create a pipeline of a non-exist user
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.paramsHTTPWithJwt), {
-      [`[with random "jwt-sub" header] POST /v1alpha/pipelines response status is 500`]: (r) => r.status === 500
+      [`[with random "jwt-sub" header] POST /v1alpha/pipelines response status is 404`]: (r) => r.status === 404
     });
 
   });
@@ -32,7 +32,7 @@ export function CheckList() {
 
     // Cannot list pipelines of a non-exist user
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines`, null, constant.paramsHTTPWithJwt), {
-      [`[with random "jwt-sub" header] GET /v1alpha/pipelines response status is 500`]: (r) => r.status === 500
+      [`[with random "jwt-sub" header] GET /v1alpha/pipelines response status is 404`]: (r) => r.status === 404
     });
   });
 }
@@ -56,7 +56,7 @@ export function CheckGet() {
 
     // Cannot get a pipeline of a non-exist user
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.paramsHTTPWithJwt), {
-      [`[with random "jwt-sub" header] GET /v1alpha/pipelines/${reqBody.id} response status is 500`]: (r) => r.status === 500
+      [`[with random "jwt-sub" header] GET /v1alpha/pipelines/${reqBody.id} response status is 404`]: (r) => r.status === 404
     });
 
     // Delete the pipeline
@@ -96,7 +96,7 @@ export function CheckUpdate() {
 
     // Cannot update a pipeline of a non-exist user
     check(http.request("PATCH", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, JSON.stringify(reqBodyUpdate), constant.paramsHTTPWithJwt), {
-      [`[with random "jwt-sub" header] PATCH /v1alpha/pipelines/${reqBody.id} response status is 500`]: (r) => r.status === 500
+      [`[with random "jwt-sub" header] PATCH /v1alpha/pipelines/${reqBody.id} response status is 404`]: (r) => r.status === 404
     });
 
     // Delete the pipeline
@@ -130,12 +130,12 @@ export function CheckUpdateState() {
 
     // Cannot activate a pipeline of a non-exist user
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/activate`, null, constant.paramsHTTPWithJwt), {
-      [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${reqBodySync.id}/activate response status is 500 for sync pipeline`]: (r) => r.status === 500
+      [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${reqBodySync.id}/activate response status is 404 for sync pipeline`]: (r) => r.status === 404
     });
 
     // Cannot deactivate a pipeline of a non-exist user
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/deactivate`, null, constant.paramsHTTPWithJwt), {
-      [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${reqBodySync.id}/deactivate response status is 500 for sync pipeline`]: (r) => r.status === 500
+      [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${reqBodySync.id}/deactivate response status is 404 for sync pipeline`]: (r) => r.status === 404
     });
 
     // Delete the pipelines
@@ -170,7 +170,7 @@ export function CheckRename() {
 
     // Cannot rename a pipeline of a non-exist user
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.id}/rename`, JSON.stringify(reqBody), constant.paramsHTTPWithJwt), {
-      [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${res.json().pipeline.id}/rename response status is 500`]: (r) => r.status === 500
+      [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${res.json().pipeline.id}/rename response status is 404`]: (r) => r.status === 404
     });
 
     // Delete the pipeline
@@ -202,7 +202,7 @@ export function CheckLookUp() {
 
     // Cannot look up a pipeline of a non-exist user
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.id}/lookUp`, null, constant.paramsHTTPWithJwt), {
-      [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${res.json().pipeline.id}/lookUp response status is 500`]: (r) => r.status === 500
+      [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${res.json().pipeline.id}/lookUp response status is 404`]: (r) => r.status === 404
     });
 
     // Delete the pipeline
