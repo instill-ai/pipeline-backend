@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-redis/redis/v9"
 	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
@@ -14,12 +13,8 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/db"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/sterr"
 
@@ -28,7 +23,7 @@ import (
 )
 
 // HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
-func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 	logger, _ := logger.GetZapLogger()
 
 	contentType := req.Header.Get("Content-Type")
@@ -69,50 +64,6 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient()
-	if mgmtPrivateServiceClientConn != nil {
-		defer mgmtPrivateServiceClientConn.Close()
-	}
-
-	connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient()
-	if connectorPublicServiceClientConn != nil {
-		defer connectorPublicServiceClientConn.Close()
-	}
-
-	connectorPrivateServiceClient, connectorPrivateServiceClientConn := external.InitConnectorPrivateServiceClient()
-	if connectorPrivateServiceClientConn != nil {
-		defer connectorPrivateServiceClientConn.Close()
-	}
-
-	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient()
-	if modelPublicServiceClientConn != nil {
-		defer modelPublicServiceClientConn.Close()
-	}
-
-	modelPrivateServiceClient, modelPrivateServiceClientConn := external.InitModelPrivateServiceClient()
-	if modelPrivateServiceClientConn != nil {
-		defer modelPrivateServiceClientConn.Close()
-	}
-
-	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
-	defer redisClient.Close()
-
-	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient()
-	if controllerServiceClientConn != nil {
-		defer controllerServiceClientConn.Close()
-	}
-
-	service := service.NewService(
-		repository.NewRepository(db.GetConnection()),
-		mgmtPrivateServiceClient,
-		connectorPublicServiceClient,
-		connectorPrivateServiceClient,
-		modelPublicServiceClient,
-		modelPrivateServiceClient,
-		controllerServiceClient,
-		redisClient,
-	)
-
 	var owner *mgmtPB.User
 
 	// Verify if "jwt-sub" is in the header
@@ -138,7 +89,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		}
 
 		ownerPermalink := "users/" + headerOwnerUId
-		resp, err := service.GetMgmtPrivateServiceClient().LookUpUserAdmin(req.Context(), &mgmtPB.LookUpUserAdminRequest{Permalink: ownerPermalink})
+		resp, err := s.GetMgmtPrivateServiceClient().LookUpUserAdmin(req.Context(), &mgmtPB.LookUpUserAdminRequest{Permalink: ownerPermalink})
 		if err != nil {
 			logger.Error(err.Error())
 			st, e := sterr.CreateErrorResourceInfo(
@@ -179,7 +130,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		}
 
 		ownerName := "users/" + headerOwnerId
-		resp, err := service.GetMgmtPrivateServiceClient().GetUserAdmin(req.Context(), &mgmtPB.GetUserAdminRequest{Name: ownerName})
+		resp, err := s.GetMgmtPrivateServiceClient().GetUserAdmin(req.Context(), &mgmtPB.GetUserAdminRequest{Name: ownerName})
 		if err != nil {
 			logger.Error(err.Error())
 			st, e := sterr.CreateErrorResourceInfo(
@@ -200,7 +151,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		owner = resp.GetUser()
 	}
 
-	dbPipeline, err := service.GetPipelineByID(id, owner, false)
+	dbPipeline, err := s.GetPipelineByID(id, owner, false)
 	if err != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.NotFound,
@@ -218,7 +169,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	model, err := service.GetModelByName(owner, dbPipeline.Recipe.Models[0])
+	model, err := s.GetModelByName(owner, dbPipeline.Recipe.Models[0])
 	if err != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.NotFound,
@@ -288,7 +239,7 @@ func HandleTriggerPipelineBinaryFileUpload(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	obj, err := service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
+	obj, err := s.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.Error(err.Error())
