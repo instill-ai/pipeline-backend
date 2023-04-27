@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -66,9 +68,30 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 
 	var owner *mgmtPB.User
 
+	// Verify if "Authorization" is in the header
+	authorization := req.Header.Get(strings.ToLower(constant.HeaderAuthorization))
+
 	// Verify if "jwt-sub" is in the header
 	headerOwnerUId := req.Header.Get(constant.HeaderOwnerUIDKey)
-	if headerOwnerUId != "" {
+
+	apiToken := strings.Replace(authorization, "Bearer ", "", 1)
+	if apiToken != "" {
+		ownerPermalink, err := s.GetRedisClient().Get(context.Background(), fmt.Sprintf(constant.AccessTokenKeyFormat, apiToken)).Result()
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		resp, err := s.GetMgmtPrivateServiceClient().LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: ownerPermalink})
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+		owner = resp.GetUser()
+	} else if headerOwnerUId != "" {
 		_, err := uuid.FromString(headerOwnerUId)
 		if err != nil {
 			logger.Error(err.Error())

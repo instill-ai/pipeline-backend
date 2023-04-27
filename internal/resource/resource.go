@@ -2,9 +2,11 @@ package resource
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
+	"github.com/go-redis/redis/v9"
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
@@ -63,11 +65,31 @@ func GetPermalinkUID(permalink string) (string, error) {
 }
 
 // GetOwner returns the resource owner
-func GetOwner(ctx context.Context, client mgmtPB.MgmtPrivateServiceClient) (*mgmtPB.User, error) {
+func GetOwner(ctx context.Context, client mgmtPB.MgmtPrivateServiceClient, redisClient *redis.Client) (*mgmtPB.User, error) {
 
+	// Verify if "authorization" is in the header
+	authorization := GetRequestSingleHeader(ctx, constant.HeaderAuthorization)
 	// Verify if "jwt-sub" is in the header
 	headerOwnerUId := GetRequestSingleHeader(ctx, constant.HeaderOwnerUIDKey)
-	if headerOwnerUId != "" {
+
+	apiToken := strings.Replace(authorization, "Bearer ", "", 1)
+	if apiToken != "" {
+		ownerPermalink, err := redisClient.Get(context.Background(), fmt.Sprintf(constant.AccessTokenKeyFormat, apiToken)).Result()
+		if err != nil {
+			return nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		resp, err := client.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: ownerPermalink})
+		if err != nil {
+			return nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
+		}
+
+		return resp.User, nil
+
+	} else if headerOwnerUId != "" {
 		_, err := uuid.FromString(headerOwnerUId)
 		if err != nil {
 			return nil, status.Errorf(codes.NotFound, "Not found")
