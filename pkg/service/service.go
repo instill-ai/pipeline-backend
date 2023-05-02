@@ -122,7 +122,7 @@ func (h *service) GetRedisClient() *redis.Client {
 
 func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	mode, err := s.checkMode(owner, dbPipeline.Recipe)
+	mode, err := s.checkRecipe(owner, dbPipeline.Recipe)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (s *service) ListPipelines(owner *mgmtPB.User, pageSize int64, pageToken st
 
 	if !isBasicView {
 		for idx, dbPipeline := range dbPipelines {
-			recipeRscName, err := s.recipePermalinkToName(owner, dbPipeline.Recipe)
+			recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 			if err != nil {
 				return nil, 0, "", status.Errorf(codes.Internal, err.Error())
 			}
@@ -195,18 +195,6 @@ func (s *service) ListPipelinesAdmin(pageSize int64, pageToken string, isBasicVi
 		return nil, 0, "", err
 	}
 
-	// TODO: Recipe returned by ListPipelinesAdmin will be permalink temporary,
-	//		 will be revisited and update soon
-	// if !isBasicView {
-	// 	for idx, dbPipeline := range dbPipelines {
-	// 		recipeRscName, err := s.recipePermalinkToNameAdmin(dbPipeline.Recipe)
-	// 		if err != nil {
-	// 			return nil, 0, "", status.Errorf(codes.Internal, err.Error())
-	// 		}
-	// 		dbPipelines[idx].Recipe = recipeRscName
-	// 	}
-	// }
-
 	return dbPipelines, ps, pt, nil
 }
 
@@ -220,7 +208,7 @@ func (s *service) GetPipelineByID(id string, owner *mgmtPB.User, isBasicView boo
 	}
 
 	if !isBasicView {
-		recipeRscName, err := s.recipePermalinkToName(owner, dbPipeline.Recipe)
+		recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
@@ -240,7 +228,7 @@ func (s *service) GetPipelineByUID(uid uuid.UUID, owner *mgmtPB.User, isBasicVie
 	}
 
 	if !isBasicView {
-		recipeRscName, err := s.recipePermalinkToName(owner, dbPipeline.Recipe)
+		recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
@@ -257,14 +245,6 @@ func (s *service) GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datam
 		return nil, err
 	}
 
-	if !isBasicView {
-		recipeRscName, err := s.recipePermalinkToNameAdmin(dbPipeline.Recipe)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
-		}
-		dbPipeline.Recipe = recipeRscName
-	}
-
 	return dbPipeline, nil
 }
 
@@ -273,7 +253,7 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 	resourceState := toUpdPipeline.State
 
 	if toUpdPipeline.Recipe != nil {
-		mode, err := s.checkMode(owner, toUpdPipeline.Recipe)
+		mode, err := s.checkRecipe(owner, toUpdPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -319,7 +299,7 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 		return nil, err
 	}
 
-	recipeRscName, err := s.recipePermalinkToName(owner, dbPipeline.Recipe)
+	recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -368,13 +348,13 @@ func (s *service) UpdatePipelineState(id string, owner *mgmtPB.User, state datam
 		resourceState = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
 	}
 
-	recipeRscName, err := s.recipePermalinkToName(owner, dbPipeline.Recipe)
+	recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	mode, err := s.checkMode(owner, recipeRscName)
-	if err != nil {
+	mode, recipeErr := s.checkRecipe(owner, recipeRscName)
+	if recipeErr != nil {
 		return nil, err
 	}
 
@@ -428,7 +408,7 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	// 	return nil, err
 	// }
 
-	recipeRscName, err := s.recipePermalinkToName(owner, dbPipeline.Recipe)
+	recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -458,12 +438,14 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 
+	models := GetModelsFromRecipe(dbPipeline.Recipe)
+	dests := GetDestinationsFromRecipe(dbPipeline.Recipe)
 	var modelOutputs []*pipelinePB.ModelOutput
 	errors := make(chan error)
 	go func() {
 		defer wg.Done()
 
-		for idx, model := range dbPipeline.Recipe.Models {
+		for idx, model := range models {
 
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 			defer cancel()
@@ -539,11 +521,11 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 				}
 			}
 
-			for idx, modelRecName := range dbPipeline.Recipe.Models {
+			for idx, destRecName := range dests {
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
 				_, err := s.connectorPublicServiceClient.WriteDestinationConnector(InjectOwnerToContext(ctx, owner), &connectorPB.WriteDestinationConnectorRequest{
-					Name:                dbPipeline.Recipe.Destination,
+					Name:                destRecName,
 					SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
 					DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
 					Pipeline:            fmt.Sprintf("pipelines/%s", dbPipeline.ID),
@@ -566,7 +548,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 					}(),
 				})
 				if err != nil {
-					logger.Error(fmt.Sprintf("[connector-backend] Error %s at %dth model %s: %v", "WriteDestinationConnector", idx, modelRecName, err.Error()))
+					logger.Error(fmt.Sprintf("[connector-backend] Error %s at %dth destination %s: %v", "WriteDestinationConnector", idx, destRecName, err.Error()))
 				}
 			}
 		}()
@@ -583,7 +565,10 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 func (s *service) triggerImageTask(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelOutput, error) {
 	imageInput := input.(*ImageInput)
 	var modelOutputs []*pipelinePB.ModelOutput
-	for idx, model := range dbPipeline.Recipe.Models {
+
+	models := GetModelsFromRecipe(dbPipeline.Recipe)
+
+	for idx, model := range models {
 
 		// TODO: async call model-backend
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
@@ -783,7 +768,9 @@ func (s *service) triggerImageTask(owner *mgmtPB.User, dbPipeline *datamodel.Pip
 func (s *service) triggerTextTask(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelOutput, error) {
 
 	var modelOutputs []*pipelinePB.ModelOutput
-	for idx, model := range dbPipeline.Recipe.Models {
+	models := GetModelsFromRecipe(dbPipeline.Recipe)
+
+	for idx, model := range models {
 
 		// TODO: async call model-backend
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
@@ -921,11 +908,13 @@ func (s *service) TriggerPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline
 			ModelOutputs:       modelOutputs,
 		}, nil
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
-		for idx, modelRecName := range dbPipeline.Recipe.Models {
+		dests := GetDestinationsFromRecipe(dbPipeline.Recipe)
+
+		for idx, destRecName := range dests {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			_, err := s.connectorPublicServiceClient.WriteDestinationConnector(InjectOwnerToContext(ctx, owner), &connectorPB.WriteDestinationConnectorRequest{
-				Name:                dbPipeline.Recipe.Destination,
+				Name:                destRecName,
 				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
 				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
 				Pipeline:            fmt.Sprintf("pipelines/%s", dbPipeline.ID),
@@ -950,7 +939,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline
 				}(),
 			})
 			if err != nil {
-				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth model %s: %v", "WriteDestinationConnector", idx, modelRecName, err.Error())
+				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth destination %s: %v", "WriteDestinationConnector", idx, destRecName, err.Error())
 			}
 		}
 		return &pipelinePB.TriggerPipelineBinaryFileUploadResponse{

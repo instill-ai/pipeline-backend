@@ -37,12 +37,19 @@ func TestCreatePipeline(t *testing.T) {
 		normalPipeline := datamodel.Pipeline{
 			ID:    "awesome",
 			Owner: "users/instill-ai",
-
 			Recipe: &datamodel.Recipe{
-				Source:      "source-connectors/source-http",
-				Destination: "destination-connectors/destination-http",
+				Version: "v1alpha",
+				Components: []*datamodel.Component{
+					&datamodel.Component{
+						Id:           "s01",
+						ResourceName: "source-connectors/source-http",
+					},
+					&datamodel.Component{
+						Id:           "d01",
+						ResourceName: "destination-connectors/destination-http",
+					},
+				},
 			},
-
 			Description: sql.NullString{
 				String: "awesome pipeline",
 				Valid:  true,

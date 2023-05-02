@@ -192,7 +192,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		return
 	}
 
-	model, err := s.GetModelByName(owner, dbPipeline.Recipe.Models[0])
+	model, err := s.GetModelByName(owner, service.GetModelsFromRecipe(dbPipeline.Recipe)[0])
 	if err != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.NotFound,

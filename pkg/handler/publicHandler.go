@@ -436,9 +436,14 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
+	sources := service.GetSourcesFromRecipe(dbPipeline.Recipe)
+	if len(sources) == 0 {
+		return nil, status.Errorf(codes.Internal, "there is no source in pipeline's recipe")
+	}
+
 	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
 		switch {
-		case strings.Contains(dbPipeline.Recipe.Source, "http") && !resource.IsGWProxied(ctx):
+		case strings.Contains(sources[0], "http") && !resource.IsGWProxied(ctx):
 			st, err := sterr.CreateErrorPreconditionFailure(
 				"[handler] trigger a HTTP pipeline with gRPC",
 				[]*errdetails.PreconditionFailure_Violation{
@@ -454,7 +459,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 			}
 			return &pipelinePB.TriggerPipelineResponse{}, st.Err()
 
-		case strings.Contains(dbPipeline.Recipe.Source, "grpc") && resource.IsGWProxied(ctx):
+		case strings.Contains(sources[0], "grpc") && resource.IsGWProxied(ctx):
 			st, err := sterr.CreateErrorPreconditionFailure(
 				"[handler] trigger a HTTP pipeline with HTTP",
 				[]*errdetails.PreconditionFailure_Violation{
@@ -518,6 +523,7 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 	var model *modelPB.Model
 
 	var firstChunk = true
+	models := service.GetModelsFromRecipe(dbPipeline.Recipe)
 
 	for {
 		data, err := stream.Recv()
@@ -534,10 +540,10 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 			if err != nil {
 				return status.Errorf(codes.Internal, "do not find the pipeline: %s", err.Error())
 			}
-			if pipeline.Recipe == nil || len(pipeline.Recipe.Models) == 0 {
+			if pipeline.Recipe == nil || len(models) == 0 {
 				return status.Errorf(codes.Internal, "there is no model in pipeline's recipe")
 			}
-			model, err = h.service.GetModelByName(owner, dbPipeline.Recipe.Models[0])
+			model, err = h.service.GetModelByName(owner, models[0])
 			if err != nil {
 				return status.Errorf(codes.Internal, "could not find model: %s", err.Error())
 			}

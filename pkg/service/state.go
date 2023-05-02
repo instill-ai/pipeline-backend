@@ -23,54 +23,56 @@ func (s *service) checkState(recipePermalink *datamodel.Recipe) (datamodel.Pipel
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var srcConnState int
-	sourceConnectorUID, err := resource.GetPermalinkUID(recipePermalink.Source)
-	if err != nil {
-		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
-	}
-	if srcResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
-		ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(sourceConnectorUID, "source-connectors"),
-	}); err != nil {
-		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[Controller] Error %s at %s: %v", "GetResourceState", recipePermalink.Source, err.Error())
-	} else {
-		srcConnState = int(srcResource.GetResource().GetConnectorState().Number())
-	}
+	states := []int{}
+	for _, component := range recipePermalink.Components {
 
-	var dstConnState int
-	destinationConnectorUID, err := resource.GetPermalinkUID(recipePermalink.Destination)
-	if err != nil {
-		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
-	}
-	if dstResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
-		ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(destinationConnectorUID, "destination-connectors"),
-	}); err != nil {
-		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[Controller] Error %s at %s: %v", "GetResourceState", recipePermalink.Destination, err.Error())
-	} else {
-		dstConnState = int(dstResource.GetResource().GetConnectorState().Number())
-	}
-
-	modelStates := make([]int, len(recipePermalink.Models))
-	for idx, model := range recipePermalink.Models {
-		modelUID, err := resource.GetPermalinkUID(model)
-		if err != nil {
-			return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
-		}
-		if modelResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
-			ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(modelUID, "models"),
-		}); err != nil {
-			return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-				status.Errorf(codes.Internal, "[Controller] Error %s at %dth model %s: %v", "GetResourceState", idx, model, err.Error())
-		} else{
-			modelStates[idx] = int(modelResource.GetResource().GetModelState().Number())
+		switch GetDefinitionType(component) {
+		// Source connector
+		case SourceConnector:
+			sourceConnectorUID, err := resource.GetPermalinkUID(component.ResourceName)
+			if err != nil {
+				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
+			}
+			if srcResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
+				ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(sourceConnectorUID, "source-connectors"),
+			}); err != nil {
+				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
+					status.Errorf(codes.Internal, "[Controller] Error %s at %s: %v", "GetResourceState", component.ResourceName, err.Error())
+			} else {
+				states = append(states, int(srcResource.GetResource().GetConnectorState().Number()))
+			}
+		// Destination connector
+		case DestinationConnector:
+			destinationConnectorUID, err := resource.GetPermalinkUID(component.ResourceName)
+			if err != nil {
+				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
+			}
+			if dstResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
+				ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(destinationConnectorUID, "destination-connectors"),
+			}); err != nil {
+				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
+					status.Errorf(codes.Internal, "[Controller] Error %s at %s: %v", "GetResourceState", component.ResourceName, err.Error())
+			} else {
+				states = append(states, int(dstResource.GetResource().GetConnectorState().Number()))
+			}
+		// Model
+		case Model:
+			modelUID, err := resource.GetPermalinkUID(component.ResourceName)
+			if err != nil {
+				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
+			}
+			if modelResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
+				ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(modelUID, "models"),
+			}); err != nil {
+				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
+					status.Errorf(codes.Internal, "[Controller] Error %s at %s: %v", "GetResourceState", component.ResourceName, err.Error())
+			} else {
+				states = append(states, int(modelResource.GetResource().GetModelState().Number()))
+			}
 		}
 	}
 
 	// State precedence rule (i.e., enum_number state logic) : 3 error (any of) > 0 unspecified (any of) > 1 negative (any of) > 2 positive (all of)
-	states := []int{srcConnState, dstConnState}
-	states = append(states, modelStates...)
-
 	if contains(states, 3) {
 		logger.Info(fmt.Sprintf("Component state: %v", states))
 		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_ERROR), nil

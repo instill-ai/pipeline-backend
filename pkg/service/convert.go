@@ -22,184 +22,176 @@ func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datam
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	recipePermalink := datamodel.Recipe{}
-
-	// Source connector
-	getSrcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(InjectOwnerToContext(ctx, owner),
-		&connectorPB.GetSourceConnectorRequest{
-			Name: recipeRscName.Source,
-		})
-	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetSourceConnector", recipeRscName.Source, err)
-	}
-
-	srcColID, err := resource.GetCollectionID(recipeRscName.Source)
-	if err != nil {
-		return nil, err
-	}
-
-	recipePermalink.Source = srcColID + "/" + getSrcConnResp.GetSourceConnector().GetUid()
-
-	// Destination connector
-	getDstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(InjectOwnerToContext(ctx, owner),
-		&connectorPB.GetDestinationConnectorRequest{
-			Name: recipeRscName.Destination,
-		})
-	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetDestinationConnector", recipeRscName.Destination, err)
-	}
-
-	dstColID, err := resource.GetCollectionID(recipeRscName.Destination)
-	if err != nil {
-		return nil, err
-	}
-
-	recipePermalink.Destination = dstColID + "/" + getDstConnResp.GetDestinationConnector().GetUid()
-
-	// Model
-	recipePermalink.Models = make([]string, len(recipeRscName.Models))
-	for idx, modelRscName := range recipeRscName.Models {
-		getModelResp, err := s.modelPublicServiceClient.GetModel(InjectOwnerToContext(ctx, owner),
-			&modelPB.GetModelRequest{
-				Name: modelRscName,
-			})
-		if err != nil {
-			return nil, fmt.Errorf("[model-backend] Error %s at %s: %s", "GetModel", modelRscName, err)
+	ctx = InjectOwnerToContext(ctx, owner)
+	recipePermalink := &datamodel.Recipe{Version: recipeRscName.Version}
+	for _, component := range recipeRscName.Components {
+		componentPermalink := &datamodel.Component{
+			Id:           component.Id,
+			Metadata:     component.Metadata,
+			Dependencies: component.Dependencies,
 		}
 
-		modelColID, err := resource.GetCollectionID(modelRscName)
+		permalink := ""
+		var err error
+		switch GetDefinitionType(component) {
+		case SourceConnector:
+			permalink, err = s.sourceConnectorNameToPermalink(ctx, component.ResourceName)
+		case DestinationConnector:
+			permalink, err = s.destinationConnectorNameToPermalink(ctx, component.ResourceName)
+		case Model:
+			permalink, err = s.modelNameToPermalink(ctx, component.ResourceName)
+		}
 		if err != nil {
 			return nil, err
 		}
-
-		recipePermalink.Models[idx] = modelColID + "/" + getModelResp.GetModel().GetUid()
+		componentPermalink.ResourceName = permalink
+		recipePermalink.Components = append(recipePermalink.Components, componentPermalink)
 	}
-
-	return &recipePermalink, nil
+	return recipePermalink, nil
 }
 
-func (s *service) recipePermalinkToNameAdmin(recipePermalink *datamodel.Recipe) (*datamodel.Recipe, error) {
+func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*datamodel.Recipe, error) {
 
+	recipe := &datamodel.Recipe{Version: recipePermalink.Version}
+
+	for _, componentPermalink := range recipePermalink.Components {
+		component := &datamodel.Component{
+			Id:           componentPermalink.Id,
+			Metadata:     componentPermalink.Metadata,
+			Dependencies: componentPermalink.Dependencies,
+		}
+
+		name := ""
+		var err error
+		switch GetDefinitionType(componentPermalink) {
+		case SourceConnector:
+			name, err = s.sourceConnectorPermalinkToName(componentPermalink.ResourceName)
+		case DestinationConnector:
+			name, err = s.destinationConnectorPermalinkToName(componentPermalink.ResourceName)
+		case Model:
+			name, err = s.modelPermalinkToName(componentPermalink.ResourceName)
+		}
+		if err != nil {
+			return nil, err
+		}
+		component.ResourceName = name
+		recipe.Components = append(recipe.Components, component)
+	}
+	return recipe, nil
+}
+
+func (s *service) sourceConnectorNameToPermalink(ctx context.Context, name string) (string, error) {
+
+	getSrcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(ctx,
+		&connectorPB.GetSourceConnectorRequest{
+			Name: name,
+		})
+	if err != nil {
+		return "", fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetSourceConnector", name, err)
+	}
+
+	srcColID, err := resource.GetCollectionID(name)
+	if err != nil {
+		return "", err
+	}
+
+	return srcColID + "/" + getSrcConnResp.GetSourceConnector().GetUid(), nil
+}
+
+func (s *service) destinationConnectorNameToPermalink(ctx context.Context, name string) (string, error) {
+
+	getDstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(ctx,
+		&connectorPB.GetDestinationConnectorRequest{
+			Name: name,
+		})
+	if err != nil {
+		return "", fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetDestinationConnector", name, err)
+	}
+
+	destColID, err := resource.GetCollectionID(name)
+	if err != nil {
+		return "", err
+	}
+
+	return destColID + "/" + getDstConnResp.GetDestinationConnector().GetUid(), nil
+}
+
+func (s *service) modelNameToPermalink(ctx context.Context, name string) (string, error) {
+
+	getModelResp, err := s.modelPublicServiceClient.GetModel(ctx,
+		&modelPB.GetModelRequest{
+			Name: name,
+		})
+	if err != nil {
+		return "", fmt.Errorf("[model-backend] Error %s at %s: %s", "GetModel", name, err)
+	}
+
+	modelColID, err := resource.GetCollectionID(name)
+	if err != nil {
+		return "", err
+	}
+
+	return modelColID + "/" + getModelResp.GetModel().GetUid(), nil
+}
+
+func (s *service) sourceConnectorPermalinkToName(permalink string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	recipeRscName := datamodel.Recipe{}
-
-	// Source connector
 	lookUpSrcConnResp, err := s.connectorPrivateServiceClient.LookUpSourceConnectorAdmin(ctx,
 		&connectorPB.LookUpSourceConnectorAdminRequest{
-			Permalink: recipePermalink.Source,
+			Permalink: permalink,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpSourceConnector", recipePermalink.Source, err)
+		return "", fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpSourceConnectorAdmin", permalink, err)
 	}
 
-	srcColID, err := resource.GetCollectionID(recipePermalink.Source)
+	srcColID, err := resource.GetCollectionID(permalink)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	recipeRscName.Source = srcColID + "/" + lookUpSrcConnResp.GetSourceConnector().GetId()
-
-	// Destination connector
-	lookUpDstConnResp, err := s.connectorPrivateServiceClient.LookUpDestinationConnectorAdmin(ctx,
-		&connectorPB.LookUpDestinationConnectorAdminRequest{
-			Permalink: recipePermalink.Destination,
-		})
-	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpDestinationConnector", recipePermalink.Destination, err)
-	}
-
-	dstColID, err := resource.GetCollectionID(recipePermalink.Destination)
-	if err != nil {
-		return nil, err
-	}
-
-	recipeRscName.Destination = dstColID + "/" + lookUpDstConnResp.GetDestinationConnector().GetId()
-
-	// Models
-	recipeRscName.Models = make([]string, len(recipePermalink.Models))
-	for idx, modelRscPermalink := range recipePermalink.Models {
-
-		lookUpModelResp, err := s.modelPrivateServiceClient.LookUpModelAdmin(ctx,
-			&modelPB.LookUpModelAdminRequest{
-				Permalink: modelRscPermalink,
-			})
-		if err != nil {
-			return nil, fmt.Errorf("[model-backend] Error %s at %s: %s", "LookUpModel", modelRscPermalink, err)
-		}
-
-		modelColID, err := resource.GetCollectionID(modelRscPermalink)
-		if err != nil {
-			return nil, err
-		}
-
-		recipeRscName.Models[idx] = modelColID + "/" + lookUpModelResp.Model.GetId()
-	}
-
-	return &recipeRscName, nil
+	return srcColID + "/" + lookUpSrcConnResp.GetSourceConnector().GetId(), nil
 }
 
-func (s *service) recipePermalinkToName(owner *mgmtPB.User, recipePermalink *datamodel.Recipe) (*datamodel.Recipe, error) {
-
+func (s *service) destinationConnectorPermalinkToName(permalink string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	recipeRscName := datamodel.Recipe{}
-
-	// Source connector
-	lookUpSrcConnResp, err := s.connectorPublicServiceClient.LookUpSourceConnector(InjectOwnerToContext(ctx, owner),
-		&connectorPB.LookUpSourceConnectorRequest{
-			Permalink: recipePermalink.Source,
+	lookUpDstConnResp, err := s.connectorPrivateServiceClient.LookUpDestinationConnectorAdmin(ctx,
+		&connectorPB.LookUpDestinationConnectorAdminRequest{
+			Permalink: permalink,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpSourceConnector", recipePermalink.Source, err)
+		return "", fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpDestinationConnectorAdmin", permalink, err)
 	}
 
-	srcColID, err := resource.GetCollectionID(recipePermalink.Source)
+	dstColID, err := resource.GetCollectionID(permalink)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	recipeRscName.Source = srcColID + "/" + lookUpSrcConnResp.GetSourceConnector().GetId()
+	return dstColID + "/" + lookUpDstConnResp.GetDestinationConnector().GetId(), nil
+}
 
-	// Destination connector
-	lookUpDstConnResp, err := s.connectorPublicServiceClient.LookUpDestinationConnector(InjectOwnerToContext(ctx, owner),
-		&connectorPB.LookUpDestinationConnectorRequest{
-			Permalink: recipePermalink.Destination,
+func (s *service) modelPermalinkToName(permalink string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	lookUpModelResp, err := s.modelPrivateServiceClient.LookUpModelAdmin(ctx,
+		&modelPB.LookUpModelAdminRequest{
+			Permalink: permalink,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpDestinationConnector", recipePermalink.Destination, err)
+		return "", fmt.Errorf("[model-backend] Error %s at %s: %s", "LookUpModelAdmin", permalink, err)
 	}
 
-	dstColID, err := resource.GetCollectionID(recipePermalink.Destination)
+	modelColID, err := resource.GetCollectionID(permalink)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	recipeRscName.Destination = dstColID + "/" + lookUpDstConnResp.GetDestinationConnector().GetId()
-
-	// Models
-	recipeRscName.Models = make([]string, len(recipePermalink.Models))
-	for idx, modelRscPermalink := range recipePermalink.Models {
-
-		lookUpModelResp, err := s.modelPublicServiceClient.LookUpModel(InjectOwnerToContext(ctx, owner),
-			&modelPB.LookUpModelRequest{
-				Permalink: modelRscPermalink,
-			})
-		if err != nil {
-			return nil, fmt.Errorf("[model-backend] Error %s at %s: %s", "LookUpModel", modelRscPermalink, err)
-		}
-
-		modelColID, err := resource.GetCollectionID(modelRscPermalink)
-		if err != nil {
-			return nil, err
-		}
-
-		recipeRscName.Models[idx] = modelColID + "/" + lookUpModelResp.Model.GetId()
-	}
-
-	return &recipeRscName, nil
+	return modelColID + "/" + lookUpModelResp.Model.GetId(), nil
 }
 
 func cvtModelTaskOutputToPipelineTaskOutput(modelTaskOutputs []*modelPB.TaskOutput) []*pipelinePB.TaskOutput {

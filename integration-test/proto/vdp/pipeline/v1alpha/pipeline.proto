@@ -4,6 +4,7 @@ package vdp.pipeline.v1alpha;
 
 // Protocol Buffers Well-Known Types
 import "google/protobuf/field_mask.proto";
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -22,23 +23,32 @@ import "../../../vdp/model/v1alpha/task_text_to_image.proto";
 import "../../../vdp/model/v1alpha/task_text_generation.proto";
 import "../../../vdp/model/v1alpha/task_unspecified.proto";
 
+
+// Represents a pipeline component
+message Component {
+
+  // Component id that is given by the users
+  string id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  // A pipeline component resource name
+  string resource_name = 2 [
+    (google.api.field_behavior) = REQUIRED ,
+    (google.api.resource_reference).type = "*"
+  ];
+  // A pipeline component resource detail
+  google.protobuf.Struct resource_detail = 3 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Metadata for the pipeline component
+  google.protobuf.Struct metadata = 4;
+  // Dependencies for the pipeline component
+  map<string, string> dependencies = 5;
+
+}
+
 // Pipeline represents a pipeline recipe
 message Recipe {
-  // A source connector resource
-  string source = 1 [
-    (google.api.field_behavior) = IMMUTABLE,
-    (google.api.resource_reference).type = "api.instill.tech/Connector"
-  ];
-  // A destination connector resource
-  string destination = 2 [
-    (google.api.field_behavior) = IMMUTABLE,
-    (google.api.resource_reference).type = "api.instill.tech/Connector"
-  ];
-  // A list of model resources
-  repeated string models = 3 [
-    (google.api.field_behavior) = IMMUTABLE,
-    (google.api.resource_reference).type = "api.instill.tech/Model"
-  ];
+  // Recipe schema version
+  string version = 1;
+  // List of pipeline components
+  repeated Component components = 2;
 }
 
 // Pipeline represents the content of a pipeline
@@ -89,12 +99,12 @@ message Pipeline {
   State state = 7 [ (google.api.field_behavior) = OUTPUT_ONLY ];
   // Pipeline owner
   oneof owner {
-    // The resource name of a user, e.g., "users/local-user".
+    // The resource name with UUID of a user, e.g., "users/bfb978f8-78d3-4338-aa2b-a6c699cb07c5".
     string user = 8 [
       (google.api.resource_reference).type = "api.instill.tech/User",
       (google.api.field_behavior) = OUTPUT_ONLY
     ];
-    // The resource name of an organization
+    // The resource name with UUID of an organization
     string org = 9 [
       (google.api.resource_reference).type = "api.instill.tech/Organization",
       (google.api.field_behavior) = OUTPUT_ONLY
