@@ -275,21 +275,51 @@ func (t *Transpiler) transpileHasCallExpr(e *expr.Expr) (*clause.Expr, error) {
 		field := callExpr.Args[0].GetSelectExpr().Field
 		constExpr := callExpr.Args[1]
 
-		iden, err := t.transpileIdentExpr(operand)
-		if err != nil {
-			return nil, err
+		switch operand.ExprKind.(type) {
+		case *expr.Expr_IdentExpr:
+			iden, err := t.transpileIdentExpr(operand)
+			if err != nil {
+				return nil, err
+			}
+			con, err := t.transpileConstExpr(constExpr)
+			fmt.Println(con)
+			if err != nil {
+				return nil, err
+			}
+			con.Vars[0] = "%\"" + con.Vars[0].(string) + "\"%"
+
+			return &clause.Expr{
+				SQL:                fmt.Sprintf("%s ->> '%s' LIKE ?", iden.SQL, field),
+				Vars:               con.Vars,
+				WithoutParentheses: false,
+			}, nil
+		case *expr.Expr_SelectExpr:
+
+			selectExpr := operand.GetSelectExpr()
+			operand, err := t.transpileExpr(selectExpr.Operand)
+			if err != nil {
+				return nil, err
+			}
+			fmt.Println(field)
+			if err != nil {
+				return nil, err
+			}
+			con, err := t.transpileConstExpr(constExpr)
+			fmt.Println(con)
+			if err != nil {
+				return nil, err
+			}
+			con.Vars[0] = "%\"" + field + "\": \"" + con.Vars[0].(string) + "\"%"
+
+			return &clause.Expr{
+				SQL:                fmt.Sprintf("%s ->> '%s' LIKE ?", operand.SQL, selectExpr.Field),
+				Vars:               con.Vars,
+				WithoutParentheses: false,
+			}, nil
+		default:
+			return nil, fmt.Errorf("TODO: add support for more complicated transpiling")
 		}
 
-		con, err := t.transpileConstExpr(constExpr)
-		if err != nil {
-			return nil, err
-		}
-		con.Vars[0] = "%" + con.Vars[0].(string) + "%"
-		return &clause.Expr{
-			SQL:                fmt.Sprintf("%s ->> '%s' LIKE ?", iden.SQL, field),
-			Vars:               con.Vars,
-			WithoutParentheses: false,
-		}, nil
 	default:
 		return nil, fmt.Errorf("TODO: add support for transpiling `:` where LHS is other than Ident and Select")
 	}

@@ -133,17 +133,17 @@ export function CheckList() {
     var modelPermalink = `models/${modelUid}`
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-      filter: `mode=MODE_SYNC AND recipe.sources:"${srcConnPermalink}"`
+      filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}"`
     }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.sources:"${srcConnPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.sources:"${srcConnPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-      filter: `mode=MODE_SYNC AND recipe.destinations:"${dstConnPermalink}" AND recipe.models:"${modelPermalink}"`
+      filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}"`
     }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.destinations:"${dstConnPermalink}" AND recipe.models:"${modelPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.destinations:"${dstConnPermalink}" AND recipe.models:"${modelPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
     // Delete the pipelines
