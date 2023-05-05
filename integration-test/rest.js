@@ -206,7 +206,7 @@ export default function (data) {
     });
   }
 
-  if (__ENV.MODE != "api-gateway" && __ENV.MODE != "localhost" && __ENV.MODE != "internal") {
+  if (!constant.apiGatewayMode) {
     pipelinePrivate.CheckList()
     pipelinePrivate.CheckGet()
     pipelinePrivate.CheckLookUp()
