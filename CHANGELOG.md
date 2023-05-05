@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.4-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.11.3-alpha...v0.11.4-alpha) (2023-05-05)
+
+
+### Bug Fixes
+
+* **controller:** fix rename id and execution order ([#148](https://github.com/instill-ai/pipeline-backend/issues/148)) ([ae29a07](https://github.com/instill-ai/pipeline-backend/commit/ae29a07a56644b47ab895a62f612b3e3793c68c1))
+
 ## [0.11.3-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.11.2-alpha...v0.11.3-alpha) (2023-05-05)
 
 
