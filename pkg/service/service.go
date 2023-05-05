@@ -419,15 +419,15 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
 
+	if err := s.DeleteResourceState(fmt.Sprintf("pipelines/%s", id)); err != nil {
+		return nil, err
+	}
+
 	if err := s.repository.UpdatePipelineID(id, ownerPermalink, newID); err != nil {
 		return nil, err
 	}
 
-	if err := s.DeleteResourceState(fmt.Sprintf("pipelines/%s", existingPipeline.ID)); err != nil {
-		return nil, err
-	}
-
-	if err := s.UpdateResourceState(fmt.Sprintf("pipelines/%s", id), pipelinePB.Pipeline_State(existingPipeline.State), nil); err != nil {
+	if err := s.UpdateResourceState(fmt.Sprintf("pipelines/%s", newID), pipelinePB.Pipeline_State(existingPipeline.State), nil); err != nil {
 		return nil, err
 	}
 
