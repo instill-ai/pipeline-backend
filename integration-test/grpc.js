@@ -232,7 +232,7 @@ export default function (data) {
   triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
   triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
 
-  if (__ENV.MODE != "api-gateway" && __ENV.MODE != "localhost" && __ENV.MODE != "internal") {
+  if (!constant.apiGatewayMode) {
     pipelinePrivate.CheckList()
     pipelinePrivate.CheckGet()
     pipelinePrivate.CheckLookUp()
