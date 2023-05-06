@@ -227,6 +227,7 @@ export default function (data) {
   pipelinePublic.CheckUpdateState()
   pipelinePublic.CheckRename()
   pipelinePublic.CheckLookUp()
+  pipelinePublic.CheckWatch()
 
   triggerSync.CheckTriggerSyncSingleImageSingleModel()
   triggerSync.CheckTriggerSyncMultiImageSingleModel()
