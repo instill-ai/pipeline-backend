@@ -2,7 +2,8 @@ import http from "k6/http";
 import grpc from 'k6/net/grpc';
 import {
   check,
-  group
+  group,
+  sleep,
 } from "k6";
 import {
   randomString
@@ -590,6 +591,53 @@ export function CheckLookUp() {
       [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
       [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline response pipeline new name`]: (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
     });
+
+    // Delete the pipeline
+    check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
+      name: `pipelines/${reqBody.id}`
+    }), {
+      [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
+    });
+
+    client.close()
+  });
+
+}
+
+export function CheckWatch() {
+
+  group("Pipelines API: Watch a pipeline", () => {
+
+    client.connect(constant.pipelineGRPCPublicHost, {
+      plaintext: true
+    });
+
+    var reqBody = Object.assign({
+      id: randomString(10),
+    },
+      constant.detSyncHTTPSingleModelRecipe
+    )
+
+    // Create a pipeline
+    var res = client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
+      pipeline: reqBody
+    })
+
+    check(res, {
+      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
+    });
+
+    // Watch the pipeline
+    // Note: controller update state every three seconds. We should check more than one times to ensure the state is correct.
+    for (var i = 0; i < 5; i++) {
+      check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
+        name: `pipelines/${reqBody.id}`
+      }), {
+        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create sync response StatusOK`]: (r) => r.status === grpc.StatusOK,
+        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create sync response pipeline state ACTIVE`]: (r) => r.message.state === "STATE_ACTIVE",
+      })
+      sleep(3)
+    }
 
     // Delete the pipeline
     check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {

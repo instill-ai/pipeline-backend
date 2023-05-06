@@ -1,5 +1,5 @@
 import http from "k6/http";
-import { check, group } from "k6";
+import { check, group, sleep } from "k6";
 import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
 import { pipelinePublicHost, connectorPublicHost, modelPublicHost } from "./const.js";
@@ -462,5 +462,43 @@ export function CheckLookUp() {
     });
 
   });
+
+}
+
+export function CheckWatch() {
+
+  group("Pipelines API: Watch a pipeline", () => {
+
+    var reqBody = Object.assign(
+      {
+        id: randomString(10),
+      },
+      constant.detSyncHTTPSingleModelRecipe
+    )
+
+    // Create a pipeline
+    var res = http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params)
+
+    check(res, {
+      "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
+    });
+
+    // Watch the pipeline
+    // Note: controller update state every three seconds. We should check more than one times to ensure the state is correct.
+    for (var i = 0; i < 5; i++) {
+      check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/watch`, null, constant.params), {
+        "GET /v1alpha/pipelines/watch sync pipeline response status is 201": (r) => r.status === 200,
+        "GET /v1alpha/pipelines/watch sync pipeline response pipeline state ACTIVE": (r) => r.json().state === "STATE_ACTIVE",
+      });
+      sleep(3)
+    }
+
+    // Delete the pipeline
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.params), {
+      [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
+    });
+
+  });
+
 
 }
