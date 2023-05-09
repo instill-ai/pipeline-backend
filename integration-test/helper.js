@@ -15,7 +15,7 @@ export function isValidOwner(user) {
   return isUUID(user.replace("users/", ""));
 }
 
-export function validateRecipe(recipe) {
+export function validateRecipe(recipe, isPrivate) {
   if (!('source' in recipe)) {
     console.log("Recipe has no source field")
     return false
@@ -31,56 +31,29 @@ export function validateRecipe(recipe) {
     return false
   }
 
-  if (isUUID(recipe.source.split('/')[1])) {
+  if (!isPrivate && isUUID(recipe.source.split('/')[1])) {
     console.log("Recipe source field should be with resource name not permalink")
+    return false
+  } else if (isPrivate && !isUUID(recipe.source.split('/')[1])) {
+    console.log("Recipe source field should be permalink")
     return false
   }
 
   for (const model of recipe.models) {
-    if (isUUID(model.split('/')[1])) {
+    if (!isPrivate && isUUID(model.split('/')[1])) {
       console.log("Recipe model field should be with resource name not permalink")
+      return false
+    } else if (isPrivate && !isUUID(model.split('/')[1])) {
+      console.log("Recipe model field should be permalink")
       return false
     }
   }
 
-  if (isUUID(recipe.destination.split('/')[1])) {
+  if (!isPrivate && isUUID(recipe.destination.split('/')[1])) {
     console.log("Recipe destination field should be with resource name not permalink")
     return false
-  }
-
-  return true
-}
-
-export function validateRecipeGRPC(recipe) {
-  if (!('source' in recipe)) {
-    console.log("Recipe has no source field")
-    return false
-  }
-
-  if (!('models' in recipe)) {
-    console.log("Recipe has no models field")
-    return false
-  }
-
-  if (!('destination' in recipe)) {
-    console.log("Recipe has no destination field")
-    return false
-  }
-
-  if (isUUID(recipe.source.split('/')[1])) {
-    console.log("Recipe source field should be with resource name not permalink")
-    return false
-  }
-
-  for (const model of recipe.models) {
-    if (isUUID(model.split('/')[1])) {
-      console.log("Recipe model field should be with resource name not permalink")
-      return false
-    }
-  }
-
-  if (isUUID(recipe.destination.split('/')[1])) {
-    console.log("Recipe destination field should be with resource name not permalink")
+  } else if (isPrivate && !isUUID(recipe.destination.split('/')[1])) {
+    console.log("Recipe destination field should be permalink")
     return false
   }
 

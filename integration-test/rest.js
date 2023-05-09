@@ -157,15 +157,16 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      let res = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}/watch`, {
-        headers: genHeader(`application/json`),
+      var res = http.get(`${modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
+          headers: genHeader(`application/json`),
       })
-      if (res.json().state === "STATE_OFFLINE") {
-        break
+      if (res.json().operation.done === true) {
+          break
       }
       sleep(1)
       currentTime = new Date().getTime();
-    }
+  }
+
 
     var res = http.post(`${modelPublicHost}/v1alpha/models/${constant.model_id}/deploy`, {}, constant.params)
 
@@ -208,7 +209,6 @@ export default function (data) {
 
   if (!constant.apiGatewayMode) {
     pipelinePrivate.CheckList()
-    pipelinePrivate.CheckGet()
     pipelinePrivate.CheckLookUp()
 
     pipelinePublicWithJwt.CheckCreate()

@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/gogo/status"
 	"google.golang.org/grpc/codes"
 
+	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
@@ -16,7 +16,7 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-func (s *service) checkState(recipeRscName *datamodel.Recipe) (datamodel.PipelineState, error) {
+func (s *service) checkState(recipePermalink *datamodel.Recipe) (datamodel.PipelineState, error) {
 
 	logger, _ := logger.GetZapLogger()
 
@@ -24,29 +24,41 @@ func (s *service) checkState(recipeRscName *datamodel.Recipe) (datamodel.Pipelin
 	defer cancel()
 
 	var srcConnState int
+	sourceConnectorUID, err := resource.GetPermalinkUID(recipePermalink.Source)
+	if err != nil {
+		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
+	}
 	if srcResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
-		Name: fmt.Sprintf("resources/%s/types/source-connectors", strings.Split(recipeRscName.Source, "/")[1]),
+		ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(sourceConnectorUID, "source-connectors"),
 	}); err != nil {
 		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[Controller] Error %s at source-connectors/%s: %v", "GetResourceState", recipeRscName.Source, err.Error())
+			status.Errorf(codes.Internal, "[Controller] Error %s at %s: %v", "GetResourceState", recipePermalink.Source, err.Error())
 	} else {
 		srcConnState = int(srcResource.GetResource().GetConnectorState().Number())
 	}
 
 	var dstConnState int
+	destinationConnectorUID, err := resource.GetPermalinkUID(recipePermalink.Destination)
+	if err != nil {
+		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
+	}
 	if dstResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
-		Name: fmt.Sprintf("resources/%s/types/destination-connectors", strings.Split(recipeRscName.Destination, "/")[1]),
+		ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(destinationConnectorUID, "destination-connectors"),
 	}); err != nil {
 		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[Controller] Error %s at source-connectors/%s: %v", "GetResourceState", recipeRscName.Source, err.Error())
+			status.Errorf(codes.Internal, "[Controller] Error %s at %s: %v", "GetResourceState", recipePermalink.Destination, err.Error())
 	} else {
 		dstConnState = int(dstResource.GetResource().GetConnectorState().Number())
 	}
 
-	modelStates := make([]int, len(recipeRscName.Models))
-	for idx, model := range recipeRscName.Models {
+	modelStates := make([]int, len(recipePermalink.Models))
+	for idx, model := range recipePermalink.Models {
+		modelUID, err := resource.GetPermalinkUID(model)
+		if err != nil {
+			return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
+		}
 		if modelResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
-			Name: fmt.Sprintf("resources/%s/types/models", strings.Split(model, "/")[1]),
+			ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(modelUID, "models"),
 		}); err != nil {
 			return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
 				status.Errorf(codes.Internal, "[Controller] Error %s at %dth model %s: %v", "GetResourceState", idx, model, err.Error())

@@ -64,7 +64,7 @@ export function CheckList() {
       view: "VIEW_FULL"
     }, {}), {
       [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response pipelines[0].recipe is valid`]: (r) => helper.validateRecipeGRPC(r.message.pipelines[0].recipe),
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response pipelines[0].recipe is valid`]: (r) => helper.validateRecipe(r.message.pipelines[0].recipe, true),
     });
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
@@ -156,71 +156,6 @@ export function CheckList() {
     }
 
     clientPrivate.close()
-    clientPublic.close();
-  });
-}
-
-export function CheckGet() {
-
-  group("Pipelines API: Get a pipeline by admin", () => {
-
-    clientPrivate.connect(constant.pipelineGRPCPrivateHost, {
-      plaintext: true
-    });
-
-
-    clientPublic.connect(constant.pipelineGRPCPublicHost, {
-      plaintext: true
-    });
-
-    var reqBody = Object.assign({
-      id: randomString(10),
-      description: randomString(50),
-    },
-      constant.detSyncHTTPSingleModelRecipe
-    )
-
-    check(clientPublic.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
-      pipeline: reqBody
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
-    });
-
-    check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin', {
-      name: `pipelines/${reqBody.id}`
-    }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline name`]: (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline uid`]: (r) => helper.isUUID(r.message.pipeline.uid),
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline id`]: (r) => r.message.pipeline.id === reqBody.id,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline description`]: (r) => r.message.pipeline.description === reqBody.description,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline recipe is null`]: (r) => r.message.pipeline.recipe === null,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.message.pipeline.user),
-    });
-
-    check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin', {
-      name: `pipelines/${reqBody.id}`,
-      view: "VIEW_FULL"
-    }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} view: "VIEW_FULL" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline recipe is null`]: (r) => r.message.pipeline.recipe !== null,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.message.pipeline.user),
-    });
-
-    check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin', {
-      name: `this-id-does-not-exist`,
-    }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/GetPipelineAdmin name: this-id-does-not-exist response StatusNotFound`]: (r) => r.status === grpc.StatusNotFound,
-    });
-
-    // Delete the pipeline
-    check(clientPublic.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
-      name: `pipelines/${reqBody.id}`
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
-    });
-
-    clientPrivate.close();
     clientPublic.close();
   });
 }

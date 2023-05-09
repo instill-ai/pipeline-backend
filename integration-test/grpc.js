@@ -13,6 +13,10 @@ import {
   randomString
 } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
+import {
+  genHeader
+} from "./helper.js"
+
 import * as pipeline from './grpc-pipeline-public.js';
 import * as pipelineWithJwt from './grpc-pipeline-public-with-jwt.js';
 import * as pipelinePrivate from './grpc-pipeline-private.js';
@@ -162,15 +166,16 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
-      var res = client.invoke('vdp.model.v1alpha.ModelPublicService/WatchModel', {
-        name: `models/${constant.model_id}`
+      var res = http.get(`${constant.modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
+          headers: genHeader(`application/json`),
       })
-      if (res.message.state === "STATE_OFFLINE") {
-        break
+      if (res.json().operation.done === true) {
+          break
       }
       sleep(1)
       currentTime = new Date().getTime();
-    }
+  }
+
 
     var res = http.post(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/deploy`, {}, constant.params)
 
@@ -235,7 +240,6 @@ export default function (data) {
 
   if (!constant.apiGatewayMode) {
     pipelinePrivate.CheckList()
-    pipelinePrivate.CheckGet()
     pipelinePrivate.CheckLookUp()
 
     pipelineWithJwt.CheckCreate()

@@ -649,7 +649,21 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 }
 
 func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.WatchPipelineRequest) (*pipelinePB.WatchPipelineResponse, error) {
-	state, err := h.service.GetResourceState(req.GetName())
+	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	if err != nil {
+		return &pipelinePB.WatchPipelineResponse{}, err
+	}
+
+	id, err := resource.GetRscNameID(req.GetName())
+	if err != nil {
+		return &pipelinePB.WatchPipelineResponse{}, err
+	}
+
+	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
+	if err != nil {
+		return &pipelinePB.WatchPipelineResponse{}, err
+	}
+	state, err := h.service.GetResourceState(dbPipeline.UID)
 
 	if err != nil {
 		return &pipelinePB.WatchPipelineResponse{}, err
