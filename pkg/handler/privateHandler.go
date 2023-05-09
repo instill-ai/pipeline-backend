@@ -87,28 +87,6 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 	return &resp, nil
 }
 
-func (h *PrivateHandler) GetPipelineAdmin(ctx context.Context, req *pipelinePB.GetPipelineAdminRequest) (*pipelinePB.GetPipelineAdminResponse, error) {
-
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
-
-	id, err := resource.GetRscNameID(req.GetName())
-	if err != nil {
-		return &pipelinePB.GetPipelineAdminResponse{}, err
-	}
-
-	dbPipeline, err := h.service.GetPipelineByIDAdmin(id, isBasicView)
-	if err != nil {
-		return &pipelinePB.GetPipelineAdminResponse{}, err
-	}
-
-	pbPipeline := DBToPBPipeline(dbPipeline)
-	resp := pipelinePB.GetPipelineAdminResponse{
-		Pipeline: pbPipeline,
-	}
-
-	return &resp, nil
-}
-
 func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelinePB.LookUpPipelineAdminRequest) (*pipelinePB.LookUpPipelineAdminResponse, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource

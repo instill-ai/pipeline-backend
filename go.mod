@@ -11,20 +11,20 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/iancoleman/strcase v0.2.0
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230419012951-e41ce4bf9d1f
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230509000136-ebf3c80b7cd4
 	github.com/instill-ai/usage-client v0.2.3-alpha
 	github.com/instill-ai/x v0.2.0-alpha
 	github.com/knadh/koanf v1.4.3
 	github.com/mennanov/fieldmask-utils v0.6.0
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/rs/cors v1.8.2
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.2
 	go.einride.tech/aip v0.58.1
 	go.temporal.io/sdk v1.17.0
 	go.uber.org/zap v1.23.0
 	golang.org/x/net v0.9.0
 	google.golang.org/grpc v1.54.0
-	google.golang.org/protobuf v1.28.1
+	google.golang.org/protobuf v1.30.0
 	gorm.io/driver/postgres v1.3.9
 	gorm.io/gorm v1.23.8
 )
@@ -64,7 +64,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v5 v5.0.0
-	github.com/stretchr/objx v0.4.0 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	go.temporal.io/api v1.12.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect

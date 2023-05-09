@@ -4,18 +4,19 @@ import (
 	"context"
 	"time"
 
+	"github.com/gofrs/uuid"
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-func (s *service) GetResourceState(pipelineName string) (*pipelinePB.Pipeline_State, error) {
+func (s *service) GetResourceState(pipelineUID uuid.UUID) (*pipelinePB.Pipeline_State, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resourceName := ConvertPipelineToResourceName(pipelineName)
+	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipelines")
 
 	resp, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
-		Name: resourceName,
+		ResourcePermalink: resourcePermalink,
 	})
 
 	if err != nil {
@@ -25,15 +26,15 @@ func (s *service) GetResourceState(pipelineName string) (*pipelinePB.Pipeline_St
 	return resp.Resource.GetPipelineState().Enum(), nil
 }
 
-func (s *service) UpdateResourceState(pipelineName string, state pipelinePB.Pipeline_State, progress *int32) error {
+func (s *service) UpdateResourceState(pipelineUID uuid.UUID, state pipelinePB.Pipeline_State, progress *int32) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resourceName := ConvertPipelineToResourceName(pipelineName)
+	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipelines")
 
 	_, err := s.controllerClient.UpdateResource(ctx, &controllerPB.UpdateResourceRequest{
 		Resource: &controllerPB.Resource{
-			Name: resourceName,
+			ResourcePermalink: resourcePermalink,
 			State: &controllerPB.Resource_PipelineState{
 				PipelineState: state,
 			},
@@ -48,14 +49,14 @@ func (s *service) UpdateResourceState(pipelineName string, state pipelinePB.Pipe
 	return nil
 }
 
-func (s *service) DeleteResourceState(pipelineName string) error {
+func (s *service) DeleteResourceState(pipelineUID uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resourceName := ConvertPipelineToResourceName(pipelineName)
+	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipelines")
 
 	_, err := s.controllerClient.DeleteResource(ctx, &controllerPB.DeleteResourceRequest{
-		Name: resourceName,
+		ResourcePermalink: resourcePermalink,
 	})
 
 	if err != nil {

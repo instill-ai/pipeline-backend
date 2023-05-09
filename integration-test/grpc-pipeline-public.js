@@ -40,7 +40,7 @@ export function CheckCreate() {
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline uid": (r) => helper.isUUID(r.message.pipeline.uid),
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline id": (r) => r.message.pipeline.id === reqBody.id,
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline description": (r) => r.message.pipeline.description === reqBody.description,
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline recipe is valid": (r) => helper.validateRecipeGRPC(r.message.pipeline.recipe),
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline recipe is valid": (r) => helper.validateRecipe(r.message.pipeline.recipe),
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline owner is UUID": (r) => helper.isValidOwner(r.message.pipeline.user),
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline state ACTIVE": (r) => r.message.pipeline.state === "STATE_ACTIVE",
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline mode": (r) => r.message.pipeline.mode == "MODE_SYNC",
@@ -164,7 +164,7 @@ export function CheckList() {
       view: "VIEW_FULL"
     }, {}), {
       [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines view=VIEW_FULL response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines view=VIEW_FULL response pipelines[0].recipe is valid`]: (r) => helper.validateRecipeGRPC(r.message.pipelines[0].recipe),
+      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines view=VIEW_FULL response pipelines[0].recipe is valid`]: (r) => helper.validateRecipe(r.message.pipelines[0].recipe),
     });
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {

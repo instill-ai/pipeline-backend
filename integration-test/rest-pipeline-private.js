@@ -45,7 +45,7 @@ export function CheckList() {
 
     check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?view=VIEW_FULL`, null, constant.params), {
       [`GET /v1alpha/admin/pipelines?view=VIEW_FULL response pipelines[0] has recipe`]: (r) => r.json().pipelines[0].recipe !== null,
-      [`GET /v1alpha/admin/pipelines?view=VIEW_FULL response pipelines[0] recipe is valid`]: (r) => helper.validateRecipe(r.json().pipelines[0].recipe),
+      [`GET /v1alpha/admin/pipelines?view=VIEW_FULL response pipelines[0] recipe is valid`]: (r) => helper.validateRecipe(r.json().pipelines[0].recipe, true),
     });
 
     check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?view=VIEW_BASIC`, null, constant.params), {
@@ -113,51 +113,6 @@ export function CheckList() {
         [`DELETE /v1alpha/pipelines x${reqBodies.length} response status is 204`]: (r) => r.status === 204,
       });
     }
-  });
-}
-
-export function CheckGet() {
-
-  group("Pipelines API: Get a pipeline by admin", () => {
-
-    var reqBody = Object.assign(
-      {
-        id: randomString(10),
-        description: randomString(50),
-      },
-      constant.detSyncHTTPSingleModelRecipe
-    )
-
-    // Create a pipeline
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
-      "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
-    });
-
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/${reqBody.id}`, null, constant.params), {
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response status is 200`]: (r) => r.status === 200,
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline name`]: (r) => r.json().pipeline.name === `pipelines/${reqBody.id}`,
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline uid`]: (r) => helper.isUUID(r.json().pipeline.uid),
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline id`]: (r) => r.json().pipeline.id === reqBody.id,
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline description`]: (r) => r.json().pipeline.description === reqBody.description,
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline recipe is null`]: (r) => r.json().pipeline.recipe === null,
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.json().pipeline.user),
-    });
-
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/${reqBody.id}?view=VIEW_FULL`, null, constant.params), {
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response status is 200`]: (r) => r.status === 200,
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline recipe is not null`]: (r) => r.json().pipeline.recipe !== null,
-      [`GET /v1alpha/admin/pipelines/${reqBody.id} response pipeline owner is UUID`]: (r) => helper.isValidOwner(r.json().pipeline.user),
-    });
-
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines/this-id-does-not-exist`, null, constant.params), {
-      "GET /v1alpha/admin/pipelines/this-id-does-not-exist response status is 404": (r) => r.status === 404,
-    });
-
-    // Delete the pipeline
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.params), {
-      [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
-    });
-
   });
 }
 

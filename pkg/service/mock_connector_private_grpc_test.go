@@ -76,46 +76,6 @@ func (mr *MockConnectorPrivateServiceClientMockRecorder) CheckSourceConnector(ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckSourceConnector", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).CheckSourceConnector), varargs...)
 }
 
-// GetDestinationConnectorAdmin mocks base method.
-func (m *MockConnectorPrivateServiceClient) GetDestinationConnectorAdmin(arg0 context.Context, arg1 *connectorv1alpha.GetDestinationConnectorAdminRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.GetDestinationConnectorAdminResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "GetDestinationConnectorAdmin", varargs...)
-	ret0, _ := ret[0].(*connectorv1alpha.GetDestinationConnectorAdminResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetDestinationConnectorAdmin indicates an expected call of GetDestinationConnectorAdmin.
-func (mr *MockConnectorPrivateServiceClientMockRecorder) GetDestinationConnectorAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDestinationConnectorAdmin", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).GetDestinationConnectorAdmin), varargs...)
-}
-
-// GetSourceConnectorAdmin mocks base method.
-func (m *MockConnectorPrivateServiceClient) GetSourceConnectorAdmin(arg0 context.Context, arg1 *connectorv1alpha.GetSourceConnectorAdminRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.GetSourceConnectorAdminResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "GetSourceConnectorAdmin", varargs...)
-	ret0, _ := ret[0].(*connectorv1alpha.GetSourceConnectorAdminResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetSourceConnectorAdmin indicates an expected call of GetSourceConnectorAdmin.
-func (mr *MockConnectorPrivateServiceClientMockRecorder) GetSourceConnectorAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSourceConnectorAdmin", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).GetSourceConnectorAdmin), varargs...)
-}
-
 // ListDestinationConnectorsAdmin mocks base method.
 func (m *MockConnectorPrivateServiceClient) ListDestinationConnectorsAdmin(arg0 context.Context, arg1 *connectorv1alpha.ListDestinationConnectorsAdminRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.ListDestinationConnectorsAdminResponse, error) {
 	m.ctrl.T.Helper()
