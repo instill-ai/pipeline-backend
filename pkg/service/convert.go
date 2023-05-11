@@ -30,7 +30,7 @@ func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datam
 			Name: recipeRscName.Source,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at source-connectors/%s: %s", "GetSourceConnector", recipeRscName.Source, err)
+		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetSourceConnector", recipeRscName.Source, err)
 	}
 
 	srcColID, err := resource.GetCollectionID(recipeRscName.Source)
@@ -46,7 +46,7 @@ func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datam
 			Name: recipeRscName.Destination,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at destination-connectors/%s: %s", "GetDestinationConnector", recipeRscName.Destination, err)
+		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetDestinationConnector", recipeRscName.Destination, err)
 	}
 
 	dstColID, err := resource.GetCollectionID(recipeRscName.Destination)
@@ -64,7 +64,7 @@ func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datam
 				Name: modelRscName,
 			})
 		if err != nil {
-			return nil, fmt.Errorf("[model-backend] Error %s at models/%s: %s", "GetModel", modelRscName, err)
+			return nil, fmt.Errorf("[model-backend] Error %s at %s: %s", "GetModel", modelRscName, err)
 		}
 
 		modelColID, err := resource.GetCollectionID(modelRscName)
@@ -91,7 +91,7 @@ func (s *service) recipePermalinkToNameAdmin(recipePermalink *datamodel.Recipe) 
 			Permalink: recipePermalink.Source,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at source-connectors/%s: %s", "LookUpSourceConnector", recipePermalink.Source, err)
+		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpSourceConnector", recipePermalink.Source, err)
 	}
 
 	srcColID, err := resource.GetCollectionID(recipePermalink.Source)
@@ -107,7 +107,7 @@ func (s *service) recipePermalinkToNameAdmin(recipePermalink *datamodel.Recipe) 
 			Permalink: recipePermalink.Destination,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at destination-connectors/%s: %s", "LookUpDestinationConnector", recipePermalink.Destination, err)
+		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpDestinationConnector", recipePermalink.Destination, err)
 	}
 
 	dstColID, err := resource.GetCollectionID(recipePermalink.Destination)
@@ -126,7 +126,7 @@ func (s *service) recipePermalinkToNameAdmin(recipePermalink *datamodel.Recipe) 
 				Permalink: modelRscPermalink,
 			})
 		if err != nil {
-			return nil, fmt.Errorf("[model-backend] Error %s at models/%s: %s", "LookUpModel", modelRscPermalink, err)
+			return nil, fmt.Errorf("[model-backend] Error %s at %s: %s", "LookUpModel", modelRscPermalink, err)
 		}
 
 		modelColID, err := resource.GetCollectionID(modelRscPermalink)
@@ -153,7 +153,7 @@ func (s *service) recipePermalinkToName(owner *mgmtPB.User, recipePermalink *dat
 			Permalink: recipePermalink.Source,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at source-connectors/%s: %s", "LookUpSourceConnector", recipePermalink.Source, err)
+		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpSourceConnector", recipePermalink.Source, err)
 	}
 
 	srcColID, err := resource.GetCollectionID(recipePermalink.Source)
@@ -169,7 +169,7 @@ func (s *service) recipePermalinkToName(owner *mgmtPB.User, recipePermalink *dat
 			Permalink: recipePermalink.Destination,
 		})
 	if err != nil {
-		return nil, fmt.Errorf("[connector-backend] Error %s at destination-connectors/%s: %s", "LookUpDestinationConnector", recipePermalink.Destination, err)
+		return nil, fmt.Errorf("[connector-backend] Error %s at %s: %s", "LookUpDestinationConnector", recipePermalink.Destination, err)
 	}
 
 	dstColID, err := resource.GetCollectionID(recipePermalink.Destination)
@@ -188,7 +188,7 @@ func (s *service) recipePermalinkToName(owner *mgmtPB.User, recipePermalink *dat
 				Permalink: modelRscPermalink,
 			})
 		if err != nil {
-			return nil, fmt.Errorf("[model-backend] Error %s at models/%s: %s", "LookUpModel", modelRscPermalink, err)
+			return nil, fmt.Errorf("[model-backend] Error %s at %s: %s", "LookUpModel", modelRscPermalink, err)
 		}
 
 		modelColID, err := resource.GetCollectionID(modelRscPermalink)

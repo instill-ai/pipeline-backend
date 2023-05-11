@@ -74,8 +74,8 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 	}
 
 	pbPipelines := []*pipelinePB.Pipeline{}
-	for _, dbPipeline := range dbPipelines {
-		pbPipelines = append(pbPipelines, DBToPBPipeline(&dbPipeline))
+	for idx := range dbPipelines {
+		pbPipelines = append(pbPipelines, DBToPBPipeline(&dbPipelines[idx]))
 	}
 
 	resp := pipelinePB.ListPipelinesAdminResponse{
