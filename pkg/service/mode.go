@@ -27,7 +27,7 @@ func (s *service) checkMode(owner *mgmtPB.User, recipeRscName *datamodel.Recipe)
 		})
 	if err != nil {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[connector-backend] Error %s at source-connectors/%s: %v",
+			status.Errorf(codes.Internal, "[connector-backend] Error %s at %s: %v",
 				"GetSourceConnector", srcConnRscName, err.Error())
 
 	}
@@ -38,7 +38,7 @@ func (s *service) checkMode(owner *mgmtPB.User, recipeRscName *datamodel.Recipe)
 		})
 	if err != nil {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[connector-backend] Error %s at source-connector-definitions/%s: %v",
+			status.Errorf(codes.Internal, "[connector-backend] Error %s at %s: %v",
 				"GetSourceConnectorDefinition", srcConnResp.GetSourceConnector().GetSourceConnectorDefinition(), err.Error())
 	}
 
@@ -50,7 +50,7 @@ func (s *service) checkMode(owner *mgmtPB.User, recipeRscName *datamodel.Recipe)
 		})
 	if err != nil {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[connector-backend] Error %s at destination-connectors/%s: %v",
+			status.Errorf(codes.Internal, "[connector-backend] Error %s at %s: %v",
 				"GetDestinationConnector", dstConnRscName, err.Error())
 	}
 
@@ -60,7 +60,7 @@ func (s *service) checkMode(owner *mgmtPB.User, recipeRscName *datamodel.Recipe)
 		})
 	if err != nil {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[connector-backend] Error %s at source-connector-definitions/%s: %v",
+			status.Errorf(codes.Internal, "[connector-backend] Error %s at %s: %v",
 				"GetDestinationConnectorDefinitionRequest", dstConnResp.GetDestinationConnector().GetDestinationConnectorDefinition(), err.Error())
 	}
 
