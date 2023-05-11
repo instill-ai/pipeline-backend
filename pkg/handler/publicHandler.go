@@ -158,8 +158,8 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 	}
 
 	pbPipelines := []*pipelinePB.Pipeline{}
-	for _, dbPipeline := range dbPipelines {
-		pbPipelines = append(pbPipelines, DBToPBPipeline(&dbPipeline))
+	for idx := range dbPipelines {
+		pbPipelines = append(pbPipelines, DBToPBPipeline(&dbPipelines[idx]))
 	}
 
 	resp := pipelinePB.ListPipelinesResponse{
