@@ -43,6 +43,11 @@ export function validateRecipe(recipe, isPrivate) {
       console.log("Recipe component resource_name field should be permalink")
       return false
     }
+    if (recipe.components[i].resource_detail === {} || recipe.components[i].resource_detail === null || recipe.components[i].resource_detail === "") {
+      console.log("Recipe component resource_detail should not be empty")
+      return false
+    }
+
   }
 
   return true;
@@ -70,6 +75,10 @@ export function validateRecipeGRPC(recipe, isPrivate) {
       return false
     } else if (isPrivate && !isUUID(recipe.components[i].resourceName.split('/')[1])) {
       console.log("Recipe component resource_name field should be permalink")
+      return false
+    }
+    if (recipe.components[i].resourceDetail === {} || recipe.components[i].resourceDetail === null || recipe.components[i].resourceDetail === "") {
+      console.log("Recipe component resource_detail should not be empty")
       return false
     }
   }

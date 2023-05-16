@@ -135,7 +135,6 @@ func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipel
 	ownerPermalink := GenOwnerPermalink(owner)
 	dbPipeline.Owner = ownerPermalink
 
-	recipeRscName := dbPipeline.Recipe
 	recipePermalink, err := s.recipeNameToPermalink(owner, dbPipeline.Recipe)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -157,12 +156,21 @@ func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipel
 		return nil, err
 	}
 
+	rErr := s.includeResourceDetailInRecipe(dbCreatedPipeline.Recipe)
+	if rErr != nil {
+		return nil, rErr
+	}
+	createdCecipeRscName, err := s.recipePermalinkToName(dbCreatedPipeline.Recipe)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
 	// Add resource entry to controller to start checking components' state
 	if err := s.UpdateResourceState(dbCreatedPipeline.UID, pipelinePB.Pipeline_State(resourceState), nil); err != nil {
 		return nil, err
 	}
 
-	dbCreatedPipeline.Recipe = recipeRscName
+	dbCreatedPipeline.Recipe = createdCecipeRscName
 
 	return dbCreatedPipeline, nil
 }
@@ -176,8 +184,12 @@ func (s *service) ListPipelines(owner *mgmtPB.User, pageSize int64, pageToken st
 	}
 
 	if !isBasicView {
-		for idx, dbPipeline := range dbPipelines {
-			recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
+		for idx := range dbPipelines {
+			err := s.includeResourceDetailInRecipe(dbPipelines[idx].Recipe)
+			if err != nil {
+				return nil, 0, "", err
+			}
+			recipeRscName, err := s.recipePermalinkToName(dbPipelines[idx].Recipe)
 			if err != nil {
 				return nil, 0, "", status.Errorf(codes.Internal, err.Error())
 			}
@@ -194,6 +206,14 @@ func (s *service) ListPipelinesAdmin(pageSize int64, pageToken string, isBasicVi
 	if err != nil {
 		return nil, 0, "", err
 	}
+	if !isBasicView {
+		for idx := range dbPipelines {
+			err := s.includeResourceDetailInRecipe(dbPipelines[idx].Recipe)
+			if err != nil {
+				return nil, 0, "", err
+			}
+		}
+	}
 
 	return dbPipelines, ps, pt, nil
 }
@@ -208,6 +228,10 @@ func (s *service) GetPipelineByID(id string, owner *mgmtPB.User, isBasicView boo
 	}
 
 	if !isBasicView {
+		err := s.includeResourceDetailInRecipe(dbPipeline.Recipe)
+		if err != nil {
+			return nil, err
+		}
 		recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
@@ -228,6 +252,10 @@ func (s *service) GetPipelineByUID(uid uuid.UUID, owner *mgmtPB.User, isBasicVie
 	}
 
 	if !isBasicView {
+		err := s.includeResourceDetailInRecipe(dbPipeline.Recipe)
+		if err != nil {
+			return nil, err
+		}
 		recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
@@ -243,6 +271,12 @@ func (s *service) GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datam
 	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(uid, isBasicView)
 	if err != nil {
 		return nil, err
+	}
+	if !isBasicView {
+		err := s.includeResourceDetailInRecipe(dbPipeline.Recipe)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return dbPipeline, nil
@@ -297,6 +331,11 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 	// Update resource entry in controller to start checking components' state
 	if err := s.UpdateResourceState(dbPipeline.UID, pipelinePB.Pipeline_State(resourceState), nil); err != nil {
 		return nil, err
+	}
+
+	rErr := s.includeResourceDetailInRecipe(dbPipeline.Recipe)
+	if rErr != nil {
+		return nil, rErr
 	}
 
 	recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
@@ -533,6 +572,9 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 					ModelOutputs:        modelOutputs,
 					Recipe: func() *pipelinePB.Recipe {
 						if dbPipeline.Recipe != nil {
+							if err := s.excludeResourceDetailFromRecipe(dbPipeline.Recipe); err != nil {
+								logger.Error(err.Error())
+							}
 							b, err := json.Marshal(dbPipeline.Recipe)
 							if err != nil {
 								logger.Error(err.Error())
@@ -924,6 +966,9 @@ func (s *service) TriggerPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline
 					logger, _ := logger.GetZapLogger()
 
 					if dbPipeline.Recipe != nil {
+						if err := s.excludeResourceDetailFromRecipe(dbPipeline.Recipe); err != nil {
+							logger.Error(err.Error())
+						}
 						b, err := json.Marshal(dbPipeline.Recipe)
 						if err != nil {
 							logger.Error(err.Error())

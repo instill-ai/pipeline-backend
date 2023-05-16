@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -26,9 +28,10 @@ func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datam
 	recipePermalink := &datamodel.Recipe{Version: recipeRscName.Version}
 	for _, component := range recipeRscName.Components {
 		componentPermalink := &datamodel.Component{
-			Id:           component.Id,
-			Metadata:     component.Metadata,
-			Dependencies: component.Dependencies,
+			Id:             component.Id,
+			Metadata:       component.Metadata,
+			Dependencies:   component.Dependencies,
+			ResourceDetail: component.ResourceDetail,
 		}
 
 		permalink := ""
@@ -56,9 +59,10 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 
 	for _, componentPermalink := range recipePermalink.Components {
 		component := &datamodel.Component{
-			Id:           componentPermalink.Id,
-			Metadata:     componentPermalink.Metadata,
-			Dependencies: componentPermalink.Dependencies,
+			Id:             componentPermalink.Id,
+			Metadata:       componentPermalink.Metadata,
+			Dependencies:   componentPermalink.Dependencies,
+			ResourceDetail: componentPermalink.ResourceDetail,
 		}
 
 		name := ""
@@ -192,6 +196,138 @@ func (s *service) modelPermalinkToName(permalink string) (string, error) {
 	}
 
 	return modelColID + "/" + lookUpModelResp.Model.GetId(), nil
+}
+
+func (s *service) excludeResourceDetailFromRecipe(recipe *datamodel.Recipe) error {
+
+	for idx := range recipe.Components {
+		recipe.Components[idx].ResourceDetail = &structpb.Struct{}
+	}
+	return nil
+}
+
+func (s *service) includeResourceDetailInRecipe(recipe *datamodel.Recipe) error {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	for idx := range recipe.Components {
+		switch GetDefinitionType(recipe.Components[idx]) {
+		case SourceConnector:
+			resp, err := s.connectorPrivateServiceClient.LookUpSourceConnectorAdmin(ctx, &connectorPB.LookUpSourceConnectorAdminRequest{
+				Permalink: recipe.Components[idx].ResourceName,
+			})
+			if err != nil {
+				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetSourceConnector", recipe.Components[idx].ResourceName, err)
+			}
+
+			detail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetSourceConnector())
+			if marshalErr != nil {
+				return marshalErr
+			}
+			unmarshalErr := detail.UnmarshalJSON(json)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+
+			defResp, err := s.connectorPublicServiceClient.GetSourceConnectorDefinition(ctx, &connectorPB.GetSourceConnectorDefinitionRequest{
+				Name: resp.GetSourceConnector().GetSourceConnectorDefinition(),
+			})
+			if err != nil {
+				return err
+			}
+			defDetail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			defJson, defMarshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(defResp.GetSourceConnectorDefinition())
+			if defMarshalErr != nil {
+				return defMarshalErr
+			}
+			defUnmarshalErr := defDetail.UnmarshalJSON(defJson)
+			if defUnmarshalErr != nil {
+				return defUnmarshalErr
+			}
+			detail.GetFields()["source_connector_definition_detail"] = structpb.NewStructValue(defDetail)
+			recipe.Components[idx].ResourceDetail = detail
+
+		case DestinationConnector:
+			resp, err := s.connectorPrivateServiceClient.LookUpDestinationConnectorAdmin(ctx, &connectorPB.LookUpDestinationConnectorAdminRequest{
+				Permalink: recipe.Components[idx].ResourceName,
+			})
+			if err != nil {
+				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetDestinationConnector", recipe.Components[idx].ResourceName, err)
+			}
+			detail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetDestinationConnector())
+			if marshalErr != nil {
+				return marshalErr
+			}
+			unmarshalErr := detail.UnmarshalJSON(json)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+
+			defResp, err := s.connectorPublicServiceClient.GetDestinationConnectorDefinition(ctx, &connectorPB.GetDestinationConnectorDefinitionRequest{
+				Name: resp.GetDestinationConnector().GetDestinationConnectorDefinition(),
+			})
+			if err != nil {
+				return err
+			}
+			defDetail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			defJson, defMarshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(defResp.GetDestinationConnectorDefinition())
+			if defMarshalErr != nil {
+				return defMarshalErr
+			}
+			defUnmarshalErr := defDetail.UnmarshalJSON(defJson)
+			if defUnmarshalErr != nil {
+				return defUnmarshalErr
+			}
+			detail.GetFields()["destination_connector_definition_detail"] = structpb.NewStructValue(defDetail)
+			recipe.Components[idx].ResourceDetail = detail
+
+		case Model:
+			resp, err := s.modelPrivateServiceClient.LookUpModelAdmin(ctx, &modelPB.LookUpModelAdminRequest{
+				Permalink: recipe.Components[idx].ResourceName,
+			})
+			if err != nil {
+				return fmt.Errorf("[model-backend] Error %s at %s: %s", "GetModel", recipe.Components[idx].ResourceName, err)
+			}
+			detail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetModel())
+			if marshalErr != nil {
+				return marshalErr
+			}
+			unmarshalErr := detail.UnmarshalJSON(json)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+
+			defResp, err := s.modelPublicServiceClient.GetModelDefinition(ctx, &modelPB.GetModelDefinitionRequest{
+				Name: resp.Model.GetModelDefinition(),
+			})
+			if err != nil {
+				return err
+			}
+			defDetail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			defJson, defMarshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(defResp.GetModelDefinition())
+			if defMarshalErr != nil {
+				return defMarshalErr
+			}
+			defUnmarshalErr := defDetail.UnmarshalJSON(defJson)
+			if defUnmarshalErr != nil {
+				return defUnmarshalErr
+			}
+			detail.GetFields()["model_definition_detail"] = structpb.NewStructValue(defDetail)
+			recipe.Components[idx].ResourceDetail = detail
+		}
+
+	}
+	return nil
 }
 
 func cvtModelTaskOutputToPipelineTaskOutput(modelTaskOutputs []*modelPB.TaskOutput) []*pipelinePB.TaskOutput {
