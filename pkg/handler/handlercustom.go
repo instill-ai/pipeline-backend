@@ -16,6 +16,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/sterr"
@@ -24,8 +25,8 @@ import (
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 )
 
-// HandleTriggerSyncPipelineBinaryFileUpload is for POST multipart form data
-func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+// HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
+func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, bool) {
 	logger, _ := logger.GetZapLogger()
 
 	contentType := req.Header.Get("Content-Type")
@@ -47,7 +48,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
 	if id == "" {
@@ -63,7 +64,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
 	var owner *mgmtPB.User
@@ -79,7 +80,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		ownerPermalink, err := s.GetRedisClient().Get(context.Background(), fmt.Sprintf(constant.AccessTokenKeyFormat, apiToken)).Result()
 		if err != nil {
 			logger.Error(err.Error())
-			return
+			return nil, nil, nil, nil, false
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -88,7 +89,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		resp, err := s.GetMgmtPrivateServiceClient().LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: ownerPermalink})
 		if err != nil {
 			logger.Error(err.Error())
-			return
+			return nil, nil, nil, nil, false
 		}
 		owner = resp.GetUser()
 	} else if headerOwnerUId != "" {
@@ -108,7 +109,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
-			return
+			return nil, nil, nil, nil, false
 		}
 
 		ownerPermalink := "users/" + headerOwnerUId
@@ -128,7 +129,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
-			return
+			return nil, nil, nil, nil, false
 		}
 		owner = resp.GetUser()
 
@@ -149,7 +150,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
-			return
+			return nil, nil, nil, nil, false
 		}
 
 		ownerName := "users/" + headerOwnerId
@@ -169,7 +170,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
-			return
+			return nil, nil, nil, nil, false
 		}
 		owner = resp.GetUser()
 	}
@@ -189,7 +190,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
 	model, err := s.GetModelByName(owner, service.GetModelsFromRecipe(dbPipeline.Recipe)[0])
@@ -207,7 +208,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
 	if err := req.ParseMultipartForm(4 << 20); err != nil {
@@ -226,7 +227,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
 	var inp interface{}
@@ -259,10 +260,50 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
+		return nil, nil, nil, nil, false
+	}
+
+	return owner, dbPipeline, model, inp, true
+
+}
+
+// HandleTriggerSyncPipelineBinaryFileUpload is for POST multipart form data
+func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	logger, _ := logger.GetZapLogger()
+
+	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(s, w, req, pathParams)
+	if !success {
 		return
 	}
 
 	obj, err := s.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Error(err.Error())
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(200)
+	ret, _ := protojson.MarshalOptions{
+		EmitUnpopulated: true,
+		UseProtoNames:   true,
+	}.Marshal(obj)
+	_, _ = w.Write(ret)
+
+}
+
+// HandleTriggerAsyncPipelineBinaryFileUpload is for POST multipart form data
+func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	logger, _ := logger.GetZapLogger()
+
+	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(s, w, req, pathParams)
+
+	if !success {
+		return
+	}
+
+	obj, err := s.TriggerAsyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.Error(err.Error())

@@ -219,6 +219,9 @@ func main() {
 	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-sync-multipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerSyncPipelineBinaryFileUpload)); err != nil {
 		logger.Fatal(err.Error())
 	}
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-async-multipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerAsyncPipelineBinaryFileUpload)); err != nil {
+		logger.Fatal(err.Error())
+	}
 
 	// Start usage reporter
 	var usg usage.Usage

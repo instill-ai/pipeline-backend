@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/iancoleman/strcase"
@@ -27,6 +28,7 @@ import (
 	"github.com/instill-ai/x/sterr"
 
 	healthcheckPB "github.com/instill-ai/protogen-go/vdp/healthcheck/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
@@ -35,6 +37,11 @@ import (
 type PublicHandler struct {
 	pipelinePB.UnimplementedPipelinePublicServiceServer
 	service service.Service
+}
+
+type Streamer interface {
+	Recv() (*pipelinePB.TriggerPipelineBinaryFileUploadRequest, error)
+	Context() context.Context
 }
 
 // NewPublicHandler initiates a handler instance
@@ -413,33 +420,33 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 	return &resp, nil
 }
 
-func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*mgmtPB.User, *datamodel.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger()
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
-		return &pipelinePB.TriggerSyncPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
-		return &pipelinePB.TriggerSyncPipelineResponse{}, err
+		return nil, nil, err
 	}
 
 	id, err := resource.GetRscNameID(req.GetName())
 	if err != nil {
-		return &pipelinePB.TriggerSyncPipelineResponse{}, err
+		return nil, nil, err
 	}
 
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
-		return &pipelinePB.TriggerSyncPipelineResponse{}, err
+		return nil, nil, err
 	}
 
 	sources := service.GetSourcesFromRecipe(dbPipeline.Recipe)
 	if len(sources) == 0 {
-		return nil, status.Errorf(codes.Internal, "there is no source in pipeline's recipe")
+		return nil, nil, status.Errorf(codes.Internal, "there is no source in pipeline's recipe")
 	}
 
 	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
@@ -458,7 +465,7 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			return &pipelinePB.TriggerSyncPipelineResponse{}, st.Err()
+			return nil, nil, st.Err()
 
 		case strings.Contains(sources[0], "grpc") && resource.IsGWProxied(ctx):
 			st, err := sterr.CreateErrorPreconditionFailure(
@@ -474,45 +481,70 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			return &pipelinePB.TriggerSyncPipelineResponse{}, st.Err()
+			return nil, nil, st.Err()
 		}
+	}
+
+	return owner, dbPipeline, nil
+
+}
+
+func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
+	if err != nil {
+		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
 
 	resp, err := h.service.TriggerSyncPipeline(req, owner, dbPipeline)
 	if err != nil {
 		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
-
 	return resp, nil
-
 }
 
-func (h *PublicHandler) TriggerSyncPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerSyncPipelineBinaryFileUploadServer) error {
+func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
-	owner, err := resource.GetOwner(stream.Context(), h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
 	if err != nil {
-		return err
+		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
 
-	data, err := stream.Recv()
+	// TODO: use temporal workflow here
+	go h.service.TriggerSyncPipeline(req, owner, dbPipeline)
+
+	return &pipelinePB.TriggerAsyncPipelineResponse{
+		Operation: &longrunningpb.Operation{
+			Done: true,
+		},
+	}, nil
+}
+
+func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, error) {
+
+	owner, err := resource.GetOwner(streamer.Context(), h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	data, err := streamer.Recv()
 
 	if err != nil {
-		return status.Errorf(codes.Unknown, "Cannot receive trigger info")
+		return nil, nil, nil, nil, status.Errorf(codes.Unknown, "Cannot receive trigger info")
 	}
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(data, triggerBinaryRequiredFields); err != nil {
-		return status.Error(codes.InvalidArgument, err.Error())
+		return nil, nil, nil, nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	id, err := resource.GetRscNameID(data.GetName())
 	if err != nil {
-		return err
+		return nil, nil, nil, nil, err
 	}
 
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
-		return err
+		return nil, nil, nil, nil, err
 	}
 
 	var textToImageInput service.TextToImageInput
@@ -527,26 +559,26 @@ func (h *PublicHandler) TriggerSyncPipelineBinaryFileUpload(stream pipelinePB.Pi
 	models := service.GetModelsFromRecipe(dbPipeline.Recipe)
 
 	for {
-		data, err := stream.Recv()
+		data, err := streamer.Recv()
 		if err != nil {
 			if err == io.EOF {
 				break
 			}
-			return status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
+			return nil, nil, nil, nil, status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
 		}
 		if firstChunk { // Get one time for first chunk.
 			firstChunk = false
 			pipelineName := data.GetName()
 			pipeline, err := h.service.GetPipelineByID(strings.TrimSuffix(pipelineName, "pipelines/"), owner, false)
 			if err != nil {
-				return status.Errorf(codes.Internal, "do not find the pipeline: %s", err.Error())
+				return nil, nil, nil, nil, status.Errorf(codes.Internal, "do not find the pipeline: %s", err.Error())
 			}
 			if pipeline.Recipe == nil || len(models) == 0 {
-				return status.Errorf(codes.Internal, "there is no model in pipeline's recipe")
+				return nil, nil, nil, nil, status.Errorf(codes.Internal, "there is no model in pipeline's recipe")
 			}
 			model, err = h.service.GetModelByName(owner, models[0])
 			if err != nil {
-				return status.Errorf(codes.Internal, "could not find model: %s", err.Error())
+				return nil, nil, nil, nil, status.Errorf(codes.Internal, "could not find model: %s", err.Error())
 			}
 
 			switch model.Task {
@@ -598,7 +630,7 @@ func (h *PublicHandler) TriggerSyncPipelineBinaryFileUpload(stream pipelinePB.Pi
 					Seed:          data.TaskInput.GetTextGeneration().GetSeed(),
 				}
 			default:
-				return fmt.Errorf("unsupported task input type")
+				return nil, nil, nil, nil, fmt.Errorf("unsupported task input type")
 			}
 			continue
 		}
@@ -617,12 +649,11 @@ func (h *PublicHandler) TriggerSyncPipelineBinaryFileUpload(stream pipelinePB.Pi
 		case modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
 			allContentFiles = append(allContentFiles, data.TaskInput.GetSemanticSegmentation().Content...)
 		default:
-			return fmt.Errorf("unsupported task input type")
+			return nil, nil, nil, nil, fmt.Errorf("unsupported task input type")
 		}
 
 	}
 
-	var obj *pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse
 	switch model.Task {
 	case modelPB.Model_TASK_CLASSIFICATION,
 		modelPB.Model_TASK_DETECTION,
@@ -631,26 +662,52 @@ func (h *PublicHandler) TriggerSyncPipelineBinaryFileUpload(stream pipelinePB.Pi
 		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
 		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
 		if len(fileLengths) == 0 {
-			return status.Errorf(codes.InvalidArgument, "no file lengths")
+			return nil, nil, nil, nil, status.Errorf(codes.InvalidArgument, "no file lengths")
 		}
 		if len(allContentFiles) == 0 {
-			return status.Errorf(codes.InvalidArgument, "no content files")
+			return nil, nil, nil, nil, status.Errorf(codes.InvalidArgument, "no content files")
 		}
 		imageInput := service.ImageInput{
 			Content:     allContentFiles,
 			FileLengths: fileLengths,
 		}
-		obj, err = h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &imageInput)
+		return owner, dbPipeline, model, &imageInput, nil
 	case modelPB.Model_TASK_TEXT_TO_IMAGE:
-		obj, err = h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &textToImageInput)
+		return owner, dbPipeline, model, &textToImageInput, nil
 	case modelPB.Model_TASK_TEXT_GENERATION:
-		obj, err = h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &textGenerationInput)
+		return owner, dbPipeline, model, &textGenerationInput, nil
 	}
+
+	return nil, nil, nil, nil, status.Errorf(codes.InvalidArgument, "unsupported task")
+}
+
+func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerSyncPipelineBinaryFileUploadServer) error {
+
+	owner, dbPipeline, model, input, err := h.PreTriggerPipelineBinaryFileUpload(stream)
+	if err != nil {
+		return err
+	}
+
+	obj, err := h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &input)
 	if err != nil {
 		return err
 	}
 
 	stream.SendAndClose(obj)
+
+	return nil
+}
+
+func (h *PublicHandler) TriggerAsyncPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerAsyncPipelineBinaryFileUploadServer) error {
+
+	owner, dbPipeline, model, input, err := h.PreTriggerPipelineBinaryFileUpload(stream)
+	if err != nil {
+		return err
+	}
+
+	go h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &input)
+
+	stream.SendAndClose(&pipelinePB.TriggerAsyncPipelineResponse{})
 
 	return nil
 }
