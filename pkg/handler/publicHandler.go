@@ -413,28 +413,28 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 	return &resp, nil
 }
 
-func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
+func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerSyncPipelineResponse, error) {
 
 	logger, _ := logger.GetZapLogger()
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
-		return &pipelinePB.TriggerPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &pipelinePB.TriggerSyncPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
-		return &pipelinePB.TriggerPipelineResponse{}, err
+		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
 
 	id, err := resource.GetRscNameID(req.GetName())
 	if err != nil {
-		return &pipelinePB.TriggerPipelineResponse{}, err
+		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
 
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
-		return &pipelinePB.TriggerPipelineResponse{}, err
+		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
 
 	sources := service.GetSourcesFromRecipe(dbPipeline.Recipe)
@@ -458,7 +458,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			return &pipelinePB.TriggerPipelineResponse{}, st.Err()
+			return &pipelinePB.TriggerSyncPipelineResponse{}, st.Err()
 
 		case strings.Contains(sources[0], "grpc") && resource.IsGWProxied(ctx):
 			st, err := sterr.CreateErrorPreconditionFailure(
@@ -474,20 +474,20 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 			if err != nil {
 				logger.Error(err.Error())
 			}
-			return &pipelinePB.TriggerPipelineResponse{}, st.Err()
+			return &pipelinePB.TriggerSyncPipelineResponse{}, st.Err()
 		}
 	}
 
-	resp, err := h.service.TriggerPipeline(req, owner, dbPipeline)
+	resp, err := h.service.TriggerSyncPipeline(req, owner, dbPipeline)
 	if err != nil {
-		return &pipelinePB.TriggerPipelineResponse{}, err
+		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
 
 	return resp, nil
 
 }
 
-func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerPipelineBinaryFileUploadServer) error {
+func (h *PublicHandler) TriggerSyncPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerSyncPipelineBinaryFileUploadServer) error {
 
 	owner, err := resource.GetOwner(stream.Context(), h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
@@ -622,7 +622,7 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 
 	}
 
-	var obj *pipelinePB.TriggerPipelineBinaryFileUploadResponse
+	var obj *pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse
 	switch model.Task {
 	case modelPB.Model_TASK_CLASSIFICATION,
 		modelPB.Model_TASK_DETECTION,
@@ -640,11 +640,11 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 			Content:     allContentFiles,
 			FileLengths: fileLengths,
 		}
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &imageInput)
+		obj, err = h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &imageInput)
 	case modelPB.Model_TASK_TEXT_TO_IMAGE:
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &textToImageInput)
+		obj, err = h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &textToImageInput)
 	case modelPB.Model_TASK_TEXT_GENERATION:
-		obj, err = h.service.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &textGenerationInput)
+		obj, err = h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &textGenerationInput)
 	}
 	if err != nil {
 		return err

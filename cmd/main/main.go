@@ -216,7 +216,7 @@ func main() {
 	)
 
 	// Register custom route for POST multipart form data
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-multipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerPipelineBinaryFileUpload)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-sync-multipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerSyncPipelineBinaryFileUpload)); err != nil {
 		logger.Fatal(err.Error())
 	}
 

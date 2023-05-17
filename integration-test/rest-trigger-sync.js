@@ -33,17 +33,17 @@ export function CheckTriggerSyncSingleImageSingleModel() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync`, JSON.stringify(payloadImageURL), constant.params), {
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     var payloadImageBase64 = {
@@ -54,46 +54,46 @@ export function CheckTriggerSyncSingleImageSingleModel() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync`, JSON.stringify(payloadImageBase64), constant.params), {
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     const fd = new FormData();
     fd.append("file", http.file(constant.dogImg, "dog.jpg"));
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
     }), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === fd.parts.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     const fdWrong = new FormData();
     fdWrong.append("file", "some fake binary string that won't work for sure");
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fdWrong.boundary}`,
       },
     }), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response status is 422 with wrong request file`]: (r) => r.status === 422,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response status is 422 with wrong request file`]: (r) => r.status === 422,
     });
 
     check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
@@ -112,8 +112,8 @@ export function CheckTriggerSyncSingleImageSingleModel() {
       "POST /v1alpha/pipelines response status is 201 (gRPC pipeline)": (r) => r.status === 201,
     });
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
-      [`POST /v1alpha/pipelines/${reqGRPC.id}/trigger (url) response status is 422 (gRPC pipeline triggered by HTTP)`]: (r) => r.status === 422,
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}/trigger-sync`, JSON.stringify(payloadImageURL), constant.params), {
+      [`POST /v1alpha/pipelines/${reqGRPC.id}/trigger-sync (url) response status is 422 (gRPC pipeline triggered by HTTP)`]: (r) => r.status === 422,
     })
 
     check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}`, null, constant.params), {
@@ -165,17 +165,17 @@ export function CheckTriggerSyncMultiImageSingleModel() {
       ]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response output[0].detection_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync`, JSON.stringify(payloadImageURL), constant.params), {
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response output[0].detection_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     var payloadImageBase64 = {
@@ -193,17 +193,17 @@ export function CheckTriggerSyncMultiImageSingleModel() {
       ]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response output[0].detection_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync`, JSON.stringify(payloadImageBase64), constant.params), {
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response output[0].detection_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === payloadImageBase64.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     const fd = new FormData();
@@ -211,21 +211,21 @@ export function CheckTriggerSyncMultiImageSingleModel() {
     fd.append("file", http.file(constant.catImg, "cat.jpg"));
     fd.append("file", http.file(constant.bearImg, "bear.jpg"));
     fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
     }), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response output[0].detection_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === fd.parts.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response output[0].detection_outputs.length`]: (r) => r.json().model_outputs[0].task_outputs.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task`]: (r) => r.json().model_outputs[0].task === "TASK_DETECTION",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].model`]: (r) => r.json().model_outputs[0].model === constant.model_name,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].detection.objects.length`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects.length === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].index == data_mapping_indices[0]`]: (r) => r.json().model_outputs[0].task_outputs[0].index === r.json().data_mapping_indices[0],
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].detection.objects[0].category`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].category === "test",
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].detection.objects[0].score`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].score === 1,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart response model_outputs[0].task_outputs[0].detection.objects[0].bounding_box`]: (r) => r.json().model_outputs[0].task_outputs[0].detection.objects[0].bounding_box !== undefined,
     });
 
     // Delete the pipeline
@@ -278,9 +278,9 @@ export function CheckTriggerSyncMultiImageMultiModel() {
         }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync`, JSON.stringify(payloadImageURL), constant.params), {
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (url) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
     });
 
     var payloadImageBase64 = {
@@ -295,9 +295,9 @@ export function CheckTriggerSyncMultiImageMultiModel() {
       }]
     };
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageBase64), constant.params), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync`, JSON.stringify(payloadImageBase64), constant.params), {
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync (base64) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
     });
 
     const fd = new FormData();
@@ -305,13 +305,13 @@ export function CheckTriggerSyncMultiImageMultiModel() {
     fd.append("file", http.file(constant.catImg, "cat.jpg"));
     fd.append("file", http.file(constant.bearImg, "bear.jpg"));
     fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-multipart`, fd.body(), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart`, fd.body(), {
       headers: {
         "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
       },
     }), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart (multipart) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-multipart (multipart) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart (multipart) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger-sync-multipart (multipart) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
     });
 
     // Delete the pipeline

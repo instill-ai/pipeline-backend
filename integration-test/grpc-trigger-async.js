@@ -48,12 +48,12 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
       }]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqBody.id}`,
       task_inputs: payloadImageURL["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
     });
 
     var payloadImageBase64 = {
@@ -64,12 +64,12 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
       }]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqBody.id}`,
       task_inputs: payloadImageBase64["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
     });
 
     check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
@@ -120,12 +120,12 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
       }]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqBody.id}`,
       task_inputs: payloadImageURL["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
     });
 
     var payloadImageBase64 = {
@@ -146,12 +146,12 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
       ]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqBody.id}`,
       task_inputs: payloadImageBase64["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
     });
 
     check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
@@ -205,12 +205,12 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
       }]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqBody.id}`,
       task_inputs: payloadImageURL["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
     });
 
     var payloadImageBase64 = {
@@ -232,12 +232,12 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
       ]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqBody.id}`,
       task_inputs: payloadImageBase64["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
     });
 
     // Delete the pipeline

@@ -24,8 +24,8 @@ import (
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 )
 
-// HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
-func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+// HandleTriggerSyncPipelineBinaryFileUpload is for POST multipart form data
+func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 	logger, _ := logger.GetZapLogger()
 
 	contentType := req.Header.Get("Content-Type")
@@ -36,7 +36,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			"[handler] content-type not supported",
 			[]*errdetails.PreconditionFailure_Violation{
 				{
-					Type:        "TriggerPipelineBinaryFileUpload",
+					Type:        "TriggerSyncPipelineBinaryFileUpload",
 					Subject:     fmt.Sprintf("id %s", id),
 					Description: fmt.Sprintf("content-type %s not supported", contentType),
 				},
@@ -215,7 +215,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			"[handler] error while get model information",
 			[]*errdetails.PreconditionFailure_Violation{
 				{
-					Type:        "TriggerPipelineBinaryFileUpload",
+					Type:        "TriggerSyncPipelineBinaryFileUpload",
 					Subject:     fmt.Sprintf("id %s", id),
 					Description: err.Error(),
 				},
@@ -248,7 +248,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			"[handler] error while reading file from request",
 			[]*errdetails.PreconditionFailure_Violation{
 				{
-					Type:        "TriggerPipelineBinaryFileUpload",
+					Type:        "TriggerSyncPipelineBinaryFileUpload",
 					Subject:     fmt.Sprintf("id %s", id),
 					Description: err.Error(),
 				},
@@ -262,7 +262,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		return
 	}
 
-	obj, err := s.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
+	obj, err := s.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.Error(err.Error())
@@ -287,7 +287,7 @@ func errorResponse(w http.ResponseWriter, s *status.Status) {
 			switch v := s.Details()[0].(type) {
 			case *errdetails.PreconditionFailure:
 				switch v.Violations[0].Type {
-				case "TriggerPipelineBinaryFileUpload":
+				case "TriggerSyncPipelineBinaryFileUpload":
 					if strings.Contains(v.Violations[0].Description, "content-type") {
 						w.WriteHeader(http.StatusUnsupportedMediaType)
 					} else {

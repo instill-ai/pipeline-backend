@@ -134,7 +134,7 @@ func TestCreatePipeline(t *testing.T) {
 // 	})
 // }
 
-// func TestTriggerPipeline(t *testing.T) {
+// func TestTriggerSyncPipeline(t *testing.T) {
 // 	t.Run("normal-url", func(t *testing.T) {
 // 		ctrl := gomock.NewController(t)
 
@@ -165,7 +165,7 @@ func TestCreatePipeline(t *testing.T) {
 
 // 		s := service.NewService(mockRepository, mockConnectorServiceClient, mockModelServiceClient)
 
-// 		_, err := s.TriggerPipeline(&pipelinePB.TriggerPipelineRequest{Inputs: pipelineInputs}, &normalPipeline)
+// 		_, err := s.TriggerSyncPipeline(&pipelinePB.TriggerPipelineRequest{Inputs: pipelineInputs}, &normalPipeline)
 
 // 		assert.NoError(t, err)
 // 	})

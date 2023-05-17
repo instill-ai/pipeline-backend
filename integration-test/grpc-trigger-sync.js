@@ -43,20 +43,20 @@ export function CheckTriggerSyncSingleImageSingleModel() {
       }]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqGRPC.id}`,
       task_inputs: payloadImageURL["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs.length`]: (r) => r.message.modelOutputs[0].taskOutputs.length === payloadImageURL.task_inputs.length,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].task`]: (r) => r.message.modelOutputs[0].task === "TASK_DETECTION",
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].model`]: (r) => r.message.modelOutputs[0].model === constant.model_name,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects.length`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects.length === 1,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].index == dataMappingIndices[0]`]: (r) => r.message.modelOutputs[0].taskOutputs[0].index === r.message.dataMappingIndices[0],
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].category`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].category === "test",
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].score`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].score === 1,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox !== undefined,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs.length`]: (r) => r.message.modelOutputs[0].taskOutputs.length === payloadImageURL.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].task`]: (r) => r.message.modelOutputs[0].task === "TASK_DETECTION",
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].model`]: (r) => r.message.modelOutputs[0].model === constant.model_name,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects.length`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects.length === 1,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].index == dataMappingIndices[0]`]: (r) => r.message.modelOutputs[0].taskOutputs[0].index === r.message.dataMappingIndices[0],
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].category`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].category === "test",
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].score`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].score === 1,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox !== undefined,
     });
 
     var payloadImageBase64 = {
@@ -67,20 +67,20 @@ export function CheckTriggerSyncSingleImageSingleModel() {
       }]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqGRPC.id}`,
       task_inputs: payloadImageBase64["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs.length`]: (r) => r.message.modelOutputs[0].taskOutputs.length === payloadImageBase64.task_inputs.length,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].task`]: (r) => r.message.modelOutputs[0].task === "TASK_DETECTION",
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].model`]: (r) => r.message.modelOutputs[0].model === constant.model_name,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects.length`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects.length === 1,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].index == dataMappingIndices[0]`]: (r) => r.message.modelOutputs[0].taskOutputs[0].index === r.message.dataMappingIndices[0],
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].category`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].category === "test",
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].score`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].score === 1,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox !== undefined,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs.length`]: (r) => r.message.modelOutputs[0].taskOutputs.length === payloadImageBase64.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].task`]: (r) => r.message.modelOutputs[0].task === "TASK_DETECTION",
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].model`]: (r) => r.message.modelOutputs[0].model === constant.model_name,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects.length`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects.length === 1,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].index == dataMappingIndices[0]`]: (r) => r.message.modelOutputs[0].taskOutputs[0].index === r.message.dataMappingIndices[0],
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].category`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].category === "test",
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].score`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].score === 1,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox !== undefined,
     });
 
     check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
@@ -102,11 +102,11 @@ export function CheckTriggerSyncSingleImageSingleModel() {
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline (HTTP pipeline) response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqHTTP.id}`,
       task_inputs: payloadImageURL["task_inputs"]
     }), {
-      "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (HTTP pipeline triggered by gRPC) response StatusFailedPrecondition": (r) => r.status === grpc.StatusFailedPrecondition,
+      "vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (HTTP pipeline triggered by gRPC) response StatusFailedPrecondition": (r) => r.status === grpc.StatusFailedPrecondition,
     })
 
     check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
@@ -164,20 +164,20 @@ export function CheckTriggerSyncMultiImageSingleModel() {
       ]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqGRPC.id}`,
       task_inputs: payloadImageURL["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs.length`]: (r) => r.message.modelOutputs[0].taskOutputs.length === payloadImageURL.task_inputs.length,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].task`]: (r) => r.message.modelOutputs[0].task === "TASK_DETECTION",
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].model`]: (r) => r.message.modelOutputs[0].model === constant.model_name,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects.length`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects.length === 1,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].index == dataMappingIndices[0]`]: (r) => r.message.modelOutputs[0].taskOutputs[0].index === r.message.dataMappingIndices[0],
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].category`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].category === "test",
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].score`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].score === 1,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox !== undefined,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs.length`]: (r) => r.message.modelOutputs[0].taskOutputs.length === payloadImageURL.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].task`]: (r) => r.message.modelOutputs[0].task === "TASK_DETECTION",
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].model`]: (r) => r.message.modelOutputs[0].model === constant.model_name,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects.length`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects.length === 1,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].index == dataMappingIndices[0]`]: (r) => r.message.modelOutputs[0].taskOutputs[0].index === r.message.dataMappingIndices[0],
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].category`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].category === "test",
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].score`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].score === 1,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox !== undefined,
     });
 
     var payloadImageBase64 = {
@@ -194,20 +194,20 @@ export function CheckTriggerSyncMultiImageSingleModel() {
       ]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqGRPC.id}`,
       task_inputs: payloadImageBase64["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs.length`]: (r) => r.message.modelOutputs[0].taskOutputs.length === payloadImageBase64.task_inputs.length,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].task`]: (r) => r.message.modelOutputs[0].task === "TASK_DETECTION",
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].model`]: (r) => r.message.modelOutputs[0].model === constant.model_name,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects.length`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects.length === 1,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].index == dataMappingIndices[0]`]: (r) => r.message.modelOutputs[0].taskOutputs[0].index === r.message.dataMappingIndices[0],
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].category`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].category === "test",
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].score`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].score === 1,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox !== undefined,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs.length`]: (r) => r.message.modelOutputs[0].taskOutputs.length === payloadImageBase64.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].task`]: (r) => r.message.modelOutputs[0].task === "TASK_DETECTION",
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].model`]: (r) => r.message.modelOutputs[0].model === constant.model_name,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects.length`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects.length === 1,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].index == dataMappingIndices[0]`]: (r) => r.message.modelOutputs[0].taskOutputs[0].index === r.message.dataMappingIndices[0],
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].category`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].category === "test",
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].score`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].score === 1,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox`]: (r) => r.message.modelOutputs[0].taskOutputs[0].detection.objects[0].boundingBox !== undefined,
     });
 
     // Delete the pipeline
@@ -262,12 +262,12 @@ export function CheckTriggerSyncMultiImageMultiModel() {
       }]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqGRPC.id}`,
       task_inputs: payloadImageURL["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs.length`]: (r) => r.message.modelOutputs.length === 2,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs.length`]: (r) => r.message.modelOutputs.length === 2,
     });
 
     var payloadImageBase64 = {
@@ -282,12 +282,12 @@ export function CheckTriggerSyncMultiImageMultiModel() {
       }]
     };
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline', {
+    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline', {
       name: `pipelines/${reqGRPC.id}`,
       task_inputs: payloadImageBase64["task_inputs"]
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs.length`]: (r) => r.message.modelOutputs.length === 2,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs.length`]: (r) => r.message.modelOutputs.length === 2,
     });
 
     // Delete the pipeline

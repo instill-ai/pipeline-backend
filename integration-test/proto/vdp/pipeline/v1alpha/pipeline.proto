@@ -352,9 +352,9 @@ message TriggerPipelineRequest {
       [ (google.api.field_behavior) = REQUIRED ];
 }
 
-// TriggerPipelineResponse represents a response for the output
+// TriggerSyncPipelineResponse represents a response for the output
 // of a pipeline, i.e., the multiple model inference outputs
-message TriggerPipelineResponse {
+message TriggerSyncPipelineResponse {
   // The data mapping indices stores UUID for each input
   repeated string data_mapping_indices = 1;
   // The multiple model inference outputs
@@ -373,9 +373,9 @@ message TriggerPipelineBinaryFileUploadRequest {
   model.v1alpha.TaskInputStream task_input = 2 [ (google.api.field_behavior) = REQUIRED ];
 }
 
-// TriggerPipelineBinaryFileUploadResponse represents a response for the output
+// TriggerSyncPipelineBinaryFileUploadResponse represents a response for the output
 // of a pipeline, i.e., the multiple model inference outputs
-message TriggerPipelineBinaryFileUploadResponse {
+message TriggerSyncPipelineBinaryFileUploadResponse {
   // The data mapping indices stores UUID for each input
   repeated string data_mapping_indices = 1;
   // The multiple model inference outputs
@@ -419,6 +419,8 @@ message ListPipelinesAdminRequest {
 }
 
 // ListPipelinesAdminResponse represents a response for a list of pipelines
+// The recipe returned will be permaLinks instead of resourceName temporary,
+// this will be refactored soon
 message ListPipelinesAdminResponse {
   // A list of pipeline resources
   repeated Pipeline pipelines = 1;

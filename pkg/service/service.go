@@ -65,8 +65,8 @@ type Service interface {
 	DeletePipeline(id string, owner *mgmtPB.User) error
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
-	TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error)
-	TriggerPipelineBinaryFileUpload(owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error)
+	TriggerSyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
+	TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse, error)
 	GetModelByName(owner *mgmtPB.User, modelName string) (*modelPB.Model, error)
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
@@ -457,7 +457,7 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	return dbPipeline, nil
 }
 
-func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error) {
+func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
 
 	logger, _ := logger.GetZapLogger()
 
@@ -542,7 +542,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 				}
 			}
 		}
-		return &pipelinePB.TriggerPipelineResponse{
+		return &pipelinePB.TriggerSyncPipelineResponse{
 			DataMappingIndices: dataMappingIndices,
 			ModelOutputs:       modelOutputs,
 		}, nil
@@ -594,7 +594,7 @@ func (s *service) TriggerPipeline(req *pipelinePB.TriggerPipelineRequest, owner 
 				}
 			}
 		}()
-		return &pipelinePB.TriggerPipelineResponse{
+		return &pipelinePB.TriggerSyncPipelineResponse{
 			DataMappingIndices: dataMappingIndices,
 			ModelOutputs:       nil,
 		}, nil
@@ -898,7 +898,7 @@ func (s *service) triggerTextTask(owner *mgmtPB.User, dbPipeline *datamodel.Pipe
 	return modelOutputs, nil
 }
 
-func (s *service) TriggerPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerPipelineBinaryFileUploadResponse, error) {
+func (s *service) TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse, error) {
 	if dbPipeline.State != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
 	}
@@ -945,7 +945,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline
 	switch {
 	// Check if this is a SYNC trigger (i.e., HTTP, gRPC source and destination connectors)
 	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
-		return &pipelinePB.TriggerPipelineBinaryFileUploadResponse{
+		return &pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse{
 			DataMappingIndices: dataMappingIndices,
 			ModelOutputs:       modelOutputs,
 		}, nil
@@ -987,7 +987,7 @@ func (s *service) TriggerPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline
 				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth destination %s: %v", "WriteDestinationConnector", idx, destRecName, err.Error())
 			}
 		}
-		return &pipelinePB.TriggerPipelineBinaryFileUploadResponse{
+		return &pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse{
 			DataMappingIndices: dataMappingIndices,
 			ModelOutputs:       nil,
 		}, nil
