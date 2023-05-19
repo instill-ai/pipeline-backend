@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/iancoleman/strcase"
@@ -24,6 +23,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/sterr"
 
@@ -444,7 +444,7 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req *pipelinePB.
 		return nil, nil, err
 	}
 
-	sources := service.GetSourcesFromRecipe(dbPipeline.Recipe)
+	sources := utils.GetSourcesFromRecipe(dbPipeline.Recipe)
 	if len(sources) == 0 {
 		return nil, nil, status.Errorf(codes.Internal, "there is no source in pipeline's recipe")
 	}
@@ -509,14 +509,12 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
 
-	// TODO: use temporal workflow here
-	go h.service.TriggerSyncPipeline(req, owner, dbPipeline)
+	resp, err := h.service.TriggerAsyncPipeline(req, owner, dbPipeline)
+	if err != nil {
+		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
+	}
 
-	return &pipelinePB.TriggerAsyncPipelineResponse{
-		Operation: &longrunningpb.Operation{
-			Done: true,
-		},
-	}, nil
+	return resp, nil
 }
 
 func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, error) {
@@ -547,8 +545,8 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 		return nil, nil, nil, nil, err
 	}
 
-	var textToImageInput service.TextToImageInput
-	var textGenerationInput service.TextGenerationInput
+	var textToImageInput utils.TextToImageInput
+	var textGenerationInput utils.TextGenerationInput
 
 	var allContentFiles []byte
 	var fileLengths []uint64
@@ -556,7 +554,7 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 	var model *modelPB.Model
 
 	var firstChunk = true
-	models := service.GetModelsFromRecipe(dbPipeline.Recipe)
+	models := utils.GetModelsFromRecipe(dbPipeline.Recipe)
 
 	for {
 		data, err := streamer.Recv()
@@ -613,7 +611,7 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 					allContentFiles = append(allContentFiles, data.TaskInput.GetSemanticSegmentation().GetContent()...)
 				}
 			case modelPB.Model_TASK_TEXT_TO_IMAGE:
-				textToImageInput = service.TextToImageInput{
+				textToImageInput = utils.TextToImageInput{
 					Prompt:   data.TaskInput.GetTextToImage().GetPrompt(),
 					Steps:    data.TaskInput.GetTextToImage().GetSteps(),
 					CfgScale: data.TaskInput.GetTextToImage().GetCfgScale(),
@@ -621,7 +619,7 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 					Samples:  data.TaskInput.GetTextToImage().GetSamples(),
 				}
 			case modelPB.Model_TASK_TEXT_GENERATION:
-				textGenerationInput = service.TextGenerationInput{
+				textGenerationInput = utils.TextGenerationInput{
 					Prompt:        data.TaskInput.GetTextGeneration().GetPrompt(),
 					OutputLen:     data.TaskInput.GetTextGeneration().GetOutputLen(),
 					BadWordsList:  data.TaskInput.GetTextGeneration().GetBadWordsList(),
@@ -667,7 +665,7 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 		if len(allContentFiles) == 0 {
 			return nil, nil, nil, nil, status.Errorf(codes.InvalidArgument, "no content files")
 		}
-		imageInput := service.ImageInput{
+		imageInput := utils.ImageInput{
 			Content:     allContentFiles,
 			FileLengths: fileLengths,
 		}

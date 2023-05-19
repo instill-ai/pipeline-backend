@@ -11,6 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
@@ -26,9 +27,9 @@ func (s *service) checkState(recipePermalink *datamodel.Recipe) (datamodel.Pipel
 	states := []int{}
 	for _, component := range recipePermalink.Components {
 
-		switch GetDefinitionType(component) {
+		switch utils.GetDefinitionType(component) {
 		// Source connector
-		case SourceConnector:
+		case utils.SourceConnector:
 			sourceConnectorUID, err := resource.GetPermalinkUID(component.ResourceName)
 			if err != nil {
 				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
@@ -42,7 +43,7 @@ func (s *service) checkState(recipePermalink *datamodel.Recipe) (datamodel.Pipel
 				states = append(states, int(srcResource.GetResource().GetConnectorState().Number()))
 			}
 		// Destination connector
-		case DestinationConnector:
+		case utils.DestinationConnector:
 			destinationConnectorUID, err := resource.GetPermalinkUID(component.ResourceName)
 			if err != nil {
 				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
@@ -56,7 +57,7 @@ func (s *service) checkState(recipePermalink *datamodel.Recipe) (datamodel.Pipel
 				states = append(states, int(dstResource.GetResource().GetConnectorState().Number()))
 			}
 		// Model
-		case Model:
+		case utils.Model:
 			modelUID, err := resource.GetPermalinkUID(component.ResourceName)
 			if err != nil {
 				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err

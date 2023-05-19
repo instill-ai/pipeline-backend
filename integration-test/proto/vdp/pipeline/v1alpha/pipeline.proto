@@ -11,6 +11,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 // Google API
 import "google/api/resource.proto";
 import "google/api/field_behavior.proto";
+import "google/longrunning/operations.proto";
 
 import "../../../vdp/model/v1alpha/model.proto";
 import "../../../vdp/model/v1alpha/task_classification.proto";
@@ -24,13 +25,13 @@ import "../../../vdp/model/v1alpha/task_text_generation.proto";
 import "../../../vdp/model/v1alpha/task_unspecified.proto";
 
 
-// Represents a pipeline component
+// Represents a pipeline component 
 message Component {
 
   // Component id that is given by the users
   string id = 1 [ (google.api.field_behavior) = REQUIRED ];
   // A pipeline component resource name
-  string resource_name = 2 [
+  string resource_name = 2 [ 
     (google.api.field_behavior) = REQUIRED ,
     (google.api.resource_reference).type = "*"
   ];
@@ -40,7 +41,7 @@ message Component {
   google.protobuf.Struct metadata = 4;
   // Dependencies for the pipeline component
   map<string, string> dependencies = 5;
-
+  
 }
 
 // Pipeline represents a pipeline recipe
@@ -381,6 +382,31 @@ message TriggerSyncPipelineBinaryFileUploadResponse {
   // The multiple model inference outputs
   repeated ModelOutput model_outputs = 2;
 }
+
+// TriggerAsyncPipelineResponse represents a response for the longrunning operation
+// of a pipeline
+message TriggerAsyncPipelineResponse {
+  // Trigger async pipeline operation message
+  google.longrunning.Operation operation = 1
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // The data mapping indices for each input
+  repeated string data_mapping_indices = 2
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}
+
+// GetPipelineOperationRequest represents a request to query a longrunning operation
+message GetPipelineOperationRequest {
+  // The name of the operation resource.
+  string name = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// GetPipelineOperationResponse represents a response for a longrunning operation
+message GetPipelineOperationResponse {
+  // The retrieved longrunning operation
+  google.longrunning.Operation operation = 1
+    [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}
+
 
 // WatchPipelineRequest represents a public request to query
 // a pipeline's current state

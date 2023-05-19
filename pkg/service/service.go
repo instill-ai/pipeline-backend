@@ -3,11 +3,8 @@ package service
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/gob"
 	"fmt"
-	"io"
-	"strings"
-	"sync"
 	"time"
 
 	"github.com/go-redis/redis/v9"
@@ -15,12 +12,18 @@ import (
 	"github.com/gogo/status"
 	"github.com/oklog/ulid/v2"
 	"go.einride.tech/aip/filtering"
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/temporal"
+	"google.golang.org/genproto/googleapis/longrunning"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
+	"github.com/instill-ai/pipeline-backend/pkg/worker"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
@@ -28,29 +31,6 @@ import (
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
-
-type TextToImageInput struct {
-	Prompt   string
-	Steps    int64
-	CfgScale float32
-	Seed     int64
-	Samples  int64
-}
-
-type TextGenerationInput struct {
-	Prompt        string
-	OutputLen     int64
-	BadWordsList  string
-	StopWordsList string
-	TopK          int64
-	Seed          int64
-}
-
-type ImageInput struct {
-	Content     []byte
-	FileNames   []string
-	FileLengths []uint64
-}
 
 // Service interface
 type Service interface {
@@ -66,6 +46,7 @@ type Service interface {
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
 	TriggerSyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
+	TriggerAsyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 	TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse, error)
 	TriggerAsyncPipelineBinaryFileUpload(owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 	GetModelByName(owner *mgmtPB.User, modelName string) (*modelPB.Model, error)
@@ -87,6 +68,7 @@ type service struct {
 	modelPrivateServiceClient     modelPB.ModelPrivateServiceClient
 	controllerClient              controllerPB.ControllerPrivateServiceClient
 	redisClient                   *redis.Client
+	temporalClient                client.Client
 }
 
 // NewService initiates a service instance
@@ -98,6 +80,7 @@ func NewService(r repository.Repository,
 	mPrivate modelPB.ModelPrivateServiceClient,
 	ct controllerPB.ControllerPrivateServiceClient,
 	rc *redis.Client,
+	t client.Client,
 ) Service {
 	return &service{
 		repository:                    r,
@@ -108,6 +91,7 @@ func NewService(r repository.Repository,
 		modelPrivateServiceClient:     mPrivate,
 		controllerClient:              ct,
 		redisClient:                   rc,
+		temporalClient:                t,
 	}
 }
 
@@ -133,7 +117,7 @@ func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipel
 	// User desires to be active
 	dbPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE)
 
-	ownerPermalink := GenOwnerPermalink(owner)
+	ownerPermalink := utils.GenOwnerPermalink(owner)
 	dbPipeline.Owner = ownerPermalink
 
 	recipePermalink, err := s.recipeNameToPermalink(owner, dbPipeline.Recipe)
@@ -178,7 +162,7 @@ func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipel
 
 func (s *service) ListPipelines(owner *mgmtPB.User, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
 
-	ownerPermalink := GenOwnerPermalink(owner)
+	ownerPermalink := utils.GenOwnerPermalink(owner)
 	dbPipelines, ps, pt, err := s.repository.ListPipelines(ownerPermalink, pageSize, pageToken, isBasicView, filter)
 	if err != nil {
 		return nil, 0, "", err
@@ -221,7 +205,7 @@ func (s *service) ListPipelinesAdmin(pageSize int64, pageToken string, isBasicVi
 
 func (s *service) GetPipelineByID(id string, owner *mgmtPB.User, isBasicView bool) (*datamodel.Pipeline, error) {
 
-	ownerPermalink := GenOwnerPermalink(owner)
+	ownerPermalink := utils.GenOwnerPermalink(owner)
 
 	dbPipeline, err := s.repository.GetPipelineByID(id, ownerPermalink, isBasicView)
 	if err != nil {
@@ -245,7 +229,7 @@ func (s *service) GetPipelineByID(id string, owner *mgmtPB.User, isBasicView boo
 
 func (s *service) GetPipelineByUID(uid uuid.UUID, owner *mgmtPB.User, isBasicView bool) (*datamodel.Pipeline, error) {
 
-	ownerPermalink := GenOwnerPermalink(owner)
+	ownerPermalink := utils.GenOwnerPermalink(owner)
 
 	dbPipeline, err := s.repository.GetPipelineByUID(uid, ownerPermalink, isBasicView)
 	if err != nil {
@@ -311,7 +295,7 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 		}
 	}
 
-	ownerPermalink := GenOwnerPermalink(owner)
+	ownerPermalink := utils.GenOwnerPermalink(owner)
 
 	toUpdPipeline.Owner = ownerPermalink
 
@@ -349,7 +333,7 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 }
 
 func (s *service) DeletePipeline(id string, owner *mgmtPB.User) error {
-	ownerPermalink := GenOwnerPermalink(owner)
+	ownerPermalink := utils.GenOwnerPermalink(owner)
 
 	dbPipeline, err := s.repository.GetPipelineByID(id, ownerPermalink, false)
 	if err != nil {
@@ -369,7 +353,7 @@ func (s *service) UpdatePipelineState(id string, owner *mgmtPB.User, state datam
 		return nil, status.Errorf(codes.InvalidArgument, "State update with unspecified is not allowed")
 	}
 
-	ownerPermalink := GenOwnerPermalink(owner)
+	ownerPermalink := utils.GenOwnerPermalink(owner)
 
 	dbPipeline, err := s.repository.GetPipelineByID(id, ownerPermalink, false)
 	if err != nil {
@@ -423,7 +407,7 @@ func (s *service) UpdatePipelineState(id string, owner *mgmtPB.User, state datam
 
 func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error) {
 
-	ownerPermalink := GenOwnerPermalink(owner)
+	ownerPermalink := utils.GenOwnerPermalink(owner)
 
 	// Validation: Pipeline existence
 	existingPipeline, _ := s.repository.GetPipelineByID(id, ownerPermalink, true)
@@ -458,448 +442,111 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	return dbPipeline, nil
 }
 
-func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
-
-	logger, _ := logger.GetZapLogger()
-
+func preTriggerPipeline(dbPipeline *datamodel.Pipeline, req *pipelinePB.TriggerPipelineRequest, expectedMode datamodel.PipelineMode) ([]string, error) {
+	if dbPipeline.Mode != expectedMode {
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not sync", dbPipeline.ID))
+	}
 	if dbPipeline.State != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
 	}
 
 	var dataMappingIndices []string
-	var taskInputs []*modelPB.TaskInput
-	for _, taskInput := range req.TaskInputs {
-		taskInputs = append(taskInputs, &modelPB.TaskInput{
-			Input: taskInput.GetInput(),
-		})
+	for range req.TaskInputs {
 		dataMappingIndices = append(dataMappingIndices, ulid.Make().String())
 	}
-
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-
-	models := GetModelsFromRecipe(dbPipeline.Recipe)
-	dests := GetDestinationsFromRecipe(dbPipeline.Recipe)
-	var modelOutputs []*pipelinePB.ModelOutput
-	errors := make(chan error)
-	go func() {
-		defer wg.Done()
-
-		for idx, model := range models {
-
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
-			defer cancel()
-			resp, err := s.modelPublicServiceClient.TriggerModel(InjectOwnerToContext(ctx, owner), &modelPB.TriggerModelRequest{
-				Name:       model,
-				TaskInputs: taskInputs,
-			})
-			if err != nil {
-				errors <- err
-				logger.Error(fmt.Sprintf("[model-backend] Error %s at %dth model %s: %v", "TriggerModel", idx, model, err.Error()))
-				return
-			}
-
-			taskOutputs := cvtModelTaskOutputToPipelineTaskOutput(resp.TaskOutputs)
-			for idx, taskOutput := range taskOutputs {
-				taskOutput.Index = dataMappingIndices[idx]
-			}
-
-			modelOutputs = append(modelOutputs, &pipelinePB.ModelOutput{
-				Model:       model,
-				Task:        resp.Task,
-				TaskOutputs: taskOutputs,
-			})
-
-			// Increment trigger image numbers
-			uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
-			if err != nil {
-				errors <- err
-				logger.Error(err.Error())
-				return
-			}
-			if strings.HasPrefix(dbPipeline.Owner, "users/") {
-				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("user:%s:trigger.num", uid), int64(len(taskInputs)))
-			} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-				s.redisClient.IncrBy(context.Background(), fmt.Sprintf("org:%s:trigger.num", uid), int64(len(taskInputs)))
-			}
-		}
-		errors <- nil
-	}()
-
-	switch {
-	// If this is a SYNC trigger (i.e., HTTP, gRPC source and destination connectors), return right away
-	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
-		go func() {
-			wg.Wait()
-			close(errors)
-		}()
-		for err := range errors {
-			if err != nil {
-				switch {
-				case strings.Contains(err.Error(), "code = DeadlineExceeded"):
-					return nil, status.Errorf(codes.DeadlineExceeded, "trigger model got timeout error")
-				default:
-					return nil, status.Errorf(codes.Internal, fmt.Sprintf("trigger model got error %v", err.Error()))
-				}
-			}
-		}
-		return &pipelinePB.TriggerSyncPipelineResponse{
-			DataMappingIndices: dataMappingIndices,
-			ModelOutputs:       modelOutputs,
-		}, nil
-	// If this is a async trigger, write to the destination connector
-	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
-		go func() {
-			go func() {
-				wg.Wait()
-				close(errors)
-			}()
-			for err := range errors {
-				if err != nil {
-					logger.Error(fmt.Sprintf("[model-backend] Error trigger model got error %v", err.Error()))
-					return
-				}
-			}
-
-			for idx, destRecName := range dests {
-				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				defer cancel()
-				_, err := s.connectorPublicServiceClient.WriteDestinationConnector(InjectOwnerToContext(ctx, owner), &connectorPB.WriteDestinationConnectorRequest{
-					Name:                destRecName,
-					SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
-					DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
-					Pipeline:            fmt.Sprintf("pipelines/%s", dbPipeline.ID),
-					DataMappingIndices:  dataMappingIndices,
-					ModelOutputs:        modelOutputs,
-					Recipe: func() *pipelinePB.Recipe {
-						if dbPipeline.Recipe != nil {
-							if err := s.excludeResourceDetailFromRecipe(dbPipeline.Recipe); err != nil {
-								logger.Error(err.Error())
-							}
-							b, err := json.Marshal(dbPipeline.Recipe)
-							if err != nil {
-								logger.Error(err.Error())
-							}
-							pbRecipe := pipelinePB.Recipe{}
-							err = json.Unmarshal(b, &pbRecipe)
-							if err != nil {
-								logger.Error(err.Error())
-							}
-							return &pbRecipe
-						}
-						return nil
-					}(),
-				})
-				if err != nil {
-					logger.Error(fmt.Sprintf("[connector-backend] Error %s at %dth destination %s: %v", "WriteDestinationConnector", idx, destRecName, err.Error()))
-				}
-			}
-		}()
-		return &pipelinePB.TriggerSyncPipelineResponse{
-			DataMappingIndices: dataMappingIndices,
-			ModelOutputs:       nil,
-		}, nil
-	}
-
-	return nil, status.Errorf(codes.Internal, "something went very wrong - unable to trigger the pipeline")
-
+	return dataMappingIndices, nil
 }
 
-func (s *service) triggerImageTask(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelOutput, error) {
-	imageInput := input.(*ImageInput)
+func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+
+	dataMappingIndices, err := preTriggerPipeline(dbPipeline, req, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
+	if err != nil {
+		return nil, err
+	}
+
 	var modelOutputs []*pipelinePB.ModelOutput
-
-	models := GetModelsFromRecipe(dbPipeline.Recipe)
-
-	for idx, model := range models {
-
-		// TODO: async call model-backend
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
-		defer cancel()
-		stream, err := s.modelPublicServiceClient.TriggerModelBinaryFileUpload(InjectOwnerToContext(ctx, owner))
-		defer func() {
-			_ = stream.CloseSend()
-		}()
-
+	for _, model := range utils.GetModelsFromRecipe(dbPipeline.Recipe) {
+		modelOutput, err := worker.Trigger(s.modelPublicServiceClient, s.redisClient, req.TaskInputs, dataMappingIndices, model, dbPipeline.Owner)
 		if err != nil {
-			return modelOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model %s: cannot init stream: %v", "TriggerModelBinaryFileUpload", idx, model, err.Error())
+			return nil, err
 		}
-		var triggerRequest modelPB.TriggerModelBinaryFileUploadRequest
-		switch task {
-		case modelPB.Model_TASK_CLASSIFICATION:
-			triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-				Name: model,
-				TaskInput: &modelPB.TaskInputStream{
-					Input: &modelPB.TaskInputStream_Classification{
-						Classification: &modelPB.ClassificationInputStream{
-							FileLengths: imageInput.FileLengths,
-						},
-					},
-				},
-			}
-		case modelPB.Model_TASK_DETECTION:
-			triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-				Name: model,
-				TaskInput: &modelPB.TaskInputStream{
-					Input: &modelPB.TaskInputStream_Detection{
-						Detection: &modelPB.DetectionInputStream{
-							FileLengths: imageInput.FileLengths,
-						},
-					},
-				},
-			}
-		case modelPB.Model_TASK_KEYPOINT:
-			triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-				Name: model,
-				TaskInput: &modelPB.TaskInputStream{
-					Input: &modelPB.TaskInputStream_Keypoint{
-						Keypoint: &modelPB.KeypointInputStream{
-							FileLengths: imageInput.FileLengths,
-						},
-					},
-				},
-			}
-		case modelPB.Model_TASK_OCR:
-			triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-				Name: model,
-				TaskInput: &modelPB.TaskInputStream{
-					Input: &modelPB.TaskInputStream_Ocr{
-						Ocr: &modelPB.OcrInputStream{
-							FileLengths: imageInput.FileLengths,
-						},
-					},
-				},
-			}
+		modelOutputs = append(modelOutputs, modelOutput)
+	}
 
-		case modelPB.Model_TASK_INSTANCE_SEGMENTATION:
-			triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-				Name: model,
-				TaskInput: &modelPB.TaskInputStream{
-					Input: &modelPB.TaskInputStream_InstanceSegmentation{
-						InstanceSegmentation: &modelPB.InstanceSegmentationInputStream{
-							FileLengths: imageInput.FileLengths,
-						},
-					},
-				},
-			}
-		case modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-			triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-				Name: model,
-				TaskInput: &modelPB.TaskInputStream{
-					Input: &modelPB.TaskInputStream_SemanticSegmentation{
-						SemanticSegmentation: &modelPB.SemanticSegmentationInputStream{
-							FileLengths: imageInput.FileLengths,
-						},
-					},
-				},
-			}
-		}
-		if err := stream.Send(&triggerRequest); err != nil {
-			return modelOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model %s: cannot send data info to server: %v", "TriggerModelBinaryFileUploadRequest", idx, model, err.Error())
-		}
-		fb := bytes.Buffer{}
-		fb.Write(imageInput.Content)
-		buf := make([]byte, 64*1024)
-		for {
-			n, err := fb.Read(buf)
-			if err == io.EOF {
-				break
-			} else if err != nil {
-				return modelOutputs, err
-			}
+	if err != nil {
+		return nil, err
+	}
 
-			var triggerRequest modelPB.TriggerModelBinaryFileUploadRequest
-			switch task {
-			case modelPB.Model_TASK_CLASSIFICATION:
-				triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-					TaskInput: &modelPB.TaskInputStream{
-						Input: &modelPB.TaskInputStream_Classification{
-							Classification: &modelPB.ClassificationInputStream{
-								Content: buf[:n],
-							},
-						},
-					},
-				}
-			case modelPB.Model_TASK_DETECTION:
-				triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-					TaskInput: &modelPB.TaskInputStream{
-						Input: &modelPB.TaskInputStream_Detection{
-							Detection: &modelPB.DetectionInputStream{
-								Content: buf[:n],
-							},
-						},
-					},
-				}
-			case modelPB.Model_TASK_KEYPOINT:
-				triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-					TaskInput: &modelPB.TaskInputStream{
-						Input: &modelPB.TaskInputStream_Keypoint{
-							Keypoint: &modelPB.KeypointInputStream{
-								Content: buf[:n],
-							},
-						},
-					},
-				}
-			case modelPB.Model_TASK_OCR:
-				triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-					TaskInput: &modelPB.TaskInputStream{
-						Input: &modelPB.TaskInputStream_Ocr{
-							Ocr: &modelPB.OcrInputStream{
-								Content: buf[:n],
-							},
-						},
-					},
-				}
+	return &pipelinePB.TriggerSyncPipelineResponse{
+		DataMappingIndices: dataMappingIndices,
+		ModelOutputs:       modelOutputs,
+	}, nil
+}
 
-			case modelPB.Model_TASK_INSTANCE_SEGMENTATION:
-				triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-					TaskInput: &modelPB.TaskInputStream{
-						Input: &modelPB.TaskInputStream_InstanceSegmentation{
-							InstanceSegmentation: &modelPB.InstanceSegmentationInputStream{
-								Content: buf[:n],
-							},
-						},
-					},
-				}
-			case modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-				triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-					TaskInput: &modelPB.TaskInputStream{
-						Input: &modelPB.TaskInputStream_SemanticSegmentation{
-							SemanticSegmentation: &modelPB.SemanticSegmentationInputStream{
-								Content: buf[:n],
-							},
-						},
-					},
-				}
-			}
-			if err := stream.Send(&triggerRequest); err != nil {
-				return modelOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model %s: cannot send chunk to server: %v", "TriggerModelBinaryFileUploadRequest", idx, model, err.Error())
-			}
-		}
+func (s *service) TriggerAsyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
-		resp, err := stream.CloseAndRecv()
-		if err != nil {
-			return modelOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model %s: cannot receive response: %v", "TriggerModelBinaryFileUploadRequest", idx, model, err.Error())
-		}
+	dataMappingIndices, err := preTriggerPipeline(dbPipeline, req, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
+	if err != nil {
+		return nil, err
+	}
+	logger, _ := logger.GetZapLogger()
 
-		taskOutputs := cvtModelTaskOutputToPipelineTaskOutput(resp.TaskOutputs)
-		for idx, taskOutput := range taskOutputs {
-			taskOutput.Index = dataMappingIndices[idx]
-		}
+	s.excludeResourceDetailFromRecipe(dbPipeline.Recipe)
 
-		modelOutputs = append(modelOutputs, &pipelinePB.ModelOutput{
-			Model:       model,
-			Task:        resp.Task,
-			TaskOutputs: taskOutputs,
+	id, _ := uuid.NewV4()
+	workflowOptions := client.StartWorkflowOptions{
+		ID:                       id.String(),
+		TaskQueue:                worker.TaskQueue,
+		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
+		},
+	}
+
+	var taskInputRedisKeys []string
+	for idx := range req.TaskInputs {
+		json, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(&modelPB.TaskInput{
+			Input: req.TaskInputs[idx].GetInput(),
 		})
-
-		// Increment trigger image numbers
-		uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
 		if err != nil {
-			return modelOutputs, err
+			return nil, err
 		}
-		if strings.HasPrefix(dbPipeline.Owner, "users/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.num", uid), int64(len(imageInput.FileLengths)))
-		} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.num", uid), int64(len(imageInput.FileLengths)))
-		}
+		key := fmt.Sprintf("async_pipeline_blob:%s:%s", id.String(), dataMappingIndices[idx])
+		s.redisClient.Set(context.Background(), key, json, time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second)
+		taskInputRedisKeys = append(taskInputRedisKeys, key)
 	}
 
-	return modelOutputs, nil
-}
-
-func (s *service) triggerTextTask(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}, dataMappingIndices []string) ([]*pipelinePB.ModelOutput, error) {
-
-	var modelOutputs []*pipelinePB.ModelOutput
-	models := GetModelsFromRecipe(dbPipeline.Recipe)
-
-	for idx, model := range models {
-
-		// TODO: async call model-backend
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
-		defer cancel()
-		stream, err := s.modelPublicServiceClient.TriggerModelBinaryFileUpload(InjectOwnerToContext(ctx, owner))
-		defer func() {
-			_ = stream.CloseSend()
-		}()
-
-		if err != nil {
-			return modelOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model %s: cannot init stream: %v", "TriggerModelBinaryFileUpload", idx, model, err.Error())
-		}
-
-		var triggerRequest modelPB.TriggerModelBinaryFileUploadRequest
-		switch task {
-		case modelPB.Model_TASK_TEXT_TO_IMAGE:
-			textToImageInput := input.(*TextToImageInput)
-			triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-				Name: model,
-				TaskInput: &modelPB.TaskInputStream{
-					Input: &modelPB.TaskInputStream_TextToImage{
-						TextToImage: &modelPB.TextToImageInput{
-							Prompt:   textToImageInput.Prompt,
-							Steps:    &textToImageInput.Steps,
-							CfgScale: &textToImageInput.CfgScale,
-							Seed:     &textToImageInput.Seed,
-							Samples:  &textToImageInput.Samples,
-						},
-					},
-				},
-			}
-		case modelPB.Model_TASK_TEXT_GENERATION:
-			textGenerationInput := input.(*TextGenerationInput)
-			triggerRequest = modelPB.TriggerModelBinaryFileUploadRequest{
-				Name: model,
-				TaskInput: &modelPB.TaskInputStream{
-					Input: &modelPB.TaskInputStream_TextGeneration{
-						TextGeneration: &modelPB.TextGenerationInput{
-							Prompt:        textGenerationInput.Prompt,
-							OutputLen:     &textGenerationInput.OutputLen,
-							BadWordsList:  &textGenerationInput.BadWordsList,
-							StopWordsList: &textGenerationInput.StopWordsList,
-							Topk:          &textGenerationInput.TopK,
-							Seed:          &textGenerationInput.Seed,
-						},
-					},
-				},
-			}
-		}
-
-		if err := stream.Send(&triggerRequest); err != nil {
-			return modelOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model %s: cannot send data info to server: %v", "TriggerModelBinaryFileUploadRequest", idx, model, err.Error())
-		}
-
-		resp, err := stream.CloseAndRecv()
-		if err != nil {
-			return modelOutputs, status.Errorf(codes.Internal, "[model-backend] Error %s at %dth model %s: cannot receive response: %v", "TriggerModelBinaryFileUploadRequest", idx, model, err.Error())
-		}
-
-		taskOutputs := cvtModelTaskOutputToPipelineTaskOutput(resp.TaskOutputs)
-		for idx, taskOutput := range taskOutputs {
-			taskOutput.Index = dataMappingIndices[idx]
-		}
-
-		modelOutputs = append(modelOutputs, &pipelinePB.ModelOutput{
-			Model:       model,
-			Task:        resp.Task,
-			TaskOutputs: taskOutputs,
+	ctx := context.Background()
+	we, err := s.temporalClient.ExecuteWorkflow(
+		ctx,
+		workflowOptions,
+		"TriggerAsyncPipelineWorkflow",
+		&worker.TriggerAsyncPipelineWorkflowParam{
+			TaskInputRedisKeys: taskInputRedisKeys,
+			DataMappingIndices: dataMappingIndices,
+			DbPipeline:         dbPipeline,
 		})
-
-		// Increment trigger image numbers
-		uid, err := resource.GetPermalinkUID(dbPipeline.Owner)
-		if err != nil {
-			return modelOutputs, err
-		}
-		if strings.HasPrefix(dbPipeline.Owner, "users/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("user:%s:trigger.num", uid), 1)
-		} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-			s.redisClient.IncrBy(ctx, fmt.Sprintf("org:%s:trigger.num", uid), 1)
-		}
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+		return nil, err
 	}
 
-	return modelOutputs, nil
+	logger.Info(fmt.Sprintf("started workflow with WorkflowID %s and RunID %s", we.GetID(), we.GetRunID()))
+
+	return &pipelinePB.TriggerAsyncPipelineResponse{
+		Operation: &longrunning.Operation{
+			Name: fmt.Sprintf("operations/%s", id),
+			Done: false,
+		},
+		DataMappingIndices: dataMappingIndices,
+	}, nil
+
 }
 
-func (s *service) TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse, error) {
+func preTriggerPipelineBinaryFileUpload(dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}, expectedMode datamodel.PipelineMode) ([]string, error) {
+	if dbPipeline.Mode != expectedMode {
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not sync", dbPipeline.ID))
+	}
 	if dbPipeline.State != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
 	}
@@ -912,7 +559,7 @@ func (s *service) TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipe
 		modelPB.Model_TASK_OCR,
 		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
 		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-		inp := input.(*ImageInput)
+		inp := input.(*utils.ImageInput)
 		batching = len(inp.FileNames)
 	case modelPB.Model_TASK_TEXT_TO_IMAGE,
 		modelPB.Model_TASK_TEXT_GENERATION:
@@ -922,89 +569,45 @@ func (s *service) TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipe
 	for i := 0; i < batching; i++ {
 		dataMappingIndices = append(dataMappingIndices, ulid.Make().String())
 	}
+	return dataMappingIndices, nil
+}
 
+func (s *service) TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse, error) {
+
+	dataMappingIndices, err := preTriggerPipelineBinaryFileUpload(dbPipeline, task, input, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
+	if err != nil {
+		return nil, err
+	}
 	var modelOutputs []*pipelinePB.ModelOutput
-	var err error
-	switch task {
-	case modelPB.Model_TASK_CLASSIFICATION,
-		modelPB.Model_TASK_DETECTION,
-		modelPB.Model_TASK_KEYPOINT,
-		modelPB.Model_TASK_OCR,
-		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
-		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-		modelOutputs, err = s.triggerImageTask(owner, dbPipeline, task, input, dataMappingIndices)
+	for _, model := range utils.GetModelsFromRecipe(dbPipeline.Recipe) {
+		modelOutput, err := worker.TriggerBinaryFileUpload(s.modelPublicServiceClient, s.redisClient, task, input, dataMappingIndices, model, dbPipeline.Owner)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
+			return nil, err
 		}
-	case modelPB.Model_TASK_TEXT_TO_IMAGE,
-		modelPB.Model_TASK_TEXT_GENERATION:
-		modelOutputs, err = s.triggerTextTask(owner, dbPipeline, task, input, dataMappingIndices)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
-		}
-	}
-	switch {
-	// Check if this is a SYNC trigger (i.e., HTTP, gRPC source and destination connectors)
-	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
-		return &pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse{
-			DataMappingIndices: dataMappingIndices,
-			ModelOutputs:       modelOutputs,
-		}, nil
-	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
-		dests := GetDestinationsFromRecipe(dbPipeline.Recipe)
-
-		for idx, destRecName := range dests {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-			_, err := s.connectorPublicServiceClient.WriteDestinationConnector(InjectOwnerToContext(ctx, owner), &connectorPB.WriteDestinationConnectorRequest{
-				Name:                destRecName,
-				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
-				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
-				Pipeline:            fmt.Sprintf("pipelines/%s", dbPipeline.ID),
-				DataMappingIndices:  dataMappingIndices,
-				ModelOutputs:        modelOutputs,
-				Recipe: func() *pipelinePB.Recipe {
-					logger, _ := logger.GetZapLogger()
-
-					if dbPipeline.Recipe != nil {
-						if err := s.excludeResourceDetailFromRecipe(dbPipeline.Recipe); err != nil {
-							logger.Error(err.Error())
-						}
-						b, err := json.Marshal(dbPipeline.Recipe)
-						if err != nil {
-							logger.Error(err.Error())
-						}
-						pbRecipe := pipelinePB.Recipe{}
-						err = json.Unmarshal(b, &pbRecipe)
-						if err != nil {
-							logger.Error(err.Error())
-						}
-						return &pbRecipe
-					}
-					return nil
-				}(),
-			})
-			if err != nil {
-				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth destination %s: %v", "WriteDestinationConnector", idx, destRecName, err.Error())
-			}
-		}
-		return &pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse{
-			DataMappingIndices: dataMappingIndices,
-			ModelOutputs:       nil,
-		}, nil
-
+		modelOutputs = append(modelOutputs, modelOutput)
 	}
 
-	return nil, status.Errorf(codes.Internal, "something went very wrong - unable to trigger the pipeline")
+	if err != nil {
+		return nil, err
+	}
+
+	return &pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse{
+		DataMappingIndices: dataMappingIndices,
+		ModelOutputs:       modelOutputs,
+	}, nil
 
 }
 
 func (s *service) TriggerAsyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
-	if dbPipeline.State != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
+	logger, _ := logger.GetZapLogger()
+	dataMappingIndices, err := preTriggerPipelineBinaryFileUpload(dbPipeline, task, input, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
+	if err != nil {
+		return nil, err
 	}
+	s.excludeResourceDetailFromRecipe(dbPipeline.Recipe)
 
-	batching := 1
+	// TODO: should refactor these switch cases
+	var inputByte []byte
 	switch task {
 	case modelPB.Model_TASK_CLASSIFICATION,
 		modelPB.Model_TASK_DETECTION,
@@ -1012,92 +615,74 @@ func (s *service) TriggerAsyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPip
 		modelPB.Model_TASK_OCR,
 		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
 		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-		inp := input.(*ImageInput)
-		batching = len(inp.FileNames)
-	case modelPB.Model_TASK_TEXT_TO_IMAGE,
-		modelPB.Model_TASK_TEXT_GENERATION:
-		batching = 1
-	}
-	var dataMappingIndices []string
-	for i := 0; i < batching; i++ {
-		dataMappingIndices = append(dataMappingIndices, ulid.Make().String())
-	}
 
-	var modelOutputs []*pipelinePB.ModelOutput
-	var err error
-	switch task {
-	case modelPB.Model_TASK_CLASSIFICATION,
-		modelPB.Model_TASK_DETECTION,
-		modelPB.Model_TASK_KEYPOINT,
-		modelPB.Model_TASK_OCR,
-		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
-		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-		modelOutputs, err = s.triggerImageTask(owner, dbPipeline, task, input, dataMappingIndices)
+		var bytesBuffer bytes.Buffer
+		enc := gob.NewEncoder(&bytesBuffer)
+		err := enc.Encode(input.(*utils.ImageInput))
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
+			return nil, err
 		}
-	case modelPB.Model_TASK_TEXT_TO_IMAGE,
-		modelPB.Model_TASK_TEXT_GENERATION:
-		modelOutputs, err = s.triggerTextTask(owner, dbPipeline, task, input, dataMappingIndices)
+		inputByte = bytesBuffer.Bytes()
+	case modelPB.Model_TASK_TEXT_TO_IMAGE:
+		var bytesBuffer bytes.Buffer
+		enc := gob.NewEncoder(&bytesBuffer)
+		err := enc.Encode(input.(*utils.TextToImageInput))
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
+			return nil, err
 		}
-	}
-	switch {
-	// Check if this is a SYNC trigger (i.e., HTTP, gRPC source and destination connectors)
-	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC):
-		return &pipelinePB.TriggerAsyncPipelineResponse{
-			// DataMappingIndices: dataMappingIndices,
-			// ModelOutputs:       modelOutputs,
-		}, nil
-	case dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC):
-		dests := GetDestinationsFromRecipe(dbPipeline.Recipe)
-
-		for idx, destRecName := range dests {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-			_, err := s.connectorPublicServiceClient.WriteDestinationConnector(InjectOwnerToContext(ctx, owner), &connectorPB.WriteDestinationConnectorRequest{
-				Name:                destRecName,
-				SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
-				DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
-				Pipeline:            fmt.Sprintf("pipelines/%s", dbPipeline.ID),
-				DataMappingIndices:  dataMappingIndices,
-				ModelOutputs:        modelOutputs,
-				Recipe: func() *pipelinePB.Recipe {
-					logger, _ := logger.GetZapLogger()
-
-					if dbPipeline.Recipe != nil {
-						b, err := json.Marshal(s.excludeResourceDetailFromRecipe(dbPipeline.Recipe))
-						if err != nil {
-							logger.Error(err.Error())
-						}
-						pbRecipe := pipelinePB.Recipe{}
-						err = json.Unmarshal(b, &pbRecipe)
-						if err != nil {
-							logger.Error(err.Error())
-						}
-						return &pbRecipe
-					}
-					return nil
-				}(),
-			})
-			if err != nil {
-				return nil, status.Errorf(codes.Internal, "[connector-backend] Error %s at %dth destination %s: %v", "WriteDestinationConnector", idx, destRecName, err.Error())
-			}
+		inputByte = bytesBuffer.Bytes()
+	case modelPB.Model_TASK_TEXT_GENERATION:
+		var bytesBuffer bytes.Buffer
+		enc := gob.NewEncoder(&bytesBuffer)
+		err := enc.Encode(input.(*utils.TextGenerationInput))
+		if err != nil {
+			return nil, err
 		}
-		return &pipelinePB.TriggerAsyncPipelineResponse{
-			// DataMappingIndices: dataMappingIndices,
-			// ModelOutputs:       nil,
-		}, nil
-
+		inputByte = bytesBuffer.Bytes()
 	}
 
-	return nil, status.Errorf(codes.Internal, "something went very wrong - unable to trigger the pipeline")
+	id, _ := uuid.NewV4()
+	workflowOptions := client.StartWorkflowOptions{
+		ID:                       id.String(),
+		TaskQueue:                worker.TaskQueue,
+		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
+		},
+	}
+
+	taskInputRedisKey := fmt.Sprintf("async_pipeline_blob:%s", id.String())
+	s.redisClient.Set(context.Background(), taskInputRedisKey, inputByte, time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second)
+
+	ctx := context.Background()
+	we, err := s.temporalClient.ExecuteWorkflow(
+		ctx,
+		workflowOptions,
+		"TriggerAsyncPipelineByFileUploadWorkflow",
+		&worker.TriggerAsyncPipelineByFileUploadWorkflowParam{
+			TaskInputRedisKey:  taskInputRedisKey,
+			DataMappingIndices: dataMappingIndices,
+			Task:               task,
+			DbPipeline:         dbPipeline,
+		})
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+		return nil, err
+	}
+
+	logger.Info(fmt.Sprintf("started workflow with WorkflowID %s and RunID %s", we.GetID(), we.GetRunID()))
+
+	return &pipelinePB.TriggerAsyncPipelineResponse{
+		Operation: &longrunning.Operation{
+			Name: fmt.Sprintf("operations/%s", id),
+			Done: false,
+		},
+		DataMappingIndices: dataMappingIndices}, nil
 
 }
 
 func (s *service) GetModelByName(owner *mgmtPB.User, modelName string) (*modelPB.Model, error) {
-	modelResq, err := s.modelPublicServiceClient.GetModel(InjectOwnerToContext(context.Background(), owner), &modelPB.GetModelRequest{
+	modelResq, err := s.modelPublicServiceClient.GetModel(utils.InjectOwnerToContext(context.Background(), owner), &modelPB.GetModelRequest{
 		Name: modelName,
 	})
 	if err != nil {

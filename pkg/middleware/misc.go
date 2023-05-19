@@ -117,6 +117,8 @@ func ErrorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.
 					httpStatus = http.StatusUnprocessableEntity
 				}
 			}
+		} else {
+			httpStatus = http.StatusBadRequest
 		}
 	default:
 		httpStatus = runtime.HTTPStatusFromCode(s.Code())

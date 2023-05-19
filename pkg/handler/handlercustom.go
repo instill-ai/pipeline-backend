@@ -19,6 +19,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/sterr"
 
 	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
@@ -193,7 +194,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		return nil, nil, nil, nil, false
 	}
 
-	model, err := s.GetModelByName(owner, service.GetModelsFromRecipe(dbPipeline.Recipe)[0])
+	model, err := s.GetModelByName(owner, utils.GetModelsFromRecipe(dbPipeline.Recipe)[0])
 	if err != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.NotFound,
@@ -267,6 +268,28 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 
 }
 
+func getHttpStatus(err error) int {
+	s := status.Convert(err)
+	var httpStatus int
+	switch {
+	case s.Code() == codes.FailedPrecondition:
+		if len(s.Details()) > 0 {
+			switch v := s.Details()[0].(type) {
+			case *errdetails.PreconditionFailure:
+				switch v.Violations[0].Type {
+				case "UPDATE", "DELETE", "STATE", "RENAME", "TRIGGER":
+					httpStatus = http.StatusUnprocessableEntity
+				}
+			}
+		} else {
+			httpStatus = http.StatusBadRequest
+		}
+	default:
+		httpStatus = runtime.HTTPStatusFromCode(s.Code())
+	}
+	return httpStatus
+}
+
 // HandleTriggerSyncPipelineBinaryFileUpload is for POST multipart form data
 func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 	logger, _ := logger.GetZapLogger()
@@ -278,7 +301,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 
 	obj, err := s.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), getHttpStatus(err))
 		logger.Error(err.Error())
 		return
 	}
@@ -305,7 +328,7 @@ func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.Respon
 
 	obj, err := s.TriggerAsyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), getHttpStatus(err))
 		logger.Error(err.Error())
 		return
 	}

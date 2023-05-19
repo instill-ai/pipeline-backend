@@ -8,6 +8,7 @@ import "google/api/client.proto";
 
 import "../../../vdp/pipeline/v1alpha/healthcheck.proto";
 import "../../../vdp/pipeline/v1alpha/pipeline.proto";
+import "google/longrunning/operations.proto";
 
 // Pipeline service responds to external access
 service PipelinePublicService {
@@ -145,12 +146,47 @@ service PipelinePublicService {
     option (google.api.method_signature) = "name,file";
   }
 
+  // TriggerAsyncPipeline method receives a TriggerPipelineRequest message and
+  // returns a TriggerAsyncPipelineResponse.
+  rpc TriggerAsyncPipeline(TriggerPipelineRequest)
+      returns (TriggerAsyncPipelineResponse) {
+    option (google.api.http) = {
+      post : "/v1alpha/{name=pipelines/*}/trigger-async"
+      body : "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // TriggerAsyncPipelineBinaryFileUpload method receives a
+  // TriggerPipelineBinaryFileUploadRequest message and returns a
+  // TriggerAsyncPipelineResponse message.
+  //
+  // Endpoint: "POST /v1alpha/{name=pipelines/*}/trigger-async-multipart"
+  rpc TriggerAsyncPipelineBinaryFileUpload(
+      stream TriggerPipelineBinaryFileUploadRequest)
+      returns (TriggerAsyncPipelineResponse) {
+    option (google.api.method_signature) = "name,file";
+  }
+
   // WatchPipeline method receives a WatchPipelineRequest message
   // and returns a WatchPipelineResponse
   rpc WatchPipeline(WatchPipelineRequest)
       returns (WatchPipelineResponse) {
     option (google.api.http) = {
       get : "/v1alpha/{name=pipelines/*}/watch"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // *Longrunning operation methods
+
+  // GetPipelineOperation method receives a
+  // GetPipelineOperationRequest message and returns a
+  // GetPipelineOperationResponse message.
+  rpc GetPipelineOperation(GetPipelineOperationRequest)
+      returns (GetPipelineOperationResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{name=pipelines/*}/trigger-async/{name=operations/*}"
     };
     option (google.api.method_signature) = "name";
   }

@@ -9,6 +9,10 @@ server:
   disableusage: false
   debug: true
   maxdatasize: 12 # MB in unit
+  workflow:
+    maxworkflowtimeout: 3600 # in seconds
+    maxworkflowretry: 3
+    maxactivityretry: 1
 database:
   username: postgres
   password: password
@@ -26,8 +30,12 @@ cache:
     redisoptions:
       addr: redis:6379
 temporal:
-  clientoptions:
-    hostport: temporal:7233
+  hostport: temporal:7233
+  namespace: pipeline-backend
+  ca:
+  cert:
+  key:
+  servername:
 connectorbackend:
   host: connector-backend
   privateport: 3082

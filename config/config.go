@@ -12,7 +12,6 @@ import (
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
-	"go.temporal.io/sdk/client"
 )
 
 // Config - Global variable to export
@@ -44,6 +43,11 @@ type ServerConfig struct {
 	DisableUsage bool     `koanf:"disableusage"`
 	Debug        bool     `koanf:"debug"`
 	MaxDataSize  int      `koanf:"maxdatasize"`
+	Workflow     struct {
+		MaxWorkflowTimeout int32 `koanf:"maxworkflowtimeout"`
+		MaxWorkflowRetry   int32 `koanf:"maxworkflowretry"`
+		MaxActivityRetry   int32 `koanf:"maxactivityretry"`
+	}
 }
 
 // DatabaseConfig related to database
@@ -64,7 +68,12 @@ type DatabaseConfig struct {
 
 // TemporalConfig related to Temporal
 type TemporalConfig struct {
-	ClientOptions client.Options `koanf:"clientoptions"`
+	HostPort   string `koanf:"hostport"`
+	Namespace  string `koanf:"namespace"`
+	Ca         string `koanf:"ca"`
+	Cert       string `koanf:"cert"`
+	Key        string `koanf:"key"`
+	ServerName string `koanf:"servername"`
 }
 
 // CacheConfig related to Redis

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gogo/status"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"google.golang.org/grpc/codes"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
@@ -36,9 +37,9 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 	dstHasGrpc := false
 
 	for _, component := range recipeRscName.Components {
-		switch GetDefinitionType(component) {
+		switch utils.GetDefinitionType(component) {
 
-		case SourceConnector:
+		case utils.SourceConnector:
 
 			srcCnt += 1
 
@@ -47,7 +48,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 					status.Errorf(codes.Internal, "[pipeline-backend] Can not have more than one source connector.")
 			}
 
-			srcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(InjectOwnerToContext(ctx, owner),
+			srcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(utils.InjectOwnerToContext(ctx, owner),
 				&connectorPB.GetSourceConnectorRequest{
 					Name: component.ResourceName,
 				})
@@ -58,7 +59,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 
 			}
 
-			srcConnDefResp, err := s.connectorPublicServiceClient.GetSourceConnectorDefinition(InjectOwnerToContext(ctx, owner),
+			srcConnDefResp, err := s.connectorPublicServiceClient.GetSourceConnectorDefinition(utils.InjectOwnerToContext(ctx, owner),
 				&connectorPB.GetSourceConnectorDefinitionRequest{
 					Name: srcConnResp.GetSourceConnector().GetSourceConnectorDefinition(),
 				})
@@ -75,9 +76,9 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 				srcCategory = Grpc
 			}
 
-		case DestinationConnector:
+		case utils.DestinationConnector:
 
-			dstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(InjectOwnerToContext(ctx, owner),
+			dstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(utils.InjectOwnerToContext(ctx, owner),
 				&connectorPB.GetDestinationConnectorRequest{
 					Name: component.ResourceName,
 				})
@@ -87,7 +88,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 						"GetDestinationConnector", component.ResourceName, err.Error())
 			}
 
-			dstConnDefResp, err := s.connectorPublicServiceClient.GetDestinationConnectorDefinition(InjectOwnerToContext(ctx, owner),
+			dstConnDefResp, err := s.connectorPublicServiceClient.GetDestinationConnectorDefinition(utils.InjectOwnerToContext(ctx, owner),
 				&connectorPB.GetDestinationConnectorDefinitionRequest{
 					Name: dstConnResp.GetDestinationConnector().GetDestinationConnectorDefinition(),
 				})
