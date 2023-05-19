@@ -12,13 +12,6 @@ import (
 // TaskQueue is the Temporal task queue name for pipeline-backend
 const TaskQueue = "pipeline-backend"
 
-type exitCode int64
-
-const (
-	exitCodeOK exitCode = iota
-	exitCodeError
-)
-
 // Worker interface
 type Worker interface {
 	TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowParam) ([][]byte, error)

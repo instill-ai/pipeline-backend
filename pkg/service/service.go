@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"github.com/go-redis/redis/v9"
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
@@ -14,7 +15,6 @@ import (
 	"go.einride.tech/aip/filtering"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
-	"google.golang.org/genproto/googleapis/longrunning"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -45,8 +45,8 @@ type Service interface {
 	DeletePipeline(id string, owner *mgmtPB.User) error
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
-	TriggerSyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
-	TriggerAsyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
+	TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
+	TriggerAsyncPipeline(req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 	TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse, error)
 	TriggerAsyncPipelineBinaryFileUpload(owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 	GetModelByName(owner *mgmtPB.User, modelName string) (*modelPB.Model, error)
@@ -442,7 +442,7 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	return dbPipeline, nil
 }
 
-func preTriggerPipeline(dbPipeline *datamodel.Pipeline, req *pipelinePB.TriggerPipelineRequest, expectedMode datamodel.PipelineMode) ([]string, error) {
+func preTriggerPipeline(dbPipeline *datamodel.Pipeline, taskInputs []*modelPB.TaskInput, expectedMode datamodel.PipelineMode) ([]string, error) {
 	if dbPipeline.Mode != expectedMode {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not sync", dbPipeline.ID))
 	}
@@ -451,15 +451,15 @@ func preTriggerPipeline(dbPipeline *datamodel.Pipeline, req *pipelinePB.TriggerP
 	}
 
 	var dataMappingIndices []string
-	for range req.TaskInputs {
+	for range taskInputs {
 		dataMappingIndices = append(dataMappingIndices, ulid.Make().String())
 	}
 	return dataMappingIndices, nil
 }
 
-func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
 
-	dataMappingIndices, err := preTriggerPipeline(dbPipeline, req, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
+	dataMappingIndices, err := preTriggerPipeline(dbPipeline, req.TaskInputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
 	if err != nil {
 		return nil, err
 	}
@@ -483,15 +483,17 @@ func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerPipelineRequest, ow
 	}, nil
 }
 
-func (s *service) TriggerAsyncPipeline(req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+func (s *service) TriggerAsyncPipeline(req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
-	dataMappingIndices, err := preTriggerPipeline(dbPipeline, req, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
+	dataMappingIndices, err := preTriggerPipeline(dbPipeline, req.TaskInputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
 	if err != nil {
 		return nil, err
 	}
 	logger, _ := logger.GetZapLogger()
 
-	s.excludeResourceDetailFromRecipe(dbPipeline.Recipe)
+	if err := s.excludeResourceDetailFromRecipe(dbPipeline.Recipe); err != nil {
+		return nil, err
+	}
 
 	id, _ := uuid.NewV4()
 	workflowOptions := client.StartWorkflowOptions{
@@ -534,7 +536,7 @@ func (s *service) TriggerAsyncPipeline(req *pipelinePB.TriggerPipelineRequest, o
 	logger.Info(fmt.Sprintf("started workflow with WorkflowID %s and RunID %s", we.GetID(), we.GetRunID()))
 
 	return &pipelinePB.TriggerAsyncPipelineResponse{
-		Operation: &longrunning.Operation{
+		Operation: &longrunningpb.Operation{
 			Name: fmt.Sprintf("operations/%s", id),
 			Done: false,
 		},
@@ -604,7 +606,9 @@ func (s *service) TriggerAsyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPip
 	if err != nil {
 		return nil, err
 	}
-	s.excludeResourceDetailFromRecipe(dbPipeline.Recipe)
+	if err := s.excludeResourceDetailFromRecipe(dbPipeline.Recipe); err != nil {
+		return nil, err
+	}
 
 	// TODO: should refactor these switch cases
 	var inputByte []byte
@@ -673,7 +677,7 @@ func (s *service) TriggerAsyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPip
 	logger.Info(fmt.Sprintf("started workflow with WorkflowID %s and RunID %s", we.GetID(), we.GetRunID()))
 
 	return &pipelinePB.TriggerAsyncPipelineResponse{
-		Operation: &longrunning.Operation{
+		Operation: &longrunningpb.Operation{
 			Name: fmt.Sprintf("operations/%s", id),
 			Done: false,
 		},

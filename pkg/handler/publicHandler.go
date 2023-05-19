@@ -40,8 +40,27 @@ type PublicHandler struct {
 }
 
 type Streamer interface {
-	Recv() (*pipelinePB.TriggerPipelineBinaryFileUploadRequest, error)
 	Context() context.Context
+}
+
+type TriggerPipelineBinaryFileUploadRequestInterface interface {
+	GetName() string
+	GetTaskInput() *modelPB.TaskInputStream
+}
+
+type TriggerPipelineRequestInterface interface {
+	GetName() string
+}
+
+func receiveFromStreamer(i interface{}) (TriggerPipelineBinaryFileUploadRequestInterface, error) {
+	switch s := i.(type) {
+	case pipelinePB.PipelinePublicService_TriggerSyncPipelineBinaryFileUploadServer:
+		return s.Recv()
+	case pipelinePB.PipelinePublicService_TriggerAsyncPipelineBinaryFileUploadServer:
+		return s.Recv()
+	default:
+		return nil, fmt.Errorf("error recieve from stream")
+	}
 }
 
 // NewPublicHandler initiates a handler instance
@@ -420,7 +439,7 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 	return &resp, nil
 }
 
-func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*mgmtPB.User, *datamodel.Pipeline, error) {
+func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (*mgmtPB.User, *datamodel.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger()
 
@@ -489,7 +508,7 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req *pipelinePB.
 
 }
 
-func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest) (*pipelinePB.TriggerSyncPipelineResponse, error) {
 	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
 	if err != nil {
 		return &pipelinePB.TriggerSyncPipelineResponse{}, err
@@ -502,29 +521,13 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 	return resp, nil
 }
 
-func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
-
-	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
-	if err != nil {
-		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
-	}
-
-	resp, err := h.service.TriggerAsyncPipeline(req, owner, dbPipeline)
-	if err != nil {
-		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
-	}
-
-	return resp, nil
-}
-
 func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, error) {
 
 	owner, err := resource.GetOwner(streamer.Context(), h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
-
-	data, err := streamer.Recv()
+	data, err := receiveFromStreamer(streamer)
 
 	if err != nil {
 		return nil, nil, nil, nil, status.Errorf(codes.Unknown, "Cannot receive trigger info")
@@ -557,7 +560,7 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 	models := utils.GetModelsFromRecipe(dbPipeline.Recipe)
 
 	for {
-		data, err := streamer.Recv()
+		data, err := receiveFromStreamer(streamer)
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -581,51 +584,51 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 
 			switch model.Task {
 			case modelPB.Model_TASK_CLASSIFICATION:
-				fileLengths = data.TaskInput.GetClassification().FileLengths
-				if data.TaskInput.GetClassification().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.TaskInput.GetClassification().GetContent()...)
+				fileLengths = data.GetTaskInput().GetClassification().FileLengths
+				if data.GetTaskInput().GetClassification().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.GetTaskInput().GetClassification().GetContent()...)
 				}
 			case modelPB.Model_TASK_DETECTION:
-				fileLengths = data.TaskInput.GetDetection().FileLengths
-				if data.TaskInput.GetDetection().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.TaskInput.GetDetection().GetContent()...)
+				fileLengths = data.GetTaskInput().GetDetection().FileLengths
+				if data.GetTaskInput().GetDetection().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.GetTaskInput().GetDetection().GetContent()...)
 				}
 			case modelPB.Model_TASK_KEYPOINT:
-				fileLengths = data.TaskInput.GetKeypoint().FileLengths
-				if data.TaskInput.GetKeypoint().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.TaskInput.GetKeypoint().GetContent()...)
+				fileLengths = data.GetTaskInput().GetKeypoint().FileLengths
+				if data.GetTaskInput().GetKeypoint().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.GetTaskInput().GetKeypoint().GetContent()...)
 				}
 			case modelPB.Model_TASK_OCR:
-				fileLengths = data.TaskInput.GetOcr().FileLengths
-				if data.TaskInput.GetOcr().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.TaskInput.GetOcr().GetContent()...)
+				fileLengths = data.GetTaskInput().GetOcr().FileLengths
+				if data.GetTaskInput().GetOcr().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.GetTaskInput().GetOcr().GetContent()...)
 				}
 			case modelPB.Model_TASK_INSTANCE_SEGMENTATION:
-				fileLengths = data.TaskInput.GetInstanceSegmentation().FileLengths
-				if data.TaskInput.GetInstanceSegmentation().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.TaskInput.GetInstanceSegmentation().GetContent()...)
+				fileLengths = data.GetTaskInput().GetInstanceSegmentation().FileLengths
+				if data.GetTaskInput().GetInstanceSegmentation().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.GetTaskInput().GetInstanceSegmentation().GetContent()...)
 				}
 			case modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-				fileLengths = data.TaskInput.GetSemanticSegmentation().FileLengths
-				if data.TaskInput.GetSemanticSegmentation().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.TaskInput.GetSemanticSegmentation().GetContent()...)
+				fileLengths = data.GetTaskInput().GetSemanticSegmentation().FileLengths
+				if data.GetTaskInput().GetSemanticSegmentation().GetContent() != nil {
+					allContentFiles = append(allContentFiles, data.GetTaskInput().GetSemanticSegmentation().GetContent()...)
 				}
 			case modelPB.Model_TASK_TEXT_TO_IMAGE:
 				textToImageInput = utils.TextToImageInput{
-					Prompt:   data.TaskInput.GetTextToImage().GetPrompt(),
-					Steps:    data.TaskInput.GetTextToImage().GetSteps(),
-					CfgScale: data.TaskInput.GetTextToImage().GetCfgScale(),
-					Seed:     data.TaskInput.GetTextToImage().GetSeed(),
-					Samples:  data.TaskInput.GetTextToImage().GetSamples(),
+					Prompt:   data.GetTaskInput().GetTextToImage().GetPrompt(),
+					Steps:    data.GetTaskInput().GetTextToImage().GetSteps(),
+					CfgScale: data.GetTaskInput().GetTextToImage().GetCfgScale(),
+					Seed:     data.GetTaskInput().GetTextToImage().GetSeed(),
+					Samples:  data.GetTaskInput().GetTextToImage().GetSamples(),
 				}
 			case modelPB.Model_TASK_TEXT_GENERATION:
 				textGenerationInput = utils.TextGenerationInput{
-					Prompt:        data.TaskInput.GetTextGeneration().GetPrompt(),
-					OutputLen:     data.TaskInput.GetTextGeneration().GetOutputLen(),
-					BadWordsList:  data.TaskInput.GetTextGeneration().GetBadWordsList(),
-					StopWordsList: data.TaskInput.GetTextGeneration().GetStopWordsList(),
-					TopK:          data.TaskInput.GetTextGeneration().GetTopk(),
-					Seed:          data.TaskInput.GetTextGeneration().GetSeed(),
+					Prompt:        data.GetTaskInput().GetTextGeneration().GetPrompt(),
+					OutputLen:     data.GetTaskInput().GetTextGeneration().GetOutputLen(),
+					BadWordsList:  data.GetTaskInput().GetTextGeneration().GetBadWordsList(),
+					StopWordsList: data.GetTaskInput().GetTextGeneration().GetStopWordsList(),
+					TopK:          data.GetTaskInput().GetTextGeneration().GetTopk(),
+					Seed:          data.GetTaskInput().GetTextGeneration().GetSeed(),
 				}
 			default:
 				return nil, nil, nil, nil, fmt.Errorf("unsupported task input type")
@@ -635,17 +638,17 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 
 		switch model.Task {
 		case modelPB.Model_TASK_CLASSIFICATION:
-			allContentFiles = append(allContentFiles, data.TaskInput.GetClassification().Content...)
+			allContentFiles = append(allContentFiles, data.GetTaskInput().GetClassification().Content...)
 		case modelPB.Model_TASK_DETECTION:
-			allContentFiles = append(allContentFiles, data.TaskInput.GetDetection().Content...)
+			allContentFiles = append(allContentFiles, data.GetTaskInput().GetDetection().Content...)
 		case modelPB.Model_TASK_KEYPOINT:
-			allContentFiles = append(allContentFiles, data.TaskInput.GetKeypoint().Content...)
+			allContentFiles = append(allContentFiles, data.GetTaskInput().GetKeypoint().Content...)
 		case modelPB.Model_TASK_OCR:
-			allContentFiles = append(allContentFiles, data.TaskInput.GetOcr().Content...)
+			allContentFiles = append(allContentFiles, data.GetTaskInput().GetOcr().Content...)
 		case modelPB.Model_TASK_INSTANCE_SEGMENTATION:
-			allContentFiles = append(allContentFiles, data.TaskInput.GetInstanceSegmentation().Content...)
+			allContentFiles = append(allContentFiles, data.GetTaskInput().GetInstanceSegmentation().Content...)
 		case modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-			allContentFiles = append(allContentFiles, data.TaskInput.GetSemanticSegmentation().Content...)
+			allContentFiles = append(allContentFiles, data.GetTaskInput().GetSemanticSegmentation().Content...)
 		default:
 			return nil, nil, nil, nil, fmt.Errorf("unsupported task input type")
 		}
@@ -692,20 +695,6 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 	}
 
 	stream.SendAndClose(obj)
-
-	return nil
-}
-
-func (h *PublicHandler) TriggerAsyncPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerAsyncPipelineBinaryFileUploadServer) error {
-
-	owner, dbPipeline, model, input, err := h.PreTriggerPipelineBinaryFileUpload(stream)
-	if err != nil {
-		return err
-	}
-
-	go h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &input)
-
-	stream.SendAndClose(&pipelinePB.TriggerAsyncPipelineResponse{})
 
 	return nil
 }

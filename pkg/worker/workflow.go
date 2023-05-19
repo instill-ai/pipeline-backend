@@ -189,11 +189,15 @@ func (w *worker) TriggerActivity(ctx context.Context, param *TriggerActivityPara
 		if err != nil {
 			return nil, err
 		}
-		protojson.Unmarshal(json, &input)
+		if err := protojson.Unmarshal(json, &input); err != nil {
+			return nil, err
+		}
 		inputs = append(inputs, &input)
 	}
 	modelOutput, err := Trigger(w.modelPublicServiceClient, w.redisClient, inputs, param.DataMappingIndices, param.Model, param.OwnerPermalink)
-
+	if err != nil {
+		return nil, err
+	}
 	modelOutputJson, err := protojson.Marshal(modelOutput)
 	if err != nil {
 		return nil, err
@@ -300,10 +304,15 @@ func (w *worker) DestinationActivity(ctx context.Context, param *DestinationActi
 		Recipe: func() *pipelinePB.Recipe {
 			if param.DbPipeline.Recipe != nil {
 				b, err := json.Marshal(param.DbPipeline.Recipe)
+				if err != nil {
+					logger.Error(err.Error())
+					return nil
+				}
 				pbRecipe := pipelinePB.Recipe{}
 				err = json.Unmarshal(b, &pbRecipe)
 				if err != nil {
 					logger.Error(err.Error())
+					return nil
 				}
 				return &pbRecipe
 			}
