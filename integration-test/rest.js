@@ -106,15 +106,15 @@ export function setup() {
 
   });
 
-  group("Connector Backend API: Create a CSV destination connector", function () {
+  group("Connector Backend API: Create a CSV destination connector 1", function () {
 
     var res = http.request("POST", `${connectorPublicHost}/v1alpha/destination-connectors`,
       JSON.stringify({
-        "id": constant.dstCSVConnID,
+        "id": constant.dstCSVConnID1,
         "destination_connector_definition": "destination-connector-definitions/destination-csv",
         "connector": {
           "configuration": {
-            "destination_path": "/local/pipeline-backend-test"
+            "destination_path": "/local/pipeline-backend-test-1"
           }
         }
       }), constant.params)
@@ -127,7 +127,38 @@ export function setup() {
     let currentTime = new Date().getTime();
     let timeoutTime = new Date().getTime() + 300000;
     while (timeoutTime > currentTime) {
-      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}/watch`)
+      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID1}/watch`)
+      if (res.json().state === "STATE_CONNECTED") {
+        break
+      }
+      sleep(1)
+      currentTime = new Date().getTime();
+    }
+
+  });
+
+  group("Connector Backend API: Create a CSV destination connector 2", function () {
+
+    var res = http.request("POST", `${connectorPublicHost}/v1alpha/destination-connectors`,
+      JSON.stringify({
+        "id": constant.dstCSVConnID2,
+        "destination_connector_definition": "destination-connector-definitions/destination-csv",
+        "connector": {
+          "configuration": {
+            "destination_path": "/local/pipeline-backend-test-2"
+          }
+        }
+      }), constant.params)
+
+    check(res, {
+      "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
+    })
+
+    // Check connector state being updated in 300 secs
+    let currentTime = new Date().getTime();
+    let timeoutTime = new Date().getTime() + 300000;
+    while (timeoutTime > currentTime) {
+      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID2}/watch`)
       if (res.json().state === "STATE_CONNECTED") {
         break
       }
@@ -236,6 +267,7 @@ export default function (data) {
   triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
   triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
   triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
+  triggerAsync.CheckTriggerAsyncMultiImageMultiModelMultipleDestination()
 
 }
 
@@ -274,8 +306,13 @@ export function teardown(data) {
   });
 
   group("Connector Backend API: Delete the csv destination connector", function () {
-    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID}`), {
-      [`DELETE /v1alpha/destination-connectors/${constant.dstCSVConnID} response status 204`]: (r) => r.status === 204,
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID1}`), {
+      [`DELETE /v1alpha/destination-connectors/${constant.dstCSVConnID1} response status 204`]: (r) => r.status === 204,
+    });
+  });
+  group("Connector Backend API: Delete the csv destination connector", function () {
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID2}`), {
+      [`DELETE /v1alpha/destination-connectors/${constant.dstCSVConnID2} response status 204`]: (r) => r.status === 204,
     });
   });
 
