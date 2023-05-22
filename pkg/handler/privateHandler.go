@@ -52,7 +52,8 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 		filtering.DeclareIdent("uid", filtering.TypeString),
 		filtering.DeclareIdent("id", filtering.TypeString),
 		filtering.DeclareIdent("description", filtering.TypeString),
-		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeString)),
+		// only support "recipe.components.resource_name" for now
+		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
 		filtering.DeclareEnumIdent("mode", mode.Type()),
 		filtering.DeclareEnumIdent("state", state.Type()),
 		filtering.DeclareIdent("owner", filtering.TypeString),

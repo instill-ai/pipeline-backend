@@ -64,7 +64,7 @@ export function CheckList() {
       view: "VIEW_FULL"
     }, {}), {
       [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response pipelines[0].recipe is valid`]: (r) => helper.validateRecipe(r.message.pipelines[0].recipe, true),
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response pipelines[0].recipe is valid`]: (r) => helper.validateRecipeGRPC(r.message.pipelines[0].recipe, true),
     });
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
@@ -133,17 +133,17 @@ export function CheckList() {
     var modelPermalink = `models/${modelUid}`
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-      filter: `mode=MODE_SYNC AND recipe.source="${srcConnPermalink}"`
+      filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}"`
     }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.source="${srcConnPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.source="${srcConnPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-      filter: `mode=MODE_SYNC AND recipe.destination="${dstConnPermalink}" AND recipe.models:"${modelPermalink}"`
+      filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}"`
     }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.destination="${dstConnPermalink}" AND recipe.models:"${modelPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.destination="${dstConnPermalink}" AND recipe.models:"${modelPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
     // Delete the pipelines

@@ -94,14 +94,14 @@ export function CheckList() {
     var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
     var modelPermalink = `models/${modelUid}`
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22`, null, constant.params), {
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22`, null, constant.params), {
+      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.destination=%22${dstConnPermalink}%22%20AND%20recipe.models:%22${modelPermalink}%22`, null, constant.params), {
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.models:%22${modelPermalink}%22 response 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.models:%22${modelPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22`, null, constant.params), {
+      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
     // Delete the pipelines

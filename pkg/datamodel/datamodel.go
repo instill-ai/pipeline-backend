@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"google.golang.org/protobuf/types/known/structpb"
 	"gorm.io/gorm"
 
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
@@ -73,14 +74,16 @@ func (p PipelineState) Value() (driver.Value, error) {
 
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
-	Source      string   `json:"source,omitempty"`
-	Destination string   `json:"destination,omitempty"`
-	Models      []string `json:"models,omitempty"`
-	Logics      []string `json:"logics,omitempty"`
+	Version    string       `json:"version,omitempty"`
+	Components []*Component `json:"components,omitempty"`
 }
 
-// Logic is the data model of logic operator
-type Logic struct {
+type Component struct {
+	Id             string            `json:"id,omitempty"`
+	ResourceName   string            `json:"resource_name,omitempty"`
+	ResourceDetail *structpb.Struct  `json:"resource_detail,omitempty"`
+	Metadata       *structpb.Struct  `json:"metadata,omitempty"`
+	Dependencies   map[string]string `json:"dependencies,omitempty"`
 }
 
 // Scan function for custom GORM type Recipe

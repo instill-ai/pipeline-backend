@@ -27,7 +27,7 @@ export function CheckCreate() {
       "POST /v1alpha/pipelines response pipeline uid": (r) => helper.isUUID(r.json().pipeline.uid),
       "POST /v1alpha/pipelines response pipeline id": (r) => r.json().pipeline.id === reqBody.id,
       "POST /v1alpha/pipelines response pipeline description": (r) => r.json().pipeline.description === reqBody.description,
-      "POST /v1alpha/pipelines response pipeline recipe is valid": (r) => helper.validateRecipe(r.json().pipeline.recipe),
+      "POST /v1alpha/pipelines response pipeline recipe is valid": (r) => helper.validateRecipe(r.json().pipeline.recipe, false),
       "POST /v1alpha/pipelines response pipeline user is UUID": (r) => helper.isValidOwner(r.json().pipeline.user),
       "POST /v1alpha/pipelines response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
       "POST /v1alpha/pipelines response pipeline mode": (r) => r.json().pipeline.mode === "MODE_SYNC",
@@ -36,7 +36,7 @@ export function CheckCreate() {
     });
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/watch`, null, constant.params), {
-      "GET /v1alpha/pipelines/watch sync pipeline response status is 201": (r) => r.status === 200,
+      "GET /v1alpha/pipelines/watch sync pipeline response status is 200": (r) => r.status === 200,
       "GET /v1alpha/pipelines/watch sync pipeline response pipeline state ACTIVE": (r) => r.json().state === "STATE_ACTIVE",
     });
 
@@ -130,7 +130,7 @@ export function CheckList() {
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?view=VIEW_FULL`, null, constant.params), {
       [`GET /v1alpha/pipelines?view=VIEW_FULL response pipelines[0] has recipe`]: (r) => r.json().pipelines[0].recipe !== null,
-      [`GET /v1alpha/pipelines?view=VIEW_FULL response pipelines[0] recipe is valid`]: (r) => helper.validateRecipe(r.json().pipelines[0].recipe),
+      [`GET /v1alpha/pipelines?view=VIEW_FULL response pipelines[0] recipe is valid`]: (r) => helper.validateRecipe(r.json().pipelines[0].recipe, false),
     });
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?view=VIEW_BASIC`, null, constant.params), {
@@ -179,14 +179,14 @@ export function CheckList() {
     var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
     var modelPermalink = `models/${modelUid}`
 
-    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22`, null, constant.params), {
-      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22`, null, constant.params), {
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.destination=%22${dstConnPermalink}%22%20AND%20recipe.models:%22${modelPermalink}%22`, null, constant.params), {
-      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.models:%22${modelPermalink}%22 response 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.source=%22${dstConnPermalink}%22%20AND%20recipe.models:%22${modelPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22`, null, constant.params), {
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
     // Delete the pipelines
@@ -281,7 +281,7 @@ export function CheckUpdate() {
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline mode (OUTPUT_ONLY)`]: (r) => r.json().pipeline.mode === resOrigin.json().pipeline.mode,
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline state (OUTPUT_ONLY)`]: (r) => r.json().pipeline.state === resOrigin.json().pipeline.state,
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline description (OPTIONAL)`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
-      [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline recipe (IMMUTABLE)`]: (r) => helper.deepEqual(r.json().pipeline.recipe, reqBody.recipe),
+      [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline recipe (IMMUTABLE)`]: (r) => helper.checkRecipeIsImmutable(r.json().pipeline.recipe, reqBody.recipe),
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline user is UUID`]: (r) => helper.isValidOwner(r.json().pipeline.user),
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline create_time (OUTPUT_ONLY)`]: (r) => new Date(r.json().pipeline.create_time).getTime() > new Date().setTime(0),
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline update_time (OUTPUT_ONLY)`]: (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0),

@@ -141,37 +141,35 @@
       "title": "Recipe",
       "description": "The specification of a recipe",
       "additionalProperties": false,
-      "required": ["source", "models", "destination"],
+      "required": ["version", "components"],
       "properties": {
-        "source": {
-          "type": "string",
-          "title": "Source",
-          "description": "The resource name of the source connector in a recipe",
-          "ui_order": 0,
-          "ui_hidden": true,
-          "ui_disabled": true,
-          "ui_component": "text"
+        "version": {
+            "type": "string",
+            "default": "",
+            "title": "The version Schema"
         },
-        "models": {
-          "type": "array",
-          "title": "Models",
-          "description": "A list of resource names of all the models in a recipe",
-          "items": {
-            "type": "string"
-          },
-          "ui_order": 1,
-          "ui_hidden": true,
-          "ui_disabled": true,
-          "ui_component": "text"
-        },
-        "destination": {
-          "type": "string",
-          "title": "Destination",
-          "description": "The resource name of the destination connector in a recipe",
-          "ui_order": 2,
-          "ui_hidden": true,
-          "ui_disabled": true,
-          "ui_component": "text"
+        "components": {
+            "type": "array",
+            "default": [],
+            "title": "The components Schema",
+            "items": {
+                "type": "object",
+                "title": "A Schema",
+                "required": [
+                    "id",
+                    "resource_name"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "The id"
+                    },
+                    "resource_name": {
+                        "type": "string",
+                        "title": "The resource name"
+                    }
+                }
+            }
         }
       }
     }
