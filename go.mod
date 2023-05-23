@@ -30,7 +30,6 @@ require (
 	gorm.io/gorm v1.23.8
 )
 
-require cloud.google.com/go/longrunning v0.3.0 // indirect
 require go.temporal.io/api v1.16.0 // indirect
 
 require (
