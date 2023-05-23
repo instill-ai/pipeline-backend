@@ -521,6 +521,19 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 	return resp, nil
 }
 
+func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
+	if err != nil {
+		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
+	}
+
+	resp, err := h.service.TriggerAsyncPipeline(req, owner, dbPipeline)
+	if err != nil {
+		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
+	}
+	return resp, nil
+}
+
 func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, error) {
 
 	owner, err := resource.GetOwner(streamer.Context(), h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())

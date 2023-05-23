@@ -249,10 +249,10 @@ func main() {
 	)
 
 	// Register custom route for POST multipart form data
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-sync-multipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerSyncPipelineBinaryFileUpload)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/triggerSyncMultipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerSyncPipelineBinaryFileUpload)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/trigger-async-multipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerAsyncPipelineBinaryFileUpload)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/triggerAsyncMultipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerAsyncPipelineBinaryFileUpload)); err != nil {
 		logger.Fatal(err.Error())
 	}
 

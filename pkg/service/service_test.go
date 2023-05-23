@@ -40,11 +40,11 @@ func TestCreatePipeline(t *testing.T) {
 			Recipe: &datamodel.Recipe{
 				Version: "v1alpha",
 				Components: []*datamodel.Component{
-					&datamodel.Component{
+					{
 						Id:           "s01",
 						ResourceName: "source-connectors/source-http",
 					},
-					&datamodel.Component{
+					{
 						Id:           "d01",
 						ResourceName: "destination-connectors/destination-http",
 					},
@@ -81,12 +81,13 @@ func TestCreatePipeline(t *testing.T) {
 		mockModelPrivateServiceClient := NewMockModelPrivateServiceClient(ctrl)
 
 		mockControllerPrivateServiceClient := NewMockControllerPrivateServiceClient(ctrl)
+		// mockRedisClient := NewMockRes
 
 		// mockControllerPrivateServiceClient.EXPECT().GetResource(gomock.Any(), gomock.Any()).Return(nil, nil).Times(2)
 		// mockControllerPrivateServiceClient.EXPECT().UpdateResource(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 
 		s := service.NewService(mockRepository, mockMgmtPrivateServiceClient, mockConnectorPublicServiceClient, mockConnectorPrivateServiceClient,
-			mockModelPublicServiceClient, mockModelPrivateServiceClient, mockControllerPrivateServiceClient, nil)
+			mockModelPublicServiceClient, mockModelPrivateServiceClient, mockControllerPrivateServiceClient, nil, nil)
 
 		_, err := s.CreatePipeline(&owner, &normalPipeline)
 

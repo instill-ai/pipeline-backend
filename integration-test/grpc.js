@@ -127,20 +127,6 @@ export function setup() {
       "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
-    // Check connector state being updated in 300 secs
-    let currentTime = new Date().getTime();
-    let timeoutTime = new Date().getTime() + 300000;
-    while (timeoutTime > currentTime) {
-      let res = client.invoke('vdp.connector.v1alpha.ConnectorPublicService/WatchDestinationConnector', {
-        name: `destination_connector/${constant.dstCSVConnID1}`
-      })
-      if (res.message.state === "STATE_CONNECTED") {
-        break
-      }
-      sleep(1)
-      currentTime = new Date().getTime();
-    }
-
   });
   group("Connector Backend API: Create a CSV destination connector 2", function () {
 
@@ -157,20 +143,6 @@ export function setup() {
     }), {
       "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
     });
-
-    // Check connector state being updated in 300 secs
-    let currentTime = new Date().getTime();
-    let timeoutTime = new Date().getTime() + 300000;
-    while (timeoutTime > currentTime) {
-      let res = client.invoke('vdp.connector.v1alpha.ConnectorPublicService/WatchDestinationConnector', {
-        name: `destination_connector/${constant.dstCSVConnID2}`
-      })
-      if (res.message.state === "STATE_CONNECTED") {
-        break
-      }
-      sleep(1)
-      currentTime = new Date().getTime();
-    }
 
   });
 

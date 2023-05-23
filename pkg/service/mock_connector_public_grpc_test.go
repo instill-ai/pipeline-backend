@@ -196,26 +196,6 @@ func (mr *MockConnectorPublicServiceClientMockRecorder) DisconnectSourceConnecto
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DisconnectSourceConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).DisconnectSourceConnector), varargs...)
 }
 
-// GetConnectorOperation mocks base method.
-func (m *MockConnectorPublicServiceClient) GetConnectorOperation(arg0 context.Context, arg1 *connectorv1alpha.GetConnectorOperationRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.GetConnectorOperationResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "GetConnectorOperation", varargs...)
-	ret0, _ := ret[0].(*connectorv1alpha.GetConnectorOperationResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetConnectorOperation indicates an expected call of GetConnectorOperation.
-func (mr *MockConnectorPublicServiceClientMockRecorder) GetConnectorOperation(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConnectorOperation", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).GetConnectorOperation), varargs...)
-}
-
 // GetDestinationConnector mocks base method.
 func (m *MockConnectorPublicServiceClient) GetDestinationConnector(arg0 context.Context, arg1 *connectorv1alpha.GetDestinationConnectorRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.GetDestinationConnectorResponse, error) {
 	m.ctrl.T.Helper()
@@ -514,6 +494,46 @@ func (mr *MockConnectorPublicServiceClientMockRecorder) RenameSourceConnector(ar
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenameSourceConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).RenameSourceConnector), varargs...)
+}
+
+// TestDestinationConnector mocks base method.
+func (m *MockConnectorPublicServiceClient) TestDestinationConnector(arg0 context.Context, arg1 *connectorv1alpha.TestDestinationConnectorRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.TestDestinationConnectorResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "TestDestinationConnector", varargs...)
+	ret0, _ := ret[0].(*connectorv1alpha.TestDestinationConnectorResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TestDestinationConnector indicates an expected call of TestDestinationConnector.
+func (mr *MockConnectorPublicServiceClientMockRecorder) TestDestinationConnector(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TestDestinationConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).TestDestinationConnector), varargs...)
+}
+
+// TestSourceConnector mocks base method.
+func (m *MockConnectorPublicServiceClient) TestSourceConnector(arg0 context.Context, arg1 *connectorv1alpha.TestSourceConnectorRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.TestSourceConnectorResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "TestSourceConnector", varargs...)
+	ret0, _ := ret[0].(*connectorv1alpha.TestSourceConnectorResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TestSourceConnector indicates an expected call of TestSourceConnector.
+func (mr *MockConnectorPublicServiceClientMockRecorder) TestSourceConnector(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TestSourceConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).TestSourceConnector), varargs...)
 }
 
 // UpdateDestinationConnector mocks base method.

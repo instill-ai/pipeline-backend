@@ -25,13 +25,13 @@ import "../../../vdp/model/v1alpha/task_text_generation.proto";
 import "../../../vdp/model/v1alpha/task_unspecified.proto";
 
 
-// Represents a pipeline component 
+// Represents a pipeline component
 message Component {
 
   // Component id that is given by the users
   string id = 1 [ (google.api.field_behavior) = REQUIRED ];
   // A pipeline component resource name
-  string resource_name = 2 [ 
+  string resource_name = 2 [
     (google.api.field_behavior) = REQUIRED ,
     (google.api.resource_reference).type = "*"
   ];
@@ -41,7 +41,7 @@ message Component {
   google.protobuf.Struct metadata = 4;
   // Dependencies for the pipeline component
   map<string, string> dependencies = 5;
-  
+
 }
 
 // Pipeline represents a pipeline recipe
@@ -341,8 +341,8 @@ message ModelOutput {
       [ (google.api.field_behavior) = OUTPUT_ONLY ];
 }
 
-// TriggerPipelineRequest represents a request to trigger a pipeline
-message TriggerPipelineRequest {
+// TriggerSyncPipelineRequest represents a request to trigger a pipeline
+message TriggerSyncPipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
@@ -362,9 +362,9 @@ message TriggerSyncPipelineResponse {
   repeated ModelOutput model_outputs = 2;
 }
 
-// TriggerPipelineBinaryFileUploadRequest represents a request to trigger a
+// TriggerSyncPipelineBinaryFileUploadRequest represents a request to trigger a
 // pipeline
-message TriggerPipelineBinaryFileUploadRequest {
+message TriggerSyncPipelineBinaryFileUploadRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
@@ -383,6 +383,18 @@ message TriggerSyncPipelineBinaryFileUploadResponse {
   repeated ModelOutput model_outputs = 2;
 }
 
+// TriggerAsyncPipelineRequest represents a request to trigger a async pipeline
+message TriggerAsyncPipelineRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+  ];
+  // Input to the pipeline
+  repeated model.v1alpha.TaskInput task_inputs = 2
+      [ (google.api.field_behavior) = REQUIRED ];
+}
+
 // TriggerAsyncPipelineResponse represents a response for the longrunning operation
 // of a pipeline
 message TriggerAsyncPipelineResponse {
@@ -394,14 +406,39 @@ message TriggerAsyncPipelineResponse {
       [ (google.api.field_behavior) = OUTPUT_ONLY ];
 }
 
-// GetPipelineOperationRequest represents a request to query a longrunning operation
-message GetPipelineOperationRequest {
+
+// TriggerAsyncPipelineBinaryFileUploadRequest represents a request to trigger a
+// pipeline
+message TriggerAsyncPipelineBinaryFileUploadRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+  ];
+  // Input to the pipeline
+  model.v1alpha.TaskInputStream task_input = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// TriggerAsyncPipelineBinaryFileUploadResponse represents a response for the longrunning operation
+// of a pipeline
+message TriggerAsyncPipelineBinaryFileUploadResponse {
+  // Trigger async pipeline operation message
+  google.longrunning.Operation operation = 1
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // The data mapping indices for each input
+  repeated string data_mapping_indices = 2
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}
+
+
+// GetTriggerAsyncOperationRequest represents a request to query a longrunning operation
+message GetTriggerAsyncOperationRequest {
   // The name of the operation resource.
   string name = 1 [ (google.api.field_behavior) = REQUIRED ];
 }
 
-// GetPipelineOperationResponse represents a response for a longrunning operation
-message GetPipelineOperationResponse {
+// GetTriggerAsyncOperationResponse represents a response for a longrunning operation
+message GetTriggerAsyncOperationResponse {
   // The retrieved longrunning operation
   google.longrunning.Operation operation = 1
     [ (google.api.field_behavior) = OUTPUT_ONLY ];

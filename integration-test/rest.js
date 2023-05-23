@@ -123,18 +123,6 @@ export function setup() {
       "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
     })
 
-    // Check connector state being updated in 300 secs
-    let currentTime = new Date().getTime();
-    let timeoutTime = new Date().getTime() + 300000;
-    while (timeoutTime > currentTime) {
-      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID1}/watch`)
-      if (res.json().state === "STATE_CONNECTED") {
-        break
-      }
-      sleep(1)
-      currentTime = new Date().getTime();
-    }
-
   });
 
   group("Connector Backend API: Create a CSV destination connector 2", function () {
@@ -153,18 +141,6 @@ export function setup() {
     check(res, {
       "POST /v1alpha/destination-connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
     })
-
-    // Check connector state being updated in 300 secs
-    let currentTime = new Date().getTime();
-    let timeoutTime = new Date().getTime() + 300000;
-    while (timeoutTime > currentTime) {
-      var res = http.request("GET", `${connectorPublicHost}/v1alpha/destination-connectors/${constant.dstCSVConnID2}/watch`)
-      if (res.json().state === "STATE_CONNECTED") {
-        break
-      }
-      sleep(1)
-      currentTime = new Date().getTime();
-    }
 
   });
 

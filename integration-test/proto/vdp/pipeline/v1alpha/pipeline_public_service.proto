@@ -8,7 +8,6 @@ import "google/api/client.proto";
 
 import "../../../vdp/pipeline/v1alpha/healthcheck.proto";
 import "../../../vdp/pipeline/v1alpha/pipeline.proto";
-import "google/longrunning/operations.proto";
 
 // Pipeline service responds to external access
 service PipelinePublicService {
@@ -124,34 +123,34 @@ service PipelinePublicService {
     option (google.api.method_signature) = "name,new_pipeline_id";
   }
 
-  // TriggerSyncPipeline method receives a TriggerPipelineRequest message and
+  // TriggerSyncPipeline method receives a TriggerSyncPipelineRequest message and
   // returns a TriggerSyncPipelineResponse.
-  rpc TriggerSyncPipeline(TriggerPipelineRequest)
+  rpc TriggerSyncPipeline(TriggerSyncPipelineRequest)
       returns (TriggerSyncPipelineResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=pipelines/*}/trigger-sync"
+      post : "/v1alpha/{name=pipelines/*}/triggerSync"
       body : "*"
     };
     option (google.api.method_signature) = "name,inputs";
   }
 
   // TriggerSyncPipelineBinaryFileUpload method receives a
-  // TriggerPipelineBinaryFileUploadRequest message and returns a
+  // TriggerSyncPipelineBinaryFileUploadRequest message and returns a
   // TriggerSyncPipelineBinaryFileUploadResponse message.
   //
-  // Endpoint: "POST /v1alpha/{name=pipelines/*}/trigger-sync-multipart"
+  // Endpoint: "POST /v1alpha/{name=pipelines/*}/triggerSyncMultipart"
   rpc TriggerSyncPipelineBinaryFileUpload(
-      stream TriggerPipelineBinaryFileUploadRequest)
+      stream TriggerSyncPipelineBinaryFileUploadRequest)
       returns (TriggerSyncPipelineBinaryFileUploadResponse) {
     option (google.api.method_signature) = "name,file";
   }
 
   // TriggerAsyncPipeline method receives a TriggerPipelineRequest message and
   // returns a TriggerAsyncPipelineResponse.
-  rpc TriggerAsyncPipeline(TriggerPipelineRequest)
+  rpc TriggerAsyncPipeline(TriggerAsyncPipelineRequest)
       returns (TriggerAsyncPipelineResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=pipelines/*}/trigger-async"
+      post : "/v1alpha/{name=pipelines/*}/triggerAsync"
       body : "*"
     };
     option (google.api.method_signature) = "name,inputs";
@@ -161,10 +160,10 @@ service PipelinePublicService {
   // TriggerPipelineBinaryFileUploadRequest message and returns a
   // TriggerAsyncPipelineResponse message.
   //
-  // Endpoint: "POST /v1alpha/{name=pipelines/*}/trigger-async-multipart"
+  // Endpoint: "POST /v1alpha/{name=pipelines/*}/triggerAsyncMultipart"
   rpc TriggerAsyncPipelineBinaryFileUpload(
-      stream TriggerPipelineBinaryFileUploadRequest)
-      returns (TriggerAsyncPipelineResponse) {
+      stream TriggerAsyncPipelineBinaryFileUploadRequest)
+      returns (TriggerAsyncPipelineBinaryFileUploadResponse) {
     option (google.api.method_signature) = "name,file";
   }
 
@@ -180,13 +179,13 @@ service PipelinePublicService {
 
   // *Longrunning operation methods
 
-  // GetPipelineOperation method receives a
-  // GetPipelineOperationRequest message and returns a
-  // GetPipelineOperationResponse message.
-  rpc GetPipelineOperation(GetPipelineOperationRequest)
-      returns (GetPipelineOperationResponse) {
+  // GetTriggerAsyncOperation method receives a
+  // GetTriggerAsyncOperationRequest message and returns a
+  // GetTriggerAsyncOperationResponse message.
+  rpc GetTriggerAsyncOperation(GetTriggerAsyncOperationRequest)
+      returns (GetTriggerAsyncOperationResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/{name=pipelines/*}/trigger-async/{name=operations/*}"
+      get : "/v1alpha/{name=triggerAsyncOperations/*}"
     };
     option (google.api.method_signature) = "name";
   }
