@@ -8,10 +8,10 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 )
 
-func parseImageFormDataInputsToBytes(req *http.Request) (ImageInput *service.ImageInput, err error) {
+func parseImageFormDataInputsToBytes(req *http.Request) (ImageInput *utils.ImageInput, err error) {
 
 	inputs := req.MultipartForm.File["file"]
 	content := make([]byte, 0, len(inputs))
@@ -44,14 +44,14 @@ func parseImageFormDataInputsToBytes(req *http.Request) (ImageInput *service.Ima
 		fileNames = append(fileNames, input.Filename)
 		fileLengths = append(fileLengths, uint64(buff.Len()))
 	}
-	return &service.ImageInput{
+	return &utils.ImageInput{
 		Content:     content,
 		FileNames:   fileNames,
 		FileLengths: fileLengths,
 	}, nil
 }
 
-func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput *service.TextToImageInput, err error) {
+func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput *utils.TextToImageInput, err error) {
 	prompts := req.MultipartForm.Value["prompt"]
 	if len(prompts) == 0 {
 		return nil, fmt.Errorf("missing prompt input")
@@ -113,7 +113,7 @@ func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput *s
 		return nil, fmt.Errorf("we only allow samples=1 for now and will improve to allow the generation of multiple samples in the future")
 	}
 
-	return &service.TextToImageInput{
+	return &utils.TextToImageInput{
 		Prompt:   prompts[0],
 		Steps:    int64(step),
 		CfgScale: float32(cfgScale),
@@ -122,7 +122,7 @@ func parseImageFormDataTextToImageInputs(req *http.Request) (textToImageInput *s
 	}, nil
 }
 
-func parseTextFormDataTextGenerationInputs(req *http.Request) (textGeneration *service.TextGenerationInput, err error) {
+func parseTextFormDataTextGenerationInputs(req *http.Request) (textGeneration *utils.TextGenerationInput, err error) {
 	prompts := req.MultipartForm.Value["prompt"]
 	if len(prompts) != 1 {
 		return nil, fmt.Errorf("only support batchsize 1")
@@ -168,7 +168,7 @@ func parseTextFormDataTextGenerationInputs(req *http.Request) (textGeneration *s
 	}
 
 	// TODO: add support for bad/stop words
-	return &service.TextGenerationInput{
+	return &utils.TextGenerationInput{
 		Prompt:        prompts[0],
 		OutputLen:     int64(outputLen),
 		BadWordsList:  badWordsList,

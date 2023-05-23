@@ -58,6 +58,7 @@ export const params = {
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: "360s",
 };
 
 const randomUUID = uuidv4();
@@ -167,7 +168,8 @@ export const detSynGRPCMultiModelRecipe = {
   },
 };
 
-export const dstCSVConnID = "some-cool-name-for-dst-csv-connector"
+export const dstCSVConnID1 = "some-cool-name-for-dst-csv-connector-1"
+export const dstCSVConnID2 = "some-cool-name-for-dst-csv-connector-2"
 
 export const detAsyncSingleModelRecipe = {
   recipe: {
@@ -183,7 +185,7 @@ export const detAsyncSingleModelRecipe = {
       },
       {
         "id": "d01",
-        "resource_name": `destination-connectors/${dstCSVConnID}`,
+        "resource_name": `destination-connectors/${dstCSVConnID1}`,
       },
     ]
   },
@@ -207,7 +209,35 @@ export const detAsyncMultiModelRecipe = {
       },
       {
         "id": "d01",
-        "resource_name": `destination-connectors/${dstCSVConnID}`,
+        "resource_name": `destination-connectors/${dstCSVConnID1}`,
+      },
+    ]
+  },
+};
+
+export const detAsyncMultiModelMultipleDestinationRecipe = {
+  recipe: {
+    version: "v1alpha",
+    components: [
+      {
+        "id": "s01",
+        "resource_name": "source-connectors/source-http",
+      },
+      {
+        "id": "m01",
+        "resource_name": `models/${model_id}`,
+      },
+      {
+        "id": "m02",
+        "resource_name": `models/${model_id}`,
+      },
+      {
+        "id": "d01",
+        "resource_name": `destination-connectors/${dstCSVConnID1}`,
+      },
+      {
+        "id": "d02",
+        "resource_name": `destination-connectors/${dstCSVConnID2}`,
       },
     ]
   },

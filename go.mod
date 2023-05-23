@@ -3,6 +3,7 @@ module github.com/instill-ai/pipeline-backend
 go 1.19
 
 require (
+	cloud.google.com/go/longrunning v0.3.0
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/gogo/status v1.1.1
@@ -11,16 +12,16 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/iancoleman/strcase v0.2.0
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230519093047-ee0261f434fa
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230523000406-299e9451af13
 	github.com/instill-ai/usage-client v0.2.3-alpha
-	github.com/instill-ai/x v0.2.0-alpha
+	github.com/instill-ai/x v0.3.0-alpha
 	github.com/knadh/koanf v1.4.3
 	github.com/mennanov/fieldmask-utils v0.6.0
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/rs/cors v1.8.2
 	github.com/stretchr/testify v1.8.2
 	go.einride.tech/aip v0.58.1
-	go.temporal.io/sdk v1.17.0
+	go.temporal.io/sdk v1.21.0
 	go.uber.org/zap v1.23.0
 	golang.org/x/net v0.9.0
 	google.golang.org/grpc v1.54.0
@@ -29,7 +30,7 @@ require (
 	gorm.io/gorm v1.23.8
 )
 
-require cloud.google.com/go/longrunning v0.3.0 // indirect
+require go.temporal.io/api v1.16.0 // indirect
 
 require (
 	github.com/catalinc/hashcash v0.0.0-20220723060415-5e3ec3e24f67 // indirect
@@ -65,13 +66,12 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v5 v5.0.0
 	github.com/stretchr/objx v0.5.0 // indirect
-	go.temporal.io/api v1.12.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
 	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
-	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
-	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f
+	golang.org/x/time v0.1.0 // indirect
+	google.golang.org/genproto v0.0.0-20230127162408-596548ed4efa
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

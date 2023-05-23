@@ -111,15 +111,15 @@ export function setup() {
 
   });
 
-  group("Connector Backend API: Create a CSV destination connector", function () {
+  group("Connector Backend API: Create a CSV destination connector 1", function () {
 
     check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
       destination_connector: {
-        "id": constant.dstCSVConnID,
+        "id": constant.dstCSVConnID1,
         "destination_connector_definition": "destination-connector-definitions/destination-csv",
         "connector": {
           "configuration": {
-            "destination_path": "/local/pipeline-backend-test"
+            "destination_path": "/local/pipeline-backend-test-1"
           }
         }
       }
@@ -127,19 +127,22 @@ export function setup() {
       "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
-    // Check connector state being updated in 300 secs
-    let currentTime = new Date().getTime();
-    let timeoutTime = new Date().getTime() + 300000;
-    while (timeoutTime > currentTime) {
-      let res = client.invoke('vdp.connector.v1alpha.ConnectorPublicService/WatchDestinationConnector', {
-        name: `destination_connector/${constant.dstCSVConnID}`
-      })
-      if (res.message.state === "STATE_CONNECTED") {
-        break
+  });
+  group("Connector Backend API: Create a CSV destination connector 2", function () {
+
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
+      destination_connector: {
+        "id": constant.dstCSVConnID2,
+        "destination_connector_definition": "destination-connector-definitions/destination-csv",
+        "connector": {
+          "configuration": {
+            "destination_path": "/local/pipeline-backend-test-2"
+          }
+        }
       }
-      sleep(1)
-      currentTime = new Date().getTime();
-    }
+    }), {
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
+    });
 
   });
 
@@ -237,6 +240,7 @@ export default function (data) {
   triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
   triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
   triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
+  triggerAsync.CheckTriggerAsyncMultiImageMultiModelMultipleDestination()
 
   if (!constant.apiGatewayMode) {
     pipelinePrivate.CheckList()
@@ -309,9 +313,16 @@ export function teardown(data) {
     });
   });
 
-  group("Connector Backend API: Delete the csv destination connector", function () {
+  group("Connector Backend API: Delete the csv destination connector 1", function () {
     check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector`, {
-      name: `destination-connectors/${constant.dstCSVConnID}`
+      name: `destination-connectors/${constant.dstCSVConnID1}`
+    }), {
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
+    });
+  });
+  group("Connector Backend API: Delete the csv destination connector 2", function () {
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector`, {
+      name: `destination-connectors/${constant.dstCSVConnID2}`
     }), {
       [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });

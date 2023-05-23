@@ -16,8 +16,10 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/sterr"
 
 	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
@@ -25,7 +27,7 @@ import (
 )
 
 // HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
-func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, bool) {
 	logger, _ := logger.GetZapLogger()
 
 	contentType := req.Header.Get("Content-Type")
@@ -36,7 +38,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			"[handler] content-type not supported",
 			[]*errdetails.PreconditionFailure_Violation{
 				{
-					Type:        "TriggerPipelineBinaryFileUpload",
+					Type:        "TriggerSyncPipelineBinaryFileUpload",
 					Subject:     fmt.Sprintf("id %s", id),
 					Description: fmt.Sprintf("content-type %s not supported", contentType),
 				},
@@ -47,7 +49,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
 	if id == "" {
@@ -63,7 +65,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
 	var owner *mgmtPB.User
@@ -79,7 +81,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		ownerPermalink, err := s.GetRedisClient().Get(context.Background(), fmt.Sprintf(constant.AccessTokenKeyFormat, apiToken)).Result()
 		if err != nil {
 			logger.Error(err.Error())
-			return
+			return nil, nil, nil, nil, false
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -88,7 +90,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		resp, err := s.GetMgmtPrivateServiceClient().LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: ownerPermalink})
 		if err != nil {
 			logger.Error(err.Error())
-			return
+			return nil, nil, nil, nil, false
 		}
 		owner = resp.GetUser()
 	} else if headerOwnerUId != "" {
@@ -108,7 +110,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
-			return
+			return nil, nil, nil, nil, false
 		}
 
 		ownerPermalink := "users/" + headerOwnerUId
@@ -128,7 +130,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
-			return
+			return nil, nil, nil, nil, false
 		}
 		owner = resp.GetUser()
 
@@ -149,7 +151,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
-			return
+			return nil, nil, nil, nil, false
 		}
 
 		ownerName := "users/" + headerOwnerId
@@ -169,7 +171,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			}
 			errorResponse(w, st)
 			logger.Error(st.String())
-			return
+			return nil, nil, nil, nil, false
 		}
 		owner = resp.GetUser()
 	}
@@ -189,10 +191,10 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
-	model, err := s.GetModelByName(owner, service.GetModelsFromRecipe(dbPipeline.Recipe)[0])
+	model, err := s.GetModelByName(owner, utils.GetModelsFromRecipe(dbPipeline.Recipe)[0])
 	if err != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.NotFound,
@@ -207,7 +209,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
 	if err := req.ParseMultipartForm(4 << 20); err != nil {
@@ -215,7 +217,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			"[handler] error while get model information",
 			[]*errdetails.PreconditionFailure_Violation{
 				{
-					Type:        "TriggerPipelineBinaryFileUpload",
+					Type:        "TriggerSyncPipelineBinaryFileUpload",
 					Subject:     fmt.Sprintf("id %s", id),
 					Description: err.Error(),
 				},
@@ -226,7 +228,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
-		return
+		return nil, nil, nil, nil, false
 	}
 
 	var inp interface{}
@@ -248,7 +250,7 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 			"[handler] error while reading file from request",
 			[]*errdetails.PreconditionFailure_Violation{
 				{
-					Type:        "TriggerPipelineBinaryFileUpload",
+					Type:        "TriggerSyncPipelineBinaryFileUpload",
 					Subject:     fmt.Sprintf("id %s", id),
 					Description: err.Error(),
 				},
@@ -259,12 +261,74 @@ func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWri
 		}
 		errorResponse(w, st)
 		logger.Error(st.String())
+		return nil, nil, nil, nil, false
+	}
+
+	return owner, dbPipeline, model, inp, true
+
+}
+
+func getHttpStatus(err error) int {
+	s := status.Convert(err)
+	var httpStatus int
+	switch {
+	case s.Code() == codes.FailedPrecondition:
+		if len(s.Details()) > 0 {
+			switch v := s.Details()[0].(type) {
+			case *errdetails.PreconditionFailure:
+				switch v.Violations[0].Type {
+				case "UPDATE", "DELETE", "STATE", "RENAME", "TRIGGER":
+					httpStatus = http.StatusUnprocessableEntity
+				}
+			}
+		} else {
+			httpStatus = http.StatusBadRequest
+		}
+	default:
+		httpStatus = runtime.HTTPStatusFromCode(s.Code())
+	}
+	return httpStatus
+}
+
+// HandleTriggerSyncPipelineBinaryFileUpload is for POST multipart form data
+func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	logger, _ := logger.GetZapLogger()
+
+	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(s, w, req, pathParams)
+	if !success {
 		return
 	}
 
-	obj, err := s.TriggerPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
+	obj, err := s.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), getHttpStatus(err))
+		logger.Error(err.Error())
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(200)
+	ret, _ := protojson.MarshalOptions{
+		EmitUnpopulated: true,
+		UseProtoNames:   true,
+	}.Marshal(obj)
+	_, _ = w.Write(ret)
+
+}
+
+// HandleTriggerAsyncPipelineBinaryFileUpload is for POST multipart form data
+func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	logger, _ := logger.GetZapLogger()
+
+	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(s, w, req, pathParams)
+
+	if !success {
+		return
+	}
+
+	obj, err := s.TriggerAsyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
+	if err != nil {
+		http.Error(w, err.Error(), getHttpStatus(err))
 		logger.Error(err.Error())
 		return
 	}
@@ -287,7 +351,7 @@ func errorResponse(w http.ResponseWriter, s *status.Status) {
 			switch v := s.Details()[0].(type) {
 			case *errdetails.PreconditionFailure:
 				switch v.Violations[0].Type {
-				case "TriggerPipelineBinaryFileUpload":
+				case "TriggerSyncPipelineBinaryFileUpload":
 					if strings.Contains(v.Violations[0].Description, "content-type") {
 						w.WriteHeader(http.StatusUnsupportedMediaType)
 					} else {

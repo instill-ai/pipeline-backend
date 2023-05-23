@@ -11,6 +11,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 // Google API
 import "google/api/resource.proto";
 import "google/api/field_behavior.proto";
+import "google/longrunning/operations.proto";
 
 import "../../../vdp/model/v1alpha/model.proto";
 import "../../../vdp/model/v1alpha/task_classification.proto";
@@ -340,8 +341,8 @@ message ModelOutput {
       [ (google.api.field_behavior) = OUTPUT_ONLY ];
 }
 
-// TriggerPipelineRequest represents a request to trigger a pipeline
-message TriggerPipelineRequest {
+// TriggerSyncPipelineRequest represents a request to trigger a pipeline
+message TriggerSyncPipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
@@ -352,18 +353,18 @@ message TriggerPipelineRequest {
       [ (google.api.field_behavior) = REQUIRED ];
 }
 
-// TriggerPipelineResponse represents a response for the output
+// TriggerSyncPipelineResponse represents a response for the output
 // of a pipeline, i.e., the multiple model inference outputs
-message TriggerPipelineResponse {
+message TriggerSyncPipelineResponse {
   // The data mapping indices stores UUID for each input
   repeated string data_mapping_indices = 1;
   // The multiple model inference outputs
   repeated ModelOutput model_outputs = 2;
 }
 
-// TriggerPipelineBinaryFileUploadRequest represents a request to trigger a
+// TriggerSyncPipelineBinaryFileUploadRequest represents a request to trigger a
 // pipeline
-message TriggerPipelineBinaryFileUploadRequest {
+message TriggerSyncPipelineBinaryFileUploadRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
@@ -373,14 +374,76 @@ message TriggerPipelineBinaryFileUploadRequest {
   model.v1alpha.TaskInputStream task_input = 2 [ (google.api.field_behavior) = REQUIRED ];
 }
 
-// TriggerPipelineBinaryFileUploadResponse represents a response for the output
+// TriggerSyncPipelineBinaryFileUploadResponse represents a response for the output
 // of a pipeline, i.e., the multiple model inference outputs
-message TriggerPipelineBinaryFileUploadResponse {
+message TriggerSyncPipelineBinaryFileUploadResponse {
   // The data mapping indices stores UUID for each input
   repeated string data_mapping_indices = 1;
   // The multiple model inference outputs
   repeated ModelOutput model_outputs = 2;
 }
+
+// TriggerAsyncPipelineRequest represents a request to trigger a async pipeline
+message TriggerAsyncPipelineRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+  ];
+  // Input to the pipeline
+  repeated model.v1alpha.TaskInput task_inputs = 2
+      [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// TriggerAsyncPipelineResponse represents a response for the longrunning operation
+// of a pipeline
+message TriggerAsyncPipelineResponse {
+  // Trigger async pipeline operation message
+  google.longrunning.Operation operation = 1
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // The data mapping indices for each input
+  repeated string data_mapping_indices = 2
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}
+
+
+// TriggerAsyncPipelineBinaryFileUploadRequest represents a request to trigger a
+// pipeline
+message TriggerAsyncPipelineBinaryFileUploadRequest {
+  // Pipeline resource name. It must have the format of "pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+  ];
+  // Input to the pipeline
+  model.v1alpha.TaskInputStream task_input = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// TriggerAsyncPipelineBinaryFileUploadResponse represents a response for the longrunning operation
+// of a pipeline
+message TriggerAsyncPipelineBinaryFileUploadResponse {
+  // Trigger async pipeline operation message
+  google.longrunning.Operation operation = 1
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // The data mapping indices for each input
+  repeated string data_mapping_indices = 2
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}
+
+
+// GetTriggerAsyncOperationRequest represents a request to query a longrunning operation
+message GetTriggerAsyncOperationRequest {
+  // The name of the operation resource.
+  string name = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+// GetTriggerAsyncOperationResponse represents a response for a longrunning operation
+message GetTriggerAsyncOperationResponse {
+  // The retrieved longrunning operation
+  google.longrunning.Operation operation = 1
+    [ (google.api.field_behavior) = OUTPUT_ONLY ];
+}
+
 
 // WatchPipelineRequest represents a public request to query
 // a pipeline's current state
@@ -419,6 +482,8 @@ message ListPipelinesAdminRequest {
 }
 
 // ListPipelinesAdminResponse represents a response for a list of pipelines
+// The recipe returned will be permaLinks instead of resourceName temporary,
+// this will be refactored soon
 message ListPipelinesAdminResponse {
   // A list of pipeline resources
   repeated Pipeline pipelines = 1;

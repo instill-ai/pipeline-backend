@@ -6,17 +6,15 @@ import (
 	"time"
 
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datamodel.Recipe) (*datamodel.Recipe, error) {
@@ -24,7 +22,7 @@ func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datam
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	ctx = InjectOwnerToContext(ctx, owner)
+	ctx = utils.InjectOwnerToContext(ctx, owner)
 	recipePermalink := &datamodel.Recipe{Version: recipeRscName.Version}
 	for _, component := range recipeRscName.Components {
 		componentPermalink := &datamodel.Component{
@@ -36,12 +34,12 @@ func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datam
 
 		permalink := ""
 		var err error
-		switch GetDefinitionType(component) {
-		case SourceConnector:
+		switch utils.GetDefinitionType(component) {
+		case utils.SourceConnector:
 			permalink, err = s.sourceConnectorNameToPermalink(ctx, component.ResourceName)
-		case DestinationConnector:
+		case utils.DestinationConnector:
 			permalink, err = s.destinationConnectorNameToPermalink(ctx, component.ResourceName)
-		case Model:
+		case utils.Model:
 			permalink, err = s.modelNameToPermalink(ctx, component.ResourceName)
 		}
 		if err != nil {
@@ -67,12 +65,12 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 
 		name := ""
 		var err error
-		switch GetDefinitionType(componentPermalink) {
-		case SourceConnector:
+		switch utils.GetDefinitionType(componentPermalink) {
+		case utils.SourceConnector:
 			name, err = s.sourceConnectorPermalinkToName(componentPermalink.ResourceName)
-		case DestinationConnector:
+		case utils.DestinationConnector:
 			name, err = s.destinationConnectorPermalinkToName(componentPermalink.ResourceName)
-		case Model:
+		case utils.Model:
 			name, err = s.modelPermalinkToName(componentPermalink.ResourceName)
 		}
 		if err != nil {
@@ -212,8 +210,8 @@ func (s *service) includeResourceDetailInRecipe(recipe *datamodel.Recipe) error 
 	defer cancel()
 
 	for idx := range recipe.Components {
-		switch GetDefinitionType(recipe.Components[idx]) {
-		case SourceConnector:
+		switch utils.GetDefinitionType(recipe.Components[idx]) {
+		case utils.SourceConnector:
 			resp, err := s.connectorPrivateServiceClient.LookUpSourceConnectorAdmin(ctx, &connectorPB.LookUpSourceConnectorAdminRequest{
 				Permalink: recipe.Components[idx].ResourceName,
 			})
@@ -251,7 +249,7 @@ func (s *service) includeResourceDetailInRecipe(recipe *datamodel.Recipe) error 
 			detail.GetFields()["source_connector_definition_detail"] = structpb.NewStructValue(defDetail)
 			recipe.Components[idx].ResourceDetail = detail
 
-		case DestinationConnector:
+		case utils.DestinationConnector:
 			resp, err := s.connectorPrivateServiceClient.LookUpDestinationConnectorAdmin(ctx, &connectorPB.LookUpDestinationConnectorAdminRequest{
 				Permalink: recipe.Components[idx].ResourceName,
 			})
@@ -288,7 +286,7 @@ func (s *service) includeResourceDetailInRecipe(recipe *datamodel.Recipe) error 
 			detail.GetFields()["destination_connector_definition_detail"] = structpb.NewStructValue(defDetail)
 			recipe.Components[idx].ResourceDetail = detail
 
-		case Model:
+		case utils.Model:
 			resp, err := s.modelPrivateServiceClient.LookUpModelAdmin(ctx, &modelPB.LookUpModelAdminRequest{
 				Permalink: recipe.Components[idx].ResourceName,
 			})
@@ -328,75 +326,6 @@ func (s *service) includeResourceDetailInRecipe(recipe *datamodel.Recipe) error 
 
 	}
 	return nil
-}
-
-func cvtModelTaskOutputToPipelineTaskOutput(modelTaskOutputs []*modelPB.TaskOutput) []*pipelinePB.TaskOutput {
-
-	logger, _ := logger.GetZapLogger()
-
-	var pipelineTaskOutputs []*pipelinePB.TaskOutput
-	for _, taskOutput := range modelTaskOutputs {
-		switch v := taskOutput.Output.(type) {
-		case *modelPB.TaskOutput_Classification:
-			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
-				Output: &pipelinePB.TaskOutput_Classification{
-					Classification: proto.Clone(v.Classification).(*modelPB.ClassificationOutput),
-				},
-			})
-		case *modelPB.TaskOutput_Detection:
-			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
-				Output: &pipelinePB.TaskOutput_Detection{
-					Detection: proto.Clone(v.Detection).(*modelPB.DetectionOutput),
-				},
-			})
-		case *modelPB.TaskOutput_Keypoint:
-			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
-				Output: &pipelinePB.TaskOutput_Keypoint{
-					Keypoint: proto.Clone(v.Keypoint).(*modelPB.KeypointOutput),
-				},
-			})
-		case *modelPB.TaskOutput_Ocr:
-			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
-				Output: &pipelinePB.TaskOutput_Ocr{
-					Ocr: proto.Clone(v.Ocr).(*modelPB.OcrOutput),
-				},
-			})
-		case *modelPB.TaskOutput_InstanceSegmentation:
-			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
-				Output: &pipelinePB.TaskOutput_InstanceSegmentation{
-					InstanceSegmentation: proto.Clone(v.InstanceSegmentation).(*modelPB.InstanceSegmentationOutput),
-				},
-			})
-		case *modelPB.TaskOutput_SemanticSegmentation:
-			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
-				Output: &pipelinePB.TaskOutput_SemanticSegmentation{
-					SemanticSegmentation: proto.Clone(v.SemanticSegmentation).(*modelPB.SemanticSegmentationOutput),
-				},
-			})
-		case *modelPB.TaskOutput_TextToImage:
-			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
-				Output: &pipelinePB.TaskOutput_TextToImage{
-					TextToImage: proto.Clone(v.TextToImage).(*modelPB.TextToImageOutput),
-				},
-			})
-		case *modelPB.TaskOutput_TextGeneration:
-			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
-				Output: &pipelinePB.TaskOutput_TextGeneration{
-					TextGeneration: proto.Clone(v.TextGeneration).(*modelPB.TextGenerationOutput),
-				},
-			})
-		case *modelPB.TaskOutput_Unspecified:
-			pipelineTaskOutputs = append(pipelineTaskOutputs, &pipelinePB.TaskOutput{
-				Output: &pipelinePB.TaskOutput_Unspecified{
-					Unspecified: proto.Clone(v.Unspecified).(*modelPB.UnspecifiedOutput),
-				},
-			})
-		default:
-			logger.Error("AI task type is not defined")
-		}
-	}
-
-	return pipelineTaskOutputs
 }
 
 func ConvertResourceUIDToControllerResourcePermalink(resourceUID string, resourceType string) string {
