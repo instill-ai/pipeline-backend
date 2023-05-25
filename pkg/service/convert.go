@@ -10,6 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
@@ -68,13 +69,20 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 		switch utils.GetDefinitionType(componentPermalink) {
 		case utils.SourceConnector:
 			name, err = s.sourceConnectorPermalinkToName(componentPermalink.ResourceName)
+			if err != nil {
+				return nil, err
+			}
 		case utils.DestinationConnector:
 			name, err = s.destinationConnectorPermalinkToName(componentPermalink.ResourceName)
+			if err != nil {
+				return nil, err
+			}
 		case utils.Model:
 			name, err = s.modelPermalinkToName(componentPermalink.ResourceName)
-		}
-		if err != nil {
-			return nil, err
+			if err != nil {
+				// NOTE: this is a workaround solution, need to handle the broken recipe more properly
+				name = "models/_error_"
+			}
 		}
 		component.ResourceName = name
 		recipe.Components = append(recipe.Components, component)
@@ -206,6 +214,7 @@ func (s *service) excludeResourceDetailFromRecipe(recipe *datamodel.Recipe) erro
 
 func (s *service) includeResourceDetailInRecipe(recipe *datamodel.Recipe) error {
 
+	logger, _ := logger.GetZapLogger()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -291,7 +300,17 @@ func (s *service) includeResourceDetailInRecipe(recipe *datamodel.Recipe) error 
 				Permalink: recipe.Components[idx].ResourceName,
 			})
 			if err != nil {
-				return fmt.Errorf("[model-backend] Error %s at %s: %s", "GetModel", recipe.Components[idx].ResourceName, err)
+				// NOTE: this is a workaround solution, need to handle the broken recipe more properly
+				logger.Warn(fmt.Sprintf("[model-backend] Error %s at %s: %s", "GetModel", recipe.Components[idx].ResourceName, err))
+				d, _ := structpb.NewValue(map[string]interface{}{
+					"id":    "_error_",
+					"name":  "models/_error_",
+					"state": "STATE_ERROR",
+					"task":  "TASK_UNSPECIFIED",
+				})
+
+				recipe.Components[idx].ResourceDetail = d.GetStructValue()
+				continue
 			}
 			detail := &structpb.Struct{}
 			// Note: need to deal with camelCase or under_score for grpc in future
