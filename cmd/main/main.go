@@ -16,6 +16,8 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rs/cors"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/client"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -33,6 +35,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/middleware"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
@@ -53,6 +56,23 @@ func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler, CORSOrigin
 			AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "HEAD"},
 		}).Handler(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if len(r.Header["X-B3-Traceid"]) > 0 {
+					traceID, _ := trace.TraceIDFromHex(r.Header["X-B3-Traceid"][0])
+					spanID, _ := trace.SpanIDFromHex(r.Header["X-B3-Spanid"][0])
+					var traceFlags trace.TraceFlags
+					if r.Header["X-B3-Sampled"][0] == "1" {
+						traceFlags = trace.FlagsSampled
+					}
+
+					spanContext := trace.NewSpanContext(trace.SpanContextConfig{
+						TraceID:    traceID,
+						SpanID:     spanID,
+						TraceFlags: traceFlags,
+					})
+
+					ctx := trace.ContextWithSpanContext(r.Context(), spanContext)
+					r = r.WithContext(ctx)
+				}
 				if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
 					grpcServer.ServeHTTP(w, r)
 				} else {
@@ -69,12 +89,31 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	logger, _ := logger.GetZapLogger()
+	// setup tracing and metrics
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if tp, err := custom_otel.SetupTracing(ctx, "PipelineBackend"); err != nil {
+		panic(err)
+	} else {
+		defer tp.Shutdown(ctx)
+	}
+
+	if mp, err := custom_otel.SetupMetrics(ctx, "PipelineBackend"); err != nil {
+		panic(err)
+	} else {
+		defer mp.Shutdown(ctx)
+	}
+
+	ctx, span := otel.Tracer("MainTracer").Start(ctx,
+		"Main",
+	)
+
+	logger, _ := logger.GetZapLogger(ctx)
 	defer func() {
 		// can't handle the error due to https://github.com/uber-go/zap/issues/880
 		_ = logger.Sync()
 	}()
-	grpc_zap.ReplaceGrpcLoggerV2(logger)
 
 	db := database.GetConnection()
 	defer database.Close(db)
@@ -136,6 +175,8 @@ func main() {
 		)),
 	}
 
+	grpc_zap.ReplaceGrpcLoggerV2(logger)
+
 	// Create tls based credential.
 	var creds credentials.TransportCredentials
 	var tlsConfig *tls.Config
@@ -150,35 +191,32 @@ func main() {
 		grpcServerOpts = append(grpcServerOpts, grpc.Creds(creds))
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient()
+	mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient(ctx)
 	if mgmtPrivateServiceClientConn != nil {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
 
-	connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient()
+	connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient(ctx)
 	if connectorPublicServiceClientConn != nil {
 		defer connectorPublicServiceClientConn.Close()
 	}
 
-	connectorPrivateServiceClient, connectorPrivateServiceClientConn := external.InitConnectorPrivateServiceClient()
+	connectorPrivateServiceClient, connectorPrivateServiceClientConn := external.InitConnectorPrivateServiceClient(ctx)
 	if connectorPrivateServiceClientConn != nil {
 		defer connectorPrivateServiceClientConn.Close()
 	}
 
-	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient()
+	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient(ctx)
 	if modelPublicServiceClientConn != nil {
 		defer modelPublicServiceClientConn.Close()
 	}
 
-	modelPrivateServiceClient, modelPrivateServiceClientConn := external.InitModelPrivateServiceClient()
+	modelPrivateServiceClient, modelPrivateServiceClientConn := external.InitModelPrivateServiceClient(ctx)
 	if modelPrivateServiceClientConn != nil {
 		defer modelPrivateServiceClientConn.Close()
 	}
 
-	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient()
+	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient(ctx)
 	if controllerServiceClientConn != nil {
 		defer controllerServiceClientConn.Close()
 	}
@@ -208,12 +246,12 @@ func main() {
 
 	pipelinePB.RegisterPipelinePrivateServiceServer(
 		privateGrpcS,
-		handler.NewPrivateHandler(service),
+		handler.NewPrivateHandler(ctx, service),
 	)
 
 	pipelinePB.RegisterPipelinePublicServiceServer(
 		publicGrpcS,
-		handler.NewPublicHandler(service),
+		handler.NewPublicHandler(ctx, service),
 	)
 
 	privateServeMux := runtime.NewServeMux(
@@ -259,7 +297,7 @@ func main() {
 	// Start usage reporter
 	var usg usage.Usage
 	if !config.Config.Server.DisableUsage {
-		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient()
+		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient(ctx)
 		if usageServiceClientConn != nil {
 			defer usageServiceClientConn.Close()
 			logger.Info("try to start usage reporter")
@@ -332,6 +370,8 @@ func main() {
 			}
 		}()
 	}
+
+	span.End()
 	logger.Info("gRPC server is running.")
 
 	// kill (no param) default send syscall.SIGTERM

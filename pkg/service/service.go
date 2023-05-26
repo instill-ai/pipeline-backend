@@ -46,9 +46,9 @@ type Service interface {
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
 	TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
-	TriggerAsyncPipeline(req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
+	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 	TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse, error)
-	TriggerAsyncPipelineBinaryFileUpload(owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerAsyncPipelineResponse, error)
+	TriggerAsyncPipelineBinaryFileUpload(ctx context.Context, owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 	GetModelByName(owner *mgmtPB.User, modelName string) (*modelPB.Model, error)
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
@@ -483,13 +483,13 @@ func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest
 	}, nil
 }
 
-func (s *service) TriggerAsyncPipeline(req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
 	dataMappingIndices, err := preTriggerPipeline(dbPipeline, req.TaskInputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
 	if err != nil {
 		return nil, err
 	}
-	logger, _ := logger.GetZapLogger()
+	logger, _ := logger.GetZapLogger(ctx)
 
 	if err := s.excludeResourceDetailFromRecipe(dbPipeline.Recipe); err != nil {
 		return nil, err
@@ -518,7 +518,6 @@ func (s *service) TriggerAsyncPipeline(req *pipelinePB.TriggerAsyncPipelineReque
 		taskInputRedisKeys = append(taskInputRedisKeys, key)
 	}
 
-	ctx := context.Background()
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -600,8 +599,8 @@ func (s *service) TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipe
 
 }
 
-func (s *service) TriggerAsyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
-	logger, _ := logger.GetZapLogger()
+func (s *service) TriggerAsyncPipelineBinaryFileUpload(ctx context.Context, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+	logger, _ := logger.GetZapLogger(ctx)
 	dataMappingIndices, err := preTriggerPipelineBinaryFileUpload(dbPipeline, task, input, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
 	if err != nil {
 		return nil, err
@@ -658,7 +657,6 @@ func (s *service) TriggerAsyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPip
 	taskInputRedisKey := fmt.Sprintf("async_pipeline_blob:%s", id.String())
 	s.redisClient.Set(context.Background(), taskInputRedisKey, inputByte, time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second)
 
-	ctx := context.Background()
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -18,8 +19,8 @@ import (
 )
 
 // PBToDBPipeline converts protobuf data model to db data model
-func PBToDBPipeline(owner string, pbPipeline *pipelinePB.Pipeline) *datamodel.Pipeline {
-	logger, _ := logger.GetZapLogger()
+func PBToDBPipeline(ctx context.Context, owner string, pbPipeline *pipelinePB.Pipeline) *datamodel.Pipeline {
+	logger, _ := logger.GetZapLogger(ctx)
 
 	return &datamodel.Pipeline{
 		Owner: owner,
@@ -78,8 +79,8 @@ func PBToDBPipeline(owner string, pbPipeline *pipelinePB.Pipeline) *datamodel.Pi
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func DBToPBPipeline(dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
-	logger, _ := logger.GetZapLogger()
+func DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) *pipelinePB.Pipeline {
+	logger, _ := logger.GetZapLogger(ctx)
 
 	pbPipeline := pipelinePB.Pipeline{
 		Name:        fmt.Sprintf("pipelines/%s", dbPipeline.ID),

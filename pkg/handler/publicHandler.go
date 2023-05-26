@@ -12,6 +12,8 @@ import (
 	"github.com/gogo/status"
 	"github.com/iancoleman/strcase"
 	"go.einride.tech/aip/filtering"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -22,6 +24,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/checkfield"
@@ -32,6 +35,8 @@ import (
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
+
+var tracer = otel.Tracer("vdp.public-handler.tracer")
 
 // PublicHandler handles public API
 type PublicHandler struct {
@@ -64,8 +69,8 @@ func receiveFromStreamer(i interface{}) (TriggerPipelineBinaryFileUploadRequestI
 }
 
 // NewPublicHandler initiates a handler instance
-func NewPublicHandler(s service.Service) pipelinePB.PipelinePublicServiceServer {
-	datamodel.InitJSONSchema()
+func NewPublicHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePublicServiceServer {
+	datamodel.InitJSONSchema(ctx)
 	return &PublicHandler{
 		service: s,
 	}
@@ -98,6 +103,13 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.Readiness
 }
 
 func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "CreatePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	// Validate JSON Schema
 	if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -123,7 +135,7 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.CreatePipeline(owner, PBToDBPipeline(owner.GetName(), req.GetPipeline()))
+	dbPipeline, err := h.service.CreatePipeline(owner, PBToDBPipeline(ctx, owner.GetName(), req.GetPipeline()))
 	if err != nil {
 		// Manually set the custom header to have a StatusBadRequest http response for REST endpoint
 		if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusBadRequest))); err != nil {
@@ -132,7 +144,7 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 		return &pipelinePB.CreatePipelineResponse{Pipeline: &pipelinePB.Pipeline{}}, err
 	}
 
-	pbPipeline := DBToPBPipeline(dbPipeline)
+	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
 	resp := pipelinePB.CreatePipelineResponse{
 		Pipeline: pbPipeline,
 	}
@@ -142,10 +154,25 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 		return nil, err
 	}
 
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"CreatePipeline",
+		false,
+	)
+	logger.Info(string(logMessage))
+
 	return &resp, nil
 }
 
 func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "ListPipelines",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	// logger, _ := logger.GetZapLogger(ctx)
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
@@ -186,7 +213,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 	pbPipelines := []*pipelinePB.Pipeline{}
 	for idx := range dbPipelines {
-		pbPipelines = append(pbPipelines, DBToPBPipeline(&dbPipelines[idx]))
+		pbPipelines = append(pbPipelines, DBToPBPipeline(ctx, &dbPipelines[idx]))
 	}
 
 	resp := pipelinePB.ListPipelinesResponse{
@@ -195,10 +222,25 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		TotalSize:     totalSize,
 	}
 
+	// logMessage := utils.ConstructAuditLog(
+	// 	span,
+	// 	*owner,
+	// 	*dbPipeline,
+	// 	"ListPipelines",
+	// 	false,
+	// )
+	// logger.Info(string(logMessage))
+
 	return &resp, nil
 }
 
 func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "GetPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
@@ -217,15 +259,30 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	pbPipeline := DBToPBPipeline(dbPipeline)
+	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
 	resp := pipelinePB.GetPipelineResponse{
 		Pipeline: pbPipeline,
 	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"GetPipeline",
+		false,
+	)
+	logger.Info(string(logMessage))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "UpdatePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
@@ -274,19 +331,34 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.UpdatePipeline(pbPipelineToUpdate.GetId(), owner, PBToDBPipeline(owner.GetName(), pbPipelineToUpdate))
+	dbPipeline, err := h.service.UpdatePipeline(pbPipelineToUpdate.GetId(), owner, PBToDBPipeline(ctx, owner.GetName(), pbPipelineToUpdate))
 	if err != nil {
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
 	resp := pipelinePB.UpdatePipelineResponse{
-		Pipeline: DBToPBPipeline(dbPipeline),
+		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"UpdatePipeline",
+		false,
+	)
+	logger.Info(string(logMessage))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "DeletePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	// logger, _ := logger.GetZapLogger(ctx)
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
@@ -307,10 +379,25 @@ func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.Dele
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
+	// logMessage := utils.ConstructAuditLog(
+	// 	span,
+	// 	*owner,
+	// 	*PBToDBPipeline(ct),
+	// 	"DeletePipeline",
+	// 	false,
+	// )
+	// logger.Info(string(logMessage))
+
 	return &pipelinePB.DeletePipelineResponse{}, nil
 }
 
 func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipelineRequest) (*pipelinePB.LookUpPipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "LookUpPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, lookUpRequiredFields); err != nil {
@@ -339,15 +426,30 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
 
-	pbPipeline := DBToPBPipeline(dbPipeline)
+	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
 	resp := pipelinePB.LookUpPipelineResponse{
 		Pipeline: pbPipeline,
 	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"LookUpPipeline",
+		false,
+	)
+	logger.Info(string(logMessage))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.ActivatePipelineRequest) (*pipelinePB.ActivatePipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "ActivatePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, activateRequiredFields); err != nil {
@@ -370,13 +472,28 @@ func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.Ac
 	}
 
 	resp := pipelinePB.ActivatePipelineResponse{
-		Pipeline: DBToPBPipeline(dbPipeline),
+		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"ActivatePipeline",
+		false,
+	)
+	logger.Info(string(logMessage))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.DeactivatePipelineRequest) (*pipelinePB.DeactivatePipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "DeactivatePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, deactivateRequiredFields); err != nil {
@@ -399,13 +516,28 @@ func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.
 	}
 
 	resp := pipelinePB.DeactivatePipelineResponse{
-		Pipeline: DBToPBPipeline(dbPipeline),
+		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"DeactivatePipeline",
+		false,
+	)
+	logger.Info(string(logMessage))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipelineRequest) (*pipelinePB.RenamePipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "RenamePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, renameRequiredFields); err != nil {
@@ -433,15 +565,24 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 	}
 
 	resp := pipelinePB.RenamePipelineResponse{
-		Pipeline: DBToPBPipeline(dbPipeline),
+		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"RenamePipeline",
+		false,
+	)
+	logger.Info(string(logMessage))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (*mgmtPB.User, *datamodel.Pipeline, error) {
 
-	logger, _ := logger.GetZapLogger()
+	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
@@ -509,6 +650,14 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipel
 }
 
 func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "TriggerSyncPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+	counter := custom_otel.SetupTriggerCounterObserver()
+
 	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
 	if err != nil {
 		return &pipelinePB.TriggerSyncPipelineResponse{}, err
@@ -518,19 +667,57 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 	if err != nil {
 		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"TriggerSyncPipeline",
+		true,
+	)
+
+	logger.Info(string(logMessage))
+	counter.Add(
+		ctx,
+		1,
+	)
+
 	return resp, nil
 }
 
 func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "TriggerAsyncPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+	counter := custom_otel.SetupTriggerCounterObserver()
+
 	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
 	if err != nil {
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
 
-	resp, err := h.service.TriggerAsyncPipeline(req, owner, dbPipeline)
+	resp, err := h.service.TriggerAsyncPipeline(ctx, req, owner, dbPipeline)
 	if err != nil {
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"TriggerAsyncPipeline",
+		true,
+	)
+
+	logger.Info(string(logMessage))
+	counter.Add(
+		ctx,
+		1,
+	)
+
 	return resp, nil
 }
 
@@ -697,6 +884,15 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 
 func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerSyncPipelineBinaryFileUploadServer) error {
 
+	ctx, span := tracer.Start(stream.Context(), "TriggerPipelineBinaryFileUpload",
+		trace.WithSpanKind(trace.SpanKindServer))
+
+	defer span.End()
+
+	counter := custom_otel.SetupTriggerCounterObserver()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	owner, dbPipeline, model, input, err := h.PreTriggerPipelineBinaryFileUpload(stream)
 	if err != nil {
 		return err
@@ -707,12 +903,32 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 		return err
 	}
 
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"TriggerPipelineBinaryFileUpload",
+		true,
+	)
+	logger.Info(string(logMessage))
+	counter.Add(
+		ctx,
+		1,
+	)
+
 	stream.SendAndClose(obj)
 
 	return nil
 }
 
 func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.WatchPipelineRequest) (*pipelinePB.WatchPipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "WatchPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
 		return &pipelinePB.WatchPipelineResponse{}, err
@@ -728,6 +944,18 @@ func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.Watch
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
 	state, err := h.service.GetResourceState(dbPipeline.UID)
+	if err != nil {
+		return &pipelinePB.WatchPipelineResponse{}, err
+	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"WatchPipeline",
+		false,
+	)
+	logger.Info(string(logMessage))
 
 	if err != nil {
 		return &pipelinePB.WatchPipelineResponse{}, err

@@ -10,6 +10,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,8 +28,9 @@ import (
 )
 
 // HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
-func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, bool) {
-	logger, _ := logger.GetZapLogger()
+func HandleTriggerPipelineBinaryFileUpload(ctx context.Context, s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, bool) {
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	contentType := req.Header.Get("Content-Type")
 	id := pathParams["id"]
@@ -292,9 +294,15 @@ func getHttpStatus(err error) int {
 
 // HandleTriggerSyncPipelineBinaryFileUpload is for POST multipart form data
 func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-	logger, _ := logger.GetZapLogger()
 
-	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(s, w, req, pathParams)
+	ctx, span := otel.Tracer("CustomHandlerTracer").Start(req.Context(),
+		"HandleTriggerSyncPipelineBinaryFileUpload",
+	)
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(ctx, s, w, req, pathParams)
 	if !success {
 		return
 	}
@@ -318,15 +326,21 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 
 // HandleTriggerAsyncPipelineBinaryFileUpload is for POST multipart form data
 func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-	logger, _ := logger.GetZapLogger()
 
-	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(s, w, req, pathParams)
+	ctx, span := otel.Tracer("CustomHandlerTracer").Start(req.Context(),
+		"HandleTriggerSyncPipelineBinaryFileUpload",
+	)
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(ctx, s, w, req, pathParams)
 
 	if !success {
 		return
 	}
 
-	obj, err := s.TriggerAsyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
+	obj, err := s.TriggerAsyncPipelineBinaryFileUpload(ctx, owner, dbPipeline, model.Task, inp)
 	if err != nil {
 		http.Error(w, err.Error(), getHttpStatus(err))
 		logger.Error(err.Error())

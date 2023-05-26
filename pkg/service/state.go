@@ -19,9 +19,9 @@ import (
 
 func (s *service) checkState(recipePermalink *datamodel.Recipe) (datamodel.PipelineState, error) {
 
-	logger, _ := logger.GetZapLogger()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+	logger, _ := logger.GetZapLogger(ctx)
 	defer cancel()
 
 	states := []int{}

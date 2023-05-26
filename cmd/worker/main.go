@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
+	"go.opentelemetry.io/otel"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
@@ -13,6 +15,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/temporal"
 	"github.com/instill-ai/x/zapadapter"
+
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	pipelineWorker "github.com/instill-ai/pipeline-backend/pkg/worker"
@@ -24,7 +28,26 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	logger, _ := logger.GetZapLogger()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if tp, err := custom_otel.SetupTracing(ctx, "PipelineBackend"); err != nil {
+		panic(err)
+	} else {
+		defer tp.Shutdown(ctx)
+	}
+
+	if mp, err := custom_otel.SetupMetrics(ctx, "PipelineBackend"); err != nil {
+		panic(err)
+	} else {
+		defer mp.Shutdown(ctx)
+	}
+
+	ctx, span := otel.Tracer("MainTracer").Start(ctx,
+		"WorkerMain",
+	)
+
+	logger, _ := logger.GetZapLogger(ctx)
 	defer func() {
 		// can't handle the error due to https://github.com/uber-go/zap/issues/880
 		_ = logger.Sync()
@@ -67,12 +90,12 @@ func main() {
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
-	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient()
+	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient(ctx)
 	if modelPublicServiceClientConn != nil {
 		defer modelPublicServiceClientConn.Close()
 	}
 
-	connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient()
+	connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient(ctx)
 	if connectorPublicServiceClientConn != nil {
 		defer connectorPublicServiceClientConn.Close()
 	}
@@ -93,4 +116,6 @@ func main() {
 	if err != nil {
 		logger.Fatal(fmt.Sprintf("Unable to start worker: %s", err))
 	}
+
+	span.End()
 }

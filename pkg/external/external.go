@@ -1,6 +1,7 @@
 package external
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 
@@ -19,8 +20,8 @@ import (
 )
 
 // InitConnectorPublicServiceClient initialises a ConnectorPublicServiceClient instance
-func InitConnectorPublicServiceClient() (connectorPB.ConnectorPublicServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger()
+func InitConnectorPublicServiceClient(ctx context.Context) (connectorPB.ConnectorPublicServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger(ctx)
 
 	var clientDialOpts grpc.DialOption
 	if config.Config.ConnectorBackend.HTTPS.Cert != "" && config.Config.ConnectorBackend.HTTPS.Key != "" {
@@ -43,8 +44,8 @@ func InitConnectorPublicServiceClient() (connectorPB.ConnectorPublicServiceClien
 }
 
 // InitConnectorPrivateServiceClient initialises a ConnectorPrivateServiceClient instance
-func InitConnectorPrivateServiceClient() (connectorPB.ConnectorPrivateServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger()
+func InitConnectorPrivateServiceClient(ctx context.Context) (connectorPB.ConnectorPrivateServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger(ctx)
 
 	var clientDialOpts grpc.DialOption
 	if config.Config.ConnectorBackend.HTTPS.Cert != "" && config.Config.ConnectorBackend.HTTPS.Key != "" {
@@ -67,8 +68,8 @@ func InitConnectorPrivateServiceClient() (connectorPB.ConnectorPrivateServiceCli
 }
 
 // InitModelPublicServiceClient initialises a ModelPublicServiceClient instance
-func InitModelPublicServiceClient() (modelPB.ModelPublicServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger()
+func InitModelPublicServiceClient(ctx context.Context) (modelPB.ModelPublicServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger(ctx)
 
 	var clientDialOpts grpc.DialOption
 	if config.Config.ModelBackend.HTTPS.Cert != "" && config.Config.ModelBackend.HTTPS.Key != "" {
@@ -91,8 +92,8 @@ func InitModelPublicServiceClient() (modelPB.ModelPublicServiceClient, *grpc.Cli
 }
 
 // InitModelPrivateServiceClient initialises a ModelPrivateServiceClient instance
-func InitModelPrivateServiceClient() (modelPB.ModelPrivateServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger()
+func InitModelPrivateServiceClient(ctx context.Context) (modelPB.ModelPrivateServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger(ctx)
 
 	var clientDialOpts grpc.DialOption
 	if config.Config.ModelBackend.HTTPS.Cert != "" && config.Config.ModelBackend.HTTPS.Key != "" {
@@ -115,8 +116,8 @@ func InitModelPrivateServiceClient() (modelPB.ModelPrivateServiceClient, *grpc.C
 }
 
 // InitMgmtPrivateServiceClient initialises a MgmtPrivateServiceClient instance
-func InitMgmtPrivateServiceClient() (mgmtPB.MgmtPrivateServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger()
+func InitMgmtPrivateServiceClient(ctx context.Context) (mgmtPB.MgmtPrivateServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger(ctx)
 
 	var clientDialOpts grpc.DialOption
 	if config.Config.MgmtBackend.HTTPS.Cert != "" && config.Config.MgmtBackend.HTTPS.Key != "" {
@@ -139,8 +140,8 @@ func InitMgmtPrivateServiceClient() (mgmtPB.MgmtPrivateServiceClient, *grpc.Clie
 }
 
 // InitUsageServiceClient initialises a UsageServiceClient instance (no mTLS)
-func InitUsageServiceClient() (usagePB.UsageServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger()
+func InitUsageServiceClient(ctx context.Context) (usagePB.UsageServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger(ctx)
 
 	var clientDialOpts grpc.DialOption
 	var err error
@@ -161,8 +162,8 @@ func InitUsageServiceClient() (usagePB.UsageServiceClient, *grpc.ClientConn) {
 }
 
 // InitControllerPrivateServiceClient initialises a ControllerPrivateServiceClient instance
-func InitControllerPrivateServiceClient() (controllerPB.ControllerPrivateServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger()
+func InitControllerPrivateServiceClient(ctx context.Context) (controllerPB.ControllerPrivateServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger(ctx)
 
 	var clientDialOpts grpc.DialOption
 	var creds credentials.TransportCredentials
