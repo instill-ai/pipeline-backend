@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -36,6 +38,21 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 	dstHasHttp := false
 	dstHasGrpc := false
 
+	componentIdSet := make(map[string]bool)
+	exp := "^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$"
+	r, _ := regexp.Compile(exp)
+	for _, component := range recipeRscName.Components {
+		if match := r.MatchString(component.Id); !match {
+			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+				status.Errorf(codes.InvalidArgument, fmt.Sprintf("[pipeline-backend] component `id` needs to be within ASCII-only 64 characters following with a regexp (%s)", exp))
+		}
+		if componentIdSet[component.Id] {
+			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+				status.Errorf(codes.InvalidArgument, "[pipeline-backend] component `id` duplicated")
+		}
+		componentIdSet[component.Id] = true
+	}
+
 	for _, component := range recipeRscName.Components {
 		switch utils.GetDefinitionType(component) {
 
@@ -45,7 +62,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 
 			if srcCnt > 1 {
 				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-					status.Errorf(codes.Internal, "[pipeline-backend] Can not have more than one source connector.")
+					status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have more than one source connector.")
 			}
 
 			srcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(utils.InjectOwnerToContext(ctx, owner),
@@ -54,7 +71,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 				})
 			if err != nil {
 				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-					status.Errorf(codes.Internal, "[connector-backend] Error %s at %s: %v",
+					status.Errorf(codes.InvalidArgument, "[connector-backend] Error %s at %s: %v",
 						"GetSourceConnector", component.ResourceName, err.Error())
 
 			}
@@ -65,7 +82,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 				})
 			if err != nil {
 				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-					status.Errorf(codes.Internal, "[connector-backend] Error %s at %s: %v",
+					status.Errorf(codes.InvalidArgument, "[connector-backend] Error %s at %s: %v",
 						"GetSourceConnectorDefinition", srcConnResp.GetSourceConnector().GetSourceConnectorDefinition(), err.Error())
 			}
 
@@ -84,7 +101,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 				})
 			if err != nil {
 				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-					status.Errorf(codes.Internal, "[connector-backend] Error %s at %s: %v",
+					status.Errorf(codes.InvalidArgument, "[connector-backend] Error %s at %s: %v",
 						"GetDestinationConnector", component.ResourceName, err.Error())
 			}
 
@@ -94,7 +111,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 				})
 			if err != nil {
 				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-					status.Errorf(codes.Internal, "[connector-backend] Error %s at %s: %v",
+					status.Errorf(codes.InvalidArgument, "[connector-backend] Error %s at %s: %v",
 						"GetDestinationConnectorDefinitionRequest", dstConnResp.GetDestinationConnector().GetDestinationConnectorDefinition(), err.Error())
 			}
 			dstConnDefID := dstConnDefResp.GetDestinationConnectorDefinition().GetId()
@@ -110,12 +127,12 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 
 	if srcCnt == 0 {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[pipeline-backend] Need to have one source connector")
+			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have one source connector")
 	}
 
 	if len(dstConnDefIDs) == 0 {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[pipeline-backend] Need to have at least one destination connector")
+			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have at least one destination connector")
 	}
 
 	if srcCategory == Http && len(dstConnDefIDs) == 1 && dstHasHttp {
@@ -124,13 +141,13 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC), nil
 	} else if srcCategory == Http && dstHasGrpc {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[pipeline-backend] Can not have http source connector with grpc destination connector")
+			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have http source connector with grpc destination connector")
 	} else if srcCategory == Grpc && dstHasHttp {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[pipeline-backend] Can not have grpc source connector with http destination connector")
+			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have grpc source connector with http destination connector")
 	} else if len(dstConnDefIDs) > 1 && dstHasHttp || dstHasGrpc {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.Internal, "[pipeline-backend] Can only have one destination connector for sync pipeline")
+			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can only have one destination connector for sync pipeline")
 	} else {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC), nil
 	}
