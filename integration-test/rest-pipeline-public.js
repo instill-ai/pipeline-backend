@@ -11,6 +11,40 @@ export function CheckCreate() {
 
   group("Pipelines API: Create a pipeline", () => {
 
+    // Can not create pipeline with duplicated component id
+    var reqBody = Object.assign(
+      {
+        id: randomString(63),
+        description: randomString(50),
+      },
+      {
+        recipe: {
+          version: "v1alpha",
+          components: [
+            {
+              "id": "id",
+              "resource_name": "source-connectors/source-http",
+            },
+            {
+              "id": "id",
+              "resource_name": `models/${constant.model_id}`,
+            },
+            {
+              "id": "id",
+              "resource_name": "destination-connectors/destination-http",
+            },
+
+          ]
+        }
+      }
+    )
+
+    // Create a pipeline with duplicated component id
+    var resOrigin = http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params)
+    check(resOrigin, {
+      "POST /v1alpha/pipelines with duplicated components id response status is 400": (r) => r.status === 400,
+    });
+
     var reqBody = Object.assign(
       {
         id: randomString(63),
