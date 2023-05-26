@@ -39,7 +39,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 	dstHasGrpc := false
 
 	componentIdSet := make(map[string]bool)
-	exp := "^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$"
+	exp := "^[A-Za-z0-9]([A-Za-z0-9-_]{0,62}[A-Za-z0-9])?$"
 	r, _ := regexp.Compile(exp)
 	for _, component := range recipeRscName.Components {
 		if match := r.MatchString(component.Id); !match {
