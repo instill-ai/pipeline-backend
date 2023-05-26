@@ -8,6 +8,16 @@ type SystemLogMessage struct {
 	ResourceUUID string
 }
 
+type ErrorLogMessage struct {
+	ServiceName string
+	TraceInfo   struct {
+		TraceId string
+		SpanId  string
+	}
+	StatusCode   int
+	ErrorMessage string
+}
+
 type AuditLogMessage struct {
 	ServiceName string
 	TraceInfo   struct {

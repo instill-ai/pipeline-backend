@@ -10,11 +10,14 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	modelv1alpha "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
@@ -58,6 +61,8 @@ type DestinationActivityParam struct {
 	Destination        string
 	DbPipeline         *datamodel.Pipeline
 }
+
+var tracer = otel.Tracer("vdp.temporal.tracer")
 
 // TriggerAsyncPipelineWorkflow is a pipeline trigger workflow definition.
 func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowParam) ([][]byte, error) {
@@ -179,6 +184,10 @@ func (w *worker) TriggerAsyncPipelineByFileUploadWorkflow(ctx workflow.Context, 
 // TriggerActivity is a pipeline trigger activity definition.
 func (w *worker) TriggerActivity(ctx context.Context, param *TriggerActivityParam) ([]byte, error) {
 
+	ctx, span := tracer.Start(ctx, "TriggerActivity",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
 	logger := activity.GetLogger(ctx)
 	logger.Info("TriggerActivity started")
 
@@ -208,12 +217,21 @@ func (w *worker) TriggerActivity(ctx context.Context, param *TriggerActivityPara
 	}
 	logger.Info("TriggerActivity completed")
 
+	custom_otel.SetupTriggerCounterObserver().Add(
+		ctx,
+		1,
+	)
+
 	return modelOutputJson, nil
 
 }
 
 // TriggerActivity is a pipeline trigger activity definition.
 func (w *worker) TriggerByFileUploadActivity(ctx context.Context, param *TriggerByFileUploadActivityParam) ([]byte, error) {
+
+	ctx, span := tracer.Start(ctx, "TriggerByFileUploadActivity",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
 
 	logger := activity.GetLogger(ctx)
 	logger.Info("TriggerByFileUploadActivity started")
@@ -272,6 +290,11 @@ func (w *worker) TriggerByFileUploadActivity(ctx context.Context, param *Trigger
 	}
 
 	logger.Info("TriggerByFileUploadActivity completed")
+
+	custom_otel.SetupTriggerCounterObserver().Add(
+		ctx,
+		1,
+	)
 
 	return modelOutputJson, nil
 

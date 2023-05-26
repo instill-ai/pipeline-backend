@@ -10,7 +10,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,6 +19,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/sterr"
@@ -26,6 +27,27 @@ import (
 	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 )
+
+func injectSpanInRequest(r *http.Request) *http.Request {
+	if len(r.Header["X-B3-Traceid"]) > 0 {
+		traceID, _ := trace.TraceIDFromHex(r.Header["X-B3-Traceid"][0])
+		spanID, _ := trace.SpanIDFromHex(r.Header["X-B3-Spanid"][0])
+		var traceFlags trace.TraceFlags
+		if r.Header["X-B3-Sampled"][0] == "1" {
+			traceFlags = trace.FlagsSampled
+		}
+
+		spanContext := trace.NewSpanContext(trace.SpanContextConfig{
+			TraceID:    traceID,
+			SpanID:     spanID,
+			TraceFlags: traceFlags,
+		})
+
+		ctx := trace.ContextWithSpanContext(r.Context(), spanContext)
+		r = r.WithContext(ctx)
+	}
+	return r
+}
 
 // HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
 func HandleTriggerPipelineBinaryFileUpload(ctx context.Context, s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, bool) {
@@ -295,9 +317,9 @@ func getHttpStatus(err error) int {
 // HandleTriggerSyncPipelineBinaryFileUpload is for POST multipart form data
 func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 
-	ctx, span := otel.Tracer("CustomHandlerTracer").Start(req.Context(),
-		"HandleTriggerSyncPipelineBinaryFileUpload",
-	)
+	req = injectSpanInRequest(req)
+	ctx, span := tracer.Start(req.Context(), "HandleTriggerSyncPipelineBinaryFileUpload",
+		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
@@ -314,6 +336,19 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		return
 	}
 
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"HandleTriggerSyncPipelineBinaryFileUpload",
+		true,
+		"",
+	)))
+	custom_otel.SetupTriggerCounterObserver().Add(
+		ctx,
+		1,
+	)
+
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)
 	ret, _ := protojson.MarshalOptions{
@@ -327,9 +362,9 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 // HandleTriggerAsyncPipelineBinaryFileUpload is for POST multipart form data
 func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 
-	ctx, span := otel.Tracer("CustomHandlerTracer").Start(req.Context(),
-		"HandleTriggerSyncPipelineBinaryFileUpload",
-	)
+	req = injectSpanInRequest(req)
+	ctx, span := tracer.Start(req.Context(), "HandleTriggerAsyncPipelineBinaryFileUpload",
+		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
@@ -346,6 +381,19 @@ func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.Respon
 		logger.Error(err.Error())
 		return
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"HandleTriggerAsyncPipelineBinaryFileUpload",
+		true,
+		"",
+	)))
+	custom_otel.SetupTriggerCounterObserver().Add(
+		ctx,
+		1,
+	)
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)

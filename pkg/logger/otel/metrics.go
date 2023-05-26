@@ -3,11 +3,11 @@ package otel
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -29,7 +29,6 @@ func SetupMetrics(ctx context.Context, serviceName string) (*sdkmetric.MeterProv
 	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceNameKey.String(serviceName),
-		attribute.String("metrics-common", "common-value"),
 	)
 
 	mp := sdkmetric.NewMeterProvider(
@@ -45,34 +44,16 @@ func SetupMetrics(ctx context.Context, serviceName string) (*sdkmetric.MeterProv
 	return mp, nil
 }
 
+var once sync.Once
+var pipelineTriggerCounter metric.Int64Counter
 func SetupTriggerCounterObserver() metric.Int64Counter {
-	counter, _ := otel.Meter("pipeline.backend").Int64Counter(
-		"vdp.trigger-pipeline.counter_observer",
-		metric.WithUnit("1"),
-		metric.WithDescription("user billable action"),
-	)
+	once.Do(func() {
+		pipelineTriggerCounter, _ = otel.Meter("pipeline.backend").Int64Counter(
+			"pipeline.trigger.counter",
+			metric.WithUnit("1"),
+			metric.WithDescription("user billable action"),
+		)
+	})
 
-	return counter
+	return pipelineTriggerCounter
 }
-
-// func SetupTriggerCounterObserver(ctx context.Context) {
-// 	meter := global.MeterProvider().Meter("pipeline.backend")
-// 	counter, _ := meter.Int64ObservableCounter(
-// 		"trigger.pipeline.counter_observer",
-// 		metric.WithUnit("1"),
-// 		metric.WithDescription("user billable action"),
-// 	)
-
-// 	var number int64
-// 	if _, err := meter.RegisterCallback(
-// 		func(_ context.Context, o metric.Observer) error {
-// 			number++
-// 			o.ObserveInt64(counter, number)
-
-// 			return nil
-// 		},
-// 		counter,
-// 	); err != nil {
-// 		panic(err)
-// 	}
-// }

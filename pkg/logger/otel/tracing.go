@@ -6,7 +6,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -28,7 +27,6 @@ func SetupTracing(ctx context.Context, serviceName string) (*trace.TracerProvide
 	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceNameKey.String(serviceName),
-		attribute.String("tracing-common", "common-value"),
 	)
 
 	provider := trace.NewTracerProvider(

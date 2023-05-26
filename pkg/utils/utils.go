@@ -175,6 +175,7 @@ func ConstructAuditLog(
 	pipeline datamodel.Pipeline,
 	eventName string,
 	billable bool,
+	metadata string,
 ) []byte {
 	logMessage, _ := json.Marshal(otel.AuditLogMessage{
 		ServiceName: "PipelineBackend",
@@ -208,6 +209,28 @@ func ConstructAuditLog(
 			ResourceState: pipelinePB.Pipeline_State(pipeline.State).String(),
 			Billable:      billable,
 		},
+		Metadata: metadata,
+	})
+
+	return logMessage
+}
+
+func ConstructErrorLog(
+	span trace.Span,
+	statusCode int,
+	errorMessage string,
+) []byte {
+	logMessage, _ := json.Marshal(otel.ErrorLogMessage{
+		ServiceName: "PipelineBackend",
+		TraceInfo: struct {
+			TraceId string
+			SpanId  string
+		}{
+			TraceId: span.SpanContext().TraceID().String(),
+			SpanId:  span.SpanContext().SpanID().String(),
+		},
+		StatusCode:   statusCode,
+		ErrorMessage: errorMessage,
 	})
 
 	return logMessage

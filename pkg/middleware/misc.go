@@ -18,6 +18,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 )
 
 // HTTPResponseModifier is a callback function for gRPC-Gateway runtime.WithForwardResponseOption
@@ -129,6 +130,17 @@ func ErrorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.
 	default:
 		httpStatus = runtime.HTTPStatusFromCode(s.Code())
 	}
+
+	errMessage := ""
+	if err != nil {
+		errMessage = err.Error()
+	}
+	span.SetStatus(1, "")
+	logger.Error(string(utils.ConstructErrorLog(
+		span,
+		httpStatus,
+		errMessage,
+	)))
 
 	w.WriteHeader(httpStatus)
 	if _, err := w.Write(buf); err != nil {
