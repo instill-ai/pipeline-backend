@@ -31,21 +31,22 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if tp, err := custom_otel.SetupTracing(ctx, "PipelineBackend"); err != nil {
+	if tp, err := custom_otel.SetupTracing(ctx, "pipeline-backend-worker"); err != nil {
 		panic(err)
 	} else {
 		defer tp.Shutdown(ctx)
 	}
 
-	if mp, err := custom_otel.SetupMetrics(ctx, "PipelineBackend"); err != nil {
+	if mp, err := custom_otel.SetupMetrics(ctx, "pipeline-backend-worker"); err != nil {
 		panic(err)
 	} else {
 		defer mp.Shutdown(ctx)
 	}
 
-	ctx, span := otel.Tracer("MainTracer").Start(ctx,
-		"WorkerMain",
+	ctx, span := otel.Tracer("worker-tracer").Start(ctx,
+		"main",
 	)
+	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
 	defer func() {
@@ -116,6 +117,4 @@ func main() {
 	if err != nil {
 		logger.Fatal(fmt.Sprintf("Unable to start worker: %s", err))
 	}
-
-	span.End()
 }

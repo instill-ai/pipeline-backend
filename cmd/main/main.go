@@ -93,20 +93,20 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if tp, err := custom_otel.SetupTracing(ctx, "PipelineBackend"); err != nil {
+	if tp, err := custom_otel.SetupTracing(ctx, "pipeline-backend"); err != nil {
 		panic(err)
 	} else {
 		defer tp.Shutdown(ctx)
 	}
 
-	if mp, err := custom_otel.SetupMetrics(ctx, "PipelineBackend"); err != nil {
+	if mp, err := custom_otel.SetupMetrics(ctx, "pipeline-backend"); err != nil {
 		panic(err)
 	} else {
 		defer mp.Shutdown(ctx)
 	}
 
-	ctx, span := otel.Tracer("MainTracer").Start(ctx,
-		"Main",
+	ctx, span := otel.Tracer("main-tracer").Start(ctx,
+		"main",
 	)
 
 	logger, _ := logger.GetZapLogger(ctx)
