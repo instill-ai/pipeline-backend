@@ -151,8 +151,16 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 	}
 
 	if srcCategory == Http && len(dstConnDefIDs) == 1 && dstHasHttp {
+		if modelCnt != 1 {
+			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+				status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have more than one model for sync pipeline")
+		}
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC), nil
 	} else if srcCategory == Grpc && len(dstConnDefIDs) == 1 && dstHasGrpc {
+		if modelCnt != 1 {
+			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+				status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have more than one model for sync pipeline")
+		}
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC), nil
 	} else if srcCategory == Http && dstHasGrpc {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
