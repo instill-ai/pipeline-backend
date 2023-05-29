@@ -235,12 +235,15 @@ export default function (data) {
 
   triggerSync.CheckTriggerSyncSingleImageSingleModel()
   triggerSync.CheckTriggerSyncMultiImageSingleModel()
-  triggerSync.CheckTriggerSyncMultiImageMultiModel()
+  // Don't support this temporarily
+  // triggerSync.CheckTriggerSyncMultiImageMultiModel()
 
   triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
   triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
-  triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
-  triggerAsync.CheckTriggerAsyncMultiImageMultiModelMultipleDestination()
+
+  // Don't support this temporarily
+  // triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
+  // triggerAsync.CheckTriggerAsyncMultiImageMultiModelMultipleDestination()
 
   if (!constant.apiGatewayMode) {
     pipelinePrivate.CheckList()
