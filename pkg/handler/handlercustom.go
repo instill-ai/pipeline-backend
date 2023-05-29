@@ -10,6 +10,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
@@ -344,9 +346,33 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		true,
 		"",
 	)))
-	custom_otel.SetupTriggerCounterObserver().Add(
+	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
 		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(owner.Id),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(*owner.Uid),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(dbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(dbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "response",
+					Value: attribute.StringValue(obj.String()),
+				},
+			),
+		),
 	)
 
 	w.Header().Add("Content-Type", "application/json")
@@ -390,9 +416,33 @@ func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.Respon
 		true,
 		"",
 	)))
-	custom_otel.SetupTriggerCounterObserver().Add(
+	custom_otel.SetupAsyncTriggerCounter().Add(
 		ctx,
 		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(owner.Id),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(*owner.Uid),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(dbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(dbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "response",
+					Value: attribute.StringValue(obj.String()),
+				},
+			),
+		),
 	)
 
 	w.Header().Add("Content-Type", "application/json")

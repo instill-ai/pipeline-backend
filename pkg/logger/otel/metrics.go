@@ -45,15 +45,28 @@ func SetupMetrics(ctx context.Context, serviceName string) (*sdkmetric.MeterProv
 }
 
 var once sync.Once
-var pipelineTriggerCounter metric.Int64Counter
-func SetupTriggerCounterObserver() metric.Int64Counter {
+var pipelineSyncTriggerCounter metric.Int64Counter
+func SetupSyncTriggerCounter() metric.Int64Counter {
 	once.Do(func() {
-		pipelineTriggerCounter, _ = otel.Meter("pipeline.backend").Int64Counter(
+		pipelineSyncTriggerCounter, _ = otel.Meter("pipeline.backend").Int64Counter(
 			"pipeline.trigger.counter",
 			metric.WithUnit("1"),
 			metric.WithDescription("user billable action"),
 		)
 	})
 
-	return pipelineTriggerCounter
+	return pipelineSyncTriggerCounter
+}
+
+var pipelineAsyncTriggerCounter metric.Int64Counter
+func SetupAsyncTriggerCounter() metric.Int64Counter {
+	once.Do(func() {
+		pipelineAsyncTriggerCounter, _ = otel.Meter("pipeline.backend").Int64Counter(
+			"pipeline.trigger.counter",
+			metric.WithUnit("1"),
+			metric.WithDescription("user billable action"),
+		)
+	})
+
+	return pipelineAsyncTriggerCounter
 }

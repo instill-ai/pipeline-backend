@@ -13,6 +13,8 @@ import (
 	"github.com/iancoleman/strcase"
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
@@ -719,9 +721,33 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 		true,
 		"",
 	)))
-	custom_otel.SetupTriggerCounterObserver().Add(
+	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
 		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(owner.Id),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(*owner.Uid),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(dbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(dbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "response",
+					Value: attribute.StringValue(resp.String()),
+				},
+			),
+		),
 	)
 
 	return resp, nil
@@ -951,9 +977,33 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 		true,
 		"",
 	)))
-	custom_otel.SetupTriggerCounterObserver().Add(
+	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
 		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(owner.Id),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(*owner.Uid),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(dbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(dbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "response",
+					Value: attribute.StringValue(obj.String()),
+				},
+			),
+		),
 	)
 
 	stream.SendAndClose(obj)
