@@ -38,6 +38,8 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 	dstHasHttp := false
 	dstHasGrpc := false
 
+	modelCnt := 0
+
 	componentIdSet := make(map[string]bool)
 	exp := "^[A-Za-z0-9]([A-Za-z0-9-_]{0,62}[A-Za-z0-9])?$"
 	r, _ := regexp.Compile(exp)
@@ -122,7 +124,20 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 			if strings.Contains(dstConnDefID, "grpc") {
 				dstHasGrpc = true
 			}
+		case utils.Model:
+			modelCnt += 1
 		}
+	}
+
+	// Temporary Constraint
+	if modelCnt != 1 {
+		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have exactly one model")
+	}
+	// Temporary Constraint
+	if len(dstConnDefIDs) != 1 {
+		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have exactly one destination connector")
 	}
 
 	if srcCnt == 0 {

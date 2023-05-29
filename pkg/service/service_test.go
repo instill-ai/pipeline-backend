@@ -45,6 +45,10 @@ func TestCreatePipeline(t *testing.T) {
 						ResourceName: "source-connectors/source-http",
 					},
 					{
+						Id:           "m01",
+						ResourceName: "models/model01",
+					},
+					{
 						Id:           "d01",
 						ResourceName: "destination-connectors/destination-http",
 					},
@@ -79,6 +83,7 @@ func TestCreatePipeline(t *testing.T) {
 
 		mockModelPublicServiceClient := NewMockModelPublicServiceClient(ctrl)
 		mockModelPrivateServiceClient := NewMockModelPrivateServiceClient(ctrl)
+		mockModelPublicServiceClient.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 
 		mockControllerPrivateServiceClient := NewMockControllerPrivateServiceClient(ctrl)
 		// mockRedisClient := NewMockRes
