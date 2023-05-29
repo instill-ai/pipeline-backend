@@ -36,7 +36,7 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-var tracer = otel.Tracer("vdp.public-handler.tracer")
+var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
 
 // PublicHandler handles public API
 type PublicHandler struct {

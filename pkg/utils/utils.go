@@ -178,7 +178,7 @@ func ConstructAuditLog(
 	metadata string,
 ) []byte {
 	logMessage, _ := json.Marshal(otel.AuditLogMessage{
-		ServiceName: "PipelineBackend",
+		ServiceName: "pipeline-backend",
 		TraceInfo: struct {
 			TraceId string
 			SpanId  string
@@ -221,7 +221,7 @@ func ConstructErrorLog(
 	errorMessage string,
 ) []byte {
 	logMessage, _ := json.Marshal(otel.ErrorLogMessage{
-		ServiceName: "PipelineBackend",
+		ServiceName: "pipeline-backend",
 		TraceInfo: struct {
 			TraceId string
 			SpanId  string

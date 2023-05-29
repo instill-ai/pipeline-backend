@@ -14,7 +14,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
-	modelv1alpha "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
@@ -62,7 +61,7 @@ type DestinationActivityParam struct {
 	DbPipeline         *datamodel.Pipeline
 }
 
-var tracer = otel.Tracer("vdp.temporal.tracer")
+var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
 // TriggerAsyncPipelineWorkflow is a pipeline trigger workflow definition.
 func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowParam) ([][]byte, error) {
@@ -191,9 +190,9 @@ func (w *worker) TriggerActivity(ctx context.Context, param *TriggerActivityPara
 	logger := activity.GetLogger(ctx)
 	logger.Info("TriggerActivity started")
 
-	var inputs []*modelv1alpha.TaskInput
+	var inputs []*modelPB.TaskInput
 	for idx := range param.TaskInputRedisKeys {
-		var input modelv1alpha.TaskInput
+		var input modelPB.TaskInput
 		json, err := w.redisClient.Get(context.Background(), param.TaskInputRedisKeys[idx]).Bytes()
 		if err != nil {
 			return nil, err
