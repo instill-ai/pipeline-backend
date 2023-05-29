@@ -31,6 +31,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// setup tracing and metrics
 	if tp, err := custom_otel.SetupTracing(ctx, "pipeline-backend-worker"); err != nil {
 		panic(err)
 	} else {
@@ -46,7 +47,6 @@ func main() {
 	ctx, span := otel.Tracer("worker-tracer").Start(ctx,
 		"main",
 	)
-	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
 	defer func() {
@@ -113,6 +113,7 @@ func main() {
 	w.RegisterActivity(cw.TriggerByFileUploadActivity)
 	w.RegisterActivity(cw.DestinationActivity)
 
+	span.End()
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
 		logger.Fatal(fmt.Sprintf("Unable to start worker: %s", err))
