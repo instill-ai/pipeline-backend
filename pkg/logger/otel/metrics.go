@@ -2,13 +2,16 @@ package otel
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -16,13 +19,27 @@ import (
 )
 
 func SetupMetrics(ctx context.Context, serviceName string) (*sdkmetric.MeterProvider, error) {
-	exporter, err := otlpmetricgrpc.New(
-		ctx,
-		otlpmetricgrpc.WithEndpoint(fmt.Sprintf("%s:%s", config.Config.Log.OtelCollector.Host, config.Config.Log.OtelCollector.Port)),
-		otlpmetricgrpc.WithInsecure(),
-	)
-	if err != nil {
-		return nil, err
+	var exporter sdkmetric.Exporter
+	var err error
+	if config.Config.Log.External {
+		exporter, err = otlpmetricgrpc.New(
+			ctx,
+			otlpmetricgrpc.WithEndpoint(fmt.Sprintf("%s:%s", config.Config.Log.OtelCollector.Host, config.Config.Log.OtelCollector.Port)),
+			otlpmetricgrpc.WithInsecure(),
+		)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		exporter, err = stdoutmetric.New(
+			stdoutmetric.WithEncoder(enc),
+			stdoutmetric.WithoutTimestamps(),
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// labels/tags/resources that are common to all metrics.
