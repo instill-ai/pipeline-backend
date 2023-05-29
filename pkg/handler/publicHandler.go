@@ -442,6 +442,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 
 	uidStr, err := resource.GetPermalinkUID(req.GetPermalink())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
 
