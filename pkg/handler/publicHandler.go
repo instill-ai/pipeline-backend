@@ -719,7 +719,7 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 		*dbPipeline,
 		"TriggerSyncPipeline",
 		true,
-		"",
+		resp.String(),
 	)))
 	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
@@ -743,8 +743,8 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 					Value: attribute.StringValue(dbPipeline.UID.String()),
 				},
 				attribute.KeyValue{
-					Key:   "response",
-					Value: attribute.StringValue(resp.String()),
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
 				},
 			),
 		),
@@ -773,16 +773,14 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
 
-	logMessage := utils.ConstructAuditLog(
+	logger.Info(string(utils.ConstructAuditLog(
 		span,
 		*owner,
 		*dbPipeline,
 		"TriggerAsyncPipeline",
 		true,
-		"",
-	)
-
-	logger.Info(string(logMessage))
+		resp.String(),
+	)))
 
 	return resp, nil
 }
@@ -975,7 +973,7 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 		*dbPipeline,
 		"TriggerPipelineBinaryFileUpload",
 		true,
-		"",
+		obj.String(),
 	)))
 	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
@@ -999,8 +997,8 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 					Value: attribute.StringValue(dbPipeline.UID.String()),
 				},
 				attribute.KeyValue{
-					Key:   "response",
-					Value: attribute.StringValue(obj.String()),
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
 				},
 			),
 		),

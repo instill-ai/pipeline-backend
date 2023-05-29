@@ -49,7 +49,7 @@ var pipelineSyncTriggerCounter metric.Int64Counter
 func SetupSyncTriggerCounter() metric.Int64Counter {
 	once.Do(func() {
 		pipelineSyncTriggerCounter, _ = otel.Meter("pipeline.backend").Int64Counter(
-			"pipeline.trigger.counter",
+			"pipeline.sync.trigger.counter",
 			metric.WithUnit("1"),
 			metric.WithDescription("user billable action"),
 		)
@@ -62,7 +62,7 @@ var pipelineAsyncTriggerCounter metric.Int64Counter
 func SetupAsyncTriggerCounter() metric.Int64Counter {
 	once.Do(func() {
 		pipelineAsyncTriggerCounter, _ = otel.Meter("pipeline.backend").Int64Counter(
-			"pipeline.trigger.counter",
+			"pipeline.async.trigger.counter",
 			metric.WithUnit("1"),
 			metric.WithDescription("user billable action"),
 		)

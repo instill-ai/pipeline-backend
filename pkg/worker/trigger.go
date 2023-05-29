@@ -13,12 +13,11 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
-	modelv1alpha "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 	"google.golang.org/grpc/codes"
 )
 
-func Trigger(mClient modelPB.ModelPublicServiceClient, rClient *redis.Client, taskInputs []*modelv1alpha.TaskInput, dataMappingIndices []string, model string, ownerPermalink string) (*pipelinePB.ModelOutput, error) {
+func Trigger(mClient modelPB.ModelPublicServiceClient, rClient *redis.Client, taskInputs []*modelPB.TaskInput, dataMappingIndices []string, model string, ownerPermalink string) (*pipelinePB.ModelOutput, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()

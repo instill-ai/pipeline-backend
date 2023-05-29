@@ -344,7 +344,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		*dbPipeline,
 		"HandleTriggerSyncPipelineBinaryFileUpload",
 		true,
-		"",
+		obj.String(),
 	)))
 	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
@@ -368,8 +368,8 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 					Value: attribute.StringValue(dbPipeline.UID.String()),
 				},
 				attribute.KeyValue{
-					Key:   "response",
-					Value: attribute.StringValue(obj.String()),
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
 				},
 			),
 		),
@@ -414,7 +414,7 @@ func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.Respon
 		*dbPipeline,
 		"HandleTriggerAsyncPipelineBinaryFileUpload",
 		true,
-		"",
+		obj.String(),
 	)))
 	custom_otel.SetupAsyncTriggerCounter().Add(
 		ctx,
@@ -438,8 +438,8 @@ func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.Respon
 					Value: attribute.StringValue(dbPipeline.UID.String()),
 				},
 				attribute.KeyValue{
-					Key:   "response",
-					Value: attribute.StringValue(obj.String()),
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
 				},
 			),
 		),
