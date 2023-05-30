@@ -10,6 +10,9 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,6 +21,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/sterr"
@@ -26,9 +30,31 @@ import (
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 )
 
+func injectSpanInRequest(r *http.Request) *http.Request {
+	if len(r.Header["X-B3-Traceid"]) > 0 {
+		traceID, _ := trace.TraceIDFromHex(r.Header["X-B3-Traceid"][0])
+		spanID, _ := trace.SpanIDFromHex(r.Header["X-B3-Spanid"][0])
+		var traceFlags trace.TraceFlags
+		if r.Header["X-B3-Sampled"][0] == "1" {
+			traceFlags = trace.FlagsSampled
+		}
+
+		spanContext := trace.NewSpanContext(trace.SpanContextConfig{
+			TraceID:    traceID,
+			SpanID:     spanID,
+			TraceFlags: traceFlags,
+		})
+
+		ctx := trace.ContextWithSpanContext(r.Context(), spanContext)
+		r = r.WithContext(ctx)
+	}
+	return r
+}
+
 // HandleTriggerPipelineBinaryFileUpload is for POST multipart form data
-func HandleTriggerPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, bool) {
-	logger, _ := logger.GetZapLogger()
+func HandleTriggerPipelineBinaryFileUpload(ctx context.Context, s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, bool) {
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	contentType := req.Header.Get("Content-Type")
 	id := pathParams["id"]
@@ -292,9 +318,15 @@ func getHttpStatus(err error) int {
 
 // HandleTriggerSyncPipelineBinaryFileUpload is for POST multipart form data
 func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-	logger, _ := logger.GetZapLogger()
 
-	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(s, w, req, pathParams)
+	req = injectSpanInRequest(req)
+	ctx, span := tracer.Start(req.Context(), "HandleTriggerSyncPipelineBinaryFileUpload",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(ctx, s, w, req, pathParams)
 	if !success {
 		return
 	}
@@ -305,6 +337,43 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		logger.Error(err.Error())
 		return
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"HandleTriggerSyncPipelineBinaryFileUpload",
+		true,
+		obj.String(),
+	)))
+	custom_otel.SetupSyncTriggerCounter().Add(
+		ctx,
+		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(owner.Id),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(*owner.Uid),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(dbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(dbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
+				},
+			),
+		),
+	)
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)
@@ -318,20 +387,63 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 
 // HandleTriggerAsyncPipelineBinaryFileUpload is for POST multipart form data
 func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-	logger, _ := logger.GetZapLogger()
 
-	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(s, w, req, pathParams)
+	req = injectSpanInRequest(req)
+	ctx, span := tracer.Start(req.Context(), "HandleTriggerAsyncPipelineBinaryFileUpload",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	owner, dbPipeline, model, inp, success := HandleTriggerPipelineBinaryFileUpload(ctx, s, w, req, pathParams)
 
 	if !success {
 		return
 	}
 
-	obj, err := s.TriggerAsyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, inp)
+	obj, err := s.TriggerAsyncPipelineBinaryFileUpload(ctx, owner, dbPipeline, model.Task, inp)
 	if err != nil {
 		http.Error(w, err.Error(), getHttpStatus(err))
 		logger.Error(err.Error())
 		return
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"HandleTriggerAsyncPipelineBinaryFileUpload",
+		true,
+		obj.String(),
+	)))
+	custom_otel.SetupAsyncTriggerCounter().Add(
+		ctx,
+		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(owner.Id),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(*owner.Uid),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(dbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(dbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
+				},
+			),
+		),
+	)
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(200)

@@ -6,15 +6,20 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
-	modelv1alpha "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
@@ -59,8 +64,14 @@ type DestinationActivityParam struct {
 	DbPipeline         *datamodel.Pipeline
 }
 
+var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
+
 // TriggerAsyncPipelineWorkflow is a pipeline trigger workflow definition.
 func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowParam) ([][]byte, error) {
+
+	sCtx, span := tracer.Start(context.Background(), "TriggerAsyncPipelineWorkflow",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
 
 	logger := workflow.GetLogger(ctx)
 	logger.Info("TriggerAsyncPipelineWorkflow started")
@@ -93,6 +104,35 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		results = append(results, result)
 	}
 
+	custom_otel.SetupAsyncTriggerCounter().Add(
+		sCtx,
+		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(param.DbPipeline.Owner),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(""),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(param.DbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(param.DbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(param.DbPipeline.Recipe), ",")),
+				},
+			),
+		),
+	)
+
 	var destinationActivities []workflow.Future
 	for _, destination := range utils.GetDestinationsFromRecipe(param.DbPipeline.Recipe) {
 		destinationActivities = append(destinationActivities, workflow.ExecuteActivity(ctx, w.DestinationActivity, &DestinationActivityParam{
@@ -120,6 +160,10 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 // TriggerAsyncPipelineWorkflow is a pipeline trigger workflow definition.
 func (w *worker) TriggerAsyncPipelineByFileUploadWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineByFileUploadWorkflowParam) ([][]byte, error) {
 
+	sCtx, span := tracer.Start(context.Background(), "TriggerAsyncPipelineByFileUploadWorkflow",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
 	logger := workflow.GetLogger(ctx)
 	logger.Info("TriggerAsyncPipelineByFileUploadWorkflow started")
 
@@ -143,6 +187,35 @@ func (w *worker) TriggerAsyncPipelineByFileUploadWorkflow(ctx workflow.Context, 
 			OwnerPermalink:     param.DbPipeline.Owner,
 		}))
 	}
+
+	custom_otel.SetupAsyncTriggerCounter().Add(
+		sCtx,
+		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(param.DbPipeline.Owner),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(""),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(param.DbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(param.DbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(param.DbPipeline.Recipe), ",")),
+				},
+			),
+		),
+	)
 
 	for idx := range modelActivities {
 		var result []byte
@@ -182,9 +255,9 @@ func (w *worker) TriggerActivity(ctx context.Context, param *TriggerActivityPara
 	logger := activity.GetLogger(ctx)
 	logger.Info("TriggerActivity started")
 
-	var inputs []*modelv1alpha.TaskInput
+	var inputs []*modelPB.TaskInput
 	for idx := range param.TaskInputRedisKeys {
-		var input modelv1alpha.TaskInput
+		var input modelPB.TaskInput
 		json, err := w.redisClient.Get(context.Background(), param.TaskInputRedisKeys[idx]).Bytes()
 		if err != nil {
 			return nil, err

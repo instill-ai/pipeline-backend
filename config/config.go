@@ -23,6 +23,7 @@ type AppConfig struct {
 	Database         DatabaseConfig         `koanf:"database"`
 	Temporal         TemporalConfig         `koanf:"temporal"`
 	Cache            CacheConfig            `koanf:"cache"`
+	Log              LogConfig              `koanf:"log"`
 	MgmtBackend      MgmtBackendConfig      `koanf:"mgmtbackend"`
 	ConnectorBackend ConnectorBackendConfig `koanf:"connectorbackend"`
 	ModelBackend     ModelBackendConfig     `koanf:"modelbackend"`
@@ -63,6 +64,15 @@ type DatabaseConfig struct {
 		IdleConnections int           `koanf:"idleconnections"`
 		MaxConnections  int           `koanf:"maxconnections"`
 		ConnLifeTime    time.Duration `koanf:"connlifetime"`
+	}
+}
+
+// LogConfig related to logging
+type LogConfig struct {
+	External      bool `koanf:"external"`
+	OtelCollector struct {
+		Host string `koanf:"host"`
+		Port string `koanf:"port"`
 	}
 }
 

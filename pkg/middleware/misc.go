@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 )
 
 // HTTPResponseModifier is a callback function for gRPC-Gateway runtime.WithForwardResponseOption
@@ -44,7 +46,12 @@ func HTTPResponseModifier(ctx context.Context, w http.ResponseWriter, p proto.Me
 // ErrorHandler is a callback function for gRPC-Gateway runtime.WithErrorHandler
 func ErrorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
 
-	logger, _ := logger.GetZapLogger()
+	ctx, span := otel.Tracer("ErrorTracer").Start(ctx,
+		"ErrorHandler",
+	)
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	// return Internal when Marshal failed
 	const fallback = `{"code": 13, "message": "failed to marshal error message"}`
@@ -124,6 +131,17 @@ func ErrorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.
 		httpStatus = runtime.HTTPStatusFromCode(s.Code())
 	}
 
+	errMessage := ""
+	if err != nil {
+		errMessage = err.Error()
+	}
+	span.SetStatus(1, "")
+	logger.Error(string(utils.ConstructErrorLog(
+		span,
+		httpStatus,
+		errMessage,
+	)))
+
 	w.WriteHeader(httpStatus)
 	if _, err := w.Write(buf); err != nil {
 		logger.Error(fmt.Sprintf("Failed to write response: %v", err))
@@ -150,6 +168,8 @@ func CustomMatcher(key string) (string, bool) {
 	case "request-id":
 		return key, true
 	case constant.HeaderOwnerIDKey:
+		return key, true
+	case "X-B3-Traceid", "X-B3-Spanid", "X-B3-Sampled":
 		return key, true
 	default:
 		return runtime.DefaultHeaderMatcher(key)

@@ -23,8 +23,8 @@ type PrivateHandler struct {
 }
 
 // NewPrivateHandler initiates a handler instance
-func NewPrivateHandler(s service.Service) pipelinePB.PipelinePrivateServiceServer {
-	datamodel.InitJSONSchema()
+func NewPrivateHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePrivateServiceServer {
+	datamodel.InitJSONSchema(ctx)
 	return &PrivateHandler{
 		service: s,
 	}
@@ -76,7 +76,7 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 
 	pbPipelines := []*pipelinePB.Pipeline{}
 	for idx := range dbPipelines {
-		pbPipelines = append(pbPipelines, DBToPBPipeline(&dbPipelines[idx]))
+		pbPipelines = append(pbPipelines, DBToPBPipeline(ctx, &dbPipelines[idx]))
 	}
 
 	resp := pipelinePB.ListPipelinesAdminResponse{
@@ -112,7 +112,7 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelineP
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err
 	}
 
-	pbPipeline := DBToPBPipeline(dbPipeline)
+	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
 	resp := pipelinePB.LookUpPipelineAdminResponse{
 		Pipeline: pbPipeline,
 	}

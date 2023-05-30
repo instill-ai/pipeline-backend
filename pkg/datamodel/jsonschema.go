@@ -1,6 +1,7 @@
 package datamodel
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -16,9 +17,9 @@ import (
 var PipelineJSONSchema *jsonschema.Schema
 
 // InitJSONSchema initialise JSON Schema instances with the given files
-func InitJSONSchema() {
+func InitJSONSchema(ctx context.Context) {
 
-	logger, _ := logger.GetZapLogger()
+	logger, _ := logger.GetZapLogger(ctx)
 
 	var err error
 	PipelineJSONSchema, err = jsonschema.Compile("config/model/pipeline.json")

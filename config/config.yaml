@@ -29,6 +29,11 @@ cache:
   redis:
     redisoptions:
       addr: redis:6379
+log:
+  external: false
+  otelcollector:
+    host: otel-collector
+    port: 8095
 temporal:
   hostport: temporal:7233
   namespace: pipeline-backend

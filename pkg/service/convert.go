@@ -214,9 +214,9 @@ func (s *service) excludeResourceDetailFromRecipe(recipe *datamodel.Recipe) erro
 
 func (s *service) includeResourceDetailInRecipe(recipe *datamodel.Recipe) error {
 
-	logger, _ := logger.GetZapLogger()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	logger, _ := logger.GetZapLogger(ctx)
 
 	for idx := range recipe.Components {
 		switch utils.GetDefinitionType(recipe.Components[idx]) {

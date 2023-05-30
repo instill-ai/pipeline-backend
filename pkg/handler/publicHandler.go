@@ -12,6 +12,10 @@ import (
 	"github.com/gogo/status"
 	"github.com/iancoleman/strcase"
 	"go.einride.tech/aip/filtering"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -22,6 +26,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/checkfield"
@@ -32,6 +37,8 @@ import (
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
+
+var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
 
 // PublicHandler handles public API
 type PublicHandler struct {
@@ -64,8 +71,8 @@ func receiveFromStreamer(i interface{}) (TriggerPipelineBinaryFileUploadRequestI
 }
 
 // NewPublicHandler initiates a handler instance
-func NewPublicHandler(s service.Service) pipelinePB.PipelinePublicServiceServer {
-	datamodel.InitJSONSchema()
+func NewPublicHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePublicServiceServer {
+	datamodel.InitJSONSchema(ctx)
 	return &PublicHandler{
 		service: s,
 	}
@@ -98,33 +105,46 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.Readiness
 }
 
 func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "CreatePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	// Validate JSON Schema
 	if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
+		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req.Pipeline, append(createRequiredFields, immutableFields...)); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Set all OUTPUT_ONLY fields to zero value on the requested payload pipeline resource
 	if err := checkfield.CheckCreateOutputOnlyFields(req.Pipeline, outputOnlyFields); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Return error if resource ID does not follow RFC-1034
 	if err := checkfield.CheckResourceID(req.Pipeline.GetId()); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.CreatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.CreatePipeline(owner, PBToDBPipeline(owner.GetName(), req.GetPipeline()))
+	dbPipeline, err := h.service.CreatePipeline(owner, PBToDBPipeline(ctx, owner.GetName(), req.GetPipeline()))
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		// Manually set the custom header to have a StatusBadRequest http response for REST endpoint
 		if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusBadRequest))); err != nil {
 			return &pipelinePB.CreatePipelineResponse{Pipeline: &pipelinePB.Pipeline{Recipe: &pipelinePB.Recipe{}}}, err
@@ -132,25 +152,42 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 		return &pipelinePB.CreatePipelineResponse{Pipeline: &pipelinePB.Pipeline{}}, err
 	}
 
-	pbPipeline := DBToPBPipeline(dbPipeline)
+	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
 	resp := pipelinePB.CreatePipelineResponse{
 		Pipeline: pbPipeline,
 	}
 
 	// Manually set the custom header to have a StatusCreated http response for REST endpoint
 	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusCreated))); err != nil {
+		span.SetStatus(1, err.Error())
 		return nil, err
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"CreatePipeline",
+		false,
+		"",
+	)))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
+	ctx, span := tracer.Start(ctx, "ListPipelines",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
@@ -171,22 +208,33 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
 	}...)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(owner, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
 	pbPipelines := []*pipelinePB.Pipeline{}
 	for idx := range dbPipelines {
-		pbPipelines = append(pbPipelines, DBToPBPipeline(&dbPipelines[idx]))
+		pbPipelines = append(pbPipelines, DBToPBPipeline(ctx, &dbPipelines[idx]))
+		logger.Info(string(utils.ConstructAuditLog(
+			span,
+			*owner,
+			dbPipelines[idx],
+			"ListPipelines",
+			false,
+			"",
+		)))
 	}
 
 	resp := pipelinePB.ListPipelinesResponse{
@@ -200,35 +248,61 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
 
+	ctx, span := tracer.Start(ctx, "GetPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
 	id, err := resource.GetRscNameID(req.GetName())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, isBasicView)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.GetPipelineResponse{}, err
 	}
 
-	pbPipeline := DBToPBPipeline(dbPipeline)
+	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
 	resp := pipelinePB.GetPipelineResponse{
 		Pipeline: pbPipeline,
 	}
+
+	logMessage := utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"GetPipeline",
+		false,
+		"",
+	)
+	logger.Info(string(logMessage))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
+	ctx, span := tracer.Start(ctx, "UpdatePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
@@ -242,16 +316,19 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 
 	getResp, err := h.GetPipeline(ctx, &pipelinePB.GetPipelineRequest{Name: pbPipelineReq.GetName()})
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
 	pbUpdateMask, err = checkfield.CheckUpdateOutputOnlyFields(pbUpdateMask, outputOnlyFields)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	mask, err := fieldmask_utils.MaskFromProtoFieldMask(pbUpdateMask, strcase.ToCamel)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -265,55 +342,93 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 
 	// Return error if IMMUTABLE fields are intentionally changed
 	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReq, pbPipelineToUpdate, immutableFields); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Only the fields mentioned in the field mask will be copied to `pbPipelineToUpdate`, other fields are left intact
 	err = fieldmask_utils.StructToStruct(mask, pbPipelineReq, pbPipelineToUpdate)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.UpdatePipeline(pbPipelineToUpdate.GetId(), owner, PBToDBPipeline(owner.GetName(), pbPipelineToUpdate))
+	dbPipeline, err := h.service.UpdatePipeline(pbPipelineToUpdate.GetId(), owner, PBToDBPipeline(ctx, owner.GetName(), pbPipelineToUpdate))
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
 
 	resp := pipelinePB.UpdatePipelineResponse{
-		Pipeline: DBToPBPipeline(dbPipeline),
+		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"UpdatePipeline",
+		false,
+		"",
+	)))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
+	ctx, span := tracer.Start(ctx, "DeletePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
 	existPipeline, err := h.GetPipeline(ctx, &pipelinePB.GetPipelineRequest{Name: req.GetName()})
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
 	if err := h.service.DeletePipeline(existPipeline.GetPipeline().GetId(), owner); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
 	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
 	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent))); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*PBToDBPipeline(ctx, owner.Id, existPipeline.Pipeline),
+		"DeletePipeline",
+		false,
+		"",
+	)))
 
 	return &pipelinePB.DeletePipelineResponse{}, nil
 }
 
 func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipelineRequest) (*pipelinePB.LookUpPipelineResponse, error) {
 
+	ctx, span := tracer.Start(ctx, "LookUpPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, lookUpRequiredFields); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.LookUpPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -321,127 +436,198 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
 
 	uidStr, err := resource.GetPermalinkUID(req.GetPermalink())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
 
 	uid, err := uuid.FromString(uidStr)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
 
 	dbPipeline, err := h.service.GetPipelineByUID(uid, owner, isBasicView)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.LookUpPipelineResponse{}, err
 	}
 
-	pbPipeline := DBToPBPipeline(dbPipeline)
+	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
 	resp := pipelinePB.LookUpPipelineResponse{
 		Pipeline: pbPipeline,
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"LookUpPipeline",
+		false,
+		"",
+	)))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.ActivatePipelineRequest) (*pipelinePB.ActivatePipelineResponse, error) {
 
+	ctx, span := tracer.Start(ctx, "ActivatePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, activateRequiredFields); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.ActivatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.ActivatePipelineResponse{}, err
 	}
 
 	id, err := resource.GetRscNameID(req.GetName())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.ActivatePipelineResponse{}, err
 	}
 
 	dbPipeline, err := h.service.UpdatePipelineState(id, owner, datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE))
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.ActivatePipelineResponse{}, err
 	}
 
 	resp := pipelinePB.ActivatePipelineResponse{
-		Pipeline: DBToPBPipeline(dbPipeline),
+		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"ActivatePipeline",
+		false,
+		"",
+	)))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.DeactivatePipelineRequest) (*pipelinePB.DeactivatePipelineResponse, error) {
 
+	ctx, span := tracer.Start(ctx, "DeactivatePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, deactivateRequiredFields); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.DeactivatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.DeactivatePipelineResponse{}, err
 	}
 
 	id, err := resource.GetRscNameID(req.GetName())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.DeactivatePipelineResponse{}, err
 	}
 
 	dbPipeline, err := h.service.UpdatePipelineState(id, owner, datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE))
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.DeactivatePipelineResponse{}, err
 	}
 
 	resp := pipelinePB.DeactivatePipelineResponse{
-		Pipeline: DBToPBPipeline(dbPipeline),
+		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"DeactivatePipeline",
+		false,
+		"",
+	)))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipelineRequest) (*pipelinePB.RenamePipelineResponse, error) {
 
+	ctx, span := tracer.Start(ctx, "RenamePipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, renameRequiredFields); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.RenamePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.RenamePipelineResponse{}, err
 	}
 
 	id, err := resource.GetRscNameID(req.GetName())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.RenamePipelineResponse{}, err
 	}
 
 	newID := req.GetNewPipelineId()
 	if err := checkfield.CheckResourceID(newID); err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.RenamePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	dbPipeline, err := h.service.UpdatePipelineID(id, owner, newID)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.RenamePipelineResponse{}, err
 	}
 
 	resp := pipelinePB.RenamePipelineResponse{
-		Pipeline: DBToPBPipeline(dbPipeline),
+		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"RenamePipeline",
+		false,
+		"",
+	)))
 
 	return &resp, nil
 }
 
 func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (*mgmtPB.User, *datamodel.Pipeline, error) {
 
-	logger, _ := logger.GetZapLogger()
+	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
@@ -509,28 +695,94 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipel
 }
 
 func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "TriggerSyncPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
 
 	resp, err := h.service.TriggerSyncPipeline(req, owner, dbPipeline)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"TriggerSyncPipeline",
+		true,
+		resp.String(),
+	)))
+	custom_otel.SetupSyncTriggerCounter().Add(
+		ctx,
+		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(owner.Id),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(*owner.Uid),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(dbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(dbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
+				},
+			),
+		),
+	)
+
 	return resp, nil
 }
 
 func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "TriggerAsyncPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
 
-	resp, err := h.service.TriggerAsyncPipeline(req, owner, dbPipeline)
+	resp, err := h.service.TriggerAsyncPipeline(ctx, req, owner, dbPipeline)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"TriggerAsyncPipeline",
+		true,
+		resp.String(),
+	)))
+
 	return resp, nil
 }
 
@@ -697,15 +949,61 @@ func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*
 
 func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerSyncPipelineBinaryFileUploadServer) error {
 
+	ctx, span := tracer.Start(stream.Context(), "TriggerPipelineBinaryFileUpload",
+		trace.WithSpanKind(trace.SpanKindServer))
+
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	owner, dbPipeline, model, input, err := h.PreTriggerPipelineBinaryFileUpload(stream)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return err
 	}
 
 	obj, err := h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &input)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return err
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"TriggerPipelineBinaryFileUpload",
+		true,
+		obj.String(),
+	)))
+	custom_otel.SetupSyncTriggerCounter().Add(
+		ctx,
+		1,
+		metric.WithAttributeSet(
+			attribute.NewSet(
+				attribute.KeyValue{
+					Key:   "ownerId",
+					Value: attribute.StringValue(owner.Id),
+				},
+				attribute.KeyValue{
+					Key:   "ownerUid",
+					Value: attribute.StringValue(*owner.Uid),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineId",
+					Value: attribute.StringValue(dbPipeline.ID),
+				},
+				attribute.KeyValue{
+					Key:   "pipelineUid",
+					Value: attribute.StringValue(dbPipeline.UID.String()),
+				},
+				attribute.KeyValue{
+					Key:   "model",
+					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
+				},
+			),
+		),
+	)
 
 	stream.SendAndClose(obj)
 
@@ -713,25 +1011,44 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 }
 
 func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.WatchPipelineRequest) (*pipelinePB.WatchPipelineResponse, error) {
+
+	ctx, span := tracer.Start(ctx, "WatchPipeline",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
 
 	id, err := resource.GetRscNameID(req.GetName())
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
 
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
 	state, err := h.service.GetResourceState(dbPipeline.UID)
-
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
+
+	logger.Info(string(utils.ConstructAuditLog(
+		span,
+		*owner,
+		*dbPipeline,
+		"WatchPipeline",
+		false,
+		state.String(),
+	)))
 
 	return &pipelinePB.WatchPipelineResponse{
 		State: *state,
