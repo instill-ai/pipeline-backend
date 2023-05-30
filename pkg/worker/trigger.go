@@ -30,7 +30,7 @@ func Trigger(mClient modelPB.ModelPublicServiceClient, rClient *redis.Client, ta
 		return nil, err
 	}
 
-	taskOutputs := utils.CvtModelTaskOutputToPipelineTaskOutput(resp.TaskOutputs)
+	taskOutputs := utils.CvtModelTaskOutputToPipelineTaskOutput(ctx, resp.TaskOutputs)
 	for idx, taskOutput := range taskOutputs {
 		taskOutput.Index = dataMappingIndices[idx]
 	}
@@ -255,7 +255,7 @@ func TriggerImageTask(mClient modelPB.ModelPublicServiceClient, rClient *redis.C
 		return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at model %s: cannot receive response: %v", "TriggerModelBinaryFileUploadRequest", model, err.Error())
 	}
 
-	taskOutputs := utils.CvtModelTaskOutputToPipelineTaskOutput(resp.TaskOutputs)
+	taskOutputs := utils.CvtModelTaskOutputToPipelineTaskOutput(ctx, resp.TaskOutputs)
 	for idx, taskOutput := range taskOutputs {
 		taskOutput.Index = dataMappingIndices[idx]
 	}
@@ -339,7 +339,7 @@ func TriggerTextTask(mClient modelPB.ModelPublicServiceClient, rClient *redis.Cl
 		return nil, status.Errorf(codes.Internal, "[model-backend] Error %s at model %s: cannot receive response: %v", "TriggerModelBinaryFileUploadRequest", model, err.Error())
 	}
 
-	taskOutputs := utils.CvtModelTaskOutputToPipelineTaskOutput(resp.TaskOutputs)
+	taskOutputs := utils.CvtModelTaskOutputToPipelineTaskOutput(ctx, resp.TaskOutputs)
 	for idx, taskOutput := range taskOutputs {
 		taskOutput.Index = dataMappingIndices[idx]
 	}

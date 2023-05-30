@@ -7,6 +7,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"go.opentelemetry.io/otel/trace"
 
@@ -77,9 +78,9 @@ func GetSourcesFromRecipe(recipe *datamodel.Recipe) []string {
 	return GetResourceFromRecipe(recipe, SourceConnector)
 }
 
-func CvtModelTaskOutputToPipelineTaskOutput(modelTaskOutputs []*modelPB.TaskOutput) []*pipelinePB.TaskOutput {
+func CvtModelTaskOutputToPipelineTaskOutput(ctx context.Context, modelTaskOutputs []*modelPB.TaskOutput) []*pipelinePB.TaskOutput {
 
-	// logger, _ := logger.GetZapLogger()
+	logger, _ := logger.GetZapLogger(ctx)
 
 	var pipelineTaskOutputs []*pipelinePB.TaskOutput
 	for _, taskOutput := range modelTaskOutputs {
@@ -139,7 +140,7 @@ func CvtModelTaskOutputToPipelineTaskOutput(modelTaskOutputs []*modelPB.TaskOutp
 				},
 			})
 		default:
-			// logger.Error("AI task type is not defined")
+			logger.Error("AI task type is not defined")
 		}
 	}
 
