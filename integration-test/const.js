@@ -61,6 +61,13 @@ export const params = {
   timeout: "1800s",
 };
 
+export const paramsGrpc = {
+  metadata: {
+    "Content-Type": "application/json",
+  },
+  timeout: "1800s",
+};
+
 const randomUUID = uuidv4();
 export const paramsGRPCWithJwt = {
   metadata: {

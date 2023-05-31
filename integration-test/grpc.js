@@ -123,7 +123,7 @@ export function setup() {
           }
         }
       }
-    }), {
+    }, constant.paramsGrpc), {
       "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
@@ -140,7 +140,7 @@ export function setup() {
           }
         }
       }
-    }), {
+    }, constant.paramsGrpc), {
       "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
