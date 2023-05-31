@@ -58,7 +58,7 @@ export const params = {
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: "600s",
+  timeout: "1800s",
 };
 
 const randomUUID = uuidv4();
