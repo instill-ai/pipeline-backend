@@ -165,7 +165,7 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"CreatePipeline",
 		false,
@@ -229,7 +229,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		pbPipelines = append(pbPipelines, DBToPBPipeline(ctx, &dbPipelines[idx]))
 		logger.Info(string(utils.ConstructAuditLog(
 			span,
-			*owner,
+			owner,
 			dbPipelines[idx],
 			"ListPipelines",
 			false,
@@ -281,7 +281,7 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 
 	logMessage := utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"GetPipeline",
 		false,
@@ -365,7 +365,7 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"UpdatePipeline",
 		false,
@@ -408,7 +408,7 @@ func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.Dele
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*PBToDBPipeline(ctx, owner.Id, existPipeline.Pipeline),
 		"DeletePipeline",
 		false,
@@ -465,7 +465,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"LookUpPipeline",
 		false,
@@ -513,7 +513,7 @@ func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.Ac
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"ActivatePipeline",
 		false,
@@ -561,7 +561,7 @@ func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"DeactivatePipeline",
 		false,
@@ -615,7 +615,7 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"RenamePipeline",
 		false,
@@ -716,7 +716,7 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"TriggerSyncPipeline",
 		true,
@@ -776,7 +776,7 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"TriggerAsyncPipeline",
 		true,
@@ -970,7 +970,7 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"TriggerPipelineBinaryFileUpload",
 		true,
@@ -1043,7 +1043,7 @@ func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.Watch
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"WatchPipeline",
 		false,
