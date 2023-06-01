@@ -14,7 +14,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 )
 
-var logger *zap.Logger
 var once sync.Once
 var core zapcore.Core
 
@@ -70,12 +69,10 @@ func GetZapLogger(ctx context.Context) (*zap.Logger, error) {
 			)
 		}
 
-		// finally construct the logger with the tee core
-		logger = zap.New(core)
 	})
 
 	// hooks to inject logs to traces
-	logger = logger.WithOptions(
+	logger := zap.New(core).WithOptions(
 		zap.Hooks(func(entry zapcore.Entry) error {
 			span := trace.SpanFromContext(ctx)
 			if !span.IsRecording() {
