@@ -340,7 +340,7 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"HandleTriggerSyncPipelineBinaryFileUpload",
 		true,
@@ -410,7 +410,7 @@ func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.Respon
 
 	logger.Info(string(utils.ConstructAuditLog(
 		span,
-		*owner,
+		owner,
 		*dbPipeline,
 		"HandleTriggerAsyncPipelineBinaryFileUpload",
 		true,

@@ -172,7 +172,7 @@ type ImageInput struct {
 
 func ConstructAuditLog(
 	span trace.Span,
-	user mgmtPB.User,
+	user *mgmtPB.User,
 	pipeline datamodel.Pipeline,
 	eventName string,
 	billable bool,
