@@ -43,7 +43,8 @@ export let options = {
 export function setup() {
 
   client.connect(constant.connectorGRPCPublicHost, {
-    plaintext: true
+    plaintext: true,
+    timeout: '1800s',
   });
 
   group("Connector Backend API: Create a http source connector", function () {
