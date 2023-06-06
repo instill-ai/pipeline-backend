@@ -39,12 +39,14 @@ type ServerConfig struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
-	CORSOrigins  []string `koanf:"corsorigins"`
-	Edition      string   `koanf:"edition"`
-	UsageEnabled bool     `koanf:"usageenabled"`
-	Debug        bool     `koanf:"debug"`
-	MaxDataSize  int      `koanf:"maxdatasize"`
-	Workflow     struct {
+	CORSOrigins []string `koanf:"corsorigins"`
+	Edition     string   `koanf:"edition"`
+	Usage       struct {
+		Enabled bool `koanf:"enabled"`
+	}
+	Debug       bool `koanf:"debug"`
+	MaxDataSize int  `koanf:"maxdatasize"`
+	Workflow    struct {
 		MaxWorkflowTimeout int32 `koanf:"maxworkflowtimeout"`
 		MaxWorkflowRetry   int32 `koanf:"maxworkflowretry"`
 		MaxActivityRetry   int32 `koanf:"maxactivityretry"`

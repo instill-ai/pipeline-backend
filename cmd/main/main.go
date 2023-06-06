@@ -300,7 +300,7 @@ func main() {
 
 	// Start usage reporter
 	var usg usage.Usage
-	if config.Config.Server.UsageEnabled {
+	if config.Config.Server.Usage.Enabled {
 		usageServiceClient, usageServiceClientConn := external.InitUsageServiceClient(ctx)
 		if usageServiceClientConn != nil {
 			defer usageServiceClientConn.Close()
@@ -387,7 +387,7 @@ func main() {
 	case err := <-errSig:
 		logger.Error(fmt.Sprintf("Fatal error: %v\n", err))
 	case <-quitSig:
-		if config.Config.Server.UsageEnabled && usg != nil {
+		if config.Config.Server.Usage.Enabled && usg != nil {
 			usg.TriggerSingleReporter(ctx)
 		}
 		logger.Info("Shutting down server...")

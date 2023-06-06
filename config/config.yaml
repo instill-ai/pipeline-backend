@@ -6,7 +6,8 @@ server:
     key:
   corsorigins:
   edition: local-ce:dev
-  usageenabled: true
+  usage:
+    enabled: true
   debug: true
   maxdatasize: 12 # MB in unit
   workflow:
