@@ -28,7 +28,6 @@ type AppConfig struct {
 	ConnectorBackend ConnectorBackendConfig `koanf:"connectorbackend"`
 	ModelBackend     ModelBackendConfig     `koanf:"modelbackend"`
 	Controller       ControllerConfig       `koanf:"controller"`
-	UsageServer      UsageServerConfig      `koanf:"usageserver"`
 }
 
 // ServerConfig defines HTTP server configurations
@@ -39,12 +38,17 @@ type ServerConfig struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
-	CORSOrigins  []string `koanf:"corsorigins"`
-	Edition      string   `koanf:"edition"`
-	DisableUsage bool     `koanf:"disableusage"`
-	Debug        bool     `koanf:"debug"`
-	MaxDataSize  int      `koanf:"maxdatasize"`
-	Workflow     struct {
+	CORSOrigins []string `koanf:"corsorigins"`
+	Edition     string   `koanf:"edition"`
+	Usage       struct {
+		Enabled    bool   `koanf:"enabled"`
+		TLSEnabled bool   `koanf:"tlsenabled"`
+		Host       string `koanf:"host"`
+		Port       int    `koanf:"port"`
+	}
+	Debug       bool `koanf:"debug"`
+	MaxDataSize int  `koanf:"maxdatasize"`
+	Workflow    struct {
 		MaxWorkflowTimeout int32 `koanf:"maxworkflowtimeout"`
 		MaxWorkflowRetry   int32 `koanf:"maxworkflowretry"`
 		MaxActivityRetry   int32 `koanf:"maxactivityretry"`
@@ -123,13 +127,6 @@ type MgmtBackendConfig struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
-}
-
-// UsageServerConfig related to usage-server
-type UsageServerConfig struct {
-	TLSEnabled bool   `koanf:"tlsenabled"`
-	Host       string `koanf:"host"`
-	Port       int    `koanf:"port"`
 }
 
 // ControllerConfig related to controller
