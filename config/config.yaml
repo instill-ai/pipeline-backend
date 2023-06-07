@@ -8,6 +8,9 @@ server:
   edition: local-ce:dev
   usage:
     enabled: true
+    tlsenabled: true
+    host: usage.instill.tech
+    port: 443
   debug: true
   maxdatasize: 12 # MB in unit
   workflow:
@@ -68,7 +71,3 @@ controller:
   https:
     cert:
     key:
-usageserver:
-  tlsenabled: true
-  host: usage.instill.tech
-  port: 443
