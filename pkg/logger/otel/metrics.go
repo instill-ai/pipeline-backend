@@ -4,18 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"sync"
 	"time"
 
-	"github.com/instill-ai/pipeline-backend/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/metric"
-	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
+
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+
+	"github.com/instill-ai/pipeline-backend/config"
 )
 
 func SetupMetrics(ctx context.Context, serviceName string) (*sdkmetric.MeterProvider, error) {
@@ -31,10 +33,8 @@ func SetupMetrics(ctx context.Context, serviceName string) (*sdkmetric.MeterProv
 			return nil, err
 		}
 	} else {
-		enc := json.NewEncoder(os.Stdout)
-		enc.SetIndent("", "  ")
 		exporter, err = stdoutmetric.New(
-			stdoutmetric.WithEncoder(enc),
+			stdoutmetric.WithEncoder(json.NewEncoder(io.Discard)),
 			stdoutmetric.WithoutTimestamps(),
 		)
 		if err != nil {

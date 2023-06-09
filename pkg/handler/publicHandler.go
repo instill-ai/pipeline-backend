@@ -163,13 +163,15 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 		return nil, err
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
+		true,
 		"CreatePipeline",
+		"request",
+		"CreatePipeline done",
 		false,
-		"",
+		custom_otel.SetEventResource(dbPipeline),
 	)))
 
 	return &resp, nil
@@ -227,15 +229,17 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 	pbPipelines := []*pipelinePB.Pipeline{}
 	for idx := range dbPipelines {
 		pbPipelines = append(pbPipelines, DBToPBPipeline(ctx, &dbPipelines[idx]))
-		logger.Info(string(utils.ConstructAuditLog(
-			span,
-			owner,
-			dbPipelines[idx],
-			"ListPipelines",
-			false,
-			"",
-		)))
 	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		owner,
+		false,
+		"ListPipelines",
+		"request",
+		"ListPipelines done",
+		false,
+	)))
 
 	resp := pipelinePB.ListPipelinesResponse{
 		Pipelines:     pbPipelines,
@@ -279,15 +283,16 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 		Pipeline: pbPipeline,
 	}
 
-	logMessage := utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
-		"GetPipeline",
 		false,
-		"",
-	)
-	logger.Info(string(logMessage))
+		"GetPipeline",
+		"request",
+		"GetPipeline done",
+		false,
+		custom_otel.SetEventResource(dbPipeline),
+	)))
 
 	return &resp, nil
 }
@@ -363,13 +368,15 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
+		true,
 		"UpdatePipeline",
+		"request",
+		"UpdatePipeline done",
 		false,
-		"",
+		custom_otel.SetEventResource(dbPipeline),
 	)))
 
 	return &resp, nil
@@ -406,13 +413,15 @@ func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.Dele
 		return &pipelinePB.DeletePipelineResponse{}, err
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*PBToDBPipeline(ctx, owner.Id, existPipeline.Pipeline),
+		true,
 		"DeletePipeline",
+		"request",
+		"DeletePipeline done",
 		false,
-		"",
+		custom_otel.SetEventResource(existPipeline.GetPipeline()),
 	)))
 
 	return &pipelinePB.DeletePipelineResponse{}, nil
@@ -463,13 +472,15 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 		Pipeline: pbPipeline,
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
-		"LookUpPipeline",
 		false,
-		"",
+		"LookUpPipeline",
+		"request",
+		"LookUpPipeline done",
+		false,
+		custom_otel.SetEventResource(dbPipeline),
 	)))
 
 	return &resp, nil
@@ -511,13 +522,15 @@ func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.Ac
 		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
+		true,
 		"ActivatePipeline",
+		"request",
+		"ActivatePipeline done",
 		false,
-		"",
+		custom_otel.SetEventResource(dbPipeline),
 	)))
 
 	return &resp, nil
@@ -559,13 +572,15 @@ func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.
 		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
+		true,
 		"DeactivatePipeline",
+		"request",
+		"DeactivatePipeline done",
 		false,
-		"",
+		custom_otel.SetEventResource(dbPipeline),
 	)))
 
 	return &resp, nil
@@ -613,13 +628,15 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 		Pipeline: DBToPBPipeline(ctx, dbPipeline),
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
+		true,
 		"RenamePipeline",
+		"request",
+		"RenamePipeline done",
 		false,
-		"",
+		custom_otel.SetEventResource(dbPipeline),
 	)))
 
 	return &resp, nil
@@ -714,17 +731,19 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
-		"TriggerSyncPipeline",
 		true,
-		resp.String(),
+		"TriggerSyncPipeline",
+		"request",
+		"TriggerSyncPipeline done",
+		true,
+		custom_otel.SetEventResource(dbPipeline),
 	)))
 	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
-		1,
+		int64(len(utils.GetModelsFromRecipe(dbPipeline.Recipe))),
 		metric.WithAttributeSet(
 			attribute.NewSet(
 				attribute.KeyValue{
@@ -774,13 +793,15 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
-		"TriggerAsyncPipeline",
 		true,
-		resp.String(),
+		"TriggerAsyncPipeline",
+		"request",
+		"TriggerAsyncPipeline done",
+		true,
+		custom_otel.SetEventResource(dbPipeline),
 	)))
 
 	return resp, nil
@@ -968,17 +989,19 @@ func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.Pipeli
 		return err
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
-		"TriggerPipelineBinaryFileUpload",
 		true,
-		obj.String(),
+		"TriggerPipelineBinaryFileUpload",
+		"request",
+		"TriggerPipelineBinaryFileUpload done",
+		true,
+		custom_otel.SetEventResource(dbPipeline),
 	)))
 	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
-		1,
+		int64(len(utils.GetModelsFromRecipe(dbPipeline.Recipe))),
 		metric.WithAttributeSet(
 			attribute.NewSet(
 				attribute.KeyValue{
@@ -1021,34 +1044,68 @@ func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.Watch
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
 		span.SetStatus(1, err.Error())
+		logger.Info(string(custom_otel.NewLogMessage(
+			span,
+			owner,
+			false,
+			"WatchPipeline",
+			"request",
+			"WatchPipeline error",
+			false,
+			custom_otel.SetErrorMessage(err.Error()),
+		)))
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
 
 	id, err := resource.GetRscNameID(req.GetName())
 	if err != nil {
 		span.SetStatus(1, err.Error())
+		logger.Info(string(custom_otel.NewLogMessage(
+			span,
+			owner,
+			false,
+			"WatchPipeline",
+			"request",
+			"WatchPipeline error",
+			false,
+			custom_otel.SetErrorMessage(err.Error()),
+			custom_otel.SetEventResource(req.GetName()),
+		)))
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
 
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
+		logger.Info(string(custom_otel.NewLogMessage(
+			span,
+			owner,
+			false,
+			"WatchPipeline",
+			"request",
+			"WatchPipeline error",
+			false,
+			custom_otel.SetErrorMessage(err.Error()),
+			custom_otel.SetEventResource(id),
+		)))
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
 	state, err := h.service.GetResourceState(dbPipeline.UID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
+		logger.Info(string(custom_otel.NewLogMessage(
+			span,
+			owner,
+			false,
+			"WatchPipeline",
+			"request",
+			"WatchPipeline error",
+			false,
+			custom_otel.SetErrorMessage(err.Error()),
+			custom_otel.SetEventResource(dbPipeline),
+		)))
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
-
-	logger.Info(string(utils.ConstructAuditLog(
-		span,
-		owner,
-		*dbPipeline,
-		"WatchPipeline",
-		false,
-		state.String(),
-	)))
 
 	return &pipelinePB.WatchPipelineResponse{
 		State: *state,

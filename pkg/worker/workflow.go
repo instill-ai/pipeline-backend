@@ -106,7 +106,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 
 	custom_otel.SetupAsyncTriggerCounter().Add(
 		sCtx,
-		1,
+		int64(len(utils.GetModelsFromRecipe(param.DbPipeline.Recipe))),
 		metric.WithAttributeSet(
 			attribute.NewSet(
 				attribute.KeyValue{
@@ -190,7 +190,7 @@ func (w *worker) TriggerAsyncPipelineByFileUploadWorkflow(ctx workflow.Context, 
 
 	custom_otel.SetupAsyncTriggerCounter().Add(
 		sCtx,
-		1,
+		int64(len(utils.GetModelsFromRecipe(param.DbPipeline.Recipe))),
 		metric.WithAttributeSet(
 			attribute.NewSet(
 				attribute.KeyValue{

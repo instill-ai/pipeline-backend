@@ -21,11 +21,11 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/sterr"
 
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
 	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 )
@@ -338,14 +338,17 @@ func HandleTriggerSyncPipelineBinaryFileUpload(s service.Service, w http.Respons
 		return
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
+		false,
 		"HandleTriggerSyncPipelineBinaryFileUpload",
+		"request",
+		"HandleTriggerSyncPipelineBinaryFileUpload done",
 		true,
-		obj.String(),
+		custom_otel.SetEventResource(dbPipeline),
 	)))
+
 	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
 		1,
@@ -408,14 +411,17 @@ func HandleTriggerAsyncPipelineBinaryFileUpload(s service.Service, w http.Respon
 		return
 	}
 
-	logger.Info(string(utils.ConstructAuditLog(
+	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		owner,
-		*dbPipeline,
+		false,
 		"HandleTriggerAsyncPipelineBinaryFileUpload",
+		"request",
+		"HandleTriggerAsyncPipelineBinaryFileUpload done",
 		true,
-		obj.String(),
+		custom_otel.SetEventResource(dbPipeline),
 	)))
+
 	custom_otel.SetupAsyncTriggerCounter().Add(
 		ctx,
 		1,

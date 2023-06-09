@@ -3,6 +3,7 @@ package otel
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"go.opentelemetry.io/contrib/propagators/b3"
@@ -28,7 +29,7 @@ func SetupTracing(ctx context.Context, serviceName string) (*trace.TracerProvide
 		}
 	} else {
 		exporter, err = stdouttrace.New(
-			stdouttrace.WithPrettyPrint(),
+			stdouttrace.WithWriter(io.Discard),
 		)
 		if err != nil {
 			return nil, err
