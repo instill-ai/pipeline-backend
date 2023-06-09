@@ -77,7 +77,7 @@ func NewLogMessage(
 ) []byte {
 	logMessage := LogMessage{}
 	logMessage.Id, _ = uuid.NewV4()
-	logMessage.ServiceName = "model-backend"
+	logMessage.ServiceName = "pipeline-backend"
 	logMessage.TraceInfo = struct {
 		TraceId string "json:\"traceID\""
 		SpanId  string "json:\"spanID\""
