@@ -4,7 +4,6 @@ server:
   https:
     cert:
     key:
-  corsorigins:
   edition: local-ce:dev
   usage:
     enabled: true
