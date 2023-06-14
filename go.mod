@@ -18,7 +18,6 @@ require (
 	github.com/knadh/koanf v1.4.3
 	github.com/mennanov/fieldmask-utils v0.6.0
 	github.com/oklog/ulid/v2 v2.1.0
-	github.com/rs/cors v1.8.2
 	github.com/stretchr/testify v1.8.3
 	go.einride.tech/aip v0.58.1
 	go.opentelemetry.io/contrib/propagators/b3 v1.17.0

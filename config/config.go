@@ -38,9 +38,8 @@ type ServerConfig struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
-	CORSOrigins []string `koanf:"corsorigins"`
-	Edition     string   `koanf:"edition"`
-	Usage       struct {
+	Edition string `koanf:"edition"`
+	Usage   struct {
 		Enabled    bool   `koanf:"enabled"`
 		TLSEnabled bool   `koanf:"tlsenabled"`
 		Host       string `koanf:"host"`
