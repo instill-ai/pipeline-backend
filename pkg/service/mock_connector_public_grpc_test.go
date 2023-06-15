@@ -196,6 +196,46 @@ func (mr *MockConnectorPublicServiceClientMockRecorder) DisconnectSourceConnecto
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DisconnectSourceConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).DisconnectSourceConnector), varargs...)
 }
 
+// ExecuteDestinationConnector mocks base method.
+func (m *MockConnectorPublicServiceClient) ExecuteDestinationConnector(arg0 context.Context, arg1 *connectorv1alpha.ExecuteDestinationConnectorRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.ExecuteDestinationConnectorResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ExecuteDestinationConnector", varargs...)
+	ret0, _ := ret[0].(*connectorv1alpha.ExecuteDestinationConnectorResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExecuteDestinationConnector indicates an expected call of ExecuteDestinationConnector.
+func (mr *MockConnectorPublicServiceClientMockRecorder) ExecuteDestinationConnector(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteDestinationConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).ExecuteDestinationConnector), varargs...)
+}
+
+// ExecuteSourceConnector mocks base method.
+func (m *MockConnectorPublicServiceClient) ExecuteSourceConnector(arg0 context.Context, arg1 *connectorv1alpha.ExecuteSourceConnectorRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.ExecuteSourceConnectorResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ExecuteSourceConnector", varargs...)
+	ret0, _ := ret[0].(*connectorv1alpha.ExecuteSourceConnectorResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExecuteSourceConnector indicates an expected call of ExecuteSourceConnector.
+func (mr *MockConnectorPublicServiceClientMockRecorder) ExecuteSourceConnector(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecuteSourceConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).ExecuteSourceConnector), varargs...)
+}
+
 // GetDestinationConnector mocks base method.
 func (m *MockConnectorPublicServiceClient) GetDestinationConnector(arg0 context.Context, arg1 *connectorv1alpha.GetDestinationConnectorRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.GetDestinationConnectorResponse, error) {
 	m.ctrl.T.Helper()
@@ -416,26 +456,6 @@ func (mr *MockConnectorPublicServiceClientMockRecorder) LookUpSourceConnector(ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookUpSourceConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).LookUpSourceConnector), varargs...)
 }
 
-// ReadSourceConnector mocks base method.
-func (m *MockConnectorPublicServiceClient) ReadSourceConnector(arg0 context.Context, arg1 *connectorv1alpha.ReadSourceConnectorRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.ReadSourceConnectorResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "ReadSourceConnector", varargs...)
-	ret0, _ := ret[0].(*connectorv1alpha.ReadSourceConnectorResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ReadSourceConnector indicates an expected call of ReadSourceConnector.
-func (mr *MockConnectorPublicServiceClientMockRecorder) ReadSourceConnector(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadSourceConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).ReadSourceConnector), varargs...)
-}
-
 // Readiness mocks base method.
 func (m *MockConnectorPublicServiceClient) Readiness(arg0 context.Context, arg1 *connectorv1alpha.ReadinessRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.ReadinessResponse, error) {
 	m.ctrl.T.Helper()
@@ -614,24 +634,4 @@ func (mr *MockConnectorPublicServiceClientMockRecorder) WatchSourceConnector(arg
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchSourceConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).WatchSourceConnector), varargs...)
-}
-
-// WriteDestinationConnector mocks base method.
-func (m *MockConnectorPublicServiceClient) WriteDestinationConnector(arg0 context.Context, arg1 *connectorv1alpha.WriteDestinationConnectorRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.WriteDestinationConnectorResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "WriteDestinationConnector", varargs...)
-	ret0, _ := ret[0].(*connectorv1alpha.WriteDestinationConnectorResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// WriteDestinationConnector indicates an expected call of WriteDestinationConnector.
-func (mr *MockConnectorPublicServiceClientMockRecorder) WriteDestinationConnector(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteDestinationConnector", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).WriteDestinationConnector), varargs...)
 }

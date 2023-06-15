@@ -5,14 +5,14 @@ go 1.19
 require (
 	cloud.google.com/go/longrunning v0.4.1
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
-	github.com/gofrs/uuid v4.3.0+incompatible
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/golang/mock v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2
 	github.com/iancoleman/strcase v0.2.0
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230523000406-299e9451af13
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230615091607-d5e75c7bc0dd
 	github.com/instill-ai/usage-client v0.2.3-alpha
 	github.com/instill-ai/x v0.3.0-alpha
 	github.com/knadh/koanf v1.4.3
@@ -31,7 +31,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v0.39.0
 	go.opentelemetry.io/otel/trace v1.16.0
 	go.temporal.io/sdk v1.21.0
-	go.uber.org/zap v1.23.0
+	go.uber.org/zap v1.24.0
 	golang.org/x/net v0.10.0
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
@@ -82,7 +82,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
-	github.com/santhosh-tekuri/jsonschema/v5 v5.0.0
+	github.com/santhosh-tekuri/jsonschema/v5 v5.3.0
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
