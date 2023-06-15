@@ -24,6 +24,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type TriggerAsyncPipelineWorkflowParam struct {
@@ -58,13 +59,88 @@ type TriggerByFileUploadActivityParam struct {
 
 // DestinationActivityParam represents the parameters for DestinationActivity
 type DestinationActivityParam struct {
-	DataMappingIndices []string
-	ModelOutputs       [][]byte
-	Destination        string
-	DbPipeline         *datamodel.Pipeline
+	Destination string
+	Input       []*connectorPB.DataPayload
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
+
+func modelOutputConverter(dataMappingIndices []string, modelOutputs [][]byte, dbPipeline *datamodel.Pipeline) ([]*connectorPB.DataPayload, error) {
+
+	pipelineStruct := structpb.Struct{}
+	pipelineStruct.Fields = make(map[string]*structpb.Value)
+	pipelineStruct.GetFields()["name"] = structpb.NewStringValue(fmt.Sprintf("pipelines/%s", dbPipeline.ID))
+	pipelineStruct.GetFields()["recipe"] = structpb.NewStructValue(
+		func() *structpb.Struct {
+			if dbPipeline.Recipe != nil {
+				b, err := json.Marshal(dbPipeline.Recipe)
+				if err != nil {
+					return nil
+				}
+				pbRecipe := structpb.Struct{}
+				err = json.Unmarshal(b, &pbRecipe)
+				if err != nil {
+					return nil
+				}
+				return &pbRecipe
+			}
+			return nil
+		}())
+
+	ret := []*connectorPB.DataPayload{}
+	for _, dataMappingIndex := range dataMappingIndices {
+		ret = append(ret, &connectorPB.DataPayload{
+			DataMappingIndex: dataMappingIndex,
+			Metadata: &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"pipeline": structpb.NewStructValue(&pipelineStruct),
+				},
+			},
+		})
+	}
+
+	for idx := range modelOutputs {
+		var modelOutput pipelinePB.ModelOutput
+		err := protojson.Unmarshal(modelOutputs[idx], &modelOutput)
+		if err != nil {
+			return nil, err
+		}
+		switch modelOutput.Task {
+
+		// TODO: should follow vdp protocol
+		case modelPB.Model_TASK_CLASSIFICATION,
+			modelPB.Model_TASK_DETECTION,
+			modelPB.Model_TASK_KEYPOINT,
+			modelPB.Model_TASK_OCR,
+			modelPB.Model_TASK_INSTANCE_SEGMENTATION,
+			modelPB.Model_TASK_SEMANTIC_SEGMENTATION,
+			modelPB.Model_TASK_TEXT_TO_IMAGE,
+			modelPB.Model_TASK_TEXT_GENERATION:
+			for taskIdx := range modelOutput.TaskOutputs {
+				data, err := protojson.Marshal(modelOutput.TaskOutputs[taskIdx])
+				if err != nil {
+					return nil, err
+				}
+
+				stru := new(structpb.Struct)
+				err = protojson.Unmarshal(data, stru)
+				if err != nil {
+					return nil, err
+				}
+
+				if ret[taskIdx].Json == nil {
+					ret[taskIdx].Json = &structpb.Struct{
+						Fields: map[string]*structpb.Value{},
+					}
+				}
+				ret[taskIdx].Json.Fields[modelOutput.Model] = structpb.NewStructValue(stru)
+
+			}
+		}
+	}
+
+	return ret, nil
+}
 
 // TriggerAsyncPipelineWorkflow is a pipeline trigger workflow definition.
 func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowParam) ([][]byte, error) {
@@ -133,13 +209,16 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		),
 	)
 
+	destInput, err := modelOutputConverter(param.DataMappingIndices, results, param.DbPipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	var destinationActivities []workflow.Future
 	for _, destination := range utils.GetDestinationsFromRecipe(param.DbPipeline.Recipe) {
 		destinationActivities = append(destinationActivities, workflow.ExecuteActivity(ctx, w.DestinationActivity, &DestinationActivityParam{
-			Destination:        destination,
-			DataMappingIndices: param.DataMappingIndices,
-			ModelOutputs:       results,
-			DbPipeline:         param.DbPipeline,
+			Destination: destination,
+			Input:       destInput,
 		}))
 
 	}
@@ -225,13 +304,16 @@ func (w *worker) TriggerAsyncPipelineByFileUploadWorkflow(ctx workflow.Context, 
 		results = append(results, result)
 	}
 
+	destInput, err := modelOutputConverter(param.DataMappingIndices, results, param.DbPipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	var destinationActivities []workflow.Future
 	for _, destination := range utils.GetDestinationsFromRecipe(param.DbPipeline.Recipe) {
 		destinationActivities = append(destinationActivities, workflow.ExecuteActivity(ctx, w.DestinationActivity, &DestinationActivityParam{
-			Destination:        destination,
-			DataMappingIndices: param.DataMappingIndices,
-			ModelOutputs:       results,
-			DbPipeline:         param.DbPipeline,
+			Destination: destination,
+			Input:       destInput,
 		}))
 
 	}
@@ -357,41 +439,11 @@ func (w *worker) DestinationActivity(ctx context.Context, param *DestinationActi
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var modelOutputs []*pipelinePB.ModelOutput
-
-	for idx := range param.ModelOutputs {
-		var modelOutput pipelinePB.ModelOutput
-		err := protojson.Unmarshal(param.ModelOutputs[idx], &modelOutput)
-		if err != nil {
-			return nil, err
-		}
-		modelOutputs = append(modelOutputs, &modelOutput)
-	}
-	_, err := w.connectorPublicServiceClient.WriteDestinationConnector(utils.InjectOwnerToContextWithOwnerPermalink(ctx, param.DbPipeline.Owner), &connectorPB.WriteDestinationConnectorRequest{
-		Name:                param.Destination,
-		SyncMode:            connectorPB.SupportedSyncModes_SUPPORTED_SYNC_MODES_FULL_REFRESH,
-		DestinationSyncMode: connectorPB.SupportedDestinationSyncModes_SUPPORTED_DESTINATION_SYNC_MODES_APPEND,
-		Pipeline:            fmt.Sprintf("pipelines/%s", param.DbPipeline.ID),
-		DataMappingIndices:  param.DataMappingIndices,
-		ModelOutputs:        modelOutputs,
-		Recipe: func() *pipelinePB.Recipe {
-			if param.DbPipeline.Recipe != nil {
-				b, err := json.Marshal(param.DbPipeline.Recipe)
-				if err != nil {
-					logger.Error(err.Error())
-					return nil
-				}
-				pbRecipe := pipelinePB.Recipe{}
-				err = json.Unmarshal(b, &pbRecipe)
-				if err != nil {
-					logger.Error(err.Error())
-					return nil
-				}
-				return &pbRecipe
-			}
-			return nil
-		}(),
+	_, err := w.connectorPublicServiceClient.ExecuteDestinationConnector(ctx, &connectorPB.ExecuteDestinationConnectorRequest{
+		Name:  param.Destination,
+		Input: param.Input,
 	})
+
 	if err != nil {
 		logger.Error(fmt.Sprintf("[connector-backend] Error %s at destination %s: %v", "WriteDestinationConnector", param.Destination, err.Error()))
 	}
