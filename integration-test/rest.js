@@ -111,7 +111,7 @@ export function setup() {
     var res = http.request("POST", `${connectorPublicHost}/v1alpha/destination-connectors`,
       JSON.stringify({
         "id": constant.dstCSVConnID1,
-        "destination_connector_definition": "destination-connector-definitions/destination-csv",
+        "destination_connector_definition": "destination-connector-definitions/airbyte-destination-csv",
         "connector": {
           "configuration": {
             "destination_path": "/local/pipeline-backend-test-1"
@@ -130,7 +130,7 @@ export function setup() {
     var res = http.request("POST", `${connectorPublicHost}/v1alpha/destination-connectors`,
       JSON.stringify({
         "id": constant.dstCSVConnID2,
-        "destination_connector_definition": "destination-connector-definitions/destination-csv",
+        "destination_connector_definition": "destination-connector-definitions/airbyte-destination-csv",
         "connector": {
           "configuration": {
             "destination_path": "/local/pipeline-backend-test-2"

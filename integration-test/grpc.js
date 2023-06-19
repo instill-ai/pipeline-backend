@@ -117,7 +117,7 @@ export function setup() {
     check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
       destination_connector: {
         "id": constant.dstCSVConnID1,
-        "destination_connector_definition": "destination-connector-definitions/destination-csv",
+        "destination_connector_definition": "destination-connector-definitions/airbyte-destination-csv",
         "connector": {
           "configuration": {
             "destination_path": "/local/pipeline-backend-test-1"
@@ -134,7 +134,7 @@ export function setup() {
     check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
       destination_connector: {
         "id": constant.dstCSVConnID2,
-        "destination_connector_definition": "destination-connector-definitions/destination-csv",
+        "destination_connector_definition": "destination-connector-definitions/airbyte-destination-csv",
         "connector": {
           "configuration": {
             "destination_path": "/local/pipeline-backend-test-2"
