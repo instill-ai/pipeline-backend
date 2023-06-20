@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.2-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.12.1-alpha...v0.12.2-alpha) (2023-06-20)
+
+
+### Miscellaneous Chores
+
+* **release:** release 0.12.2-alpha ([00059e0](https://github.com/instill-ai/pipeline-backend/commit/00059e05f6213bf94b4485ee429afee782a26afc))
+
 ## [0.12.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.12.0-alpha...v0.12.1-alpha) (2023-06-11)
 
 
