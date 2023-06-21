@@ -61,6 +61,7 @@ type TriggerByFileUploadActivityParam struct {
 type DestinationActivityParam struct {
 	Destination string
 	Input       []*connectorPB.DataPayload
+	DbPipeline  *datamodel.Pipeline
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -219,6 +220,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		destinationActivities = append(destinationActivities, workflow.ExecuteActivity(ctx, w.DestinationActivity, &DestinationActivityParam{
 			Destination: destination,
 			Input:       destInput,
+			DbPipeline:  param.DbPipeline,
 		}))
 
 	}
@@ -314,6 +316,7 @@ func (w *worker) TriggerAsyncPipelineByFileUploadWorkflow(ctx workflow.Context, 
 		destinationActivities = append(destinationActivities, workflow.ExecuteActivity(ctx, w.DestinationActivity, &DestinationActivityParam{
 			Destination: destination,
 			Input:       destInput,
+			DbPipeline:  param.DbPipeline,
 		}))
 
 	}
@@ -439,10 +442,12 @@ func (w *worker) DestinationActivity(ctx context.Context, param *DestinationActi
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := w.connectorPublicServiceClient.ExecuteDestinationConnector(ctx, &connectorPB.ExecuteDestinationConnectorRequest{
-		Name:  param.Destination,
-		Input: param.Input,
-	})
+	_, err := w.connectorPublicServiceClient.ExecuteDestinationConnector(
+		utils.InjectOwnerToContextWithOwnerPermalink(ctx, param.DbPipeline.Owner),
+		&connectorPB.ExecuteDestinationConnectorRequest{
+			Name:  param.Destination,
+			Input: param.Input,
+		})
 
 	if err != nil {
 		logger.Error(fmt.Sprintf("[connector-backend] Error %s at destination %s: %v", "WriteDestinationConnector", param.Destination, err.Error()))
