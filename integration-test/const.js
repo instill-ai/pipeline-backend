@@ -21,9 +21,13 @@ if (__ENV.API_GATEWAY_PROTOCOL) {
 
 if (apiGatewayMode) {
   // internal mode for accessing api-gateway from container
-  pHost = cHost = mHost = __ENV.API_GATEWAY_HOST
+  pHost = cHost = __ENV.API_GATEWAY_HOST
   pPrivatePort = 3081
-  pPublicPort = cPublicPort = mPublicPort = __ENV.API_GATEWAY_PORT
+  pPublicPort = cPublicPort = __ENV.API_GATEWAY_PORT
+
+  // TODO: remove model-backend dependency
+  mHost = "api-gateway-model"
+  mPublicPort = 9080
 } else {
   // direct microservice mode
   pHost = "pipeline-backend"
