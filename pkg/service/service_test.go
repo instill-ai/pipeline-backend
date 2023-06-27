@@ -1,11 +1,11 @@
 package service_test
 
 //go:generate mockgen -destination mock_repository_test.go -package $GOPACKAGE github.com/instill-ai/pipeline-backend/pkg/repository Repository
-//go:generate mockgen -destination mock_model_public_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/model/v1alpha ModelPublicServiceClient
-//go:generate mockgen -destination mock_model_private_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/model/v1alpha ModelPrivateServiceClient
+//go:generate mockgen -destination mock_model_public_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/model/model/v1alpha ModelPublicServiceClient
+//go:generate mockgen -destination mock_model_private_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/model/model/v1alpha ModelPrivateServiceClient
 //go:generate mockgen -destination mock_connector_public_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/connector/v1alpha ConnectorPublicServiceClient
 //go:generate mockgen -destination mock_connector_private_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/connector/v1alpha ConnectorPrivateServiceClient
-//go:generate mockgen -destination mock_user_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha MgmtPrivateServiceClient
+//go:generate mockgen -destination mock_user_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/base/mgmt/v1alpha MgmtPrivateServiceClient
 //go:generate mockgen -destination mock_usage_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/usage/v1alpha UsageServiceClient
 //go:generate mockgen -destination mock_controller_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/controller/v1alpha ControllerPrivateServiceClient
 
@@ -20,7 +20,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
-	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 )
 
 func TestCreatePipeline(t *testing.T) {

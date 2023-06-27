@@ -171,14 +171,14 @@ export function setup() {
     let timeoutTime = new Date().getTime() + 120000;
     while (timeoutTime > currentTime) {
       var res = http.get(`${constant.modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
-          headers: genHeader(`application/json`),
+        headers: genHeader(`application/json`),
       })
       if (res.json().operation.done === true) {
-          break
+        break
       }
       sleep(1)
       currentTime = new Date().getTime();
-  }
+    }
 
 
     var res = http.post(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/deploy`, {}, constant.params)

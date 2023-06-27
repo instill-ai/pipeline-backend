@@ -13,9 +13,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
+	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
+	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
-	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 )
 
 func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datamodel.Recipe) (*datamodel.Recipe, error) {

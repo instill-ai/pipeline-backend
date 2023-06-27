@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v9"
+	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
 	"go.temporal.io/sdk/workflow"
 )
 

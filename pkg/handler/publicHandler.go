@@ -32,9 +32,9 @@ import (
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/sterr"
 
-	healthcheckPB "github.com/instill-ai/protogen-go/vdp/healthcheck/v1alpha"
-	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
+	healthcheckPB "github.com/instill-ai/protogen-go/common/healthcheck/v1alpha"
+	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 

@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 
-	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 )
 
 // ExtractFromMetadata extracts context metadata given a key

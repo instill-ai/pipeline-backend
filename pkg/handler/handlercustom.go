@@ -26,8 +26,8 @@ import (
 	"github.com/instill-ai/x/sterr"
 
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
+	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 )
 
 func injectSpanInRequest(r *http.Request) *http.Request {

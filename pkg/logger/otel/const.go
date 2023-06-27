@@ -6,7 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.opentelemetry.io/otel/trace"
 
-	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 )
 
 type Option func(l LogMessage) LogMessage
