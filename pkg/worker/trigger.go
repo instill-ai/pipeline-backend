@@ -12,7 +12,7 @@ import (
 	"github.com/gogo/status"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
-	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
+	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 	"google.golang.org/grpc/codes"
 )

@@ -12,11 +12,11 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
+	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
+	usagePB "github.com/instill-ai/protogen-go/base/usage/v1alpha"
+	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
-	mgmtPB "github.com/instill-ai/protogen-go/vdp/mgmt/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/vdp/model/v1alpha"
-	usagePB "github.com/instill-ai/protogen-go/vdp/usage/v1alpha"
 )
 
 // InitConnectorPublicServiceClient initialises a ConnectorPublicServiceClient instance
