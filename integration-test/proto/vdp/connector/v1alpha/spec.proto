@@ -8,54 +8,12 @@ import "google/protobuf/struct.proto";
 // Google API
 import "google/api/field_behavior.proto";
 
-import "../../../vdp/connector/v1alpha/auth.proto";
-
-// SupportedSyncModes enumerates sync mode (this needs to be in plural form to
-// match with Airbyte protocol)
-enum SupportedSyncModes {
-  // SupportedSyncModes: SUPPORTED_SYNC_MODES_UNSPECIFIED
-  SUPPORTED_SYNC_MODES_UNSPECIFIED = 0;
-  // SupportedSyncModes: SUPPORTED_SYNC_MODES_FULL_REFRESH
-  SUPPORTED_SYNC_MODES_FULL_REFRESH = 1;
-  // SupportedSyncModes: SUPPORTED_SYNC_MODES_INCREMENTAL
-  SUPPORTED_SYNC_MODES_INCREMENTAL = 2;
-}
-
-// SupportedDestinationSyncModes enumerates destination sync mode (this needs to
-// be in plural form to match with Airbyte protocol)
-enum SupportedDestinationSyncModes {
-  // SupportedDestinationSyncModes: DESTINATION_SYNC_MODES_UNSPECIFIED
-  SUPPORTED_DESTINATION_SYNC_MODES_UNSPECIFIED = 0;
-  // SupportedDestinationSyncModes: DESTINATION_SYNC_MODES_APPEND
-  SUPPORTED_DESTINATION_SYNC_MODES_APPEND = 1;
-  // SupportedDestinationSyncModes: DESTINATION_SYNC_MODES_OVERWRITE
-  SUPPORTED_DESTINATION_SYNC_MODES_OVERWRITE = 2;
-  // SupportedDestinationSyncModes: DESTINATION_SYNC_MODES_APPEND_DEDUP
-  SUPPORTED_DESTINATION_SYNC_MODES_APPEND_DEDUP = 3;
-}
-
 ////////////////////////////////////
 // Spec represents a spec data model
 message Spec {
-
   // Spec documentation URL
   string documentation_url = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
   // Spec connection specification
   google.protobuf.Struct connection_specification = 2
       [ (google.api.field_behavior) = REQUIRED ];
-  // Spec supports incremental flag, i.e., if the connector supports incremental
-  // mode or not
-  bool supports_incremental = 3 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // Spec supports normalization flag, i.e., if the connector supports
-  // normalization or not
-  bool supports_normalization = 4 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // Spec supports dbt flag, i.e., if the connector supports DBT or not
-  bool supports_dbt = 5 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // Spec destination sync mode, i.e., a list of destination sync modes
-  // supported by the connector
-  repeated SupportedDestinationSyncModes supported_destination_sync_modes = 6
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // Spec advanced auth, i.e., additional and optional specification object to
-  // describe what an 'advanced' Auth flow would need to function
-  AdvancedAuth advanced_auth = 7 [ (google.api.field_behavior) = OUTPUT_ONLY ];
 }

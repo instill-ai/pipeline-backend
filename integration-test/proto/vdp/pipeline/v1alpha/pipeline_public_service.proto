@@ -6,7 +6,6 @@ package vdp.pipeline.v1alpha;
 import "google/api/annotations.proto";
 import "google/api/client.proto";
 
-import "../../../vdp/pipeline/v1alpha/healthcheck.proto";
 import "../../../vdp/pipeline/v1alpha/pipeline.proto";
 
 // Pipeline service responds to external access
@@ -26,7 +25,7 @@ service PipelinePublicService {
   // Readiness method receives a ReadinessRequest message and returns a
   // ReadinessResponse message.
   // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
-  rpc Readiness(ReadinessRequest) returns (ReadinessResponse) {
+  rpc Readiness(ReadinessRequest) returns (v1alpha.ReadinessResponse) {
     option (google.api.http) = {
       get : "/v1alpha/__readiness"
     };
@@ -123,8 +122,8 @@ service PipelinePublicService {
     option (google.api.method_signature) = "name,new_pipeline_id";
   }
 
-  // TriggerSyncPipeline method receives a TriggerSyncPipelineRequest message and
-  // returns a TriggerSyncPipelineResponse.
+  // TriggerSyncPipeline method receives a TriggerSyncPipelineRequest message
+  // and returns a TriggerSyncPipelineResponse.
   rpc TriggerSyncPipeline(TriggerSyncPipelineRequest)
       returns (TriggerSyncPipelineResponse) {
     option (google.api.http) = {
@@ -132,17 +131,6 @@ service PipelinePublicService {
       body : "*"
     };
     option (google.api.method_signature) = "name,inputs";
-  }
-
-  // TriggerSyncPipelineBinaryFileUpload method receives a
-  // TriggerSyncPipelineBinaryFileUploadRequest message and returns a
-  // TriggerSyncPipelineBinaryFileUploadResponse message.
-  //
-  // Endpoint: "POST /v1alpha/{name=pipelines/*}/triggerSyncMultipart"
-  rpc TriggerSyncPipelineBinaryFileUpload(
-      stream TriggerSyncPipelineBinaryFileUploadRequest)
-      returns (TriggerSyncPipelineBinaryFileUploadResponse) {
-    option (google.api.method_signature) = "name,file";
   }
 
   // TriggerAsyncPipeline method receives a TriggerPipelineRequest message and
@@ -156,21 +144,9 @@ service PipelinePublicService {
     option (google.api.method_signature) = "name,inputs";
   }
 
-  // TriggerAsyncPipelineBinaryFileUpload method receives a
-  // TriggerPipelineBinaryFileUploadRequest message and returns a
-  // TriggerAsyncPipelineResponse message.
-  //
-  // Endpoint: "POST /v1alpha/{name=pipelines/*}/triggerAsyncMultipart"
-  rpc TriggerAsyncPipelineBinaryFileUpload(
-      stream TriggerAsyncPipelineBinaryFileUploadRequest)
-      returns (TriggerAsyncPipelineBinaryFileUploadResponse) {
-    option (google.api.method_signature) = "name,file";
-  }
-
   // WatchPipeline method receives a WatchPipelineRequest message
   // and returns a WatchPipelineResponse
-  rpc WatchPipeline(WatchPipelineRequest)
-      returns (WatchPipelineResponse) {
+  rpc WatchPipeline(WatchPipelineRequest) returns (WatchPipelineResponse) {
     option (google.api.http) = {
       get : "/v1alpha/{name=pipelines/*}/watch"
     };

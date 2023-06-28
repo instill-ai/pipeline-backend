@@ -6,8 +6,7 @@ var lookUpRequiredFields = []string{"permalink"}
 var activateRequiredFields = []string{"name"}
 var deactivateRequiredFields = []string{"name"}
 var renameRequiredFields = []string{"name", "new_pipeline_id"}
-var triggerRequiredFields = []string{"name", "task_inputs"}
-var triggerBinaryRequiredFields = []string{"name", "file_lengths", "content"}
+var triggerRequiredFields = []string{"name", "inputs"}
 
 // immutableFields are Protobuf message fields with IMMUTABLE field_behavior annotation
 var immutableFields = []string{"id", "recipe"}

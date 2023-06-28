@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Google api
 import "google/api/field_behavior.proto";
 
-import "../../../vdp/model/v1alpha/common.proto";
+import "../../../model/model/v1alpha/common.proto";
 
 // Keypoint structure which include coordinate and keypoint visibility
 message Keypoint {
@@ -38,7 +38,8 @@ message KeypointInput {
   }
 }
 
-// KeypointInputStream represents the input of keypoint detection task when using stream method
+// KeypointInputStream represents the input of keypoint detection task when
+// using stream method
 message KeypointInputStream {
   // The list of file length for each uploaded binary file
   repeated uint64 file_lengths = 1 [ (google.api.field_behavior) = REQUIRED ];

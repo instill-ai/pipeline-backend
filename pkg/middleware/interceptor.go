@@ -8,10 +8,10 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
-
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 )
 
 // RecoveryInterceptorOpt - panic handler

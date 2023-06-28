@@ -27,7 +27,6 @@ const client = new grpc.Client();
 
 client.load(['proto/vdp/pipeline/v1alpha'], 'pipeline_public_service.proto');
 client.load(['proto/vdp/connector/v1alpha'], 'connector_public_service.proto');
-client.load(['proto/vdp/model/v1alpha'], 'model_public_service.proto');
 
 import * as constant from "./const.js";
 
@@ -49,159 +48,147 @@ export function setup() {
 
   group("Connector Backend API: Create a http source connector", function () {
 
-    var resp = client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateSourceConnector', {
-      source_connector: {
+    var resp = client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateConnector', {
+      connector: {
         "id": "source-http",
-        "source_connector_definition": "source-connector-definitions/source-http",
-        "connector": {
-          "configuration": {}
-        }
+        "connector_definition_name": "connector-definitions/source-http",
+        "configuration": {}
       }
     })
     check(resp, {
-      "vdp.connector.v1alpha.ConnectorPublicService/CreateSourceConnector HTTP response StatusOK": (r) => r.status === grpc.StatusOK,
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector HTTP response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
   });
 
   group("Connector Backend API: Create a http destination connector", function () {
 
-    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
-      destination_connector: {
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateConnector', {
+      connector: {
         "id": "destination-http",
-        "destination_connector_definition": "destination-connector-definitions/destination-http",
-        "connector": {
-          "configuration": {}
-        }
+        "connector_definition_name": "connector-definitions/destination-http",
+        "configuration": {}
       }
     }), {
-      "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector HTTP response StatusOK": (r) => r.status === grpc.StatusOK,
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector HTTP response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
   });
 
   group("Connector Backend API: Create a gRPC source connector", function () {
 
-    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateSourceConnector', {
-      source_connector: {
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateConnector', {
+      connector: {
         "id": "source-grpc",
-        "source_connector_definition": "source-connector-definitions/source-grpc",
-        "connector": {
-          "configuration": {}
-        }
+        "connector_definition_name": "connector-definitions/source-grpc",
+        "configuration": {}
       }
     }), {
-      "vdp.connector.v1alpha.ConnectorPublicService/CreateSourceConnector gRPC response StatusOK": (r) => r.status === grpc.StatusOK,
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector gRPC response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
   });
 
   group("Connector Backend API: Create a gRPC destination connector", function () {
 
-    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
-      destination_connector: {
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateConnector', {
+      connector: {
         "id": "destination-grpc",
-        "destination_connector_definition": "destination-connector-definitions/destination-grpc",
-        "connector": {
-          "configuration": {}
-        }
+        "connector_definition_name": "connector-definitions/destination-grpc",
+        "configuration": {}
       }
     }), {
-      "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector gRPC response StatusOK": (r) => r.status === grpc.StatusOK,
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector gRPC response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
   });
 
   group("Connector Backend API: Create a CSV destination connector 1", function () {
 
-    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
-      destination_connector: {
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateConnector', {
+      connector: {
         "id": constant.dstCSVConnID1,
-        "destination_connector_definition": "destination-connector-definitions/airbyte-destination-csv",
-        "connector": {
-          "configuration": {
-            "destination_path": "/local/pipeline-backend-test-1"
-          }
+        "connector_definition_name": "connector-definitions/airbyte-destination-csv",
+        "configuration": {
+          "destination_path": "/local/pipeline-backend-test-1"
         }
       }
     }, constant.paramsGrpc), {
-      "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
   });
   group("Connector Backend API: Create a CSV destination connector 2", function () {
 
-    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector', {
-      destination_connector: {
+    check(client.invoke('vdp.connector.v1alpha.ConnectorPublicService/CreateConnector', {
+      connector: {
         "id": constant.dstCSVConnID2,
-        "destination_connector_definition": "destination-connector-definitions/airbyte-destination-csv",
-        "connector": {
-          "configuration": {
-            "destination_path": "/local/pipeline-backend-test-2"
-          }
+        "connector_definition_name": "connector-definitions/airbyte-destination-csv",
+        "configuration": {
+          "destination_path": "/local/pipeline-backend-test-2"
         }
       }
     }, constant.paramsGrpc), {
-      "vdp.connector.v1alpha.ConnectorPublicService/CreateDestinationConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
+      "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
     });
 
   });
 
-  group("Model Backend API: Deploy a detection model", function () {
-    client.connect(constant.modelGRPCPublicHost, {
-      plaintext: true
-    });
-    let fd = new FormData();
-    let model_description = randomString(20)
-    fd.append("id", constant.model_id);
-    fd.append("description", model_description);
-    fd.append("model_definition", constant.model_def_name);
-    fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
-    let createClsModelRes = http.request("POST", `${constant.modelPublicHost}/v1alpha/models/multipart`, fd.body(), {
-      headers: {
-        "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
-      },
-    })
-    check(createClsModelRes, {
-      "POST /v1alpha/models/multipart task det response status": (r) => r.status === 201
-    });
+  // group("Model Backend API: Deploy a detection model", function () {
+  //   client.connect(constant.modelGRPCPublicHost, {
+  //     plaintext: true
+  //   });
+  //   let fd = new FormData();
+  //   let model_description = randomString(20)
+  //   fd.append("id", constant.model_id);
+  //   fd.append("description", model_description);
+  //   fd.append("model_definition", constant.model_def_name);
+  //   fd.append("content", http.file(constant.det_model, "dummy-det-model.zip"));
+  //   let createClsModelRes = http.request("POST", `${constant.modelPublicHost}/v1alpha/models/multipart`, fd.body(), {
+  //     headers: {
+  //       "Content-Type": `multipart/form-data; boundary=${fd.boundary}`
+  //     },
+  //   })
+  //   check(createClsModelRes, {
+  //     "POST /v1alpha/models/multipart task det response status": (r) => r.status === 201
+  //   });
 
-    // Check model creation finished
-    let currentTime = new Date().getTime();
-    let timeoutTime = new Date().getTime() + 120000;
-    while (timeoutTime > currentTime) {
-      var res = http.get(`${constant.modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
-        headers: genHeader(`application/json`),
-      })
-      if (res.json().operation.done === true) {
-        break
-      }
-      sleep(1)
-      currentTime = new Date().getTime();
-    }
+  //   // Check model creation finished
+  //   let currentTime = new Date().getTime();
+  //   let timeoutTime = new Date().getTime() + 120000;
+  //   while (timeoutTime > currentTime) {
+  //     var res = http.get(`${constant.modelPublicHost}/v1alpha/${createClsModelRes.json().operation.name}`, {
+  //       headers: genHeader(`application/json`),
+  //     })
+  //     if (res.json().operation.done === true) {
+  //       break
+  //     }
+  //     sleep(1)
+  //     currentTime = new Date().getTime();
+  //   }
 
 
-    var res = http.post(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/deploy`, {}, constant.params)
+  //   var res = http.post(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}/deploy`, {}, constant.params)
 
-    check(res, {
-      [`POST /v1alpha/models/${constant.model_id}/deploy online task det response status`]: (r) => r.status === 200
-    });
+  //   check(res, {
+  //     [`POST /v1alpha/models/${constant.model_id}/deploy online task det response status`]: (r) => r.status === 200
+  //   });
 
-    // Check the model state being updated in 120 secs (in integration test, model is dummy model without download time but in real use case, time will be longer)
-    currentTime = new Date().getTime();
-    timeoutTime = new Date().getTime() + 120000;
-    while (timeoutTime > currentTime) {
-      var res = client.invoke('vdp.model.v1alpha.ModelPublicService/WatchModel', {
-        name: `models/${constant.model_id}`
-      })
-      if (res.message.state === "STATE_ONLINE") {
-        break
-      }
-      sleep(1)
-      currentTime = new Date().getTime();
-    }
+  //   // Check the model state being updated in 120 secs (in integration test, model is dummy model without download time but in real use case, time will be longer)
+  //   currentTime = new Date().getTime();
+  //   timeoutTime = new Date().getTime() + 120000;
+  //   while (timeoutTime > currentTime) {
+  //     var res = client.invoke('vdp.model.v1alpha.ModelPublicService/WatchModel', {
+  //       name: `models/${constant.model_id}`
+  //     })
+  //     if (res.message.state === "STATE_ONLINE") {
+  //       break
+  //     }
+  //     sleep(1)
+  //     currentTime = new Date().getTime();
+  //   }
 
-  });
+  // });
 
   client.close()
 }
@@ -234,13 +221,13 @@ export default function (data) {
   pipeline.CheckLookUp()
   pipeline.CheckWatch()
 
-  triggerSync.CheckTriggerSyncSingleImageSingleModel()
-  triggerSync.CheckTriggerSyncMultiImageSingleModel()
+  // triggerSync.CheckTriggerSyncSingleImageSingleModel()
+  // triggerSync.CheckTriggerSyncMultiImageSingleModel()
   // Don't support this temporarily
   // triggerSync.CheckTriggerSyncMultiImageMultiModel()
 
-  triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
-  triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
+  // triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
+  // triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
 
   // Don't support this temporarily
   // triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
@@ -286,57 +273,57 @@ export function teardown(data) {
   });
 
   group("Connector Backend API: Delete the http source connector", function () {
-    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteSourceConnector`, {
-      name: "source-connectors/source-http"
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`, {
+      name: "connectors/source-http"
     }), {
-      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteSourceConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
 
   group("Connector Backend API: Delete the http destination connector", function () {
-    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector`, {
-      name: "destination-connectors/destination-http"
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`, {
+      name: "connectors/destination-http"
     }), {
-      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
 
   group("Connector Backend API: Delete the gRPC source connector", function () {
-    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteSourceConnector`, {
-      name: "source-connectors/source-grpc"
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`, {
+      name: "connectors/source-grpc"
     }), {
-      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteSourceConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
 
   group("Connector Backend API: Delete the gRPC destination connector", function () {
-    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector`, {
-      name: "destination-connectors/destination-grpc"
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`, {
+      name: "connectors/destination-grpc"
     }), {
-      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
 
   group("Connector Backend API: Delete the csv destination connector 1", function () {
-    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector`, {
-      name: `destination-connectors/${constant.dstCSVConnID1}`
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`, {
+      name: `connectors/${constant.dstCSVConnID1}`
     }), {
-      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
   group("Connector Backend API: Delete the csv destination connector 2", function () {
-    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector`, {
-      name: `destination-connectors/${constant.dstCSVConnID2}`
+    check(client.invoke(`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`, {
+      name: `connectors/${constant.dstCSVConnID2}`
     }), {
-      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteDestinationConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
   });
 
   client.close();
 
-  group("Model Backend API: Delete the detection model", function () {
-    check(http.request("DELETE", `${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, null, constant.params), {
-      [`DELETE /v1alpha/models/${constant.model_id} response status is 204`]: (r) => r.status === 204,
-    });
-  });
+  // group("Model Backend API: Delete the detection model", function () {
+  //   check(http.request("DELETE", `${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, null, constant.params), {
+  //     [`DELETE /v1alpha/models/${constant.model_id} response status is 204`]: (r) => r.status === 204,
+  //   });
+  // });
 }

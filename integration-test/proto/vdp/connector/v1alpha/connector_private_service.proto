@@ -11,86 +11,32 @@ import "../../../vdp/connector/v1alpha/connector.proto";
 // Connector service responds to internal access
 service ConnectorPrivateService {
 
-  // *SourceConnector methods
-
-  // ListSourceConnectorsAdmin method receives a ListSourceConnectorsAdminRequest message
-  // and returns a ListSourceConnectorsAdminResponse message.
-  rpc ListSourceConnectorsAdmin(ListSourceConnectorsAdminRequest)
-      returns (ListSourceConnectorsAdminResponse) {
+  // ListConnectorsAdmin method receives a ListConnectorsAdminRequest
+  // message and returns a ListConnectorsResponse message.
+  rpc ListConnectorsAdmin(ListConnectorsAdminRequest)
+      returns (ListConnectorsAdminResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/admin/source-connectors"
+      get : "/v1alpha/admin/connectors"
     };
   }
 
-  // GetSourceConnectorAdmin method receives a GetSourceConnectorAdminRequest
-  // message and returns a GetSourceConnectorAdminResponse message.
-  rpc GetSourceConnectorAdmin(GetSourceConnectorAdminRequest)
-      returns (GetSourceConnectorAdminResponse) {
+  // LookUpConnectorAdmin method receives a
+  // LookUpConnectorAdminRequest message and returns a
+  // LookUpConnectorAdminResponse
+  rpc LookUpConnectorAdmin(LookUpConnectorAdminRequest)
+      returns (LookUpConnectorAdminResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/admin/{name=source-connectors/*}"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // LookUpSourceConnectorAdmin method receives a
-  // LookUpSourceConnectorAdminRequest message and returns a
-  // LookUpSourceConnectorAdminResponse
-  rpc LookUpSourceConnectorAdmin(LookUpSourceConnectorAdminRequest)
-      returns (LookUpSourceConnectorAdminResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/{permalink=source-connectors/*}/lookUp"
+      get : "/v1alpha/admin/{permalink=connectors/*}/lookUp"
     };
     option (google.api.method_signature) = "permalink";
   }
 
-  // CheckSourceConnector method receives a CheckSourceConnectorRequest message and returns a
-  // CheckSourceConnectorResponse
-  rpc CheckSourceConnector(CheckSourceConnectorRequest) returns (CheckSourceConnectorResponse) {
+  // CheckConnector method receives a CheckConnectorRequest message and returns a
+  // CheckConnectorResponse
+  rpc CheckConnector(CheckConnectorRequest) returns (CheckConnectorResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/admin/{name=source-connectors/*}/check"
+      get : "/v1alpha/admin/{connector_permalink=connectors/*}/check"
     };
-    option (google.api.method_signature) = "name";
-  };
-
-  // *DestinationConnector methods
-
-  // ListDestinationConnectorsAdmin method receives a ListDestinationConnectorsAdminRequest
-  // message and returns a ListDestinationConnectorsResponse message.
-  rpc ListDestinationConnectorsAdmin(ListDestinationConnectorsAdminRequest)
-      returns (ListDestinationConnectorsAdminResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/destination-connectors"
-    };
-  }
-
-  // GetDestinationConnectorAdmin method receives a
-  // GetDestinationConnectorAdminRequest message and returns a
-  // GetDestinationConnectorAdminResponse message.
-  rpc GetDestinationConnectorAdmin(GetDestinationConnectorAdminRequest)
-      returns (GetDestinationConnectorAdminResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/{name=destination-connectors/*}"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // LookUpDestinationConnectorAdmin method receives a
-  // LookUpDestinationConnectorAdminRequest message and returns a
-  // LookUpDestinationConnectorAdminResponse
-  rpc LookUpDestinationConnectorAdmin(LookUpDestinationConnectorAdminRequest)
-      returns (LookUpDestinationConnectorAdminResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/{permalink=destination-connectors/*}/lookUp"
-    };
-    option (google.api.method_signature) = "permalink";
-  }
-
-  // CheckDestinationConnector method receives a CheckDestinationConnectorRequest message and returns a
-  // CheckDestinationConnectorResponse
-  rpc CheckDestinationConnector(CheckDestinationConnectorRequest) returns (CheckDestinationConnectorResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/{name=destination-connectors/*}/check"
-    };
-    option (google.api.method_signature) = "name";
+    option (google.api.method_signature) = "connector_permalink";
   };
 }

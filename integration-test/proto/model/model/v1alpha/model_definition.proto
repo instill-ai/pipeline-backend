@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Protocol Buffers Well-Known Types
 import "google/protobuf/struct.proto";
@@ -97,8 +97,8 @@ message ListModelDefinitionsRequest {
   optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
 }
 
-// ListModelDefinitionsResponse represents a response to list all supported model
-// definitions
+// ListModelDefinitionsResponse represents a response to list all supported
+// model definitions
 message ListModelDefinitionsResponse {
   // a list of ModelDefinition instances
   repeated ModelDefinition model_definitions = 1;

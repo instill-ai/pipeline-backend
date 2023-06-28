@@ -4,15 +4,11 @@ package vdp.connector.v1alpha;
 
 // Protocol Buffers Well-Known Types
 import "google/protobuf/struct.proto";
-import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 // Google API
 import "google/api/resource.proto";
 import "google/api/field_behavior.proto";
-
-// Google type
-import "google/type/date.proto";
 
 import "../../../vdp/connector/v1alpha/spec.proto";
 
@@ -27,14 +23,6 @@ enum View {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// DockerImageSpec represents a data model for docker image name and the
-// connector specification associated with it
-message DockerImageSpec {
-  // DockerImageSpec docker image
-  string docker_image = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // DockerImageSpec spec data
-  Spec spec = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-}
 
 // ConnectorType enumerates connector types
 enum ConnectorType {
@@ -44,220 +32,114 @@ enum ConnectorType {
   CONNECTOR_TYPE_SOURCE = 1;
   // ConnectorType: DESTINATION
   CONNECTOR_TYPE_DESTINATION = 2;
-}
-
-// ReleaseStage enumerates the release stages
-enum ReleaseStage {
-  // ReleaseStage: UNSPECIFIED
-  RELEASE_STAGE_UNSPECIFIED = 0;
-  // ReleaseStage: ALPHA
-  RELEASE_STAGE_ALPHA = 1;
-  // ReleaseStage: BETA
-  RELEASE_STAGE_BETA = 2;
-  // ReleaseStage: GENERALLY_AVAILABLE
-  RELEASE_STAGE_GENERALLY_AVAILABLE = 3;
-  // ReleaseStage: CUSTOM
-  RELEASE_STAGE_CUSTOM = 4;
+  // ConnectorType: AI
+  CONNECTOR_TYPE_AI = 3;
+  // ConnectorType: Blockchain
+  CONNECTOR_TYPE_BLOCKCHAIN = 4;
 }
 
 // ConnectorDefinition represents the connector definition data model
 message ConnectorDefinition {
-  // ConnectorDefinition title
-  string title = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition Docker repository
-  string docker_repository = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition Docker image tag
-  string docker_image_tag = 3 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition documentation URL
-  string documentation_url = 4 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition icon
-  string icon = 5 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition spec
-  Spec spec = 6 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition tombstone, i.e., if not set or false, the
-  // configuration is active, or otherwise, if true, this configuration is
-  // permanently off
-  bool tombstone = 7 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition public flag, i.e., true if this connector
-  // definition is available to all workspaces
-  bool public = 8 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition custom flag, i.e., whether this is a custom
-  // connector definition
-  bool custom = 9 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition release stage
-  ReleaseStage release_stage = 10 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition release date, i.e., the date when this connector
-  // was first released, in yyyy-mm-dd format.
-  google.type.Date release_date = 11
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition resource requirements
-  google.protobuf.Struct resource_requirements = 12
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition creation time
-  google.protobuf.Timestamp create_time = 13
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // ConnectorDefinition update time
-  google.protobuf.Timestamp update_time = 14
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-}
-
-// SourceConnectorDefinition represents the source connector definition resource
-message SourceConnectorDefinition {
   option (google.api.resource) = {
-    type : "api.instill.tech/SourceConnectorDefinition"
-    pattern : "source-connector-definitions/{source-connector-definition}"
+    type : "api.instill.tech/ConnectorDefinition"
+    pattern : "connector-definitions/"
+              "{connector-definition}"
   };
 
-  // SourceConnectorDefinition resource name. It must have the format of
+  // ConnectorDefinition resource name. It must have the format of
   // "connector-definitions/*"
   string name = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // SourceConnectorDefinition UUID
+  // ConnectorDefinition UUID
   string uid = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // SourceConnectorDefinition resource ID (the last segment of the resource
-  // name) used to construct the resource name. This conforms to RFC-1034, which
-  // restricts to letters, numbers, and hyphen, with the first character a
-  // letter, the last a letter or a number, and a 63 character maximum.
-  string id = 3 [ (google.api.field_behavior) = IMMUTABLE ];
-  // SourceConnectorDefinition connector definition
-  ConnectorDefinition connector_definition = 4
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-}
-
-// DestinationConnectorDefinition represents the destination connector
-// definition resource
-message DestinationConnectorDefinition {
-  option (google.api.resource) = {
-    type : "api.instill.tech/DestinationConnectorDefinition"
-    pattern : "destination-connector-definitions/"
-              "{destination-connector-definition}"
-  };
-
-  // DestinationConnectorDefinition resource name. It must have the format of
-  // "connector-definitions/*"
-  string name = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // DestinationConnectorDefinition UUID
-  string uid = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // DestinationConnectorDefinition resource ID (the last segment of the
+  // ConnectorDefinition resource ID (the last segment of the
   // resource name) used to construct the resource name. This conforms to
   // RFC-1034, which restricts to letters, numbers, and hyphen, with the first
   // character a letter, the last a letter or a number, and a 63 character
   // maximum.
   string id = 3 [ (google.api.field_behavior) = IMMUTABLE ];
-  // DestinationConnectorDefinition connector definition
-  ConnectorDefinition connector_definition = 4
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition title
+  string title = 4 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition documentation URL
+  string documentation_url = 5 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition icon
+  string icon = 6 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition spec
+  Spec spec = 7 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // Connector Type
+  ConnectorType connector_type = 8 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition tombstone, i.e., if not set or false, the
+  // configuration is active, or otherwise, if true, this configuration is
+  // permanently off
+  bool tombstone = 9 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition public flag, i.e., true if this connector
+  // definition is available to all workspaces
+  bool public = 10 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition custom flag, i.e., whether this is a custom
+  // connector definition
+  bool custom = 11 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition iconUrl
+  string icon_url = 12 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition vendor name
+  string vendor = 13 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // ConnectorDefinition vendorAttributes, i.e. the vendor-specific attributes
+  google.protobuf.Struct vendor_attributes = 14 [ (google.api.field_behavior) = OUTPUT_ONLY ];
 }
 
 ///////////////////////////////////////////////////////////////////////
 // RPC messages
 ///////////////////////////////////////////////////////////////////////
 
-//  SourceConnectorDefinition
-//
-// ListSourceConnectorDefinitionsRequest represents a request to list
-// SourceConnectorDefinitions
-message ListSourceConnectorDefinitionsRequest {
-  // The maximum number of SourceConnectorDefinitions to return. The service may
-  // return fewer than this value. If unspecified, at most 10
-  // SourceConnectorDefinitions will be returned. The maximum value is 100;
-  // values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
-  // Page token
-  optional string page_token = 2 [ (google.api.field_behavior) = OPTIONAL ];
-  // Definition view (default is DEFINITION_VIEW_BASIC)
-  optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
-}
-
-// ListSourceConnectorDefinitionsResponse represents a response for a list of
-// SourceConnectorDefinitions
-message ListSourceConnectorDefinitionsResponse {
-  // A list of SourceConnectorDefinition resources
-  repeated SourceConnectorDefinition source_connector_definitions = 1;
-  // Next page token
-  string next_page_token = 2;
-  // Total count of SourceConnectorDefinition resources
-  int64 total_size = 3;
-}
-
-// GetSourceConnectorDefinitionRequest represents a request to query a
-// SourceConnectorDefinition resource
-message GetSourceConnectorDefinitionRequest {
-  // SourceConnectorDefinition resource name. It must have the format of
-  // "source-connector-definitions/*"
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {
-      type : "api.instill.tech/SourceConnectorDefinition"
-    },
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {
-        path_param_name : "source_connector_definition.name"
-      }
-    }
-  ];
-  // SourceConnectorDefinition resource view (default is DEFINITION_VIEW_BASIC)
-  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
-}
-
-// GetSourceConnectorDefinitionResponse represents a SourceConnectorDefinition
-// response
-message GetSourceConnectorDefinitionResponse {
-  // A SourceConnectorDefinition resource
-  SourceConnectorDefinition source_connector_definition = 1;
-}
-
-///////////////////////////////////////////////////////////////////////
-//  DestinationConnectorDefinition
-//
-// ListDestinationConnectorDefinitionsRequest represents a request to list
-// DestinationConnectorDefinitions
-message ListDestinationConnectorDefinitionsRequest {
-  // The maximum number of DestinationConnectorDefinitions to return. The
+// ListConnectorDefinitionsRequest represents a request to list
+// ConnectorDefinitions
+message ListConnectorDefinitionsRequest {
+  // The maximum number of ConnectorDefinitions to return. The
   // service may return fewer than this value. If unspecified, at most 10
-  // DestinationConnectorDefinitions will be returned. The maximum value is 100;
+  // ConnectorDefinitions will be returned. The maximum value is 100;
   // values above 100 will be coerced to 100.
   optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
   // Page token
   optional string page_token = 2 [ (google.api.field_behavior) = OPTIONAL ];
   // Definition view (default is DEFINITION_VIEW_BASIC)
   optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
+  // Filter expression to list connector definitions
+  optional string filter = 4 [ (google.api.field_behavior) = OPTIONAL ];
 }
 
-// ListDestinationConnectorDefinitionsResponse represents a response for a list
-// of DestinationConnectorDefinitions
-message ListDestinationConnectorDefinitionsResponse {
-  // A list of DestinationConnectorDefinition resources
-  repeated DestinationConnectorDefinition destination_connector_definitions = 1;
+// ListConnectorDefinitionsResponse represents a response for a list
+// of ConnectorDefinitions
+message ListConnectorDefinitionsResponse {
+  // A list of ConnectorDefinition resources
+  repeated ConnectorDefinition connector_definitions = 1;
   // Next page token
   string next_page_token = 2;
-  // Total count of DestinationConnectorDefinition resources
+  // Total count of ConnectorDefinition resources
   int64 total_size = 3;
 }
 
-// GetDestinationConnectorDefinitionRequest represents a request to query a
-// DestinationConnectorDefinition resource
-message GetDestinationConnectorDefinitionRequest {
-  // DestinationConnectorDefinition resource name. It must have the format of
-  // "source-connector-definitions/*"
+// GetConnectorDefinitionRequest represents a request to query a
+// ConnectorDefinition resource
+message GetConnectorDefinitionRequest {
+  // ConnectorDefinition resource name. It must have the format of
+  // "connector-definitions/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference) = {
-      type : "api.instill.tech/DestinationConnectorDefinition"
+      type : "api.instill.tech/ConnectorDefinition"
     },
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       field_configuration : {
-        path_param_name : "destination_connector_definition.name"
+        path_param_name : "connector_definition.name"
       }
     }
   ];
-  // DestinationConnectorDefinition resource view (default is
+  // ConnectorDefinition resource view (default is
   // DEFINITION_VIEW_BASIC)
   optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
 }
 
-// GetDestinationConnectorDefinitionResponse represents a
-// DestinationConnectorDefinition response
-message GetDestinationConnectorDefinitionResponse {
-  // A DestinationConnectorDefinition resource
-  DestinationConnectorDefinition destination_connector_definition = 1;
+// GetConnectorDefinitionResponse represents a
+// ConnectorDefinition response
+message GetConnectorDefinitionResponse {
+  // A ConnectorDefinition resource
+  ConnectorDefinition connector_definition = 1;
 }

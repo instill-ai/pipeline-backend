@@ -10,7 +10,7 @@ export function checkRecipeIsImmutable(x, y) {
   x.components.forEach(function(value, idx, arr){
     delete arr[idx].resource_detail;
     delete arr[idx].metadata;
-    delete arr[idx].dependencies;
+    delete arr[idx].type;
   });
   return deepEqual(x, y);
 }

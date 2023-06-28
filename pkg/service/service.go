@@ -16,7 +16,6 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -26,7 +25,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
@@ -47,12 +45,13 @@ type Service interface {
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
 	TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
 	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
-	TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse, error)
-	TriggerAsyncPipelineBinaryFileUpload(ctx context.Context, owner *mgmtPB.User, pipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerAsyncPipelineResponse, error)
-	GetModelByName(owner *mgmtPB.User, modelName string) (*modelPB.Model, error)
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
+
+	IncludeConnectorTypeInRecipeByPermalink(recipe *datamodel.Recipe) error
+	IncludeConnectorTypeInRecipeByName(recipe *datamodel.Recipe, owner *mgmtPB.User) error
+
 	// Controller APIs
 	GetResourceState(uid uuid.UUID) (*pipelinePB.Pipeline_State, error)
 	UpdateResourceState(uid uuid.UUID, state pipelinePB.Pipeline_State, progress *int32) error
@@ -64,8 +63,6 @@ type service struct {
 	mgmtPrivateServiceClient      mgmtPB.MgmtPrivateServiceClient
 	connectorPublicServiceClient  connectorPB.ConnectorPublicServiceClient
 	connectorPrivateServiceClient connectorPB.ConnectorPrivateServiceClient
-	modelPublicServiceClient      modelPB.ModelPublicServiceClient
-	modelPrivateServiceClient     modelPB.ModelPrivateServiceClient
 	controllerClient              controllerPB.ControllerPrivateServiceClient
 	redisClient                   *redis.Client
 	temporalClient                client.Client
@@ -76,8 +73,6 @@ func NewService(r repository.Repository,
 	u mgmtPB.MgmtPrivateServiceClient,
 	c connectorPB.ConnectorPublicServiceClient,
 	cPrivate connectorPB.ConnectorPrivateServiceClient,
-	m modelPB.ModelPublicServiceClient,
-	mPrivate modelPB.ModelPrivateServiceClient,
 	ct controllerPB.ControllerPrivateServiceClient,
 	rc *redis.Client,
 	t client.Client,
@@ -87,8 +82,6 @@ func NewService(r repository.Repository,
 		mgmtPrivateServiceClient:      u,
 		connectorPublicServiceClient:  c,
 		connectorPrivateServiceClient: cPrivate,
-		modelPublicServiceClient:      m,
-		modelPrivateServiceClient:     mPrivate,
 		controllerClient:              ct,
 		redisClient:                   rc,
 		temporalClient:                t,
@@ -442,50 +435,41 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	return dbPipeline, nil
 }
 
-func preTriggerPipeline(dbPipeline *datamodel.Pipeline, taskInputs []*modelPB.TaskInput, expectedMode datamodel.PipelineMode) ([]string, error) {
+func preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInputs []*pipelinePB.PipelineDataPayload, expectedMode datamodel.PipelineMode) error {
 	if dbPipeline.Mode != expectedMode {
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not sync", dbPipeline.ID))
+		return status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not sync", dbPipeline.ID))
 	}
 	if dbPipeline.State != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
+		return status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
 	}
 
-	var dataMappingIndices []string
-	for range taskInputs {
-		dataMappingIndices = append(dataMappingIndices, ulid.Make().String())
+	for idx := range pipelineInputs {
+		pipelineInputs[idx].DataMappingIndex = ulid.Make().String()
 	}
-	return dataMappingIndices, nil
+	return nil
 }
 
 func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
 
-	dataMappingIndices, err := preTriggerPipeline(dbPipeline, req.TaskInputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
+	err := preTriggerPipeline(dbPipeline, req.Inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
 	if err != nil {
 		return nil, err
 	}
 
-	var modelOutputs []*pipelinePB.ModelOutput
-	for _, model := range utils.GetModelsFromRecipe(dbPipeline.Recipe) {
-		modelOutput, err := worker.Trigger(s.modelPublicServiceClient, s.redisClient, req.TaskInputs, dataMappingIndices, model, dbPipeline.Owner)
-		if err != nil {
-			return nil, err
-		}
-		modelOutputs = append(modelOutputs, modelOutput)
-	}
-
+	// TODO
 	if err != nil {
 		return nil, err
 	}
 
 	return &pipelinePB.TriggerSyncPipelineResponse{
-		DataMappingIndices: dataMappingIndices,
-		ModelOutputs:       modelOutputs,
+		Outputs: req.Inputs,
 	}, nil
 }
 
 func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
-	dataMappingIndices, err := preTriggerPipeline(dbPipeline, req.TaskInputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
+	inputs := req.Inputs
+	err := preTriggerPipeline(dbPipeline, inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
 	if err != nil {
 		return nil, err
 	}
@@ -505,27 +489,28 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		},
 	}
 
-	var taskInputRedisKeys []string
-	for idx := range req.TaskInputs {
-		json, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(&modelPB.TaskInput{
-			Input: req.TaskInputs[idx].GetInput(),
-		})
-		if err != nil {
-			return nil, err
-		}
-		key := fmt.Sprintf("async_pipeline_blob:%s:%s", id.String(), dataMappingIndices[idx])
-		s.redisClient.Set(context.Background(), key, json, time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second)
-		taskInputRedisKeys = append(taskInputRedisKeys, key)
+	var bytesBuffer bytes.Buffer
+	enc := gob.NewEncoder(&bytesBuffer)
+	err = enc.Encode(inputs)
+	if err != nil {
+		return nil, err
 	}
+
+	inputBlobRedisKey := fmt.Sprintf("async_pipeline_blob:%s", id.String())
+	s.redisClient.Set(
+		context.Background(),
+		inputBlobRedisKey,
+		bytesBuffer.Bytes(),
+		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
+	)
 
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
 		"TriggerAsyncPipelineWorkflow",
-		&worker.TriggerAsyncPipelineWorkflowParam{
-			TaskInputRedisKeys: taskInputRedisKeys,
-			DataMappingIndices: dataMappingIndices,
-			DbPipeline:         dbPipeline,
+		&worker.TriggerAsyncPipelineWorkflowRequest{
+			PipelineInputBlobRedisKey: inputBlobRedisKey,
+			Pipeline:                  dbPipeline,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -533,6 +518,11 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 	}
 
 	logger.Info(fmt.Sprintf("started workflow with WorkflowID %s and RunID %s", we.GetID(), we.GetRunID()))
+
+	dataMappingIndices := []string{}
+	for idx := range inputs {
+		dataMappingIndices = append(dataMappingIndices, inputs[idx].DataMappingIndex)
+	}
 
 	return &pipelinePB.TriggerAsyncPipelineResponse{
 		Operation: &longrunningpb.Operation{
@@ -542,153 +532,4 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		DataMappingIndices: dataMappingIndices,
 	}, nil
 
-}
-
-func preTriggerPipelineBinaryFileUpload(dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}, expectedMode datamodel.PipelineMode) ([]string, error) {
-	if dbPipeline.Mode != expectedMode {
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not sync", dbPipeline.ID))
-	}
-	if dbPipeline.State != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
-	}
-
-	batching := 1
-	switch task {
-	case modelPB.Model_TASK_CLASSIFICATION,
-		modelPB.Model_TASK_DETECTION,
-		modelPB.Model_TASK_KEYPOINT,
-		modelPB.Model_TASK_OCR,
-		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
-		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-		inp := input.(*utils.ImageInput)
-		batching = len(inp.FileNames)
-	case modelPB.Model_TASK_TEXT_TO_IMAGE,
-		modelPB.Model_TASK_TEXT_GENERATION:
-		batching = 1
-	}
-	var dataMappingIndices []string
-	for i := 0; i < batching; i++ {
-		dataMappingIndices = append(dataMappingIndices, ulid.Make().String())
-	}
-	return dataMappingIndices, nil
-}
-
-func (s *service) TriggerSyncPipelineBinaryFileUpload(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse, error) {
-
-	dataMappingIndices, err := preTriggerPipelineBinaryFileUpload(dbPipeline, task, input, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
-	if err != nil {
-		return nil, err
-	}
-	var modelOutputs []*pipelinePB.ModelOutput
-	for _, model := range utils.GetModelsFromRecipe(dbPipeline.Recipe) {
-		modelOutput, err := worker.TriggerBinaryFileUpload(s.modelPublicServiceClient, s.redisClient, task, input, dataMappingIndices, model, dbPipeline.Owner)
-		if err != nil {
-			return nil, err
-		}
-		modelOutputs = append(modelOutputs, modelOutput)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &pipelinePB.TriggerSyncPipelineBinaryFileUploadResponse{
-		DataMappingIndices: dataMappingIndices,
-		ModelOutputs:       modelOutputs,
-	}, nil
-
-}
-
-func (s *service) TriggerAsyncPipelineBinaryFileUpload(ctx context.Context, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, task modelPB.Model_Task, input interface{}) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
-	logger, _ := logger.GetZapLogger(ctx)
-	dataMappingIndices, err := preTriggerPipelineBinaryFileUpload(dbPipeline, task, input, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
-	if err != nil {
-		return nil, err
-	}
-	if err := s.excludeResourceDetailFromRecipe(dbPipeline.Recipe); err != nil {
-		return nil, err
-	}
-
-	// TODO: should refactor these switch cases
-	var inputByte []byte
-	switch task {
-	case modelPB.Model_TASK_CLASSIFICATION,
-		modelPB.Model_TASK_DETECTION,
-		modelPB.Model_TASK_KEYPOINT,
-		modelPB.Model_TASK_OCR,
-		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
-		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-
-		var bytesBuffer bytes.Buffer
-		enc := gob.NewEncoder(&bytesBuffer)
-		err := enc.Encode(input.(*utils.ImageInput))
-		if err != nil {
-			return nil, err
-		}
-		inputByte = bytesBuffer.Bytes()
-	case modelPB.Model_TASK_TEXT_TO_IMAGE:
-		var bytesBuffer bytes.Buffer
-		enc := gob.NewEncoder(&bytesBuffer)
-		err := enc.Encode(input.(*utils.TextToImageInput))
-		if err != nil {
-			return nil, err
-		}
-		inputByte = bytesBuffer.Bytes()
-	case modelPB.Model_TASK_TEXT_GENERATION:
-		var bytesBuffer bytes.Buffer
-		enc := gob.NewEncoder(&bytesBuffer)
-		err := enc.Encode(input.(*utils.TextGenerationInput))
-		if err != nil {
-			return nil, err
-		}
-		inputByte = bytesBuffer.Bytes()
-	}
-
-	id, _ := uuid.NewV4()
-	workflowOptions := client.StartWorkflowOptions{
-		ID:                       id.String(),
-		TaskQueue:                worker.TaskQueue,
-		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		RetryPolicy: &temporal.RetryPolicy{
-			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
-		},
-	}
-
-	taskInputRedisKey := fmt.Sprintf("async_pipeline_blob:%s", id.String())
-	s.redisClient.Set(context.Background(), taskInputRedisKey, inputByte, time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second)
-
-	we, err := s.temporalClient.ExecuteWorkflow(
-		ctx,
-		workflowOptions,
-		"TriggerAsyncPipelineByFileUploadWorkflow",
-		&worker.TriggerAsyncPipelineByFileUploadWorkflowParam{
-			TaskInputRedisKey:  taskInputRedisKey,
-			DataMappingIndices: dataMappingIndices,
-			Task:               task,
-			DbPipeline:         dbPipeline,
-		})
-	if err != nil {
-		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
-		return nil, err
-	}
-
-	logger.Info(fmt.Sprintf("started workflow with WorkflowID %s and RunID %s", we.GetID(), we.GetRunID()))
-
-	return &pipelinePB.TriggerAsyncPipelineResponse{
-		Operation: &longrunningpb.Operation{
-			Name: fmt.Sprintf("operations/%s", id),
-			Done: false,
-		},
-		DataMappingIndices: dataMappingIndices}, nil
-
-}
-
-func (s *service) GetModelByName(owner *mgmtPB.User, modelName string) (*modelPB.Model, error) {
-	modelResq, err := s.modelPublicServiceClient.GetModel(utils.InjectOwnerToContext(context.Background(), owner), &modelPB.GetModelRequest{
-		Name: modelName,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return modelResq.Model, nil
 }

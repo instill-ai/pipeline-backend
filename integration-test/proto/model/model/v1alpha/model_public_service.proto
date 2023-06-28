@@ -1,14 +1,13 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Google API
 import "google/api/annotations.proto";
 import "google/api/client.proto";
 
-import "../../../vdp/model/v1alpha/healthcheck.proto";
-import "../../../vdp/model/v1alpha/model_definition.proto";
-import "../../../vdp/model/v1alpha/model.proto";
+import "../../../model/model/v1alpha/model_definition.proto";
+import "../../../model/model/v1alpha/model.proto";
 
 // Model service responds to external access
 service ModelPublicService {
@@ -148,8 +147,7 @@ service ModelPublicService {
   }
 
   // DeployModel deploy a model to online state
-  rpc DeployModel(DeployModelRequest)
-      returns (DeployModelResponse) {
+  rpc DeployModel(DeployModelRequest) returns (DeployModelResponse) {
     option (google.api.http) = {
       post : "/v1alpha/{name=models/*}/deploy"
       body : "*"
@@ -158,8 +156,7 @@ service ModelPublicService {
   }
 
   // UndeployModel undeploy a model to offline state
-  rpc UndeployModel(UndeployModelRequest)
-      returns (UndeployModelResponse) {
+  rpc UndeployModel(UndeployModelRequest) returns (UndeployModelResponse) {
     option (google.api.http) = {
       post : "/v1alpha/{name=models/*}/undeploy"
       body : "*"
@@ -169,8 +166,7 @@ service ModelPublicService {
 
   // GetModelCard method receives a GetModelCardRequest message
   // and returns a GetModelCardResponse
-  rpc GetModelCard(GetModelCardRequest)
-      returns (GetModelCardResponse) {
+  rpc GetModelCard(GetModelCardRequest) returns (GetModelCardResponse) {
     option (google.api.http) = {
       get : "/v1alpha/{name=models/*/readme}"
     };
@@ -179,8 +175,7 @@ service ModelPublicService {
 
   // WatchModel method receives a WatchModelRequest message
   // and returns a WatchModelResponse
-  rpc WatchModel(WatchModelRequest)
-      returns (WatchModelResponse) {
+  rpc WatchModel(WatchModelRequest) returns (WatchModelResponse) {
     option (google.api.http) = {
       get : "/v1alpha/{name=models/*}/watch"
     };
@@ -191,8 +186,7 @@ service ModelPublicService {
   //
   // TriggerModel method receives a TriggerModelRequest message
   // and returns a TriggerModelResponse message.
-  rpc TriggerModel(TriggerModelRequest)
-      returns (TriggerModelResponse) {
+  rpc TriggerModel(TriggerModelRequest) returns (TriggerModelResponse) {
     option (google.api.http) = {
       post : "/v1alpha/{name=models/*}/trigger"
       body : "*"
@@ -205,16 +199,14 @@ service ModelPublicService {
   // TriggerModelBinaryFileUploadResponse message.
   //
   // Endpoint: "POST/v1alpha/{name=models/*}/trigger-multipart"
-  rpc TriggerModelBinaryFileUpload(
-      stream TriggerModelBinaryFileUploadRequest)
+  rpc TriggerModelBinaryFileUpload(stream TriggerModelBinaryFileUploadRequest)
       returns (TriggerModelBinaryFileUploadResponse) {
     option (google.api.method_signature) = "name,file";
   }
 
   // TestModel method receives a TestModelRequest message
   // and returns a TestModelResponse message.
-  rpc TestModel(TestModelRequest)
-      returns (TestModelResponse) {
+  rpc TestModel(TestModelRequest) returns (TestModelResponse) {
     option (google.api.http) = {
       post : "/v1alpha/{name=models/*}/test"
       body : "*"
@@ -227,8 +219,7 @@ service ModelPublicService {
   // TestModelBinaryFileUploadResponse message.
   //
   // Endpoint: "POST/v1alpha/{name=models/*}/test-multipart"
-  rpc TestModelBinaryFileUpload(
-      stream TestModelBinaryFileUploadRequest)
+  rpc TestModelBinaryFileUpload(stream TestModelBinaryFileUploadRequest)
       returns (TestModelBinaryFileUploadResponse) {
     option (google.api.method_signature) = "name,file";
   }
@@ -243,5 +234,4 @@ service ModelPublicService {
     };
     option (google.api.method_signature) = "name";
   }
-
 }

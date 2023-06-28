@@ -13,17 +13,42 @@ import "google/api/resource.proto";
 import "google/api/field_behavior.proto";
 import "google/longrunning/operations.proto";
 
-import "../../../vdp/model/v1alpha/model.proto";
-import "../../../vdp/model/v1alpha/task_classification.proto";
-import "../../../vdp/model/v1alpha/task_detection.proto";
-import "../../../vdp/model/v1alpha/task_keypoint.proto";
-import "../../../vdp/model/v1alpha/task_ocr.proto";
-import "../../../vdp/model/v1alpha/task_instance_segmentation.proto";
-import "../../../vdp/model/v1alpha/task_semantic_segmentation.proto";
-import "../../../vdp/model/v1alpha/task_text_to_image.proto";
-import "../../../vdp/model/v1alpha/task_text_generation.proto";
-import "../../../vdp/model/v1alpha/task_unspecified.proto";
+import "../../../common/healthcheck/v1alpha/healthcheck.proto";
+import "../../../model/model/v1alpha/task_classification.proto";
+import "../../../model/model/v1alpha/task_detection.proto";
+import "../../../model/model/v1alpha/task_keypoint.proto";
+import "../../../model/model/v1alpha/task_ocr.proto";
+import "../../../model/model/v1alpha/task_instance_segmentation.proto";
+import "../../../model/model/v1alpha/task_semantic_segmentation.proto";
+import "../../../model/model/v1alpha/task_text_to_image.proto";
+import "../../../model/model/v1alpha/task_text_generation.proto";
+import "../../../model/model/v1alpha/task_unspecified.proto";
 
+// LivenessRequest represents a request to check a service liveness status
+message LivenessRequest {
+  // HealthCheckRequest message
+  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request =
+      1 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// LivenessResponse represents a response for a service liveness status
+message LivenessResponse {
+  // HealthCheckResponse message
+  common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
+}
+
+// ReadinessRequest represents a request to check a service readiness status
+message ReadinessRequest {
+  // HealthCheckRequest message
+  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request =
+      1 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// ReadinessResponse represents a response for a service readiness status
+message ReadinessResponse {
+  // HealthCheckResponse message
+  common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
+}
 
 // Represents a pipeline component
 message Component {
@@ -32,16 +57,18 @@ message Component {
   string id = 1 [ (google.api.field_behavior) = REQUIRED ];
   // A pipeline component resource name
   string resource_name = 2 [
-    (google.api.field_behavior) = REQUIRED ,
+    (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference).type = "*"
   ];
   // A pipeline component resource detail
-  google.protobuf.Struct resource_detail = 3 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Struct resource_detail = 3
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
   // Metadata for the pipeline component
   google.protobuf.Struct metadata = 4;
   // Dependencies for the pipeline component
   map<string, string> dependencies = 5;
-
+  // Resource Type
+  string type = 6 [ (google.api.field_behavior) = OUTPUT_ONLY ];
 }
 
 // Pipeline represents a pipeline recipe
@@ -100,7 +127,8 @@ message Pipeline {
   State state = 7 [ (google.api.field_behavior) = OUTPUT_ONLY ];
   // Pipeline owner
   oneof owner {
-    // The resource name with UUID of a user, e.g., "users/bfb978f8-78d3-4338-aa2b-a6c699cb07c5".
+    // The resource name with UUID of a user, e.g.,
+    // "users/bfb978f8-78d3-4338-aa2b-a6c699cb07c5".
     string user = 8 [
       (google.api.resource_reference).type = "api.instill.tech/User",
       (google.api.field_behavior) = OUTPUT_ONLY
@@ -290,55 +318,74 @@ message RenamePipelineResponse {
 // Here we don't use a model.v1alpha.TaskOutput type field but explicitly use
 // the replicated oneof field because we want the CV Task output to be at the
 // same message layer like the trigger output of model.
+// This message is deprecated, will be removed soon
 message TaskOutput {
   // The index of input data in a batch
   string index = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
   // The inference task output
   oneof output {
     // The classification output
-    model.v1alpha.ClassificationOutput classification = 2
+    model.model.v1alpha.ClassificationOutput classification = 2
         [ (google.api.field_behavior) = OUTPUT_ONLY ];
     // The detection output
-    model.v1alpha.DetectionOutput detection = 3
+    model.model.v1alpha.DetectionOutput detection = 3
         [ (google.api.field_behavior) = OUTPUT_ONLY ];
     // The keypoint output
-    model.v1alpha.KeypointOutput keypoint = 4
+    model.model.v1alpha.KeypointOutput keypoint = 4
         [ (google.api.field_behavior) = OUTPUT_ONLY ];
     // The ocr output
-    model.v1alpha.OcrOutput ocr = 5
+    model.model.v1alpha.OcrOutput ocr = 5
         [ (google.api.field_behavior) = OUTPUT_ONLY ];
     // The instance segmentation output
-    model.v1alpha.InstanceSegmentationOutput instance_segmentation = 6
+    model.model.v1alpha.InstanceSegmentationOutput instance_segmentation = 6
         [ (google.api.field_behavior) = OUTPUT_ONLY ];
     // The semantic segmentation output
-    model.v1alpha.SemanticSegmentationOutput semantic_segmentation = 7
+    model.model.v1alpha.SemanticSegmentationOutput semantic_segmentation = 7
         [ (google.api.field_behavior) = OUTPUT_ONLY ];
     // The text to image output
-    model.v1alpha.TextToImageOutput text_to_image = 8
+    model.model.v1alpha.TextToImageOutput text_to_image = 8
         [ (google.api.field_behavior) = OUTPUT_ONLY ];
     // The text generation
-    model.v1alpha.TextGenerationOutput text_generation = 9
+    model.model.v1alpha.TextGenerationOutput text_generation = 9
         [ (google.api.field_behavior) = OUTPUT_ONLY ];
     // The unspecified task output
-    model.v1alpha.UnspecifiedOutput unspecified = 10
+    model.model.v1alpha.UnspecifiedOutput unspecified = 10
         [ (google.api.field_behavior) = OUTPUT_ONLY ];
   }
 }
 
-// ModelOutput represents one model inference result
-message ModelOutput {
-  // The model
-  string model = 1 [
-    (google.api.field_behavior) = OUTPUT_ONLY,
-    (google.api.resource_reference).type = "api.instill.tech/Model"
-  ];
-  // The task type
-  model.v1alpha.Model.Task task = 2
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // The extended task outputs based on the model inference (i.e.,
-  // from a trigger endpoint of model-backend)
-  repeated TaskOutput task_outputs = 3
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+// PipelineDataPayload is a data structure for pipeline input
+message PipelineDataPayload {
+
+  // UnstructuredData
+  message UnstructuredData {
+    // UnstructuredData
+    oneof unstructured_data {
+      // UnstructuredData using bytes,
+      // grpc-gateway will do base64 conversion for http endpoint
+      bytes blob = 1;
+      // UnstructuredData using url
+      string url = 2;
+    }
+  }
+
+  // Data index corresponds to each data element
+  string data_mapping_index = 1 [ (google.api.field_behavior) = REQUIRED ];
+
+  // Unstructured: text field
+  repeated string texts = 2;
+
+  // Unstructured: image field
+  repeated UnstructuredData images = 3;
+
+  // repeated UnstructuredData audios = 4;
+  // repeated UnstructuredData videos = 5;
+
+  // [semi-]structured data: json field
+  google.protobuf.Struct structured_data = 6;
+
+  // Metadata
+  google.protobuf.Struct metadata = 7;
 }
 
 // TriggerSyncPipelineRequest represents a request to trigger a pipeline
@@ -349,7 +396,7 @@ message TriggerSyncPipelineRequest {
     (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
   ];
   // Input to the pipeline
-  repeated model.v1alpha.TaskInput task_inputs = 2
+  repeated PipelineDataPayload inputs = 2
       [ (google.api.field_behavior) = REQUIRED ];
 }
 
@@ -359,28 +406,7 @@ message TriggerSyncPipelineResponse {
   // The data mapping indices stores UUID for each input
   repeated string data_mapping_indices = 1;
   // The multiple model inference outputs
-  repeated ModelOutput model_outputs = 2;
-}
-
-// TriggerSyncPipelineBinaryFileUploadRequest represents a request to trigger a
-// pipeline
-message TriggerSyncPipelineBinaryFileUploadRequest {
-  // Pipeline resource name. It must have the format of "pipelines/*"
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
-  ];
-  // Input to the pipeline
-  model.v1alpha.TaskInputStream task_input = 2 [ (google.api.field_behavior) = REQUIRED ];
-}
-
-// TriggerSyncPipelineBinaryFileUploadResponse represents a response for the output
-// of a pipeline, i.e., the multiple model inference outputs
-message TriggerSyncPipelineBinaryFileUploadResponse {
-  // The data mapping indices stores UUID for each input
-  repeated string data_mapping_indices = 1;
-  // The multiple model inference outputs
-  repeated ModelOutput model_outputs = 2;
+  repeated PipelineDataPayload outputs = 2;
 }
 
 // TriggerAsyncPipelineRequest represents a request to trigger a async pipeline
@@ -391,12 +417,12 @@ message TriggerAsyncPipelineRequest {
     (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
   ];
   // Input to the pipeline
-  repeated model.v1alpha.TaskInput task_inputs = 2
+  repeated PipelineDataPayload inputs = 2
       [ (google.api.field_behavior) = REQUIRED ];
 }
 
-// TriggerAsyncPipelineResponse represents a response for the longrunning operation
-// of a pipeline
+// TriggerAsyncPipelineResponse represents a response for the longrunning
+// operation of a pipeline
 message TriggerAsyncPipelineResponse {
   // Trigger async pipeline operation message
   google.longrunning.Operation operation = 1
@@ -406,44 +432,20 @@ message TriggerAsyncPipelineResponse {
       [ (google.api.field_behavior) = OUTPUT_ONLY ];
 }
 
-
-// TriggerAsyncPipelineBinaryFileUploadRequest represents a request to trigger a
-// pipeline
-message TriggerAsyncPipelineBinaryFileUploadRequest {
-  // Pipeline resource name. It must have the format of "pipelines/*"
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
-  ];
-  // Input to the pipeline
-  model.v1alpha.TaskInputStream task_input = 2 [ (google.api.field_behavior) = REQUIRED ];
-}
-
-// TriggerAsyncPipelineBinaryFileUploadResponse represents a response for the longrunning operation
-// of a pipeline
-message TriggerAsyncPipelineBinaryFileUploadResponse {
-  // Trigger async pipeline operation message
-  google.longrunning.Operation operation = 1
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // The data mapping indices for each input
-  repeated string data_mapping_indices = 2
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-}
-
-
-// GetTriggerAsyncOperationRequest represents a request to query a longrunning operation
+// GetTriggerAsyncOperationRequest represents a request to query a longrunning
+// operation
 message GetTriggerAsyncOperationRequest {
   // The name of the operation resource.
   string name = 1 [ (google.api.field_behavior) = REQUIRED ];
 }
 
-// GetTriggerAsyncOperationResponse represents a response for a longrunning operation
+// GetTriggerAsyncOperationResponse represents a response for a longrunning
+// operation
 message GetTriggerAsyncOperationResponse {
   // The retrieved longrunning operation
   google.longrunning.Operation operation = 1
-    [ (google.api.field_behavior) = OUTPUT_ONLY ];
+      [ (google.api.field_behavior) = OUTPUT_ONLY ];
 }
-
 
 // WatchPipelineRequest represents a public request to query
 // a pipeline's current state
@@ -467,7 +469,8 @@ message WatchPipelineResponse {
 
 // ========== Private endpoints
 
-// ListPipelinesAdminRequest represents a request to list all pipelines from all users by admin
+// ListPipelinesAdminRequest represents a request to list all pipelines from all
+// users by admin
 message ListPipelinesAdminRequest {
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
@@ -493,7 +496,8 @@ message ListPipelinesAdminResponse {
   int64 total_size = 3;
 }
 
-// GetPipelineAdminRequest represents a request to query a user's pipeline by admin
+// GetPipelineAdminRequest represents a request to query a user's pipeline by
+// admin
 message GetPipelineAdminRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
@@ -513,7 +517,8 @@ message GetPipelineAdminResponse {
   Pipeline pipeline = 1;
 }
 
-// LookUpPipelineAdminRequest represents a request to query a user's pipeline via permalink by admin
+// LookUpPipelineAdminRequest represents a request to query a user's pipeline
+// via permalink by admin
 message LookUpPipelineAdminRequest {
   // Permalink of a pipeline. For example:
   // "pipelines/{uid}"

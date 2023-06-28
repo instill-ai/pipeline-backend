@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Google api
 import "google/api/field_behavior.proto";
 
-import "../../../vdp/model/v1alpha/common.proto";
+import "../../../model/model/v1alpha/common.proto";
 
 // OcrObject represents a predicted ocr object
 message OcrObject {

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Google api
 import "google/api/field_behavior.proto";

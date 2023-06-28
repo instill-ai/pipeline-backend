@@ -194,16 +194,6 @@ func main() {
 		defer connectorPrivateServiceClientConn.Close()
 	}
 
-	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient(ctx)
-	if modelPublicServiceClientConn != nil {
-		defer modelPublicServiceClientConn.Close()
-	}
-
-	modelPrivateServiceClient, modelPrivateServiceClientConn := external.InitModelPrivateServiceClient(ctx)
-	if modelPrivateServiceClientConn != nil {
-		defer modelPrivateServiceClientConn.Close()
-	}
-
 	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient(ctx)
 	if controllerServiceClientConn != nil {
 		defer controllerServiceClientConn.Close()
@@ -219,8 +209,6 @@ func main() {
 		mgmtPrivateServiceClient,
 		connectorPublicServiceClient,
 		connectorPrivateServiceClient,
-		modelPublicServiceClient,
-		modelPrivateServiceClient,
 		controllerServiceClient,
 		redisClient,
 		temporalClient,
@@ -273,14 +261,6 @@ func main() {
 			},
 		}),
 	)
-
-	// Register custom route for POST multipart form data
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/triggerSyncMultipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerSyncPipelineBinaryFileUpload)); err != nil {
-		logger.Fatal(err.Error())
-	}
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/pipelines/{id}/triggerAsyncMultipart", middleware.AppendCustomHeaderMiddleware(service, handler.HandleTriggerAsyncPipelineBinaryFileUpload)); err != nil {
-		logger.Fatal(err.Error())
-	}
 
 	// Start usage reporter
 	var usg usage.Usage

@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/gogo/status"
+	"google.golang.org/grpc/codes"
+
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
-	"google.golang.org/grpc/codes"
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
@@ -29,7 +30,10 @@ const (
 func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recipe) (datamodel.PipelineMode, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
+	err := s.IncludeConnectorTypeInRecipeByName(recipeRscName, owner)
+	if err != nil {
+		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED), err
+	}
 	srcCnt := 0
 	srcConnDefID := ""
 	srcCategory := Unspecified
@@ -38,7 +42,8 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 	dstHasHttp := false
 	dstHasGrpc := false
 
-	modelCnt := 0
+	aiCnt := 0
+	blockchainCnt := 0
 
 	componentIdSet := make(map[string]bool)
 	exp := "^[A-Za-z0-9]([A-Za-z0-9-_]{0,62}[A-Za-z0-9])?$"
@@ -56,9 +61,10 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 	}
 
 	for _, component := range recipeRscName.Components {
-		switch utils.GetDefinitionType(component) {
 
-		case utils.SourceConnector:
+		switch component.Type {
+
+		case connectorPB.ConnectorType_CONNECTOR_TYPE_SOURCE.String():
 
 			srcCnt += 1
 
@@ -67,38 +73,38 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 					status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have more than one source connector.")
 			}
 
-			srcConnResp, err := s.connectorPublicServiceClient.GetSourceConnector(utils.InjectOwnerToContext(ctx, owner),
-				&connectorPB.GetSourceConnectorRequest{
+			srcConnResp, err := s.connectorPublicServiceClient.GetConnector(utils.InjectOwnerToContext(ctx, owner),
+				&connectorPB.GetConnectorRequest{
 					Name: component.ResourceName,
 				})
 			if err != nil {
 				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
 					status.Errorf(codes.InvalidArgument, "[connector-backend] Error %s at %s: %v",
-						"GetSourceConnector", component.ResourceName, err.Error())
+						"GetConnector", component.ResourceName, err.Error())
 
 			}
 
-			srcConnDefResp, err := s.connectorPublicServiceClient.GetSourceConnectorDefinition(utils.InjectOwnerToContext(ctx, owner),
-				&connectorPB.GetSourceConnectorDefinitionRequest{
-					Name: srcConnResp.GetSourceConnector().GetSourceConnectorDefinition(),
+			srcConnDefResp, err := s.connectorPublicServiceClient.GetConnectorDefinition(utils.InjectOwnerToContext(ctx, owner),
+				&connectorPB.GetConnectorDefinitionRequest{
+					Name: srcConnResp.GetConnector().GetConnectorDefinitionName(),
 				})
 			if err != nil {
 				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
 					status.Errorf(codes.InvalidArgument, "[connector-backend] Error %s at %s: %v",
-						"GetSourceConnectorDefinition", srcConnResp.GetSourceConnector().GetSourceConnectorDefinition(), err.Error())
+						"GetConnectorDefinition", srcConnResp.GetConnector().GetConnectorDefinition(), err.Error())
 			}
 
-			srcConnDefID = srcConnDefResp.GetSourceConnectorDefinition().GetId()
+			srcConnDefID = srcConnDefResp.GetConnectorDefinition().GetId()
 			if strings.Contains(srcConnDefID, "http") {
 				srcCategory = Http
 			} else if strings.Contains(srcConnDefID, "grpc") {
 				srcCategory = Grpc
 			}
 
-		case utils.DestinationConnector:
+		case connectorPB.ConnectorType_CONNECTOR_TYPE_DESTINATION.String():
 
-			dstConnResp, err := s.connectorPublicServiceClient.GetDestinationConnector(utils.InjectOwnerToContext(ctx, owner),
-				&connectorPB.GetDestinationConnectorRequest{
+			dstConnResp, err := s.connectorPublicServiceClient.GetConnector(utils.InjectOwnerToContext(ctx, owner),
+				&connectorPB.GetConnectorRequest{
 					Name: component.ResourceName,
 				})
 			if err != nil {
@@ -107,16 +113,16 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 						"GetDestinationConnector", component.ResourceName, err.Error())
 			}
 
-			dstConnDefResp, err := s.connectorPublicServiceClient.GetDestinationConnectorDefinition(utils.InjectOwnerToContext(ctx, owner),
-				&connectorPB.GetDestinationConnectorDefinitionRequest{
-					Name: dstConnResp.GetDestinationConnector().GetDestinationConnectorDefinition(),
+			dstConnDefResp, err := s.connectorPublicServiceClient.GetConnectorDefinition(utils.InjectOwnerToContext(ctx, owner),
+				&connectorPB.GetConnectorDefinitionRequest{
+					Name: dstConnResp.GetConnector().GetConnectorDefinitionName(),
 				})
 			if err != nil {
 				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
 					status.Errorf(codes.InvalidArgument, "[connector-backend] Error %s at %s: %v",
-						"GetDestinationConnectorDefinitionRequest", dstConnResp.GetDestinationConnector().GetDestinationConnectorDefinition(), err.Error())
+						"GetDestinationConnectorDefinitionRequest", dstConnResp.GetConnector().GetConnectorDefinition(), err.Error())
 			}
-			dstConnDefID := dstConnDefResp.GetDestinationConnectorDefinition().GetId()
+			dstConnDefID := dstConnDefResp.GetConnectorDefinition().GetId()
 			dstConnDefIDs = append(dstConnDefIDs, dstConnDefID)
 			if strings.Contains(dstConnDefID, "http") {
 				dstHasHttp = true
@@ -124,43 +130,45 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 			if strings.Contains(dstConnDefID, "grpc") {
 				dstHasGrpc = true
 			}
-		case utils.Model:
-			modelCnt += 1
+		case connectorPB.ConnectorType_CONNECTOR_TYPE_AI.String():
+			aiCnt += 1
+		case connectorPB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN.String():
+			blockchainCnt += 1
 		}
 	}
 
 	// Temporary Constraint
-	if modelCnt != 1 {
-		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have exactly one model")
-	}
+	// if aiCnt != 1 {
+	// 	return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+	// 		status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have exactly one model")
+	// }
 	// Temporary Constraint
-	if len(dstConnDefIDs) != 1 {
-		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have exactly one destination connector")
-	}
+	// if len(dstConnDefIDs) != 1 {
+	// 	return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+	// 		status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have exactly one destination connector")
+	// }
 
-	if srcCnt == 0 {
-		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have one source connector")
-	}
+	// if srcCnt == 0 {
+	// 	return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+	// 		status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have one source connector")
+	// }
 
-	if len(dstConnDefIDs) == 0 {
-		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-			status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have at least one destination connector")
-	}
+	// if len(dstConnDefIDs) == 0 {
+	// 	return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+	// 		status.Errorf(codes.InvalidArgument, "[pipeline-backend] Need to have at least one destination connector")
+	// }
 
 	if srcCategory == Http && len(dstConnDefIDs) == 1 && dstHasHttp {
-		if modelCnt != 1 {
-			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-				status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have more than one model for sync pipeline")
-		}
+		// if aiCnt != 1 {
+		// 	return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+		// 		status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have more than one model for sync pipeline")
+		// }
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC), nil
 	} else if srcCategory == Grpc && len(dstConnDefIDs) == 1 && dstHasGrpc {
-		if modelCnt != 1 {
-			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-				status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have more than one model for sync pipeline")
-		}
+		// if aiCnt != 1 {
+		// 	return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+		// 		status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have more than one model for sync pipeline")
+		// }
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC), nil
 	} else if srcCategory == Http && dstHasGrpc {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),

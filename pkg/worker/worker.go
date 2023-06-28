@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v9"
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
-	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	"go.temporal.io/sdk/workflow"
+
+	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 )
 
 // TaskQueue is the Temporal task queue name for pipeline-backend
@@ -14,25 +14,20 @@ const TaskQueue = "pipeline-backend"
 
 // Worker interface
 type Worker interface {
-	TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowParam) ([][]byte, error)
-	TriggerAsyncPipelineByFileUploadWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineByFileUploadWorkflowParam) ([][]byte, error)
-	TriggerActivity(ctx context.Context, param *TriggerActivityParam) ([]byte, error)
-	TriggerByFileUploadActivity(ctx context.Context, param *TriggerByFileUploadActivityParam) ([]byte, error)
-	DestinationActivity(ctx context.Context, param *DestinationActivityParam) ([]byte, error)
+	TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowRequest) error
+	ConnectorActivity(ctx context.Context, param *ExecuteConnectorActivityRequest) (*ExecuteConnectorActivityResponse, error)
 }
 
 // worker represents resources required to run Temporal workflow and activity
 type worker struct {
-	modelPublicServiceClient     modelPB.ModelPublicServiceClient
 	connectorPublicServiceClient connectorPB.ConnectorPublicServiceClient
 	redisClient                  *redis.Client
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
-func NewWorker(m modelPB.ModelPublicServiceClient, c connectorPB.ConnectorPublicServiceClient, r *redis.Client) Worker {
+func NewWorker(c connectorPB.ConnectorPublicServiceClient, r *redis.Client) Worker {
 
 	return &worker{
-		modelPublicServiceClient:     m,
 		connectorPublicServiceClient: c,
 		redisClient:                  r,
 	}

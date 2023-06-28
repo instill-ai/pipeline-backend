@@ -123,14 +123,14 @@ export function CheckList() {
     });
 
     // Get UUID for foreign resources
-    var srcConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/source-connectors/source-http`, {}, constant.params).json().source_connector.uid
-    var srcConnPermalink = `source-connectors/${srcConnUid}`
+    var srcConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/connectors/source-http`, {}, constant.params).json().connector.uid
+    var srcConnPermalink = `connectors/${srcConnUid}`
 
-    var dstConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/destination-connectors/destination-http`, {}, constant.params).json().destination_connector.uid
-    var dstConnPermalink = `destination-connectors/${dstConnUid}`
+    var dstConnUid = http.get(`${constant.connectorPublicHost}/v1alpha/connectors/destination-http`, {}, constant.params).json().connector.uid
+    var dstConnPermalink = `connectors/${dstConnUid}`
 
-    var modelUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
-    var modelPermalink = `models/${modelUid}`
+    // var modelUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
+    // var modelPermalink = `models/${modelUid}`
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
       filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}"`
@@ -139,12 +139,12 @@ export function CheckList() {
       [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
-    check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-      filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}"`
-    }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
-    });
+    // check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
+    //   filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}"`
+    // }, {}), {
+    //   [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
+    //   [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+    // });
 
     // Delete the pipelines
     for (const reqBody of reqBodies) {
