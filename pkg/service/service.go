@@ -100,15 +100,8 @@ func (h *service) GetRedisClient() *redis.Client {
 
 func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	mode, err := s.checkRecipe(owner, dbPipeline.Recipe)
-	if err != nil {
-		return nil, err
-	}
-
-	dbPipeline.Mode = mode
-
 	// User desires to be active
-	dbPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE)
+	dbPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
 
 	ownerPermalink := utils.GenOwnerPermalink(owner)
 	dbPipeline.Owner = ownerPermalink
@@ -265,15 +258,9 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 	resourceState := toUpdPipeline.State
 
 	if toUpdPipeline.Recipe != nil {
-		mode, err := s.checkRecipe(owner, toUpdPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
-
-		toUpdPipeline.Mode = mode
 
 		// User desires to be active
-		toUpdPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE)
+		toUpdPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
 
 		recipePermalink, err := s.recipeNameToPermalink(owner, toUpdPipeline.Recipe)
 		if err != nil {

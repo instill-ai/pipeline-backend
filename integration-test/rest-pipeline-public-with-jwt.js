@@ -14,6 +14,7 @@ export function CheckCreate() {
       {
         id: randomString(63),
         description: randomString(50),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -45,6 +46,7 @@ export function CheckGet() {
       {
         id: randomString(10),
         description: randomString(50),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -74,6 +76,7 @@ export function CheckUpdate() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -114,14 +117,16 @@ export function CheckUpdateState() {
     var reqBodySync = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBodySync), constant.params), {
       "POST /v1alpha/pipelines sync pipeline creation response status is 201": (r) => r.status === 201,
-      "POST /v1alpha/pipelines sync pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
+
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/activate`, {}, constant.params)
 
     // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBodyAsync), constant.params), {
     //   "POST /v1alpha/pipelines async pipeline creation response status is 201": (r) => r.status === 201,
@@ -154,6 +159,7 @@ export function CheckRename() {
     var reqBody = Object.assign(
       {
         id: id,
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -189,6 +195,7 @@ export function CheckLookUp() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
