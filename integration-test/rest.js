@@ -203,26 +203,26 @@ export default function (data) {
   }
 
   if (!constant.apiGatewayMode) {
-    // pipelinePrivate.CheckList()
-    // pipelinePrivate.CheckLookUp()
+    pipelinePrivate.CheckList()
+    pipelinePrivate.CheckLookUp()
 
-    // pipelinePublicWithJwt.CheckCreate()
-    // pipelinePublicWithJwt.CheckList()
-    // pipelinePublicWithJwt.CheckGet()
-    // pipelinePublicWithJwt.CheckUpdate()
-    // pipelinePublicWithJwt.CheckUpdateState()
-    // pipelinePublicWithJwt.CheckRename()
-    // pipelinePublicWithJwt.CheckLookUp()
+    pipelinePublicWithJwt.CheckCreate()
+    pipelinePublicWithJwt.CheckList()
+    pipelinePublicWithJwt.CheckGet()
+    pipelinePublicWithJwt.CheckUpdate()
+    pipelinePublicWithJwt.CheckUpdateState()
+    pipelinePublicWithJwt.CheckRename()
+    pipelinePublicWithJwt.CheckLookUp()
   }
 
-  // pipelinePublic.CheckCreate()
-  // pipelinePublic.CheckList()
-  // pipelinePublic.CheckGet()
+  pipelinePublic.CheckCreate()
+  pipelinePublic.CheckList()
+  pipelinePublic.CheckGet()
   pipelinePublic.CheckUpdate()
-  // pipelinePublic.CheckUpdateState()
-  // pipelinePublic.CheckRename()
-  // pipelinePublic.CheckLookUp()
-  // pipelinePublic.CheckWatch()
+  pipelinePublic.CheckUpdateState()
+  pipelinePublic.CheckRename()
+  pipelinePublic.CheckLookUp()
+  pipelinePublic.CheckWatch()
 
   // triggerSync.CheckTriggerSyncSingleImageSingleModel()
   // triggerSync.CheckTriggerSyncMultiImageSingleModel()
