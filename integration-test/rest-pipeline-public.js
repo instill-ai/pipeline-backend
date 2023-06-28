@@ -11,46 +11,49 @@ export function CheckCreate() {
 
   group("Pipelines API: Create a pipeline", () => {
 
-    // Can not create pipeline with duplicated component id
+    // TODO: check when activate pipeline
+    // // Can not create pipeline with duplicated component id
+    // var reqBody = Object.assign(
+    //   {
+    //     id: randomString(63),
+    //     description: randomString(50),
+    //     mode: "MODE_SYNC",
+    //   },
+    //   {
+    //     recipe: {
+    //       version: "v1alpha",
+    //       components: [
+    //         {
+    //           "id": "id",
+    //           "resource_name": "connectors/source-http",
+    //           "dependencies": {},
+    //         },
+    //         // {
+    //         //   "id": "id",
+    //         //   "resource_name": `connectors/${constant.model_id}`,
+    //         // },
+    //         {
+    //           "id": "id",
+    //           "resource_name": "connectors/destination-http",
+    //           "dependencies": {},
+    //         },
+
+    //       ]
+    //     }
+    //   }
+    // )
+
+    // // Create a pipeline with duplicated component id
+    // var resOrigin = http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params)
+    // check(resOrigin, {
+    //   "POST /v1alpha/pipelines with duplicated components id response status is 400": (r) => r.status === 400,
+    // });
+
     var reqBody = Object.assign(
       {
         id: randomString(63),
         description: randomString(50),
-      },
-      {
-        recipe: {
-          version: "v1alpha",
-          components: [
-            {
-              "id": "id",
-              "resource_name": "connectors/source-http",
-              "dependencies": {},
-            },
-            // {
-            //   "id": "id",
-            //   "resource_name": `connectors/${constant.model_id}`,
-            // },
-            {
-              "id": "id",
-              "resource_name": "connectors/destination-http",
-              "dependencies": {},
-            },
-
-          ]
-        }
-      }
-    )
-
-    // Create a pipeline with duplicated component id
-    var resOrigin = http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params)
-    check(resOrigin, {
-      "POST /v1alpha/pipelines with duplicated components id response status is 400": (r) => r.status === 400,
-    });
-
-    var reqBody = Object.assign(
-      {
-        id: randomString(63),
-        description: randomString(50),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -65,11 +68,12 @@ export function CheckCreate() {
       "POST /v1alpha/pipelines response pipeline description": (r) => r.json().pipeline.description === reqBody.description,
       "POST /v1alpha/pipelines response pipeline recipe is valid": (r) => helper.validateRecipe(r.json().pipeline.recipe, false),
       "POST /v1alpha/pipelines response pipeline user is UUID": (r) => helper.isValidOwner(r.json().pipeline.user),
-      "POST /v1alpha/pipelines response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
       "POST /v1alpha/pipelines response pipeline mode": (r) => r.json().pipeline.mode === "MODE_SYNC",
       "POST /v1alpha/pipelines response pipeline create_time": (r) => new Date(r.json().pipeline.create_time).getTime() > new Date().setTime(0),
       "POST /v1alpha/pipelines response pipeline update_time": (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0)
     });
+
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/watch`, null, constant.params), {
       "GET /v1alpha/pipelines/watch sync pipeline response status is 200": (r) => r.status === 200,
@@ -145,6 +149,7 @@ export function CheckList() {
         {
           id: randomString(10),
           description: randomString(50),
+          mode: "MODE_SYNC",
         },
         constant.detSyncHTTPSingleModelRecipe
       )
@@ -155,6 +160,7 @@ export function CheckList() {
       check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
         [`POST /v1alpha/pipelines x${reqBodies.length} response status is 201`]: (r) => r.status === 201
       });
+      http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
     }
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines`, null, constant.params), {
@@ -245,6 +251,7 @@ export function CheckGet() {
       {
         id: randomString(10),
         description: randomString(50),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -289,6 +296,7 @@ export function CheckUpdate() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -314,7 +322,6 @@ export function CheckUpdate() {
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline name (OUTPUT_ONLY)`]: (r) => r.json().pipeline.name === `pipelines/${resOrigin.json().pipeline.id}`,
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline uid (OUTPUT_ONLY)`]: (r) => r.json().pipeline.uid === resOrigin.json().pipeline.uid,
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline id (IMMUTABLE)`]: (r) => r.json().pipeline.id === resOrigin.json().pipeline.id,
-      [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline mode (OUTPUT_ONLY)`]: (r) => r.json().pipeline.mode === resOrigin.json().pipeline.mode,
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline state (OUTPUT_ONLY)`]: (r) => r.json().pipeline.state === resOrigin.json().pipeline.state,
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline description (OPTIONAL)`]: (r) => r.json().pipeline.description === reqBodyUpdate.description,
       [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline recipe (IMMUTABLE)`]: (r) => helper.checkRecipeIsImmutable(r.json().pipeline.recipe, reqBody.recipe),
@@ -366,14 +373,16 @@ export function CheckUpdateState() {
     var reqBodySync = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBodySync), constant.params), {
       "POST /v1alpha/pipelines sync pipeline creation response status is 201": (r) => r.status === 201,
-      "POST /v1alpha/pipelines sync pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
+
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/activate`, {}, constant.params)
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/watch`, null, constant.params), {
       "GET /v1alpha/pipelines/watch sync pipeline response status is 201": (r) => r.status === 200,
@@ -391,14 +400,16 @@ export function CheckUpdateState() {
     var reqBodyAsync = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_ASYNC",
       },
       constant.detAsyncSingleModelRecipe
     )
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBodyAsync), constant.params), {
       "POST /v1alpha/pipelines async pipeline creation response status is 201": (r) => r.status === 201,
-      "POST /v1alpha/pipelines async pipeline creation response pipeline state ACTIVE": (r) => r.json().pipeline.state === "STATE_ACTIVE",
     });
+
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodyAsync.id}/activate`, {}, constant.params)
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodyAsync.id}/watch`, null, constant.params), {
       "GET /v1alpha/pipelines/watch sync pipeline response status is 201": (r) => r.status === 200,
@@ -440,6 +451,7 @@ export function CheckRename() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -476,6 +488,7 @@ export function CheckLookUp() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -508,6 +521,7 @@ export function CheckWatch() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -518,6 +532,8 @@ export function CheckWatch() {
     check(res, {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
+
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
 
     // Watch the pipeline
     // Note: controller update state every three seconds. We should check more than one times to ensure the state is correct.

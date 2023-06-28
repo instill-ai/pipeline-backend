@@ -40,18 +40,23 @@ export function CheckList() {
       reqBodies[i] = Object.assign({
         id: randomString(10),
         description: randomString(50),
+        mode: "MODE_SYNC",
       },
         constant.detSyncHTTPSingleModelRecipe
       )
     }
 
     // Create pipelines
-    for (const reqBody of reqBodies)
+    for (const reqBody of reqBodies){
       check(clientPublic.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
         pipeline: reqBody
       }), {
         [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline x${reqBodies.length} response StatusOK`]: (r) => r.status === grpc.StatusOK,
       });
+      clientPublic.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
+        name: `pipelines/${reqBody.id}`
+      })
+    }
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {}, {}), {
       [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response StatusOK`]: (r) => r.status === grpc.StatusOK,

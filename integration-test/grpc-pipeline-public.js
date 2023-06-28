@@ -23,47 +23,50 @@ export function CheckCreate() {
       plaintext: true
     });
 
-    // Can not create pipeline with duplicated component id
-    var reqBody = Object.assign(
-      {
-        id: randomString(63),
-        description: randomString(50),
-      },
-      {
-        recipe: {
-          version: "v1alpha",
-          components: [
-            {
-              "id": "id",
-              "resource_name": "connectors/source-grpc",
-              "dependencies": {},
-            },
-            // {
-            //   "id": "id",
-            //   "resource_name": `connectors/${constant.model_id}`,
-            // },
-            {
-              "id": "id",
-              "resource_name": "connectors/destination-grpc",
-              "dependencies": {},
-            },
+    // TODO move to activate pipeline
+    // // Can not create pipeline with duplicated component id
+    // var reqBody = Object.assign(
+    //   {
+    //     id: randomString(63),
+    //     description: randomString(50),
+    //     mode: "MODE_SYNC",
+    //   },
+    //   {
+    //     recipe: {
+    //       version: "v1alpha",
+    //       components: [
+    //         {
+    //           "id": "id",
+    //           "resource_name": "connectors/source-grpc",
+    //           "dependencies": {},
+    //         },
+    //         // {
+    //         //   "id": "id",
+    //         //   "resource_name": `connectors/${constant.model_id}`,
+    //         // },
+    //         {
+    //           "id": "id",
+    //           "resource_name": "connectors/destination-grpc",
+    //           "dependencies": {},
+    //         },
 
-          ]
-        }
-      }
-    )
+    //       ]
+    //     }
+    //   }
+    // )
 
-    // Create a pipeline with duplicated component id
-    var resOrigin = client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
-      pipeline: reqBody
-    })
-    check(resOrigin, {
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline with duplicated component id response StatusInvalidArgument": (r) => r.status === grpc.StatusInvalidArgument,
-    });
+    // // Create a pipeline with duplicated component id
+    // var resOrigin = client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
+    //   pipeline: reqBody
+    // })
+    // check(resOrigin, {
+    //   "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline with duplicated component id response StatusInvalidArgument": (r) => r.status === grpc.StatusInvalidArgument,
+    // });
 
     var reqBody = Object.assign({
       id: randomString(63),
       description: randomString(50),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -80,11 +83,14 @@ export function CheckCreate() {
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline description": (r) => r.message.pipeline.description === reqBody.description,
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline recipe is valid": (r) => helper.validateRecipeGRPC(r.message.pipeline.recipe, false),
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline owner is UUID": (r) => helper.isValidOwner(r.message.pipeline.user),
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline state ACTIVE": (r) => r.message.pipeline.state === "STATE_ACTIVE",
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline mode": (r) => r.message.pipeline.mode == "MODE_SYNC",
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline create_time": (r) => new Date(r.message.pipeline.createTime).getTime() > new Date().setTime(0),
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline update_time": (r) => new Date(r.message.pipeline.updateTime).getTime() > new Date().setTime(0)
     });
+
+    client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
+      name: `pipelines/${reqBody.id}`
+    })
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
       name: `pipelines/${reqBody.id}`
@@ -178,18 +184,23 @@ export function CheckList() {
       reqBodies[i] = Object.assign({
         id: randomString(10),
         description: randomString(50),
+        mode: "MODE_SYNC",
       },
         constant.detSyncHTTPSingleModelRecipe
       )
     }
 
     // Create pipelines
-    for (const reqBody of reqBodies)
+    for (const reqBody of reqBodies){
       check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
         pipeline: reqBody
       }), {
         [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline x${reqBodies.length} response StatusOK`]: (r) => r.status === grpc.StatusOK,
       });
+      client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
+        name: `pipelines/${reqBody.id}`
+      })
+    }
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {}, {}), {
       [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response StatusOK`]: (r) => r.status === grpc.StatusOK,
@@ -308,6 +319,7 @@ export function CheckGet() {
     var reqBody = Object.assign({
       id: randomString(10),
       description: randomString(50),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -366,6 +378,7 @@ export function CheckUpdate() {
 
     var reqBody = Object.assign({
       id: randomString(10),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -457,6 +470,7 @@ export function CheckUpdateState() {
 
     var reqBodySync = Object.assign({
       id: randomString(10),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -465,7 +479,10 @@ export function CheckUpdateState() {
       pipeline: reqBodySync
     }), {
       [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Sync response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Sync response pipeline state ACTIVE`]: (r) => r.message.pipeline.state === "STATE_ACTIVE",
+    })
+
+    client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
+      name: `pipelines/${reqBodySync.id}`
     })
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
@@ -489,6 +506,7 @@ export function CheckUpdateState() {
 
     var reqBodyAsync = Object.assign({
       id: randomString(10),
+      mode: "MODE_ASYNC",
     },
       constant.detAsyncSingleModelRecipe
     )
@@ -498,8 +516,11 @@ export function CheckUpdateState() {
       pipeline: reqBodyAsync
     }), {
       [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline async response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline async response pipeline state ACTIVE`]: (r) => r.message.pipeline.state === "STATE_ACTIVE",
     });
+
+    client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
+      name: `pipelines/${reqBodyAsync.id}`
+    })
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
       name: `pipelines/${reqBodyAsync.id}`
@@ -563,6 +584,7 @@ export function CheckRename() {
 
     var reqBody = Object.assign({
       id: randomString(10),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -610,6 +632,7 @@ export function CheckLookUp() {
 
     var reqBody = Object.assign({
       id: randomString(10),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -652,6 +675,7 @@ export function CheckWatch() {
 
     var reqBody = Object.assign({
       id: randomString(10),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -664,6 +688,10 @@ export function CheckWatch() {
     check(res, {
       [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
     });
+
+    client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
+      name: `pipelines/${reqBody.id}`
+    })
 
     // Watch the pipeline
     // Note: controller update state every three seconds. We should check more than one times to ensure the state is correct.

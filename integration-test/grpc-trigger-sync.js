@@ -25,6 +25,7 @@ export function CheckTriggerSyncSingleImageSingleModel() {
     var reqGRPC = Object.assign({
       id: randomString(10),
       description: randomString(50),
+      mode: "MODE_SYNC",
     },
       constant.detSyncGRPCSingleModelRecipe
     );
@@ -92,6 +93,7 @@ export function CheckTriggerSyncSingleImageSingleModel() {
     var reqHTTP = Object.assign({
       id: randomString(10),
       description: randomString(50),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     );
@@ -131,6 +133,7 @@ export function CheckTriggerSyncMultiImageSingleModel() {
     var reqGRPC = Object.assign({
       id: randomString(10),
       description: randomString(50),
+      mode: "MODE_SYNC",
     },
       constant.detSyncGRPCSingleModelRecipe
     );
@@ -232,6 +235,7 @@ export function CheckTriggerSyncMultiImageMultiModel() {
     var reqGRPC = Object.assign({
       id: randomString(10),
       description: randomString(50),
+      mode: "MODE_SYNC",
     },
       constant.detSynGRPCMultiModelRecipe
     );

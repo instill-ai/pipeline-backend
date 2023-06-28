@@ -24,6 +24,7 @@ export function CheckList() {
         {
           id: randomString(10),
           description: randomString(50),
+          mode: "MODE_SYNC"
         },
         constant.detSyncHTTPSingleModelRecipe
       )
@@ -34,6 +35,7 @@ export function CheckList() {
       check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
         [`POST /v1alpha/pipelines x${reqBodies.length} response status is 201`]: (r) => r.status === 201
       });
+      http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
     }
 
     check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines`, null, constant.params), {
@@ -123,6 +125,7 @@ export function CheckLookUp() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
+        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )

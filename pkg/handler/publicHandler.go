@@ -327,6 +327,9 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 	}
 
 	pbPipelineToUpdate := getResp.GetPipeline()
+	if pbPipelineToUpdate.State == pipelinePB.Pipeline_STATE_ACTIVE {
+		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.InvalidArgument, "can not update a active pipeline")
+	}
 
 	// Return error if IMMUTABLE fields are intentionally changed
 	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReq, pbPipelineToUpdate, immutableFields); err != nil {

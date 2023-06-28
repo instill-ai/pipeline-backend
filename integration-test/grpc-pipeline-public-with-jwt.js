@@ -23,6 +23,7 @@ export function CheckCreate() {
     var reqBody = Object.assign({
       id: randomString(63),
       description: randomString(50),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -66,6 +67,7 @@ export function CheckGet() {
     var reqBody = Object.assign({
       id: randomString(10),
       description: randomString(50),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -104,6 +106,7 @@ export function CheckUpdate() {
 
     var reqBody = Object.assign({
       id: randomString(10),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -154,6 +157,7 @@ export function CheckUpdateState() {
 
     var reqBodySync = Object.assign({
       id: randomString(10),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -162,7 +166,10 @@ export function CheckUpdateState() {
       pipeline: reqBodySync
     }), {
       [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Sync response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Sync response pipeline state ACTIVE`]: (r) => r.message.pipeline.state === "STATE_ACTIVE",
+    })
+
+    client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {
+      name: `pipelines/${reqBodySync.id}`
     })
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline', {
@@ -207,6 +214,7 @@ export function CheckRename() {
 
     var reqBody = Object.assign({
       id: randomString(10),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -253,6 +261,7 @@ export function CheckLookUp() {
 
     var reqBody = Object.assign({
       id: randomString(10),
+      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
