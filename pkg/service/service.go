@@ -46,7 +46,7 @@ type Service interface {
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
 	TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
-	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
+	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
@@ -460,7 +460,7 @@ func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest
 	}, nil
 }
 
-func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, piprlineRunID string, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
 	inputs := req.Inputs
 	err := preTriggerPipeline(dbPipeline, inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
@@ -474,7 +474,7 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 	}
 
 	workflowOptions := client.StartWorkflowOptions{
-		ID:                       piprlineRunID,
+		ID:                       pipelineTriggerID,
 		TaskQueue:                worker.TaskQueue,
 		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -489,7 +489,7 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		return nil, err
 	}
 
-	inputBlobRedisKey := fmt.Sprintf("async_pipeline_blob:%s", id.String())
+	inputBlobRedisKey := fmt.Sprintf("async_pipeline_blob:%s", pipelineTriggerID)
 	s.redisClient.Set(
 		context.Background(),
 		inputBlobRedisKey,
@@ -519,7 +519,7 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 
 	return &pipelinePB.TriggerAsyncPipelineResponse{
 		Operation: &longrunningpb.Operation{
-			Name: fmt.Sprintf("operations/%s", piprlineRunID),
+			Name: fmt.Sprintf("operations/%s", pipelineTriggerID),
 			Done: false,
 		},
 		DataMappingIndices: dataMappingIndices,

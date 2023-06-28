@@ -31,7 +31,6 @@ import (
 
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
-	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	healthcheckPB "github.com/instill-ai/protogen-go/common/healthcheck/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"

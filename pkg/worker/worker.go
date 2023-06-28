@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"go.temporal.io/sdk/workflow"
 
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 )
 

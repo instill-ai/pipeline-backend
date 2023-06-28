@@ -6,16 +6,15 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/go-redis/redis/v9"
+	"github.com/gofrs/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/workflow"
-	"github.com/go-redis/redis/v9"
-	"github.com/gofrs/uuid"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -23,7 +22,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -102,9 +100,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	logger.Info("TriggerAsyncPipelineWorkflow started")
 
 	dataPoint := utils.NewDataPoint(
-		strings.Split(param.DbPipeline.Owner, "/")[1],
+		strings.Split(param.Pipeline.Owner, "/")[1],
 		workflow.GetInfo(ctx).WorkflowExecution.ID,
-		param.DbPipeline,
+		param.Pipeline,
 		startTime,
 	)
 
