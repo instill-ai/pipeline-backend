@@ -113,6 +113,8 @@ export function setup() {
       "POST /v1alpha/connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
     })
 
+    http.request("POST", `${connectorPublicHost}/v1alpha/connectors/${constant.dstCSVConnID1}/connect`, {}, constant.params)
+
   });
 
   group("Connector Backend API: Create a CSV destination connector 2", function () {
@@ -129,6 +131,8 @@ export function setup() {
     check(res, {
       "POST /v1alpha/connectors response status for creating CSV destination connector 201": (r) => r.status === 201,
     })
+
+    http.request("POST", `${connectorPublicHost}/v1alpha/connectors/${constant.dstCSVConnID2}/connect`, {}, constant.params)
 
   });
 

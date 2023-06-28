@@ -116,6 +116,9 @@ export function setup() {
     }, constant.paramsGrpc), {
       "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
     });
+    client.invoke('vdp.connector.v1alpha.ConnectorPublicService/ConnectConnector', {
+      name: `connectors/${constant.dstCSVConnID1}`,
+    })
 
   });
   group("Connector Backend API: Create a CSV destination connector 2", function () {
@@ -131,6 +134,9 @@ export function setup() {
     }, constant.paramsGrpc), {
       "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector CSV response StatusOK": (r) => r.status === grpc.StatusOK,
     });
+    client.invoke('vdp.connector.v1alpha.ConnectorPublicService/ConnectConnector', {
+      name: `connectors/${constant.dstCSVConnID2}`,
+    })
 
   });
 
