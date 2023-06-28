@@ -23,15 +23,17 @@ export function CheckCreate() {
           components: [
             {
               "id": "id",
-              "resource_name": "source-connectors/source-http",
+              "resource_name": "connectors/source-http",
+              "dependencies": {},
             },
+            // {
+            //   "id": "id",
+            //   "resource_name": `connectors/${constant.model_id}`,
+            // },
             {
               "id": "id",
-              "resource_name": `models/${constant.model_id}`,
-            },
-            {
-              "id": "id",
-              "resource_name": "destination-connectors/destination-http",
+              "resource_name": "connectors/destination-http",
+              "dependencies": {},
             },
 
           ]
@@ -204,24 +206,24 @@ export function CheckList() {
     });
 
     // Get UUID for foreign resources
-    var srcConnUid = http.get(`${connectorPublicHost}/v1alpha/source-connectors/source-http`, {}, constant.params).json().source_connector.uid
-    var srcConnPermalink = `source-connectors/${srcConnUid}`
+    var srcConnUid = http.get(`${connectorPublicHost}/v1alpha/connectors/source-http`, {}, constant.params).json().connector.uid
+    var srcConnPermalink = `connectors/${srcConnUid}`
 
-    var dstConnUid = http.get(`${connectorPublicHost}/v1alpha/destination-connectors/destination-http`, {}, constant.params).json().destination_connector.uid
-    var dstConnPermalink = `destination-connectors/${dstConnUid}`
+    var dstConnUid = http.get(`${connectorPublicHost}/v1alpha/connectors/destination-http`, {}, constant.params).json().connector.uid
+    var dstConnPermalink = `connectors/${dstConnUid}`
 
-    var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
-    var modelPermalink = `models/${modelUid}`
+    // var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
+    // var modelPermalink = `models/${modelUid}`
 
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22`, null, constant.params), {
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
       [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22`, null, constant.params), {
-      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
-    });
+    // check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22`, null, constant.params), {
+    //   [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response 200`]: (r) => r.status == 200,
+    //   [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    // });
 
     // Delete the pipelines
     for (const reqBody of reqBodies) {

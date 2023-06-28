@@ -95,27 +95,19 @@ func main() {
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
-	modelPublicServiceClient, modelPublicServiceClientConn := external.InitModelPublicServiceClient(ctx)
-	if modelPublicServiceClientConn != nil {
-		defer modelPublicServiceClientConn.Close()
-	}
-
 	connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient(ctx)
 	if connectorPublicServiceClientConn != nil {
 		defer connectorPublicServiceClientConn.Close()
 	}
 
-	cw := pipelineWorker.NewWorker(modelPublicServiceClient, connectorPublicServiceClient, redisClient)
+	cw := pipelineWorker.NewWorker(connectorPublicServiceClient, redisClient)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
 		MaxConcurrentActivityExecutionSize: 2,
 	})
 
 	w.RegisterWorkflow(cw.TriggerAsyncPipelineWorkflow)
-	w.RegisterWorkflow(cw.TriggerAsyncPipelineByFileUploadWorkflow)
-	w.RegisterActivity(cw.TriggerActivity)
-	w.RegisterActivity(cw.TriggerByFileUploadActivity)
-	w.RegisterActivity(cw.DestinationActivity)
+	w.RegisterActivity(cw.ConnectorActivity)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())

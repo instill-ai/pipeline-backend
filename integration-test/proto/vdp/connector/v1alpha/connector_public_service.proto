@@ -6,7 +6,6 @@ package vdp.connector.v1alpha;
 import "google/api/annotations.proto";
 import "google/api/client.proto";
 
-import "../../../vdp/connector/v1alpha/healthcheck.proto";
 import "../../../vdp/connector/v1alpha/connector_definition.proto";
 import "../../../vdp/connector/v1alpha/connector.proto";
 
@@ -37,46 +36,23 @@ service ConnectorPublicService {
     };
   }
 
-  // ListSourceConnectorDefinitions method receives a
-  // ListSourceConnectorDefinitionsRequest message and returns a
-  // ListSourceConnectorDefinitionsResponse message.
-  rpc ListSourceConnectorDefinitions(ListSourceConnectorDefinitionsRequest)
-      returns (ListSourceConnectorDefinitionsResponse) {
+  // ListConnectorDefinitions method receives a
+  // ListConnectorDefinitionsRequest message and returns a
+  // ListConnectorDefinitionsResponse message.
+  rpc ListConnectorDefinitions(ListConnectorDefinitionsRequest)
+      returns (ListConnectorDefinitionsResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/source-connector-definitions"
+      get : "/v1alpha/connector-definitions"
     };
   }
 
-  // GetSourceConnectorDefinition method receives a
-  // GetSourceConnectorDefinitionRequest message and returns a
-  // GetGetSourceConnectorDefinitionResponse message.
-  rpc GetSourceConnectorDefinition(GetSourceConnectorDefinitionRequest)
-      returns (GetSourceConnectorDefinitionResponse) {
+  // GetConnectorDefinition method receives a
+  // GetConnectorDefinitionRequest message and returns a
+  // GetGetConnectorDefinitionResponse message.
+  rpc GetConnectorDefinition(GetConnectorDefinitionRequest)
+      returns (GetConnectorDefinitionResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/{name=source-connector-definitions/*}"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // ListDestinationConnectorDefinitions method receives a
-  // ListDestinationConnectorDefinitionsRequest message and returns a
-  // ListDestinationConnectorDefinitionsResponse message.
-  rpc ListDestinationConnectorDefinitions(
-      ListDestinationConnectorDefinitionsRequest)
-      returns (ListDestinationConnectorDefinitionsResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/destination-connector-definitions"
-    };
-  }
-
-  // GetDestinationConnectorDefinition method receives a
-  // GetDestinationConnectorDefinitionRequest message and returns a
-  // GetGetDestinationConnectorDefinitionResponse message.
-  rpc GetDestinationConnectorDefinition(
-      GetDestinationConnectorDefinitionRequest)
-      returns (GetDestinationConnectorDefinitionResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=destination-connector-definitions/*}"
+      get : "/v1alpha/{name=connector-definitions/*}"
     };
     option (google.api.method_signature) = "name";
   }
@@ -85,267 +61,141 @@ service ConnectorPublicService {
   // Connector methods
   /////////////////////////////////
 
-  // *SourceConnector methods
-
-  // CreateSourceConnector method receives a CreateSourceConnectorRequest
-  // message and returns a CreateSourceConnectorResponse message.
-  rpc CreateSourceConnector(CreateSourceConnectorRequest)
-      returns (CreateSourceConnectorResponse) {
+  // CreateConnector method receives a
+  // CreateConnectorRequest message and returns a
+  // CreateConnectorResponse message.
+  rpc CreateConnector(CreateConnectorRequest)
+      returns (CreateConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/source-connectors"
-      body : "source_connector"
+      post : "/v1alpha/connectors"
+      body : "connector"
     };
-    option (google.api.method_signature) = "source_connector";
+    option (google.api.method_signature) = "connector";
   }
 
-  // ListSourceConnectors method receives a ListSourceConnectorsRequest message
-  // and returns a ListSourceConnectorsResponse message.
-  rpc ListSourceConnectors(ListSourceConnectorsRequest)
-      returns (ListSourceConnectorsResponse) {
+  // ListConnectors method receives a
+  // ListConnectorsRequest message and returns a
+  // ListConnectorsResponse message.
+  rpc ListConnectors(ListConnectorsRequest)
+      returns (ListConnectorsResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/source-connectors"
+      get : "/v1alpha/connectors"
     };
   }
 
-  // GetSourceConnector method receives a GetSourceConnectorRequest message and
-  // returns a GetSourceConnectorResponse message.
-  rpc GetSourceConnector(GetSourceConnectorRequest)
-      returns (GetSourceConnectorResponse) {
+  // GetConnector method receives a GetConnectorRequest
+  // message and returns a GetConnectorResponse message.
+  rpc GetConnector(GetConnectorRequest)
+      returns (GetConnectorResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/{name=source-connectors/*}"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // UpdateSourceConnector method receives a UpdateSourceConnectorRequest
-  // message and returns a UpdateSourceConnectorResponse message.
-  rpc UpdateSourceConnector(UpdateSourceConnectorRequest)
-      returns (UpdateSourceConnectorResponse) {
-    option (google.api.http) = {
-      patch : "/v1alpha/{source_connector.name=source-connectors/*}"
-      body : "source_connector"
-    };
-    option (google.api.method_signature) = "source_connector,update_mask";
-  }
-
-  // DeleteSourceConnector method receives a DeleteSourceConnectorRequest
-  // message and returns a DeleteSourceConnectorResponse message.
-  rpc DeleteSourceConnector(DeleteSourceConnectorRequest)
-      returns (DeleteSourceConnectorResponse) {
-    option (google.api.http) = {
-      delete : "/v1alpha/{name=source-connectors/*}"
+      get : "/v1alpha/{name=connectors/*}"
     };
     option (google.api.method_signature) = "name";
   }
 
-  // LookUpSourceConnector method receives a LookUpSourceConnectorRequest
-  // message and returns a LookUpSourceConnectorResponse
-  rpc LookUpSourceConnector(LookUpSourceConnectorRequest)
-      returns (LookUpSourceConnectorResponse) {
+  // UpdateConnector method receives a
+  // UpdateConnectorRequest message and returns a
+  // UpdateConnectorResponse message.
+  rpc UpdateConnector(UpdateConnectorRequest)
+      returns (UpdateConnectorResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/{permalink=source-connectors/*}/lookUp"
+      patch : "/v1alpha/{connector.name=connectors/*}"
+      body : "connector"
+    };
+    option (google.api.method_signature) = "connector,update_mask";
+  }
+
+  // DeleteConnector method receives a
+  // DeleteConnectorRequest message and returns a
+  // DeleteConnectorResponse message.
+  rpc DeleteConnector(DeleteConnectorRequest)
+      returns (DeleteConnectorResponse) {
+    option (google.api.http) = {
+      delete : "/v1alpha/{name=connectors/*}"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // LookUpConnector method receives a
+  // LookUpConnectorRequest message and returns a
+  // LookUpConnectorResponse
+  rpc LookUpConnector(LookUpConnectorRequest)
+      returns (LookUpConnectorResponse) {
+    option (google.api.http) = {
+      get : "/v1alpha/{permalink=connectors/*}/lookUp"
     };
     option (google.api.method_signature) = "permalink";
   }
 
-  // Connect a source connector.
+  // Connect a connector.
   // The "state" of the connector after connecting is "CONNECTED".
-  // ConnectSourceConnector can be called on SourceConnector in the state
-  // `DISCONNECTED`; SourceConnector in a different state (including
+  // ConnectConnector can be called on Connector in the
+  // state `DISCONNECTED`; Connector in a different state (including
   // `CONNECTED`) returns an error.
-  rpc ConnectSourceConnector(ConnectSourceConnectorRequest)
-      returns (ConnectSourceConnectorResponse) {
+  rpc ConnectConnector(ConnectConnectorRequest)
+      returns (ConnectConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=source-connectors/*}/connect"
+      post : "/v1alpha/{name=connectors/*}/connect"
       body : "*"
     };
     option (google.api.method_signature) = "name";
   }
 
-  // Disconnect a source connector.
+  // Disconnect a connector.
   // The "state" of the connector after disconnecting is "DISCONNECTED".
-  // DisconnectSourceConnector can be called on SourceConnector in the state
-  // `CONNECTED`; SourceConnector in a different state (including
+  // DisconnectConnector can be called on Connector in the
+  // state `CONNECTED`; Connector in a different state (including
   // `DISCONNECTED`) returns an error.
-  rpc DisconnectSourceConnector(DisconnectSourceConnectorRequest)
-      returns (DisconnectSourceConnectorResponse) {
+  rpc DisconnectConnector(DisconnectConnectorRequest)
+      returns (DisconnectConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=source-connectors/*}/disconnect"
+      post : "/v1alpha/{name=connectors/*}/disconnect"
       body : "*"
     };
     option (google.api.method_signature) = "name";
   }
 
-  // RenameSourceConnector method receives a RenameSourceConnectorRequest
-  // message and returns a RenameSourceConnectorResponse message.
-  rpc RenameSourceConnector(RenameSourceConnectorRequest)
-      returns (RenameSourceConnectorResponse) {
+  // RenameConnector method receives a
+  // RenameConnectorRequest message and returns a
+  // RenameConnectorResponse message.
+  rpc RenameConnector(RenameConnectorRequest)
+      returns (RenameConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=source-connectors/*}/rename"
+      post : "/v1alpha/{name=connectors/*}/rename"
       body : "*"
     };
-    option (google.api.method_signature) = "name,new_source_connector_id";
+    option (google.api.method_signature) = "name,new_connector_id";
   }
 
-  // ReadSourceConnector method receives a ReadSourceConnectorRequest
-  // message and returns a ReadSourceConnectorResponse message.
-  rpc ReadSourceConnector(ReadSourceConnectorRequest)
-      returns (ReadSourceConnectorResponse) {
+  // ExecuteConnector method receives a
+  // ExecuteConnectorRequest message and returns a
+  // ExecuteConnectorResponse message.
+  rpc ExecuteConnector(ExecuteConnectorRequest)
+      returns (ExecuteConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=source-connectors/*}/read"
+      post : "/v1alpha/{name=connectors/*}/execute"
       body : "*"
     };
-    option (google.api.method_signature) = "name,new_source_connector_id";
-  }
+    option (google.api.method_signature) = "name";
+  };
 
-  // WatchSourceConnector method receives a WatchSourceConnectorRequest message
-  // and returns a WatchSourceConnectorResponse
-  rpc WatchSourceConnector(WatchSourceConnectorRequest)
-      returns (WatchSourceConnectorResponse) {
+  // WatchConnector method receives a
+  // WatchConnectorRequest message and returns a
+  // WatchConnectorResponse
+  rpc WatchConnector(WatchConnectorRequest)
+      returns (WatchConnectorResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/{name=source-connectors/*}/watch"
+      get : "/v1alpha/{name=connectors/*}/watch"
     };
     option (google.api.method_signature) = "name";
   }
 
-  // *DestinationConnector methods
-
-  // CreateDestinationConnector method receives a
-  // CreateDestinationConnectorRequest message and returns a
-  // CreateDestinationConnectorResponse message.
-  rpc CreateDestinationConnector(CreateDestinationConnectorRequest)
-      returns (CreateDestinationConnectorResponse) {
+  // TestConnector method receives a TestConnectorRequest
+  // message and returns a TestConnectorResponse
+  rpc TestConnector(TestConnectorRequest)
+      returns (TestConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/destination-connectors"
-      body : "destination_connector"
-    };
-    option (google.api.method_signature) = "destination_connector";
-  }
-
-  // ListDestinationConnectors method receives a ListDestinationConnectorsRequest
-  // message and returns a ListDestinationConnectorsResponse message.
-  rpc ListDestinationConnectors(ListDestinationConnectorsRequest)
-      returns (ListDestinationConnectorsResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/destination-connectors"
-    };
-  }
-
-  // GetDestinationConnector method receives a GetDestinationConnectorRequest
-  // message and returns a GetDestinationConnectorResponse message.
-  rpc GetDestinationConnector(GetDestinationConnectorRequest)
-      returns (GetDestinationConnectorResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=destination-connectors/*}"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // UpdateDestinationConnector method receives a
-  // UpdateDestinationConnectorRequest message and returns a
-  // UpdateDestinationConnectorResponse message.
-  rpc UpdateDestinationConnector(UpdateDestinationConnectorRequest)
-      returns (UpdateDestinationConnectorResponse) {
-    option (google.api.http) = {
-      patch : "/v1alpha/{destination_connector.name=destination-connectors/*}"
-      body : "destination_connector"
-    };
-    option (google.api.method_signature) = "destination_connector,update_mask";
-  }
-
-  // DeleteDestinationConnector method receives a
-  // DeleteDestinationConnectorRequest message and returns a
-  // DeleteDestinationConnectorResponse message.
-  rpc DeleteDestinationConnector(DeleteDestinationConnectorRequest)
-      returns (DeleteDestinationConnectorResponse) {
-    option (google.api.http) = {
-      delete : "/v1alpha/{name=destination-connectors/*}"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // LookUpDestinationConnector method receives a
-  // LookUpDestinationConnectorRequest message and returns a
-  // LookUpDestinationConnectorResponse
-  rpc LookUpDestinationConnector(LookUpDestinationConnectorRequest)
-      returns (LookUpDestinationConnectorResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{permalink=destination-connectors/*}/lookUp"
-    };
-    option (google.api.method_signature) = "permalink";
-  }
-
-  // Connect a destination connector.
-  // The "state" of the connector after connecting is "CONNECTED".
-  // ConnectDestinationConnector can be called on DestinationConnector in the
-  // state `DISCONNECTED`; DestinationConnector in a different state (including
-  // `CONNECTED`) returns an error.
-  rpc ConnectDestinationConnector(ConnectDestinationConnectorRequest)
-      returns (ConnectDestinationConnectorResponse) {
-    option (google.api.http) = {
-      post : "/v1alpha/{name=destination-connectors/*}/connect"
-      body : "*"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // Disconnect a destination connector.
-  // The "state" of the connector after disconnecting is "DISCONNECTED".
-  // DisconnectDestinationConnector can be called on DestinationConnector in the
-  // state `CONNECTED`; DestinationConnector in a different state (including
-  // `DISCONNECTED`) returns an error.
-  rpc DisconnectDestinationConnector(DisconnectDestinationConnectorRequest)
-      returns (DisconnectDestinationConnectorResponse) {
-    option (google.api.http) = {
-      post : "/v1alpha/{name=destination-connectors/*}/disconnect"
-      body : "*"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // RenameDestinationConnector method receives a
-  // RenameDestinationConnectorRequest message and returns a
-  // RenameDestinationConnectorResponse message.
-  rpc RenameDestinationConnector(RenameDestinationConnectorRequest)
-      returns (RenameDestinationConnectorResponse) {
-    option (google.api.http) = {
-      post : "/v1alpha/{name=destination-connectors/*}/rename"
-      body : "*"
-    };
-    option (google.api.method_signature) = "name,new_destination_connector_id";
-  }
-
-  // WriteDestinationConnector method receives a
-  // WriteDestinationConnectorRequest message and returns a
-  // WriteDestinationConnectorResponse message.
-  rpc WriteDestinationConnector(WriteDestinationConnectorRequest)
-      returns (WriteDestinationConnectorResponse) {
-    option (google.api.http) = {
-      post : "/v1alpha/{name=destination-connectors/*}/write"
-      body : "*"
-    };
-    option (google.api.method_signature) = "name,new_destination_connector_id";
-  }
-
-  // WatchDestinationConnector method receives a WatchDestinationConnectorRequest message
-  // and returns a WatchDestinationConnectorResponse
-  rpc WatchDestinationConnector(WatchDestinationConnectorRequest)
-      returns (WatchDestinationConnectorResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=destination-connectors/*}/watch"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // *Longrunning operation methods
-
-  // GetConnectorOperation method receives a
-  // GetConnectorOperationRequest message and returns a
-  // GetConnectorOperationResponse message.
-  rpc GetConnectorOperation(GetConnectorOperationRequest)
-      returns (GetConnectorOperationResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=operations/*}"
+      post : "/v1alpha/{name=connectors/*}/testConnection"
     };
     option (google.api.method_signature) = "name";
   }

@@ -53,10 +53,6 @@ export const catImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/
 export const bearImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/bear.jpg`, "b");
 export const dogRGBAImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog-rgba.png`, "b");
 
-export const det_model = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dummy-det-model.zip`, "b");
-export const model_def_name = "model-definitions/local"
-export const model_id = "dummy-det"
-export const model_name = `models/${model_id}`
 
 export const params = {
   headers: {
@@ -93,15 +89,19 @@ export const detSyncHTTPSingleModelRecipe = {
     components: [
       {
         "id": "s01",
-        "resource_name": "source-connectors/source-http",
+        "resource_name": "connectors/source-http",
+        "dependencies": {},
       },
-      {
-        "id": "m01",
-        "resource_name": `models/${model_id}`,
-      },
+      // {
+      //   "id": "m01",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
       {
         "id": "d01",
-        "resource_name": "destination-connectors/destination-http",
+        "resource_name": "connectors/destination-http",
+        "dependencies": {
+          "json": "{**s01.json}"
+        }
       },
 
     ]
@@ -114,15 +114,17 @@ export const detSyncGRPCSingleModelRecipe = {
     components: [
       {
         "id": "s01",
-        "resource_name": "source-connectors/source-grpc",
+        "resource_name": "connectors/source-grpc",
+        "dependencies": {},
       },
-      {
-        "id": "m01",
-        "resource_name": `models/${model_id}`,
-      },
+      // {
+      //   "id": "m01",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
       {
         "id": "d01",
-        "resource_name": "destination-connectors/destination-grpc",
+        "resource_name": "connectors/destination-grpc",
+        "dependencies": {},
       },
 
     ]
@@ -135,19 +137,21 @@ export const detSyncHTTPMultiModelRecipe = {
     components: [
       {
         "id": "s01",
-        "resource_name": "source-connectors/source-http",
+        "resource_name": "connectors/source-http",
+        "dependencies": {},
       },
-      {
-        "id": "m01",
-        "resource_name": `models/${model_id}`,
-      },
-      {
-        "id": "m02",
-        "resource_name": `models/${model_id}`,
-      },
+      // {
+      //   "id": "m01",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
+      // {
+      //   "id": "m02",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
       {
         "id": "d01",
-        "resource_name": "destination-connectors/destination-http",
+        "resource_name": "connectors/destination-http",
+        "dependencies": {},
       },
 
     ]
@@ -160,19 +164,21 @@ export const detSynGRPCMultiModelRecipe = {
     components: [
       {
         "id": "s01",
-        "resource_name": "source-connectors/source-grpc",
+        "resource_name": "connectors/source-grpc",
+        "dependencies": {},
       },
-      {
-        "id": "m01",
-        "resource_name": `models/${model_id}`,
-      },
-      {
-        "id": "m02",
-        "resource_name": `models/${model_id}`,
-      },
+      // {
+      //   "id": "m01",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
+      // {
+      //   "id": "m02",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
       {
         "id": "d01",
-        "resource_name": "destination-connectors/destination-grpc",
+        "resource_name": "connectors/destination-grpc",
+        "dependencies": {},
       },
 
     ]
@@ -188,15 +194,17 @@ export const detAsyncSingleModelRecipe = {
     components: [
       {
         "id": "s01",
-        "resource_name": "source-connectors/source-http",
+        "resource_name": "connectors/source-http",
+        "dependencies": {},
       },
-      {
-        "id": "m01",
-        "resource_name": `models/${model_id}`,
-      },
+      // {
+      //   "id": "m01",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
       {
         "id": "d01",
-        "resource_name": `destination-connectors/${dstCSVConnID1}`,
+        "resource_name": `connectors/${dstCSVConnID1}`,
+        "dependencies": {},
       },
     ]
   },
@@ -208,19 +216,21 @@ export const detAsyncMultiModelRecipe = {
     components: [
       {
         "id": "s01",
-        "resource_name": "source-connectors/source-http",
+        "resource_name": "connectors/source-http",
+        "dependencies": {},
       },
-      {
-        "id": "m01",
-        "resource_name": `models/${model_id}`,
-      },
-      {
-        "id": "m02",
-        "resource_name": `models/${model_id}`,
-      },
+      // {
+      //   "id": "m01",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
+      // {
+      //   "id": "m02",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
       {
         "id": "d01",
-        "resource_name": `destination-connectors/${dstCSVConnID1}`,
+        "resource_name": `connectors/${dstCSVConnID1}`,
+        "dependencies": {},
       },
     ]
   },
@@ -232,23 +242,26 @@ export const detAsyncMultiModelMultipleDestinationRecipe = {
     components: [
       {
         "id": "s01",
-        "resource_name": "source-connectors/source-http",
+        "resource_name": "connectors/source-http",
+        "dependencies": {},
       },
-      {
-        "id": "m01",
-        "resource_name": `models/${model_id}`,
-      },
-      {
-        "id": "m02",
-        "resource_name": `models/${model_id}`,
-      },
+      // {
+      //   "id": "m01",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
+      // {
+      //   "id": "m02",
+      //   "resource_name": `connectors/${model_id}`,
+      // },
       {
         "id": "d01",
-        "resource_name": `destination-connectors/${dstCSVConnID1}`,
+        "resource_name": `connectors/${dstCSVConnID1}`,
+        "dependencies": {},
       },
       {
         "id": "d02",
-        "resource_name": `destination-connectors/${dstCSVConnID2}`,
+        "resource_name": `connectors/${dstCSVConnID2}`,
+        "dependencies": {},
       },
     ]
   },

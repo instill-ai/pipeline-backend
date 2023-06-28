@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Google api
 import "google/api/field_behavior.proto";
@@ -16,7 +16,7 @@ message TextToImageInput {
   // The seed, default is 0
   optional int64 seed = 4 [ (google.api.field_behavior) = OPTIONAL ];
   // The number of generated samples, default is 1
-  optional int64 samples = 5 [(google.api.field_behavior) = OPTIONAL ];
+  optional int64 samples = 5 [ (google.api.field_behavior) = OPTIONAL ];
 }
 
 // TextToImageOutput represents the output of text to image task

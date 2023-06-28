@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Google api
 import "google/api/field_behavior.proto";
 
-import "../../../vdp/model/v1alpha/common.proto";
+import "../../../model/model/v1alpha/common.proto";
 
 // DetectionObject represents a predicted object
 message DetectionObject {
@@ -28,7 +28,8 @@ message DetectionInput {
   }
 }
 
-// DetectionInputStream represents the input of detection task when using stream method
+// DetectionInputStream represents the input of detection task when using stream
+// method
 message DetectionInputStream {
   // The list of file length for each uploaded binary file
   repeated uint64 file_lengths = 1 [ (google.api.field_behavior) = REQUIRED ];

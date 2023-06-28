@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Protobuf standard
 import "google/protobuf/struct.proto";
@@ -13,16 +13,43 @@ import "google/api/resource.proto";
 import "google/api/field_behavior.proto";
 import "google/longrunning/operations.proto";
 
-import "../../../vdp/model/v1alpha/model_definition.proto";
-import "../../../vdp/model/v1alpha/task_classification.proto";
-import "../../../vdp/model/v1alpha/task_detection.proto";
-import "../../../vdp/model/v1alpha/task_keypoint.proto";
-import "../../../vdp/model/v1alpha/task_ocr.proto";
-import "../../../vdp/model/v1alpha/task_instance_segmentation.proto";
-import "../../../vdp/model/v1alpha/task_semantic_segmentation.proto";
-import "../../../vdp/model/v1alpha/task_text_to_image.proto";
-import "../../../vdp/model/v1alpha/task_text_generation.proto";
-import "../../../vdp/model/v1alpha/task_unspecified.proto";
+import "../../../common/healthcheck/v1alpha/healthcheck.proto";
+import "../../../model/model/v1alpha/model_definition.proto";
+import "../../../model/model/v1alpha/task_classification.proto";
+import "../../../model/model/v1alpha/task_detection.proto";
+import "../../../model/model/v1alpha/task_keypoint.proto";
+import "../../../model/model/v1alpha/task_ocr.proto";
+import "../../../model/model/v1alpha/task_instance_segmentation.proto";
+import "../../../model/model/v1alpha/task_semantic_segmentation.proto";
+import "../../../model/model/v1alpha/task_text_to_image.proto";
+import "../../../model/model/v1alpha/task_text_generation.proto";
+import "../../../model/model/v1alpha/task_unspecified.proto";
+
+// LivenessRequest represents a request to check a service liveness status
+message LivenessRequest {
+  // HealthCheckRequest message
+  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request =
+      1 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// LivenessResponse represents a response for a service liveness status
+message LivenessResponse {
+  // HealthCheckResponse message
+  common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
+}
+
+// ReadinessRequest represents a request to check a service readiness status
+message ReadinessRequest {
+  // HealthCheckRequest message
+  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request =
+      1 [ (google.api.field_behavior) = OPTIONAL ];
+}
+
+// ReadinessResponse represents a response for a service readiness status
+message ReadinessResponse {
+  // HealthCheckResponse message
+  common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
+}
 
 // Model represents a model
 message Model {
@@ -104,12 +131,13 @@ message Model {
   Visibility visibility = 9 [ (google.api.field_behavior) = OUTPUT_ONLY ];
   // Model owner
   oneof owner {
-    // The resource name of a user, e.g., "users/local-user".
+    // The resource name with UUID of a user, e.g.,
+    // "users/bfb978f8-78d3-4338-aa2b-a6c699cb07c5".
     string user = 10 [
       (google.api.resource_reference).type = "api.instill.tech/User",
       (google.api.field_behavior) = OUTPUT_ONLY
     ];
-    // The resource name of an organization
+    // The resource name with UUID of an organization
     string org = 11 [
       (google.api.resource_reference).type = "api.instill.tech/Organization",
       (google.api.field_behavior) = OUTPUT_ONLY
@@ -343,7 +371,8 @@ message DeployModelResponse {
   google.longrunning.Operation operation = 1;
 }
 
-// UndeployModelRequest represents a request to undeploy a model to offline state
+// UndeployModelRequest represents a request to undeploy a model to offline
+// state
 message UndeployModelRequest {
   // Resource name for the model to be undeployed.
   // Format: models/{model}
@@ -593,7 +622,8 @@ message GetModelOperationResponse {
 
 // ========== Private endpoints
 
-// ListModelsAdminRequest represents a request to list all models from all users by admin
+// ListModelsAdminRequest represents a request to list all models from all users
+// by admin
 message ListModelsAdminRequest {
   // Page size: the maximum number of resources to return. The service may
   // return fewer than this value. If unspecified, at most 10 models will be
@@ -618,29 +648,6 @@ message ListModelsAdminResponse {
   int64 total_size = 3;
 }
 
-// GetModelAdminRequest represents a request to query a model by admin
-message GetModelAdminRequest {
-  // Resource name of the model.
-  // For example "models/{model}"
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type = "api.instill.tech/Model",
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {path_param_name : "model.name"}
-    }
-  ];
-  // Model view (default is VIEW_BASIC)
-  // VIEW_UNSPECIFIED/VIEW_BASIC: omit `Model.configuration`
-  // VIEW_FULL: show full information
-  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
-}
-
-// GetModelAdminResponse represents a response for a model
-message GetModelAdminResponse {
-  // The retrieved model
-  Model model = 1;
-}
-
 // LookUpModelAdminRequest represents a request to query a model via
 // permalink by admin
 message LookUpModelAdminRequest {
@@ -662,9 +669,9 @@ message LookUpModelAdminResponse {
 // CheckModelRequest represents a private request to query
 // a model current state and longrunning progress
 message CheckModelRequest {
-  // Resource name of the model.
-  // For example "models/{model}"
-  string name = 1 [ (google.api.field_behavior) = REQUIRED ];
+  // Permalink of a model. For example:
+  // "models/{uid}"
+  string model_permalink = 1 [ (google.api.field_behavior) = REQUIRED ];
 }
 
 // CheckModelResponse represents a response to fetch a model's

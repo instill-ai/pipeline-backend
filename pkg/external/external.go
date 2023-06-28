@@ -14,7 +14,6 @@ import (
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	usagePB "github.com/instill-ai/protogen-go/base/usage/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 )
@@ -65,54 +64,6 @@ func InitConnectorPrivateServiceClient(ctx context.Context) (connectorPB.Connect
 	}
 
 	return connectorPB.NewConnectorPrivateServiceClient(clientConn), clientConn
-}
-
-// InitModelPublicServiceClient initialises a ModelPublicServiceClient instance
-func InitModelPublicServiceClient(ctx context.Context) (modelPB.ModelPublicServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	if config.Config.ModelBackend.HTTPS.Cert != "" && config.Config.ModelBackend.HTTPS.Key != "" {
-		creds, err := credentials.NewServerTLSFromFile(config.Config.ModelBackend.HTTPS.Cert, config.Config.ModelBackend.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort), clientDialOpts)
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return modelPB.NewModelPublicServiceClient(clientConn), clientConn
-}
-
-// InitModelPrivateServiceClient initialises a ModelPrivateServiceClient instance
-func InitModelPrivateServiceClient(ctx context.Context) (modelPB.ModelPrivateServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	if config.Config.ModelBackend.HTTPS.Cert != "" && config.Config.ModelBackend.HTTPS.Key != "" {
-		creds, err := credentials.NewServerTLSFromFile(config.Config.ModelBackend.HTTPS.Cert, config.Config.ModelBackend.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ModelBackend.Host, config.Config.ModelBackend.PrivatePort), clientDialOpts)
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return modelPB.NewModelPrivateServiceClient(clientConn), clientConn
 }
 
 // InitMgmtPrivateServiceClient initialises a MgmtPrivateServiceClient instance

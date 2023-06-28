@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Google api
 import "google/api/field_behavior.proto";
@@ -24,7 +24,8 @@ message SemanticSegmentationInput {
   }
 }
 
-// SemanticSegmentationInputStream represents the input of semantic segmentation task when using stream method
+// SemanticSegmentationInputStream represents the input of semantic segmentation
+// task when using stream method
 message SemanticSegmentationInputStream {
   // The list of file length for each uploaded binary file
   repeated uint64 file_lengths = 1 [ (google.api.field_behavior) = REQUIRED ];

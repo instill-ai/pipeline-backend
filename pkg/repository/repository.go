@@ -92,7 +92,7 @@ func (r *repository) ListPipelines(owner string, pageSize int64, pageToken strin
 	if expr, err := r.transpileFilter(filter); err != nil {
 		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
 	} else if expr != nil {
-		queryBuilder.Clauses(expr)
+		queryBuilder.Where("(?)", expr)
 	}
 
 	var createTime time.Time

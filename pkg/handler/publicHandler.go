@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -26,15 +25,15 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/sterr"
 
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	healthcheckPB "github.com/instill-ai/protogen-go/common/healthcheck/v1alpha"
-	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
+	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -50,24 +49,8 @@ type Streamer interface {
 	Context() context.Context
 }
 
-type TriggerPipelineBinaryFileUploadRequestInterface interface {
-	GetName() string
-	GetTaskInput() *modelPB.TaskInputStream
-}
-
 type TriggerPipelineRequestInterface interface {
 	GetName() string
-}
-
-func receiveFromStreamer(i interface{}) (TriggerPipelineBinaryFileUploadRequestInterface, error) {
-	switch s := i.(type) {
-	case pipelinePB.PipelinePublicService_TriggerSyncPipelineBinaryFileUploadServer:
-		return s.Recv()
-	case pipelinePB.PipelinePublicService_TriggerAsyncPipelineBinaryFileUploadServer:
-		return s.Recv()
-	default:
-		return nil, fmt.Errorf("error recieve from stream")
-	}
 }
 
 // NewPublicHandler initiates a handler instance
@@ -666,7 +649,12 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipel
 		return nil, nil, err
 	}
 
-	sources := utils.GetSourcesFromRecipe(dbPipeline.Recipe)
+	err = h.service.IncludeConnectorTypeInRecipeByName(dbPipeline.Recipe, owner)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	sources := utils.GetResourceFromRecipe(dbPipeline.Recipe, connectorPB.ConnectorType_CONNECTOR_TYPE_SOURCE)
 	if len(sources) == 0 {
 		return nil, nil, status.Errorf(codes.Internal, "there is no source in pipeline's recipe")
 	}
@@ -743,7 +731,7 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 	)))
 	custom_otel.SetupSyncTriggerCounter().Add(
 		ctx,
-		int64(len(utils.GetModelsFromRecipe(dbPipeline.Recipe))),
+		1,
 		metric.WithAttributeSet(
 			attribute.NewSet(
 				attribute.KeyValue{
@@ -761,10 +749,6 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 				attribute.KeyValue{
 					Key:   "pipelineUid",
 					Value: attribute.StringValue(dbPipeline.UID.String()),
-				},
-				attribute.KeyValue{
-					Key:   "model",
-					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
 				},
 			),
 		),
@@ -805,232 +789,6 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 	)))
 
 	return resp, nil
-}
-
-func (h *PublicHandler) PreTriggerPipelineBinaryFileUpload(streamer Streamer) (*mgmtPB.User, *datamodel.Pipeline, *modelPB.Model, interface{}, error) {
-
-	owner, err := resource.GetOwner(streamer.Context(), h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-	data, err := receiveFromStreamer(streamer)
-
-	if err != nil {
-		return nil, nil, nil, nil, status.Errorf(codes.Unknown, "Cannot receive trigger info")
-	}
-
-	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(data, triggerBinaryRequiredFields); err != nil {
-		return nil, nil, nil, nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	id, err := resource.GetRscNameID(data.GetName())
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-
-	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-
-	var textToImageInput utils.TextToImageInput
-	var textGenerationInput utils.TextGenerationInput
-
-	var allContentFiles []byte
-	var fileLengths []uint64
-
-	var model *modelPB.Model
-
-	var firstChunk = true
-	models := utils.GetModelsFromRecipe(dbPipeline.Recipe)
-
-	for {
-		data, err := receiveFromStreamer(streamer)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, nil, nil, nil, status.Errorf(codes.Internal, "failed unexpectedly while reading chunks from stream: %s", err.Error())
-		}
-		if firstChunk { // Get one time for first chunk.
-			firstChunk = false
-			pipelineName := data.GetName()
-			pipeline, err := h.service.GetPipelineByID(strings.TrimSuffix(pipelineName, "pipelines/"), owner, false)
-			if err != nil {
-				return nil, nil, nil, nil, status.Errorf(codes.Internal, "do not find the pipeline: %s", err.Error())
-			}
-			if pipeline.Recipe == nil || len(models) == 0 {
-				return nil, nil, nil, nil, status.Errorf(codes.Internal, "there is no model in pipeline's recipe")
-			}
-			model, err = h.service.GetModelByName(owner, models[0])
-			if err != nil {
-				return nil, nil, nil, nil, status.Errorf(codes.Internal, "could not find model: %s", err.Error())
-			}
-
-			switch model.Task {
-			case modelPB.Model_TASK_CLASSIFICATION:
-				fileLengths = data.GetTaskInput().GetClassification().FileLengths
-				if data.GetTaskInput().GetClassification().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.GetTaskInput().GetClassification().GetContent()...)
-				}
-			case modelPB.Model_TASK_DETECTION:
-				fileLengths = data.GetTaskInput().GetDetection().FileLengths
-				if data.GetTaskInput().GetDetection().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.GetTaskInput().GetDetection().GetContent()...)
-				}
-			case modelPB.Model_TASK_KEYPOINT:
-				fileLengths = data.GetTaskInput().GetKeypoint().FileLengths
-				if data.GetTaskInput().GetKeypoint().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.GetTaskInput().GetKeypoint().GetContent()...)
-				}
-			case modelPB.Model_TASK_OCR:
-				fileLengths = data.GetTaskInput().GetOcr().FileLengths
-				if data.GetTaskInput().GetOcr().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.GetTaskInput().GetOcr().GetContent()...)
-				}
-			case modelPB.Model_TASK_INSTANCE_SEGMENTATION:
-				fileLengths = data.GetTaskInput().GetInstanceSegmentation().FileLengths
-				if data.GetTaskInput().GetInstanceSegmentation().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.GetTaskInput().GetInstanceSegmentation().GetContent()...)
-				}
-			case modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-				fileLengths = data.GetTaskInput().GetSemanticSegmentation().FileLengths
-				if data.GetTaskInput().GetSemanticSegmentation().GetContent() != nil {
-					allContentFiles = append(allContentFiles, data.GetTaskInput().GetSemanticSegmentation().GetContent()...)
-				}
-			case modelPB.Model_TASK_TEXT_TO_IMAGE:
-				textToImageInput = utils.TextToImageInput{
-					Prompt:   data.GetTaskInput().GetTextToImage().GetPrompt(),
-					Steps:    data.GetTaskInput().GetTextToImage().GetSteps(),
-					CfgScale: data.GetTaskInput().GetTextToImage().GetCfgScale(),
-					Seed:     data.GetTaskInput().GetTextToImage().GetSeed(),
-					Samples:  data.GetTaskInput().GetTextToImage().GetSamples(),
-				}
-			case modelPB.Model_TASK_TEXT_GENERATION:
-				textGenerationInput = utils.TextGenerationInput{
-					Prompt:        data.GetTaskInput().GetTextGeneration().GetPrompt(),
-					OutputLen:     data.GetTaskInput().GetTextGeneration().GetOutputLen(),
-					BadWordsList:  data.GetTaskInput().GetTextGeneration().GetBadWordsList(),
-					StopWordsList: data.GetTaskInput().GetTextGeneration().GetStopWordsList(),
-					TopK:          data.GetTaskInput().GetTextGeneration().GetTopk(),
-					Seed:          data.GetTaskInput().GetTextGeneration().GetSeed(),
-				}
-			default:
-				return nil, nil, nil, nil, fmt.Errorf("unsupported task input type")
-			}
-			continue
-		}
-
-		switch model.Task {
-		case modelPB.Model_TASK_CLASSIFICATION:
-			allContentFiles = append(allContentFiles, data.GetTaskInput().GetClassification().Content...)
-		case modelPB.Model_TASK_DETECTION:
-			allContentFiles = append(allContentFiles, data.GetTaskInput().GetDetection().Content...)
-		case modelPB.Model_TASK_KEYPOINT:
-			allContentFiles = append(allContentFiles, data.GetTaskInput().GetKeypoint().Content...)
-		case modelPB.Model_TASK_OCR:
-			allContentFiles = append(allContentFiles, data.GetTaskInput().GetOcr().Content...)
-		case modelPB.Model_TASK_INSTANCE_SEGMENTATION:
-			allContentFiles = append(allContentFiles, data.GetTaskInput().GetInstanceSegmentation().Content...)
-		case modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-			allContentFiles = append(allContentFiles, data.GetTaskInput().GetSemanticSegmentation().Content...)
-		default:
-			return nil, nil, nil, nil, fmt.Errorf("unsupported task input type")
-		}
-
-	}
-
-	switch model.Task {
-	case modelPB.Model_TASK_CLASSIFICATION,
-		modelPB.Model_TASK_DETECTION,
-		modelPB.Model_TASK_KEYPOINT,
-		modelPB.Model_TASK_OCR,
-		modelPB.Model_TASK_INSTANCE_SEGMENTATION,
-		modelPB.Model_TASK_SEMANTIC_SEGMENTATION:
-		if len(fileLengths) == 0 {
-			return nil, nil, nil, nil, status.Errorf(codes.InvalidArgument, "no file lengths")
-		}
-		if len(allContentFiles) == 0 {
-			return nil, nil, nil, nil, status.Errorf(codes.InvalidArgument, "no content files")
-		}
-		imageInput := utils.ImageInput{
-			Content:     allContentFiles,
-			FileLengths: fileLengths,
-		}
-		return owner, dbPipeline, model, &imageInput, nil
-	case modelPB.Model_TASK_TEXT_TO_IMAGE:
-		return owner, dbPipeline, model, &textToImageInput, nil
-	case modelPB.Model_TASK_TEXT_GENERATION:
-		return owner, dbPipeline, model, &textGenerationInput, nil
-	}
-
-	return nil, nil, nil, nil, status.Errorf(codes.InvalidArgument, "unsupported task")
-}
-
-func (h *PublicHandler) TriggerPipelineBinaryFileUpload(stream pipelinePB.PipelinePublicService_TriggerSyncPipelineBinaryFileUploadServer) error {
-
-	ctx, span := tracer.Start(stream.Context(), "TriggerPipelineBinaryFileUpload",
-		trace.WithSpanKind(trace.SpanKindServer))
-
-	defer span.End()
-
-	logger, _ := logger.GetZapLogger(ctx)
-
-	owner, dbPipeline, model, input, err := h.PreTriggerPipelineBinaryFileUpload(stream)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return err
-	}
-
-	obj, err := h.service.TriggerSyncPipelineBinaryFileUpload(owner, dbPipeline, model.Task, &input)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return err
-	}
-
-	logger.Info(string(custom_otel.NewLogMessage(
-		span,
-		owner,
-		true,
-		"TriggerPipelineBinaryFileUpload",
-		"request",
-		"TriggerPipelineBinaryFileUpload done",
-		true,
-		custom_otel.SetEventResource(dbPipeline),
-	)))
-	custom_otel.SetupSyncTriggerCounter().Add(
-		ctx,
-		int64(len(utils.GetModelsFromRecipe(dbPipeline.Recipe))),
-		metric.WithAttributeSet(
-			attribute.NewSet(
-				attribute.KeyValue{
-					Key:   "ownerId",
-					Value: attribute.StringValue(owner.Id),
-				},
-				attribute.KeyValue{
-					Key:   "ownerUid",
-					Value: attribute.StringValue(*owner.Uid),
-				},
-				attribute.KeyValue{
-					Key:   "pipelineId",
-					Value: attribute.StringValue(dbPipeline.ID),
-				},
-				attribute.KeyValue{
-					Key:   "pipelineUid",
-					Value: attribute.StringValue(dbPipeline.UID.String()),
-				},
-				attribute.KeyValue{
-					Key:   "model",
-					Value: attribute.StringValue(strings.Join(utils.GetModelsFromRecipe(dbPipeline.Recipe), ",")),
-				},
-			),
-		),
-	)
-
-	stream.SendAndClose(obj)
-
-	return nil
 }
 
 func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.WatchPipelineRequest) (*pipelinePB.WatchPipelineResponse, error) {

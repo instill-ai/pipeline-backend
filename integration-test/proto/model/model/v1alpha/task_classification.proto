@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vdp.model.v1alpha;
+package model.model.v1alpha;
 
 // Google api
 import "google/api/field_behavior.proto";
@@ -16,7 +16,8 @@ message ClassificationInput {
   }
 }
 
-// ClassificationInputStream represents the input of classification task when using stream method
+// ClassificationInputStream represents the input of classification task when
+// using stream method
 message ClassificationInputStream {
   // The list of file length for each uploaded binary file
   repeated uint64 file_lengths = 1 [ (google.api.field_behavior) = REQUIRED ];

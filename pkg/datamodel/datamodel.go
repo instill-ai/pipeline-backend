@@ -84,6 +84,7 @@ type Component struct {
 	ResourceDetail *structpb.Struct  `json:"resource_detail,omitempty"`
 	Metadata       *structpb.Struct  `json:"metadata,omitempty"`
 	Dependencies   map[string]string `json:"dependencies,omitempty"`
+	Type           string            `json:"type,omitempty"`
 }
 
 // Scan function for custom GORM type Recipe
