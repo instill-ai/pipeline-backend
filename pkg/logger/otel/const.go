@@ -3,17 +3,18 @@ package otel
 import (
 	"encoding/json"
 
-	"github.com/gofrs/uuid"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 )
 
-type Option func(l LogMessage) LogMessage
+type Option func(l logMessage) logMessage
 
-type LogMessage struct {
-	Id          uuid.UUID `json:"uuid"`
-	ServiceName string    `json:"serviceName"`
+type logMessage struct {
+	Id          string `json:"id"`
+	ServiceName string `json:"serviceName"`
 	TraceInfo   struct {
 		TraceId string `json:"traceID"`
 		SpanId  string `json:"spanID"`
@@ -25,9 +26,8 @@ type LogMessage struct {
 	Event struct {
 		IsAuditEvent bool `json:"isAuditEvent"`
 		EventInfo    struct {
-			EventName        string `json:"eventName"`
-			EventTriggerType string `json:"eventTriggerType"`
-			Billable         bool   `json:"billable"`
+			EventName string `json:"eventName"`
+			Billable  bool   `json:"billable"`
 		}
 		EventResource interface{} `json:"eventResource"`
 		EventResult   interface{} `json:"eventResult"`
@@ -38,28 +38,35 @@ type LogMessage struct {
 }
 
 func SetEventResource(resource interface{}) Option {
-	return func(l LogMessage) LogMessage {
+	return func(l logMessage) logMessage {
 		l.Event.EventResource = resource
 		return l
 	}
 }
 
 func SetEventResult(result interface{}) Option {
-	return func(l LogMessage) LogMessage {
+	return func(l logMessage) logMessage {
 		l.Event.EventResult = result
 		return l
 	}
 }
 
+func SetEventMessage(message string) Option {
+	return func(l logMessage) logMessage {
+		l.Event.EventMessage = message
+		return l
+	}
+}
+
 func SetErrorMessage(e string) Option {
-	return func(l LogMessage) LogMessage {
+	return func(l logMessage) logMessage {
 		l.ErrorMessage = e
 		return l
 	}
 }
 
 func SetMetadata(m string) Option {
-	return func(l LogMessage) LogMessage {
+	return func(l logMessage) logMessage {
 		l.Metadata = m
 		return l
 	}
@@ -67,16 +74,13 @@ func SetMetadata(m string) Option {
 
 func NewLogMessage(
 	span trace.Span,
+	logID string,
 	user *mgmtPB.User,
-	isAuditEvent bool,
 	eventName string,
-	eventTriggerType string,
-	eventMessage string,
-	billable bool,
 	options ...Option,
 ) []byte {
-	logMessage := LogMessage{}
-	logMessage.Id, _ = uuid.NewV4()
+	logMessage := logMessage{}
+	logMessage.Id = logID
 	logMessage.ServiceName = "pipeline-backend"
 	logMessage.TraceInfo = struct {
 		TraceId string "json:\"traceID\""
@@ -95,25 +99,21 @@ func NewLogMessage(
 	logMessage.Event = struct {
 		IsAuditEvent bool "json:\"isAuditEvent\""
 		EventInfo    struct {
-			EventName        string "json:\"eventName\""
-			EventTriggerType string "json:\"eventTriggerType\""
-			Billable         bool   "json:\"billable\""
+			EventName string "json:\"eventName\""
+			Billable  bool   "json:\"billable\""
 		}
 		EventResource interface{} "json:\"eventResource\""
 		EventResult   interface{} "json:\"eventResult\""
 		EventMessage  string      "json:\"eventMessage\""
 	}{
-		IsAuditEvent: isAuditEvent,
+		IsAuditEvent: utils.IsAuditEvent(eventName),
 		EventInfo: struct {
-			EventName        string "json:\"eventName\""
-			EventTriggerType string "json:\"eventTriggerType\""
-			Billable         bool   "json:\"billable\""
+			EventName string "json:\"eventName\""
+			Billable  bool   "json:\"billable\""
 		}{
-			EventName:        eventName,
-			EventTriggerType: eventTriggerType,
-			Billable:         billable,
+			EventName: eventName,
+			Billable:  utils.IsBillableEvent(eventName),
 		},
-		EventMessage: eventMessage,
 	}
 
 	for _, o := range options {
