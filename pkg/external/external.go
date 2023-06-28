@@ -156,15 +156,12 @@ func InitInfluxDBServiceClient(ctx context.Context) (influxdb2.Client, api.Write
 	influxOptions.SetFlushInterval(uint(time.Duration(config.Config.InfluxDB.FlushInterval * int(time.Second)).Milliseconds()))
 
 	if config.Config.InfluxDB.HTTPS.Cert != "" && config.Config.InfluxDB.HTTPS.Key != "" {
+		// TODO: support TLS
 		creds, err = credentials.NewServerTLSFromFile(config.Config.InfluxDB.HTTPS.Cert, config.Config.InfluxDB.HTTPS.Key)
 		if err != nil {
 			logger.Fatal(err.Error())
 		}
 		logger.Info(creds.Info().ServerName)
-	} else {
-		influxOptions.SetTLSConfig(&tls.Config{
-			InsecureSkipVerify: true,
-		})
 	}
 
 	client := influxdb2.NewClientWithOptions(
