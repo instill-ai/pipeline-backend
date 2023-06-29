@@ -17,7 +17,6 @@ export function CheckTriggerSyncSingleImageSingleModel() {
       {
         id: randomString(10),
         description: randomString(50),
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     );
@@ -105,7 +104,6 @@ export function CheckTriggerSyncSingleImageSingleModel() {
       {
         id: randomString(10),
         description: randomString(50),
-        mode: "MODE_SYNC",
       },
       constant.detSyncGRPCSingleModelRecipe
     );
@@ -134,7 +132,6 @@ export function CheckTriggerSyncMultiImageSingleModel() {
       {
         id: randomString(10),
         description: randomString(50),
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     );
@@ -248,7 +245,6 @@ export function CheckTriggerSyncMultiImageMultiModel() {
       {
         id: randomString(10),
         description: randomString(50),
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPMultiModelRecipe
     );

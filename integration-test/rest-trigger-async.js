@@ -15,7 +15,6 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
     {
       id: randomString(10),
       description: randomString(50),
-      mode: "MODE_ASYNC",
     },
     constant.detAsyncSingleModelRecipe
   );
@@ -76,7 +75,6 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
     {
       id: randomString(10),
       description: randomString(50),
-      mode: "MODE_ASYNC",
     },
     constant.detAsyncSingleModelRecipe
   );
@@ -158,7 +156,6 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
     {
       id: randomString(10),
       description: randomString(50),
-      mode: "MODE_ASYNC",
     },
     constant.detAsyncMultiModelRecipe
   );
@@ -247,7 +244,6 @@ export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
     {
       id: randomString(10),
       description: randomString(50),
-      mode: "MODE_ASYNC",
     },
     constant.detAsyncMultiModelMultipleDestinationRecipe
   );

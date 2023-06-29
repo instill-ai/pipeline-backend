@@ -40,7 +40,6 @@ export function CheckList() {
       reqBodies[i] = Object.assign({
         id: randomString(10),
         description: randomString(50),
-        mode: "MODE_SYNC",
       },
         constant.detSyncHTTPSingleModelRecipe
       )
@@ -106,18 +105,12 @@ export function CheckList() {
     });
 
     // Filtering
-    check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-      filter: "mode=MODE_SYNC"
-    }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: "mode=MODE_SYNC" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: "mode=MODE_SYNC" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
-    });
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-      filter: 'mode=MODE_SYNC AND state=STATE_ACTIVE'
+      filter: 'state=STATE_ACTIVE'
     }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND state=STATE_ACTIVE response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND state=STATE_ACTIVE response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: state=STATE_ACTIVE response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: state=STATE_ACTIVE response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
@@ -138,10 +131,10 @@ export function CheckList() {
     // var modelPermalink = `models/${modelUid}`
 
     check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-      filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}"`
+      filter: `recipe.components.resource_name:"${srcConnPermalink}"`
     }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.resource_name:"${srcConnPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.resource_name:"${srcConnPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
     // check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
