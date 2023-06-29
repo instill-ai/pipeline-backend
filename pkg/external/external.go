@@ -146,14 +146,14 @@ func InitInfluxDBServiceClient(ctx context.Context) (influxdb2.Client, api.Write
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	var influxOptions influxdb2.Options
 	var creds credentials.TransportCredentials
 	var err error
 
+	influxOptions := influxdb2.DefaultOptions()
 	if config.Config.Server.Debug {
-		influxOptions.SetLogLevel(log.DebugLevel)
+		influxOptions = influxOptions.SetLogLevel(log.DebugLevel)
 	}
-	influxOptions.SetFlushInterval(uint(time.Duration(config.Config.InfluxDB.FlushInterval * int(time.Second)).Milliseconds()))
+	influxOptions = influxOptions.SetFlushInterval(uint(time.Duration(config.Config.InfluxDB.FlushInterval * int(time.Second)).Milliseconds()))
 
 	if config.Config.InfluxDB.HTTPS.Cert != "" && config.Config.InfluxDB.HTTPS.Key != "" {
 		// TODO: support TLS
@@ -167,7 +167,7 @@ func InitInfluxDBServiceClient(ctx context.Context) (influxdb2.Client, api.Write
 	client := influxdb2.NewClientWithOptions(
 		fmt.Sprintf("http://%s:%v", config.Config.InfluxDB.Host, config.Config.InfluxDB.Port),
 		config.Config.InfluxDB.Token,
-		&influxOptions,
+		influxOptions,
 	)
 
 	if _, err := client.Ping(ctx); err != nil {
