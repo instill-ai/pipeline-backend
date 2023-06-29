@@ -6,14 +6,13 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/iancoleman/strcase"
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
@@ -89,9 +88,13 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.Readiness
 
 func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "CreatePipeline",
+	eventName := "CreatePipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -148,12 +151,9 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		true,
-		"CreatePipeline",
-		"request",
-		"CreatePipeline done",
-		false,
+		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
@@ -162,9 +162,13 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 
 func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "ListPipelines",
+	eventName := "ListPipelines"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -216,12 +220,9 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		false,
-		"ListPipelines",
-		"request",
-		"ListPipelines done",
-		false,
+		eventName,
 	)))
 
 	resp := pipelinePB.ListPipelinesResponse{
@@ -235,9 +236,13 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "GetPipeline",
+	eventName := "GetPipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -268,12 +273,9 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		false,
-		"GetPipeline",
-		"request",
-		"GetPipeline done",
-		false,
+		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
@@ -282,9 +284,13 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 
 func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "UpdatePipeline",
+	eventName := "UpdatePipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -356,12 +362,9 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		true,
-		"UpdatePipeline",
-		"request",
-		"UpdatePipeline done",
-		false,
+		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
@@ -370,9 +373,13 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 
 func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "DeletePipeline",
+	eventName := "DeletePipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -401,12 +408,9 @@ func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.Dele
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		true,
-		"DeletePipeline",
-		"request",
-		"DeletePipeline done",
-		false,
+		eventName,
 		custom_otel.SetEventResource(existPipeline.GetPipeline()),
 	)))
 
@@ -415,9 +419,13 @@ func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.Dele
 
 func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipelineRequest) (*pipelinePB.LookUpPipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "LookUpPipeline",
+	eventName := "LookUpPipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -460,12 +468,9 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		false,
-		"LookUpPipeline",
-		"request",
-		"LookUpPipeline done",
-		false,
+		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
@@ -474,9 +479,13 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 
 func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.ActivatePipelineRequest) (*pipelinePB.ActivatePipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "ActivatePipeline",
+	eventName := "ActivatePipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -510,12 +519,9 @@ func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.Ac
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		true,
-		"ActivatePipeline",
-		"request",
-		"ActivatePipeline done",
-		false,
+		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
@@ -524,9 +530,13 @@ func (h *PublicHandler) ActivatePipeline(ctx context.Context, req *pipelinePB.Ac
 
 func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.DeactivatePipelineRequest) (*pipelinePB.DeactivatePipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "DeactivatePipeline",
+	eventName := "DeactivatePipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -560,12 +570,9 @@ func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		true,
-		"DeactivatePipeline",
-		"request",
-		"DeactivatePipeline done",
-		false,
+		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
@@ -574,9 +581,13 @@ func (h *PublicHandler) DeactivatePipeline(ctx context.Context, req *pipelinePB.
 
 func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipelineRequest) (*pipelinePB.RenamePipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "RenamePipeline",
+	eventName := "RenamePipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -616,12 +627,9 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		true,
-		"RenamePipeline",
-		"request",
-		"RenamePipeline done",
-		false,
+		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
@@ -704,9 +712,14 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipel
 
 func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest) (*pipelinePB.TriggerSyncPipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "TriggerSyncPipeline",
+	startTime := time.Now()
+	eventName := "TriggerSyncPipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -716,55 +729,44 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
 
+	dataPoint := utils.NewDataPoint(
+		*owner.Uid,
+		logUUID.String(),
+		dbPipeline,
+		startTime,
+	)
+
 	resp, err := h.service.TriggerSyncPipeline(req, owner, dbPipeline)
 	if err != nil {
 		span.SetStatus(1, err.Error())
+		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+		h.service.WriteNewDataPoint(dataPoint.AddTag("status", "errored"))
 		return &pipelinePB.TriggerSyncPipelineResponse{}, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		true,
-		"TriggerSyncPipeline",
-		"request",
-		"TriggerSyncPipeline done",
-		true,
+		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
-	custom_otel.SetupSyncTriggerCounter().Add(
-		ctx,
-		1,
-		metric.WithAttributeSet(
-			attribute.NewSet(
-				attribute.KeyValue{
-					Key:   "ownerId",
-					Value: attribute.StringValue(owner.Id),
-				},
-				attribute.KeyValue{
-					Key:   "ownerUid",
-					Value: attribute.StringValue(*owner.Uid),
-				},
-				attribute.KeyValue{
-					Key:   "pipelineId",
-					Value: attribute.StringValue(dbPipeline.ID),
-				},
-				attribute.KeyValue{
-					Key:   "pipelineUid",
-					Value: attribute.StringValue(dbPipeline.UID.String()),
-				},
-			),
-		),
-	)
+
+	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+	h.service.WriteNewDataPoint(dataPoint.AddTag("status", "completed"))
 
 	return resp, nil
 }
 
 func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "TriggerAsyncPipeline",
+	eventName := "TriggerAsyncPipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -774,7 +776,7 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
 
-	resp, err := h.service.TriggerAsyncPipeline(ctx, req, owner, dbPipeline)
+	resp, err := h.service.TriggerAsyncPipeline(ctx, req, logUUID.String(), owner, dbPipeline)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
@@ -782,12 +784,9 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
+		logUUID.String(),
 		owner,
-		true,
-		"TriggerAsyncPipeline",
-		"request",
-		"TriggerAsyncPipeline done",
-		true,
+		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
@@ -796,9 +795,13 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 
 func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.WatchPipelineRequest) (*pipelinePB.WatchPipelineResponse, error) {
 
-	ctx, span := tracer.Start(ctx, "WatchPipeline",
+	eventName := "TriggerPipelineBinaryFileUpload"
+
+	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -807,12 +810,9 @@ func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.Watch
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
+			logUUID.String(),
 			owner,
-			false,
-			"WatchPipeline",
-			"request",
-			"WatchPipeline error",
-			false,
+			eventName,
 			custom_otel.SetErrorMessage(err.Error()),
 		)))
 		return &pipelinePB.WatchPipelineResponse{}, err
@@ -823,12 +823,9 @@ func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.Watch
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
+			logUUID.String(),
 			owner,
-			false,
-			"WatchPipeline",
-			"request",
-			"WatchPipeline error",
-			false,
+			eventName,
 			custom_otel.SetErrorMessage(err.Error()),
 			custom_otel.SetEventResource(req.GetName()),
 		)))
@@ -840,14 +837,11 @@ func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.Watch
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
+			logUUID.String(),
 			owner,
-			false,
-			"WatchPipeline",
-			"request",
-			"WatchPipeline error",
-			false,
+			eventName,
 			custom_otel.SetErrorMessage(err.Error()),
-			custom_otel.SetEventResource(id),
+			custom_otel.SetEventResource(req.GetName()),
 		)))
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
@@ -856,14 +850,11 @@ func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.Watch
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
+			logUUID.String(),
 			owner,
-			false,
-			"WatchPipeline",
-			"request",
-			"WatchPipeline error",
-			false,
+			eventName,
 			custom_otel.SetErrorMessage(err.Error()),
-			custom_otel.SetEventResource(dbPipeline),
+			custom_otel.SetEventResource(req.GetName()),
 		)))
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}

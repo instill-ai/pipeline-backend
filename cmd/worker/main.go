@@ -39,14 +39,6 @@ func main() {
 		}()
 	}
 
-	if mp, err := custom_otel.SetupMetrics(ctx, "pipeline-backend-worker"); err != nil {
-		panic(err)
-	} else {
-		defer func() {
-			err = mp.Shutdown(ctx)
-		}()
-	}
-
 	ctx, span := otel.Tracer("worker-tracer").Start(ctx,
 		"main",
 	)
@@ -100,7 +92,17 @@ func main() {
 		defer connectorPublicServiceClientConn.Close()
 	}
 
-	cw := pipelineWorker.NewWorker(connectorPublicServiceClient, redisClient)
+	influxDBClient, influxDBWriteClient := external.InitInfluxDBServiceClient(ctx)
+	defer influxDBClient.Close()
+
+	influxErrCh := influxDBWriteClient.Errors()
+	go func() {
+		for err := range influxErrCh {
+			logger.Error(fmt.Sprintf("write to bucket %s error: %s\n", config.Config.InfluxDB.Bucket, err.Error()))
+		}
+	}()
+
+	cw := pipelineWorker.NewWorker(connectorPublicServiceClient, redisClient, influxDBWriteClient)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
 		MaxConcurrentActivityExecutionSize: 2,

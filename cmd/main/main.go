@@ -84,14 +84,6 @@ func main() {
 		}()
 	}
 
-	if mp, err := custom_otel.SetupMetrics(ctx, "pipeline-backend"); err != nil {
-		panic(err)
-	} else {
-		defer func() {
-			err = mp.Shutdown(ctx)
-		}()
-	}
-
 	ctx, span := otel.Tracer("main-tracer").Start(ctx,
 		"main",
 	)
@@ -202,6 +194,16 @@ func main() {
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
+	influxDBClient, influxDBWriteClient := external.InitInfluxDBServiceClient(ctx)
+	defer influxDBClient.Close()
+
+	influxErrCh := influxDBWriteClient.Errors()
+	go func() {
+		for err := range influxErrCh {
+			logger.Error(fmt.Sprintf("write to bucket %s error: %s\n", config.Config.InfluxDB.Bucket, err.Error()))
+		}
+	}()
+
 	repository := repository.NewRepository(db)
 
 	service := service.NewService(
@@ -212,6 +214,7 @@ func main() {
 		controllerServiceClient,
 		redisClient,
 		temporalClient,
+		influxDBWriteClient,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)

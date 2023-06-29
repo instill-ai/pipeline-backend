@@ -6,22 +6,21 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/go-redis/redis/v9"
+	"github.com/gofrs/uuid"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/workflow"
 
-	"github.com/go-redis/redis/v9"
-	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
-	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
@@ -90,18 +89,32 @@ func SetBlob(redisClient *redis.Client, input interface{}) (string, error) {
 // TriggerAsyncPipelineWorkflow is a pipeline trigger workflow definition.
 func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowRequest) error {
 
-	sCtx, span := tracer.Start(context.Background(), "TriggerAsyncPipelineWorkflow",
+	startTime := time.Now()
+	eventName := "TriggerAsyncPipelineWorkflow"
+
+	sCtx, span := tracer.Start(context.Background(), eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logger := workflow.GetLogger(ctx)
+	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerAsyncPipelineWorkflow started")
+
+	dataPoint := utils.NewDataPoint(
+		strings.Split(param.Pipeline.Owner, "/")[1],
+		workflow.GetInfo(ctx).WorkflowExecution.ID,
+		param.Pipeline,
+		startTime,
+	)
 
 	var pipelineInputs []*pipelinePB.PipelineDataPayload
 	err := GetBlob(w.redisClient, param.PipelineInputBlobRedisKey, &pipelineInputs)
 	if err != nil {
+		span.SetStatus(1, err.Error())
+		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
 		return err
 	}
+
 	defer w.redisClient.Del(context.Background(), param.PipelineInputBlobRedisKey)
 
 	// Download images
@@ -116,6 +129,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				response, err := http.Get(imageUrl)
 				if err != nil {
 					logger.Error(fmt.Sprintf("logUnable to download image at %v. %v", imageUrl, err))
+					span.SetStatus(1, err.Error())
+					dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+					w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
 					return fmt.Errorf("unable to download image at %v", imageUrl)
 				}
 				defer response.Body.Close()
@@ -124,6 +140,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				_, err = buff.ReadFrom(response.Body)
 				if err != nil {
 					logger.Error(fmt.Sprintf("Unable to read content body from image at %v. %v", imageUrl, err))
+					span.SetStatus(1, err.Error())
+					dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+					w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
 					return fmt.Errorf("unable to read content body from image at %v", imageUrl)
 				}
 				images = append(images, buff.Bytes())
@@ -173,30 +192,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	// 	}
 	// }
 
-	custom_otel.SetupAsyncTriggerCounter().Add(
-		sCtx,
-		1,
-		metric.WithAttributeSet(
-			attribute.NewSet(
-				attribute.KeyValue{
-					Key:   "ownerId",
-					Value: attribute.StringValue(param.Pipeline.Owner),
-				},
-				attribute.KeyValue{
-					Key:   "ownerUid",
-					Value: attribute.StringValue(""),
-				},
-				attribute.KeyValue{
-					Key:   "pipelineId",
-					Value: attribute.StringValue(param.Pipeline.ID),
-				},
-				attribute.KeyValue{
-					Key:   "pipelineUid",
-					Value: attribute.StringValue(param.Pipeline.UID.String()),
-				},
-			),
-		),
-	)
+	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+	w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "completed"))
 
 	logger.Info("TriggerAsyncPipelineWorkflow completed")
 	return nil

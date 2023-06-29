@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"sync"
 	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
-	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -59,34 +57,4 @@ func SetupMetrics(ctx context.Context, serviceName string) (*sdkmetric.MeterProv
 	otel.SetMeterProvider(mp)
 
 	return mp, nil
-}
-
-var syncOnce sync.Once
-var pipelineSyncTriggerCounter metric.Int64Counter
-
-func SetupSyncTriggerCounter() metric.Int64Counter {
-	syncOnce.Do(func() {
-		pipelineSyncTriggerCounter, _ = otel.Meter("pipeline.backend").Int64Counter(
-			"pipeline.sync.trigger.counter",
-			metric.WithUnit("1"),
-			metric.WithDescription("user billable action"),
-		)
-	})
-
-	return pipelineSyncTriggerCounter
-}
-
-var asyncOnce sync.Once
-var pipelineAsyncTriggerCounter metric.Int64Counter
-
-func SetupAsyncTriggerCounter() metric.Int64Counter {
-	asyncOnce.Do(func() {
-		pipelineAsyncTriggerCounter, _ = otel.Meter("pipeline.backend").Int64Counter(
-			"pipeline.async.trigger.counter",
-			metric.WithUnit("1"),
-			metric.WithDescription("user billable action"),
-		)
-	})
-
-	return pipelineAsyncTriggerCounter
 }

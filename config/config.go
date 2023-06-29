@@ -21,6 +21,7 @@ var Config AppConfig
 type AppConfig struct {
 	Server           ServerConfig           `koanf:"server"`
 	Database         DatabaseConfig         `koanf:"database"`
+	InfluxDB         InfluxDBConfig         `koanf:"influxdb"`
 	Temporal         TemporalConfig         `koanf:"temporal"`
 	Cache            CacheConfig            `koanf:"cache"`
 	Log              LogConfig              `koanf:"log"`
@@ -67,6 +68,20 @@ type DatabaseConfig struct {
 		IdleConnections int           `koanf:"idleconnections"`
 		MaxConnections  int           `koanf:"maxconnections"`
 		ConnLifeTime    time.Duration `koanf:"connlifetime"`
+	}
+}
+
+// InfluxDBConfig related to influxDB database
+type InfluxDBConfig struct {
+	Host          string `koanf:"host"`
+	Port          int    `koanf:"port"`
+	Token         string `koanf:"token"`
+	Org           string `koanf:"org"`
+	Bucket        string `koanf:"bucket"`
+	FlushInterval int    `koanf:"flushinterval"`
+	HTTPS       struct {
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
 	}
 }
 

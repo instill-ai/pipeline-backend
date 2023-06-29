@@ -28,6 +28,16 @@ database:
     idleconnections: 5
     maxconnections: 10
     connlifetime: 30m # In minutes, e.g., '60m'
+influxdb:
+  host: influxdb
+  port: 8086
+  token: i-love-instill-ai
+  org: instill-ai
+  bucket: vdp
+  flushinterval: 10 # In seconds for non-blocking batch mode
+  https:
+    cert:
+    key:
 cache:
   redis:
     redisoptions:

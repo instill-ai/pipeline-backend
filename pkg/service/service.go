@@ -11,6 +11,8 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
+	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/oklog/ulid/v2"
 	"go.einride.tech/aip/filtering"
 	"go.temporal.io/sdk/client"
@@ -44,7 +46,7 @@ type Service interface {
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
 	TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
-	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
+	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
@@ -56,6 +58,8 @@ type Service interface {
 	GetResourceState(uid uuid.UUID) (*pipelinePB.Pipeline_State, error)
 	UpdateResourceState(uid uuid.UUID, state pipelinePB.Pipeline_State, progress *int32) error
 	DeleteResourceState(uid uuid.UUID) error
+	// Influx API
+	WriteNewDataPoint(p *write.Point)
 }
 
 type service struct {
@@ -66,6 +70,7 @@ type service struct {
 	controllerClient              controllerPB.ControllerPrivateServiceClient
 	redisClient                   *redis.Client
 	temporalClient                client.Client
+	influxDBWriteClient           api.WriteAPI
 }
 
 // NewService initiates a service instance
@@ -76,6 +81,7 @@ func NewService(r repository.Repository,
 	ct controllerPB.ControllerPrivateServiceClient,
 	rc *redis.Client,
 	t client.Client,
+	i api.WriteAPI,
 ) Service {
 	return &service{
 		repository:                    r,
@@ -85,6 +91,7 @@ func NewService(r repository.Repository,
 		controllerClient:              ct,
 		redisClient:                   rc,
 		temporalClient:                t,
+		influxDBWriteClient:           i,
 	}
 }
 
@@ -453,7 +460,7 @@ func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest
 	}, nil
 }
 
-func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
 	inputs := req.Inputs
 	err := preTriggerPipeline(dbPipeline, inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
@@ -466,9 +473,8 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		return nil, err
 	}
 
-	id, _ := uuid.NewV4()
 	workflowOptions := client.StartWorkflowOptions{
-		ID:                       id.String(),
+		ID:                       pipelineTriggerID,
 		TaskQueue:                worker.TaskQueue,
 		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -483,7 +489,7 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		return nil, err
 	}
 
-	inputBlobRedisKey := fmt.Sprintf("async_pipeline_blob:%s", id.String())
+	inputBlobRedisKey := fmt.Sprintf("async_pipeline_blob:%s", pipelineTriggerID)
 	s.redisClient.Set(
 		context.Background(),
 		inputBlobRedisKey,
@@ -513,7 +519,7 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 
 	return &pipelinePB.TriggerAsyncPipelineResponse{
 		Operation: &longrunningpb.Operation{
-			Name: fmt.Sprintf("operations/%s", id),
+			Name: fmt.Sprintf("operations/%s", pipelineTriggerID),
 			Done: false,
 		},
 		DataMappingIndices: dataMappingIndices,
