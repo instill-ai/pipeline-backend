@@ -66,7 +66,6 @@ export function CheckCreate() {
     var reqBody = Object.assign({
       id: randomString(63),
       description: randomString(50),
-      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -83,7 +82,6 @@ export function CheckCreate() {
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline description": (r) => r.message.pipeline.description === reqBody.description,
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline recipe is valid": (r) => helper.validateRecipeGRPC(r.message.pipeline.recipe, false),
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline owner is UUID": (r) => helper.isValidOwner(r.message.pipeline.user),
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline mode": (r) => r.message.pipeline.mode == "MODE_SYNC",
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline create_time": (r) => new Date(r.message.pipeline.createTime).getTime() > new Date().setTime(0),
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline update_time": (r) => new Date(r.message.pipeline.updateTime).getTime() > new Date().setTime(0)
     });
@@ -184,7 +182,6 @@ export function CheckList() {
       reqBodies[i] = Object.assign({
         id: randomString(10),
         description: randomString(50),
-        mode: "MODE_SYNC",
       },
         constant.detSyncHTTPSingleModelRecipe
       )
@@ -250,18 +247,12 @@ export function CheckList() {
     });
 
     // Filtering
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
-      filter: "mode=MODE_SYNC"
-    }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: "mode=MODE_SYNC" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: "mode=MODE_SYNC" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
-    });
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
-      filter: 'mode=MODE_SYNC AND state=STATE_ACTIVE'
+      filter: 'state=STATE_ACTIVE'
     }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: mode=MODE_SYNC AND state=STATE_ACTIVE response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: mode=MODE_SYNC AND state=STATE_ACTIVE response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=STATE_ACTIVE response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=STATE_ACTIVE response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
@@ -282,10 +273,10 @@ export function CheckList() {
     // var modelPermalink = `models/${modelUid}`
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
-      filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}"`
+      filter: `recipe.components.resource_name:"${srcConnPermalink}"`
     }, {}), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: mode=MODE_SYNC AND recipe.components.resource_name:"${srcConnPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: recipe.components.resource_name:"${srcConnPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: recipe.components.resource_name:"${srcConnPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
     });
 
     // check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
@@ -319,7 +310,6 @@ export function CheckGet() {
     var reqBody = Object.assign({
       id: randomString(10),
       description: randomString(50),
-      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -378,7 +368,6 @@ export function CheckUpdate() {
 
     var reqBody = Object.assign({
       id: randomString(10),
-      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -470,7 +459,6 @@ export function CheckUpdateState() {
 
     var reqBodySync = Object.assign({
       id: randomString(10),
-      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -506,7 +494,6 @@ export function CheckUpdateState() {
 
     var reqBodyAsync = Object.assign({
       id: randomString(10),
-      mode: "MODE_ASYNC",
     },
       constant.detAsyncSingleModelRecipe
     )
@@ -584,7 +571,6 @@ export function CheckRename() {
 
     var reqBody = Object.assign({
       id: randomString(10),
-      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -632,7 +618,6 @@ export function CheckLookUp() {
 
     var reqBody = Object.assign({
       id: randomString(10),
-      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -675,7 +660,6 @@ export function CheckWatch() {
 
     var reqBody = Object.assign({
       id: randomString(10),
-      mode: "MODE_SYNC",
     },
       constant.detSyncHTTPSingleModelRecipe
     )

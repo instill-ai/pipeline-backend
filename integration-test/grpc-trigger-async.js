@@ -30,7 +30,6 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
     var reqBody = Object.assign({
       id: randomString(10),
       description: randomString(50),
-      mode: "MODE_ASYNC",
     },
       constant.detAsyncSingleModelRecipe
     );
@@ -95,7 +94,6 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
     var reqBody = Object.assign({
       id: randomString(10),
       description: randomString(50),
-      mode: "MODE_ASYNC",
     },
       constant.detAsyncSingleModelRecipe
     );
@@ -177,7 +175,6 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
     var reqBody = Object.assign({
       id: randomString(10),
       description: randomString(50),
-      mode: "MODE_ASYNC",
     },
       constant.detAsyncMultiModelRecipe
     );
@@ -268,7 +265,6 @@ export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
     var reqBody = Object.assign({
       id: randomString(10),
       description: randomString(50),
-      mode: "MODE_ASYNC",
     },
       constant.detAsyncMultiModelMultipleDestinationRecipe
     );

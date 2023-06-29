@@ -14,7 +14,6 @@ export function CheckCreate() {
       {
         id: randomString(63),
         description: randomString(50),
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -46,7 +45,6 @@ export function CheckGet() {
       {
         id: randomString(10),
         description: randomString(50),
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -76,7 +74,6 @@ export function CheckUpdate() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -117,7 +114,6 @@ export function CheckUpdateState() {
     var reqBodySync = Object.assign(
       {
         id: randomString(10),
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -159,7 +155,6 @@ export function CheckRename() {
     var reqBody = Object.assign(
       {
         id: id,
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
@@ -195,7 +190,6 @@ export function CheckLookUp() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )

@@ -24,7 +24,6 @@ export function CheckList() {
         {
           id: randomString(10),
           description: randomString(50),
-          mode: "MODE_SYNC"
         },
         constant.detSyncHTTPSingleModelRecipe
       )
@@ -71,14 +70,14 @@ export function CheckList() {
     });
 
     // Filtering
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC`, null, constant.params), {
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC response 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines`, null, constant.params), {
+      [`GET /v1alpha/admin/pipelines response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/admin/pipelines response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE`, null, constant.params), {
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE response 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20state=STATE_ACTIVE response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=state=STATE_ACTIVE`, null, constant.params), {
+      [`GET /v1alpha/admin/pipelines?filter=state=STATE_ACTIVE response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/admin/pipelines?filter=state=STATE_ACTIVE response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
     check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`, null, constant.params), {
@@ -96,9 +95,9 @@ export function CheckList() {
     // var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
     // var modelPermalink = `models/${modelUid}`
 
-    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22`, null, constant.params), {
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
+    check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=recipe.components.resource_name:%22${srcConnPermalink}%22`, null, constant.params), {
+      [`GET /v1alpha/admin/pipelines?filter=recipe.components.resource_name:%22${srcConnPermalink}%22 response 200`]: (r) => r.status == 200,
+      [`GET /v1alpha/admin/pipelines?filter=recipe.components.resource_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
     });
 
     // check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22`, null, constant.params), {
@@ -125,7 +124,6 @@ export function CheckLookUp() {
     var reqBody = Object.assign(
       {
         id: randomString(10),
-        mode: "MODE_SYNC",
       },
       constant.detSyncHTTPSingleModelRecipe
     )
