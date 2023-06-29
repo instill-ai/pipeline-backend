@@ -170,7 +170,7 @@ func InitInfluxDBServiceClient(ctx context.Context) (influxdb2.Client, api.Write
 		influxOptions,
 	)
 
-	if _, err := client.Ping(ctx); err != nil {
+	if _, err := client.Ping(ctx); err != nil && config.Config.Log.External {
 		logger.Fatal(err.Error())
 	}
 
