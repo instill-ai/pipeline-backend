@@ -483,7 +483,7 @@ export function CheckUpdateState() {
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline', {
       name: `pipelines/${reqBodySync.id}`
     }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline ${reqBodySync.id} response status is StatusInvalidArgument for sync pipeline`]: (r) => r.status === grpc.StatusInvalidArgument,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline ${reqBodySync.id} response status is StatusOK for sync pipeline`]: (r) => r.status === grpc.StatusOK,
     });
 
     check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline', {

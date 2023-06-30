@@ -383,7 +383,7 @@ export function CheckUpdateState() {
     });
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/deactivate`, null, constant.params), {
-      [`POST /v1alpha/pipelines/${reqBodySync.id}/deactivate response status is 400 for sync pipeline`]: (r) => r.status === 400,
+      [`POST /v1alpha/pipelines/${reqBodySync.id}/deactivate response status is 200 for sync pipeline`]: (r) => r.status === 200,
     });
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBodySync.id}/activate`, null, constant.params), {
