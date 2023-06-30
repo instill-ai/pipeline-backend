@@ -3,18 +3,18 @@ package worker
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v9"
 	"github.com/gofrs/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/activity"
+	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -26,64 +26,61 @@ import (
 )
 
 type TriggerAsyncPipelineWorkflowRequest struct {
-	PipelineInputBlobRedisKey string
-	Pipeline                  *datamodel.Pipeline
+	PipelineInputBlobRedisKeys []string
+	Pipeline                   *datamodel.Pipeline
 }
 
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
 type ExecuteConnectorActivityRequest struct {
-	InputBlobRedisKey string
-	Name              string
-	OwnerPermalink    string
+	InputBlobRedisKeys []string
+	Name               string
+	OwnerPermalink     string
 }
 
 type ExecuteConnectorActivityResponse struct {
-	OutpurBlobRedisKey string
+	OutputBlobRedisKeys []string
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
-func GetBlob(redisClient *redis.Client, redisKey string, output interface{}) error {
-	blob, err := redisClient.Get(context.Background(), redisKey).Bytes()
-	if err != nil {
-		return err
-	}
-	bytesBuffer := bytes.NewBuffer(blob)
-	dec := gob.NewDecoder(bytesBuffer)
+func (w *worker) GetBlob(redisKeys []string) ([]*connectorPB.DataPayload, error) {
+	payloads := []*connectorPB.DataPayload{}
+	for idx := range redisKeys {
+		blob, err := w.redisClient.Get(context.Background(), redisKeys[idx]).Bytes()
+		if err != nil {
+			return nil, err
+		}
+		payload := &connectorPB.DataPayload{}
+		err = protojson.Unmarshal(blob, payload)
+		if err != nil {
+			return nil, err
+		}
 
-	err = dec.Decode(output)
-	if err != nil {
-		return err
+		payloads = append(payloads, payload)
+
 	}
-	return nil
+	return payloads, nil
 }
 
-func SetBlob(redisClient *redis.Client, input interface{}) (string, error) {
-
+func (w *worker) SetBlob(inputs []*connectorPB.DataPayload) ([]string, error) {
 	id, _ := uuid.NewV4()
-	redisKey := ""
+	blobRedisKeys := []string{}
+	for idx, input := range inputs {
+		inputJson, err := protojson.Marshal(input)
+		if err != nil {
+			return nil, err
+		}
 
-	switch input.(type) {
-	case []*pipelinePB.PipelineDataPayload:
-		redisKey = fmt.Sprintf("async_pipeline_blob:%s", id.String())
-	case []*connectorPB.DataPayload:
-		redisKey = fmt.Sprintf("async_connector_blob:%s", id.String())
+		blobRedisKey := fmt.Sprintf("async_connector_blob:%s:%d", id.String(), idx)
+		w.redisClient.Set(
+			context.Background(),
+			blobRedisKey,
+			inputJson,
+			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
+		)
+		blobRedisKeys = append(blobRedisKeys, blobRedisKey)
 	}
-
-	var bytesBuffer bytes.Buffer
-	enc := gob.NewEncoder(&bytesBuffer)
-	err := enc.Encode(input)
-	if err != nil {
-		return "", err
-	}
-
-	redisClient.Set(
-		context.Background(),
-		redisKey,
-		bytesBuffer.Bytes(),
-		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
-	)
-	return redisKey, nil
+	return blobRedisKeys, nil
 }
 
 // TriggerAsyncPipelineWorkflow is a pipeline trigger workflow definition.
@@ -107,15 +104,31 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	)
 
 	var pipelineInputs []*pipelinePB.PipelineDataPayload
-	err := GetBlob(w.redisClient, param.PipelineInputBlobRedisKey, &pipelineInputs)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
-		return err
+
+	for idx := range param.PipelineInputBlobRedisKeys {
+		blob, err := w.redisClient.Get(context.Background(), param.PipelineInputBlobRedisKeys[idx]).Bytes()
+		if err != nil {
+			span.SetStatus(1, err.Error())
+			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			return err
+		}
+		pipelineInput := &pipelinePB.PipelineDataPayload{}
+		err = protojson.Unmarshal(blob, pipelineInput)
+		if err != nil {
+			span.SetStatus(1, err.Error())
+			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			return err
+		}
+
+		pipelineInputs = append(pipelineInputs, pipelineInput)
+
 	}
 
-	defer w.redisClient.Del(context.Background(), param.PipelineInputBlobRedisKey)
+	for idx := range param.PipelineInputBlobRedisKeys {
+		defer w.redisClient.Del(context.Background(), param.PipelineInputBlobRedisKeys[idx])
+	}
 
 	// Download images
 	var images [][]byte
@@ -153,44 +166,50 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	var connectorInputs []*connectorPB.DataPayload
 	for idx := range pipelineInputs {
 		connectorInputs = append(connectorInputs, &connectorPB.DataPayload{
-			Images:         images,
-			Texts:          pipelineInputs[idx].Texts,
-			StructuredData: pipelineInputs[idx].StructuredData,
-			Metadata:       pipelineInputs[idx].Metadata,
+			DataMappingIndex: pipelineInputs[idx].DataMappingIndex,
+			Images:           images,
+			Texts:            pipelineInputs[idx].Texts,
+			StructuredData:   pipelineInputs[idx].StructuredData,
+			Metadata:         pipelineInputs[idx].Metadata,
 		})
 	}
 
-	fmt.Println(connectorInputs)
-
 	// TODO: DAG
-	// var destinationActivities []workflow.Future
-	// for _, destinationName := range utils.GetResourceFromRecipe(param.Pipeline.Recipe, connectorPB.ConnectorType_CONNECTOR_TYPE_DESTINATION) {
+	var destinationActivities []workflow.Future
+	for _, destinationName := range utils.GetResourceFromRecipe(param.Pipeline.Recipe, connectorPB.ConnectorType_CONNECTOR_TYPE_DESTINATION) {
 
-	// 	inputBlobRedisKey, err := SetBlob(w.redisClient, connectorInputs)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+		inputBlobRedisKeys, err := w.SetBlob(connectorInputs)
+		for idx := range inputBlobRedisKeys {
+			defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
+		}
 
-	// ao := workflow.ActivityOptions{
-	// 	StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-	// 	RetryPolicy: &temporal.RetryPolicy{
-	// 		MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
-	// 	},
-	// }
-	// ctx = workflow.WithActivityOptions(ctx, ao)
-	// 	destinationActivities = append(destinationActivities, workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
-	// 		InputBlobRedisKey: inputBlobRedisKey,
-	// 		Name:              destinationName,
-	// 		OwnerPermalink:    param.Pipeline.Owner,
-	// 	}))
+		if err != nil {
+			return err
+		}
 
-	// }
-	// for idx := range destinationActivities {
-	// 	var result []byte
-	// 	if err := destinationActivities[idx].Get(ctx, &result); err != nil {
-	// 		return err
-	// 	}
-	// }
+		ao := workflow.ActivityOptions{
+			StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+			RetryPolicy: &temporal.RetryPolicy{
+				MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
+			},
+		}
+		ctx = workflow.WithActivityOptions(ctx, ao)
+		destinationActivities = append(destinationActivities, workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
+			InputBlobRedisKeys: inputBlobRedisKeys,
+			Name:               destinationName,
+			OwnerPermalink:     param.Pipeline.Owner,
+		}))
+
+	}
+	for idx := range destinationActivities {
+		result := ExecuteConnectorActivityResponse{}
+		if err := destinationActivities[idx].Get(ctx, &result); err != nil {
+			return err
+		}
+		for idx := range result.OutputBlobRedisKeys {
+			defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
+		}
+	}
 
 	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
 	w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "completed"))
@@ -206,8 +225,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var inputs []*connectorPB.DataPayload
-	err := GetBlob(w.redisClient, param.InputBlobRedisKey, &inputs)
+	inputs, err := w.GetBlob(param.InputBlobRedisKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -224,12 +242,12 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		return nil, err
 	}
 
-	outputBlobRedisKey, err := SetBlob(w.redisClient, resp.Outputs)
+	outputBlobRedisKeys, err := w.SetBlob(resp.Outputs)
 	if err != nil {
 
 		return nil, err
 	}
 
 	logger.Info("ConnectorActivity completed")
-	return &ExecuteConnectorActivityResponse{OutpurBlobRedisKey: outputBlobRedisKey}, nil
+	return &ExecuteConnectorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
 }

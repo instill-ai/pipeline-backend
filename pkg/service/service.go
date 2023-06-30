@@ -1,9 +1,7 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"time"
 
@@ -18,6 +16,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -494,28 +493,30 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		},
 	}
 
-	var bytesBuffer bytes.Buffer
-	enc := gob.NewEncoder(&bytesBuffer)
-	err = enc.Encode(inputs)
-	if err != nil {
-		return nil, err
-	}
+	inputBlobRedisKeys := []string{}
+	for idx, input := range inputs {
+		inputJson, err := protojson.Marshal(input)
+		if err != nil {
+			return nil, err
+		}
 
-	inputBlobRedisKey := fmt.Sprintf("async_pipeline_blob:%s", pipelineTriggerID)
-	s.redisClient.Set(
-		context.Background(),
-		inputBlobRedisKey,
-		bytesBuffer.Bytes(),
-		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
-	)
+		inputBlobRedisKey := fmt.Sprintf("async_pipeline_blob:%s:%d", pipelineTriggerID, idx)
+		s.redisClient.Set(
+			context.Background(),
+			inputBlobRedisKey,
+			inputJson,
+			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
+		)
+		inputBlobRedisKeys = append(inputBlobRedisKeys, inputBlobRedisKey)
+	}
 
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
 		"TriggerAsyncPipelineWorkflow",
 		&worker.TriggerAsyncPipelineWorkflowRequest{
-			PipelineInputBlobRedisKey: inputBlobRedisKey,
-			Pipeline:                  dbPipeline,
+			PipelineInputBlobRedisKeys: inputBlobRedisKeys,
+			Pipeline:                   dbPipeline,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
