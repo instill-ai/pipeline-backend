@@ -61,13 +61,6 @@ connectorbackend:
   https:
     cert:
     key:
-modelbackend:
-  host: model-backend
-  privateport: 3083
-  publicport: 8083
-  https:
-    cert:
-    key:
 mgmtbackend:
   host: mgmt-backend
   privateport: 3084

@@ -27,7 +27,6 @@ type AppConfig struct {
 	Log              LogConfig              `koanf:"log"`
 	MgmtBackend      MgmtBackendConfig      `koanf:"mgmtbackend"`
 	ConnectorBackend ConnectorBackendConfig `koanf:"connectorbackend"`
-	ModelBackend     ModelBackendConfig     `koanf:"modelbackend"`
 	Controller       ControllerConfig       `koanf:"controller"`
 }
 
@@ -79,7 +78,7 @@ type InfluxDBConfig struct {
 	Org           string `koanf:"org"`
 	Bucket        string `koanf:"bucket"`
 	FlushInterval int    `koanf:"flushinterval"`
-	HTTPS       struct {
+	HTTPS         struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
@@ -113,17 +112,6 @@ type CacheConfig struct {
 
 // ConnectorBackendConfig related to connector-backend
 type ConnectorBackendConfig struct {
-	Host        string `koanf:"host"`
-	PrivatePort int    `koanf:"privateport"`
-	PublicPort  int    `koanf:"publicport"`
-	HTTPS       struct {
-		Cert string `koanf:"cert"`
-		Key  string `koanf:"key"`
-	}
-}
-
-// ModelBackendConfig related to model-backend
-type ModelBackendConfig struct {
 	Host        string `koanf:"host"`
 	PrivatePort int    `koanf:"privateport"`
 	PublicPort  int    `koanf:"publicport"`
