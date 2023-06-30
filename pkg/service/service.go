@@ -364,13 +364,21 @@ func (s *service) UpdatePipelineState(id string, owner *mgmtPB.User, state datam
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	mode, recipeErr := s.checkRecipe(owner, recipeRscName)
-	if recipeErr != nil {
-		return nil, err
-	}
+	if state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
+		mode, recipeErr := s.checkRecipe(owner, recipeRscName)
 
-	if mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) && state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE) {
-		return nil, status.Errorf(codes.InvalidArgument, "Pipeline %s is in the SYNC mode, which is always active", dbPipeline.ID)
+		if recipeErr != nil {
+			return nil, recipeErr
+		}
+
+		if err := s.repository.UpdatePipelineMode(id, ownerPermalink, mode); err != nil {
+			return nil, err
+		}
+
+	} else {
+		if err := s.repository.UpdatePipelineMode(id, ownerPermalink, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED)); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := s.repository.UpdatePipelineState(id, ownerPermalink, state); err != nil {
@@ -387,9 +395,8 @@ func (s *service) UpdatePipelineState(id string, owner *mgmtPB.User, state datam
 		return nil, err
 	}
 
-	dbPipeline.Recipe = recipeRscName
+	return s.GetPipelineByID(dbPipeline.ID, owner, true)
 
-	return dbPipeline, nil
 }
 
 func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error) {
@@ -429,12 +436,17 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	return dbPipeline, nil
 }
 
-func preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInputs []*pipelinePB.PipelineDataPayload, expectedMode datamodel.PipelineMode) error {
+func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInputs []*pipelinePB.PipelineDataPayload, expectedMode datamodel.PipelineMode) error {
+	state, err := s.GetResourceState(dbPipeline.UID)
+	if err != nil {
+		return err
+	}
+	if *state != pipelinePB.Pipeline_STATE_ACTIVE {
+		return status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
+	}
+
 	if dbPipeline.Mode != expectedMode {
 		return status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not sync", dbPipeline.ID))
-	}
-	if dbPipeline.State != datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-		return status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
 	}
 
 	for idx := range pipelineInputs {
@@ -445,7 +457,7 @@ func preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInputs []*pipeli
 
 func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
 
-	err := preTriggerPipeline(dbPipeline, req.Inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
+	err := s.preTriggerPipeline(dbPipeline, req.Inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
 	if err != nil {
 		return nil, err
 	}
@@ -463,7 +475,7 @@ func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest
 func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
 	inputs := req.Inputs
-	err := preTriggerPipeline(dbPipeline, inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
+	err := s.preTriggerPipeline(dbPipeline, inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
 	if err != nil {
 		return nil, err
 	}
