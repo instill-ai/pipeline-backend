@@ -511,9 +511,9 @@ func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.Trigg
 		componentIdMap[dbPipeline.Recipe.Components[idx].Id] = dbPipeline.Recipe.Components[idx]
 	}
 
-	dag := NewDAG(dbPipeline.Recipe.Components)
+	dag := utils.NewDAG(dbPipeline.Recipe.Components)
 	for _, component := range dbPipeline.Recipe.Components {
-		parents, _, err := parseDependency(component.Dependencies)
+		parents, _, err := utils.ParseDependency(component.Dependencies)
 		if err != nil {
 			return nil,
 				status.Errorf(codes.InvalidArgument, "dependencies error")
@@ -531,7 +531,7 @@ func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.Trigg
 	cache[orderedComp[0].Id] = inputs
 
 	for _, comp := range orderedComp[1:] {
-		_, depMap, err := parseDependency(comp.Dependencies)
+		_, depMap, err := utils.ParseDependency(comp.Dependencies)
 		if err != nil {
 			return nil, err
 		}

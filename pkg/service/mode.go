@@ -27,48 +27,6 @@ const (
 	Pull        SourceCategory = 3
 )
 
-// we only support the simple case for now
-//
-//	"dependencies": {
-//		"texts": "[*c1.texts, *c2.texts]",
-//		"images": "[*c1.images, *c2.images]",
-//		"structured_data": "{**c1.structured_data, **c2.structured_data}",
-//		"metadata": "{**c1.metadata, **c2.metadata}"
-//	}
-//
-//	"dependencies": {
-//		"texts": "[*c2.texts]",
-//		"images": "[*c1.images]",
-//		"structured_data": "{**c1.structured_data}",
-//		"metadata": "{**c1.metadata, **c2.metadata}"
-//	}
-func parseDependency(dep map[string]string) ([]string, map[string][]string, error) {
-	parentMap := map[string]bool{}
-	depMap := map[string][]string{}
-	for _, key := range []string{"images", "texts", "structured_data", "metadata"} {
-		depMap[key] = []string{}
-
-		if str, ok := dep[key]; ok {
-			str = strings.ReplaceAll(str, " ", "")
-			str = str[1 : len(str)-1]
-			items := strings.Split(str, ",")
-			for idx := range items {
-
-				name := strings.Split(items[idx], ".")[0]
-				depKey := strings.Split(items[idx], ".")[1]
-				name = strings.ReplaceAll(name, "*", "")
-				parentMap[name] = true
-				depMap[key] = append(depMap[key], fmt.Sprintf("%s.%s", name, depKey))
-			}
-		}
-	}
-	parent := []string{}
-	for k := range parentMap {
-		parent = append(parent, k)
-	}
-	return parent, depMap, nil
-}
-
 func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recipe) (datamodel.PipelineMode, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -184,9 +142,9 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 		}
 	}
 
-	dag := NewDAG(recipeRscName.Components)
+	dag := utils.NewDAG(recipeRscName.Components)
 	for _, component := range recipeRscName.Components {
-		parents, _, err := parseDependency(component.Dependencies)
+		parents, _, err := utils.ParseDependency(component.Dependencies)
 		if err != nil {
 			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
 				status.Errorf(codes.InvalidArgument, "dependencies error")

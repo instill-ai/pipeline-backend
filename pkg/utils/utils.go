@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -75,12 +76,54 @@ func NewDataPoint(
 			"pipeline_mode": pipelinePB.Pipeline_Mode(pipeline.Mode).String(),
 		},
 		map[string]interface{}{
-			"owner_uid":          ownerUUID,
-			"pipeline_name":        pipeline.ID,
-			"pipeline_permalink":       pipeline.UID.String(),
+			"owner_uid":           ownerUUID,
+			"pipeline_name":       pipeline.ID,
+			"pipeline_permalink":  pipeline.UID.String(),
 			"pipeline_trigger_id": pipelineRunID,
-			"trigger_time":       startTime.Format(time.RFC3339Nano),
+			"trigger_time":        startTime.Format(time.RFC3339Nano),
 		},
 		time.Now(),
 	)
+}
+
+// we only support the simple case for now
+//
+//	"dependencies": {
+//		"texts": "[*c1.texts, *c2.texts]",
+//		"images": "[*c1.images, *c2.images]",
+//		"structured_data": "{**c1.structured_data, **c2.structured_data}",
+//		"metadata": "{**c1.metadata, **c2.metadata}"
+//	}
+//
+//	"dependencies": {
+//		"texts": "[*c2.texts]",
+//		"images": "[*c1.images]",
+//		"structured_data": "{**c1.structured_data}",
+//		"metadata": "{**c1.metadata, **c2.metadata}"
+//	}
+func ParseDependency(dep map[string]string) ([]string, map[string][]string, error) {
+	parentMap := map[string]bool{}
+	depMap := map[string][]string{}
+	for _, key := range []string{"images", "texts", "structured_data", "metadata"} {
+		depMap[key] = []string{}
+
+		if str, ok := dep[key]; ok {
+			str = strings.ReplaceAll(str, " ", "")
+			str = str[1 : len(str)-1]
+			items := strings.Split(str, ",")
+			for idx := range items {
+
+				name := strings.Split(items[idx], ".")[0]
+				depKey := strings.Split(items[idx], ".")[1]
+				name = strings.ReplaceAll(name, "*", "")
+				parentMap[name] = true
+				depMap[key] = append(depMap[key], fmt.Sprintf("%s.%s", name, depKey))
+			}
+		}
+	}
+	parent := []string{}
+	for k := range parentMap {
+		parent = append(parent, k)
+	}
+	return parent, depMap, nil
 }

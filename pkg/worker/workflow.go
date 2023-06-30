@@ -175,41 +175,67 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		})
 	}
 
-	// TODO: DAG
-	var destinationActivities []workflow.Future
-	for _, destinationName := range utils.GetResourceFromRecipe(param.Pipeline.Recipe, connectorPB.ConnectorType_CONNECTOR_TYPE_DESTINATION) {
+	ao := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
+		},
+	}
 
-		inputBlobRedisKeys, err := w.SetBlob(connectorInputs)
-		for idx := range inputBlobRedisKeys {
-			defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
+	// TODO: parallel
+
+	componentIdMap := make(map[string]*datamodel.Component)
+	for idx := range param.Pipeline.Recipe.Components {
+		componentIdMap[param.Pipeline.Recipe.Components[idx].Id] = param.Pipeline.Recipe.Components[idx]
+	}
+	dag := utils.NewDAG(param.Pipeline.Recipe.Components)
+	for _, component := range param.Pipeline.Recipe.Components {
+		parents, _, err := utils.ParseDependency(component.Dependencies)
+		if err != nil {
+			return err
+		}
+		for idx := range parents {
+			dag.AddEdge(componentIdMap[parents[idx]], component)
+		}
+	}
+	orderedComp, err := dag.TopoloicalSort()
+	if err != nil {
+		return err
+	}
+
+	cache := map[string][]*connectorPB.DataPayload{}
+	cache[orderedComp[0].Id] = connectorInputs
+
+	for _, comp := range orderedComp[1:] {
+
+		_, depMap, err := utils.ParseDependency(comp.Dependencies)
+		if err != nil {
+			return err
+		}
+		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys))
+		inputBlobRedisKeys, err := w.SetBlob(inputs)
+		result := ExecuteConnectorActivityResponse{}
+		ctx = workflow.WithActivityOptions(ctx, ao)
+		if err := workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
+			InputBlobRedisKeys: inputBlobRedisKeys,
+			Name:               comp.ResourceName,
+			OwnerPermalink:     param.Pipeline.Owner,
+		}).Get(ctx, &result); err != nil {
+			return err
+		}
+
+		for idx := range result.OutputBlobRedisKeys {
+			defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
 		}
 
 		if err != nil {
 			return err
 		}
-
-		ao := workflow.ActivityOptions{
-			StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-			RetryPolicy: &temporal.RetryPolicy{
-				MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
-			},
-		}
-		ctx = workflow.WithActivityOptions(ctx, ao)
-		destinationActivities = append(destinationActivities, workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
-			InputBlobRedisKeys: inputBlobRedisKeys,
-			Name:               destinationName,
-			OwnerPermalink:     param.Pipeline.Owner,
-		}))
-
-	}
-	for idx := range destinationActivities {
-		result := ExecuteConnectorActivityResponse{}
-		if err := destinationActivities[idx].Get(ctx, &result); err != nil {
+		outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
+		if err != nil {
 			return err
 		}
-		for idx := range result.OutputBlobRedisKeys {
-			defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
-		}
+		cache[comp.Id] = outputs
 	}
 
 	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
