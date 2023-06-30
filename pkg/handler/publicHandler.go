@@ -736,7 +736,7 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 		startTime,
 	)
 
-	resp, err := h.service.TriggerSyncPipeline(req, owner, dbPipeline)
+	resp, err := h.service.TriggerSyncPipeline(ctx, req, owner, dbPipeline)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())

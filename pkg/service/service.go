@@ -1,8 +1,10 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
@@ -44,7 +46,7 @@ type Service interface {
 	DeletePipeline(id string, owner *mgmtPB.User) error
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
-	TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
+	TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
 	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
@@ -454,20 +456,122 @@ func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInp
 	return nil
 }
 
-func (s *service) TriggerSyncPipeline(req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
 
+	logger, _ := logger.GetZapLogger(ctx)
 	err := s.preTriggerPipeline(dbPipeline, req.Inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO
+	pipelineInputs := req.Inputs
+	// Download images
+	var images [][]byte
+	for idx := range pipelineInputs {
+		for imageIdx := range pipelineInputs[idx].Images {
+			switch pipelineInputs[idx].Images[imageIdx].UnstructuredData.(type) {
+			case *pipelinePB.PipelineDataPayload_UnstructuredData_Blob:
+				images = append(images, pipelineInputs[idx].Images[imageIdx].GetBlob())
+			case *pipelinePB.PipelineDataPayload_UnstructuredData_Url:
+				imageUrl := pipelineInputs[idx].Images[imageIdx].GetUrl()
+				response, err := http.Get(imageUrl)
+				if err != nil {
+					logger.Error(fmt.Sprintf("Unable to download image at %v. %v", imageUrl, err))
+
+					return nil, fmt.Errorf("unable to download image at %v", imageUrl)
+				}
+				defer response.Body.Close()
+
+				buff := new(bytes.Buffer) // pointer
+				_, err = buff.ReadFrom(response.Body)
+				if err != nil {
+					logger.Error(fmt.Sprintf("Unable to read content body from image at %v. %v", imageUrl, err))
+
+					return nil, fmt.Errorf("unable to read content body from image at %v", imageUrl)
+				}
+				images = append(images, buff.Bytes())
+			}
+		}
+	}
+
+	var inputs []*connectorPB.DataPayload
+	for idx := range pipelineInputs {
+		inputs = append(inputs, &connectorPB.DataPayload{
+			DataMappingIndex: pipelineInputs[idx].DataMappingIndex,
+			Images:           images,
+			Texts:            pipelineInputs[idx].Texts,
+			StructuredData:   pipelineInputs[idx].StructuredData,
+			Metadata:         pipelineInputs[idx].Metadata,
+		})
+	}
+
+	componentIdMap := make(map[string]*datamodel.Component)
+
+	for idx := range dbPipeline.Recipe.Components {
+		componentIdMap[dbPipeline.Recipe.Components[idx].Id] = dbPipeline.Recipe.Components[idx]
+	}
+
+	dag := NewDAG(dbPipeline.Recipe.Components)
+	for _, component := range dbPipeline.Recipe.Components {
+		parents, _, err := parseDependency(component.Dependencies)
+		if err != nil {
+			return nil,
+				status.Errorf(codes.InvalidArgument, "dependencies error")
+		}
+		for idx := range parents {
+			dag.AddEdge(componentIdMap[parents[idx]], component)
+		}
+	}
+	orderedComp, err := dag.TopoloicalSort()
 	if err != nil {
 		return nil, err
 	}
 
+	cache := map[string][]*connectorPB.DataPayload{}
+	cache[orderedComp[0].Id] = inputs
+
+	for _, comp := range orderedComp[1:] {
+		_, depMap, err := parseDependency(comp.Dependencies)
+		if err != nil {
+			return nil, err
+		}
+		inputs := worker.MergeData(cache, depMap, len(req.Inputs))
+		resp, err := s.connectorPublicServiceClient.ExecuteConnector(
+			utils.InjectOwnerToContextWithOwnerPermalink(ctx, utils.GenOwnerPermalink(owner)),
+			&connectorPB.ExecuteConnectorRequest{
+				Name:   comp.ResourceName,
+				Inputs: inputs,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+		cache[comp.Id] = resp.Outputs
+	}
+
+	outputs := cache[orderedComp[len(orderedComp)-1].Id]
+	pipelineOutputs := []*pipelinePB.PipelineDataPayload{}
+	for idx := range outputs {
+		images := []*pipelinePB.PipelineDataPayload_UnstructuredData{}
+		for imageIdx := range outputs[idx].Images {
+			images = append(images, &pipelinePB.PipelineDataPayload_UnstructuredData{
+				UnstructuredData: &pipelinePB.PipelineDataPayload_UnstructuredData_Blob{
+					Blob: outputs[idx].Images[imageIdx],
+				},
+			})
+		}
+		pipelineOutput := &pipelinePB.PipelineDataPayload{
+			DataMappingIndex: outputs[idx].DataMappingIndex,
+			Images:           images,
+			Texts:            outputs[idx].Texts,
+			StructuredData:   outputs[idx].StructuredData,
+			Metadata:         outputs[idx].Metadata,
+		}
+		pipelineOutputs = append(pipelineOutputs, pipelineOutput)
+	}
+
 	return &pipelinePB.TriggerSyncPipelineResponse{
-		Outputs: req.Inputs,
+		Outputs: pipelineOutputs,
 	}, nil
 }
 

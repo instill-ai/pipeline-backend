@@ -15,6 +15,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -250,4 +251,90 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 
 	logger.Info("ConnectorActivity completed")
 	return &ExecuteConnectorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
+}
+
+func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]string, size int) []*connectorPB.DataPayload {
+
+	outputs := []*connectorPB.DataPayload{}
+	for idx := 0; idx < size; idx++ {
+		output := &connectorPB.DataPayload{}
+		for _, imageDep := range depMap["images"] {
+			imageDepName := strings.Split(imageDep, ".")[0]
+			output.DataMappingIndex = cache[imageDepName][idx].DataMappingIndex
+			output.Images = append(output.Images, cache[imageDepName][idx].Images...)
+
+		}
+		for _, textDep := range depMap["texts"] {
+
+			textDepName := strings.Split(textDep, ".")[0]
+			output.DataMappingIndex = cache[textDepName][idx].DataMappingIndex
+			output.Texts = append(output.Texts, cache[textDepName][idx].Texts...)
+
+		}
+		for _, structuredDataDep := range depMap["structured_data"] {
+
+			structuredDataDepName := strings.Split(structuredDataDep, ".")[0]
+			output.DataMappingIndex = cache[structuredDataDepName][idx].DataMappingIndex
+			for k, v := range cache[structuredDataDepName][idx].StructuredData.AsMap() {
+				if output.StructuredData == nil {
+					output.StructuredData = &structpb.Struct{
+						Fields: map[string]*structpb.Value{},
+					}
+				}
+
+				val, _ := structpb.NewValue(v)
+
+				output.StructuredData.GetFields()[k] = val
+			}
+		}
+		for _, metadataDep := range depMap["metadata"] {
+			metadataDepName := strings.Split(metadataDep, ".")[0]
+			output.DataMappingIndex = cache[metadataDepName][idx].DataMappingIndex
+			metadataDepField := strings.Split(metadataDep, ".")[1]
+			if metadataDepField == "structured_data" {
+
+				for k, v := range cache[metadataDepName][idx].StructuredData.AsMap() {
+
+					if output.Metadata == nil {
+						output.Metadata = &structpb.Struct{
+							Fields: map[string]*structpb.Value{},
+						}
+					}
+					val, _ := structpb.NewValue(v)
+
+					output.Metadata.GetFields()[k] = val
+				}
+			}
+			if metadataDepField == "metadata" {
+				for k, v := range cache[metadataDepName][idx].Metadata.AsMap() {
+					if output.Metadata == nil {
+						output.Metadata = &structpb.Struct{
+							Fields: map[string]*structpb.Value{},
+						}
+					}
+					val, _ := structpb.NewValue(v)
+
+					output.Metadata.GetFields()[k] = val
+				}
+			}
+			if metadataDepField == "texts" {
+
+				if output.Metadata == nil {
+					output.Metadata = &structpb.Struct{
+						Fields: map[string]*structpb.Value{},
+					}
+				}
+				values := []*structpb.Value{}
+
+				for textIdx := range cache[metadataDepName][idx].Texts {
+					values = append(values, structpb.NewStringValue(cache[metadataDepName][idx].Texts[textIdx]))
+				}
+				output.Metadata.GetFields()["texts"] = structpb.NewListValue(&structpb.ListValue{Values: values})
+			}
+
+		}
+		outputs = append(outputs, output)
+
+	}
+	return outputs
 }
