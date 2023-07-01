@@ -100,7 +100,7 @@ export const detSyncHTTPSingleModelRecipe = {
         "id": "d01",
         "resource_name": "connectors/destination-http",
         "dependencies": {
-          "json": "{**s01.json}"
+          "structured_data": "{**s01.structured_data}"
         }
       },
 
@@ -124,7 +124,9 @@ export const detSyncGRPCSingleModelRecipe = {
       {
         "id": "d01",
         "resource_name": "connectors/destination-grpc",
-        "dependencies": {},
+        "dependencies": {
+          "structured_data": "{**s01.structured_data}"
+        },
       },
 
     ]
@@ -151,7 +153,9 @@ export const detSyncHTTPMultiModelRecipe = {
       {
         "id": "d01",
         "resource_name": "connectors/destination-http",
-        "dependencies": {},
+        "dependencies": {
+          "structured_data": "{**s01.structured_data}"
+        },
       },
 
     ]
@@ -178,7 +182,9 @@ export const detSynGRPCMultiModelRecipe = {
       {
         "id": "d01",
         "resource_name": "connectors/destination-grpc",
-        "dependencies": {},
+        "dependencies": {
+          "structured_data": "{**s01.structured_data}"
+        },
       },
 
     ]
@@ -204,7 +210,9 @@ export const detAsyncSingleModelRecipe = {
       {
         "id": "d01",
         "resource_name": `connectors/${dstCSVConnID1}`,
-        "dependencies": {},
+        "dependencies": {
+          "structured_data": "{**s01.structured_data}"
+        },
       },
     ]
   },
@@ -230,7 +238,9 @@ export const detAsyncMultiModelRecipe = {
       {
         "id": "d01",
         "resource_name": `connectors/${dstCSVConnID1}`,
-        "dependencies": {},
+        "dependencies": {
+          "structured_data": "{**s01.structured_data}"
+        },
       },
     ]
   },
@@ -256,12 +266,16 @@ export const detAsyncMultiModelMultipleDestinationRecipe = {
       {
         "id": "d01",
         "resource_name": `connectors/${dstCSVConnID1}`,
-        "dependencies": {},
+        "dependencies": {
+          "structured_data": "{**s01.structured_data}"
+        },
       },
       {
         "id": "d02",
         "resource_name": `connectors/${dstCSVConnID2}`,
-        "dependencies": {},
+        "dependencies": {
+          "structured_data": "{**s01.structured_data}"
+        },
       },
     ]
   },
