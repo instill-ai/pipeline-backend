@@ -81,8 +81,7 @@ func migrateRecipeUp(oldRecipe *Recipe) (*datamodel.Recipe, error) {
 	}
 	return newRecipe, nil
 }
-func migratePipelineRecipeUp() error {
-	fmt.Println("migratePipelineRecipeUp")
+func migratePipelineRecipeUp000002() error {
 	db := database.GetConnection()
 	defer database.Close(db)
 
