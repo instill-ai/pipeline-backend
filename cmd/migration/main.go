@@ -116,16 +116,21 @@ func main() {
 
 	step := curVersion
 	for {
-		if step == 1 {
-			if err := migratePipelineRecipeUp(); err != nil {
-				panic(err)
-			}
-
-		}
 		if ExpectedVersion <= step {
 			fmt.Printf("Migration to version %d complete\n", ExpectedVersion)
 			break
 		} else {
+			if step == 1 {
+				if err := migratePipelineRecipeUp000002(); err != nil {
+					panic(err)
+				}
+
+			}
+			if step == 2 {
+				if err := migratePipelineRecipeUp000003(); err != nil {
+					panic(err)
+				}
+			}
 			fmt.Printf("Step up to version %d\n", step+1)
 			if err := m.Steps(1); err != nil {
 				panic(err)
