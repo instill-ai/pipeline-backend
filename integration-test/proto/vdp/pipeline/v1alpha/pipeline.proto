@@ -370,6 +370,8 @@ message PipelineDataPayload {
   }
 
   // Data index corresponds to each data element
+  // if not provided, vdp will generate a one by uild
+  // ref: https://github.com/ulid/spec
   string data_mapping_index = 1 [ (google.api.field_behavior) = REQUIRED ];
 
   // Unstructured: text field
@@ -403,10 +405,8 @@ message TriggerSyncPipelineRequest {
 // TriggerSyncPipelineResponse represents a response for the output
 // of a pipeline, i.e., the multiple model inference outputs
 message TriggerSyncPipelineResponse {
-  // The data mapping indices stores UUID for each input
-  repeated string data_mapping_indices = 1;
   // The multiple model inference outputs
-  repeated PipelineDataPayload outputs = 2;
+  repeated PipelineDataPayload outputs = 1;
 }
 
 // TriggerAsyncPipelineRequest represents a request to trigger a async pipeline
