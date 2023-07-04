@@ -77,8 +77,8 @@ func NewDataPoint(
 		},
 		map[string]interface{}{
 			"owner_uid":           ownerUUID,
-			"pipeline_name":       pipeline.ID,
-			"pipeline_permalink":  pipeline.UID.String(),
+			"pipeline_id":         pipeline.ID,
+			"pipeline_uid":        pipeline.UID.String(),
 			"pipeline_trigger_id": pipelineRunID,
 			"trigger_time":        startTime.Format(time.RFC3339Nano),
 		},
