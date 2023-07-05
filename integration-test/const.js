@@ -2,13 +2,13 @@ import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
 let proto
 let pHost, cHost, mHost
-let pPrivatePort, pPublicPort, cPublicPort, mPublicPort
+let pPrivatePort, pPublicPort, cPublicPort
 
-if (__ENV.API_GATEWAY_HOST && !__ENV.API_GATEWAY_PORT || !__ENV.API_GATEWAY_HOST && __ENV.API_GATEWAY_PORT) {
-  fail("both API_GATEWAY_HOST and API_GATEWAY_PORT should be properly configured.")
+if (__ENV.API_GATEWAY_VDP_HOST && !__ENV.API_GATEWAY_VDP_PORT || !__ENV.API_GATEWAY_VDP_HOST && __ENV.API_GATEWAY_VDP_PORT) {
+  fail("both API_GATEWAY_HOST and API_GATEWAY_VDP_PORT should be properly configured.")
 }
 
-export const apiGatewayMode = (__ENV.API_GATEWAY_HOST && __ENV.API_GATEWAY_PORT);
+export const apiGatewayMode = (__ENV.API_GATEWAY_VDP_HOST && __ENV.API_GATEWAY_VDP_PORT);
 
 if (__ENV.API_GATEWAY_PROTOCOL) {
   if (__ENV.API_GATEWAY_PROTOCOL !== "http" && __ENV.API_GATEWAY_PROTOCOL != "https") {
@@ -21,13 +21,10 @@ if (__ENV.API_GATEWAY_PROTOCOL) {
 
 if (apiGatewayMode) {
   // internal mode for accessing api-gateway from container
-  pHost = cHost = __ENV.API_GATEWAY_HOST
+  pHost = cHost = __ENV.API_GATEWAY_VDP_HOST
   pPrivatePort = 3081
-  pPublicPort = cPublicPort = __ENV.API_GATEWAY_PORT
+  pPublicPort = cPublicPort = __ENV.API_GATEWAY_VDP_PORT
 
-  // TODO: remove model-backend dependency
-  mHost = "api-gateway-model"
-  mPublicPort = 9080
 } else {
   // direct microservice mode
   pHost = "pipeline-backend"
@@ -36,7 +33,6 @@ if (apiGatewayMode) {
   pPrivatePort = 3081
   pPublicPort = 8081
   cPublicPort = 8082
-  mPublicPort = 8083
 }
 
 export const pipelinePrivateHost = `${proto}://${pHost}:${pPrivatePort}`;
@@ -45,8 +41,8 @@ export const pipelineGRPCPrivateHost = `${pHost}:${pPrivatePort}`;
 export const pipelineGRPCPublicHost = `${pHost}:${pPublicPort}`;
 export const connectorPublicHost = `${proto}://${cHost}:${cPublicPort}`;
 export const connectorGRPCPublicHost = `${cHost}:${cPublicPort}`;
-export const modelPublicHost = `${proto}://${mHost}:${mPublicPort}`;
-export const modelGRPCPublicHost = `${mHost}:${mPublicPort}`;
+
+console.log(pipelinePublicHost)
 
 export const dogImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b");
 export const catImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/cat.jpg`, "b");

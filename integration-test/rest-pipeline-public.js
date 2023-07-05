@@ -2,7 +2,7 @@ import http from "k6/http";
 import { check, group, sleep } from "k6";
 import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
-import { pipelinePublicHost, connectorPublicHost, modelPublicHost } from "./const.js";
+import { pipelinePublicHost, connectorPublicHost } from "./const.js";
 
 import * as constant from "./const.js"
 import * as helper from "./helper.js"
