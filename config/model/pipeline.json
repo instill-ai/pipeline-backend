@@ -141,7 +141,7 @@
       "title": "Recipe",
       "description": "The specification of a recipe",
       "additionalProperties": false,
-      "required": ["version", "components"],
+      "required": ["version"],
       "properties": {
         "version": {
             "type": "string",
