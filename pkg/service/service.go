@@ -535,7 +535,7 @@ func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.Trigg
 		if err != nil {
 			return nil, err
 		}
-		inputs := worker.MergeData(cache, depMap, len(req.Inputs))
+		inputs := worker.MergeData(cache, depMap, len(req.Inputs), dbPipeline)
 		resp, err := s.connectorPublicServiceClient.ExecuteConnector(
 			utils.InjectOwnerToContextWithOwnerPermalink(ctx, utils.GenOwnerPermalink(owner)),
 			&connectorPB.ExecuteConnectorRequest{

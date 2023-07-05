@@ -212,7 +212,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		if err != nil {
 			return err
 		}
-		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys))
+		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys), param.Pipeline)
 		inputBlobRedisKeys, err := w.SetBlob(inputs)
 		result := ExecuteConnectorActivityResponse{}
 		ctx = workflow.WithActivityOptions(ctx, ao)
@@ -279,7 +279,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	return &ExecuteConnectorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
 }
 
-func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]string, size int) []*connectorPB.DataPayload {
+func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]string, size int, pipeline *datamodel.Pipeline) []*connectorPB.DataPayload {
 
 	outputs := []*connectorPB.DataPayload{}
 	for idx := 0; idx < size; idx++ {
@@ -357,6 +357,21 @@ func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]
 				}
 				output.Metadata.GetFields()["texts"] = structpb.NewListValue(&structpb.ListValue{Values: values})
 			}
+			if output.Metadata == nil {
+				output.Metadata = &structpb.Struct{
+					Fields: map[string]*structpb.Value{},
+				}
+			}
+
+			pipelineVal, err := structpb.NewValue(map[string]interface{}{
+				"id":    pipeline.ID,
+				"uid":   pipeline.BaseDynamic.UID.String(),
+				"owner": pipeline.Owner,
+			})
+
+			fmt.Println(err)
+			output.Metadata.GetFields()["pipeline"] = pipelineVal
+			fmt.Println("\n\n\n", output.Metadata)
 
 		}
 		outputs = append(outputs, output)
