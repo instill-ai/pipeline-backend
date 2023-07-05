@@ -16,7 +16,6 @@ import {
 import {
   pipelinePublicHost,
   connectorPublicHost,
-  modelPublicHost
 } from "./const.js";
 
 import {
