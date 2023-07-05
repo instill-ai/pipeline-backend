@@ -73,6 +73,9 @@ func (d *dag) AddEdge(from *datamodel.Component, to *datamodel.Component) {
 }
 
 func (d *dag) TopoloicalSort() ([]*datamodel.Component, error) {
+	if len(d.comps) == 0 {
+		return nil, fmt.Errorf("no components")
+	}
 	indegreesMap := map[*datamodel.Component]int{}
 	for _, tos := range d.prerequisitesMap {
 		for _, to := range tos {
@@ -102,11 +105,13 @@ func (d *dag) TopoloicalSort() ([]*datamodel.Component, error) {
 		}
 	}
 
-	if d.uf.Count() > 1 {
-		return nil, fmt.Errorf("more then a graph")
-	}
 	if len(ans) < len(d.comps) {
 		return nil, fmt.Errorf("not a valid dag")
 	}
+
+	if d.uf.Count() != 1 {
+		return nil, fmt.Errorf("more then a dag")
+	}
+
 	return ans, nil
 }
