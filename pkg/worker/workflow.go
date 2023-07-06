@@ -233,9 +233,12 @@ func (w *worker) DownloadActivity(ctx context.Context, param *TriggerAsyncPipeli
 		defer w.redisClient.Del(context.Background(), param.PipelineInputBlobRedisKeys[idx])
 	}
 
+	var connectorInputs []*connectorPB.DataPayload
+
 	// Download images
-	var images [][]byte
+
 	for idx := range pipelineInputs {
+		var images [][]byte
 		for imageIdx := range pipelineInputs[idx].Images {
 			switch pipelineInputs[idx].Images[imageIdx].UnstructuredData.(type) {
 			case *pipelinePB.PipelineDataPayload_UnstructuredData_Blob:
@@ -256,10 +259,6 @@ func (w *worker) DownloadActivity(ctx context.Context, param *TriggerAsyncPipeli
 				images = append(images, buff.Bytes())
 			}
 		}
-	}
-
-	var connectorInputs []*connectorPB.DataPayload
-	for idx := range pipelineInputs {
 		connectorInputs = append(connectorInputs, &connectorPB.DataPayload{
 			DataMappingIndex: pipelineInputs[idx].DataMappingIndex,
 			Images:           images,
