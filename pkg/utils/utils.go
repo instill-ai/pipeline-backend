@@ -110,15 +110,18 @@ func ParseDependency(dep map[string]string) ([]string, map[string][]string, erro
 		if str, ok := dep[key]; ok {
 			str = strings.ReplaceAll(str, " ", "")
 			str = str[1 : len(str)-1]
-			items := strings.Split(str, ",")
-			for idx := range items {
+			if len(str) > 0 {
+				items := strings.Split(str, ",")
+				for idx := range items {
 
-				name := strings.Split(items[idx], ".")[0]
-				depKey := strings.Split(items[idx], ".")[1]
-				name = strings.ReplaceAll(name, "*", "")
-				parentMap[name] = true
-				depMap[key] = append(depMap[key], fmt.Sprintf("%s.%s", name, depKey))
+					name := strings.Split(items[idx], ".")[0]
+					depKey := strings.Split(items[idx], ".")[1]
+					name = strings.ReplaceAll(name, "*", "")
+					parentMap[name] = true
+					depMap[key] = append(depMap[key], fmt.Sprintf("%s.%s", name, depKey))
+				}
 			}
+
 		}
 	}
 	parent := []string{}

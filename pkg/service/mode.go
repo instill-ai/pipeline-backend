@@ -144,15 +144,18 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 
 	dag := utils.NewDAG(recipeRscName.Components)
 	for _, component := range recipeRscName.Components {
-		parents, _, err := utils.ParseDependency(component.Dependencies)
-		if err != nil {
-			return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
-				status.Errorf(codes.InvalidArgument, "dependencies error")
-		}
-		for idx := range parents {
+		if component.Dependencies != nil {
+			parents, _, err := utils.ParseDependency(component.Dependencies)
+			if err != nil {
+				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+					status.Errorf(codes.InvalidArgument, "dependencies error")
+			}
+			for idx := range parents {
 
-			dag.AddEdge(componentIdMap[parents[idx]], component)
+				dag.AddEdge(componentIdMap[parents[idx]], component)
+			}
 		}
+
 	}
 	_, err = dag.TopoloicalSort()
 	if err != nil {
