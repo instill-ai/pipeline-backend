@@ -446,9 +446,12 @@ func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.Trigg
 	}
 
 	pipelineInputs := req.Inputs
+
+	var inputs []*connectorPB.DataPayload
+
 	// Download images
-	var images [][]byte
 	for idx := range pipelineInputs {
+		var images [][]byte
 		for imageIdx := range pipelineInputs[idx].Images {
 			switch pipelineInputs[idx].Images[imageIdx].UnstructuredData.(type) {
 			case *pipelinePB.PipelineDataPayload_UnstructuredData_Blob:
@@ -473,10 +476,7 @@ func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.Trigg
 				images = append(images, buff.Bytes())
 			}
 		}
-	}
 
-	var inputs []*connectorPB.DataPayload
-	for idx := range pipelineInputs {
 		inputs = append(inputs, &connectorPB.DataPayload{
 			DataMappingIndex: pipelineInputs[idx].DataMappingIndex,
 			Images:           images,
