@@ -33,7 +33,7 @@ influxdb:
   port: 8086
   token: i-love-instill-ai
   org: instill-ai
-  bucket: vdp
+  bucket: instill-ai
   flushinterval: 10 # In seconds for non-blocking batch mode
   https:
     cert:
