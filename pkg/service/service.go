@@ -121,11 +121,6 @@ func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipel
 
 	dbPipeline.Recipe = recipePermalink
 
-	resourceState, err := s.checkState(dbPipeline.Recipe)
-	if err != nil {
-		return nil, err
-	}
-
 	if err := s.repository.CreatePipeline(dbPipeline); err != nil {
 		return nil, err
 	}
@@ -144,8 +139,8 @@ func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipel
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	// Add resource entry to controller to start checking components' state
-	if err := s.UpdateResourceState(dbCreatedPipeline.UID, pipelinePB.Pipeline_State(resourceState), nil); err != nil {
+	// Add resource entry to controller
+	if err := s.UpdateResourceState(dbCreatedPipeline.UID, pipelinePB.Pipeline_STATE_INACTIVE, nil); err != nil {
 		return nil, err
 	}
 
@@ -263,8 +258,6 @@ func (s *service) GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datam
 
 func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	resourceState := toUpdPipeline.State
-
 	if toUpdPipeline.Recipe != nil {
 
 		// User desires to be active
@@ -277,10 +270,6 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 
 		toUpdPipeline.Recipe = recipePermalink
 
-		resourceState, err = s.checkState(toUpdPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	ownerPermalink := utils.GenOwnerPermalink(owner)
@@ -301,8 +290,8 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 		return nil, err
 	}
 
-	// Update resource entry in controller to start checking components' state
-	if err := s.UpdateResourceState(dbPipeline.UID, pipelinePB.Pipeline_State(resourceState), nil); err != nil {
+	// Update resource entry in controller
+	if err := s.UpdateResourceState(dbPipeline.UID, pipelinePB.Pipeline_STATE_INACTIVE, nil); err != nil {
 		return nil, err
 	}
 
@@ -410,10 +399,6 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
 
-	// if err := s.DeleteResourceState(existingPipeline.UID.String()); err != nil {
-	// 	return nil, err
-	// }
-
 	if err := s.repository.UpdatePipelineID(id, ownerPermalink, newID); err != nil {
 		return nil, err
 	}
@@ -422,10 +407,6 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	if err != nil {
 		return nil, err
 	}
-
-	// if err := s.UpdateResourceState(dbPipeline.UID.String(), pipelinePB.Pipeline_State(existingPipeline.State), nil); err != nil {
-	// 	return nil, err
-	// }
 
 	recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 	if err != nil {

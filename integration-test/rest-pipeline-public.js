@@ -71,6 +71,8 @@ export function CheckCreate() {
       "POST /v1alpha/pipelines response pipeline update_time": (r) => new Date(r.json().pipeline.update_time).getTime() > new Date().setTime(0)
     });
 
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
+
     check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/watch`, null, constant.params), {
       "GET /v1alpha/pipelines/watch sync pipeline response status is 200": (r) => r.status === 200,
       "GET /v1alpha/pipelines/watch sync pipeline response pipeline state ACTIVE": (r) => r.json().state === "STATE_ACTIVE",
