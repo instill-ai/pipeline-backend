@@ -165,12 +165,12 @@ func InitInfluxDBServiceClient(ctx context.Context) (influxdb2.Client, api.Write
 	}
 
 	client := influxdb2.NewClientWithOptions(
-		fmt.Sprintf("http://%s:%v", config.Config.InfluxDB.Host, config.Config.InfluxDB.Port),
+		config.Config.InfluxDB.URL,
 		config.Config.InfluxDB.Token,
 		influxOptions,
 	)
 
-	if _, err := client.Ping(ctx); err != nil && config.Config.Log.External {
+	if _, err := client.Ping(ctx); err != nil {
 		logger.Fatal(err.Error())
 	}
 

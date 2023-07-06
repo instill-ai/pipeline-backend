@@ -72,8 +72,7 @@ type DatabaseConfig struct {
 
 // InfluxDBConfig related to influxDB database
 type InfluxDBConfig struct {
-	Host          string `koanf:"host"`
-	Port          int    `koanf:"port"`
+	URL           string `koanf:"url"`
 	Token         string `koanf:"token"`
 	Org           string `koanf:"org"`
 	Bucket        string `koanf:"bucket"`
