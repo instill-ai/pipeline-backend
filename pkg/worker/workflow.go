@@ -104,77 +104,6 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		startTime,
 	)
 
-	var pipelineInputs []*pipelinePB.PipelineDataPayload
-
-	for idx := range param.PipelineInputBlobRedisKeys {
-		blob, err := w.redisClient.Get(context.Background(), param.PipelineInputBlobRedisKeys[idx]).Bytes()
-		if err != nil {
-			span.SetStatus(1, err.Error())
-			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
-			return err
-		}
-		pipelineInput := &pipelinePB.PipelineDataPayload{}
-		err = protojson.Unmarshal(blob, pipelineInput)
-		if err != nil {
-			span.SetStatus(1, err.Error())
-			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
-			return err
-		}
-
-		pipelineInputs = append(pipelineInputs, pipelineInput)
-
-	}
-
-	for idx := range param.PipelineInputBlobRedisKeys {
-		defer w.redisClient.Del(context.Background(), param.PipelineInputBlobRedisKeys[idx])
-	}
-
-	// Download images
-	var images [][]byte
-	for idx := range pipelineInputs {
-		for imageIdx := range pipelineInputs[idx].Images {
-			switch pipelineInputs[idx].Images[imageIdx].UnstructuredData.(type) {
-			case *pipelinePB.PipelineDataPayload_UnstructuredData_Blob:
-				images = append(images, pipelineInputs[idx].Images[imageIdx].GetBlob())
-			case *pipelinePB.PipelineDataPayload_UnstructuredData_Url:
-				imageUrl := pipelineInputs[idx].Images[imageIdx].GetUrl()
-				response, err := http.Get(imageUrl)
-				if err != nil {
-					logger.Error(fmt.Sprintf("logUnable to download image at %v. %v", imageUrl, err))
-					span.SetStatus(1, err.Error())
-					dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-					w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
-					return fmt.Errorf("unable to download image at %v", imageUrl)
-				}
-				defer response.Body.Close()
-
-				buff := new(bytes.Buffer) // pointer
-				_, err = buff.ReadFrom(response.Body)
-				if err != nil {
-					logger.Error(fmt.Sprintf("Unable to read content body from image at %v. %v", imageUrl, err))
-					span.SetStatus(1, err.Error())
-					dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-					w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
-					return fmt.Errorf("unable to read content body from image at %v", imageUrl)
-				}
-				images = append(images, buff.Bytes())
-			}
-		}
-	}
-
-	var connectorInputs []*connectorPB.DataPayload
-	for idx := range pipelineInputs {
-		connectorInputs = append(connectorInputs, &connectorPB.DataPayload{
-			DataMappingIndex: pipelineInputs[idx].DataMappingIndex,
-			Images:           images,
-			Texts:            pipelineInputs[idx].Texts,
-			StructuredData:   pipelineInputs[idx].StructuredData,
-			Metadata:         pipelineInputs[idx].Metadata,
-		})
-	}
-
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -203,8 +132,18 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		return err
 	}
 
+	result := ExecuteConnectorActivityResponse{}
+	ctx = workflow.WithActivityOptions(ctx, ao)
+	if err := workflow.ExecuteActivity(ctx, w.DownloadActivity, param).Get(ctx, &result); err != nil {
+		return err
+	}
+
 	cache := map[string][]*connectorPB.DataPayload{}
-	cache[orderedComp[0].Id] = connectorInputs
+	outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
+	if err != nil {
+		return err
+	}
+	cache[orderedComp[0].Id] = outputs
 
 	for _, comp := range orderedComp[1:] {
 
@@ -245,6 +184,75 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	return nil
 }
 
+func (w *worker) DownloadActivity(ctx context.Context, param *TriggerAsyncPipelineWorkflowRequest) (*ExecuteConnectorActivityResponse, error) {
+
+	logger := activity.GetLogger(ctx)
+	logger.Info("DownloadActivity started")
+	var pipelineInputs []*pipelinePB.PipelineDataPayload
+
+	for idx := range param.PipelineInputBlobRedisKeys {
+		blob, err := w.redisClient.Get(context.Background(), param.PipelineInputBlobRedisKeys[idx]).Bytes()
+		if err != nil {
+			return nil, err
+		}
+		pipelineInput := &pipelinePB.PipelineDataPayload{}
+		err = protojson.Unmarshal(blob, pipelineInput)
+		if err != nil {
+			return nil, err
+		}
+
+		pipelineInputs = append(pipelineInputs, pipelineInput)
+
+	}
+
+	for idx := range param.PipelineInputBlobRedisKeys {
+		defer w.redisClient.Del(context.Background(), param.PipelineInputBlobRedisKeys[idx])
+	}
+
+	// Download images
+	var images [][]byte
+	for idx := range pipelineInputs {
+		for imageIdx := range pipelineInputs[idx].Images {
+			switch pipelineInputs[idx].Images[imageIdx].UnstructuredData.(type) {
+			case *pipelinePB.PipelineDataPayload_UnstructuredData_Blob:
+				images = append(images, pipelineInputs[idx].Images[imageIdx].GetBlob())
+			case *pipelinePB.PipelineDataPayload_UnstructuredData_Url:
+				imageUrl := pipelineInputs[idx].Images[imageIdx].GetUrl()
+				response, err := http.Get(imageUrl)
+				if err != nil {
+					return nil, fmt.Errorf("unable to download image at %v", imageUrl)
+				}
+				defer response.Body.Close()
+
+				buff := new(bytes.Buffer) // pointer
+				_, err = buff.ReadFrom(response.Body)
+				if err != nil {
+					return nil, fmt.Errorf("unable to read content body from image at %v", imageUrl)
+				}
+				images = append(images, buff.Bytes())
+			}
+		}
+	}
+
+	var connectorInputs []*connectorPB.DataPayload
+	for idx := range pipelineInputs {
+		connectorInputs = append(connectorInputs, &connectorPB.DataPayload{
+			DataMappingIndex: pipelineInputs[idx].DataMappingIndex,
+			Images:           images,
+			Texts:            pipelineInputs[idx].Texts,
+			StructuredData:   pipelineInputs[idx].StructuredData,
+			Metadata:         pipelineInputs[idx].Metadata,
+		})
+	}
+	outputBlobRedisKeys, err := w.SetBlob(connectorInputs)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("DownloadActivity completed")
+	return &ExecuteConnectorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
+}
+
 func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorActivityRequest) (*ExecuteConnectorActivityResponse, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("ConnectorActivity started")
@@ -271,7 +279,6 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 
 	outputBlobRedisKeys, err := w.SetBlob(resp.Outputs)
 	if err != nil {
-
 		return nil, err
 	}
 
