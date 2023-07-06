@@ -55,7 +55,7 @@ export function setup() {
         "configuration": {}
       }
     })
-    console.log(resp)
+
     check(resp, {
       "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector HTTP response StatusOK": (r) => r.status === grpc.StatusOK,
     });

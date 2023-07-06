@@ -42,8 +42,6 @@ export const pipelineGRPCPublicHost = `${pHost}:${pPublicPort}`;
 export const connectorPublicHost = `${proto}://${cHost}:${cPublicPort}`;
 export const connectorGRPCPublicHost = `${cHost}:${cPublicPort}`;
 
-console.log(pipelinePublicHost)
-
 export const dogImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b");
 export const catImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/cat.jpg`, "b");
 export const bearImg = open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/bear.jpg`, "b");
