@@ -832,7 +832,7 @@ func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.Watch
 		return &pipelinePB.WatchPipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
+	dbPipeline, err := h.service.GetPipelineByID(id, owner, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
