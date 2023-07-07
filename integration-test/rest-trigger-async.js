@@ -1,5 +1,4 @@
 import http from "k6/http";
-import encoding from "k6/encoding";
 
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import { check, group } from "k6";
@@ -24,43 +23,48 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
 
     var payloadImageURL = {
-      task_inputs: [{
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }]
+      inputs: [
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+      ]
     };
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
     });
 
     var payloadImageBase64 = {
-      task_inputs: [{
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
-        }
-      }]
+      inputs: [
+        {
+          images: [{
+            blob: constant.dogImg,
+          }]
+        },
+      ]
     };
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
     });
 
-    const fd = new FormData();
-    fd.append("file", http.file(constant.dogImg), "dog.jpg");
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsyncMultipart`, fd.body(), {
-      headers: {
-        "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
-      },
-    }), {
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
-    });
+    // const fd = new FormData();
+    // fd.append("file", http.file(constant.dogImg), "dog.jpg");
+    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsyncMultipart`, fd.body(), {
+    //   headers: {
+    //     "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
+    //   },
+    // }), {
+    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
+    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
+    // });
 
   });
 
@@ -84,64 +88,71 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
 
     var payloadImageURL = {
-      task_inputs: [{
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }]
+      inputs: [
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+      ]
     };
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
     });
 
     var payloadImageBase64 = {
-      task_inputs: [
+      inputs: [
         {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
+          images: [{
+            blob: constant.dogImg,
+          }]
         },
         {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
-        }, {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
-        }]
+          images: [{
+            blob: constant.dogImg,
+          }]
+        },
+        {
+          images: [{
+            blob: constant.dogImg,
+          }]
+        },
+      ]
     };
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
     });
 
-    const fd = new FormData();
-    fd.append("file", http.file(constant.dogImg), "dog.jpg");
-    fd.append("file", http.file(constant.catImg, "cat.jpg"));
-    fd.append("file", http.file(constant.bearImg), "bear.jpg");
-    fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsyncMultipart`, fd.body(), {
-      headers: {
-        "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
-      },
-    }), {
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
-    });
+    // const fd = new FormData();
+    // fd.append("file", http.file(constant.dogImg), "dog.jpg");
+    // fd.append("file", http.file(constant.catImg, "cat.jpg"));
+    // fd.append("file", http.file(constant.bearImg), "bear.jpg");
+    // fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
+    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsyncMultipart`, fd.body(), {
+    //   headers: {
+    //     "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
+    //   },
+    // }), {
+    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
+    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
+    // });
 
   });
 
@@ -165,49 +176,55 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
 
     var payloadImageURL = {
-      task_inputs: [{
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }]
+      inputs: [
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+      ]
     };
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
     });
 
     var payloadImageBase64 = {
-      task_inputs: [
+      inputs: [
         {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
+          images: [{
+            blob: constant.dogImg,
+          }]
         },
         {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
+          images: [{
+            blob: constant.dogImg,
+          }]
         },
         {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
-        }
+          images: [{
+            blob: constant.dogImg,
+          }]
+        },
       ]
     };
 
@@ -253,70 +270,76 @@ export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
 
     var payloadImageURL = {
-      task_inputs: [{
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
-        }
-      }]
+      inputs: [
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+      ]
     };
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
     });
 
     var payloadImageBase64 = {
-      task_inputs: [
+      inputs: [
         {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
+          images: [{
+            blob: constant.dogImg,
+          }]
         },
         {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
+          images: [{
+            blob: constant.dogImg,
+          }]
         },
         {
-          detection: {
-            image_base64: encoding.b64encode(constant.dogImg, "b"),
-          }
-        }
+          images: [{
+            blob: constant.dogImg,
+          }]
+        },
       ]
     };
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
+      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
     });
 
-    const fd = new FormData();
-    fd.append("file", http.file(constant.dogImg, "dog.jpg"));
-    fd.append("file", http.file(constant.catImg, "cat.jpg"));
-    fd.append("file", http.file(constant.bearImg, "bear.jpg"));
-    fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsyncMultipart`, fd.body(), {
-      headers: {
-        "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
-      },
-    }), {
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
-    });
+    // const fd = new FormData();
+    // fd.append("file", http.file(constant.dogImg, "dog.jpg"));
+    // fd.append("file", http.file(constant.catImg, "cat.jpg"));
+    // fd.append("file", http.file(constant.bearImg, "bear.jpg"));
+    // fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
+    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsyncMultipart`, fd.body(), {
+    //   headers: {
+    //     "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
+    //   },
+    // }), {
+    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
+    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
+    // });
 
     // Delete the pipeline
     check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.params), {

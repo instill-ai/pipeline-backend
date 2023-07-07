@@ -1,344 +1,555 @@
-import http from "k6/http";
-import grpc from 'k6/net/grpc';
-import encoding from "k6/encoding";
+import grpc from "k6/net/grpc";
 
-import {
-  check,
-  group
-} from "k6";
-import {
-  randomString
-} from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
-import {
-  pipelinePublicHost
-} from "./const.js";
+import { check, group } from "k6";
+import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
-import * as constant from "./const.js"
+import * as constant from "./const.js";
 
 const client = new grpc.Client();
-client.load(['proto/vdp/pipeline/v1alpha'], 'pipeline_public_service.proto');
+client.load(["proto/vdp/pipeline/v1alpha"], "pipeline_public_service.proto");
 
 export function CheckTriggerAsyncSingleImageSingleModel() {
+  group(
+    "Pipelines API: Trigger an async pipeline for single image and single model",
+    () => {
+      client.connect(constant.pipelineGRPCPublicHost, {
+        plaintext: true,
+      });
 
-  group("Pipelines API: Trigger an async pipeline for single image and single model", () => {
+      var reqBody = Object.assign(
+        {
+          id: randomString(10),
+          description: randomString(50),
+        },
+        constant.detAsyncSingleModelRecipe
+      );
 
-    client.connect(constant.pipelineGRPCPublicHost, {
-      plaintext: true
-    });
-
-    var reqBody = Object.assign({
-      id: randomString(10),
-      description: randomString(50),
-    },
-      constant.detAsyncSingleModelRecipe
-    );
-
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
-      pipeline: reqBody
-    }), {
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Async GRPC pipeline response StatusOK": (r) => r.status === grpc.StatusOK,
-    });
-
-    var payloadImageURL = {
-      task_inputs: [{
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+          {
+            pipeline: reqBody,
+          }
+        ),
+        {
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Async GRPC pipeline response StatusOK":
+            (r) => r.status === grpc.StatusOK,
         }
-      }]
-    };
-
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline', {
-      name: `pipelines/${reqBody.id}`,
-      task_inputs: payloadImageURL["task_inputs"]
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
-    });
-
-    var payloadImageBase64 = {
-      task_inputs: [{
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
+      );
+      client.invoke(
+        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
+        {
+          name: `pipelines/${reqBody.id}`,
         }
-      }]
-    };
+      );
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline', {
-      name: `pipelines/${reqBody.id}`,
-      task_inputs: payloadImageBase64["task_inputs"]
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
-    });
+      var payloadImageURL = {
+        inputs: [
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+        ],
+      };
 
-    check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
-      name: `pipelines/${reqBody.id}`
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
-    });
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",
+          {
+            name: `pipelines/${reqBody.id}`,
+            inputs: payloadImageURL["inputs"],
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]:
+            (r) =>
+              r.message.dataMappingIndices.length ===
+              payloadImageURL.inputs.length,
+        }
+      );
 
-    client.close();
-  });
+      var payloadImageBase64 = {
+        inputs: [
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+        ],
+      };
+
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",
+          {
+            name: `pipelines/${reqBody.id}`,
+            inputs: payloadImageBase64["inputs"],
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]:
+            (r) =>
+              r.message.dataMappingIndices.length ===
+              payloadImageBase64.inputs.length,
+        }
+      );
+
+      check(
+        client.invoke(
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          {
+            name: `pipelines/${reqBody.id}`,
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+        }
+      );
+
+      client.close();
+    }
+  );
 }
 
 export function CheckTriggerAsyncMultiImageSingleModel() {
+  group(
+    "Pipelines API: Trigger an async pipeline for multiple images and single model",
+    () => {
+      client.connect(constant.pipelineGRPCPublicHost, {
+        plaintext: true,
+      });
 
+      var reqBody = Object.assign(
+        {
+          id: randomString(10),
+          description: randomString(50),
+        },
+        constant.detAsyncSingleModelRecipe
+      );
 
-  group("Pipelines API: Trigger an async pipeline for multiple images and single model", () => {
-
-    client.connect(constant.pipelineGRPCPublicHost, {
-      plaintext: true
-    });
-
-    var reqBody = Object.assign({
-      id: randomString(10),
-      description: randomString(50),
-    },
-      constant.detAsyncSingleModelRecipe
-    );
-
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
-      pipeline: reqBody
-    }), {
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Async GRPC pipeline response StatusOK": (r) => r.status === grpc.StatusOK,
-    });
-
-    var payloadImageURL = {
-      task_inputs: [{
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+          {
+            pipeline: reqBody,
+          }
+        ),
+        {
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Async GRPC pipeline response StatusOK":
+            (r) => r.status === grpc.StatusOK,
         }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      );
+      client.invoke(
+        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
+        {
+          name: `pipelines/${reqBody.id}`,
         }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      );
+
+      var payloadImageURL = {
+        inputs: [
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+        ],
+      };
+
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",
+          {
+            name: `pipelines/${reqBody.id}`,
+            inputs: payloadImageURL["inputs"],
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]:
+            (r) =>
+              r.message.dataMappingIndices.length ===
+              payloadImageURL.inputs.length,
         }
-      }]
-    };
+      );
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline', {
-      name: `pipelines/${reqBody.id}`,
-      task_inputs: payloadImageURL["task_inputs"]
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
-    });
+      var payloadImageBase64 = {
+        inputs: [
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+        ],
+      };
 
-    var payloadImageBase64 = {
-      task_inputs: [{
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",
+          {
+            name: `pipelines/${reqBody.id}`,
+            inputs: payloadImageBase64["inputs"],
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]:
+            (r) =>
+              r.message.dataMappingIndices.length ===
+              payloadImageBase64.inputs.length,
         }
-      },
-      {
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
+      );
+
+      check(
+        client.invoke(
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          {
+            name: `pipelines/${reqBody.id}`,
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
         }
-      }, {
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
-        }
-      }
-      ]
-    };
+      );
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline', {
-      name: `pipelines/${reqBody.id}`,
-      task_inputs: payloadImageBase64["task_inputs"]
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
-    });
-
-    check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
-      name: `pipelines/${reqBody.id}`
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
-    });
-
-    client.close();
-  });
+      client.close();
+    }
+  );
 }
 
 export function CheckTriggerAsyncMultiImageMultiModel() {
+  group(
+    "Pipelines API: Trigger an async pipeline for multiple images and multiple models",
+    () => {
+      client.connect(constant.pipelineGRPCPublicHost, {
+        plaintext: true,
+      });
 
-  group("Pipelines API: Trigger an async pipeline for multiple images and multiple models", () => {
+      var reqBody = Object.assign(
+        {
+          id: randomString(10),
+          description: randomString(50),
+        },
+        constant.detAsyncMultiModelRecipe
+      );
 
-    client.connect(constant.pipelineGRPCPublicHost, {
-      plaintext: true
-    });
-
-    var reqBody = Object.assign({
-      id: randomString(10),
-      description: randomString(50),
-    },
-      constant.detAsyncMultiModelRecipe
-    );
-
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
-      pipeline: reqBody
-    }), {
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Async GRPC pipeline response StatusOK": (r) => r.status === grpc.StatusOK,
-    });
-
-    var payloadImageURL = {
-      task_inputs: [{
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+          {
+            pipeline: reqBody,
+          }
+        ),
+        {
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Async GRPC pipeline response StatusOK":
+            (r) => r.status === grpc.StatusOK,
         }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      );
+      client.invoke(
+        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
+        {
+          name: `pipelines/${reqBody.id}`,
         }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      );
+
+      var payloadImageURL = {
+        inputs: [
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+        ],
+      };
+
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",
+          {
+            name: `pipelines/${reqBody.id}`,
+            inputs: payloadImageURL["inputs"],
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]:
+            (r) =>
+              r.message.dataMappingIndices.length ===
+              payloadImageURL.inputs.length,
         }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      );
+
+      var payloadImageBase64 = {
+        inputs: [
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+        ],
+      };
+
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",
+          {
+            name: `pipelines/${reqBody.id}`,
+            inputs: payloadImageBase64["inputs"],
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]:
+            (r) =>
+              r.message.dataMappingIndices.length ===
+              payloadImageBase64.inputs.length,
         }
-      }]
-    };
+      );
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline', {
-      name: `pipelines/${reqBody.id}`,
-      task_inputs: payloadImageURL["task_inputs"]
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
-    });
-
-    var payloadImageBase64 = {
-      task_inputs: [{
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
+      // Delete the pipeline
+      check(
+        client.invoke(
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          {
+            name: `pipelines/${reqBody.id}`,
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
         }
-      },
-      {
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
-        }
-      },
-      {
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
-        }
-      }
-      ]
-    };
+      );
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline', {
-      name: `pipelines/${reqBody.id}`,
-      task_inputs: payloadImageBase64["task_inputs"]
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
-    });
-
-    // Delete the pipeline
-    check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
-      name: `pipelines/${reqBody.id}`
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
-    });
-
-    client.close();
-  });
-
-
+      client.close();
+    }
+  );
 }
 
-
 export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
+  group(
+    "Pipelines API: Trigger an async pipeline for multiple images and multiple models and multiple destinations",
+    () => {
+      client.connect(constant.pipelineGRPCPublicHost, {
+        plaintext: true,
+      });
 
-  group("Pipelines API: Trigger an async pipeline for multiple images and multiple models and multiple destinations", () => {
+      var reqBody = Object.assign(
+        {
+          id: randomString(10),
+          description: randomString(50),
+        },
+        constant.detAsyncMultiModelMultipleDestinationRecipe
+      );
 
-    client.connect(constant.pipelineGRPCPublicHost, {
-      plaintext: true
-    });
-
-    var reqBody = Object.assign({
-      id: randomString(10),
-      description: randomString(50),
-    },
-      constant.detAsyncMultiModelMultipleDestinationRecipe
-    );
-
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline', {
-      pipeline: reqBody
-    }), {
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Async GRPC pipeline response StatusOK": (r) => r.status === grpc.StatusOK,
-    });
-
-    var payloadImageURL = {
-      task_inputs: [{
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+          {
+            pipeline: reqBody,
+          }
+        ),
+        {
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Async GRPC pipeline response StatusOK":
+            (r) => r.status === grpc.StatusOK,
         }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      );
+      client.invoke(
+        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
+        {
+          name: `pipelines/${reqBody.id}`,
         }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      );
+
+      var payloadImageURL = {
+        inputs: [
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                url: "https://artifacts.instill.tech/imgs/dog.jpg",
+              },
+            ],
+          },
+        ],
+      };
+
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",
+          {
+            name: `pipelines/${reqBody.id}`,
+            inputs: payloadImageURL["inputs"],
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]:
+            (r) =>
+              r.message.dataMappingIndices.length ===
+              payloadImageURL.inputs.length,
         }
-      }, {
-        detection: {
-          image_url: "https://artifacts.instill.tech/imgs/dog.jpg",
+      );
+
+      var payloadImageBase64 = {
+        inputs: [
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+          {
+            images: [
+              {
+                blob: constant.dogImg,
+              },
+            ],
+          },
+        ],
+      };
+
+      check(
+        client.invoke(
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",
+          {
+            name: `pipelines/${reqBody.id}`,
+            inputs: payloadImageBase64["inputs"],
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]:
+            (r) =>
+              r.message.dataMappingIndices.length ===
+              payloadImageBase64.inputs.length,
         }
-      }]
-    };
+      );
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline', {
-      name: `pipelines/${reqBody.id}`,
-      task_inputs: payloadImageURL["task_inputs"]
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageURL.task_inputs.length,
-    });
-
-    var payloadImageBase64 = {
-      task_inputs: [{
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
+      // Delete the pipeline
+      check(
+        client.invoke(
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          {
+            name: `pipelines/${reqBody.id}`,
+          }
+        ),
+        {
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
         }
-      },
-      {
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
-        }
-      },
-      {
-        detection: {
-          image_base64: encoding.b64encode(constant.dogImg, "b"),
-        }
-      }
-      ]
-    };
+      );
 
-    check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline', {
-      name: `pipelines/${reqBody.id}`,
-      task_inputs: payloadImageBase64["task_inputs"]
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]: (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]: (r) => r.message.dataMappingIndices.length === payloadImageBase64.task_inputs.length,
-    });
-
-    // Delete the pipeline
-    check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`, {
-      name: `pipelines/${reqBody.id}`
-    }), {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
-    });
-
-    client.close();
-  });
-
-
+      client.close();
+    }
+  );
 }
