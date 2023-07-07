@@ -37,6 +37,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 	srcCnt := 0
 	srcConnDefID := ""
 	srcCategory := Unspecified
+	sourceId := ""
 
 	dstConnDefIDs := []string{}
 	dstHasHttp := false
@@ -116,6 +117,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 				return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
 					status.Errorf(codes.InvalidArgument, "[pipeline-backend] Can not have more than one source connector.")
 			}
+			sourceId = recipeRscName.Components[idx].Id
 
 			srcConnDefID = connDefResp.GetConnectorDefinition().GetId()
 			if strings.Contains(srcConnDefID, "source-http") {
@@ -157,10 +159,14 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 		}
 
 	}
-	_, err = dag.TopoloicalSort()
+	orderedComp, err := dag.TopoloicalSort()
 	if err != nil {
 		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
 			status.Errorf(codes.InvalidArgument, "[pipeline-backend] The recipe is not a valid single source DAG: %v", err.Error())
+	}
+	if orderedComp[0].Id != sourceId {
+		return datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED),
+			status.Errorf(codes.InvalidArgument, "[pipeline-backend] The recipe is not starting from source")
 	}
 
 	if srcCategory == Http && len(dstConnDefIDs) == 1 && dstHasHttp {
