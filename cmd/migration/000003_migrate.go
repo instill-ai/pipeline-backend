@@ -17,7 +17,7 @@ func migratePipelineRecipeUp000003() error {
 	defer database.Close(db)
 
 	var items []datamodel.Pipeline
-	result := db.Unscoped().Model(&datamodel.Pipeline{})
+	result := db.Model(&datamodel.Pipeline{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -43,6 +43,7 @@ func migratePipelineRecipeUp000003() error {
 		defer connectorPrivateServiceClientConn.Close()
 	}
 	for idx := range items {
+		fmt.Printf("migrate %s\n", items[idx].UID)
 		var source *datamodel.Component
 		var model *datamodel.Component
 		var destination *datamodel.Component
