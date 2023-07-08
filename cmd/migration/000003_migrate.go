@@ -71,6 +71,14 @@ func migratePipelineRecipeUp000003() error {
 		model.ResourceName = "connectors/" + model.ResourceName[strings.LastIndex(model.ResourceName, "/")+1:]
 		destination.ResourceName = "connectors/" + destination.ResourceName[strings.LastIndex(destination.ResourceName, "/")+1:]
 
+		if source.Dependencies == nil {
+			source.Dependencies = map[string]string{
+				"texts":           "[]",
+				"images":          "[]",
+				"structured_data": "{}",
+				"metadata":        "{}",
+			}
+		}
 		if model.Dependencies == nil {
 			model.Dependencies = map[string]string{
 				"texts":           fmt.Sprintf("[*%s.texts]", source.Id),
