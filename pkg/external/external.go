@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
@@ -171,7 +172,7 @@ func InitInfluxDBServiceClient(ctx context.Context) (influxdb2.Client, api.Write
 	)
 
 	if _, err := client.Ping(ctx); err != nil {
-		logger.Fatal(err.Error())
+		logger.Warn(err.Error())
 	}
 
 	writeAPI := client.WriteAPI(config.Config.InfluxDB.Org, config.Config.InfluxDB.Bucket)
