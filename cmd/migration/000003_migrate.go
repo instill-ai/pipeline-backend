@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
@@ -66,6 +67,9 @@ func migratePipelineRecipeUp000003() error {
 			}
 
 		}
+		source.ResourceName = "connectors/" + source.ResourceName[strings.LastIndex(source.ResourceName, "/")+1:]
+		model.ResourceName = "connectors/" + model.ResourceName[strings.LastIndex(model.ResourceName, "/")+1:]
+		destination.ResourceName = "connectors/" + destination.ResourceName[strings.LastIndex(destination.ResourceName, "/")+1:]
 
 		if model.Dependencies == nil {
 			model.Dependencies = map[string]string{
