@@ -25,9 +25,7 @@ jobs:
           [
             pipeline-backend,
             connector-backend,
-            model-backend,
-            mgmt-backend,
-            controller,
+            controller-vdp,
           ]
     uses: instill-ai/vdp/.github/workflows/integration-test-backend.yml@main
     with:
@@ -81,17 +79,39 @@ jobs:
             GOLANG_VERSION=${{ env.GOLANG_VERSION }}
           tags: instill/pipeline-backend:latest
 
-      - name: Checkout (vdp)
+      - name: Checkout repo (base)
+        uses: actions/checkout@v3
+        with:
+          repository: instill-ai/base
+
+      - name: Load .env file (base)
+        uses: cardinalby/export-env-action@v2
+        with:
+          envFile: .env
+
+      - name: Launch Instill Base (latest)
+        run: |
+          COMPOSE_PROFILES=all \
+          EDITION=local-ce:test \
+          docker compose -f docker-compose.yml -f docker-compose.latest.yml up -d --quiet-pull
+          COMPOSE_PROFILES=all \
+          EDITION=local-ce:test \
+          docker compose -f docker-compose.yml -f docker-compose.latest.yml rm -f
+
+      - name: Checkout repo (vdp)
         uses: actions/checkout@v3
         with:
           repository: instill-ai/vdp
 
-      - name: Launch VDP
+      - name: Load .env file (vdp)
+        uses: cardinalby/export-env-action@v2
+        with:
+          envFile: .env
+
+      - name: Launch Instill VDP (latest)
         run: |
           COMPOSE_PROFILES=all \
           EDITION=local-ce:test \
-          ITMODE_ENABLED=true \
-          TRITON_CONDA_ENV_PLATFORM=cpu \
           docker compose -f docker-compose.yml -f docker-compose.latest.yml up -d --quiet-pull
           COMPOSE_PROFILES=all \
           EDITION=local-ce:test \
