@@ -44,7 +44,6 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	var mode pipelinePB.Pipeline_Mode
 	var state pipelinePB.Pipeline_State
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
@@ -54,7 +53,6 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 		filtering.DeclareIdent("description", filtering.TypeString),
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
-		filtering.DeclareEnumIdent("mode", mode.Type()),
 		filtering.DeclareEnumIdent("state", state.Type()),
 		filtering.DeclareIdent("owner", filtering.TypeString),
 		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),

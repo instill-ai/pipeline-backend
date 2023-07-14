@@ -39,23 +39,8 @@ type Pipeline struct {
 	ID          string
 	Owner       string
 	Description sql.NullString
-	Mode        PipelineMode
 	State       PipelineState
 	Recipe      *Recipe `gorm:"type:jsonb"`
-}
-
-// PipelineMode is an alias type for Protobuf enum Pipeline.Mode
-type PipelineMode pipelinePB.Pipeline_Mode
-
-// Scan function for custom GORM type PipelineMode
-func (p *PipelineMode) Scan(value interface{}) error {
-	*p = PipelineMode(pipelinePB.Pipeline_Mode_value[value.(string)])
-	return nil
-}
-
-// Value function for custom GORM type PipelineMode
-func (p PipelineMode) Value() (driver.Value, error) {
-	return pipelinePB.Pipeline_Mode(p).String(), nil
 }
 
 // PipelineState is an alias type for Protobuf enum Pipeline.State

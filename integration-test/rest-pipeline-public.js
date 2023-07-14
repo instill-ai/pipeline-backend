@@ -23,7 +23,7 @@ export function CheckCreate() {
     //       components: [
     //         {
     //           "id": "id",
-    //           "resource_name": "connectors/source-http",
+    //           "resource_name": "connectors/trigger",
     //           "dependencies": {},
     //         },
     //         // {
@@ -32,7 +32,7 @@ export function CheckCreate() {
     //         // },
     //         {
     //           "id": "id",
-    //           "resource_name": "connectors/destination-http",
+    //           "resource_name": "connectors/response",
     //           "dependencies": {},
     //         },
 
@@ -447,7 +447,7 @@ export function CheckList() {
     // Get UUID for foreign resources
     var srcConnUid = http
       .get(
-        `${connectorPublicHost}/v1alpha/connectors/source-http`,
+        `${connectorPublicHost}/v1alpha/connectors/trigger`,
         {},
         constant.params
       )
@@ -456,7 +456,7 @@ export function CheckList() {
 
     var dstConnUid = http
       .get(
-        `${connectorPublicHost}/v1alpha/connectors/destination-http`,
+        `${connectorPublicHost}/v1alpha/connectors/response`,
         {},
         constant.params
       )

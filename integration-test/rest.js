@@ -27,60 +27,31 @@ export let options = {
 
 export function setup() {
 
-  group("Connector Backend API: Create a http source connector", function () {
+  group("Connector Backend API: Create a source connector", function () {
 
     var res = http.request("POST", `${connectorPublicHost}/v1alpha/connectors`,
       JSON.stringify({
-        "id": "source-http",
-        "connector_definition_name": "connector-definitions/source-http",
+        "id": "trigger",
+        "connector_definition_name": "connector-definitions/trigger",
         "configuration": {}
       }), constant.params)
     check(res, {
-      "POST /v1alpha/connectors response status for creating HTTP source connector 201": (r) => r.status === 201,
+      "POST /v1alpha/connectors response status for creating source connector 201": (r) => r.status === 201,
     })
 
   });
 
-  group("Connector Backend API: Create a http destination connector", function () {
+  group("Connector Backend API: Create a destination connector", function () {
 
     var res = http.request("POST", `${connectorPublicHost}/v1alpha/connectors`,
       JSON.stringify({
-        "id": "destination-http",
-        "connector_definition_name": "connector-definitions/destination-http",
+        "id": "response",
+        "connector_definition_name": "connector-definitions/response",
         "configuration": {}
       }), constant.params)
 
     check(res, {
-      "POST /v1alpha/connectors response status for creating HTTP destination connector 201": (r) => r.status === 201,
-    })
-
-  });
-
-  group("Connector Backend API: Create a gRPC source connector", function () {
-
-    var res = http.request("POST", `${connectorPublicHost}/v1alpha/connectors`,
-      JSON.stringify({
-        "id": "source-grpc",
-        "connector_definition_name": "connector-definitions/source-grpc",
-        "configuration": {}
-      }), constant.params)
-    check(res, {
-      "POST /v1alpha/connectors response status for creating gRPC source connector 201": (r) => r.status === 201,
-    })
-
-  });
-
-  group("Connector Backend API: Create a gRPC destination connector", function () {
-
-    var res = http.request("POST", `${connectorPublicHost}/v1alpha/connectors`,
-      JSON.stringify({
-        "id": "destination-grpc",
-        "connector_definition_name": "connector-definitions/destination-grpc",
-        "configuration": {}
-      }), constant.params)
-
-    check(res, {
-      "POST /v1alpha/connectors response status for creating gRPC destination connector 201": (r) => r.status === 201,
+      "POST /v1alpha/connectors response status for creating destination connector 201": (r) => r.status === 201,
     })
 
   });
@@ -186,29 +157,18 @@ export function teardown(data) {
     }
   });
 
-  group("Connector Backend API: Delete the http source connector", function () {
-    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/source-http`), {
-      [`DELETE /v1alpha/connectors/source-http response status 204`]: (r) => r.status === 204,
+  group("Connector Backend API: Delete the source connector", function () {
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/trigger`), {
+      [`DELETE /v1alpha/connectors/trigger response status 204`]: (r) => r.status === 204,
     });
   });
 
-  group("Connector Backend API: Delete the http destination connector", function () {
-    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/destination-http`), {
-      [`DELETE /v1alpha/connectors/destination-http response status 204`]: (r) => r.status === 204,
+  group("Connector Backend API: Delete the destination connector", function () {
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/response`), {
+      [`DELETE /v1alpha/connectors/response response status 204`]: (r) => r.status === 204,
     });
   });
 
-  group("Connector Backend API: Delete the gRPC source connector", function () {
-    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/source-grpc`), {
-      [`DELETE /v1alpha/connectors/source-grpc response status 204`]: (r) => r.status === 204,
-    });
-  });
-
-  group("Connector Backend API: Delete the gRPC destination connector", function () {
-    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/destination-grpc`), {
-      [`DELETE /v1alpha/connectors/destination-grpc response status 204`]: (r) => r.status === 204,
-    });
-  });
 
   group("Connector Backend API: Delete the csv destination connector", function () {
     check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/${constant.dstCSVConnID1}`), {

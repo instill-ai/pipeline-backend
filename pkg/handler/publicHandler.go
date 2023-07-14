@@ -2,10 +2,8 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -14,7 +12,6 @@ import (
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -27,7 +24,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/checkfield"
-	"github.com/instill-ai/x/sterr"
 
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
@@ -180,7 +176,6 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
-	var mode pipelinePB.Pipeline_Mode
 	var state pipelinePB.Pipeline_State
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
@@ -190,7 +185,6 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		filtering.DeclareIdent("description", filtering.TypeString),
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
-		filtering.DeclareEnumIdent("mode", mode.Type()),
 		filtering.DeclareEnumIdent("state", state.Type()),
 		filtering.DeclareIdent("owner", filtering.TypeString),
 		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
@@ -638,8 +632,6 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 
 func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (*mgmtPB.User, *datamodel.Pipeline, error) {
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
 		return nil, nil, status.Error(codes.InvalidArgument, err.Error())
@@ -670,42 +662,6 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipel
 		return nil, nil, status.Errorf(codes.Internal, "there is no source in pipeline's recipe")
 	}
 
-	if dbPipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
-		switch {
-		case strings.Contains(sources[0], "http") && !resource.IsGWProxied(ctx):
-			st, err := sterr.CreateErrorPreconditionFailure(
-				"[handler] trigger a HTTP pipeline with gRPC",
-				[]*errdetails.PreconditionFailure_Violation{
-					{
-						Type:        "TRIGGER",
-						Subject:     fmt.Sprintf("id %s", id),
-						Description: fmt.Sprintf("Pipeline id %s has a source-http connector which cannot be triggered by gRPC", id),
-					},
-				},
-			)
-			if err != nil {
-				logger.Error(err.Error())
-			}
-			return nil, nil, st.Err()
-
-		case strings.Contains(sources[0], "grpc") && resource.IsGWProxied(ctx):
-			st, err := sterr.CreateErrorPreconditionFailure(
-				"[handler] trigger a HTTP pipeline with HTTP",
-				[]*errdetails.PreconditionFailure_Violation{
-					{
-						Type:        "TRIGGER",
-						Subject:     fmt.Sprintf("id %s", id),
-						Description: fmt.Sprintf("Pipeline id %s has a source-grpc connector which cannot be triggered by HTTP", id),
-					},
-				},
-			)
-			if err != nil {
-				logger.Error(err.Error())
-			}
-			return nil, nil, st.Err()
-		}
-	}
-
 	return owner, dbPipeline, nil
 
 }
@@ -733,6 +689,7 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 		*owner.Uid,
 		logUUID.String(),
 		dbPipeline,
+		pipelinePB.Pipeline_MODE_SYNC,
 		startTime,
 	)
 

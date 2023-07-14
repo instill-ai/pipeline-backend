@@ -25,7 +25,6 @@ func PBToDBPipeline(ctx context.Context, owner string, pbPipeline *pipelinePB.Pi
 	return &datamodel.Pipeline{
 		Owner: owner,
 		ID:    pbPipeline.GetId(),
-		Mode:  datamodel.PipelineMode(pbPipeline.GetMode()),
 		State: datamodel.PipelineState(pbPipeline.GetState()),
 
 		BaseDynamic: datamodel.BaseDynamic{
@@ -86,7 +85,6 @@ func DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) *pipeli
 		Name:        fmt.Sprintf("pipelines/%s", dbPipeline.ID),
 		Uid:         dbPipeline.BaseDynamic.UID.String(),
 		Id:          dbPipeline.ID,
-		Mode:        pipelinePB.Pipeline_Mode(dbPipeline.Mode),
 		State:       pipelinePB.Pipeline_State(dbPipeline.State),
 		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
 		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),

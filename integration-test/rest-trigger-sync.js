@@ -77,27 +77,6 @@ export function CheckTriggerSyncSingleImageSingleModel() {
       [`DELETE /v1alpha/pipelines/${reqHTTP.id} response status 204`]: (r) => r.status === 204,
     });
 
-    var reqGRPC = Object.assign(
-      {
-        id: randomString(10),
-        description: randomString(50),
-      },
-      constant.detSyncGRPCSimpleRecipe
-    );
-
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqGRPC), constant.params), {
-      "POST /v1alpha/pipelines response status is 201 (gRPC pipeline)": (r) => r.status === 201,
-    });
-    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}/activate`, {}, constant.params)
-
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}/triggerSync`, JSON.stringify(payloadImageURL), constant.params), {
-      [`POST /v1alpha/pipelines/${reqGRPC.id}/triggerSync (url) response status is 422 (gRPC pipeline triggered by HTTP)`]: (r) => r.status === 422,
-    })
-
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqGRPC.id}`, null, constant.params), {
-      [`DELETE /v1alpha/pipelines/${reqGRPC.id} response status 204`]: (r) => r.status === 204,
-    });
-
   });
 
 }

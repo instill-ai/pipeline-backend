@@ -12,4 +12,4 @@ var triggerRequiredFields = []string{"name", "inputs"}
 var immutableFields = []string{"id"}
 
 // outputOnlyFields are Protobuf message fields with OUTPUT_ONLY field_behavior annotation
-var outputOnlyFields = []string{"name", "uid", "mode", "state", "owner", "create_time", "update_time"}
+var outputOnlyFields = []string{"name", "uid", "state", "owner", "create_time", "update_time"}

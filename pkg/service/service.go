@@ -21,6 +21,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
@@ -108,7 +109,6 @@ func (h *service) GetRedisClient() *redis.Client {
 
 func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	// User desires to be active
 	dbPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
 
 	ownerPermalink := utils.GenOwnerPermalink(owner)
@@ -355,20 +355,12 @@ func (s *service) UpdatePipelineState(id string, owner *mgmtPB.User, state datam
 	}
 
 	if state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-		mode, recipeErr := s.checkRecipe(owner, recipeRscName)
+		recipeErr := s.checkRecipe(owner, recipeRscName)
 
 		if recipeErr != nil {
 			return nil, recipeErr
 		}
 
-		if err := s.repository.UpdatePipelineMode(id, ownerPermalink, mode); err != nil {
-			return nil, err
-		}
-
-	} else {
-		if err := s.repository.UpdatePipelineMode(id, ownerPermalink, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_UNSPECIFIED)); err != nil {
-			return nil, err
-		}
 	}
 
 	if err := s.repository.UpdatePipelineState(id, ownerPermalink, state); err != nil {
@@ -418,17 +410,13 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	return dbPipeline, nil
 }
 
-func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInputs []*pipelinePB.PipelineDataPayload, expectedMode datamodel.PipelineMode) error {
+func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInputs []*pipelinePB.PipelineDataPayload) error {
 	state, err := s.GetResourceState(dbPipeline.UID)
 	if err != nil {
 		return err
 	}
 	if *state != pipelinePB.Pipeline_STATE_ACTIVE {
 		return status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
-	}
-
-	if dbPipeline.Mode != expectedMode {
-		return status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not sync", dbPipeline.ID))
 	}
 
 	for idx := range pipelineInputs {
@@ -440,7 +428,7 @@ func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInp
 func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
-	err := s.preTriggerPipeline(dbPipeline, req.Inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC))
+	err := s.preTriggerPipeline(dbPipeline, req.Inputs)
 	if err != nil {
 		return nil, err
 	}
@@ -511,6 +499,7 @@ func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.Trigg
 	cache := map[string][]*connectorPB.DataPayload{}
 	cache[orderedComp[0].Id] = inputs
 
+	responseCompId := ""
 	for _, comp := range orderedComp[1:] {
 		_, depMap, err := utils.ParseDependency(comp.Dependencies)
 		if err != nil {
@@ -528,27 +517,39 @@ func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.Trigg
 			return nil, err
 		}
 		cache[comp.Id] = resp.Outputs
+		if comp.ResourceName == fmt.Sprintf("connectors/%s", constant.ResponseConnectorId) {
+			responseCompId = comp.Id
+		}
 	}
 
-	outputs := cache[orderedComp[len(orderedComp)-1].Id]
 	pipelineOutputs := []*pipelinePB.PipelineDataPayload{}
-	for idx := range outputs {
-		images := []*pipelinePB.PipelineDataPayload_UnstructuredData{}
-		for imageIdx := range outputs[idx].Images {
-			images = append(images, &pipelinePB.PipelineDataPayload_UnstructuredData{
-				UnstructuredData: &pipelinePB.PipelineDataPayload_UnstructuredData_Blob{
-					Blob: outputs[idx].Images[imageIdx],
-				},
-			})
+	if responseCompId == "" {
+		for idx := range inputs {
+			pipelineOutput := &pipelinePB.PipelineDataPayload{
+				DataMappingIndex: inputs[idx].DataMappingIndex,
+			}
+			pipelineOutputs = append(pipelineOutputs, pipelineOutput)
 		}
-		pipelineOutput := &pipelinePB.PipelineDataPayload{
-			DataMappingIndex: outputs[idx].DataMappingIndex,
-			Images:           images,
-			Texts:            outputs[idx].Texts,
-			StructuredData:   outputs[idx].StructuredData,
-			Metadata:         outputs[idx].Metadata,
+	} else {
+		outputs := cache[responseCompId]
+		for idx := range outputs {
+			images := []*pipelinePB.PipelineDataPayload_UnstructuredData{}
+			for imageIdx := range outputs[idx].Images {
+				images = append(images, &pipelinePB.PipelineDataPayload_UnstructuredData{
+					UnstructuredData: &pipelinePB.PipelineDataPayload_UnstructuredData_Blob{
+						Blob: outputs[idx].Images[imageIdx],
+					},
+				})
+			}
+			pipelineOutput := &pipelinePB.PipelineDataPayload{
+				DataMappingIndex: outputs[idx].DataMappingIndex,
+				Images:           images,
+				Texts:            outputs[idx].Texts,
+				StructuredData:   outputs[idx].StructuredData,
+				Metadata:         outputs[idx].Metadata,
+			}
+			pipelineOutputs = append(pipelineOutputs, pipelineOutput)
 		}
-		pipelineOutputs = append(pipelineOutputs, pipelineOutput)
 	}
 
 	return &pipelinePB.TriggerSyncPipelineResponse{
@@ -559,7 +560,7 @@ func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.Trigg
 func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
 	inputs := req.Inputs
-	err := s.preTriggerPipeline(dbPipeline, inputs, datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC))
+	err := s.preTriggerPipeline(dbPipeline, inputs)
 	if err != nil {
 		return nil, err
 	}

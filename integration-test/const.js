@@ -99,12 +99,12 @@ export const detSyncHTTPSimpleRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/source-http",
+        resource_name: "connectors/trigger",
         dependencies: {},
       },
       {
         id: "d01",
-        resource_name: "connectors/destination-http",
+        resource_name: "connectors/response",
         dependencies: {
           structured_data: "{**s01.structured_data}",
         },
@@ -119,12 +119,12 @@ export const detSyncGRPCSimpleRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/source-grpc",
+        resource_name: "connectors/trigger",
         dependencies: {},
       },
       {
         id: "d01",
-        resource_name: "connectors/destination-grpc",
+        resource_name: "connectors/response",
         dependencies: {
           structured_data: "{**s01.structured_data}",
         },
@@ -139,7 +139,7 @@ export const detSyncHTTPMultiModelRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/source-http",
+        resource_name: "connectors/trigger",
         dependencies: {},
       },
       // {
@@ -152,7 +152,7 @@ export const detSyncHTTPMultiModelRecipe = {
       // },
       {
         id: "d01",
-        resource_name: "connectors/destination-http",
+        resource_name: "connectors/response",
         dependencies: {
           structured_data: "{**s01.structured_data}",
         },
@@ -167,7 +167,7 @@ export const detSynGRPCMultiModelRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/source-grpc",
+        resource_name: "connectors/trigger",
         dependencies: {},
       },
       // {
@@ -180,7 +180,7 @@ export const detSynGRPCMultiModelRecipe = {
       // },
       {
         id: "d01",
-        resource_name: "connectors/destination-grpc",
+        resource_name: "connectors/response",
         dependencies: {
           structured_data: "{**s01.structured_data}",
         },
@@ -198,7 +198,7 @@ export const detAsyncSingleModelRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/source-http",
+        resource_name: "connectors/trigger",
         dependencies: {},
       },
       // {
@@ -222,7 +222,7 @@ export const detAsyncMultiModelRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/source-http",
+        resource_name: "connectors/trigger",
         dependencies: {},
       },
       // {
@@ -250,7 +250,7 @@ export const detAsyncMultiModelMultipleDestinationRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/source-http",
+        resource_name: "connectors/trigger",
         dependencies: {},
       },
       // {

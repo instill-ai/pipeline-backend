@@ -32,7 +32,6 @@ type Repository interface {
 	DeletePipeline(id string, owner string) error
 	UpdatePipelineID(id string, owner string, newID string) error
 	UpdatePipelineState(id string, owner string, state datamodel.PipelineState) error
-	UpdatePipelineMode(id string, owner string, mode datamodel.PipelineMode) error
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByIDAdmin(id string, isBasicView bool) (*datamodel.Pipeline, error)
@@ -290,17 +289,6 @@ func (r *repository) UpdatePipelineState(id string, owner string, state datamode
 		return status.Error(codes.Internal, result.Error.Error())
 	} else if result.RowsAffected == 0 {
 		return status.Errorf(codes.NotFound, "[UpdatePipelineState] The pipeline id %s you specified is not found", id)
-	}
-	return nil
-}
-
-func (r *repository) UpdatePipelineMode(id string, owner string, mode datamodel.PipelineMode) error {
-	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("id = ? AND owner = ?", id, owner).
-		Update("mode", mode); result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
-	} else if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[UpdatePipelineMode] The pipeline id %s you specified is not found", id)
 	}
 	return nil
 }

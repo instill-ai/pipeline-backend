@@ -27,12 +27,12 @@ export function CheckCreate() {
     //       components: [
     //         {
     //           id: "id",
-    //           resource_name: "connectors/source-grpc",
+    //           resource_name: "connectors/trigger",
     //           dependencies: {},
     //         },
     //         {
     //           id: "id",
-    //           resource_name: "connectors/destination-grpc",
+    //           resource_name: "connectors/response",
     //           dependencies: {},
     //         },
     //       ],
@@ -446,7 +446,7 @@ export function CheckList() {
     // Get UUID for foreign resources
     var srcConnUid = http
       .get(
-        `${constant.connectorPublicHost}/v1alpha/connectors/source-http`,
+        `${constant.connectorPublicHost}/v1alpha/connectors/trigger`,
         {},
         constant.params
       )
@@ -455,7 +455,7 @@ export function CheckList() {
 
     var dstConnUid = http
       .get(
-        `${constant.connectorPublicHost}/v1alpha/connectors/destination-http`,
+        `${constant.connectorPublicHost}/v1alpha/connectors/response`,
         {},
         constant.params
       )
