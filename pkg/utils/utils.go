@@ -68,12 +68,13 @@ func NewDataPoint(
 	ownerUUID string,
 	pipelineRunID string,
 	pipeline *datamodel.Pipeline,
+	mode pipelinePB.Pipeline_Mode,
 	startTime time.Time,
 ) *write.Point {
 	return influxdb2.NewPoint(
 		"pipeline.trigger",
 		map[string]string{
-			"pipeline_mode": pipelinePB.Pipeline_Mode(pipeline.Mode).String(),
+			"pipeline_mode": mode.String(),
 		},
 		map[string]interface{}{
 			"owner_uid":           ownerUUID,

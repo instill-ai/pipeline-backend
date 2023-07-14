@@ -103,12 +103,6 @@ func (u *usage) RetrieveUsageData() interface{} {
 					if pipeline.State == datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE) {
 						pipeInactiveStateNum++
 					}
-					if pipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_SYNC) {
-						pipeSyncModeNum++
-					}
-					if pipeline.Mode == datamodel.PipelineMode(pipelinePB.Pipeline_MODE_ASYNC) {
-						pipeAsyncModeNum++
-					}
 				}
 
 				if pipeNextPageToken == "" {

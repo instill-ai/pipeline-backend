@@ -101,6 +101,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		strings.Split(param.Pipeline.Owner, "/")[1],
 		workflow.GetInfo(ctx).WorkflowExecution.ID,
 		param.Pipeline,
+		pipelinePB.Pipeline_MODE_ASYNC,
 		startTime,
 	)
 

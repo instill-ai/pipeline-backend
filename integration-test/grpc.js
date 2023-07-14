@@ -29,13 +29,13 @@ export function setup() {
     timeout: "1800s",
   });
 
-  group("Connector Backend API: Create a http source connector", function () {
+  group("Connector Backend API: Create a source connector", function () {
     var resp = client.invoke(
       "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
       {
         connector: {
-          id: "source-http",
-          connector_definition_name: "connector-definitions/source-http",
+          id: "trigger",
+          connector_definition_name: "connector-definitions/trigger",
           configuration: {},
         },
       }
@@ -47,64 +47,22 @@ export function setup() {
   });
 
   group(
-    "Connector Backend API: Create a http destination connector",
+    "Connector Backend API: Create a destination connector",
     function () {
       check(
         client.invoke(
           "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
           {
             connector: {
-              id: "destination-http",
+              id: "response",
               connector_definition_name:
-                "connector-definitions/destination-http",
+                "connector-definitions/response",
               configuration: {},
             },
           }
         ),
         {
           "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector HTTP response StatusOK":
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-    }
-  );
-
-  group("Connector Backend API: Create a gRPC source connector", function () {
-    check(
-      client.invoke(
-        "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
-        {
-          connector: {
-            id: "source-grpc",
-            connector_definition_name: "connector-definitions/source-grpc",
-            configuration: {},
-          },
-        }
-      ),
-      {
-        "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector gRPC response StatusOK":
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-  });
-
-  group(
-    "Connector Backend API: Create a gRPC destination connector",
-    function () {
-      check(
-        client.invoke(
-          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
-          {
-            connector: {
-              id: "destination-grpc",
-              connector_definition_name:
-                "connector-definitions/destination-grpc",
-              configuration: {},
-            },
-          }
-        ),
-        {
-          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector gRPC response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -270,12 +228,12 @@ export function teardown(data) {
     plaintext: true,
   });
 
-  group("Connector Backend API: Delete the http source connector", function () {
+  group("Connector Backend API: Delete the source connector", function () {
     check(
       client.invoke(
         `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
         {
-          name: "connectors/source-http",
+          name: "connectors/trigger",
         }
       ),
       {
@@ -286,46 +244,13 @@ export function teardown(data) {
   });
 
   group(
-    "Connector Backend API: Delete the http destination connector",
+    "Connector Backend API: Delete the destination connector",
     function () {
       check(
         client.invoke(
           `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
           {
-            name: "connectors/destination-http",
-          }
-        ),
-        {
-          [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-    }
-  );
-
-  group("Connector Backend API: Delete the gRPC source connector", function () {
-    check(
-      client.invoke(
-        `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
-        {
-          name: "connectors/source-grpc",
-        }
-      ),
-      {
-        [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-  });
-
-  group(
-    "Connector Backend API: Delete the gRPC destination connector",
-    function () {
-      check(
-        client.invoke(
-          `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
-          {
-            name: "connectors/destination-grpc",
+            name: "connectors/response",
           }
         ),
         {

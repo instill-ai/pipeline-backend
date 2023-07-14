@@ -201,7 +201,7 @@ export function CheckList() {
     // Get UUID for foreign resources
     var srcConnUid = http
       .get(
-        `${connectorPublicHost}/v1alpha/connectors/source-http`,
+        `${connectorPublicHost}/v1alpha/connectors/trigger`,
         {},
         constant.params
       )
@@ -210,7 +210,7 @@ export function CheckList() {
 
     var dstConnUid = http
       .get(
-        `${connectorPublicHost}/v1alpha/connectors/destination-http`,
+        `${connectorPublicHost}/v1alpha/connectors/response`,
         {},
         constant.params
       )
