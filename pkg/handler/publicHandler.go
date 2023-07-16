@@ -666,10 +666,10 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipel
 
 }
 
-func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
 
 	startTime := time.Now()
-	eventName := "TriggerSyncPipeline"
+	eventName := "TriggerPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -682,23 +682,23 @@ func (h *PublicHandler) TriggerSyncPipeline(ctx context.Context, req *pipelinePB
 	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.TriggerSyncPipelineResponse{}, err
+		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
 	dataPoint := utils.NewDataPoint(
 		*owner.Uid,
 		logUUID.String(),
 		dbPipeline,
-		pipelinePB.Pipeline_MODE_SYNC,
+		mgmtPB.Mode_MODE_SYNC,
 		startTime,
 	)
 
-	resp, err := h.service.TriggerSyncPipeline(ctx, req, owner, dbPipeline)
+	resp, err := h.service.TriggerPipeline(ctx, req, owner, dbPipeline)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
 		h.service.WriteNewDataPoint(dataPoint.AddTag("status", "errored"))
-		return &pipelinePB.TriggerSyncPipelineResponse{}, err
+		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
@@ -818,5 +818,21 @@ func (h *PublicHandler) WatchPipeline(ctx context.Context, req *pipelinePB.Watch
 
 	return &pipelinePB.WatchPipelineResponse{
 		State: *state,
+	}, nil
+}
+
+func (h *PublicHandler) GetOperation(ctx context.Context, req *pipelinePB.GetOperationRequest) (*pipelinePB.GetOperationResponse, error) {
+
+	operationId, err := resource.GetOperationID(req.Name)
+	if err != nil {
+		return &pipelinePB.GetOperationResponse{}, err
+	}
+	operation, err := h.service.GetOperation(ctx, operationId)
+	if err != nil {
+		return &pipelinePB.GetOperationResponse{}, err
+	}
+
+	return &pipelinePB.GetOperationResponse{
+		Operation: operation,
 	}, nil
 }

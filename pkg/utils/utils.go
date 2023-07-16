@@ -15,7 +15,6 @@ import (
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 func GenOwnerPermalink(owner *mgmtPB.User) string {
@@ -68,7 +67,7 @@ func NewDataPoint(
 	ownerUUID string,
 	pipelineRunID string,
 	pipeline *datamodel.Pipeline,
-	mode pipelinePB.Pipeline_Mode,
+	mode mgmtPB.Mode,
 	startTime time.Time,
 ) *write.Point {
 	return influxdb2.NewPoint(

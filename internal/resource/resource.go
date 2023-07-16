@@ -130,3 +130,11 @@ func IsGWProxied(ctx context.Context) bool {
 	}
 	return false
 }
+
+func GetOperationID(name string) (string, error) {
+	id := strings.TrimPrefix(name, "operations/")
+	if !strings.HasPrefix(name, "operations/") || id == "" {
+		return "", status.Error(codes.InvalidArgument, "Error when extract operations resource id")
+	}
+	return id, nil
+}

@@ -15,10 +15,16 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/oklog/ulid/v2"
 	"go.einride.tech/aip/filtering"
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/converter"
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/anypb"
+
+	workflowpb "go.temporal.io/api/workflow/v1"
+	rpcStatus "google.golang.org/genproto/googleapis/rpc/status"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
@@ -47,7 +53,7 @@ type Service interface {
 	DeletePipeline(id string, owner *mgmtPB.User) error
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
-	TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error)
+	TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error)
 	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
@@ -62,6 +68,8 @@ type Service interface {
 	DeleteResourceState(uid uuid.UUID) error
 	// Influx API
 	WriteNewDataPoint(p *write.Point)
+
+	GetOperation(ctx context.Context, workflowId string) (*longrunningpb.Operation, error)
 }
 
 type service struct {
@@ -425,7 +433,7 @@ func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInp
 	return nil
 }
 
-func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.TriggerSyncPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerSyncPipelineResponse, error) {
+func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 	err := s.preTriggerPipeline(dbPipeline, req.Inputs)
@@ -552,7 +560,7 @@ func (s *service) TriggerSyncPipeline(ctx context.Context, req *pipelinePB.Trigg
 		}
 	}
 
-	return &pipelinePB.TriggerSyncPipelineResponse{
+	return &pipelinePB.TriggerPipelineResponse{
 		Outputs: pipelineOutputs,
 	}, nil
 }
@@ -570,15 +578,6 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		return nil, err
 	}
 
-	workflowOptions := client.StartWorkflowOptions{
-		ID:                       pipelineTriggerID,
-		TaskQueue:                worker.TaskQueue,
-		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		RetryPolicy: &temporal.RetryPolicy{
-			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
-		},
-	}
-
 	inputBlobRedisKeys := []string{}
 	for idx, input := range inputs {
 		inputJson, err := protojson.Marshal(input)
@@ -586,7 +585,7 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 			return nil, err
 		}
 
-		inputBlobRedisKey := fmt.Sprintf("async_pipeline_blob:%s:%d", pipelineTriggerID, idx)
+		inputBlobRedisKey := fmt.Sprintf("async_pipeline_request:%s:%d", pipelineTriggerID, idx)
 		s.redisClient.Set(
 			context.Background(),
 			inputBlobRedisKey,
@@ -594,6 +593,18 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
 		)
 		inputBlobRedisKeys = append(inputBlobRedisKeys, inputBlobRedisKey)
+	}
+	memo := map[string]interface{}{}
+	memo["number_of_data"] = len(inputBlobRedisKeys)
+
+	workflowOptions := client.StartWorkflowOptions{
+		ID:                       pipelineTriggerID,
+		TaskQueue:                worker.TaskQueue,
+		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
+		},
+		Memo: memo,
 	}
 
 	we, err := s.temporalClient.ExecuteWorkflow(
@@ -611,17 +622,87 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 
 	logger.Info(fmt.Sprintf("started workflow with WorkflowID %s and RunID %s", we.GetID(), we.GetRunID()))
 
-	dataMappingIndices := []string{}
-	for idx := range inputs {
-		dataMappingIndices = append(dataMappingIndices, inputs[idx].DataMappingIndex)
-	}
-
 	return &pipelinePB.TriggerAsyncPipelineResponse{
 		Operation: &longrunningpb.Operation{
 			Name: fmt.Sprintf("operations/%s", pipelineTriggerID),
 			Done: false,
 		},
-		DataMappingIndices: dataMappingIndices,
 	}, nil
 
+}
+
+func (s *service) GetOperation(ctx context.Context, workflowId string) (*longrunningpb.Operation, error) {
+	workflowExecutionRes, err := s.temporalClient.DescribeWorkflowExecution(ctx, workflowId, "")
+
+	if err != nil {
+		return nil, err
+	}
+	return s.getOperationFromWorkflowInfo(workflowExecutionRes.WorkflowExecutionInfo)
+}
+
+func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb.WorkflowExecutionInfo) (*longrunningpb.Operation, error) {
+	operation := longrunningpb.Operation{}
+
+	switch workflowExecutionInfo.Status {
+	case enums.WORKFLOW_EXECUTION_STATUS_COMPLETED:
+		payloads := []*pipelinePB.PipelineDataPayload{}
+		numberOfData := 0
+		err := converter.GetDefaultDataConverter().FromPayload(workflowExecutionInfo.Memo.GetFields()["number_of_data"], &numberOfData)
+		if err != nil {
+			return nil, err
+		}
+
+		for idx := 0; idx < numberOfData; idx++ {
+			blobRedisKey := fmt.Sprintf("async_pipeline_response:%s:%d", workflowExecutionInfo.Execution.WorkflowId, idx)
+			blob, err := s.redisClient.Get(context.Background(), blobRedisKey).Bytes()
+			if err != nil {
+				return nil, err
+			}
+			payload := &pipelinePB.PipelineDataPayload{}
+			err = protojson.Unmarshal(blob, payload)
+			if err != nil {
+				return nil, err
+			}
+
+			payloads = append(payloads, payload)
+
+		}
+		pipelineResp := pipelinePB.TriggerPipelineResponse{
+			Outputs: payloads,
+		}
+
+		resp, err := anypb.New(&pipelineResp)
+		if err != nil {
+			return nil, err
+		}
+		resp.TypeUrl = "buf.build/instill-ai/protobufs/vdp.pipeline.v1alpha.TriggerPipelineResponse"
+		operation = longrunningpb.Operation{
+			Done: true,
+			Result: &longrunningpb.Operation_Response{
+				Response: resp,
+			},
+		}
+	case enums.WORKFLOW_EXECUTION_STATUS_RUNNING:
+	case enums.WORKFLOW_EXECUTION_STATUS_CONTINUED_AS_NEW:
+		operation = longrunningpb.Operation{
+			Done: false,
+			Result: &longrunningpb.Operation_Response{
+				Response: &anypb.Any{},
+			},
+		}
+	default:
+		operation = longrunningpb.Operation{
+			Done: true,
+			Result: &longrunningpb.Operation_Error{
+				Error: &rpcStatus.Status{
+					Code:    int32(workflowExecutionInfo.Status),
+					Details: []*anypb.Any{},
+					Message: "",
+				},
+			},
+		}
+	}
+
+	operation.Name = fmt.Sprintf("operations/%s", workflowExecutionInfo.Execution.WorkflowId)
+	return &operation, nil
 }
