@@ -235,11 +235,6 @@ export function CheckList() {
       }
     );
 
-    // check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22`, null, constant.params), {
-    //   [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response 200`]: (r) => r.status == 200,
-    //   [`GET /v1alpha/admin/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
-    // });
-
     // Delete the pipelines
     for (const reqBody of reqBodies) {
       check(

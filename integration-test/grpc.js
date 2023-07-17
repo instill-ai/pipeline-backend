@@ -5,7 +5,7 @@ import { check, group } from "k6";
 import * as pipeline from "./grpc-pipeline-public.js";
 import * as pipelineWithJwt from "./grpc-pipeline-public-with-jwt.js";
 import * as pipelinePrivate from "./grpc-pipeline-private.js";
-import * as triggerSync from "./grpc-trigger-sync.js";
+import * as trigger from "./grpc-trigger.js";
 import * as triggerAsync from "./grpc-trigger-async.js";
 
 const client = new grpc.Client();
@@ -169,10 +169,10 @@ export default function (data) {
   pipeline.CheckLookUp()
   pipeline.CheckWatch()
 
-  triggerSync.CheckTriggerSyncSingleImageSingleModel();
-  triggerSync.CheckTriggerSyncMultiImageSingleModel();
+  trigger.CheckTriggerSingleImageSingleModel();
+  trigger.CheckTriggerMultiImageSingleModel();
   // Don't support this temporarily
-  // triggerSync.CheckTriggerSyncMultiImageMultiModel()
+  // trigger.CheckTriggerMultiImageMultiModel()
 
   triggerAsync.CheckTriggerAsyncSingleImageSingleModel();
   triggerAsync.CheckTriggerAsyncMultiImageSingleModel();

@@ -15,7 +15,6 @@ export function CheckCreate() {
     //   {
     //     id: randomString(63),
     //     description: randomString(50),
-    //     mode: "MODE_SYNC",
     //   },
     //   {
     //     recipe: {
@@ -481,11 +480,6 @@ export function CheckList() {
       }
     );
 
-    // check(http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22`, null, constant.params), {
-    //   [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response 200`]: (r) => r.status == 200,
-    //   [`GET /v1alpha/pipelines?filter=mode=MODE_SYNC%20AND%20recipe.components.resource_name:%22${dstConnPermalink}%22%20AND%20recipe.components.resource_name:%22${modelPermalink}%22 response pipelines.length > 0`]: (r) => r.json().pipelines.length > 0,
-    // });
-
     // Delete the pipelines
     for (const reqBody of reqBodies) {
       check(
@@ -622,7 +616,6 @@ export function CheckUpdate() {
 
     var reqBodyUpdate = Object.assign({
       uid: "output-only-to-be-ignored",
-      mode: "MODE_ASYNC",
       name: "pipelines/some-string-to-be-ignored",
       description: randomString(50),
     });
@@ -646,8 +639,6 @@ export function CheckUpdate() {
           (r) => r.json().pipeline.uid === resOrigin.json().pipeline.uid,
         [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline id (IMMUTABLE)`]:
           (r) => r.json().pipeline.id === resOrigin.json().pipeline.id,
-        [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline mode (OUTPUT_ONLY)`]:
-          (r) => r.json().pipeline.mode === resOrigin.json().pipeline.mode,
         [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline state (OUTPUT_ONLY)`]:
           (r) => r.json().pipeline.state === resOrigin.json().pipeline.state,
         [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline description (OPTIONAL)`]:

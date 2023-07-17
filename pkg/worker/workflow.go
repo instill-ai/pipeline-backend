@@ -18,10 +18,12 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
+	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
@@ -101,7 +103,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		strings.Split(param.Pipeline.Owner, "/")[1],
 		workflow.GetInfo(ctx).WorkflowExecution.ID,
 		param.Pipeline,
-		pipelinePB.Pipeline_MODE_ASYNC,
+		mgmtPB.Mode_MODE_ASYNC,
 		startTime,
 	)
 
@@ -150,6 +152,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 
 	cache := map[string][]*connectorPB.DataPayload{}
 	outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
+	for idx := range result.OutputBlobRedisKeys {
+		defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
+	}
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
@@ -157,6 +162,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		return err
 	}
 	cache[orderedComp[0].Id] = outputs
+
+	responseCompId := ""
 
 	for _, comp := range orderedComp[1:] {
 
@@ -169,6 +176,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		}
 		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys), param.Pipeline)
 		inputBlobRedisKeys, err := w.SetBlob(inputs)
+		for idx := range result.OutputBlobRedisKeys {
+			defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
+		}
 		result := ExecuteConnectorActivityResponse{}
 		ctx = workflow.WithActivityOptions(ctx, ao)
 		if err := workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
@@ -182,10 +192,6 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			return err
 		}
 
-		for idx := range result.OutputBlobRedisKeys {
-			defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
-		}
-
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
@@ -193,6 +199,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			return err
 		}
 		outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
+		for idx := range result.OutputBlobRedisKeys {
+			defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
+		}
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
@@ -200,10 +209,58 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			return err
 		}
 		cache[comp.Id] = outputs
+		if comp.ResourceName == fmt.Sprintf("connectors/%s", constant.ResponseConnectorId) {
+			responseCompId = comp.Id
+		}
 	}
 
 	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
 	w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "completed"))
+
+	pipelineOutputs := []*pipelinePB.PipelineDataPayload{}
+	if responseCompId == "" {
+		for idx := range cache[orderedComp[0].Id] {
+			pipelineOutput := &pipelinePB.PipelineDataPayload{
+				DataMappingIndex: cache[orderedComp[0].Id][idx].DataMappingIndex,
+			}
+			pipelineOutputs = append(pipelineOutputs, pipelineOutput)
+		}
+	} else {
+		outputs := cache[responseCompId]
+		for idx := range outputs {
+			images := []*pipelinePB.PipelineDataPayload_UnstructuredData{}
+			for imageIdx := range outputs[idx].Images {
+				images = append(images, &pipelinePB.PipelineDataPayload_UnstructuredData{
+					UnstructuredData: &pipelinePB.PipelineDataPayload_UnstructuredData_Blob{
+						Blob: outputs[idx].Images[imageIdx],
+					},
+				})
+			}
+			pipelineOutput := &pipelinePB.PipelineDataPayload{
+				DataMappingIndex: outputs[idx].DataMappingIndex,
+				Images:           images,
+				Texts:            outputs[idx].Texts,
+				StructuredData:   outputs[idx].StructuredData,
+				Metadata:         outputs[idx].Metadata,
+			}
+			pipelineOutputs = append(pipelineOutputs, pipelineOutput)
+		}
+	}
+
+	for idx := range pipelineOutputs {
+		outputJson, err := protojson.Marshal(pipelineOutputs[idx])
+		if err != nil {
+			return err
+		}
+
+		blobRedisKey := fmt.Sprintf("async_pipeline_response:%s:%d", workflow.GetInfo(ctx).WorkflowExecution.ID, idx)
+		w.redisClient.Set(
+			context.Background(),
+			blobRedisKey,
+			outputJson,
+			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
+		)
+	}
 
 	logger.Info("TriggerAsyncPipelineWorkflow completed")
 	return nil

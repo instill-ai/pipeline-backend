@@ -86,16 +86,6 @@ message Pipeline {
     pattern : "pipelines/{pipeline}"
   };
 
-  // Mode enumerates the pipeline modes
-  enum Mode {
-    // Mode: UNSPECIFIED
-    MODE_UNSPECIFIED = 0;
-    // Mode: SYNC
-    MODE_SYNC = 1;
-    // Mode: ASYNC
-    MODE_ASYNC = 2;
-  }
-
   // State enumerates the state of a pipeline
   enum State {
     // State: UNSPECIFIED
@@ -121,8 +111,6 @@ message Pipeline {
   optional string description = 4 [ (google.api.field_behavior) = OPTIONAL ];
   // Pipeline recipe
   Recipe recipe = 5 [ (google.api.field_behavior) = IMMUTABLE ];
-  // Pipeline mode
-  Mode mode = 6 [ (google.api.field_behavior) = OUTPUT_ONLY ];
   // Pipeline state
   State state = 7 [ (google.api.field_behavior) = OUTPUT_ONLY ];
   // Pipeline owner
@@ -390,8 +378,8 @@ message PipelineDataPayload {
   google.protobuf.Struct metadata = 7;
 }
 
-// TriggerSyncPipelineRequest represents a request to trigger a pipeline
-message TriggerSyncPipelineRequest {
+// TriggerPipelineRequest represents a request to trigger a pipeline
+message TriggerPipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
@@ -402,9 +390,9 @@ message TriggerSyncPipelineRequest {
       [ (google.api.field_behavior) = REQUIRED ];
 }
 
-// TriggerSyncPipelineResponse represents a response for the output
+// TriggerPipelineResponse represents a response for the output
 // of a pipeline, i.e., the multiple model inference outputs
-message TriggerSyncPipelineResponse {
+message TriggerPipelineResponse {
   // The multiple model inference outputs
   repeated PipelineDataPayload outputs = 1;
 }
@@ -427,21 +415,18 @@ message TriggerAsyncPipelineResponse {
   // Trigger async pipeline operation message
   google.longrunning.Operation operation = 1
       [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // The data mapping indices for each input
-  repeated string data_mapping_indices = 2
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
 }
 
-// GetTriggerAsyncOperationRequest represents a request to query a longrunning
+// GetOperationRequest represents a request to query a longrunning
 // operation
-message GetTriggerAsyncOperationRequest {
+message GetOperationRequest {
   // The name of the operation resource.
   string name = 1 [ (google.api.field_behavior) = REQUIRED ];
 }
 
-// GetTriggerAsyncOperationResponse represents a response for a longrunning
+// GetOperationResponse represents a response for a longrunning
 // operation
-message GetTriggerAsyncOperationResponse {
+message GetOperationResponse {
   // The retrieved longrunning operation
   google.longrunning.Operation operation = 1
       [ (google.api.field_behavior) = OUTPUT_ONLY ];

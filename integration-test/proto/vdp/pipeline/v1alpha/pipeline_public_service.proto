@@ -122,12 +122,12 @@ service PipelinePublicService {
     option (google.api.method_signature) = "name,new_pipeline_id";
   }
 
-  // TriggerSyncPipeline method receives a TriggerSyncPipelineRequest message
-  // and returns a TriggerSyncPipelineResponse.
-  rpc TriggerSyncPipeline(TriggerSyncPipelineRequest)
-      returns (TriggerSyncPipelineResponse) {
+  // TriggerPipeline method receives a TriggerPipelineRequest message
+  // and returns a TriggerPipelineResponse.
+  rpc TriggerPipeline(TriggerPipelineRequest)
+      returns (TriggerPipelineResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=pipelines/*}/triggerSync"
+      post : "/v1alpha/{name=pipelines/*}/trigger"
       body : "*"
     };
     option (google.api.method_signature) = "name,inputs";
@@ -155,13 +155,13 @@ service PipelinePublicService {
 
   // *Longrunning operation methods
 
-  // GetTriggerAsyncOperation method receives a
-  // GetTriggerAsyncOperationRequest message and returns a
-  // GetTriggerAsyncOperationResponse message.
-  rpc GetTriggerAsyncOperation(GetTriggerAsyncOperationRequest)
-      returns (GetTriggerAsyncOperationResponse) {
+  // GetOperation method receives a
+  // GetOperationRequest message and returns a
+  // GetOperationResponse message.
+  rpc GetOperation(GetOperationRequest)
+      returns (GetOperationResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/{name=triggerAsyncOperations/*}"
+      get : "/v1alpha/{name=operations/*}"
     };
     option (google.api.method_signature) = "name";
   }

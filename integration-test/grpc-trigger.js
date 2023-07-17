@@ -8,7 +8,7 @@ import * as constant from "./const.js";
 const client = new grpc.Client();
 client.load(["proto/vdp/pipeline/v1alpha"], "pipeline_public_service.proto");
 
-export function CheckTriggerSyncSingleImageSingleModel() {
+export function CheckTriggerSingleImageSingleModel() {
   group(
     "Pipelines API: Trigger a pipeline for single image and single model",
     () => {
@@ -71,14 +71,14 @@ export function CheckTriggerSyncSingleImageSingleModel() {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
           {
             name: `pipelines/${reqGRPC.id}`,
             inputs: payloadImageURL["inputs"],
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -97,14 +97,14 @@ export function CheckTriggerSyncSingleImageSingleModel() {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
           {
             name: `pipelines/${reqGRPC.id}`,
             inputs: payloadImageBase64["inputs"],
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -152,14 +152,14 @@ export function CheckTriggerSyncSingleImageSingleModel() {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
           {
             name: `pipelines/${reqHTTP.id}`,
             inputs: payloadImageURL["inputs"],
           }
         ),
         {
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (HTTP pipeline triggered by gRPC) response StatusFailedPrecondition":
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (HTTP pipeline triggered by gRPC) response StatusFailedPrecondition":
             (r) => r.status === grpc.StatusFailedPrecondition,
         }
       );
@@ -182,7 +182,7 @@ export function CheckTriggerSyncSingleImageSingleModel() {
   );
 }
 
-export function CheckTriggerSyncMultiImageSingleModel() {
+export function CheckTriggerMultiImageSingleModel() {
   group(
     "Pipelines API: Trigger a pipeline for multiple images and single model",
     () => {
@@ -252,14 +252,14 @@ export function CheckTriggerSyncMultiImageSingleModel() {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
           {
             name: `pipelines/${reqGRPC.id}`,
             inputs: payloadImageURL["inputs"],
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -285,14 +285,14 @@ export function CheckTriggerSyncMultiImageSingleModel() {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
           {
             name: `pipelines/${reqGRPC.id}`,
             inputs: payloadImageBase64["inputs"],
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -316,7 +316,7 @@ export function CheckTriggerSyncMultiImageSingleModel() {
   );
 }
 
-export function CheckTriggerSyncMultiImageMultiModel() {
+export function CheckTriggerMultiImageMultiModel() {
   group(
     "Pipelines API: Trigger a pipeline for multiple images and multiple models",
     () => {
@@ -387,16 +387,16 @@ export function CheckTriggerSyncMultiImageMultiModel() {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
           {
             name: `pipelines/${reqGRPC.id}`,
             inputs: payloadImageURL["inputs"],
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (url) response modelOutputs.length`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response modelOutputs.length`]:
             (r) => r.message.outputs.length === 2,
         }
       );
@@ -422,16 +422,16 @@ export function CheckTriggerSyncMultiImageMultiModel() {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
           {
             name: `pipelines/${reqGRPC.id}`,
             inputs: payloadImageBase64["inputs"],
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerSyncPipeline (base64) response modelOutputs.length`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (base64) response modelOutputs.length`]:
             (r) => r.message.outputs.length === 2,
         }
       );

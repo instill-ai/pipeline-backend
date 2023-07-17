@@ -252,13 +252,6 @@ export function CheckList() {
       }
     );
 
-    // check(clientPrivate.invoke('vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin', {
-    //   filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}"`
-    // }, {}), {
-    //   [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-    //   [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
-    // });
-
     // Delete the pipelines
     for (const reqBody of reqBodies) {
       check(

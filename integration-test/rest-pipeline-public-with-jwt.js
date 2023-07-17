@@ -133,7 +133,6 @@ export function CheckUpdate() {
 
       var reqBodyUpdate = Object.assign({
         uid: "output-only-to-be-ignored",
-        mode: "MODE_ASYNC",
         name: "pipelines/some-string-to-be-ignored",
         description: randomString(50),
       });
