@@ -174,7 +174,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
 			return err
 		}
-		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys), param.Pipeline)
+		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys), param.Pipeline, workflow.GetInfo(ctx).WorkflowExecution.ID)
 		inputBlobRedisKeys, err := w.SetBlob(inputs)
 		for idx := range result.OutputBlobRedisKeys {
 			defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
@@ -366,7 +366,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	return &ExecuteConnectorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
 }
 
-func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]string, size int, pipeline *datamodel.Pipeline) []*connectorPB.DataPayload {
+func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]string, size int, pipeline *datamodel.Pipeline, pipelineTriggerId string) []*connectorPB.DataPayload {
 
 	outputs := []*connectorPB.DataPayload{}
 	for idx := 0; idx < size; idx++ {
@@ -451,9 +451,10 @@ func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]
 			}
 
 			pipelineVal, _ := structpb.NewValue(map[string]interface{}{
-				"id":    pipeline.ID,
-				"uid":   pipeline.BaseDynamic.UID.String(),
-				"owner": pipeline.Owner,
+				"id":         pipeline.ID,
+				"uid":        pipeline.BaseDynamic.UID.String(),
+				"owner":      pipeline.Owner,
+				"trigger_id": pipelineTriggerId,
 			})
 
 			output.Metadata.GetFields()["pipeline"] = pipelineVal

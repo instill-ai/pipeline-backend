@@ -693,7 +693,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		startTime,
 	)
 
-	resp, err := h.service.TriggerPipeline(ctx, req, owner, dbPipeline)
+	resp, err := h.service.TriggerPipeline(ctx, req, owner, dbPipeline, logUUID.String())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
