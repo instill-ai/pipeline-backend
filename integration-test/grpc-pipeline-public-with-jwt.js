@@ -176,7 +176,6 @@ export function CheckUpdate() {
         id: reqBody.id,
         name: `pipelines/${reqBody.id}`,
         uid: "output-only-to-be-ignored",
-        mode: "MODE_ASYNC",
         description: randomString(50),
       });
 

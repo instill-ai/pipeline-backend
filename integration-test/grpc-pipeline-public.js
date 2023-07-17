@@ -481,13 +481,6 @@ export function CheckList() {
       }
     );
 
-    // check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
-    //   filter: `mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}"`
-    // }, {}), {
-    //   [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response StatusOK`]: (r) => r.status === grpc.StatusOK,
-    //   [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: mode=MODE_SYNC AND recipe.components.resource_name:"${dstConnPermalink}" AND recipe.components.resource_name:"${modelPermalink}" response pipelines.length`]: (r) => r.message.pipelines.length > 0,
-    // });
-
     // Delete the pipelines
     for (const reqBody of reqBodies) {
       check(
@@ -642,7 +635,6 @@ export function CheckUpdate() {
       id: reqBody.id,
       name: `pipelines/${reqBody.id}`,
       uid: "output-only-to-be-ignored",
-      mode: "MODE_ASYNC",
       description: randomString(50),
     });
 
@@ -665,8 +657,6 @@ export function CheckUpdate() {
           (r) => r.message.pipeline.uid === resOrigin.message.pipeline.uid,
         [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline id (IMMUTABLE)`]:
           (r) => r.message.pipeline.id === resOrigin.message.pipeline.id,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline mode (OUTPUT_ONLY)`]:
-          (r) => r.message.pipeline.mode === resOrigin.message.pipeline.mode,
         [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline state (OUTPUT_ONLY)`]:
           (r) => r.message.pipeline.state === resOrigin.message.pipeline.state,
         [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline description (OPTIONAL)`]:

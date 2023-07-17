@@ -67,10 +67,6 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]:
-            (r) =>
-              r.message.dataMappingIndices.length ===
-              payloadImageURL.inputs.length,
         }
       );
 
@@ -97,10 +93,6 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]:
-            (r) =>
-              r.message.dataMappingIndices.length ===
-              payloadImageBase64.inputs.length,
         }
       );
 
@@ -194,10 +186,6 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]:
-            (r) =>
-              r.message.dataMappingIndices.length ===
-              payloadImageURL.inputs.length,
         }
       );
 
@@ -238,10 +226,6 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]:
-            (r) =>
-              r.message.dataMappingIndices.length ===
-              payloadImageBase64.inputs.length,
         }
       );
 
@@ -335,10 +319,6 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]:
-            (r) =>
-              r.message.dataMappingIndices.length ===
-              payloadImageURL.inputs.length,
         }
       );
 
@@ -379,10 +359,6 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]:
-            (r) =>
-              r.message.dataMappingIndices.length ===
-              payloadImageBase64.inputs.length,
         }
       );
 
@@ -484,10 +460,6 @@ export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response dataMappingIndices.length`]:
-            (r) =>
-              r.message.dataMappingIndices.length ===
-              payloadImageURL.inputs.length,
         }
       );
 
@@ -528,10 +500,6 @@ export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (base64) response dataMappingIndices.length`]:
-            (r) =>
-              r.message.dataMappingIndices.length ===
-              payloadImageBase64.inputs.length,
         }
       );
 

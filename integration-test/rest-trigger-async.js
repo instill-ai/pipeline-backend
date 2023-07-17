@@ -37,7 +37,6 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
     });
 
     var payloadImageBase64 = {
@@ -52,7 +51,6 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
     });
 
     // const fd = new FormData();
@@ -63,7 +61,6 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
     //   },
     // }), {
     //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
     // });
 
   });
@@ -112,7 +109,6 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
     });
 
     var payloadImageBase64 = {
@@ -137,7 +133,6 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
     });
 
     // const fd = new FormData();
@@ -151,7 +146,6 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
     //   },
     // }), {
     //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
     // });
 
   });
@@ -205,7 +199,6 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
     });
 
     var payloadImageBase64 = {
@@ -230,7 +223,6 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.task_inputs.length,
     });
 
     const fd = new FormData();
@@ -244,7 +236,6 @@ export function CheckTriggerAsyncMultiImageMultiModel() {
       },
     }), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
     });
 
     // Delete the pipeline
@@ -299,7 +290,6 @@ export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageURL), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (url) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageURL.inputs.length,
     });
 
     var payloadImageBase64 = {
@@ -324,7 +314,6 @@ export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === payloadImageBase64.inputs.length,
     });
 
     // const fd = new FormData();
@@ -338,7 +327,6 @@ export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
     //   },
     // }), {
     //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response data_mapping_indices.length`]: (r) => r.json().data_mapping_indices.length === fd.parts.length,
     // });
 
     // Delete the pipeline

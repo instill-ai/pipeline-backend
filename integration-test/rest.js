@@ -14,7 +14,7 @@ import * as constant from "./const.js";
 import * as pipelinePublic from './rest-pipeline-public.js';
 import * as pipelinePublicWithJwt from './rest-pipeline-public-with-jwt.js';
 import * as pipelinePrivate from './rest-pipeline-private.js';
-import * as triggerSync from './rest-trigger-sync.js';
+import * as trigger from './rest-trigger.js';
 import * as triggerAsync from './rest-trigger-async.js';
 
 export let options = {
@@ -133,10 +133,10 @@ export default function (data) {
   pipelinePublic.CheckLookUp()
   pipelinePublic.CheckWatch()
 
-  triggerSync.CheckTriggerSyncSingleImageSingleModel()
-  triggerSync.CheckTriggerSyncMultiImageSingleModel()
+  trigger.CheckTriggerSingleImageSingleModel()
+  trigger.CheckTriggerMultiImageSingleModel()
   // Don't support this temporarily
-  // triggerSync.CheckTriggerSyncMultiImageMultiModel()
+  // trigger.CheckTriggerMultiImageMultiModel()
 
   triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
   triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
