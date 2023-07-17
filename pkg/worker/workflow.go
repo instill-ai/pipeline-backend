@@ -126,7 +126,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 		for idx := range parents {
@@ -137,7 +137,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 		return err
 	}
 
@@ -146,7 +146,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	if err := workflow.ExecuteActivity(ctx, w.DownloadActivity, param).Get(ctx, &result); err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 		return err
 	}
 
@@ -158,7 +158,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 		return err
 	}
 	cache[orderedComp[0].Id] = outputs
@@ -171,7 +171,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys), param.Pipeline, workflow.GetInfo(ctx).WorkflowExecution.ID)
@@ -188,14 +188,14 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		}).Get(ctx, &result); err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 		outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
@@ -205,7 +205,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 		cache[comp.Id] = outputs
@@ -249,7 +249,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 
@@ -263,7 +263,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	}
 
 	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-	w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "completed"))
+	w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_COMPLETED.String()))
 	logger.Info("TriggerAsyncPipelineWorkflow completed")
 	return nil
 }

@@ -697,7 +697,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-		h.service.WriteNewDataPoint(dataPoint.AddTag("status", "errored"))
+		h.service.WriteNewDataPoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
@@ -710,7 +710,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 	)))
 
 	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-	h.service.WriteNewDataPoint(dataPoint.AddTag("status", "completed"))
+	h.service.WriteNewDataPoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_COMPLETED.String()))
 
 	return resp, nil
 }
