@@ -130,11 +130,6 @@ func main() {
 					panic(err)
 				}
 			}
-			if step == 3 {
-				if err := migratePipelineRecipeUp000004(); err != nil {
-					panic(err)
-				}
-			}
 
 			fmt.Printf("Step up to version %d\n", step+1)
 			if err := m.Steps(1); err != nil {
