@@ -214,9 +214,6 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		}
 	}
 
-	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-	w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "completed"))
-
 	pipelineOutputs := []*pipelinePB.PipelineDataPayload{}
 	if responseCompId == "" {
 		for idx := range cache[orderedComp[0].Id] {
@@ -250,6 +247,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	for idx := range pipelineOutputs {
 		outputJson, err := protojson.Marshal(pipelineOutputs[idx])
 		if err != nil {
+			span.SetStatus(1, err.Error())
+			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
 			return err
 		}
 
@@ -262,6 +262,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		)
 	}
 
+	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+	w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "completed"))
 	logger.Info("TriggerAsyncPipelineWorkflow completed")
 	return nil
 }
