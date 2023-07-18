@@ -73,7 +73,7 @@ func NewDataPoint(
 	return influxdb2.NewPoint(
 		"pipeline.trigger",
 		map[string]string{
-			"pipeline_mode": mode.String(),
+			"trigger_mode": mode.String(),
 		},
 		map[string]interface{}{
 			"owner_uid":           ownerUUID,

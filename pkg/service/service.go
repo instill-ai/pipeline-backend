@@ -53,7 +53,7 @@ type Service interface {
 	DeletePipeline(id string, owner *mgmtPB.User) error
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
-	TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error)
+	TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline, pipelineTriggerId string) (*pipelinePB.TriggerPipelineResponse, error)
 	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
@@ -425,7 +425,7 @@ func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInp
 	return nil
 }
 
-func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerPipelineResponse, error) {
+func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, pipelineTriggerId string) (*pipelinePB.TriggerPipelineResponse, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 	err := s.preTriggerPipeline(dbPipeline, req.Inputs)
@@ -505,7 +505,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		if err != nil {
 			return nil, err
 		}
-		inputs := worker.MergeData(cache, depMap, len(req.Inputs), dbPipeline)
+		inputs := worker.MergeData(cache, depMap, len(req.Inputs), dbPipeline, pipelineTriggerId)
 		resp, err := s.connectorPublicServiceClient.ExecuteConnector(
 			utils.InjectOwnerToContextWithOwnerPermalink(ctx, utils.GenOwnerPermalink(owner)),
 			&connectorPB.ExecuteConnectorRequest{

@@ -126,7 +126,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 		for idx := range parents {
@@ -137,7 +137,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 		return err
 	}
 
@@ -146,7 +146,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	if err := workflow.ExecuteActivity(ctx, w.DownloadActivity, param).Get(ctx, &result); err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 		return err
 	}
 
@@ -158,7 +158,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+		w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 		return err
 	}
 	cache[orderedComp[0].Id] = outputs
@@ -171,10 +171,10 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
-		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys), param.Pipeline)
+		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys), param.Pipeline, workflow.GetInfo(ctx).WorkflowExecution.ID)
 		inputBlobRedisKeys, err := w.SetBlob(inputs)
 		for idx := range result.OutputBlobRedisKeys {
 			defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
@@ -188,14 +188,14 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		}).Get(ctx, &result); err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 		outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
@@ -205,7 +205,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "errored"))
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 		cache[comp.Id] = outputs
@@ -213,9 +213,6 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			responseCompId = comp.Id
 		}
 	}
-
-	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-	w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", "completed"))
 
 	pipelineOutputs := []*pipelinePB.PipelineDataPayload{}
 	if responseCompId == "" {
@@ -250,6 +247,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	for idx := range pipelineOutputs {
 		outputJson, err := protojson.Marshal(pipelineOutputs[idx])
 		if err != nil {
+			span.SetStatus(1, err.Error())
+			dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+			w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
 			return err
 		}
 
@@ -262,6 +262,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		)
 	}
 
+	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
+	w.influxDBWriteClient.WritePoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_COMPLETED.String()))
 	logger.Info("TriggerAsyncPipelineWorkflow completed")
 	return nil
 }
@@ -364,7 +366,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	return &ExecuteConnectorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
 }
 
-func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]string, size int, pipeline *datamodel.Pipeline) []*connectorPB.DataPayload {
+func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]string, size int, pipeline *datamodel.Pipeline, pipelineTriggerId string) []*connectorPB.DataPayload {
 
 	outputs := []*connectorPB.DataPayload{}
 	for idx := 0; idx < size; idx++ {
@@ -449,9 +451,10 @@ func MergeData(cache map[string][]*connectorPB.DataPayload, depMap map[string][]
 			}
 
 			pipelineVal, _ := structpb.NewValue(map[string]interface{}{
-				"id":    pipeline.ID,
-				"uid":   pipeline.BaseDynamic.UID.String(),
-				"owner": pipeline.Owner,
+				"id":         pipeline.ID,
+				"uid":        pipeline.BaseDynamic.UID.String(),
+				"owner":      pipeline.Owner,
+				"trigger_id": pipelineTriggerId,
 			})
 
 			output.Metadata.GetFields()["pipeline"] = pipelineVal
