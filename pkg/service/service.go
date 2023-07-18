@@ -188,14 +188,6 @@ func (s *service) ListPipelinesAdmin(pageSize int64, pageToken string, isBasicVi
 	if err != nil {
 		return nil, 0, "", err
 	}
-	if !isBasicView {
-		for idx := range dbPipelines {
-			err := s.includeResourceDetailInRecipe(dbPipelines[idx].Recipe)
-			if err != nil {
-				return nil, 0, "", err
-			}
-		}
-	}
 
 	return dbPipelines, ps, pt, nil
 }

@@ -103,7 +103,9 @@ func DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) *pipeli
 					logger.Error(err.Error())
 				}
 				for i := range pbRecipe.Components {
-					pbRecipe.Components[i].Type = pbRecipe.Components[i].ResourceDetail.GetFields()["connector_type"].GetStringValue()
+					if pbRecipe.Components[i].ResourceDetail != nil {
+						pbRecipe.Components[i].Type = pbRecipe.Components[i].ResourceDetail.GetFields()["connector_type"].GetStringValue()
+					}
 				}
 				return &pbRecipe
 			}
