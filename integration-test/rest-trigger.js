@@ -213,3 +213,118 @@ export function CheckTriggerMultiImageMultiModel() {
   });
 
 }
+
+export function CheckTriggerWithDependency() {
+
+  group("Pipelines API: Trigger a pipeline with dependency setting", () => {
+
+    var reqHTTP = {
+      id: randomString(10),
+      description: randomString(50),
+      recipe: {
+        version: "v1alpha",
+        components: [
+          {
+            id: "s01",
+            resource_name: "connectors/trigger",
+            dependencies: {},
+          },
+          {
+            id: "d01",
+            resource_name: "connectors/response",
+            dependencies: {
+              images: "[*s01.images]",
+            },
+          },
+        ],
+      },
+    }
+
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), constant.params), {
+      "POST /v1alpha/pipelines response status is 201 (HTTP pipeline)": (r) => r.status === 201,
+    });
+
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/activate`, {}, constant.params)
+
+    var payloadImageURL = {
+      inputs: [
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }]
+        },
+      ]
+    };
+
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url)  response outputs.length = ${payloadImageURL["inputs"].length}`]:
+        (r) => r.json().outputs.length === payloadImageURL["inputs"].length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url)  response outputs[0].images.length = ${payloadImageURL["inputs"][0].images.length}`]:
+        (r) => r.json().outputs[0].images.length === payloadImageURL["inputs"][0].images.length,
+    });
+
+
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
+      [`DELETE /v1alpha/pipelines/${reqHTTP.id} response status 204`]: (r) => r.status === 204,
+    });
+
+    var reqHTTP = {
+      id: randomString(10),
+      description: randomString(50),
+      recipe: {
+        version: "v1alpha",
+        components: [
+          {
+            id: "s01",
+            resource_name: "connectors/trigger",
+            dependencies: {},
+          },
+          {
+            id: "d01",
+            resource_name: "connectors/response",
+            dependencies: {
+              texts: "[*s01.texts]",
+              images: "[]",
+            },
+          },
+        ],
+      },
+    }
+
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), constant.params), {
+      "POST /v1alpha/pipelines response status is 201 (HTTP pipeline)": (r) => r.status === 201,
+    });
+
+    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/activate`, {}, constant.params)
+
+    var payloadImageURL = {
+      inputs: [
+        {
+          images: [{
+            url: "https://artifacts.instill.tech/imgs/dog.jpg",
+          }],
+          texts: ["11", "22"]
+        },
+      ]
+    };
+
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(payloadImageURL), constant.params), {
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url)  response outputs.length = ${payloadImageURL["inputs"].length}`]:
+        (r) => r.json().outputs.length === payloadImageURL["inputs"].length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url)  response outputs[0].texts.length = ${payloadImageURL["inputs"][0].texts.length}`]:
+        (r) => r.json().outputs[0].texts.length === payloadImageURL["inputs"][0].texts.length,
+      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url)  response outputs[0].images.length = 0`]:
+        (r) => r.json().outputs[0].images.length === 0,
+    });
+
+
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
+      [`DELETE /v1alpha/pipelines/${reqHTTP.id} response status 204`]: (r) => r.status === 204,
+    });
+
+
+  });
+
+}
