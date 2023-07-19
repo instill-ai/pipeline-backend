@@ -139,6 +139,7 @@ export default function (data) {
 
   triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
   triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
+  triggerAsync.CheckTriggerAsyncSingleResponse()
 
 
 }

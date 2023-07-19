@@ -171,15 +171,9 @@ export default function (data) {
 
   trigger.CheckTriggerSingleImageSingleModel();
   trigger.CheckTriggerMultiImageSingleModel();
-  // Don't support this temporarily
-  // trigger.CheckTriggerMultiImageMultiModel()
-
   triggerAsync.CheckTriggerAsyncSingleImageSingleModel();
   triggerAsync.CheckTriggerAsyncMultiImageSingleModel();
-
-  // Don't support this temporarily
-  // triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
-  // triggerAsync.CheckTriggerAsyncMultiImageMultiModelMultipleDestination()
+  triggerAsync.CheckTriggerAsyncSingleResponse()
 
   if (!constant.apiGatewayMode) {
     pipelinePrivate.CheckList()

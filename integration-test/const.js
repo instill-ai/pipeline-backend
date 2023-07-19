@@ -215,6 +215,27 @@ export const detAsyncSingleModelRecipe = {
   },
 };
 
+export const detAsyncSingleResponseRecipe = {
+  recipe: {
+    version: "v1alpha",
+    components: [
+      {
+        id: "s01",
+        resource_name: "connectors/trigger",
+        dependencies: {},
+      },
+      {
+        id: "d01",
+        resource_name: `connectors/response`,
+        dependencies: {
+          images: "[*s01.images]",
+          structured_data: "{**s01.structured_data}",
+        },
+      },
+    ],
+  },
+};
+
 export const detAsyncMultiModelRecipe = {
   recipe: {
     version: "v1alpha",
