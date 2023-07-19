@@ -2,7 +2,7 @@ import { uuidv4 } from "https://jslib.k6.io/k6-utils/1.4.0/index.js";
 import encoding from "k6/encoding";
 
 let proto;
-let pHost, cHost, mHost;
+let pHost, cHost;
 let pPrivatePort, pPublicPort, cPublicPort;
 
 if (
@@ -38,7 +38,6 @@ if (apiGatewayMode) {
   // direct microservice mode
   pHost = "pipeline-backend";
   cHost = "connector-backend";
-  mHost = "model-backend";
   pPrivatePort = 3081;
   pPublicPort = 8081;
   cPublicPort = 8082;
@@ -113,6 +112,26 @@ export const detSyncHTTPSimpleRecipe = {
   },
 };
 
+export const detSyncHTTPSimpleRecipeDupId = {
+  recipe: {
+    version: "v1alpha",
+    components: [
+      {
+        id: "s01",
+        resource_name: "connectors/trigger",
+        dependencies: {},
+      },
+      {
+        id: "s01",
+        resource_name: "connectors/response",
+        dependencies: {
+          structured_data: "{**s01.structured_data}",
+        },
+      },
+    ],
+  },
+};
+
 export const detSyncGRPCSimpleRecipe = {
   recipe: {
     version: "v1alpha",
@@ -142,14 +161,6 @@ export const detSyncHTTPMultiModelRecipe = {
         resource_name: "connectors/trigger",
         dependencies: {},
       },
-      // {
-      //   "id": "m01",
-      //   "resource_name": `connectors/${model_id}`,
-      // },
-      // {
-      //   "id": "m02",
-      //   "resource_name": `connectors/${model_id}`,
-      // },
       {
         id: "d01",
         resource_name: "connectors/response",
@@ -170,14 +181,6 @@ export const detSynGRPCMultiModelRecipe = {
         resource_name: "connectors/trigger",
         dependencies: {},
       },
-      // {
-      //   "id": "m01",
-      //   "resource_name": `connectors/${model_id}`,
-      // },
-      // {
-      //   "id": "m02",
-      //   "resource_name": `connectors/${model_id}`,
-      // },
       {
         id: "d01",
         resource_name: "connectors/response",
@@ -201,10 +204,6 @@ export const detAsyncSingleModelRecipe = {
         resource_name: "connectors/trigger",
         dependencies: {},
       },
-      // {
-      //   "id": "m01",
-      //   "resource_name": `connectors/${model_id}`,
-      // },
       {
         id: "d01",
         resource_name: `connectors/${dstCSVConnID1}`,
@@ -225,14 +224,6 @@ export const detAsyncMultiModelRecipe = {
         resource_name: "connectors/trigger",
         dependencies: {},
       },
-      // {
-      //   "id": "m01",
-      //   "resource_name": `connectors/${model_id}`,
-      // },
-      // {
-      //   "id": "m02",
-      //   "resource_name": `connectors/${model_id}`,
-      // },
       {
         id: "d01",
         resource_name: `connectors/${dstCSVConnID1}`,
@@ -253,14 +244,6 @@ export const detAsyncMultiModelMultipleDestinationRecipe = {
         resource_name: "connectors/trigger",
         dependencies: {},
       },
-      // {
-      //   "id": "m01",
-      //   "resource_name": `connectors/${model_id}`,
-      // },
-      // {
-      //   "id": "m02",
-      //   "resource_name": `connectors/${model_id}`,
-      // },
       {
         id: "d01",
         resource_name: `connectors/${dstCSVConnID1}`,

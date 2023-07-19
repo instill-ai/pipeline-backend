@@ -125,6 +125,7 @@ export default function (data) {
   }
 
   pipelinePublic.CheckCreate()
+  pipelinePublic.CheckActivate()
   pipelinePublic.CheckList()
   pipelinePublic.CheckGet()
   pipelinePublic.CheckUpdate()
@@ -135,15 +136,10 @@ export default function (data) {
 
   trigger.CheckTriggerSingleImageSingleModel()
   trigger.CheckTriggerMultiImageSingleModel()
-  // Don't support this temporarily
-  // trigger.CheckTriggerMultiImageMultiModel()
 
   triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
   triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
 
-  // Don't support this temporarily
-  // triggerAsync.CheckTriggerAsyncMultiImageMultiModel()
-  // triggerAsync.CheckTriggerAsyncMultiImageMultiModelMultipleDestination()
 
 }
 

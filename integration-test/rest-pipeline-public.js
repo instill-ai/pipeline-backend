@@ -9,42 +9,6 @@ import * as helper from "./helper.js";
 
 export function CheckCreate() {
   group("Pipelines API: Create a pipeline", () => {
-    // TODO: check when activate pipeline
-    // // Can not create pipeline with duplicated component id
-    // var reqBody = Object.assign(
-    //   {
-    //     id: randomString(63),
-    //     description: randomString(50),
-    //   },
-    //   {
-    //     recipe: {
-    //       version: "v1alpha",
-    //       components: [
-    //         {
-    //           "id": "id",
-    //           "resource_name": "connectors/trigger",
-    //           "dependencies": {},
-    //         },
-    //         // {
-    //         //   "id": "id",
-    //         //   "resource_name": `connectors/${constant.model_id}`,
-    //         // },
-    //         {
-    //           "id": "id",
-    //           "resource_name": "connectors/response",
-    //           "dependencies": {},
-    //         },
-
-    //       ]
-    //     }
-    //   }
-    // )
-
-    // // Create a pipeline with duplicated component id
-    // var resOrigin = http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params)
-    // check(resOrigin, {
-    //   "POST /v1alpha/pipelines with duplicated components id response status is 400": (r) => r.status === 400,
-    // });
 
     var reqBody = Object.assign(
       {
@@ -258,6 +222,182 @@ export function CheckCreate() {
     );
   });
 }
+
+export function CheckActivate() {
+  group("Pipelines API: Activate a pipeline", () => {
+
+    var reqBody = {
+      id: randomString(63),
+      description: randomString(50),
+      recipe: {
+        version: "v1alpha",
+        components: []
+      }
+    };
+
+    // Can create a pipeline with unfinished recipe
+    var resOrigin = http.request(
+      "POST",
+      `${pipelinePublicHost}/v1alpha/pipelines`,
+      JSON.stringify(reqBody),
+      constant.params
+    );
+    check(resOrigin, {
+      "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
+    });
+
+
+    // Cannot activate a pipeline with unfinished recipe
+    check(http.request(
+      "POST",
+      `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`,
+      {},
+      constant.params
+    ), {
+      [`POST /v1alpha/pipelines/${reqBody.id}/activate response status is 400`]: (r) => r.status === 400,
+    });
+
+    // Cannot deactivate a pipeline with unfinished recipe
+    check(http.request(
+      "POST",
+      `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/deactivate`,
+      {},
+      constant.params
+    ), {
+      [`POST /v1alpha/pipelines/${reqBody.id}/deactivate response status is 200`]: (r) => r.status === 200,
+    });
+
+    // Delete the pipeline
+    check(
+      http.request(
+        "DELETE",
+        `${pipelinePublicHost}/v1alpha/pipelines/${resOrigin.json().pipeline.id
+        }`,
+        null,
+        constant.params
+      ),
+      {
+        [`DELETE /v1alpha/pipelines/${resOrigin.json().pipeline.id
+          } response status 204`]: (r) => r.status === 204,
+      }
+    );
+
+
+
+    var reqBody = Object.assign(
+      {
+        id: randomString(63),
+        description: randomString(50),
+      },
+      constant.detSyncHTTPSimpleRecipe
+    );
+
+    // Can create a pipeline
+    var resOrigin = http.request(
+      "POST",
+      `${pipelinePublicHost}/v1alpha/pipelines`,
+      JSON.stringify(reqBody),
+      constant.params
+    );
+    check(resOrigin, {
+      "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
+    });
+
+
+    // Can activate a pipeline with finished recipe
+    check(http.request(
+      "POST",
+      `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`,
+      {},
+      constant.params
+    ), {
+      [`POST /v1alpha/pipelines/${reqBody.id}/activate response status is 200`]: (r) => r.status === 200,
+    });
+
+    // Cannot deactivate a pipeline with finished recipe
+    check(http.request(
+      "POST",
+      `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/deactivate`,
+      {},
+      constant.params
+    ), {
+      [`POST /v1alpha/pipelines/${reqBody.id}/deactivate response status is 200`]: (r) => r.status === 200,
+    });
+
+    // Delete the pipeline
+    check(
+      http.request(
+        "DELETE",
+        `${pipelinePublicHost}/v1alpha/pipelines/${resOrigin.json().pipeline.id
+        }`,
+        null,
+        constant.params
+      ),
+      {
+        [`DELETE /v1alpha/pipelines/${resOrigin.json().pipeline.id
+          } response status 204`]: (r) => r.status === 204,
+      }
+    );
+
+
+    var reqBody = Object.assign(
+      {
+        id: randomString(63),
+        description: randomString(50),
+      },
+      constant.detSyncHTTPSimpleRecipeDupId
+    );
+
+    // Can create a pipeline
+    var resOrigin = http.request(
+      "POST",
+      `${pipelinePublicHost}/v1alpha/pipelines`,
+      JSON.stringify(reqBody),
+      constant.params
+    );
+    check(resOrigin, {
+      "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
+    });
+
+
+    // Cannot activate a pipeline with duplicatd id
+    check(http.request(
+      "POST",
+      `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`,
+      {},
+      constant.params
+    ), {
+      [`POST /v1alpha/pipelines/${reqBody.id}/activate response status is 400`]: (r) => r.status === 400,
+    });
+
+    // Cannot deactivate a pipeline with duplicatd id
+    check(http.request(
+      "POST",
+      `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/deactivate`,
+      {},
+      constant.params
+    ), {
+      [`POST /v1alpha/pipelines/${reqBody.id}/deactivate response status is 200`]: (r) => r.status === 200,
+    });
+
+    // Delete the pipeline
+    check(
+      http.request(
+        "DELETE",
+        `${pipelinePublicHost}/v1alpha/pipelines/${resOrigin.json().pipeline.id
+        }`,
+        null,
+        constant.params
+      ),
+      {
+        [`DELETE /v1alpha/pipelines/${resOrigin.json().pipeline.id
+          } response status 204`]: (r) => r.status === 204,
+      }
+    );
+
+  });
+}
+
 
 export function CheckList() {
   group("Pipelines API: List pipelines", () => {

@@ -53,16 +53,6 @@ export function CheckTriggerAsyncSingleImageSingleModel() {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
     });
 
-    // const fd = new FormData();
-    // fd.append("file", http.file(constant.dogImg), "dog.jpg");
-    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsyncMultipart`, fd.body(), {
-    //   headers: {
-    //     "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
-    //   },
-    // }), {
-    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-    // });
-
   });
 
   // Delete the pipeline
@@ -134,19 +124,6 @@ export function CheckTriggerAsyncMultiImageSingleModel() {
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(payloadImageBase64), constant.params), {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
     });
-
-    // const fd = new FormData();
-    // fd.append("file", http.file(constant.dogImg), "dog.jpg");
-    // fd.append("file", http.file(constant.catImg, "cat.jpg"));
-    // fd.append("file", http.file(constant.bearImg), "bear.jpg");
-    // fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsyncMultipart`, fd.body(), {
-    //   headers: {
-    //     "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
-    //   },
-    // }), {
-    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-    // });
 
   });
 
@@ -316,18 +293,6 @@ export function CheckTriggerAsyncMultiImageMultiModelMultipleDestination() {
       [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (base64) response status is 200`]: (r) => r.status === 200,
     });
 
-    // const fd = new FormData();
-    // fd.append("file", http.file(constant.dogImg, "dog.jpg"));
-    // fd.append("file", http.file(constant.catImg, "cat.jpg"));
-    // fd.append("file", http.file(constant.bearImg, "bear.jpg"));
-    // fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsyncMultipart`, fd.body(), {
-    //   headers: {
-    //     "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
-    //   },
-    // }), {
-    //   [`POST /v1alpha/pipelines/${reqBody.id}/triggerAsync (multipart) response status is 200`]: (r) => r.status === 200,
-    // });
 
     // Delete the pipeline
     check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`, null, constant.params), {

@@ -14,15 +14,6 @@ import "google/api/field_behavior.proto";
 import "google/longrunning/operations.proto";
 
 import "../../../common/healthcheck/v1alpha/healthcheck.proto";
-import "../../../model/model/v1alpha/task_classification.proto";
-import "../../../model/model/v1alpha/task_detection.proto";
-import "../../../model/model/v1alpha/task_keypoint.proto";
-import "../../../model/model/v1alpha/task_ocr.proto";
-import "../../../model/model/v1alpha/task_instance_segmentation.proto";
-import "../../../model/model/v1alpha/task_semantic_segmentation.proto";
-import "../../../model/model/v1alpha/task_text_to_image.proto";
-import "../../../model/model/v1alpha/task_text_generation.proto";
-import "../../../model/model/v1alpha/task_unspecified.proto";
 
 // LivenessRequest represents a request to check a service liveness status
 message LivenessRequest {
@@ -297,50 +288,6 @@ message RenamePipelineResponse {
   Pipeline pipeline = 1;
 }
 
-////////////////////////////////////
-//  Trigger methods
-////////////////////////////////////
-
-// TaskOutput represents the output of a CV Task result from a
-// model, extended from model.v1alpha.TaskOutput.
-// Here we don't use a model.v1alpha.TaskOutput type field but explicitly use
-// the replicated oneof field because we want the CV Task output to be at the
-// same message layer like the trigger output of model.
-// This message is deprecated, will be removed soon
-message TaskOutput {
-  // The index of input data in a batch
-  string index = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // The inference task output
-  oneof output {
-    // The classification output
-    model.model.v1alpha.ClassificationOutput classification = 2
-        [ (google.api.field_behavior) = OUTPUT_ONLY ];
-    // The detection output
-    model.model.v1alpha.DetectionOutput detection = 3
-        [ (google.api.field_behavior) = OUTPUT_ONLY ];
-    // The keypoint output
-    model.model.v1alpha.KeypointOutput keypoint = 4
-        [ (google.api.field_behavior) = OUTPUT_ONLY ];
-    // The ocr output
-    model.model.v1alpha.OcrOutput ocr = 5
-        [ (google.api.field_behavior) = OUTPUT_ONLY ];
-    // The instance segmentation output
-    model.model.v1alpha.InstanceSegmentationOutput instance_segmentation = 6
-        [ (google.api.field_behavior) = OUTPUT_ONLY ];
-    // The semantic segmentation output
-    model.model.v1alpha.SemanticSegmentationOutput semantic_segmentation = 7
-        [ (google.api.field_behavior) = OUTPUT_ONLY ];
-    // The text to image output
-    model.model.v1alpha.TextToImageOutput text_to_image = 8
-        [ (google.api.field_behavior) = OUTPUT_ONLY ];
-    // The text generation
-    model.model.v1alpha.TextGenerationOutput text_generation = 9
-        [ (google.api.field_behavior) = OUTPUT_ONLY ];
-    // The unspecified task output
-    model.model.v1alpha.UnspecifiedOutput unspecified = 10
-        [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  }
-}
 
 // PipelineDataPayload is a data structure for pipeline input
 message PipelineDataPayload {
