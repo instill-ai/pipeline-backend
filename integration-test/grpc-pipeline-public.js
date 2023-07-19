@@ -15,43 +15,6 @@ export function CheckCreate() {
       plaintext: true,
     });
 
-    // // Can not create pipeline with duplicated component id
-    // var reqBody = Object.assign(
-    //   {
-    //     id: randomString(63),
-    //     description: randomString(50),
-    //   },
-    //   {
-    //     recipe: {
-    //       version: "v1alpha",
-    //       components: [
-    //         {
-    //           id: "id",
-    //           resource_name: "connectors/trigger",
-    //           dependencies: {},
-    //         },
-    //         {
-    //           id: "id",
-    //           resource_name: "connectors/response",
-    //           dependencies: {},
-    //         },
-    //       ],
-    //     },
-    //   }
-    // );
-
-    // // Create a pipeline with duplicated component id
-    // var resOrigin = client.invoke(
-    //   "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
-    //   {
-    //     pipeline: reqBody,
-    //   }
-    // );
-    // check(resOrigin, {
-    //   "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline with duplicated component id response StatusInvalidArgument":
-    //     (r) => r.status === grpc.StatusInvalidArgument,
-    // });
-
     var reqBody = Object.assign(
       {
         id: randomString(63),

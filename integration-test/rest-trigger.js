@@ -53,26 +53,6 @@ export function CheckTriggerSingleImageSingleModel() {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
     });
 
-    // const fd = new FormData();
-    // fd.append("file", http.file(constant.dogImg, "dog.jpg"));
-    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/triggerMultipart`, fd.body(), {
-    //   headers: {
-    //     "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
-    //   },
-    // }), {
-    //   [`POST /v1alpha/pipelines/${reqHTTP.id}/triggerMultipart response status is 200`]: (r) => r.status === 200,
-    // });
-
-    // const fdWrong = new FormData();
-    // fdWrong.append("file", "some fake binary string that won't work for sure");
-    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/triggerMultipart`, fd.body(), {
-    //   headers: {
-    //     "Content-Type": `multipart/form-data; boundary=${fdWrong.boundary}`,
-    //   },
-    // }), {
-    //   [`POST /v1alpha/pipelines/${reqHTTP.id}/triggerMultipart response status is 422 with wrong request file`]: (r) => r.status === 422,
-    // });
-
     check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
       [`DELETE /v1alpha/pipelines/${reqHTTP.id} response status 204`]: (r) => r.status === 204,
     });
@@ -147,18 +127,6 @@ export function CheckTriggerMultiImageSingleModel() {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
     });
 
-    // const fd = new FormData();
-    // fd.append("file", http.file(constant.dogImg, "dog.jpg"));
-    // fd.append("file", http.file(constant.catImg, "cat.jpg"));
-    // fd.append("file", http.file(constant.bearImg, "bear.jpg"));
-    // fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/triggerMultipart`, fd.body(), {
-    //   headers: {
-    //     "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
-    //   },
-    // }), {
-    //   [`POST /v1alpha/pipelines/${reqHTTP.id}/triggerMultipart response status is 200`]: (r) => r.status === 200,
-    // });
 
     // Delete the pipeline
     check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
@@ -236,20 +204,6 @@ export function CheckTriggerMultiImageMultiModel() {
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (base64) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
     });
-
-    // const fd = new FormData();
-    // fd.append("file", http.file(constant.dogImg, "dog.jpg"));
-    // fd.append("file", http.file(constant.catImg, "cat.jpg"));
-    // fd.append("file", http.file(constant.bearImg, "bear.jpg"));
-    // fd.append("file", http.file(constant.dogRGBAImg, "dog-rgba.png"));
-    // check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/triggerMultipart`, fd.body(), {
-    //   headers: {
-    //     "Content-Type": `multipart/form-data; boundary=${fd.boundary}`,
-    //   },
-    // }), {
-    //   [`POST /v1alpha/pipelines/${reqHTTP.id}/triggerMultipart (multipart) response status is 200`]: (r) => r.status === 200,
-    //   [`POST /v1alpha/pipelines/${reqHTTP.id}/triggerMultipart (multipart) response model_outputs.length == 2`]: (r) => r.json().model_outputs.length === 2,
-    // });
 
     // Delete the pipeline
     check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
