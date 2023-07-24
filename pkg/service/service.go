@@ -1,10 +1,8 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
@@ -427,7 +425,6 @@ func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInp
 
 func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, pipelineTriggerId string) (*pipelinePB.TriggerPipelineResponse, error) {
 
-	logger, _ := logger.GetZapLogger(ctx)
 	err := s.preTriggerPipeline(dbPipeline, req.Inputs)
 	if err != nil {
 		return nil, err
@@ -437,37 +434,21 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 	var inputs []*connectorPB.DataPayload
 
-	// Download images
+	// Download images, audios
 	for idx := range pipelineInputs {
-		var images [][]byte
-		for imageIdx := range pipelineInputs[idx].Images {
-			switch pipelineInputs[idx].Images[imageIdx].UnstructuredData.(type) {
-			case *pipelinePB.PipelineDataPayload_UnstructuredData_Blob:
-				images = append(images, pipelineInputs[idx].Images[imageIdx].GetBlob())
-			case *pipelinePB.PipelineDataPayload_UnstructuredData_Url:
-				imageUrl := pipelineInputs[idx].Images[imageIdx].GetUrl()
-				response, err := http.Get(imageUrl)
-				if err != nil {
-					logger.Error(fmt.Sprintf("Unable to download image at %v. %v", imageUrl, err))
-
-					return nil, fmt.Errorf("unable to download image at %v", imageUrl)
-				}
-				defer response.Body.Close()
-
-				buff := new(bytes.Buffer) // pointer
-				_, err = buff.ReadFrom(response.Body)
-				if err != nil {
-					logger.Error(fmt.Sprintf("Unable to read content body from image at %v. %v", imageUrl, err))
-
-					return nil, fmt.Errorf("unable to read content body from image at %v", imageUrl)
-				}
-				images = append(images, buff.Bytes())
-			}
+		images, err := utils.LoadPipelineUnstructuredData(pipelineInputs[idx].Images)
+		if err != nil {
+			return nil, err
+		}
+		audios, err := utils.LoadPipelineUnstructuredData(pipelineInputs[idx].Audios)
+		if err != nil {
+			return nil, err
 		}
 
 		inputs = append(inputs, &connectorPB.DataPayload{
 			DataMappingIndex: pipelineInputs[idx].DataMappingIndex,
 			Images:           images,
+			Audios:           audios,
 			Texts:            pipelineInputs[idx].Texts,
 			StructuredData:   pipelineInputs[idx].StructuredData,
 			Metadata:         pipelineInputs[idx].Metadata,
@@ -533,17 +514,10 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 	} else {
 		outputs := cache[responseCompId]
 		for idx := range outputs {
-			images := []*pipelinePB.PipelineDataPayload_UnstructuredData{}
-			for imageIdx := range outputs[idx].Images {
-				images = append(images, &pipelinePB.PipelineDataPayload_UnstructuredData{
-					UnstructuredData: &pipelinePB.PipelineDataPayload_UnstructuredData_Blob{
-						Blob: outputs[idx].Images[imageIdx],
-					},
-				})
-			}
 			pipelineOutput := &pipelinePB.PipelineDataPayload{
 				DataMappingIndex: outputs[idx].DataMappingIndex,
-				Images:           images,
+				Images:           utils.DumpPipelineUnstructuredData(outputs[idx].Images),
+				Audios:           utils.DumpPipelineUnstructuredData(outputs[idx].Audios),
 				Texts:            outputs[idx].Texts,
 				StructuredData:   outputs[idx].StructuredData,
 				Metadata:         outputs[idx].Metadata,
