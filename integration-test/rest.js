@@ -31,8 +31,8 @@ export function setup() {
 
     var res = http.request("POST", `${connectorPublicHost}/v1alpha/connectors`,
       JSON.stringify({
-        "id": "trigger",
-        "connector_definition_name": "connector-definitions/trigger",
+        "id": "start-operator",
+        "connector_definition_name": "connector-definitions/start-operator",
         "configuration": {}
       }), constant.params)
     check(res, {
@@ -45,8 +45,8 @@ export function setup() {
 
     var res = http.request("POST", `${connectorPublicHost}/v1alpha/connectors`,
       JSON.stringify({
-        "id": "response",
-        "connector_definition_name": "connector-definitions/response",
+        "id": "end-operator",
+        "connector_definition_name": "connector-definitions/end-operator",
         "configuration": {}
       }), constant.params)
 
@@ -156,14 +156,14 @@ export function teardown(data) {
   });
 
   group("Connector Backend API: Delete the source connector", function () {
-    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/trigger`), {
-      [`DELETE /v1alpha/connectors/trigger response status 204`]: (r) => r.status === 204,
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/start-operator`), {
+      [`DELETE /v1alpha/connectors/start-operator response status 204`]: (r) => r.status === 204,
     });
   });
 
   group("Connector Backend API: Delete the destination connector", function () {
-    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/response`), {
-      [`DELETE /v1alpha/connectors/response response status 204`]: (r) => r.status === 204,
+    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/end-operator`), {
+      [`DELETE /v1alpha/connectors/end-operator response status 204`]: (r) => r.status === 204,
     });
   });
 

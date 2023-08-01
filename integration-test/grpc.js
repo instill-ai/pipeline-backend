@@ -34,8 +34,8 @@ export function setup() {
       "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
       {
         connector: {
-          id: "trigger",
-          connector_definition_name: "connector-definitions/trigger",
+          id: "start-operator",
+          connector_definition_name: "connector-definitions/start-operator",
           configuration: {},
         },
       }
@@ -54,9 +54,9 @@ export function setup() {
           "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
           {
             connector: {
-              id: "response",
+              id: "end-operator",
               connector_definition_name:
-                "connector-definitions/response",
+                "connector-definitions/end-operator",
               configuration: {},
             },
           }
@@ -228,7 +228,7 @@ export function teardown(data) {
       client.invoke(
         `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
         {
-          name: "connectors/trigger",
+          name: "connectors/start-operator",
         }
       ),
       {
@@ -245,7 +245,7 @@ export function teardown(data) {
         client.invoke(
           `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
           {
-            name: "connectors/response",
+            name: "connectors/end-operator",
           }
         ),
         {
