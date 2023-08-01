@@ -67,24 +67,31 @@ func IsBillableEvent(eventName string) bool {
 	return strings.HasPrefix(eventName, TriggerEvent)
 }
 
-func NewDataPoint(
-	ownerUUID string,
-	pipelineRunID string,
-	pipeline *datamodel.Pipeline,
-	mode mgmtPB.Mode,
-	startTime time.Time,
-) *write.Point {
+type UsageMetricData struct {
+	OwnerUID            string
+	TriggerMode         mgmtPB.Mode
+	Status              mgmtPB.Status
+	PipelineID          string
+	PipelineUID         string
+	PipelineTriggerUID  string
+	TriggerTime         time.Time
+	ComputeTimeDuration float64
+}
+
+func NewDataPoint(data UsageMetricData) *write.Point {
 	return influxdb2.NewPoint(
 		"pipeline.trigger",
 		map[string]string{
-			"trigger_mode": mode.String(),
+			"status":       data.Status.String(),
+			"trigger_mode": data.TriggerMode.String(),
 		},
 		map[string]interface{}{
-			"owner_uid":           ownerUUID,
-			"pipeline_id":         pipeline.ID,
-			"pipeline_uid":        pipeline.UID.String(),
-			"pipeline_trigger_id": pipelineRunID,
-			"trigger_time":        startTime.Format(time.RFC3339Nano),
+			"owner_uid":             data.OwnerUID,
+			"pipeline_id":           data.PipelineID,
+			"pipeline_uid":          data.PipelineUID,
+			"pipeline_trigger_id":   data.PipelineTriggerUID,
+			"trigger_time":          data.TriggerTime.Format(time.RFC3339Nano),
+			"compute_time_duration": data.ComputeTimeDuration,
 		},
 		time.Now(),
 	)

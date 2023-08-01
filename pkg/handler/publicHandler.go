@@ -691,19 +691,21 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
-	dataPoint := utils.NewDataPoint(
-		*owner.Uid,
-		logUUID.String(),
-		dbPipeline,
-		mgmtPB.Mode_MODE_SYNC,
-		startTime,
-	)
+	dataPoint := utils.UsageMetricData{
+		OwnerUID: *owner.Uid,
+		TriggerMode: mgmtPB.Mode_MODE_SYNC,
+		PipelineID: dbPipeline.ID,
+		PipelineUID: dbPipeline.UID.String(),
+		PipelineTriggerUID: logUUID.String(),
+		TriggerTime: startTime,
+	}
 
 	resp, err := h.service.TriggerPipeline(ctx, req, owner, dbPipeline, logUUID.String())
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-		h.service.WriteNewDataPoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_ERRORED.String()))
+		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
+		h.service.WriteNewDataPoint(ctx, dataPoint)
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
@@ -715,8 +717,9 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
-	dataPoint = dataPoint.AddField("compute_time_duration", time.Since(startTime).Seconds())
-	h.service.WriteNewDataPoint(dataPoint.AddTag("status", mgmtPB.Status_STATUS_COMPLETED.String()))
+	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+		dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
+		h.service.WriteNewDataPoint(ctx, dataPoint)
 
 	return resp, nil
 }

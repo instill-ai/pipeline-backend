@@ -6,17 +6,15 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v9"
-	"go.einride.tech/aip/filtering"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/repo"
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	usagePB "github.com/instill-ai/protogen-go/base/usage/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 	usageClient "github.com/instill-ai/usage-client/client"
 	usageReporter "github.com/instill-ai/usage-client/reporter"
 )
@@ -85,47 +83,38 @@ func (u *usage) RetrieveUsageData() interface{} {
 
 		// Roll all pipeline resources on a user
 		for _, user := range userResp.Users {
-			pipePageToken := ""
-			pipeActiveStateNum := int64(0)
-			pipeInactiveStateNum := int64(0)
-			pipeSyncModeNum := int64(0)
-			pipeAsyncModeNum := int64(0)
-			for {
-				dbPipelines, _, pipeNextPageToken, err := u.repository.ListPipelines(fmt.Sprintf("users/%s", user.GetUid()), int64(repository.MaxPageSize), pipePageToken, true, filtering.Filter{})
-				if err != nil {
-					logger.Error(fmt.Sprintf("%s", err))
-				}
 
-				for _, pipeline := range dbPipelines {
-					if pipeline.State == datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-						pipeActiveStateNum++
-					}
-					if pipeline.State == datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE) {
-						pipeInactiveStateNum++
-					}
-				}
+			triggerDataList := []*usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{}
 
-				if pipeNextPageToken == "" {
-					break
-				} else {
-					pipePageToken = pipeNextPageToken
+			triggerCount := u.redisClient.LLen(ctx, fmt.Sprintf("user:%s:trigger.trigger_uid", user.GetUid())).Val() // O(1)
+
+			if triggerCount != 0 {
+				for i := int64(0); i < triggerCount; i++ {
+					// LPop O(1)
+					timeStr, _ := time.Parse(time.RFC3339Nano, u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.trigger_time", user.GetUid())).Val())
+					triggerData := &usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{}
+					triggerData.PipelineUid = u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.pipeline_uid", user.GetUid())).Val()
+					triggerData.TriggerUid = u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.trigger_uid", user.GetUid())).Val()
+					triggerData.TriggerTime = timestamppb.New(timeStr)
+					triggerData.TriggerMode = mgmtPB.Mode(mgmtPB.Mode_value[u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.trigger_mode", user.GetUid())).Val()])
+					triggerData.Status = mgmtPB.Status(mgmtPB.Status_value[u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.status", user.GetUid())).Val()])
+					triggerDataList = append(triggerDataList, triggerData)
 				}
 			}
 
-			triggerNum, err := u.redisClient.Get(ctx, fmt.Sprintf("user:%s:trigger.num", user.GetUid())).Int64()
-			if err == redis.Nil {
-				triggerNum = 0
-			} else if err != nil {
-				logger.Error(fmt.Sprintf("%s", err))
-			}
+			// Cleanup in case of length mismatch between lists
+			u.redisClient.Unlink(
+				ctx,
+				fmt.Sprintf("user:%s:trigger.trigger_time", user.GetUid()),
+				fmt.Sprintf("user:%s:trigger.trigger_uid", user.GetUid()),
+				fmt.Sprintf("user:%s:trigger.trigger_mode", user.GetUid()),
+				fmt.Sprintf("user:%s:trigger.pipeline_uid", user.GetUid()),
+				fmt.Sprintf("user:%s:trigger.status", user.GetUid()),
+			)
 
 			pbPipelineUsageData = append(pbPipelineUsageData, &usagePB.PipelineUsageData_UserUsageData{
-				UserUid:                  user.GetUid(),
-				PipelineActiveStateNum:   pipeActiveStateNum,
-				PipelineInactiveStateNum: pipeInactiveStateNum,
-				PipelineSyncModeNum:      pipeSyncModeNum,
-				PipelineAsyncModeNum:     pipeAsyncModeNum,
-				TriggerNum:               triggerNum,
+				UserUid:             user.GetUid(),
+				PipelineTriggerData: triggerDataList,
 			})
 
 		}

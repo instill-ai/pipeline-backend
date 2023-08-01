@@ -10,7 +10,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/influxdata/influxdb-client-go/v2/api"
-	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/oklog/ulid/v2"
 	"go.einride.tech/aip/filtering"
 	"go.temporal.io/api/enums/v1"
@@ -65,7 +64,7 @@ type Service interface {
 	UpdateResourceState(uid uuid.UUID, state pipelinePB.Pipeline_State, progress *int32) error
 	DeleteResourceState(uid uuid.UUID) error
 	// Influx API
-	WriteNewDataPoint(p *write.Point)
+	WriteNewDataPoint(ctx context.Context, data utils.UsageMetricData)
 
 	GetOperation(ctx context.Context, workflowId string) (*longrunningpb.Operation, error)
 }
