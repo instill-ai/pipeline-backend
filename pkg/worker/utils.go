@@ -2,18 +2,26 @@ package worker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"time"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 )
 
-func (w *worker) writeNewDataPoint(ctx context.Context, data utils.UsageMetricData) {
-	w.redisClient.RPush(ctx, fmt.Sprintf("user:%s:trigger.trigger_time", data.OwnerUID), data.TriggerTime.Format(time.RFC3339Nano))
-	w.redisClient.RPush(ctx, fmt.Sprintf("user:%s:trigger.pipeline_uid", data.OwnerUID), data.PipelineUID)
-	w.redisClient.RPush(ctx, fmt.Sprintf("user:%s:trigger.trigger_uid", data.OwnerUID), data.PipelineTriggerUID)
-	w.redisClient.RPush(ctx, fmt.Sprintf("user:%s:trigger.trigger_mode", data.OwnerUID), data.TriggerMode.String())
-	w.redisClient.RPush(ctx, fmt.Sprintf("user:%s:trigger.status", data.OwnerUID), data.Status.String())
+func (w *worker) writeNewDataPoint(ctx context.Context, data utils.UsageMetricData) error {
+
+	if config.Config.Server.Usage.Enabled {
+
+		bData, err := json.Marshal(data)
+		if err != nil {
+			return err
+		}
+
+		w.redisClient.RPush(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", data.OwnerUID), string(bData))
+	}
 
 	w.influxDBWriteClient.WritePoint(utils.NewDataPoint(data))
+
+	return nil
 }

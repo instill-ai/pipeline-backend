@@ -2,6 +2,7 @@ package usage
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/repo"
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
@@ -86,31 +88,32 @@ func (u *usage) RetrieveUsageData() interface{} {
 
 			triggerDataList := []*usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{}
 
-			triggerCount := u.redisClient.LLen(ctx, fmt.Sprintf("user:%s:trigger.trigger_uid", user.GetUid())).Val() // O(1)
+			triggerCount := u.redisClient.LLen(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", user.GetUid())).Val() // O(1)
 
 			if triggerCount != 0 {
 				for i := int64(0); i < triggerCount; i++ {
-					// LPop O(1)
-					timeStr, _ := time.Parse(time.RFC3339Nano, u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.trigger_time", user.GetUid())).Val())
-					triggerData := &usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{}
-					triggerData.PipelineUid = u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.pipeline_uid", user.GetUid())).Val()
-					triggerData.TriggerUid = u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.trigger_uid", user.GetUid())).Val()
-					triggerData.TriggerTime = timestamppb.New(timeStr)
-					triggerData.TriggerMode = mgmtPB.Mode(mgmtPB.Mode_value[u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.trigger_mode", user.GetUid())).Val()])
-					triggerData.Status = mgmtPB.Status(mgmtPB.Status_value[u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:trigger.status", user.GetUid())).Val()])
-					triggerDataList = append(triggerDataList, triggerData)
+
+					strData := u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", user.GetUid())).Val()
+
+					triggerData := &utils.UsageMetricData{}
+					if err := json.Unmarshal([]byte(strData), triggerData); err != nil {
+						logger.Warn("Usage data might be corrupted")
+					}
+
+					triggerTime, _ := time.Parse(time.RFC3339Nano, triggerData.TriggerTime)
+
+					triggerDataList = append(
+						triggerDataList,
+						&usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{
+							PipelineUid: triggerData.PipelineUID,
+							TriggerUid:  triggerData.PipelineTriggerUID,
+							TriggerTime: timestamppb.New(triggerTime),
+							TriggerMode: triggerData.TriggerMode,
+							Status:      triggerData.Status,
+						},
+					)
 				}
 			}
-
-			// Cleanup in case of length mismatch between lists
-			u.redisClient.Unlink(
-				ctx,
-				fmt.Sprintf("user:%s:trigger.trigger_time", user.GetUid()),
-				fmt.Sprintf("user:%s:trigger.trigger_uid", user.GetUid()),
-				fmt.Sprintf("user:%s:trigger.trigger_mode", user.GetUid()),
-				fmt.Sprintf("user:%s:trigger.pipeline_uid", user.GetUid()),
-				fmt.Sprintf("user:%s:trigger.status", user.GetUid()),
-			)
 
 			pbPipelineUsageData = append(pbPipelineUsageData, &usagePB.PipelineUsageData_UserUsageData{
 				UserUid:             user.GetUid(),

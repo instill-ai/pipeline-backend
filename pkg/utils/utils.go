@@ -74,7 +74,7 @@ type UsageMetricData struct {
 	PipelineID          string
 	PipelineUID         string
 	PipelineTriggerUID  string
-	TriggerTime         time.Time
+	TriggerTime         string
 	ComputeTimeDuration float64
 }
 
@@ -90,7 +90,7 @@ func NewDataPoint(data UsageMetricData) *write.Point {
 			"pipeline_id":           data.PipelineID,
 			"pipeline_uid":          data.PipelineUID,
 			"pipeline_trigger_id":   data.PipelineTriggerUID,
-			"trigger_time":          data.TriggerTime.Format(time.RFC3339Nano),
+			"trigger_time":          data.TriggerTime,
 			"compute_time_duration": data.ComputeTimeDuration,
 		},
 		time.Now(),

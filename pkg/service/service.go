@@ -64,7 +64,7 @@ type Service interface {
 	UpdateResourceState(uid uuid.UUID, state pipelinePB.Pipeline_State, progress *int32) error
 	DeleteResourceState(uid uuid.UUID) error
 	// Influx API
-	WriteNewDataPoint(ctx context.Context, data utils.UsageMetricData)
+	WriteNewDataPoint(ctx context.Context, data utils.UsageMetricData) error
 
 	GetOperation(ctx context.Context, workflowId string) (*longrunningpb.Operation, error)
 }

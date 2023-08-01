@@ -692,12 +692,12 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 	}
 
 	dataPoint := utils.UsageMetricData{
-		OwnerUID: *owner.Uid,
-		TriggerMode: mgmtPB.Mode_MODE_SYNC,
-		PipelineID: dbPipeline.ID,
-		PipelineUID: dbPipeline.UID.String(),
+		OwnerUID:           *owner.Uid,
+		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
+		PipelineID:         dbPipeline.ID,
+		PipelineUID:        dbPipeline.UID.String(),
 		PipelineTriggerUID: logUUID.String(),
-		TriggerTime: startTime,
+		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
 
 	resp, err := h.service.TriggerPipeline(ctx, req, owner, dbPipeline, logUUID.String())
@@ -705,7 +705,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		h.service.WriteNewDataPoint(ctx, dataPoint)
+		_ = h.service.WriteNewDataPoint(ctx, dataPoint)
 		return &pipelinePB.TriggerPipelineResponse{}, err
 	}
 
@@ -718,8 +718,10 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 	)))
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-		dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
-		h.service.WriteNewDataPoint(ctx, dataPoint)
+	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
+	if err := h.service.WriteNewDataPoint(ctx, dataPoint); err != nil {
+		logger.Warn(err.Error())
+	}
 
 	return resp, nil
 }

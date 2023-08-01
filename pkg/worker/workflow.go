@@ -103,7 +103,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		PipelineID:         param.Pipeline.ID,
 		PipelineUID:        param.Pipeline.UID.String(),
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
-		TriggerTime:        startTime,
+		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
 
 	ao := workflow.ActivityOptions{
@@ -126,7 +126,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			span.SetStatus(1, err.Error())
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-			w.writeNewDataPoint(sCtx, dataPoint)
+			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return err
 		}
 		for idx := range parents {
@@ -138,7 +138,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		w.writeNewDataPoint(sCtx, dataPoint)
+		_ = w.writeNewDataPoint(sCtx, dataPoint)
 		return err
 	}
 
@@ -148,7 +148,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		w.writeNewDataPoint(sCtx, dataPoint)
+		_ = w.writeNewDataPoint(sCtx, dataPoint)
 		return err
 	}
 
@@ -161,7 +161,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		w.writeNewDataPoint(sCtx, dataPoint)
+		_ = w.writeNewDataPoint(sCtx, dataPoint)
 		return err
 	}
 	cache[orderedComp[0].Id] = outputs
@@ -175,7 +175,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			span.SetStatus(1, err.Error())
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-			w.writeNewDataPoint(sCtx, dataPoint)
+			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return err
 		}
 		inputs := MergeData(cache, depMap, len(param.PipelineInputBlobRedisKeys), param.Pipeline, workflow.GetInfo(ctx).WorkflowExecution.ID)
@@ -193,7 +193,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			span.SetStatus(1, err.Error())
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-			w.writeNewDataPoint(sCtx, dataPoint)
+			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return err
 		}
 
@@ -201,7 +201,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			span.SetStatus(1, err.Error())
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-			w.writeNewDataPoint(sCtx, dataPoint)
+			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return err
 		}
 		outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
@@ -212,7 +212,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			span.SetStatus(1, err.Error())
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-			w.writeNewDataPoint(sCtx, dataPoint)
+			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return err
 		}
 		cache[comp.Id] = outputs
@@ -250,7 +250,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			span.SetStatus(1, err.Error())
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-			w.writeNewDataPoint(sCtx, dataPoint)
+			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return err
 		}
 
@@ -265,7 +265,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
-	w.writeNewDataPoint(sCtx, dataPoint)
+	if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
+		logger.Warn(err.Error())
+	}
 	logger.Info("TriggerAsyncPipelineWorkflow completed")
 	return nil
 }
