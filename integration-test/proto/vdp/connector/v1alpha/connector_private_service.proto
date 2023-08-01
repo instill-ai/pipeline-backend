@@ -5,38 +5,28 @@ package vdp.connector.v1alpha;
 // Google API
 import "google/api/annotations.proto";
 import "google/api/client.proto";
-
 import "../../../vdp/connector/v1alpha/connector.proto";
 
 // Connector service responds to internal access
 service ConnectorPrivateService {
-
   // ListConnectorsAdmin method receives a ListConnectorsAdminRequest
   // message and returns a ListConnectorsResponse message.
-  rpc ListConnectorsAdmin(ListConnectorsAdminRequest)
-      returns (ListConnectorsAdminResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/connectors"
-    };
+  rpc ListConnectorsAdmin(ListConnectorsAdminRequest) returns (ListConnectorsAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/connectors"};
   }
 
   // LookUpConnectorAdmin method receives a
   // LookUpConnectorAdminRequest message and returns a
   // LookUpConnectorAdminResponse
-  rpc LookUpConnectorAdmin(LookUpConnectorAdminRequest)
-      returns (LookUpConnectorAdminResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/{permalink=connectors/*}/lookUp"
-    };
+  rpc LookUpConnectorAdmin(LookUpConnectorAdminRequest) returns (LookUpConnectorAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/{permalink=connectors/*}/lookUp"};
     option (google.api.method_signature) = "permalink";
   }
 
   // CheckConnector method receives a CheckConnectorRequest message and returns a
   // CheckConnectorResponse
   rpc CheckConnector(CheckConnectorRequest) returns (CheckConnectorResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/{connector_permalink=connectors/*}/check"
-    };
+    option (google.api.http) = {get: "/v1alpha/admin/{connector_permalink=connectors/*}/check"};
     option (google.api.method_signature) = "connector_permalink";
-  };
+  }
 }

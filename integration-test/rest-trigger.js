@@ -226,12 +226,12 @@ export function CheckTriggerWithDependency() {
         components: [
           {
             id: "s01",
-            resource_name: "connectors/trigger",
+            resource_name: "connectors/start-operator",
             dependencies: {},
           },
           {
             id: "d01",
-            resource_name: "connectors/response",
+            resource_name: "connectors/end-operator",
             dependencies: {
               images: "[*s01.images]",
             },
@@ -277,12 +277,12 @@ export function CheckTriggerWithDependency() {
         components: [
           {
             id: "s01",
-            resource_name: "connectors/trigger",
+            resource_name: "connectors/start-operator",
             dependencies: {},
           },
           {
             id: "d01",
-            resource_name: "connectors/response",
+            resource_name: "connectors/end-operator",
             dependencies: {
               texts: "[*s01.texts]",
               images: "[]",

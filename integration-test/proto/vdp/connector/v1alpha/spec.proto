@@ -2,18 +2,16 @@ syntax = "proto3";
 
 package vdp.connector.v1alpha;
 
-// Protocol Buffers Well-Known Types
-import "google/protobuf/struct.proto";
-
 // Google API
 import "google/api/field_behavior.proto";
+// Protocol Buffers Well-Known Types
+import "google/protobuf/struct.proto";
 
 ////////////////////////////////////
 // Spec represents a spec data model
 message Spec {
   // Spec documentation URL
-  string documentation_url = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  string documentation_url = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Spec connection specification
-  google.protobuf.Struct connection_specification = 2
-      [ (google.api.field_behavior) = REQUIRED ];
+  google.protobuf.Struct connection_specification = 2 [(google.api.field_behavior) = REQUIRED];
 }

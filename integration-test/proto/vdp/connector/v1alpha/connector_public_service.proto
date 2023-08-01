@@ -5,9 +5,8 @@ package vdp.connector.v1alpha;
 // Google API
 import "google/api/annotations.proto";
 import "google/api/client.proto";
-
-import "../../../vdp/connector/v1alpha/connector_definition.proto";
 import "../../../vdp/connector/v1alpha/connector.proto";
+import "../../../vdp/connector/v1alpha/connector_definition.proto";
 
 // Connector service responds to external access
 service ConnectorPublicService {
@@ -22,8 +21,9 @@ service ConnectorPublicService {
   // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
   rpc Liveness(LivenessRequest) returns (LivenessResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/__liveness"
-      additional_bindings : [ {get : "/v1alpha/health/connector"} ]
+      get: "/v1alpha/__liveness"
+      additional_bindings: [
+        {get: "/v1alpha/health/connector"}]
     };
   }
 
@@ -31,29 +31,21 @@ service ConnectorPublicService {
   // ReadinessResponse message.
   // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
   rpc Readiness(ReadinessRequest) returns (ReadinessResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/__readiness"
-    };
+    option (google.api.http) = {get: "/v1alpha/__readiness"};
   }
 
   // ListConnectorDefinitions method receives a
   // ListConnectorDefinitionsRequest message and returns a
   // ListConnectorDefinitionsResponse message.
-  rpc ListConnectorDefinitions(ListConnectorDefinitionsRequest)
-      returns (ListConnectorDefinitionsResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/connector-definitions"
-    };
+  rpc ListConnectorDefinitions(ListConnectorDefinitionsRequest) returns (ListConnectorDefinitionsResponse) {
+    option (google.api.http) = {get: "/v1alpha/connector-definitions"};
   }
 
   // GetConnectorDefinition method receives a
   // GetConnectorDefinitionRequest message and returns a
   // GetGetConnectorDefinitionResponse message.
-  rpc GetConnectorDefinition(GetConnectorDefinitionRequest)
-      returns (GetConnectorDefinitionResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=connector-definitions/*}"
-    };
+  rpc GetConnectorDefinition(GetConnectorDefinitionRequest) returns (GetConnectorDefinitionResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=connector-definitions/*}"};
     option (google.api.method_signature) = "name";
   }
 
@@ -64,11 +56,10 @@ service ConnectorPublicService {
   // CreateConnector method receives a
   // CreateConnectorRequest message and returns a
   // CreateConnectorResponse message.
-  rpc CreateConnector(CreateConnectorRequest)
-      returns (CreateConnectorResponse) {
+  rpc CreateConnector(CreateConnectorRequest) returns (CreateConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/connectors"
-      body : "connector"
+      post: "/v1alpha/connectors"
+      body: "connector"
     };
     option (google.api.method_signature) = "connector";
   }
@@ -76,31 +67,24 @@ service ConnectorPublicService {
   // ListConnectors method receives a
   // ListConnectorsRequest message and returns a
   // ListConnectorsResponse message.
-  rpc ListConnectors(ListConnectorsRequest)
-      returns (ListConnectorsResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/connectors"
-    };
+  rpc ListConnectors(ListConnectorsRequest) returns (ListConnectorsResponse) {
+    option (google.api.http) = {get: "/v1alpha/connectors"};
   }
 
   // GetConnector method receives a GetConnectorRequest
   // message and returns a GetConnectorResponse message.
-  rpc GetConnector(GetConnectorRequest)
-      returns (GetConnectorResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=connectors/*}"
-    };
+  rpc GetConnector(GetConnectorRequest) returns (GetConnectorResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=connectors/*}"};
     option (google.api.method_signature) = "name";
   }
 
   // UpdateConnector method receives a
   // UpdateConnectorRequest message and returns a
   // UpdateConnectorResponse message.
-  rpc UpdateConnector(UpdateConnectorRequest)
-      returns (UpdateConnectorResponse) {
+  rpc UpdateConnector(UpdateConnectorRequest) returns (UpdateConnectorResponse) {
     option (google.api.http) = {
-      patch : "/v1alpha/{connector.name=connectors/*}"
-      body : "connector"
+      patch: "/v1alpha/{connector.name=connectors/*}"
+      body: "connector"
     };
     option (google.api.method_signature) = "connector,update_mask";
   }
@@ -108,22 +92,16 @@ service ConnectorPublicService {
   // DeleteConnector method receives a
   // DeleteConnectorRequest message and returns a
   // DeleteConnectorResponse message.
-  rpc DeleteConnector(DeleteConnectorRequest)
-      returns (DeleteConnectorResponse) {
-    option (google.api.http) = {
-      delete : "/v1alpha/{name=connectors/*}"
-    };
+  rpc DeleteConnector(DeleteConnectorRequest) returns (DeleteConnectorResponse) {
+    option (google.api.http) = {delete: "/v1alpha/{name=connectors/*}"};
     option (google.api.method_signature) = "name";
   }
 
   // LookUpConnector method receives a
   // LookUpConnectorRequest message and returns a
   // LookUpConnectorResponse
-  rpc LookUpConnector(LookUpConnectorRequest)
-      returns (LookUpConnectorResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{permalink=connectors/*}/lookUp"
-    };
+  rpc LookUpConnector(LookUpConnectorRequest) returns (LookUpConnectorResponse) {
+    option (google.api.http) = {get: "/v1alpha/{permalink=connectors/*}/lookUp"};
     option (google.api.method_signature) = "permalink";
   }
 
@@ -132,11 +110,10 @@ service ConnectorPublicService {
   // ConnectConnector can be called on Connector in the
   // state `DISCONNECTED`; Connector in a different state (including
   // `CONNECTED`) returns an error.
-  rpc ConnectConnector(ConnectConnectorRequest)
-      returns (ConnectConnectorResponse) {
+  rpc ConnectConnector(ConnectConnectorRequest) returns (ConnectConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=connectors/*}/connect"
-      body : "*"
+      post: "/v1alpha/{name=connectors/*}/connect"
+      body: "*"
     };
     option (google.api.method_signature) = "name";
   }
@@ -146,11 +123,10 @@ service ConnectorPublicService {
   // DisconnectConnector can be called on Connector in the
   // state `CONNECTED`; Connector in a different state (including
   // `DISCONNECTED`) returns an error.
-  rpc DisconnectConnector(DisconnectConnectorRequest)
-      returns (DisconnectConnectorResponse) {
+  rpc DisconnectConnector(DisconnectConnectorRequest) returns (DisconnectConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=connectors/*}/disconnect"
-      body : "*"
+      post: "/v1alpha/{name=connectors/*}/disconnect"
+      body: "*"
     };
     option (google.api.method_signature) = "name";
   }
@@ -158,11 +134,10 @@ service ConnectorPublicService {
   // RenameConnector method receives a
   // RenameConnectorRequest message and returns a
   // RenameConnectorResponse message.
-  rpc RenameConnector(RenameConnectorRequest)
-      returns (RenameConnectorResponse) {
+  rpc RenameConnector(RenameConnectorRequest) returns (RenameConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=connectors/*}/rename"
-      body : "*"
+      post: "/v1alpha/{name=connectors/*}/rename"
+      body: "*"
     };
     option (google.api.method_signature) = "name,new_connector_id";
   }
@@ -170,33 +145,26 @@ service ConnectorPublicService {
   // ExecuteConnector method receives a
   // ExecuteConnectorRequest message and returns a
   // ExecuteConnectorResponse message.
-  rpc ExecuteConnector(ExecuteConnectorRequest)
-      returns (ExecuteConnectorResponse) {
+  rpc ExecuteConnector(ExecuteConnectorRequest) returns (ExecuteConnectorResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=connectors/*}/execute"
-      body : "*"
+      post: "/v1alpha/{name=connectors/*}/execute"
+      body: "*"
     };
     option (google.api.method_signature) = "name";
-  };
+  }
 
   // WatchConnector method receives a
   // WatchConnectorRequest message and returns a
   // WatchConnectorResponse
-  rpc WatchConnector(WatchConnectorRequest)
-      returns (WatchConnectorResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=connectors/*}/watch"
-    };
+  rpc WatchConnector(WatchConnectorRequest) returns (WatchConnectorResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=connectors/*}/watch"};
     option (google.api.method_signature) = "name";
   }
 
   // TestConnector method receives a TestConnectorRequest
   // message and returns a TestConnectorResponse
-  rpc TestConnector(TestConnectorRequest)
-      returns (TestConnectorResponse) {
-    option (google.api.http) = {
-      post : "/v1alpha/{name=connectors/*}/testConnection"
-    };
+  rpc TestConnector(TestConnectorRequest) returns (TestConnectorResponse) {
+    option (google.api.http) = {post: "/v1alpha/{name=connectors/*}/testConnection"};
     option (google.api.method_signature) = "name";
   }
 }

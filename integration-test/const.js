@@ -98,12 +98,12 @@ export const detSyncHTTPSimpleRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/trigger",
+        resource_name: "connectors/start-operator",
         dependencies: {},
       },
       {
         id: "d01",
-        resource_name: "connectors/response",
+        resource_name: "connectors/end-operator",
         dependencies: {
           structured_data: "{**s01.structured_data}",
         },
@@ -118,12 +118,12 @@ export const detSyncHTTPSimpleRecipeDupId = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/trigger",
+        resource_name: "connectors/start-operator",
         dependencies: {},
       },
       {
         id: "s01",
-        resource_name: "connectors/response",
+        resource_name: "connectors/end-operator",
         dependencies: {
           structured_data: "{**s01.structured_data}",
         },
@@ -138,12 +138,12 @@ export const detSyncGRPCSimpleRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/trigger",
+        resource_name: "connectors/start-operator",
         dependencies: {},
       },
       {
         id: "d01",
-        resource_name: "connectors/response",
+        resource_name: "connectors/end-operator",
         dependencies: {
           structured_data: "{**s01.structured_data}",
         },
@@ -158,12 +158,12 @@ export const detSyncHTTPMultiModelRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/trigger",
+        resource_name: "connectors/start-operator",
         dependencies: {},
       },
       {
         id: "d01",
-        resource_name: "connectors/response",
+        resource_name: "connectors/end-operator",
         dependencies: {
           structured_data: "{**s01.structured_data}",
         },
@@ -178,12 +178,12 @@ export const detSynGRPCMultiModelRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/trigger",
+        resource_name: "connectors/start-operator",
         dependencies: {},
       },
       {
         id: "d01",
-        resource_name: "connectors/response",
+        resource_name: "connectors/end-operator",
         dependencies: {
           structured_data: "{**s01.structured_data}",
         },
@@ -201,7 +201,7 @@ export const detAsyncSingleModelRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/trigger",
+        resource_name: "connectors/start-operator",
         dependencies: {},
       },
       {
@@ -221,12 +221,12 @@ export const detAsyncSingleResponseRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/trigger",
+        resource_name: "connectors/start-operator",
         dependencies: {},
       },
       {
         id: "d01",
-        resource_name: `connectors/response`,
+        resource_name: `connectors/end-operator`,
         dependencies: {
           images: "[*s01.images]",
           structured_data: "{**s01.structured_data}",
@@ -242,7 +242,7 @@ export const detAsyncMultiModelRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/trigger",
+        resource_name: "connectors/start-operator",
         dependencies: {},
       },
       {
@@ -262,7 +262,7 @@ export const detAsyncMultiModelMultipleDestinationRecipe = {
     components: [
       {
         id: "s01",
-        resource_name: "connectors/trigger",
+        resource_name: "connectors/start-operator",
         dependencies: {},
       },
       {

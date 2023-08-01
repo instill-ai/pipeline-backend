@@ -657,8 +657,14 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipel
 		return nil, nil, err
 	}
 
-	sources := utils.GetResourceFromRecipe(dbPipeline.Recipe, connectorPB.ConnectorType_CONNECTOR_TYPE_SOURCE)
-	if len(sources) == 0 {
+	operators := utils.GetResourceFromRecipe(dbPipeline.Recipe, connectorPB.ConnectorType_CONNECTOR_TYPE_OPERATOR)
+	hasSource := false
+	for _, operator := range operators {
+		if operator == "connectors/start-operator" {
+			hasSource = true
+		}
+	}
+	if !hasSource {
 		return nil, nil, status.Errorf(codes.Internal, "there is no source in pipeline's recipe")
 	}
 
