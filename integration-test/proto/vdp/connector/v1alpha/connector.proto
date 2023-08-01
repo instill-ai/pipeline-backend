@@ -2,24 +2,21 @@ syntax = "proto3";
 
 package vdp.connector.v1alpha;
 
+import "../../../common/healthcheck/v1alpha/healthcheck.proto";
+import "google/api/field_behavior.proto";
+// Google API
+import "google/api/resource.proto";
+import "google/protobuf/field_mask.proto";
 // Protocol Buffers Well-Known Types
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/field_mask.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
-
-// Google API
-import "google/api/resource.proto";
-import "google/api/field_behavior.proto";
-
-import "../../../common/healthcheck/v1alpha/healthcheck.proto";
 import "../../../vdp/connector/v1alpha/connector_definition.proto";
 
 // LivenessRequest represents a request to check a service liveness status
 message LivenessRequest {
   // HealthCheckRequest message
-  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request =
-      1 [ (google.api.field_behavior) = OPTIONAL ];
+  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LivenessResponse represents a response for a service liveness status
@@ -31,8 +28,7 @@ message LivenessResponse {
 // ReadinessRequest represents a request to check a service readiness status
 message ReadinessRequest {
   // HealthCheckRequest message
-  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request =
-      1 [ (google.api.field_behavior) = OPTIONAL ];
+  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ReadinessResponse represents a response for a service readiness status
@@ -41,9 +37,34 @@ message ReadinessResponse {
   common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
 }
 
+// Task enumerates the task type of a connector
+enum Task {
+  // Task: UNSPECIFIED
+  TASK_UNSPECIFIED = 0;
+  // Task: CLASSIFICATION
+  TASK_CLASSIFICATION = 1;
+  // Task: DETECTION
+  TASK_DETECTION = 2;
+  // Task: KEYPOINT
+  TASK_KEYPOINT = 3;
+  // Task: OCR
+  TASK_OCR = 4;
+  // Task: INSTANCE SEGMENTATION
+  TASK_INSTANCE_SEGMENTATION = 5;
+  // Task: SEMANTIC SEGMENTATION
+  TASK_SEMANTIC_SEGMENTATION = 6;
+  // Task: TEXT TO IMAGE
+  TASK_TEXT_TO_IMAGE = 7;
+  // Task: TEXT GENERATION
+  TASK_TEXT_GENERATION = 8;
+  // Task: IMAGE TO IMAGE
+  TASK_IMAGE_TO_IMAGE = 9;
+  // Task: TEXT EMBEDDINGS
+  TASK_TEXT_EMBEDDINGS = 10;
+}
+
 // Connector represents a connector data model
 message Connector {
-
   // State enumerates the connector state
   enum State {
     // State: UNSPECIFIED
@@ -67,40 +88,37 @@ message Connector {
   }
 
   option (google.api.resource) = {
-    type : "api.instill.tech/Connector"
-    pattern : "connectors/{connector}"
+    type: "api.instill.tech/Connector"
+    pattern: "connectors/{connector}"
   };
 
   // Connector resource name. It must have the format of
   // "connectors/*"
-  string name = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector UUID
-  string uid = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector resource ID (the last segment of the resource name)
   // used to construct the resource name. This conforms to RFC-1034, which
   // restricts to letters, numbers, and hyphen, with the first character a
   // letter, the last a letter or a number, and a 63 character maximum.
-  string id = 3 [ (google.api.field_behavior) = IMMUTABLE ];
+  string id = 3 [(google.api.field_behavior) = IMMUTABLE];
   // ConnectorDefinition resource
   string connector_definition_name = 4 [
     (google.api.field_behavior) = IMMUTABLE,
-    (google.api.resource_reference) = {
-      type : "api.instill.tech/ConnectorDefinition"
-    }
+    (google.api.resource_reference) = {type: "api.instill.tech/ConnectorDefinition"}
   ];
   // Connector Type
-  ConnectorType connector_type = 5 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  ConnectorType connector_type = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector description
-  string task = 6 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  Task task = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector description
-  optional string description = 7 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string description = 7 [(google.api.field_behavior) = OPTIONAL];
   // Connector configuration in JSON format
-  google.protobuf.Struct configuration = 8
-      [ (google.api.field_behavior) = REQUIRED ];
+  google.protobuf.Struct configuration = 8 [(google.api.field_behavior) = REQUIRED];
   // Connector state
-  State state = 9 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  State state = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector tombstone
-  bool tombstone = 10 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  bool tombstone = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector owner
   oneof owner {
     // The resource name with UUID of a user, e.g.,
@@ -114,18 +132,15 @@ message Connector {
       (google.api.resource_reference).type = "api.instill.tech/Organization",
       (google.api.field_behavior) = OUTPUT_ONLY
     ];
-  };
+  }
   // Connector creation time
-  google.protobuf.Timestamp create_time = 13
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Timestamp create_time = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector update time
-  google.protobuf.Timestamp update_time = 14
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Timestamp update_time = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector visibility including public or private
-  Visibility visibility = 15 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  Visibility visibility = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Embed the content of the connector_definition
-  ConnectorDefinition connector_definition = 16
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  ConnectorDefinition connector_definition = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -136,8 +151,7 @@ message Connector {
 // Connector resource
 message CreateConnectorRequest {
   // Connector resource
-  Connector connector = 1
-      [ (google.api.field_behavior) = REQUIRED ];
+  Connector connector = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // CreateConnectorResponse represents a response for a
@@ -153,13 +167,13 @@ message ListConnectorsRequest {
   // The maximum number of connectors to return. The service may return fewer
   // than this value. If unspecified, at most 10 connectors will be returned.
   // The maximum value is 100; values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
+  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
-  optional string page_token = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list connectors
-  optional string filter = 4 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListConnectorsResponse represents a response for a list of
@@ -180,15 +194,13 @@ message GetConnectorRequest {
   // "connectors/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {
-      type : "api.instill.tech/Connector"
-    },
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {path_param_name : "connector.name"}
+      field_configuration: {path_param_name: "connector.name"}
     }
   ];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // GetConnectorResponse represents a response for a
@@ -202,11 +214,9 @@ message GetConnectorResponse {
 // Connector resource
 message UpdateConnectorRequest {
   // Connector resource
-  Connector connector = 1
-      [ (google.api.field_behavior) = REQUIRED ];
+  Connector connector = 1 [(google.api.field_behavior) = REQUIRED];
   // Update mask for a Connector resource
-  google.protobuf.FieldMask update_mask = 2
-      [ (google.api.field_behavior) = REQUIRED ];
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 // UpdateConnectorResponse represents a response for a
@@ -223,11 +233,9 @@ message DeleteConnectorRequest {
   // "connectors/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {
-      type : "api.instill.tech/Connector"
-    },
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {path_param_name : "connector.name"}
+      field_configuration: {path_param_name: "connector.name"}
     }
   ];
 }
@@ -240,9 +248,9 @@ message DeleteConnectorResponse {}
 message LookUpConnectorRequest {
   // Permalink of a connector. For example:
   // "connectors/{uid}"
-  string permalink = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LookUpConnectorResponse represents a response for a
@@ -259,9 +267,7 @@ message ConnectConnectorRequest {
   // "connectors/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {
-      type : "api.instill.tech/Connector"
-    }
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
   ];
 }
 
@@ -279,9 +285,7 @@ message DisconnectConnectorRequest {
   // "connectors/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {
-      type : "api.instill.tech/Connector"
-    }
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
   ];
 }
 
@@ -299,15 +303,12 @@ message RenameConnectorRequest {
   // "connectors/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {
-      type : "api.instill.tech/Connector"
-    }
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
   ];
   // Connector new resource id to replace with the
   // Connector resource name to be
   // "connectors/{new_connector_id}"
-  string new_connector_id = 2
-      [ (google.api.field_behavior) = REQUIRED ];
+  string new_connector_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 // RenameConnectorResponse represents a renamed Connector
@@ -325,13 +326,13 @@ message ListConnectorsAdminRequest {
   // The maximum number of connectors to return. The service may return fewer
   // than this value. If unspecified, at most 10 connectors will be returned.
   // The maximum value is 100; values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
+  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
-  optional string page_token = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list connectors
-  optional string filter = 4 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListConnectorsAdminResponse represents a response for a list of
@@ -350,9 +351,9 @@ message ListConnectorsAdminResponse {
 message LookUpConnectorAdminRequest {
   // Permalink of a connector. For example:
   // "connectors/{uid}"
-  string permalink = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LookUpConnectorAdminResponse represents a response for a
@@ -369,10 +370,9 @@ message WatchConnectorRequest {
   // "connectors/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type =
-        "api.instill.tech/Connector",
+    (google.api.resource_reference).type = "api.instill.tech/Connector",
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {path_param_name : "connector.name"}
+      field_configuration: {path_param_name: "connector.name"}
     }
   ];
 }
@@ -389,8 +389,7 @@ message WatchConnectorResponse {
 message CheckConnectorRequest {
   // Permalink of a connector. For example:
   // "connectors/{uid}"
-  string connector_permalink = 1
-      [ (google.api.field_behavior) = REQUIRED ];
+  string connector_permalink = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // CheckConnectorResponse represents a response to fetch a
@@ -407,10 +406,9 @@ message TestConnectorRequest {
   // "connectors/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type =
-        "api.instill.tech/Connector",
+    (google.api.resource_reference).type = "api.instill.tech/Connector",
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {path_param_name : "connector.name"}
+      field_configuration: {path_param_name: "connector.name"}
     }
   ];
 }
@@ -424,16 +422,16 @@ message TestConnectorResponse {
 
 // DataPayload is a data structure trasferring data in pipeline
 message DataPayload {
-
   // Data index corresponds to each data element
-  string data_mapping_index = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string data_mapping_index = 1 [(google.api.field_behavior) = REQUIRED];
 
   // Unstructured: text field
   repeated string texts = 2;
   // Unstructured: image field
   repeated bytes images = 3;
+  // Unstructured: audio field
+  repeated bytes audios = 4;
 
-  // repeated bytes audios = 4;
   // repeated bytes videos = 5;
 
   // [semi-]structured data: structured_data field
@@ -448,7 +446,7 @@ message DataPayload {
 message ExecuteConnectorRequest {
   // Name of a connector. For example:
   // "connectors/{name}"
-  string name = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
 
   // Inputs
   repeated DataPayload inputs = 2;

@@ -498,7 +498,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 			return nil, err
 		}
 		cache[comp.Id] = resp.Outputs
-		if comp.ResourceName == fmt.Sprintf("connectors/%s", constant.ResponseConnectorId) {
+		if comp.ResourceName == fmt.Sprintf("connectors/%s", constant.EndConnectorId) {
 			responseCompId = comp.Id
 		}
 	}

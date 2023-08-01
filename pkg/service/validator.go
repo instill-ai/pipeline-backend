@@ -54,10 +54,10 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipeRscName *datamodel.Recip
 
 	for idx := range recipeRscName.Components {
 
-		if recipeRscName.Components[idx].ResourceName == fmt.Sprintf("connectors/%s", constant.TriggerConnectorId) {
+		if recipeRscName.Components[idx].ResourceName == fmt.Sprintf("connectors/%s", constant.StartConnectorId) {
 			triggerCnt += 1
 		}
-		if recipeRscName.Components[idx].ResourceName == fmt.Sprintf("connectors/%s", constant.ResponseConnectorId) {
+		if recipeRscName.Components[idx].ResourceName == fmt.Sprintf("connectors/%s", constant.EndConnectorId) {
 			responseCnt += 1
 		}
 		watchResp, err := s.connectorPublicServiceClient.WatchConnector(

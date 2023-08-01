@@ -207,7 +207,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			return err
 		}
 		cache[comp.Id] = outputs
-		if comp.ResourceName == fmt.Sprintf("connectors/%s", constant.ResponseConnectorId) {
+		if comp.ResourceName == fmt.Sprintf("connectors/%s", constant.EndConnectorId) {
 			responseCompId = comp.Id
 		}
 	}
