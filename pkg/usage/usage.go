@@ -2,21 +2,21 @@ package usage
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v9"
-	"go.einride.tech/aip/filtering"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/repo"
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	usagePB "github.com/instill-ai/protogen-go/base/usage/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 	usageClient "github.com/instill-ai/usage-client/client"
 	usageReporter "github.com/instill-ai/usage-client/reporter"
 )
@@ -85,47 +85,39 @@ func (u *usage) RetrieveUsageData() interface{} {
 
 		// Roll all pipeline resources on a user
 		for _, user := range userResp.Users {
-			pipePageToken := ""
-			pipeActiveStateNum := int64(0)
-			pipeInactiveStateNum := int64(0)
-			pipeSyncModeNum := int64(0)
-			pipeAsyncModeNum := int64(0)
-			for {
-				dbPipelines, _, pipeNextPageToken, err := u.repository.ListPipelines(fmt.Sprintf("users/%s", user.GetUid()), int64(repository.MaxPageSize), pipePageToken, true, filtering.Filter{})
-				if err != nil {
-					logger.Error(fmt.Sprintf("%s", err))
-				}
 
-				for _, pipeline := range dbPipelines {
-					if pipeline.State == datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-						pipeActiveStateNum++
+			triggerDataList := []*usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{}
+
+			triggerCount := u.redisClient.LLen(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", user.GetUid())).Val() // O(1)
+
+			if triggerCount != 0 {
+				for i := int64(0); i < triggerCount; i++ {
+
+					strData := u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", user.GetUid())).Val()
+
+					triggerData := &utils.UsageMetricData{}
+					if err := json.Unmarshal([]byte(strData), triggerData); err != nil {
+						logger.Warn("Usage data might be corrupted")
 					}
-					if pipeline.State == datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE) {
-						pipeInactiveStateNum++
-					}
-				}
 
-				if pipeNextPageToken == "" {
-					break
-				} else {
-					pipePageToken = pipeNextPageToken
-				}
-			}
+					triggerTime, _ := time.Parse(time.RFC3339Nano, triggerData.TriggerTime)
 
-			triggerNum, err := u.redisClient.Get(ctx, fmt.Sprintf("user:%s:trigger.num", user.GetUid())).Int64()
-			if err == redis.Nil {
-				triggerNum = 0
-			} else if err != nil {
-				logger.Error(fmt.Sprintf("%s", err))
+					triggerDataList = append(
+						triggerDataList,
+						&usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{
+							PipelineUid: triggerData.PipelineUID,
+							TriggerUid:  triggerData.PipelineTriggerUID,
+							TriggerTime: timestamppb.New(triggerTime),
+							TriggerMode: triggerData.TriggerMode,
+							Status:      triggerData.Status,
+						},
+					)
+				}
 			}
 
 			pbPipelineUsageData = append(pbPipelineUsageData, &usagePB.PipelineUsageData_UserUsageData{
-				UserUid:                  user.GetUid(),
-				PipelineActiveStateNum:   pipeActiveStateNum,
-				PipelineInactiveStateNum: pipeInactiveStateNum,
-				PipelineSyncModeNum:      pipeSyncModeNum,
-				PipelineAsyncModeNum:     pipeAsyncModeNum,
-				TriggerNum:               triggerNum,
+				UserUid:             user.GetUid(),
+				PipelineTriggerData: triggerDataList,
 			})
 
 		}
