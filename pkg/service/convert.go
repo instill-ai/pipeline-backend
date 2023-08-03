@@ -30,6 +30,11 @@ func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datam
 			Dependencies:   component.Dependencies,
 			ResourceDetail: component.ResourceDetail,
 		}
+		if componentPermalink.Dependencies != nil {
+			if _, ok := componentPermalink.Dependencies["audios"]; !ok {
+				componentPermalink.Dependencies["audios"] = "[]"
+			}
+		}
 
 		permalink := ""
 		var err error
@@ -53,6 +58,11 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 			Metadata:       componentPermalink.Metadata,
 			Dependencies:   componentPermalink.Dependencies,
 			ResourceDetail: componentPermalink.ResourceDetail,
+		}
+		if component.Dependencies != nil {
+			if _, ok := component.Dependencies["audios"]; !ok {
+				component.Dependencies["audios"] = "[]"
+			}
 		}
 
 		name, err := s.connectorPermalinkToName(componentPermalink.ResourceName)

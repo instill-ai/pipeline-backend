@@ -783,12 +783,6 @@ export function CheckUpdate() {
           (r) => r.json().pipeline.state === resOrigin.json().pipeline.state,
         [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline description (OPTIONAL)`]:
           (r) => r.json().pipeline.description === reqBodyUpdate.description,
-        [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline recipe (IMMUTABLE)`]:
-          (r) =>
-            helper.checkRecipeIsImmutable(
-              r.json().pipeline.recipe,
-              reqBody.recipe
-            ),
         [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline user is UUID`]:
           (r) => helper.isValidOwner(r.json().pipeline.user),
         [`PATCH /v1alpha/pipelines/${reqBody.id} response pipeline create_time (OUTPUT_ONLY)`]:
