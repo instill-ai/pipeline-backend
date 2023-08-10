@@ -5,7 +5,7 @@ package vdp.pipeline.v1alpha;
 // Google API
 import "google/api/annotations.proto";
 import "google/api/client.proto";
-
+import "../../../vdp/pipeline/v1alpha/operator_definition.proto";
 import "../../../vdp/pipeline/v1alpha/pipeline.proto";
 
 // Pipeline service responds to external access
@@ -17,8 +17,9 @@ service PipelinePublicService {
   // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
   rpc Liveness(LivenessRequest) returns (LivenessResponse) {
     option (google.api.http) = {
-      get : "/v1alpha/__liveness"
-      additional_bindings : [ {get : "/v1alpha/health/pipeline"} ]
+      get: "/v1alpha/__liveness"
+      additional_bindings: [
+        {get: "/v1alpha/health/pipeline"}]
     };
   }
 
@@ -26,17 +27,30 @@ service PipelinePublicService {
   // ReadinessResponse message.
   // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
   rpc Readiness(ReadinessRequest) returns (v1alpha.ReadinessResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/__readiness"
-    };
+    option (google.api.http) = {get: "/v1alpha/__readiness"};
+  }
+
+  // ListOperatorDefinitions method receives a
+  // ListOperatorDefinitionsRequest message and returns a
+  // ListOperatorDefinitionsResponse message.
+  rpc ListOperatorDefinitions(ListOperatorDefinitionsRequest) returns (ListOperatorDefinitionsResponse) {
+    option (google.api.http) = {get: "/v1alpha/operator-definitions"};
+  }
+
+  // GetOperatorDefinition method receives a
+  // GetOperatorDefinitionRequest message and returns a
+  // GetGetOperatorDefinitionResponse message.
+  rpc GetOperatorDefinition(GetOperatorDefinitionRequest) returns (GetOperatorDefinitionResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=operator-definitions/*}"};
+    option (google.api.method_signature) = "name";
   }
 
   // CreatePipeline method receives a CreatePipelineRequest message and returns
   // a CreatePipelineResponse message.
   rpc CreatePipeline(CreatePipelineRequest) returns (CreatePipelineResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/pipelines"
-      body : "pipeline"
+      post: "/v1alpha/pipelines"
+      body: "pipeline"
     };
     option (google.api.method_signature) = "pipeline";
   }
@@ -44,17 +58,13 @@ service PipelinePublicService {
   // ListPipelines method receives a ListPipelinesRequest message and returns a
   // ListPipelinesResponse message.
   rpc ListPipelines(ListPipelinesRequest) returns (ListPipelinesResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/pipelines"
-    };
+    option (google.api.http) = {get: "/v1alpha/pipelines"};
   }
 
   // GetPipeline method receives a GetPipelineRequest message and returns a
   // GetPipelineResponse message.
   rpc GetPipeline(GetPipelineRequest) returns (GetPipelineResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=pipelines/*}"
-    };
+    option (google.api.http) = {get: "/v1alpha/{name=pipelines/*}"};
     option (google.api.method_signature) = "name";
   }
 
@@ -62,8 +72,8 @@ service PipelinePublicService {
   // a UpdatePipelineResponse message.
   rpc UpdatePipeline(UpdatePipelineRequest) returns (UpdatePipelineResponse) {
     option (google.api.http) = {
-      patch : "/v1alpha/{pipeline.name=pipelines/*}"
-      body : "pipeline"
+      patch: "/v1alpha/{pipeline.name=pipelines/*}"
+      body: "pipeline"
     };
     option (google.api.method_signature) = "pipeline,update_mask";
   }
@@ -71,18 +81,14 @@ service PipelinePublicService {
   // DeletePipeline method receives a DeletePipelineRequest message and returns
   // a DeletePipelineResponse message.
   rpc DeletePipeline(DeletePipelineRequest) returns (DeletePipelineResponse) {
-    option (google.api.http) = {
-      delete : "/v1alpha/{name=pipelines/*}"
-    };
+    option (google.api.http) = {delete: "/v1alpha/{name=pipelines/*}"};
     option (google.api.method_signature) = "name";
   }
 
   // LookUpPipeline method receives a LookUpPipelineRequest message and returns
   // a LookUpPipelineResponse
   rpc LookUpPipeline(LookUpPipelineRequest) returns (LookUpPipelineResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{permalink=pipelines/*}/lookUp"
-    };
+    option (google.api.http) = {get: "/v1alpha/{permalink=pipelines/*}/lookUp"};
     option (google.api.method_signature) = "permalink";
   }
 
@@ -90,11 +96,10 @@ service PipelinePublicService {
   // The "state" of the pipeline after activating is "ACTIVE".
   // ActivatePipeline can be called on Pipelines in the state "INACTIVE";
   // Pipelines in a different state (including "ACTIVE") returns an error.
-  rpc ActivatePipeline(ActivatePipelineRequest)
-      returns (ActivatePipelineResponse) {
+  rpc ActivatePipeline(ActivatePipelineRequest) returns (ActivatePipelineResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=pipelines/*}/activate"
-      body : "*"
+      post: "/v1alpha/{name=pipelines/*}/activate"
+      body: "*"
     };
     option (google.api.method_signature) = "name";
   }
@@ -103,11 +108,10 @@ service PipelinePublicService {
   // The "state" of the pipeline after inactivating is "INACTIVE".
   // DeactivatePipeline can be called on Pipelines in the state "ACTIVE";
   // Pipelines in a different state (including "INACTIVE") returns an error.
-  rpc DeactivatePipeline(DeactivatePipelineRequest)
-      returns (DeactivatePipelineResponse) {
+  rpc DeactivatePipeline(DeactivatePipelineRequest) returns (DeactivatePipelineResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=pipelines/*}/deactivate"
-      body : "*"
+      post: "/v1alpha/{name=pipelines/*}/deactivate"
+      body: "*"
     };
     option (google.api.method_signature) = "name";
   }
@@ -116,30 +120,28 @@ service PipelinePublicService {
   // a RenamePipelineResponse message.
   rpc RenamePipeline(RenamePipelineRequest) returns (RenamePipelineResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=pipelines/*}/rename"
-      body : "*"
+      post: "/v1alpha/{name=pipelines/*}/rename"
+      body: "*"
     };
     option (google.api.method_signature) = "name,new_pipeline_id";
   }
 
   // TriggerPipeline method receives a TriggerPipelineRequest message
   // and returns a TriggerPipelineResponse.
-  rpc TriggerPipeline(TriggerPipelineRequest)
-      returns (TriggerPipelineResponse) {
+  rpc TriggerPipeline(TriggerPipelineRequest) returns (TriggerPipelineResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=pipelines/*}/trigger"
-      body : "*"
+      post: "/v1alpha/{name=pipelines/*}/trigger"
+      body: "*"
     };
     option (google.api.method_signature) = "name,inputs";
   }
 
   // TriggerAsyncPipeline method receives a TriggerPipelineRequest message and
   // returns a TriggerAsyncPipelineResponse.
-  rpc TriggerAsyncPipeline(TriggerAsyncPipelineRequest)
-      returns (TriggerAsyncPipelineResponse) {
+  rpc TriggerAsyncPipeline(TriggerAsyncPipelineRequest) returns (TriggerAsyncPipelineResponse) {
     option (google.api.http) = {
-      post : "/v1alpha/{name=pipelines/*}/triggerAsync"
-      body : "*"
+      post: "/v1alpha/{name=pipelines/*}/triggerAsync"
+      body: "*"
     };
     option (google.api.method_signature) = "name,inputs";
   }
@@ -147,9 +149,7 @@ service PipelinePublicService {
   // WatchPipeline method receives a WatchPipelineRequest message
   // and returns a WatchPipelineResponse
   rpc WatchPipeline(WatchPipelineRequest) returns (WatchPipelineResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=pipelines/*}/watch"
-    };
+    option (google.api.http) = {get: "/v1alpha/{name=pipelines/*}/watch"};
     option (google.api.method_signature) = "name";
   }
 
@@ -158,11 +158,8 @@ service PipelinePublicService {
   // GetOperation method receives a
   // GetOperationRequest message and returns a
   // GetOperationResponse message.
-  rpc GetOperation(GetOperationRequest)
-      returns (GetOperationResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/{name=operations/*}"
-    };
+  rpc GetOperation(GetOperationRequest) returns (GetOperationResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=operations/*}"};
     option (google.api.method_signature) = "name";
   }
 }

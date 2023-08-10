@@ -26,48 +26,9 @@ export let options = {
 export function setup() {
   client.connect(constant.connectorGRPCPublicHost, {
     plaintext: true,
-    timeout: "1800s",
+    timeout: "10s",
   });
 
-  group("Connector Backend API: Create a source connector", function () {
-    var resp = client.invoke(
-      "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
-      {
-        connector: {
-          id: "start-operator",
-          connector_definition_name: "connector-definitions/start-operator",
-          configuration: {},
-        },
-      }
-    );
-    check(resp, {
-      "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector HTTP response StatusOK":
-        (r) => r.status === grpc.StatusOK,
-    });
-  });
-
-  group(
-    "Connector Backend API: Create a destination connector",
-    function () {
-      check(
-        client.invoke(
-          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
-          {
-            connector: {
-              id: "end-operator",
-              connector_definition_name:
-                "connector-definitions/end-operator",
-              configuration: {},
-            },
-          }
-        ),
-        {
-          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector HTTP response StatusOK":
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-    }
-  );
 
   group(
     "Connector Backend API: Create a CSV destination connector 1",
@@ -169,12 +130,8 @@ export default function (data) {
   pipeline.CheckLookUp()
   pipeline.CheckWatch()
 
-  trigger.CheckTriggerSingleImageSingleModel();
-  trigger.CheckTriggerMultiImageSingleModel();
-  trigger.CheckTriggerWithDependency();
-  triggerAsync.CheckTriggerAsyncSingleImageSingleModel();
-  triggerAsync.CheckTriggerAsyncMultiImageSingleModel();
-  triggerAsync.CheckTriggerAsyncSingleResponse()
+  trigger.CheckTrigger();
+  triggerAsync.CheckTrigger();
 
   if (!constant.apiGatewayMode) {
     pipelinePrivate.CheckList()
@@ -223,38 +180,6 @@ export function teardown(data) {
     plaintext: true,
   });
 
-  group("Connector Backend API: Delete the source connector", function () {
-    check(
-      client.invoke(
-        `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
-        {
-          name: "connectors/start-operator",
-        }
-      ),
-      {
-        [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-  });
-
-  group(
-    "Connector Backend API: Delete the destination connector",
-    function () {
-      check(
-        client.invoke(
-          `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
-          {
-            name: "connectors/end-operator",
-          }
-        ),
-        {
-          [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-    }
-  );
 
   group(
     "Connector Backend API: Delete the csv destination connector 1",

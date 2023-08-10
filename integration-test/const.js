@@ -67,14 +67,14 @@ export const params = {
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: "1800s",
+  timeout: "10s",
 };
 
 export const paramsGrpc = {
   metadata: {
     "Content-Type": "application/json",
   },
-  timeout: "1800s",
+  timeout: "10s",
 };
 
 const randomUUID = uuidv4();
@@ -92,193 +92,132 @@ export const paramsHTTPWithJwt = {
   },
 };
 
-export const detSyncHTTPSimpleRecipe = {
-  recipe: {
-    version: "v1alpha",
-    components: [
-      {
-        id: "s01",
-        resource_name: "connectors/start-operator",
-        dependencies: {},
-      },
-      {
-        id: "d01",
-        resource_name: "connectors/end-operator",
-        dependencies: {
-          structured_data: "{**s01.structured_data}",
-        },
-      },
-    ],
-  },
-};
-
-export const detSyncHTTPSimpleRecipeDupId = {
-  recipe: {
-    version: "v1alpha",
-    components: [
-      {
-        id: "s01",
-        resource_name: "connectors/start-operator",
-        dependencies: {},
-      },
-      {
-        id: "s01",
-        resource_name: "connectors/end-operator",
-        dependencies: {
-          structured_data: "{**s01.structured_data}",
-        },
-      },
-    ],
-  },
-};
-
-export const detSyncGRPCSimpleRecipe = {
-  recipe: {
-    version: "v1alpha",
-    components: [
-      {
-        id: "s01",
-        resource_name: "connectors/start-operator",
-        dependencies: {},
-      },
-      {
-        id: "d01",
-        resource_name: "connectors/end-operator",
-        dependencies: {
-          structured_data: "{**s01.structured_data}",
-        },
-      },
-    ],
-  },
-};
-
-export const detSyncHTTPMultiModelRecipe = {
-  recipe: {
-    version: "v1alpha",
-    components: [
-      {
-        id: "s01",
-        resource_name: "connectors/start-operator",
-        dependencies: {},
-      },
-      {
-        id: "d01",
-        resource_name: "connectors/end-operator",
-        dependencies: {
-          structured_data: "{**s01.structured_data}",
-        },
-      },
-    ],
-  },
-};
-
-export const detSynGRPCMultiModelRecipe = {
-  recipe: {
-    version: "v1alpha",
-    components: [
-      {
-        id: "s01",
-        resource_name: "connectors/start-operator",
-        dependencies: {},
-      },
-      {
-        id: "d01",
-        resource_name: "connectors/end-operator",
-        dependencies: {
-          structured_data: "{**s01.structured_data}",
-        },
-      },
-    ],
-  },
-};
-
 export const dstCSVConnID1 = "some-cool-name-for-dst-csv-connector-1";
 export const dstCSVConnID2 = "some-cool-name-for-dst-csv-connector-2";
 
-export const detAsyncSingleModelRecipe = {
+export const simpleRecipe = {
   recipe: {
     version: "v1alpha",
     components: [
       {
-        id: "s01",
-        resource_name: "connectors/start-operator",
-        dependencies: {},
+        id: "start",
+        definition_name: "operator-definitions/start-operator",
+        configuration: {
+          body: {
+            input: {
+              display_name: "Input",
+              type: "text"
+            }
+          }
+        }
+      },
+      {
+        id: "end",
+        definition_name: "operator-definitions/end-operator",
+        configuration: {
+          body: {
+            output: "{ start.body.input }"
+          }
+        }
       },
       {
         id: "d01",
         resource_name: `connectors/${dstCSVConnID1}`,
-        dependencies: {
-          structured_data: "{**s01.structured_data}",
-        },
-      },
-    ],
-  },
-};
-
-export const detAsyncSingleResponseRecipe = {
-  recipe: {
-    version: "v1alpha",
-    components: [
-      {
-        id: "s01",
-        resource_name: "connectors/start-operator",
-        dependencies: {},
-      },
-      {
-        id: "d01",
-        resource_name: `connectors/end-operator`,
-        dependencies: {
-          images: "[*s01.images]",
-          structured_data: "{**s01.structured_data}",
-        },
-      },
-    ],
-  },
-};
-
-export const detAsyncMultiModelRecipe = {
-  recipe: {
-    version: "v1alpha",
-    components: [
-      {
-        id: "s01",
-        resource_name: "connectors/start-operator",
-        dependencies: {},
-      },
-      {
-        id: "d01",
-        resource_name: `connectors/${dstCSVConnID1}`,
-        dependencies: {
-          structured_data: "{**s01.structured_data}",
-        },
-      },
-    ],
-  },
-};
-
-export const detAsyncMultiModelMultipleDestinationRecipe = {
-  recipe: {
-    version: "v1alpha",
-    components: [
-      {
-        id: "s01",
-        resource_name: "connectors/start-operator",
-        dependencies: {},
-      },
-      {
-        id: "d01",
-        resource_name: `connectors/${dstCSVConnID1}`,
-        dependencies: {
-          structured_data: "{**s01.structured_data}",
-        },
+        definition_name: "connector-definitions/airbyte-destination-csv",
+        configuration: {
+          text: "{ start.body.input }"
+        }
       },
       {
         id: "d02",
         resource_name: `connectors/${dstCSVConnID2}`,
-        dependencies: {
-          structured_data: "{**s01.structured_data}",
-        },
+        definition_name: "connector-definitions/airbyte-destination-csv",
+        configuration: {
+          text: "{ start.body.input }"
+        }
       },
     ],
   },
+};
+
+export const simpleRecipeWithoutCSV = {
+  recipe: {
+    version: "v1alpha",
+    components: [
+      {
+        id: "start",
+        definition_name: "operator-definitions/start-operator",
+        configuration: {
+          body: {
+            input: {
+              display_name: "Input",
+              type: "text"
+            }
+          }
+        }
+      },
+      {
+        id: "end",
+        definition_name: "operator-definitions/end-operator",
+        configuration: {
+          body: {
+            output: "{ start.body.input }"
+          }
+        }
+      },
+    ],
+  },
+};
+
+export const simpleRecipeDupId = {
+  recipe: {
+    version: "v1alpha",
+    components: [
+      {
+        id: "start",
+        definition_name: "operator-definitions/start-operator",
+        configuration: {
+          body: {
+            input: {
+              display_name: "Input",
+              type: "text"
+            }
+          }
+        }
+      },
+      {
+        id: "end",
+        definition_name: "operator-definitions/end-operator",
+        configuration: {
+          body: {
+            output: "{ start.body.input }"
+          }
+        }
+      },
+      {
+        id: "d01",
+        resource_name: `connectors/${dstCSVConnID1}`,
+        definition_name: "connector-definitions/airbyte-destination-csv",
+        configuration: {
+          text: "{ start.body.input }"
+        }
+      },
+      {
+        id: "d01",
+        resource_name: `connectors/${dstCSVConnID2}`,
+        definition_name: "connector-definitions/airbyte-destination-csv",
+        configuration: {
+          text: "{ start.body.input }"
+        }
+      },
+    ],
+  },
+};
+
+export const simplePayload = {
+  inputs: [
+    {
+      input: "a",
+    },
+  ],
 };

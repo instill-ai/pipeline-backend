@@ -67,6 +67,32 @@ func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handl
 	)
 }
 
+// InitPipelinePublicServiceClient initialises a PipelineServiceClient instance
+func InitPipelinePublicServiceClient(ctx context.Context) (pipelinePB.PipelinePublicServiceClient, *grpc.ClientConn) {
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var clientDialOpts grpc.DialOption
+	var creds credentials.TransportCredentials
+	var err error
+	if config.Config.Server.HTTPS.Cert != "" && config.Config.Server.HTTPS.Key != "" {
+		creds, err = credentials.NewServerTLSFromFile(config.Config.Server.HTTPS.Cert, config.Config.Server.HTTPS.Key)
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+		clientDialOpts = grpc.WithTransportCredentials(creds)
+	} else {
+		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+
+	clientConn, err := grpc.Dial(fmt.Sprintf(":%v", config.Config.Server.PublicPort), clientDialOpts)
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, nil
+	}
+
+	return pipelinePB.NewPipelinePublicServiceClient(clientConn), clientConn
+}
+
 func main() {
 
 	if err := config.Init(); err != nil {
@@ -171,6 +197,10 @@ func main() {
 		grpcServerOpts = append(grpcServerOpts, grpc.Creds(creds))
 	}
 
+	pipelinePublicServiceClient, pipelinePublicServiceClientConn := InitPipelinePublicServiceClient(ctx)
+	if pipelinePublicServiceClientConn != nil {
+		defer pipelinePublicServiceClientConn.Close()
+	}
 	mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient(ctx)
 	if mgmtPrivateServiceClientConn != nil {
 		defer mgmtPrivateServiceClientConn.Close()
@@ -303,6 +333,12 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=pipelines/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger)); err != nil {
+		logger.Fatal(err.Error())
+	}
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=pipelines/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync)); err != nil {
+		logger.Fatal(err.Error())
+	}
 	privateHTTPServer := &http.Server{
 		Addr:      fmt.Sprintf(":%v", config.Config.Server.PrivatePort),
 		Handler:   grpcHandlerFunc(privateGrpcS, privateServeMux),

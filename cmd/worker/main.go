@@ -109,7 +109,6 @@ func main() {
 	})
 
 	w.RegisterWorkflow(cw.TriggerAsyncPipelineWorkflow)
-	w.RegisterActivity(cw.DownloadActivity)
 	w.RegisterActivity(cw.ConnectorActivity)
 
 	span.End()

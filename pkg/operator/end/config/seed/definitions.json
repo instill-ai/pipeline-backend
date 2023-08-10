@@ -1,0 +1,18 @@
+[
+  {
+    "custom": false,
+    "documentation_url": "https://www.instill.tech/docs/vdp/operators/end-operator",
+    "icon": "end-operator.svg",
+    "icon_url": "",
+    "id": "end-operator",
+    "public": true,
+    "spec": {
+      "component_specification": {
+        "$ref": "component.json"
+      }
+    },
+    "title": "End",
+    "tombstone": false,
+    "uid": "4f39c8bc-8617-495d-80de-80d0f5397516"
+  }
+]

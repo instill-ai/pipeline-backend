@@ -2,24 +2,21 @@ syntax = "proto3";
 
 package vdp.pipeline.v1alpha;
 
+import "../../../common/healthcheck/v1alpha/healthcheck.proto";
+import "google/api/field_behavior.proto";
+// Google API
+import "google/api/resource.proto";
+import "google/longrunning/operations.proto";
 // Protocol Buffers Well-Known Types
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
-// Google API
-import "google/api/resource.proto";
-import "google/api/field_behavior.proto";
-import "google/longrunning/operations.proto";
-
-import "../../../common/healthcheck/v1alpha/healthcheck.proto";
-
 // LivenessRequest represents a request to check a service liveness status
 message LivenessRequest {
   // HealthCheckRequest message
-  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request =
-      1 [ (google.api.field_behavior) = OPTIONAL ];
+  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LivenessResponse represents a response for a service liveness status
@@ -31,8 +28,7 @@ message LivenessResponse {
 // ReadinessRequest represents a request to check a service readiness status
 message ReadinessRequest {
   // HealthCheckRequest message
-  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request =
-      1 [ (google.api.field_behavior) = OPTIONAL ];
+  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ReadinessResponse represents a response for a service readiness status
@@ -43,23 +39,23 @@ message ReadinessResponse {
 
 // Represents a pipeline component
 message Component {
-
   // Component id that is given by the users
-  string id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
   // A pipeline component resource name
-  string resource_name = 2 [
+  string resource_name = 2 [(google.api.resource_reference).type = "*"];
+  // A pipeline component resource detail
+  google.protobuf.Struct resource_detail = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Configuration for the pipeline component
+  google.protobuf.Struct configuration = 4;
+  // Resource Type
+  string type = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // A pipeline component definition name
+  string definition_name = 7 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference).type = "*"
   ];
-  // A pipeline component resource detail
-  google.protobuf.Struct resource_detail = 3
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
-  // Metadata for the pipeline component
-  google.protobuf.Struct metadata = 4;
-  // Dependencies for the pipeline component
-  map<string, string> dependencies = 5;
-  // Resource Type
-  string type = 6 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  // A pipeline component definition detail
+  google.protobuf.Struct definition_detail = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // Pipeline represents a pipeline recipe
@@ -73,8 +69,8 @@ message Recipe {
 // Pipeline represents the content of a pipeline
 message Pipeline {
   option (google.api.resource) = {
-    type : "api.instill.tech/Pipeline"
-    pattern : "pipelines/{pipeline}"
+    type: "api.instill.tech/Pipeline"
+    pattern: "pipelines/{pipeline}"
   };
 
   // State enumerates the state of a pipeline
@@ -90,20 +86,20 @@ message Pipeline {
   }
 
   // Pipeline resource name. It must have the format of "pipelines/*"
-  string name = 1 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline UUID
-  string uid = 2 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline resource ID (the last segment of the resource name) used to
   // construct the resource name. This conforms to RFC-1034, which restricts to
   // letters, numbers, and hyphen, with the first character a letter, the last a
   // letter or a number, and a 63 character maximum.
-  string id = 3 [ (google.api.field_behavior) = IMMUTABLE ];
+  string id = 3 [(google.api.field_behavior) = IMMUTABLE];
   // Pipeline description
-  optional string description = 4 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string description = 4 [(google.api.field_behavior) = OPTIONAL];
   // Pipeline recipe
-  Recipe recipe = 5 [ (google.api.field_behavior) = IMMUTABLE ];
+  Recipe recipe = 5 [(google.api.field_behavior) = IMMUTABLE];
   // Pipeline state
-  State state = 7 [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  State state = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline owner
   oneof owner {
     // The resource name with UUID of a user, e.g.,
@@ -117,19 +113,17 @@ message Pipeline {
       (google.api.resource_reference).type = "api.instill.tech/Organization",
       (google.api.field_behavior) = OUTPUT_ONLY
     ];
-  };
+  }
   // Pipeline creation time
-  google.protobuf.Timestamp create_time = 10
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Timestamp create_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline update time
-  google.protobuf.Timestamp update_time = 11
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.protobuf.Timestamp update_time = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // CreatePipelineRequest represents a request to create a pipeline
 message CreatePipelineRequest {
   // A pipeline resource to create
-  Pipeline pipeline = 1 [ (google.api.field_behavior) = REQUIRED ];
+  Pipeline pipeline = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // CreatePipelineResponse represents a response for a pipeline resource
@@ -155,13 +149,13 @@ message ListPipelinesRequest {
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
+  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
-  optional string page_token = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
-  optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipelines
-  optional string filter = 4 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListPipelinesResponse represents a response for a list of pipelines
@@ -179,13 +173,13 @@ message GetPipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"},
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {path_param_name : "pipeline.name"}
+      field_configuration: {path_param_name: "pipeline.name"}
     }
   ];
   // Pipeline resource view (default is VIEW_BASIC)
-  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // GetPipelineResponse represents a response for a pipeline resource
@@ -197,10 +191,9 @@ message GetPipelineResponse {
 // UpdatePipelineRequest represents a request to update a pipeline
 message UpdatePipelineRequest {
   // A pipeline resource to update
-  Pipeline pipeline = 1 [ (google.api.field_behavior) = REQUIRED ];
+  Pipeline pipeline = 1 [(google.api.field_behavior) = REQUIRED];
   // Update mask for a pipeline resource
-  google.protobuf.FieldMask update_mask = 2
-      [ (google.api.field_behavior) = REQUIRED ];
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 // UpdatePipelineResponse represents a response for a pipeline resource
@@ -214,9 +207,9 @@ message DeletePipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"},
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {path_param_name : "pipeline.name"}
+      field_configuration: {path_param_name: "pipeline.name"}
     }
   ];
 }
@@ -228,9 +221,9 @@ message DeletePipelineResponse {}
 message LookUpPipelineRequest {
   // Permalink of a pipeline. For example:
   // "pipelines/{uid}"
-  string permalink = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
   // View view (default is VIEW_BASIC)
-  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LookUpPipelineResponse represents a response for a pipeline resource
@@ -244,7 +237,7 @@ message ActivatePipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
   ];
 }
 
@@ -259,7 +252,7 @@ message DeactivatePipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
   ];
 }
 
@@ -275,11 +268,11 @@ message RenamePipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
   ];
   // Pipeline new resource id to replace with the pipeline resource name to be
   // "pipelines/{new_pipeline_id}"
-  string new_pipeline_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+  string new_pipeline_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 // RenamePipelineResponse represents a renamed pipeline resource
@@ -288,60 +281,22 @@ message RenamePipelineResponse {
   Pipeline pipeline = 1;
 }
 
-
-// PipelineDataPayload is a data structure for pipeline input
-message PipelineDataPayload {
-
-  // UnstructuredData
-  message UnstructuredData {
-    // UnstructuredData
-    oneof unstructured_data {
-      // UnstructuredData using bytes,
-      // grpc-gateway will do base64 conversion for http endpoint
-      bytes blob = 1;
-      // UnstructuredData using url
-      string url = 2;
-    }
-  }
-
-  // Data index corresponds to each data element
-  // if not provided, vdp will generate a one by uild
-  // ref: https://github.com/ulid/spec
-  string data_mapping_index = 1 [ (google.api.field_behavior) = REQUIRED ];
-
-  // Unstructured: text field
-  repeated string texts = 2;
-
-  // Unstructured: image field
-  repeated UnstructuredData images = 3;
-
-  // repeated UnstructuredData audios = 4;
-  // repeated UnstructuredData videos = 5;
-
-  // [semi-]structured data: json field
-  google.protobuf.Struct structured_data = 6;
-
-  // Metadata
-  google.protobuf.Struct metadata = 7;
-}
-
 // TriggerPipelineRequest represents a request to trigger a pipeline
 message TriggerPipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
   ];
   // Input to the pipeline
-  repeated PipelineDataPayload inputs = 2
-      [ (google.api.field_behavior) = REQUIRED ];
+  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 // TriggerPipelineResponse represents a response for the output
 // of a pipeline, i.e., the multiple model inference outputs
 message TriggerPipelineResponse {
   // The multiple model inference outputs
-  repeated PipelineDataPayload outputs = 1;
+  repeated google.protobuf.Struct outputs = 1;
 }
 
 // TriggerAsyncPipelineRequest represents a request to trigger a async pipeline
@@ -349,34 +304,31 @@ message TriggerAsyncPipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"}
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
   ];
   // Input to the pipeline
-  repeated PipelineDataPayload inputs = 2
-      [ (google.api.field_behavior) = REQUIRED ];
+  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 // TriggerAsyncPipelineResponse represents a response for the longrunning
 // operation of a pipeline
 message TriggerAsyncPipelineResponse {
   // Trigger async pipeline operation message
-  google.longrunning.Operation operation = 1
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.longrunning.Operation operation = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // GetOperationRequest represents a request to query a longrunning
 // operation
 message GetOperationRequest {
   // The name of the operation resource.
-  string name = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // GetOperationResponse represents a response for a longrunning
 // operation
 message GetOperationResponse {
   // The retrieved longrunning operation
-  google.longrunning.Operation operation = 1
-      [ (google.api.field_behavior) = OUTPUT_ONLY ];
+  google.longrunning.Operation operation = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // WatchPipelineRequest represents a public request to query
@@ -385,9 +337,9 @@ message WatchPipelineRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"},
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {path_param_name : "pipeline.name/watch"}
+      field_configuration: {path_param_name: "pipeline.name/watch"}
     }
   ];
 }
@@ -407,13 +359,13 @@ message ListPipelinesAdminRequest {
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [ (google.api.field_behavior) = OPTIONAL ];
+  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
-  optional string page_token = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
-  optional View view = 3 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipelines
-  optional string filter = 4 [ (google.api.field_behavior) = OPTIONAL ];
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListPipelinesAdminResponse represents a response for a list of pipelines
@@ -434,13 +386,13 @@ message GetPipelineAdminRequest {
   // Pipeline resource name. It must have the format of "pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type : "api.instill.tech/Pipeline"},
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration : {path_param_name : "pipeline.name"}
+      field_configuration: {path_param_name: "pipeline.name"}
     }
   ];
   // Pipeline resource view (default is VIEW_BASIC)
-  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // GetPipelineAdminResponse represents a response for a pipeline resource
@@ -454,9 +406,9 @@ message GetPipelineAdminResponse {
 message LookUpPipelineAdminRequest {
   // Permalink of a pipeline. For example:
   // "pipelines/{uid}"
-  string permalink = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
   // View view (default is VIEW_BASIC)
-  optional View view = 2 [ (google.api.field_behavior) = OPTIONAL ];
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LookUpPipelineAdminResponse represents a response for a pipeline resource

@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
@@ -14,11 +12,8 @@ import (
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
-	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 func GenOwnerPermalink(owner *mgmtPB.User) string {
@@ -33,16 +28,6 @@ func InjectOwnerToContextWithOwnerPermalink(ctx context.Context, permalink strin
 	uid, _ := resource.GetPermalinkUID(permalink)
 	ctx = metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", uid)
 	return ctx
-}
-
-func GetResourceFromRecipe(recipe *datamodel.Recipe, t connectorPB.ConnectorType) []string {
-	resources := []string{}
-	for _, component := range recipe.Components {
-		if component.Type == t.String() {
-			resources = append(resources, component.ResourceName)
-		}
-	}
-	return resources
 }
 
 const (
@@ -140,42 +125,4 @@ func ParseDependency(dep map[string]string) ([]string, map[string][]string, erro
 		parent = append(parent, k)
 	}
 	return parent, depMap, nil
-}
-
-func LoadPipelineUnstructuredData(unstructuredData []*pipelinePB.PipelineDataPayload_UnstructuredData) ([][]byte, error) {
-	var data [][]byte
-	for idx := range unstructuredData {
-		switch unstructuredData[idx].UnstructuredData.(type) {
-		case *pipelinePB.PipelineDataPayload_UnstructuredData_Blob:
-			data = append(data, unstructuredData[idx].GetBlob())
-		case *pipelinePB.PipelineDataPayload_UnstructuredData_Url:
-			url := unstructuredData[idx].GetUrl()
-			response, err := http.Get(url)
-			if err != nil {
-
-				return nil, fmt.Errorf("unable to download url at %v", url)
-			}
-			defer response.Body.Close()
-
-			buff := new(bytes.Buffer) // pointer
-			_, err = buff.ReadFrom(response.Body)
-			if err != nil {
-				return nil, fmt.Errorf("unable to read content body from data at %v", url)
-			}
-			data = append(data, buff.Bytes())
-		}
-	}
-	return data, nil
-}
-
-func DumpPipelineUnstructuredData(data [][]byte) []*pipelinePB.PipelineDataPayload_UnstructuredData {
-	unstructuredData := []*pipelinePB.PipelineDataPayload_UnstructuredData{}
-	for idx := range data {
-		unstructuredData = append(unstructuredData, &pipelinePB.PipelineDataPayload_UnstructuredData{
-			UnstructuredData: &pipelinePB.PipelineDataPayload_UnstructuredData_Blob{
-				Blob: data[idx],
-			},
-		})
-	}
-	return unstructuredData
 }

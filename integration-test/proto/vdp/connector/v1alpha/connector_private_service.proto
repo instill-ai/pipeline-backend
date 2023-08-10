@@ -6,9 +6,18 @@ package vdp.connector.v1alpha;
 import "google/api/annotations.proto";
 import "google/api/client.proto";
 import "../../../vdp/connector/v1alpha/connector.proto";
+import "../../../vdp/connector/v1alpha/connector_definition.proto";
 
 // Connector service responds to internal access
 service ConnectorPrivateService {
+  // LookUpConnectorDefinitionAdmin method receives a
+  // LookUpConnectorDefinitionAdminRequest message and returns a
+  // LookUpConnectorDefinitionAdminResponse
+  rpc LookUpConnectorDefinitionAdmin(LookUpConnectorDefinitionAdminRequest) returns (LookUpConnectorDefinitionAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/{permalink=connector-definitions/*}/lookUp"};
+    option (google.api.method_signature) = "permalink";
+  }
+
   // ListConnectorsAdmin method receives a ListConnectorsAdminRequest
   // message and returns a ListConnectorsResponse message.
   rpc ListConnectorsAdmin(ListConnectorsAdminRequest) returns (ListConnectorsAdminResponse) {
