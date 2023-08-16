@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package vdp.pipeline.v1alpha;
+
+import "google/api/field_behavior.proto";
+// Google API
+import "google/api/resource.proto";
+// Protocol Buffers Well-Known Types
+import "google/protobuf/struct.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "../../../vdp/pipeline/v1alpha/pipeline.proto";
+
+// View enumerates the definition views
+message Spec {
+  // Spec operator specification
+  google.protobuf.Struct component_specification = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+// Operator represents the operator definition data model
+message OperatorDefinition {
+  option (google.api.resource) = {
+    type: "api.instill.tech/Operator"
+    pattern:
+      "operator-definitions/"
+      "{operator-definition}"
+  };
+
+  // Operator resource name. It must have the format of
+  // "operator-definitions/*"
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Operator UUID
+  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Operator resource ID (the last segment of the
+  // resource name) used to construct the resource name. This conforms to
+  // RFC-1034, which restricts to letters, numbers, and hyphen, with the first
+  // character a letter, the last a letter or a number, and a 63 character
+  // maximum.
+  string id = 3 [(google.api.field_behavior) = IMMUTABLE];
+  // Operator title
+  string title = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Operator documentation URL
+  string documentation_url = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Operator icon
+  string icon = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Operator spec
+  Spec spec = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Operator tombstone, i.e., if not set or false, the
+  // configuration is active, or otherwise, if true, this configuration is
+  // permanently off
+  bool tombstone = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Operator public flag, i.e., true if this operator
+  // definition is available to all workspaces
+  bool public = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Operator custom flag, i.e., whether this is a custom
+  // operator definition
+  bool custom = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Operator iconUrl
+  string icon_url = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+///////////////////////////////////////////////////////////////////////
+// RPC messages
+///////////////////////////////////////////////////////////////////////
+
+// ListOperatorDefinitionsRequest represents a request to list
+// OperatorDefinitions
+message ListOperatorDefinitionsRequest {
+  // The maximum number of OperatorDefinitions to return. The
+  // service may return fewer than this value. If unspecified, at most 10
+  // OperatorDefinitions will be returned. The maximum value is 100;
+  // values above 100 will be coerced to 100.
+  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Definition view (default is DEFINITION_VIEW_BASIC)
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter expression to list operator definitions
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListOperatorDefinitionsResponse represents a response for a list
+// of OperatorDefinitions
+message ListOperatorDefinitionsResponse {
+  // A list of Operator resources
+  repeated OperatorDefinition operator_definitions = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of Operator resources
+  int64 total_size = 3;
+}
+
+// GetOperatorDefinitionRequest represents a request to query a
+// Operator resource
+message GetOperatorDefinitionRequest {
+  // Operator resource name. It must have the format of
+  // "operator-definitions/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Operator"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "operator_definition.name"}
+    }
+  ];
+  // Operator resource view (default is
+  // DEFINITION_VIEW_BASIC)
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetOperatorDefinitionResponse represents a
+// Operator response
+message GetOperatorDefinitionResponse {
+  // A Operator resource
+  OperatorDefinition operator_definition = 1;
+}
+
+// LookUpOperatorDefinitionAdminRequest represents a request to query a
+// operatorDefinition via permalink by admin
+message LookUpOperatorDefinitionAdminRequest {
+  // Permalink of a operator. For example:
+  // "operator-definitions/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+  // Operator view (default is VIEW_BASIC)
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LookUpOperatorAdminResponse represents a response for a
+// operator
+message LookUpOperatorDefinitionAdminResponse {
+  // operator resource
+  OperatorDefinition operator_definition = 1;
+}

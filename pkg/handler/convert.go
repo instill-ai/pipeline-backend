@@ -98,15 +98,30 @@ func DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) *pipeli
 				}
 				pbRecipe := pipelinePB.Recipe{}
 
-				err = json.Unmarshal(b, &pbRecipe)
+				err = protojson.Unmarshal(b, &pbRecipe)
 				if err != nil {
 					logger.Error(err.Error())
 				}
+
 				for i := range pbRecipe.Components {
-					if pbRecipe.Components[i].ResourceDetail != nil {
-						pbRecipe.Components[i].Type = pbRecipe.Components[i].ResourceDetail.GetFields()["connector_type"].GetStringValue()
+					// TODO: use enum
+					if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions/") {
+						if pbRecipe.Components[i].ResourceDetail != nil {
+							pbRecipe.Components[i].Type = pbRecipe.Components[i].ResourceDetail.GetFields()["connector_type"].GetStringValue()
+							switch pbRecipe.Components[i].ResourceDetail.GetFields()["connector_type"].GetStringValue() {
+							case "CONNECTOR_TYPE_AI":
+								pbRecipe.Components[i].Type = "COMPONENT_TYPE_CONNECTOR_AI"
+							case "CONNECTOR_TYPE_BLOCKCHAIN":
+								pbRecipe.Components[i].Type = "COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN"
+							case "CONNECTOR_TYPE_DATA":
+								pbRecipe.Components[i].Type = "COMPONENT_TYPE_CONNECTOR_DATA"
+							}
+						}
+					} else if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions/") {
+						pbRecipe.Components[i].Type = "COMPONENT_TYPE_OPERATOR"
 					}
 				}
+
 				return &pbRecipe
 			}
 			return nil

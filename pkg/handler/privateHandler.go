@@ -2,14 +2,18 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/operator"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/checkfield"
 
@@ -19,14 +23,16 @@ import (
 // PrivateHandler handles private API
 type PrivateHandler struct {
 	pipelinePB.UnimplementedPipelinePrivateServiceServer
-	service service.Service
+	service  service.Service
+	operator operator.Operator
 }
 
 // NewPrivateHandler initiates a handler instance
 func NewPrivateHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePrivateServiceServer {
 	datamodel.InitJSONSchema(ctx)
 	return &PrivateHandler{
-		service: s,
+		service:  s,
+		operator: operator.InitOperator(),
 	}
 }
 
@@ -116,4 +122,31 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelineP
 	}
 
 	return &resp, nil
+}
+
+func (h *PrivateHandler) LookUpOperatorDefinitionAdmin(ctx context.Context, req *pipelinePB.LookUpOperatorDefinitionAdminRequest) (resp *pipelinePB.LookUpOperatorDefinitionAdminResponse, err error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp = &pipelinePB.LookUpOperatorDefinitionAdminResponse{}
+
+	var connID string
+
+	if connID, err = resource.GetRscNameID(req.GetPermalink()); err != nil {
+		return resp, err
+	}
+	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
+
+	dbDef, err := h.operator.GetOperatorDefinitionById(connID)
+	if err != nil {
+		return resp, err
+	}
+	resp.OperatorDefinition = proto.Clone(dbDef).(*pipelinePB.OperatorDefinition)
+	if isBasicView {
+		resp.OperatorDefinition.Spec = nil
+	}
+	resp.OperatorDefinition.Name = fmt.Sprintf("operator-definitions/%s", resp.OperatorDefinition.GetId())
+
+	logger.Info("GetOperatorDefinitionAdmin")
+	return resp, nil
 }

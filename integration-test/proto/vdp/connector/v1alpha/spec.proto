@@ -10,8 +10,10 @@ import "google/protobuf/struct.proto";
 ////////////////////////////////////
 // Spec represents a spec data model
 message Spec {
-  // Spec documentation URL
-  string documentation_url = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Spec connection specification
-  google.protobuf.Struct connection_specification = 2 [(google.api.field_behavior) = REQUIRED];
+  // Spec resource specification
+  google.protobuf.Struct resource_specification = 2 [(google.api.field_behavior) = REQUIRED];
+  // Spec connector specification
+  google.protobuf.Struct component_specification = 3 [(google.api.field_behavior) = REQUIRED];
+  // Spec openapi specification
+  google.protobuf.Struct openapi_specifications = 4 [(google.api.field_behavior) = REQUIRED];
 }

@@ -20,7 +20,7 @@ export function CheckCreate() {
           id: randomString(63),
           description: randomString(50),
         },
-        constant.detSyncHTTPSimpleRecipe
+        constant.simpleRecipe
       );
 
       // Cannot create a pipeline of a non-exist user
@@ -83,7 +83,7 @@ export function CheckGet() {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     check(
@@ -150,7 +150,7 @@ export function CheckUpdate() {
         {
           id: randomString(10),
         },
-        constant.detSyncHTTPSimpleRecipe
+        constant.simpleRecipe
       );
 
       // Create a pipeline
@@ -226,7 +226,7 @@ export function CheckUpdateState() {
         {
           id: randomString(10),
         },
-        constant.detSyncHTTPSimpleRecipe
+        constant.simpleRecipe
       );
 
       check(
@@ -325,7 +325,7 @@ export function CheckRename() {
         {
           id: randomString(10),
         },
-        constant.detSyncHTTPSimpleRecipe
+        constant.simpleRecipe
       );
 
       // Create a pipeline
@@ -399,7 +399,7 @@ export function CheckLookUp() {
         {
           id: randomString(10),
         },
-        constant.detSyncHTTPSimpleRecipe
+        constant.simpleRecipe
       );
 
       // Create a pipeline

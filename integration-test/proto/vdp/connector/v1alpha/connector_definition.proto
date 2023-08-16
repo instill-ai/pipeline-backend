@@ -142,3 +142,20 @@ message GetConnectorDefinitionResponse {
   // A ConnectorDefinition resource
   ConnectorDefinition connector_definition = 1;
 }
+
+// LookUpConnectorDefinitionAdminRequest represents a request to query a
+// connectorDefinition via permalink by admin
+message LookUpConnectorDefinitionAdminRequest {
+  // Permalink of a connector. For example:
+  // "connector-definitions/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+  // Connector view (default is VIEW_BASIC)
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LookUpConnectorAdminResponse represents a response for a
+// connector
+message LookUpConnectorDefinitionAdminResponse {
+  // Connector resource
+  ConnectorDefinition connector_definition = 1;
+}

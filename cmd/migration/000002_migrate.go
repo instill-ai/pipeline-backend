@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Recipe struct {
+type Recipe02 struct {
 	Source      string   `json:"source,omitempty"`
 	Destination string   `json:"destination,omitempty"`
 	Models      []string `json:"models,omitempty"`
@@ -20,7 +20,7 @@ type Recipe struct {
 }
 
 // Scan function for custom GORM type Recipe
-func (r *Recipe) Scan(value interface{}) error {
+func (r *Recipe02) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal Recipe value:", value))
@@ -34,21 +34,25 @@ func (r *Recipe) Scan(value interface{}) error {
 }
 
 // Value function for custom GORM type Recipe
-func (r *Recipe) Value() (driver.Value, error) {
+func (r *Recipe02) Value() (driver.Value, error) {
 	valueString, err := json.Marshal(r)
 	return string(valueString), err
 }
 
-type Pipeline struct {
+type Pipeline02 struct {
 	datamodel.BaseDynamic
 	ID          string
 	Owner       string
 	Description sql.NullString
 	State       datamodel.PipelineState
-	Recipe      *Recipe `gorm:"type:jsonb"`
+	Recipe      *Recipe02 `gorm:"type:jsonb"`
 }
 
-func migrateRecipeUp(oldRecipe *Recipe) (*datamodel.Recipe, error) {
+func (Pipeline02) TableName() string {
+	return "pipeline"
+}
+
+func migrateRecipeUp(oldRecipe *Recipe02) (*datamodel.Recipe, error) {
 
 	if oldRecipe.Source == "" || oldRecipe.Destination == "" || len(oldRecipe.Models) == 0 {
 		return nil, fmt.Errorf("upgrade failed: recipe error")
@@ -84,9 +88,9 @@ func migratePipelineRecipeUp000002() error {
 	db := database.GetConnection()
 	defer database.Close(db)
 
-	var items []Pipeline
+	var items []Pipeline02
 
-	result := db.Unscoped().Model(&Pipeline{})
+	result := db.Unscoped().Model(&Pipeline02{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -99,7 +103,7 @@ func migratePipelineRecipeUp000002() error {
 	defer rows.Close()
 
 	for rows.Next() {
-		var item Pipeline
+		var item Pipeline02
 		if err = db.ScanRows(rows, &item); err != nil {
 			return err
 		}

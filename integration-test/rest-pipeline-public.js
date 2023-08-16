@@ -15,7 +15,7 @@ export function CheckCreate() {
         id: randomString(63),
         description: randomString(50),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     // Create a pipeline
@@ -289,7 +289,7 @@ export function CheckActivate() {
         id: randomString(63),
         description: randomString(50),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     // Can create a pipeline
@@ -345,7 +345,7 @@ export function CheckActivate() {
         id: randomString(63),
         description: randomString(50),
       },
-      constant.detSyncHTTPSimpleRecipeDupId
+      constant.simpleRecipeDupId
     );
 
     // Can create a pipeline
@@ -418,7 +418,7 @@ export function CheckList() {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.detSyncHTTPSimpleRecipe
+        constant.simpleRecipeWithoutCSV
       );
     }
 
@@ -583,39 +583,19 @@ export function CheckList() {
       }
     );
 
-    // Get UUID for foreign resources
-    var srcConnUid = http
-      .get(
-        `${connectorPublicHost}/v1alpha/connectors/start-operator`,
-        {},
-        constant.params
-      )
-      .json().connector.uid;
-    var srcConnPermalink = `connectors/${srcConnUid}`;
-
-    var dstConnUid = http
-      .get(
-        `${connectorPublicHost}/v1alpha/connectors/end-operator`,
-        {},
-        constant.params
-      )
-      .json().connector.uid;
-    var dstConnPermalink = `connectors/${dstConnUid}`;
-
-    // var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
-    // var modelPermalink = `models/${modelUid}`
+    var srcConnPermalink = "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3"
 
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1alpha/pipelines?filter=recipe.components.resource_name:%22${srcConnPermalink}%22`,
+        `${pipelinePublicHost}/v1alpha/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/pipelines?filter=recipe.components.resource_name:%22${srcConnPermalink}%22 response 200`]:
+        [`GET /v1alpha/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response 200`]:
           (r) => r.status == 200,
-        [`GET /v1alpha/pipelines?filter=recipe.components.resource_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]:
+        [`GET /v1alpha/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]:
           (r) => r.json().pipelines.length > 0,
       }
     );
@@ -645,7 +625,7 @@ export function CheckGet() {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     // Create a pipeline
@@ -739,7 +719,7 @@ export function CheckUpdate() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     // Create a pipeline
@@ -891,7 +871,7 @@ export function CheckUpdateState() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     check(
@@ -960,7 +940,7 @@ export function CheckUpdateState() {
       {
         id: randomString(10),
       },
-      constant.detAsyncSingleModelRecipe
+      constant.simpleRecipe
     );
 
     check(
@@ -1082,7 +1062,7 @@ export function CheckRename() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     // Create a pipeline
@@ -1143,7 +1123,7 @@ export function CheckLookUp() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     // Create a pipeline
@@ -1195,7 +1175,7 @@ export function CheckWatch() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     // Create a pipeline

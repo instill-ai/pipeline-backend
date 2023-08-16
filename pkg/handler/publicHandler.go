@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -12,23 +13,28 @@ import (
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
+	"github.com/instill-ai/connector-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/operator"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/checkfield"
+	"github.com/instill-ai/x/paginate"
+	"github.com/instill-ai/x/sterr"
 
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	healthcheckPB "github.com/instill-ai/protogen-go/common/healthcheck/v1alpha"
-	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -37,7 +43,8 @@ var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
 // PublicHandler handles public API
 type PublicHandler struct {
 	pipelinePB.UnimplementedPipelinePublicServiceServer
-	service service.Service
+	service  service.Service
+	operator operator.Operator
 }
 
 type Streamer interface {
@@ -52,7 +59,8 @@ type TriggerPipelineRequestInterface interface {
 func NewPublicHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePublicServiceServer {
 	datamodel.InitJSONSchema(ctx)
 	return &PublicHandler{
-		service: s,
+		service:  s,
+		operator: operator.InitOperator(),
 	}
 }
 
@@ -82,6 +90,117 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.Readiness
 	}, nil
 }
 
+func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.ListOperatorDefinitionsRequest) (resp *pipelinePB.ListOperatorDefinitionsResponse, err error) {
+	ctx, span := tracer.Start(ctx, "ListOperatorDefinitions",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp = &pipelinePB.ListOperatorDefinitionsResponse{}
+	pageSize := req.GetPageSize()
+	pageToken := req.GetPageToken()
+	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
+
+	prevLastUid := ""
+
+	if pageToken != "" {
+		_, prevLastUid, err = paginate.DecodeToken(pageToken)
+		if err != nil {
+			st, err := sterr.CreateErrorBadRequest(
+				fmt.Sprintf("[db] list operator error: %s", err.Error()),
+				[]*errdetails.BadRequest_FieldViolation{
+					{
+						Field:       "page_token",
+						Description: fmt.Sprintf("Invalid page token: %s", err.Error()),
+					},
+				},
+			)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+			return nil, st.Err()
+		}
+	}
+
+	if pageSize == 0 {
+		pageSize = repository.DefaultPageSize
+	} else if pageSize > repository.MaxPageSize {
+		pageSize = repository.MaxPageSize
+	}
+
+	defs := h.operator.ListOperatorDefinitions()
+
+	startIdx := 0
+	lastUid := ""
+	for idx, def := range defs {
+		if def.Uid == prevLastUid {
+			startIdx = idx + 1
+			break
+		}
+	}
+
+	page := []*pipelinePB.OperatorDefinition{}
+	for i := 0; i < int(pageSize) && startIdx+i < len(defs); i++ {
+		def := proto.Clone(defs[startIdx+i]).(*pipelinePB.OperatorDefinition)
+		page = append(page, def)
+		lastUid = def.Uid
+	}
+
+	nextPageToken := ""
+
+	if startIdx+len(page) < len(defs) {
+		nextPageToken = paginate.EncodeToken(time.Time{}, lastUid)
+	}
+	for _, def := range page {
+		def.Name = fmt.Sprintf("operator-definitions/%s", def.Id)
+		if isBasicView {
+			def.Spec = nil
+		}
+		resp.OperatorDefinitions = append(
+			resp.OperatorDefinitions,
+			def)
+	}
+	resp.NextPageToken = nextPageToken
+	resp.TotalSize = int64(len(defs))
+
+	logger.Info("ListOperatorDefinitions")
+
+	return resp, nil
+}
+
+func (h *PublicHandler) GetOperatorDefinition(ctx context.Context, req *pipelinePB.GetOperatorDefinitionRequest) (resp *pipelinePB.GetOperatorDefinitionResponse, err error) {
+	ctx, span := tracer.Start(ctx, "GetOperatorDefinition",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp = &pipelinePB.GetOperatorDefinitionResponse{}
+
+	var connID string
+
+	if connID, err = resource.GetRscNameID(req.GetName()); err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
+
+	dbDef, err := h.operator.GetOperatorDefinitionById(connID)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	resp.OperatorDefinition = proto.Clone(dbDef).(*pipelinePB.OperatorDefinition)
+	if isBasicView {
+		resp.OperatorDefinition.Spec = nil
+	}
+	resp.OperatorDefinition.Name = fmt.Sprintf("operator-definitions/%s", resp.OperatorDefinition.GetId())
+
+	logger.Info("GetOperatorDefinition")
+	return resp, nil
+}
+
 func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
 
 	eventName := "CreatePipeline"
@@ -95,10 +214,10 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 	logger, _ := logger.GetZapLogger(ctx)
 
 	// Validate JSON Schema
-	if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
+	// if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
+	// 	span.SetStatus(1, err.Error())
+	// 	return nil, status.Error(codes.InvalidArgument, err.Error())
+	// }
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req.Pipeline, append(createRequiredFields, immutableFields...)); err != nil {
@@ -650,22 +769,6 @@ func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipel
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
 		return nil, nil, err
-	}
-
-	err = h.service.IncludeConnectorTypeInRecipeByName(dbPipeline.Recipe, owner)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	operators := utils.GetResourceFromRecipe(dbPipeline.Recipe, connectorPB.ConnectorType_CONNECTOR_TYPE_OPERATOR)
-	hasSource := false
-	for _, operator := range operators {
-		if operator == "connectors/start-operator" {
-			hasSource = true
-		}
-	}
-	if !hasSource {
-		return nil, nil, status.Errorf(codes.Internal, "there is no source in pipeline's recipe")
 	}
 
 	return owner, dbPipeline, nil

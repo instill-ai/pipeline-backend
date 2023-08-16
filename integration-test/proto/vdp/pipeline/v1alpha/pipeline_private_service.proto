@@ -5,28 +5,29 @@ package vdp.pipeline.v1alpha;
 // Google API
 import "google/api/annotations.proto";
 import "google/api/client.proto";
-
+import "../../../vdp/pipeline/v1alpha/operator_definition.proto";
 import "../../../vdp/pipeline/v1alpha/pipeline.proto";
 
 // Pipeline service responds to internal access
 service PipelinePrivateService {
-
   // ListPipelinesAdmin method receives a ListPipelinesAdminRequest message and
   // returns a ListPipelinesAdminResponse message.
-  rpc ListPipelinesAdmin(ListPipelinesAdminRequest)
-      returns (ListPipelinesAdminResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/pipelines"
-    };
+  rpc ListPipelinesAdmin(ListPipelinesAdminRequest) returns (ListPipelinesAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/pipelines"};
   }
 
   // LookUpPipelineAdmin method receives a LookUpPipelineAdminRequest message
   // and returns a LookUpPipelineAdminResponse
-  rpc LookUpPipelineAdmin(LookUpPipelineAdminRequest)
-      returns (LookUpPipelineAdminResponse) {
-    option (google.api.http) = {
-      get : "/v1alpha/admin/{permalink=pipelines/*}/lookUp"
-    };
+  rpc LookUpPipelineAdmin(LookUpPipelineAdminRequest) returns (LookUpPipelineAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/{permalink=pipelines/*}/lookUp"};
+    option (google.api.method_signature) = "permalink";
+  }
+
+  // LookUpOperatorDefinitionAdmin method receives a
+  // LookUpOperatorDefinitionAdminRequest message and returns a
+  // LookUpOperatorDefinitionAdminResponse
+  rpc LookUpOperatorDefinitionAdmin(LookUpOperatorDefinitionAdminRequest) returns (LookUpOperatorDefinitionAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/{permalink=operator-definitions/*}/lookUp"};
     option (google.api.method_signature) = "permalink";
   }
 }

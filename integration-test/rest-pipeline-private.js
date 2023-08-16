@@ -34,7 +34,7 @@ export function CheckList() {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.detSyncHTTPSimpleRecipe
+        constant.simpleRecipeWithoutCSV
       );
     }
 
@@ -198,24 +198,7 @@ export function CheckList() {
       }
     );
 
-    // Get UUID for foreign resources
-    var srcConnUid = http
-      .get(
-        `${connectorPublicHost}/v1alpha/connectors/start-operator`,
-        {},
-        constant.params
-      )
-      .json().connector.uid;
-    var srcConnPermalink = `connectors/${srcConnUid}`;
-
-    var dstConnUid = http
-      .get(
-        `${connectorPublicHost}/v1alpha/connectors/end-operator`,
-        {},
-        constant.params
-      )
-      .json().connector.uid;
-    var dstConnPermalink = `connectors/${dstConnUid}`;
+    var srcConnPermalink = "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3"
 
     // var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
     // var modelPermalink = `models/${modelUid}`
@@ -223,14 +206,14 @@ export function CheckList() {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=recipe.components.resource_name:%22${srcConnPermalink}%22`,
+        `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines?filter=recipe.components.resource_name:%22${srcConnPermalink}%22 response 200`]:
+        [`GET /v1alpha/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response 200`]:
           (r) => r.status == 200,
-        [`GET /v1alpha/admin/pipelines?filter=recipe.components.resource_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]:
+        [`GET /v1alpha/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]:
           (r) => r.json().pipelines.length > 0,
       }
     );
@@ -259,7 +242,7 @@ export function CheckLookUp() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     // Create a pipeline

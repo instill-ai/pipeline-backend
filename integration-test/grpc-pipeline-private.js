@@ -51,7 +51,7 @@ export function CheckList() {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.detSyncHTTPSimpleRecipe
+        constant.simpleRecipeWithoutCSV
       );
     }
 
@@ -214,40 +214,20 @@ export function CheckList() {
       }
     );
 
-    // Get UUID for foreign resources
-    var srcConnUid = http
-      .get(
-        `${constant.connectorPublicHost}/v1alpha/connectors/start-operator`,
-        {},
-        constant.params
-      )
-      .json().connector.uid;
-    var srcConnPermalink = `connectors/${srcConnUid}`;
-
-    var dstConnUid = http
-      .get(
-        `${constant.connectorPublicHost}/v1alpha/connectors/end-operator`,
-        {},
-        constant.params
-      )
-      .json().connector.uid;
-    var dstConnPermalink = `connectors/${dstConnUid}`;
-
-    // var modelUid = http.get(`${constant.modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
-    // var modelPermalink = `models/${modelUid}`
+    var srcConnPermalink = "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3"
 
     check(
       clientPrivate.invoke(
         "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
         {
-          filter: `recipe.components.resource_name:"${srcConnPermalink}"`,
+          filter: `recipe.components.definition_name:"${srcConnPermalink}"`,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.resource_name:"${srcConnPermalink}" response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.definition_name:"${srcConnPermalink}" response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.resource_name:"${srcConnPermalink}" response pipelines.length`]:
+        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.definition_name:"${srcConnPermalink}" response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -287,7 +267,7 @@ export function CheckLookUp() {
       {
         id: randomString(10),
       },
-      constant.detSyncHTTPSimpleRecipe
+      constant.simpleRecipe
     );
 
     // Create a pipeline

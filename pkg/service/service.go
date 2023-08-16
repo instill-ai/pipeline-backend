@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
@@ -10,23 +12,24 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/influxdata/influxdb-client-go/v2/api"
-	"github.com/oklog/ulid/v2"
 	"go.einride.tech/aip/filtering"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/converter"
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	workflowpb "go.temporal.io/api/workflow/v1"
 	rpcStatus "google.golang.org/genproto/googleapis/rpc/status"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/operator"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
@@ -56,9 +59,6 @@ type Service interface {
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
 
-	IncludeConnectorTypeInRecipeByPermalink(recipe *datamodel.Recipe) error
-	IncludeConnectorTypeInRecipeByName(recipe *datamodel.Recipe, owner *mgmtPB.User) error
-
 	// Controller APIs
 	GetResourceState(uid uuid.UUID) (*pipelinePB.Pipeline_State, error)
 	UpdateResourceState(uid uuid.UUID, state pipelinePB.Pipeline_State, progress *int32) error
@@ -78,6 +78,7 @@ type service struct {
 	redisClient                   *redis.Client
 	temporalClient                client.Client
 	influxDBWriteClient           api.WriteAPI
+	operator                      operator.Operator
 }
 
 // NewService initiates a service instance
@@ -99,6 +100,7 @@ func NewService(r repository.Repository,
 		redisClient:                   rc,
 		temporalClient:                t,
 		influxDBWriteClient:           i,
+		operator:                      operator.InitOperator(),
 	}
 }
 
@@ -135,7 +137,7 @@ func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipel
 		return nil, err
 	}
 
-	rErr := s.includeResourceDetailInRecipe(dbCreatedPipeline.Recipe)
+	rErr := s.includeDetailInRecipe(dbCreatedPipeline.Recipe)
 	if rErr != nil {
 		return nil, rErr
 	}
@@ -164,7 +166,7 @@ func (s *service) ListPipelines(owner *mgmtPB.User, pageSize int64, pageToken st
 
 	if !isBasicView {
 		for idx := range dbPipelines {
-			err := s.includeResourceDetailInRecipe(dbPipelines[idx].Recipe)
+			err := s.includeDetailInRecipe(dbPipelines[idx].Recipe)
 			if err != nil {
 				return nil, 0, "", err
 			}
@@ -199,7 +201,7 @@ func (s *service) GetPipelineByID(id string, owner *mgmtPB.User, isBasicView boo
 	}
 
 	if !isBasicView {
-		err := s.includeResourceDetailInRecipe(dbPipeline.Recipe)
+		err := s.includeDetailInRecipe(dbPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -223,7 +225,7 @@ func (s *service) GetPipelineByUID(uid uuid.UUID, owner *mgmtPB.User, isBasicVie
 	}
 
 	if !isBasicView {
-		err := s.includeResourceDetailInRecipe(dbPipeline.Recipe)
+		err := s.includeDetailInRecipe(dbPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -244,7 +246,7 @@ func (s *service) GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datam
 		return nil, err
 	}
 	if !isBasicView {
-		err := s.includeResourceDetailInRecipe(dbPipeline.Recipe)
+		err := s.includeDetailInRecipe(dbPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -257,7 +259,6 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 
 	if toUpdPipeline.Recipe != nil {
 
-		// User desires to be active
 		toUpdPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
 
 		recipePermalink, err := s.recipeNameToPermalink(owner, toUpdPipeline.Recipe)
@@ -292,7 +293,7 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 		return nil, err
 	}
 
-	rErr := s.includeResourceDetailInRecipe(dbPipeline.Recipe)
+	rErr := s.includeDetailInRecipe(dbPipeline.Recipe)
 	if rErr != nil {
 		return nil, rErr
 	}
@@ -346,13 +347,12 @@ func (s *service) UpdatePipelineState(id string, owner *mgmtPB.User, state datam
 		resourceState = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
 	}
 
-	recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	if state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-		recipeErr := s.checkRecipe(owner, recipeRscName)
+		recipeErr := s.checkRecipe(owner, dbPipeline.Recipe)
 
 		if recipeErr != nil {
 			return nil, recipeErr
@@ -407,7 +407,7 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	return dbPipeline, nil
 }
 
-func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInputs []*pipelinePB.PipelineDataPayload) error {
+func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInputs []*structpb.Struct) error {
 	state, err := s.GetResourceState(dbPipeline.UID)
 	if err != nil {
 		return err
@@ -415,10 +415,92 @@ func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInp
 	if *state != pipelinePB.Pipeline_STATE_ACTIVE {
 		return status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
 	}
-
-	for idx := range pipelineInputs {
-		pipelineInputs[idx].DataMappingIndex = ulid.Make().String()
+	typeMap := map[string]string{}
+	for _, comp := range dbPipeline.Recipe.Components {
+		if comp.DefinitionName == "operator-definitions/start-operator" {
+			for key, value := range comp.Configuration.Fields["body"].GetStructValue().Fields {
+				typeMap[key] = value.GetStructValue().Fields["type"].GetStringValue()
+			}
+		}
 	}
+	for idx := range pipelineInputs {
+		for key, val := range pipelineInputs[idx].Fields {
+			switch typeMap[key] {
+			case "integer":
+				v, err := strconv.ParseInt(val.GetStringValue(), 10, 64)
+				if err != nil {
+					return err
+				}
+				pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(float64(v))
+			case "number":
+				v, err := strconv.ParseFloat(val.GetStringValue(), 64)
+				if err != nil {
+					return err
+				}
+				pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(v)
+			case "boolean":
+				v, err := strconv.ParseBool(val.GetStringValue())
+				if err != nil {
+					return err
+				}
+				pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(v)
+			case "text", "image", "audio", "video":
+			case "integer_array", "number_array", "boolean_array", "text_array", "image_array", "audio_array", "video_array":
+				if val.GetListValue() == nil {
+					return fmt.Errorf("%s should be a array", key)
+				}
+
+				switch typeMap[key] {
+				case "integer_array":
+					vals := []interface{}{}
+					for _, val := range val.GetListValue().AsSlice() {
+						n, err := strconv.ParseInt(val.(string), 10, 64)
+						if err != nil {
+							return err
+						}
+						vals = append(vals, n)
+					}
+					structVal, err := structpb.NewList(vals)
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewListValue(structVal)
+
+				case "number_array":
+					vals := []interface{}{}
+					for _, val := range val.GetListValue().AsSlice() {
+						n, err := strconv.ParseFloat(val.(string), 64)
+						if err != nil {
+							return err
+						}
+						vals = append(vals, n)
+					}
+					structVal, err := structpb.NewList(vals)
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewListValue(structVal)
+				case "boolean_array":
+					vals := []interface{}{}
+					for _, val := range val.GetListValue().AsSlice() {
+						n, err := strconv.ParseBool(val.(string))
+						if err != nil {
+							return err
+						}
+						vals = append(vals, n)
+					}
+					structVal, err := structpb.NewList(vals)
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewListValue(structVal)
+
+				}
+			}
+
+		}
+	}
+
 	return nil
 }
 
@@ -431,98 +513,148 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 	pipelineInputs := req.Inputs
 
-	var inputs []*connectorPB.DataPayload
+	var inputs [][]byte
 
-	// Download images, audios
+	batchSize := len(pipelineInputs)
+
 	for idx := range pipelineInputs {
-		images, err := utils.LoadPipelineUnstructuredData(pipelineInputs[idx].Images)
+		inputStruct := &structpb.Struct{
+			Fields: map[string]*structpb.Value{},
+		}
+		inputStruct.Fields["body"] = structpb.NewStructValue(pipelineInputs[idx])
+
+		input, err := protojson.Marshal(inputStruct)
 		if err != nil {
 			return nil, err
 		}
-		audios, err := utils.LoadPipelineUnstructuredData(pipelineInputs[idx].Audios)
-		if err != nil {
-			return nil, err
-		}
-
-		inputs = append(inputs, &connectorPB.DataPayload{
-			DataMappingIndex: pipelineInputs[idx].DataMappingIndex,
-			Images:           images,
-			Audios:           audios,
-			Texts:            pipelineInputs[idx].Texts,
-			StructuredData:   pipelineInputs[idx].StructuredData,
-			Metadata:         pipelineInputs[idx].Metadata,
-		})
+		inputs = append(inputs, input)
 	}
 
-	componentIdMap := make(map[string]*datamodel.Component)
-
-	for idx := range dbPipeline.Recipe.Components {
-		componentIdMap[dbPipeline.Recipe.Components[idx].Id] = dbPipeline.Recipe.Components[idx]
+	dag, err := utils.GenerateDAG(dbPipeline.Recipe.Components)
+	if err != nil {
+		return nil, err
 	}
 
-	dag := utils.NewDAG(dbPipeline.Recipe.Components)
-	for _, component := range dbPipeline.Recipe.Components {
-		parents, _, err := utils.ParseDependency(component.Dependencies)
-		if err != nil {
-			return nil,
-				status.Errorf(codes.InvalidArgument, "dependencies error")
-		}
-		for idx := range parents {
-			dag.AddEdge(componentIdMap[parents[idx]], component)
-		}
-	}
 	orderedComp, err := dag.TopoloicalSort()
 	if err != nil {
 		return nil, err
 	}
 
-	cache := map[string][]*connectorPB.DataPayload{}
-	cache[orderedComp[0].Id] = inputs
+	cache := make([]map[string]interface{}, batchSize)
+
+	for idx := range inputs {
+		cache[idx] = map[string]interface{}{}
+		var inputStruct map[string]interface{}
+		err := json.Unmarshal(inputs[idx], &inputStruct)
+		if err != nil {
+			return nil, err
+		}
+
+		cache[idx][orderedComp[0].Id] = inputStruct
+
+	}
 
 	responseCompId := ""
 	for _, comp := range orderedComp[1:] {
-		_, depMap, err := utils.ParseDependency(comp.Dependencies)
-		if err != nil {
-			return nil, err
+		var compInputs []*structpb.Struct
+
+		for idx := 0; idx < batchSize; idx++ {
+			compInputTemplate := comp.Configuration
+			compInputTemplateJson, err := protojson.Marshal(compInputTemplate)
+			if err != nil {
+				return nil, err
+			}
+
+			var compInputTemplateStruct interface{}
+			err = json.Unmarshal(compInputTemplateJson, &compInputTemplateStruct)
+			if err != nil {
+				return nil, err
+			}
+
+			compInputStruct, err := utils.RenderInput(compInputTemplateStruct, cache[idx])
+			if err != nil {
+				return nil, err
+			}
+			compInputJson, err := json.Marshal(compInputStruct)
+			if err != nil {
+				return nil, err
+			}
+
+			compInput := &structpb.Struct{}
+			err = protojson.Unmarshal([]byte(compInputJson), compInput)
+			if err != nil {
+				return nil, err
+			}
+
+			compInputs = append(compInputs, compInput)
 		}
-		inputs := worker.MergeData(cache, depMap, len(req.Inputs), dbPipeline, pipelineTriggerId)
-		resp, err := s.connectorPublicServiceClient.ExecuteConnector(
-			utils.InjectOwnerToContextWithOwnerPermalink(ctx, utils.GenOwnerPermalink(owner)),
-			&connectorPB.ExecuteConnectorRequest{
-				Name:   comp.ResourceName,
-				Inputs: inputs,
-			},
-		)
-		if err != nil {
-			return nil, err
+
+		if comp.ResourceName != "" {
+			resp, err := s.connectorPublicServiceClient.ExecuteConnector(
+				utils.InjectOwnerToContextWithOwnerPermalink(
+					metadata.AppendToOutgoingContext(ctx,
+						"id", dbPipeline.ID,
+						"uid", dbPipeline.BaseDynamic.UID.String(),
+						"owner", dbPipeline.Owner,
+						"trigger_id", pipelineTriggerId,
+					),
+					utils.GenOwnerPermalink(owner)),
+				&connectorPB.ExecuteConnectorRequest{
+					Name:   comp.ResourceName,
+					Inputs: compInputs,
+				},
+			)
+			if err != nil {
+				return nil, err
+			}
+			for idx := range resp.Outputs {
+
+				outputJson, err := protojson.Marshal(resp.Outputs[idx])
+				if err != nil {
+					return nil, err
+				}
+				var outputStruct map[string]interface{}
+				err = json.Unmarshal(outputJson, &outputStruct)
+				if err != nil {
+					return nil, err
+				}
+				cache[idx][comp.Id] = outputStruct
+			}
+
 		}
-		cache[comp.Id] = resp.Outputs
-		if comp.ResourceName == fmt.Sprintf("connectors/%s", constant.EndConnectorId) {
+
+		if comp.DefinitionName == "operator-definitions/end-operator" {
 			responseCompId = comp.Id
+			for idx := range compInputs {
+				outputJson, err := protojson.Marshal(compInputs[idx])
+				if err != nil {
+					return nil, err
+				}
+				var outputStruct map[string]interface{}
+				err = json.Unmarshal(outputJson, &outputStruct)
+				if err != nil {
+					return nil, err
+				}
+				cache[idx][comp.Id] = outputStruct
+			}
+
 		}
+
 	}
 
-	pipelineOutputs := []*pipelinePB.PipelineDataPayload{}
-	if responseCompId == "" {
-		for idx := range inputs {
-			pipelineOutput := &pipelinePB.PipelineDataPayload{
-				DataMappingIndex: inputs[idx].DataMappingIndex,
-			}
-			pipelineOutputs = append(pipelineOutputs, pipelineOutput)
+	pipelineOutputs := []*structpb.Struct{}
+	for idx := 0; idx < batchSize; idx++ {
+		pipelineOutputJson, err := json.Marshal(cache[idx][responseCompId].(map[string]interface{})["body"])
+		if err != nil {
+			return nil, err
 		}
-	} else {
-		outputs := cache[responseCompId]
-		for idx := range outputs {
-			pipelineOutput := &pipelinePB.PipelineDataPayload{
-				DataMappingIndex: outputs[idx].DataMappingIndex,
-				Images:           utils.DumpPipelineUnstructuredData(outputs[idx].Images),
-				Audios:           utils.DumpPipelineUnstructuredData(outputs[idx].Audios),
-				Texts:            outputs[idx].Texts,
-				StructuredData:   outputs[idx].StructuredData,
-				Metadata:         outputs[idx].Metadata,
-			}
-			pipelineOutputs = append(pipelineOutputs, pipelineOutput)
+		pipelineOutput := &structpb.Struct{}
+		err = protojson.Unmarshal(pipelineOutputJson, pipelineOutput)
+		if err != nil {
+			return nil, err
 		}
+		pipelineOutputs = append(pipelineOutputs, pipelineOutput)
+
 	}
 
 	return &pipelinePB.TriggerPipelineResponse{
@@ -539,7 +671,7 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 	}
 	logger, _ := logger.GetZapLogger(ctx)
 
-	if err := s.excludeResourceDetailFromRecipe(dbPipeline.Recipe); err != nil {
+	if err := s.excludeDetailFromRecipe(dbPipeline.Recipe); err != nil {
 		return nil, err
 	}
 
@@ -610,7 +742,7 @@ func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb
 
 	switch workflowExecutionInfo.Status {
 	case enums.WORKFLOW_EXECUTION_STATUS_COMPLETED:
-		payloads := []*pipelinePB.PipelineDataPayload{}
+		payloads := []*structpb.Struct{}
 		numberOfData := 0
 		err := converter.GetDefaultDataConverter().FromPayload(workflowExecutionInfo.Memo.GetFields()["number_of_data"], &numberOfData)
 		if err != nil {
@@ -623,7 +755,7 @@ func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb
 			if err != nil {
 				return nil, err
 			}
-			payload := &pipelinePB.PipelineDataPayload{}
+			payload := &structpb.Struct{}
 			err = protojson.Unmarshal(blob, payload)
 			if err != nil {
 				return nil, err

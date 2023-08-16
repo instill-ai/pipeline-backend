@@ -27,35 +27,6 @@ export let options = {
 
 export function setup() {
 
-  group("Connector Backend API: Create a source connector", function () {
-
-    var res = http.request("POST", `${connectorPublicHost}/v1alpha/connectors`,
-      JSON.stringify({
-        "id": "start-operator",
-        "connector_definition_name": "connector-definitions/start-operator",
-        "configuration": {}
-      }), constant.params)
-    check(res, {
-      "POST /v1alpha/connectors response status for creating source connector 201": (r) => r.status === 201,
-    })
-
-  });
-
-  group("Connector Backend API: Create a destination connector", function () {
-
-    var res = http.request("POST", `${connectorPublicHost}/v1alpha/connectors`,
-      JSON.stringify({
-        "id": "end-operator",
-        "connector_definition_name": "connector-definitions/end-operator",
-        "configuration": {}
-      }), constant.params)
-
-    check(res, {
-      "POST /v1alpha/connectors response status for creating destination connector 201": (r) => r.status === 201,
-    })
-
-  });
-
   group("Connector Backend API: Create a CSV destination connector 1", function () {
 
     var res = http.request("POST", `${connectorPublicHost}/v1alpha/connectors`,
@@ -134,13 +105,8 @@ export default function (data) {
   pipelinePublic.CheckLookUp()
   pipelinePublic.CheckWatch()
 
-  trigger.CheckTriggerSingleImageSingleModel()
-  trigger.CheckTriggerMultiImageSingleModel()
-  trigger.CheckTriggerWithDependency();
-
-  triggerAsync.CheckTriggerAsyncSingleImageSingleModel()
-  triggerAsync.CheckTriggerAsyncMultiImageSingleModel()
-  triggerAsync.CheckTriggerAsyncSingleResponse()
+  trigger.CheckTrigger()
+  triggerAsync.CheckTrigger()
 
 
 }
@@ -154,20 +120,6 @@ export function teardown(data) {
       });
     }
   });
-
-  group("Connector Backend API: Delete the source connector", function () {
-    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/start-operator`), {
-      [`DELETE /v1alpha/connectors/start-operator response status 204`]: (r) => r.status === 204,
-    });
-  });
-
-  group("Connector Backend API: Delete the destination connector", function () {
-    check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/end-operator`), {
-      [`DELETE /v1alpha/connectors/end-operator response status 204`]: (r) => r.status === 204,
-    });
-  });
-
-
   group("Connector Backend API: Delete the csv destination connector", function () {
     check(http.request("DELETE", `${connectorPublicHost}/v1alpha/connectors/${constant.dstCSVConnID1}`), {
       [`DELETE /v1alpha/connectors/${constant.dstCSVConnID1} response status 204`]: (r) => r.status === 204,

@@ -3,6 +3,7 @@ syntax = "proto3";
 package vdp.connector.v1alpha;
 
 import "../../../common/healthcheck/v1alpha/healthcheck.proto";
+import "../../../common/task/v1alpha/task.proto";
 import "google/api/field_behavior.proto";
 // Google API
 import "google/api/resource.proto";
@@ -35,32 +36,6 @@ message ReadinessRequest {
 message ReadinessResponse {
   // HealthCheckResponse message
   common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
-}
-
-// Task enumerates the task type of a connector
-enum Task {
-  // Task: UNSPECIFIED
-  TASK_UNSPECIFIED = 0;
-  // Task: CLASSIFICATION
-  TASK_CLASSIFICATION = 1;
-  // Task: DETECTION
-  TASK_DETECTION = 2;
-  // Task: KEYPOINT
-  TASK_KEYPOINT = 3;
-  // Task: OCR
-  TASK_OCR = 4;
-  // Task: INSTANCE SEGMENTATION
-  TASK_INSTANCE_SEGMENTATION = 5;
-  // Task: SEMANTIC SEGMENTATION
-  TASK_SEMANTIC_SEGMENTATION = 6;
-  // Task: TEXT TO IMAGE
-  TASK_TEXT_TO_IMAGE = 7;
-  // Task: TEXT GENERATION
-  TASK_TEXT_GENERATION = 8;
-  // Task: IMAGE TO IMAGE
-  TASK_IMAGE_TO_IMAGE = 9;
-  // Task: TEXT EMBEDDINGS
-  TASK_TEXT_EMBEDDINGS = 10;
 }
 
 // Connector represents a connector data model
@@ -110,7 +85,7 @@ message Connector {
   // Connector Type
   ConnectorType connector_type = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector description
-  Task task = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  common.task.v1alpha.Task task = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector description
   optional string description = 7 [(google.api.field_behavior) = OPTIONAL];
   // Connector configuration in JSON format
@@ -420,27 +395,6 @@ message TestConnectorResponse {
   Connector.State state = 1;
 }
 
-// DataPayload is a data structure trasferring data in pipeline
-message DataPayload {
-  // Data index corresponds to each data element
-  string data_mapping_index = 1 [(google.api.field_behavior) = REQUIRED];
-
-  // Unstructured: text field
-  repeated string texts = 2;
-  // Unstructured: image field
-  repeated bytes images = 3;
-  // Unstructured: audio field
-  repeated bytes audios = 4;
-
-  // repeated bytes videos = 5;
-
-  // [semi-]structured data: structured_data field
-  google.protobuf.Struct structured_data = 6;
-
-  // Metadata
-  google.protobuf.Struct metadata = 7;
-}
-
 // ExecuteConnectorRequest represents a private request to execution
 // connector
 message ExecuteConnectorRequest {
@@ -449,12 +403,12 @@ message ExecuteConnectorRequest {
   string name = 1 [(google.api.field_behavior) = REQUIRED];
 
   // Inputs
-  repeated DataPayload inputs = 2;
+  repeated google.protobuf.Struct inputs = 2;
 }
 
 // ExecuteConnectorResponse represents a response for execution
 // output
 message ExecuteConnectorResponse {
   // Outputs
-  repeated DataPayload outputs = 1;
+  repeated google.protobuf.Struct outputs = 1;
 }
