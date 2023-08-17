@@ -10,11 +10,15 @@ import (
 
 	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
 
+	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -107,18 +111,17 @@ func DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) *pipeli
 					// TODO: use enum
 					if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions/") {
 						if pbRecipe.Components[i].ResourceDetail != nil {
-							pbRecipe.Components[i].Type = pbRecipe.Components[i].ResourceDetail.GetFields()["connector_type"].GetStringValue()
-							switch pbRecipe.Components[i].ResourceDetail.GetFields()["connector_type"].GetStringValue() {
-							case "CONNECTOR_TYPE_AI":
-								pbRecipe.Components[i].Type = "COMPONENT_TYPE_CONNECTOR_AI"
-							case "CONNECTOR_TYPE_BLOCKCHAIN":
-								pbRecipe.Components[i].Type = "COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN"
-							case "CONNECTOR_TYPE_DATA":
-								pbRecipe.Components[i].Type = "COMPONENT_TYPE_CONNECTOR_DATA"
+							switch pbRecipe.Components[i].ResourceDetail.ConnectorType {
+							case connectorPB.ConnectorType_CONNECTOR_TYPE_AI:
+								pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
+							case connectorPB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN:
+								pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN
+							case connectorPB.ConnectorType_CONNECTOR_TYPE_DATA:
+								pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA
 							}
 						}
 					} else if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions/") {
-						pbRecipe.Components[i].Type = "COMPONENT_TYPE_OPERATOR"
+						pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR
 					}
 				}
 
@@ -135,4 +138,158 @@ func DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) *pipeli
 	}
 
 	return &pbPipeline
+}
+
+func IncludeDetailInRecipeAdmin(recipe *pipelinePB.Recipe, s service.Service) error {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	for idx := range recipe.Components {
+
+		if service.IsConnector(recipe.Components[idx].ResourceName) {
+			resp, err := s.GetConnectorPrivateServiceClient().LookUpConnectorAdmin(ctx, &connectorPB.LookUpConnectorAdminRequest{
+				Permalink: recipe.Components[idx].ResourceName,
+				View:      connectorPB.View_VIEW_FULL.Enum(),
+			})
+			if err != nil {
+				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetConnector", recipe.Components[idx].ResourceName, err)
+			}
+			detail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnector())
+			if marshalErr != nil {
+				return marshalErr
+			}
+			unmarshalErr := detail.UnmarshalJSON(json)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+
+			recipe.Components[idx].ResourceDetail = resp.Connector
+		}
+		if service.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
+			resp, err := s.GetConnectorPrivateServiceClient().LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
+				Permalink: recipe.Components[idx].DefinitionName,
+				View:      connectorPB.View_VIEW_FULL.Enum(),
+			})
+			if err != nil {
+				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetConnector", recipe.Components[idx].ResourceName, err)
+			}
+			detail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnectorDefinition())
+			if marshalErr != nil {
+				return marshalErr
+			}
+			unmarshalErr := detail.UnmarshalJSON(json)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+
+			recipe.Components[idx].DefinitionDetail = &pipelinePB.Component_ConnectorDefinitionDetail{ConnectorDefinitionDetail: resp.ConnectorDefinition}
+		}
+		if service.IsOperatorDefinition(recipe.Components[idx].DefinitionName) {
+			uid, err := resource.GetPermalinkUID(recipe.Components[idx].DefinitionName)
+			if err != nil {
+				return err
+			}
+			def, err := s.GetOperator().GetOperatorDefinitionByUid(uuid.FromStringOrNil(uid))
+			if err != nil {
+				return err
+			}
+
+			detail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
+			if marshalErr != nil {
+				return marshalErr
+			}
+			unmarshalErr := detail.UnmarshalJSON(json)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+
+			recipe.Components[idx].DefinitionDetail = &pipelinePB.Component_OperatorDefinitionDetail{OperatorDefinitionDetail: def}
+		}
+
+	}
+	return nil
+}
+
+func IncludeDetailInRecipe(recipe *pipelinePB.Recipe, s service.Service) error {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	for idx := range recipe.Components {
+
+		if service.IsConnector(recipe.Components[idx].ResourceName) {
+			resp, err := s.GetConnectorPublicServiceClient().GetConnector(ctx, &connectorPB.GetConnectorRequest{
+				Name: recipe.Components[idx].ResourceName,
+				View: connectorPB.View_VIEW_FULL.Enum(),
+			})
+			if err != nil {
+				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetConnector", recipe.Components[idx].ResourceName, err)
+			}
+			detail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnector())
+			if marshalErr != nil {
+				return marshalErr
+			}
+			unmarshalErr := detail.UnmarshalJSON(json)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+
+			recipe.Components[idx].ResourceDetail = resp.Connector
+		}
+		if service.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
+			resp, err := s.GetConnectorPublicServiceClient().GetConnectorDefinition(ctx, &connectorPB.GetConnectorDefinitionRequest{
+				Name: recipe.Components[idx].DefinitionName,
+				View: connectorPB.View_VIEW_FULL.Enum(),
+			})
+			if err != nil {
+				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetConnector", recipe.Components[idx].ResourceName, err)
+			}
+			detail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnectorDefinition())
+			if marshalErr != nil {
+				return marshalErr
+			}
+			unmarshalErr := detail.UnmarshalJSON(json)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+
+			recipe.Components[idx].DefinitionDetail = &pipelinePB.Component_ConnectorDefinitionDetail{ConnectorDefinitionDetail: resp.ConnectorDefinition}
+		}
+		if service.IsOperatorDefinition(recipe.Components[idx].DefinitionName) {
+			id, err := resource.GetRscNameID(recipe.Components[idx].DefinitionName)
+			if err != nil {
+				return err
+			}
+			def, err := s.GetOperator().GetOperatorDefinitionById(id)
+			if err != nil {
+				return err
+			}
+
+			detail := &structpb.Struct{}
+			// Note: need to deal with camelCase or under_score for grpc in future
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
+			if marshalErr != nil {
+				return marshalErr
+			}
+			unmarshalErr := detail.UnmarshalJSON(json)
+			if unmarshalErr != nil {
+				return unmarshalErr
+			}
+
+			recipe.Components[idx].DefinitionDetail = &pipelinePB.Component_OperatorDefinitionDetail{OperatorDefinitionDetail: def}
+		}
+
+	}
+	return nil
 }

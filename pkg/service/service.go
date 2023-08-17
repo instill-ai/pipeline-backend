@@ -43,7 +43,10 @@ import (
 // Service interface
 type Service interface {
 	GetMgmtPrivateServiceClient() mgmtPB.MgmtPrivateServiceClient
+	GetConnectorPrivateServiceClient() connectorPB.ConnectorPrivateServiceClient
+	GetConnectorPublicServiceClient() connectorPB.ConnectorPublicServiceClient
 	GetRedisClient() *redis.Client
+	GetOperator() *operator.Operator
 
 	CreatePipeline(owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
 	ListPipelines(owner *mgmtPB.User, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
@@ -109,6 +112,18 @@ func (h *service) GetMgmtPrivateServiceClient() mgmtPB.MgmtPrivateServiceClient 
 	return h.mgmtPrivateServiceClient
 }
 
+func (h *service) GetConnectorPrivateServiceClient() connectorPB.ConnectorPrivateServiceClient {
+	return h.connectorPrivateServiceClient
+}
+
+func (h *service) GetConnectorPublicServiceClient() connectorPB.ConnectorPublicServiceClient {
+	return h.connectorPublicServiceClient
+}
+
+func (h *service) GetOperator() *operator.Operator {
+	return &h.operator
+}
+
 // GetRedisClient returns the redis client
 func (h *service) GetRedisClient() *redis.Client {
 	return h.redisClient
@@ -137,10 +152,6 @@ func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipel
 		return nil, err
 	}
 
-	rErr := s.includeDetailInRecipe(dbCreatedPipeline.Recipe)
-	if rErr != nil {
-		return nil, rErr
-	}
 	createdCecipeRscName, err := s.recipePermalinkToName(dbCreatedPipeline.Recipe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
@@ -166,10 +177,6 @@ func (s *service) ListPipelines(owner *mgmtPB.User, pageSize int64, pageToken st
 
 	if !isBasicView {
 		for idx := range dbPipelines {
-			err := s.includeDetailInRecipe(dbPipelines[idx].Recipe)
-			if err != nil {
-				return nil, 0, "", err
-			}
 			recipeRscName, err := s.recipePermalinkToName(dbPipelines[idx].Recipe)
 			if err != nil {
 				return nil, 0, "", status.Errorf(codes.Internal, err.Error())
@@ -201,10 +208,6 @@ func (s *service) GetPipelineByID(id string, owner *mgmtPB.User, isBasicView boo
 	}
 
 	if !isBasicView {
-		err := s.includeDetailInRecipe(dbPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
 		recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
@@ -225,10 +228,6 @@ func (s *service) GetPipelineByUID(uid uuid.UUID, owner *mgmtPB.User, isBasicVie
 	}
 
 	if !isBasicView {
-		err := s.includeDetailInRecipe(dbPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
 		recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
@@ -244,12 +243,6 @@ func (s *service) GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datam
 	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(uid, isBasicView)
 	if err != nil {
 		return nil, err
-	}
-	if !isBasicView {
-		err := s.includeDetailInRecipe(dbPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return dbPipeline, nil
@@ -291,11 +284,6 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 	// Update resource entry in controller
 	if err := s.UpdateResourceState(dbPipeline.UID, pipelinePB.Pipeline_STATE_INACTIVE, nil); err != nil {
 		return nil, err
-	}
-
-	rErr := s.includeDetailInRecipe(dbPipeline.Recipe)
-	if rErr != nil {
-		return nil, rErr
 	}
 
 	recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
@@ -670,10 +658,6 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		return nil, err
 	}
 	logger, _ := logger.GetZapLogger(ctx)
-
-	if err := s.excludeDetailFromRecipe(dbPipeline.Recipe); err != nil {
-		return nil, err
-	}
 
 	inputBlobRedisKeys := []string{}
 	for idx, input := range inputs {

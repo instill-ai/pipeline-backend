@@ -64,12 +64,10 @@ type Recipe struct {
 }
 
 type Component struct {
-	Id               string           `json:"id"`
-	DefinitionName   string           `json:"definition_name"`
-	DefinitionDetail *structpb.Struct `json:"definition_detail,omitempty"`
-	ResourceName     string           `json:"resource_name"`
-	ResourceDetail   *structpb.Struct `json:"resource_detail,omitempty"`
-	Configuration    *structpb.Struct `json:"configuration"`
+	Id             string           `json:"id"`
+	DefinitionName string           `json:"definition_name"`
+	ResourceName   string           `json:"resource_name"`
+	Configuration  *structpb.Struct `json:"configuration"`
 }
 
 // Scan function for custom GORM type Recipe

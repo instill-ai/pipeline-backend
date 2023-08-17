@@ -254,6 +254,11 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 	}
 
 	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
+
+	if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+		return nil, err
+	}
+
 	resp := pipelinePB.CreatePipelineResponse{
 		Pipeline: pbPipeline,
 	}
@@ -328,7 +333,13 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 	pbPipelines := []*pipelinePB.Pipeline{}
 	for idx := range dbPipelines {
-		pbPipelines = append(pbPipelines, DBToPBPipeline(ctx, &dbPipelines[idx]))
+		pbPipeline := DBToPBPipeline(ctx, &dbPipelines[idx])
+		if !isBasicView {
+			if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+				return nil, err
+			}
+		}
+		pbPipelines = append(pbPipelines, pbPipeline)
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
@@ -380,6 +391,12 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 	}
 
 	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
+	if !isBasicView {
+		if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+			return nil, err
+		}
+	}
+
 	resp := pipelinePB.GetPipelineResponse{
 		Pipeline: pbPipeline,
 	}
@@ -468,9 +485,13 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.UpdatePipelineResponse{}, err
 	}
+	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
+	if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+		return nil, err
+	}
 
 	resp := pipelinePB.UpdatePipelineResponse{
-		Pipeline: DBToPBPipeline(ctx, dbPipeline),
+		Pipeline: pbPipeline,
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
@@ -575,6 +596,11 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 	}
 
 	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
+	if !isBasicView {
+		if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+			return nil, err
+		}
+	}
 	resp := pipelinePB.LookUpPipelineResponse{
 		Pipeline: pbPipeline,
 	}
