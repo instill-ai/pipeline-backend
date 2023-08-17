@@ -110,8 +110,8 @@ func DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) *pipeli
 				for i := range pbRecipe.Components {
 					// TODO: use enum
 					if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions/") {
-						if pbRecipe.Components[i].ResourceDetail != nil {
-							switch pbRecipe.Components[i].ResourceDetail.ConnectorType {
+						if pbRecipe.Components[i].Resource != nil {
+							switch pbRecipe.Components[i].Resource.ConnectorType {
 							case connectorPB.ConnectorType_CONNECTOR_TYPE_AI:
 								pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
 							case connectorPB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN:
@@ -166,7 +166,7 @@ func IncludeDetailInRecipeAdmin(recipe *pipelinePB.Recipe, s service.Service) er
 				return unmarshalErr
 			}
 
-			recipe.Components[idx].ResourceDetail = resp.ConnectorResource
+			recipe.Components[idx].Resource = resp.ConnectorResource
 		}
 		if service.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
 			resp, err := s.GetConnectorPrivateServiceClient().LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
@@ -187,7 +187,7 @@ func IncludeDetailInRecipeAdmin(recipe *pipelinePB.Recipe, s service.Service) er
 				return unmarshalErr
 			}
 
-			recipe.Components[idx].DefinitionDetail = &pipelinePB.Component_ConnectorDefinitionDetail{ConnectorDefinitionDetail: resp.ConnectorDefinition}
+			recipe.Components[idx].Definition = &pipelinePB.Component_ConnectorDefinition{ConnectorDefinition: resp.ConnectorDefinition}
 		}
 		if service.IsOperatorDefinition(recipe.Components[idx].DefinitionName) {
 			uid, err := resource.GetPermalinkUID(recipe.Components[idx].DefinitionName)
@@ -210,7 +210,7 @@ func IncludeDetailInRecipeAdmin(recipe *pipelinePB.Recipe, s service.Service) er
 				return unmarshalErr
 			}
 
-			recipe.Components[idx].DefinitionDetail = &pipelinePB.Component_OperatorDefinitionDetail{OperatorDefinitionDetail: def}
+			recipe.Components[idx].Definition = &pipelinePB.Component_OperatorDefinition{OperatorDefinition: def}
 		}
 
 	}
@@ -243,7 +243,7 @@ func IncludeDetailInRecipe(recipe *pipelinePB.Recipe, s service.Service) error {
 				return unmarshalErr
 			}
 
-			recipe.Components[idx].ResourceDetail = resp.ConnectorResource
+			recipe.Components[idx].Resource = resp.ConnectorResource
 		}
 		if service.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
 			resp, err := s.GetConnectorPublicServiceClient().GetConnectorDefinition(ctx, &connectorPB.GetConnectorDefinitionRequest{
@@ -264,7 +264,7 @@ func IncludeDetailInRecipe(recipe *pipelinePB.Recipe, s service.Service) error {
 				return unmarshalErr
 			}
 
-			recipe.Components[idx].DefinitionDetail = &pipelinePB.Component_ConnectorDefinitionDetail{ConnectorDefinitionDetail: resp.ConnectorDefinition}
+			recipe.Components[idx].Definition = &pipelinePB.Component_ConnectorDefinition{ConnectorDefinition: resp.ConnectorDefinition}
 		}
 		if service.IsOperatorDefinition(recipe.Components[idx].DefinitionName) {
 			id, err := resource.GetRscNameID(recipe.Components[idx].DefinitionName)
@@ -287,7 +287,7 @@ func IncludeDetailInRecipe(recipe *pipelinePB.Recipe, s service.Service) error {
 				return unmarshalErr
 			}
 
-			recipe.Components[idx].DefinitionDetail = &pipelinePB.Component_OperatorDefinitionDetail{OperatorDefinitionDetail: def}
+			recipe.Components[idx].Definition = &pipelinePB.Component_OperatorDefinition{OperatorDefinition: def}
 		}
 
 	}
