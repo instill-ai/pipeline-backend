@@ -15,7 +15,7 @@ require (
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/connector-backend v0.11.0-alpha
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230814104042-37ca0356defc
-	github.com/instill-ai/usage-client v0.2.4-alpha
+	github.com/instill-ai/usage-client v0.2.4-alpha.0.20230814155646-874e57a1e4b0
 	github.com/instill-ai/x v0.3.0-alpha
 	github.com/knadh/koanf v1.5.0
 	github.com/mennanov/fieldmask-utils v1.0.0

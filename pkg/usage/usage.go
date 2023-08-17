@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
@@ -46,7 +47,14 @@ func NewUsage(ctx context.Context, r repository.Repository, mu mgmtPB.MgmtPrivat
 		return nil
 	}
 
-	reporter, err := usageClient.InitReporter(ctx, usc, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, version)
+	var defaultOwnerUID string
+	if resp, err := mu.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: constant.DefaultOwnerID}); err == nil {
+		defaultOwnerUID = resp.GetUser().GetUid()
+	} else {
+		logger.Error(err.Error())
+	}
+
+	reporter, err := usageClient.InitReporter(ctx, usc, usagePB.Session_SERVICE_MODEL, config.Config.Server.Edition, version, defaultOwnerUID)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil
@@ -144,9 +152,18 @@ func (u *usage) StartReporter(ctx context.Context) {
 	}
 
 	logger, _ := logger.GetZapLogger(ctx)
+
+	var defaultOwnerUID string
+	if resp, err := u.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: constant.DefaultOwnerID}); err == nil {
+		defaultOwnerUID = resp.GetUser().GetUid()
+	} else {
+		logger.Error(err.Error())
+		return
+	}
+
 	go func() {
 		time.Sleep(5 * time.Second)
-		err := usageClient.StartReporter(ctx, u.reporter, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, u.version, u.RetrieveUsageData)
+		err := usageClient.StartReporter(ctx, u.reporter, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, u.version, defaultOwnerUID, u.RetrieveUsageData)
 		if err != nil {
 			logger.Error(fmt.Sprintf("unable to start reporter: %v\n", err))
 		}
@@ -157,8 +174,18 @@ func (u *usage) TriggerSingleReporter(ctx context.Context) {
 	if u.reporter == nil {
 		return
 	}
+
 	logger, _ := logger.GetZapLogger(ctx)
-	err := usageClient.SingleReporter(ctx, u.reporter, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, u.version, u.RetrieveUsageData())
+
+	var defaultOwnerUID string
+	if resp, err := u.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: constant.DefaultOwnerID}); err == nil {
+		defaultOwnerUID = resp.GetUser().GetUid()
+	} else {
+		logger.Error(err.Error())
+		return
+	}
+
+	err := usageClient.SingleReporter(ctx, u.reporter, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, u.version, defaultOwnerUID, u.RetrieveUsageData())
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to trigger single reporter: %v\n", err))
 	}
