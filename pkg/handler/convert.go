@@ -148,7 +148,7 @@ func IncludeDetailInRecipeAdmin(recipe *pipelinePB.Recipe, s service.Service) er
 	for idx := range recipe.Components {
 
 		if service.IsConnector(recipe.Components[idx].ResourceName) {
-			resp, err := s.GetConnectorPrivateServiceClient().LookUpConnectorAdmin(ctx, &connectorPB.LookUpConnectorAdminRequest{
+			resp, err := s.GetConnectorPrivateServiceClient().LookUpConnectorResourceAdmin(ctx, &connectorPB.LookUpConnectorResourceAdminRequest{
 				Permalink: recipe.Components[idx].ResourceName,
 				View:      connectorPB.View_VIEW_FULL.Enum(),
 			})
@@ -157,7 +157,7 @@ func IncludeDetailInRecipeAdmin(recipe *pipelinePB.Recipe, s service.Service) er
 			}
 			detail := &structpb.Struct{}
 			// Note: need to deal with camelCase or under_score for grpc in future
-			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnector())
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnectorResource())
 			if marshalErr != nil {
 				return marshalErr
 			}
@@ -166,7 +166,7 @@ func IncludeDetailInRecipeAdmin(recipe *pipelinePB.Recipe, s service.Service) er
 				return unmarshalErr
 			}
 
-			recipe.Components[idx].ResourceDetail = resp.Connector
+			recipe.Components[idx].ResourceDetail = resp.ConnectorResource
 		}
 		if service.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
 			resp, err := s.GetConnectorPrivateServiceClient().LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
@@ -225,7 +225,7 @@ func IncludeDetailInRecipe(recipe *pipelinePB.Recipe, s service.Service) error {
 	for idx := range recipe.Components {
 
 		if service.IsConnector(recipe.Components[idx].ResourceName) {
-			resp, err := s.GetConnectorPublicServiceClient().GetConnector(ctx, &connectorPB.GetConnectorRequest{
+			resp, err := s.GetConnectorPublicServiceClient().GetConnectorResource(ctx, &connectorPB.GetConnectorResourceRequest{
 				Name: recipe.Components[idx].ResourceName,
 				View: connectorPB.View_VIEW_FULL.Enum(),
 			})
@@ -234,7 +234,7 @@ func IncludeDetailInRecipe(recipe *pipelinePB.Recipe, s service.Service) error {
 			}
 			detail := &structpb.Struct{}
 			// Note: need to deal with camelCase or under_score for grpc in future
-			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnector())
+			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnectorResource())
 			if marshalErr != nil {
 				return marshalErr
 			}
@@ -243,7 +243,7 @@ func IncludeDetailInRecipe(recipe *pipelinePB.Recipe, s service.Service) error {
 				return unmarshalErr
 			}
 
-			recipe.Components[idx].ResourceDetail = resp.Connector
+			recipe.Components[idx].ResourceDetail = resp.ConnectorResource
 		}
 		if service.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
 			resp, err := s.GetConnectorPublicServiceClient().GetConnectorDefinition(ctx, &connectorPB.GetConnectorDefinitionRequest{

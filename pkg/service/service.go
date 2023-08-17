@@ -578,7 +578,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		}
 
 		if comp.ResourceName != "" {
-			resp, err := s.connectorPublicServiceClient.ExecuteConnector(
+			resp, err := s.connectorPublicServiceClient.ExecuteConnectorResource(
 				utils.InjectOwnerToContextWithOwnerPermalink(
 					metadata.AppendToOutgoingContext(ctx,
 						"id", dbPipeline.ID,
@@ -587,7 +587,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 						"trigger_id", pipelineTriggerId,
 					),
 					utils.GenOwnerPermalink(owner)),
-				&connectorPB.ExecuteConnectorRequest{
+				&connectorPB.ExecuteConnectorResourceRequest{
 					Name:   comp.ResourceName,
 					Inputs: compInputs,
 				},

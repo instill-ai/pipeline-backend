@@ -120,7 +120,7 @@ export function CheckCreate() {
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.ConnectorPublicService/DeletePipeline ${reqBody.id} response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline ${reqBody.id} response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );

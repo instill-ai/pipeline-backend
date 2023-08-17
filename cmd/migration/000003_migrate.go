@@ -103,20 +103,20 @@ func migratePipelineRecipeUp000003() error {
 		var model *Component
 		var destination *Component
 		for compIdx := range items[idx].Recipe.Components {
-			connector, err := connectorPrivateServiceClient.LookUpConnectorAdmin(context.Background(), &connectorPB.LookUpConnectorAdminRequest{
+			connector, err := connectorPrivateServiceClient.LookUpConnectorResourceAdmin(context.Background(), &connectorPB.LookUpConnectorResourceAdminRequest{
 				Permalink: items[idx].Recipe.Components[compIdx].ResourceName,
 			})
 			if err != nil {
 				panic(err)
 			}
 
-			if connector.Connector.ConnectorType == connectorPB.ConnectorType_CONNECTOR_TYPE_SOURCE {
+			if connector.ConnectorResource.ConnectorType == connectorPB.ConnectorType_CONNECTOR_TYPE_SOURCE {
 				source = items[idx].Recipe.Components[compIdx]
 			}
-			if connector.Connector.ConnectorType == connectorPB.ConnectorType_CONNECTOR_TYPE_AI {
+			if connector.ConnectorResource.ConnectorType == connectorPB.ConnectorType_CONNECTOR_TYPE_AI {
 				model = items[idx].Recipe.Components[compIdx]
 			}
-			if connector.Connector.ConnectorType == connectorPB.ConnectorType_CONNECTOR_TYPE_DESTINATION {
+			if connector.ConnectorResource.ConnectorType == connectorPB.ConnectorType_CONNECTOR_TYPE_DESTINATION {
 				destination = items[idx].Recipe.Components[compIdx]
 			}
 

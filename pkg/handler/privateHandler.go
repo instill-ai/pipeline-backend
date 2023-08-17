@@ -82,7 +82,7 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 	for idx := range dbPipelines {
 		pbPipeline := DBToPBPipeline(ctx, &dbPipelines[idx])
 		if !isBasicView {
-			if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+			if err := IncludeDetailInRecipeAdmin(pbPipeline.Recipe, h.service); err != nil {
 				return nil, err
 			}
 		}

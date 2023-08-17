@@ -16,7 +16,7 @@ import (
 )
 
 func IsConnector(resourceName string) bool {
-	return strings.HasPrefix(resourceName, "connectors/")
+	return strings.HasPrefix(resourceName, "connector-resources/")
 }
 
 func IsConnectorDefinition(resourceName string) bool {
@@ -106,8 +106,8 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 
 func (s *service) connectorNameToPermalink(ctx context.Context, name string) (string, error) {
 
-	getSrcConnResp, err := s.connectorPublicServiceClient.GetConnector(ctx,
-		&connectorPB.GetConnectorRequest{
+	getSrcConnResp, err := s.connectorPublicServiceClient.GetConnectorResource(ctx,
+		&connectorPB.GetConnectorResourceRequest{
 			Name: name,
 		})
 	if err != nil {
@@ -119,15 +119,15 @@ func (s *service) connectorNameToPermalink(ctx context.Context, name string) (st
 		return "", err
 	}
 
-	return srcColID + "/" + getSrcConnResp.GetConnector().GetUid(), nil
+	return srcColID + "/" + getSrcConnResp.GetConnectorResource().GetUid(), nil
 }
 
 func (s *service) connectorPermalinkToName(permalink string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	lookUpSrcConnResp, err := s.connectorPrivateServiceClient.LookUpConnectorAdmin(ctx,
-		&connectorPB.LookUpConnectorAdminRequest{
+	lookUpSrcConnResp, err := s.connectorPrivateServiceClient.LookUpConnectorResourceAdmin(ctx,
+		&connectorPB.LookUpConnectorResourceAdminRequest{
 			Permalink: permalink,
 		})
 	if err != nil {
@@ -139,7 +139,7 @@ func (s *service) connectorPermalinkToName(permalink string) (string, error) {
 		return "", err
 	}
 
-	return srcColID + "/" + lookUpSrcConnResp.GetConnector().GetId(), nil
+	return srcColID + "/" + lookUpSrcConnResp.GetConnectorResource().GetId(), nil
 }
 
 func (s *service) connectorDefinitionNameToPermalink(ctx context.Context, name string) (string, error) {

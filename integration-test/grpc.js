@@ -35,9 +35,9 @@ export function setup() {
     function () {
       check(
         client.invoke(
-          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
+          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnectorResource",
           {
-            connector: {
+            connector_resource: {
               id: constant.dstCSVConnID1,
               connector_definition_name:
                 "connector-definitions/airbyte-destination-csv",
@@ -49,14 +49,14 @@ export function setup() {
           constant.paramsGrpc
         ),
         {
-          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector CSV response StatusOK":
+          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnectorResource CSV response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
       client.invoke(
-        "vdp.connector.v1alpha.ConnectorPublicService/ConnectConnector",
+        "vdp.connector.v1alpha.ConnectorPublicService/ConnectConnectorResource",
         {
-          name: `connectors/${constant.dstCSVConnID1}`,
+          name: `connector-resources/${constant.dstCSVConnID1}`,
         }
       );
     }
@@ -66,9 +66,9 @@ export function setup() {
     function () {
       check(
         client.invoke(
-          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector",
+          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnectorResource",
           {
-            connector: {
+            connectorResource: {
               id: constant.dstCSVConnID2,
               connector_definition_name:
                 "connector-definitions/airbyte-destination-csv",
@@ -80,14 +80,14 @@ export function setup() {
           constant.paramsGrpc
         ),
         {
-          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnector CSV response StatusOK":
+          "vdp.connector.v1alpha.ConnectorPublicService/CreateConnectorResource CSV response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
       client.invoke(
-        "vdp.connector.v1alpha.ConnectorPublicService/ConnectConnector",
+        "vdp.connector.v1alpha.ConnectorPublicService/ConnectConnectorResource",
         {
-          name: `connectors/${constant.dstCSVConnID2}`,
+          name: `connector-resources/${constant.dstCSVConnID2}`,
         }
       );
     }
@@ -186,13 +186,13 @@ export function teardown(data) {
     function () {
       check(
         client.invoke(
-          `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
+          `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnectorResource`,
           {
-            name: `connectors/${constant.dstCSVConnID1}`,
+            name: `connector-resources/${constant.dstCSVConnID1}`,
           }
         ),
         {
-          [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]:
+          [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnectorResource response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -203,13 +203,13 @@ export function teardown(data) {
     function () {
       check(
         client.invoke(
-          `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector`,
+          `vdp.connector.v1alpha.ConnectorPublicService/DeleteConnectorResource`,
           {
-            name: `connectors/${constant.dstCSVConnID2}`,
+            name: `connector-resources/${constant.dstCSVConnID2}`,
           }
         ),
         {
-          [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnector response StatusOK`]:
+          [`vdp.connector.v1alpha.ConnectorPublicService/DeleteConnectorResource response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

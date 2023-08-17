@@ -36,62 +36,82 @@ func (m *MockConnectorPrivateServiceClient) EXPECT() *MockConnectorPrivateServic
 	return m.recorder
 }
 
-// CheckConnector mocks base method.
-func (m *MockConnectorPrivateServiceClient) CheckConnector(arg0 context.Context, arg1 *connectorv1alpha.CheckConnectorRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.CheckConnectorResponse, error) {
+// CheckConnectorResource mocks base method.
+func (m *MockConnectorPrivateServiceClient) CheckConnectorResource(arg0 context.Context, arg1 *connectorv1alpha.CheckConnectorResourceRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.CheckConnectorResourceResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CheckConnector", varargs...)
-	ret0, _ := ret[0].(*connectorv1alpha.CheckConnectorResponse)
+	ret := m.ctrl.Call(m, "CheckConnectorResource", varargs...)
+	ret0, _ := ret[0].(*connectorv1alpha.CheckConnectorResourceResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CheckConnector indicates an expected call of CheckConnector.
-func (mr *MockConnectorPrivateServiceClientMockRecorder) CheckConnector(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// CheckConnectorResource indicates an expected call of CheckConnectorResource.
+func (mr *MockConnectorPrivateServiceClientMockRecorder) CheckConnectorResource(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckConnector", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).CheckConnector), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckConnectorResource", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).CheckConnectorResource), varargs...)
 }
 
-// ListConnectorsAdmin mocks base method.
-func (m *MockConnectorPrivateServiceClient) ListConnectorsAdmin(arg0 context.Context, arg1 *connectorv1alpha.ListConnectorsAdminRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.ListConnectorsAdminResponse, error) {
+// ListConnectorResourcesAdmin mocks base method.
+func (m *MockConnectorPrivateServiceClient) ListConnectorResourcesAdmin(arg0 context.Context, arg1 *connectorv1alpha.ListConnectorResourcesAdminRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.ListConnectorResourcesAdminResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ListConnectorsAdmin", varargs...)
-	ret0, _ := ret[0].(*connectorv1alpha.ListConnectorsAdminResponse)
+	ret := m.ctrl.Call(m, "ListConnectorResourcesAdmin", varargs...)
+	ret0, _ := ret[0].(*connectorv1alpha.ListConnectorResourcesAdminResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListConnectorsAdmin indicates an expected call of ListConnectorsAdmin.
-func (mr *MockConnectorPrivateServiceClientMockRecorder) ListConnectorsAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// ListConnectorResourcesAdmin indicates an expected call of ListConnectorResourcesAdmin.
+func (mr *MockConnectorPrivateServiceClientMockRecorder) ListConnectorResourcesAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListConnectorsAdmin", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).ListConnectorsAdmin), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListConnectorResourcesAdmin", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).ListConnectorResourcesAdmin), varargs...)
 }
 
-// LookUpConnectorAdmin mocks base method.
-func (m *MockConnectorPrivateServiceClient) LookUpConnectorAdmin(arg0 context.Context, arg1 *connectorv1alpha.LookUpConnectorAdminRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.LookUpConnectorAdminResponse, error) {
+// LookUpConnectorDefinitionAdmin mocks base method.
+func (m *MockConnectorPrivateServiceClient) LookUpConnectorDefinitionAdmin(arg0 context.Context, arg1 *connectorv1alpha.LookUpConnectorDefinitionAdminRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.LookUpConnectorDefinitionAdminResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "LookUpConnectorAdmin", varargs...)
-	ret0, _ := ret[0].(*connectorv1alpha.LookUpConnectorAdminResponse)
+	ret := m.ctrl.Call(m, "LookUpConnectorDefinitionAdmin", varargs...)
+	ret0, _ := ret[0].(*connectorv1alpha.LookUpConnectorDefinitionAdminResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// LookUpConnectorAdmin indicates an expected call of LookUpConnectorAdmin.
-func (mr *MockConnectorPrivateServiceClientMockRecorder) LookUpConnectorAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// LookUpConnectorDefinitionAdmin indicates an expected call of LookUpConnectorDefinitionAdmin.
+func (mr *MockConnectorPrivateServiceClientMockRecorder) LookUpConnectorDefinitionAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookUpConnectorAdmin", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).LookUpConnectorAdmin), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookUpConnectorDefinitionAdmin", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).LookUpConnectorDefinitionAdmin), varargs...)
+}
+
+// LookUpConnectorResourceAdmin mocks base method.
+func (m *MockConnectorPrivateServiceClient) LookUpConnectorResourceAdmin(arg0 context.Context, arg1 *connectorv1alpha.LookUpConnectorResourceAdminRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.LookUpConnectorResourceAdminResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "LookUpConnectorResourceAdmin", varargs...)
+	ret0, _ := ret[0].(*connectorv1alpha.LookUpConnectorResourceAdminResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LookUpConnectorResourceAdmin indicates an expected call of LookUpConnectorResourceAdmin.
+func (mr *MockConnectorPrivateServiceClientMockRecorder) LookUpConnectorResourceAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookUpConnectorResourceAdmin", reflect.TypeOf((*MockConnectorPrivateServiceClient)(nil).LookUpConnectorResourceAdmin), varargs...)
 }
