@@ -80,7 +80,13 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 
 	pbPipelines := []*pipelinePB.Pipeline{}
 	for idx := range dbPipelines {
-		pbPipelines = append(pbPipelines, DBToPBPipeline(ctx, &dbPipelines[idx]))
+		pbPipeline := DBToPBPipeline(ctx, &dbPipelines[idx])
+		if !isBasicView {
+			if err := IncludeDetailInRecipeAdmin(pbPipeline.Recipe, h.service); err != nil {
+				return nil, err
+			}
+		}
+		pbPipelines = append(pbPipelines, pbPipeline)
 	}
 
 	resp := pipelinePB.ListPipelinesAdminResponse{
@@ -117,6 +123,11 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelineP
 	}
 
 	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
+	if !isBasicView {
+		if err := IncludeDetailInRecipeAdmin(pbPipeline.Recipe, h.service); err != nil {
+			return nil, err
+		}
+	}
 	resp := pipelinePB.LookUpPipelineAdminResponse{
 		Pipeline: pbPipeline,
 	}

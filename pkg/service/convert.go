@@ -6,9 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -19,7 +16,7 @@ import (
 )
 
 func IsConnector(resourceName string) bool {
-	return strings.HasPrefix(resourceName, "connectors/")
+	return strings.HasPrefix(resourceName, "connector-resources/")
 }
 
 func IsConnectorDefinition(resourceName string) bool {
@@ -39,10 +36,8 @@ func (s *service) recipeNameToPermalink(owner *mgmtPB.User, recipeRscName *datam
 	recipePermalink := &datamodel.Recipe{Version: recipeRscName.Version}
 	for _, component := range recipeRscName.Components {
 		componentPermalink := &datamodel.Component{
-			Id:               component.Id,
-			Configuration:    component.Configuration,
-			ResourceDetail:   component.ResourceDetail,
-			DefinitionDetail: component.DefinitionDetail,
+			Id:            component.Id,
+			Configuration: component.Configuration,
 		}
 
 		permalink := ""
@@ -79,10 +74,8 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 
 	for _, componentPermalink := range recipePermalink.Components {
 		component := &datamodel.Component{
-			Id:               componentPermalink.Id,
-			Configuration:    componentPermalink.Configuration,
-			ResourceDetail:   componentPermalink.ResourceDetail,
-			DefinitionDetail: componentPermalink.DefinitionDetail,
+			Id:            componentPermalink.Id,
+			Configuration: componentPermalink.Configuration,
 		}
 
 		if IsConnector(componentPermalink.ResourceName) {
@@ -113,8 +106,8 @@ func (s *service) recipePermalinkToName(recipePermalink *datamodel.Recipe) (*dat
 
 func (s *service) connectorNameToPermalink(ctx context.Context, name string) (string, error) {
 
-	getSrcConnResp, err := s.connectorPublicServiceClient.GetConnector(ctx,
-		&connectorPB.GetConnectorRequest{
+	getSrcConnResp, err := s.connectorPublicServiceClient.GetConnectorResource(ctx,
+		&connectorPB.GetConnectorResourceRequest{
 			Name: name,
 		})
 	if err != nil {
@@ -126,15 +119,15 @@ func (s *service) connectorNameToPermalink(ctx context.Context, name string) (st
 		return "", err
 	}
 
-	return srcColID + "/" + getSrcConnResp.GetConnector().GetUid(), nil
+	return srcColID + "/" + getSrcConnResp.GetConnectorResource().GetUid(), nil
 }
 
 func (s *service) connectorPermalinkToName(permalink string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	lookUpSrcConnResp, err := s.connectorPrivateServiceClient.LookUpConnectorAdmin(ctx,
-		&connectorPB.LookUpConnectorAdminRequest{
+	lookUpSrcConnResp, err := s.connectorPrivateServiceClient.LookUpConnectorResourceAdmin(ctx,
+		&connectorPB.LookUpConnectorResourceAdminRequest{
 			Permalink: permalink,
 		})
 	if err != nil {
@@ -146,7 +139,7 @@ func (s *service) connectorPermalinkToName(permalink string) (string, error) {
 		return "", err
 	}
 
-	return srcColID + "/" + lookUpSrcConnResp.GetConnector().GetId(), nil
+	return srcColID + "/" + lookUpSrcConnResp.GetConnectorResource().GetId(), nil
 }
 
 func (s *service) connectorDefinitionNameToPermalink(ctx context.Context, name string) (string, error) {
@@ -225,92 +218,6 @@ func (s *service) operatorDefinitionPermalinkToName(permalink string) (string, e
 	}
 
 	return colId + "/" + def.Id, nil
-}
-
-func (s *service) excludeDetailFromRecipe(recipe *datamodel.Recipe) error {
-
-	for idx := range recipe.Components {
-		recipe.Components[idx].ResourceDetail = &structpb.Struct{}
-		recipe.Components[idx].DefinitionDetail = &structpb.Struct{}
-	}
-	return nil
-}
-
-func (s *service) includeDetailInRecipe(recipe *datamodel.Recipe) error {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	for idx := range recipe.Components {
-
-		if IsConnector(recipe.Components[idx].ResourceName) {
-			resp, err := s.connectorPrivateServiceClient.LookUpConnectorAdmin(ctx, &connectorPB.LookUpConnectorAdminRequest{
-				Permalink: recipe.Components[idx].ResourceName,
-				View:      connectorPB.View_VIEW_FULL.Enum(),
-			})
-			if err != nil {
-				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetConnector", recipe.Components[idx].ResourceName, err)
-			}
-			detail := &structpb.Struct{}
-			// Note: need to deal with camelCase or under_score for grpc in future
-			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnector())
-			if marshalErr != nil {
-				return marshalErr
-			}
-			unmarshalErr := detail.UnmarshalJSON(json)
-			if unmarshalErr != nil {
-				return unmarshalErr
-			}
-
-			recipe.Components[idx].ResourceDetail = detail
-		}
-		if IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
-			resp, err := s.connectorPrivateServiceClient.LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
-				Permalink: recipe.Components[idx].DefinitionName,
-				View:      connectorPB.View_VIEW_FULL.Enum(),
-			})
-			if err != nil {
-				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetConnector", recipe.Components[idx].ResourceName, err)
-			}
-			detail := &structpb.Struct{}
-			// Note: need to deal with camelCase or under_score for grpc in future
-			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnectorDefinition())
-			if marshalErr != nil {
-				return marshalErr
-			}
-			unmarshalErr := detail.UnmarshalJSON(json)
-			if unmarshalErr != nil {
-				return unmarshalErr
-			}
-
-			recipe.Components[idx].DefinitionDetail = detail
-		}
-		if IsOperatorDefinition(recipe.Components[idx].DefinitionName) {
-			uid, err := resource.GetPermalinkUID(recipe.Components[idx].DefinitionName)
-			if err != nil {
-				return err
-			}
-			def, err := s.operator.GetOperatorDefinitionByUid(uuid.FromStringOrNil(uid))
-			if err != nil {
-				return err
-			}
-
-			detail := &structpb.Struct{}
-			// Note: need to deal with camelCase or under_score for grpc in future
-			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
-			if marshalErr != nil {
-				return marshalErr
-			}
-			unmarshalErr := detail.UnmarshalJSON(json)
-			if unmarshalErr != nil {
-				return unmarshalErr
-			}
-
-			recipe.Components[idx].DefinitionDetail = detail
-		}
-
-	}
-	return nil
 }
 
 func ConvertResourceUIDToControllerResourcePermalink(resourceUID string, resourceType string) string {

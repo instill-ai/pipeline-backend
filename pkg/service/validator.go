@@ -72,10 +72,10 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipePermalink *datamodel.Rec
 		}
 		if IsConnector(recipePermalink.Components[idx].ResourceName) {
 
-			checkResp, err := s.connectorPrivateServiceClient.CheckConnector(
+			checkResp, err := s.connectorPrivateServiceClient.CheckConnectorResource(
 				utils.InjectOwnerToContext(ctx, owner),
-				&connectorPB.CheckConnectorRequest{
-					ConnectorPermalink: recipePermalink.Components[idx].ResourceName,
+				&connectorPB.CheckConnectorResourceRequest{
+					Permalink: recipePermalink.Components[idx].ResourceName,
 				},
 			)
 			if err != nil {
@@ -83,7 +83,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipePermalink *datamodel.Rec
 					"CheckConnector", recipePermalink.Components[idx].ResourceName, err.Error())
 
 			}
-			if checkResp.State != connectorPB.Connector_STATE_CONNECTED {
+			if checkResp.State != connectorPB.ConnectorResource_STATE_CONNECTED {
 				return status.Errorf(codes.InvalidArgument, "[connector-backend] %s is not connected", recipePermalink.Components[idx].ResourceName)
 			}
 		}

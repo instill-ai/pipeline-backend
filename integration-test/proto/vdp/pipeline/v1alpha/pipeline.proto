@@ -12,6 +12,10 @@ import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
+import "../../../vdp/connector/v1alpha/connector.proto";
+import "../../../vdp/connector/v1alpha/connector_definition.proto";
+import "../../../vdp/pipeline/v1alpha/common.proto";
+import "../../../vdp/pipeline/v1alpha/operator_definition.proto";
 
 // LivenessRequest represents a request to check a service liveness status
 message LivenessRequest {
@@ -37,6 +41,20 @@ message ReadinessResponse {
   common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
 }
 
+// ComponentType
+enum ComponentType {
+  // TYPE_UNSPECIFIED
+  COMPONENT_TYPE_UNSPECIFIED = 0;
+  // CONNECTOR_AI
+  COMPONENT_TYPE_CONNECTOR_AI = 1;
+  // CONNECTOR_DATA
+  COMPONENT_TYPE_CONNECTOR_DATA = 2;
+  // CONNECTOR_BLOCKCHAIN
+  COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN = 3;
+  // CONNECTOR_OPERATOR
+  COMPONENT_TYPE_OPERATOR = 4;
+}
+
 // Represents a pipeline component
 message Component {
   // Component id that is given by the users
@@ -44,18 +62,23 @@ message Component {
   // A pipeline component resource name
   string resource_name = 2 [(google.api.resource_reference).type = "*"];
   // A pipeline component resource detail
-  google.protobuf.Struct resource_detail = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  vdp.connector.v1alpha.ConnectorResource resource = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Configuration for the pipeline component
   google.protobuf.Struct configuration = 4;
   // Resource Type
-  string type = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  ComponentType type = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // A pipeline component definition name
   string definition_name = 7 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference).type = "*"
   ];
   // A pipeline component definition detail
-  google.protobuf.Struct definition_detail = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  oneof definition {
+    // operator definition detail
+    OperatorDefinition operator_definition = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // connector definition detail
+    vdp.connector.v1alpha.ConnectorDefinition connector_definition = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  }
 }
 
 // Pipeline represents a pipeline recipe
@@ -130,18 +153,6 @@ message CreatePipelineRequest {
 message CreatePipelineResponse {
   // The created pipeline resource
   Pipeline pipeline = 1;
-}
-
-// View represents a view of any resource. The resource view is implemented by
-// adding a parameter to the method request which allows the client to specify
-// which view of the resource it wants to receive in the response.
-enum View {
-  // View: UNSPECIFIED
-  VIEW_UNSPECIFIED = 0;
-  // View: BASIC
-  VIEW_BASIC = 1;
-  // View: FULL
-  VIEW_FULL = 2;
 }
 
 // ListPipelinesRequest represents a request to list pipelines

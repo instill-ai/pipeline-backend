@@ -376,7 +376,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		return nil, err
 	}
 
-	resp, err := w.connectorPublicServiceClient.ExecuteConnector(
+	resp, err := w.connectorPublicServiceClient.ExecuteConnectorResource(
 		utils.InjectOwnerToContextWithOwnerPermalink(
 			metadata.AppendToOutgoingContext(ctx,
 				"id", param.PipelineMetadata.Id,
@@ -385,7 +385,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 				"trigger_id", param.PipelineMetadata.TriggerId,
 			),
 			param.OwnerPermalink),
-		&connectorPB.ExecuteConnectorRequest{
+		&connectorPB.ExecuteConnectorResourceRequest{
 			Name:   param.Name,
 			Inputs: inputs,
 		},

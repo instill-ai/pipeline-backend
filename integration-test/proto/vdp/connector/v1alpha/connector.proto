@@ -38,9 +38,9 @@ message ReadinessResponse {
   common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
 }
 
-// Connector represents a connector data model
-message Connector {
-  // State enumerates the connector state
+// ConnectorResource represents a connector_resource data model
+message ConnectorResource {
+  // State enumerates the connector_resource state
   enum State {
     // State: UNSPECIFIED
     STATE_UNSPECIFIED = 0;
@@ -52,7 +52,7 @@ message Connector {
     STATE_ERROR = 3;
   }
 
-  // Connector visibility including public or private
+  // ConnectorResource visibility including public or private
   enum Visibility {
     // Visibility: UNSPECIFIED, equivalent to PRIVATE.
     VISIBILITY_UNSPECIFIED = 0;
@@ -63,16 +63,16 @@ message Connector {
   }
 
   option (google.api.resource) = {
-    type: "api.instill.tech/Connector"
-    pattern: "connectors/{connector}"
+    type: "api.instill.tech/ConnectorResource"
+    pattern: "connector-resources/{connector_resource}"
   };
 
-  // Connector resource name. It must have the format of
-  // "connectors/*"
+  // ConnectorResource resource name. It must have the format of
+  // "connector-resources/*"
   string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector UUID
+  // ConnectorResource UUID
   string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector resource ID (the last segment of the resource name)
+  // ConnectorResource resource ID (the last segment of the resource name)
   // used to construct the resource name. This conforms to RFC-1034, which
   // restricts to letters, numbers, and hyphen, with the first character a
   // letter, the last a letter or a number, and a 63 character maximum.
@@ -82,19 +82,19 @@ message Connector {
     (google.api.field_behavior) = IMMUTABLE,
     (google.api.resource_reference) = {type: "api.instill.tech/ConnectorDefinition"}
   ];
-  // Connector Type
+  // ConnectorResource Type
   ConnectorType connector_type = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector description
+  // ConnectorResource description
   common.task.v1alpha.Task task = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector description
+  // ConnectorResource description
   optional string description = 7 [(google.api.field_behavior) = OPTIONAL];
-  // Connector configuration in JSON format
+  // ConnectorResource configuration in JSON format
   google.protobuf.Struct configuration = 8 [(google.api.field_behavior) = REQUIRED];
-  // Connector state
+  // ConnectorResource state
   State state = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector tombstone
+  // ConnectorResource tombstone
   bool tombstone = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector owner
+  // ConnectorResource owner
   oneof owner {
     // The resource name with UUID of a user, e.g.,
     // "users/bfb978f8-78d3-4338-aa2b-a6c699cb07c5".
@@ -108,11 +108,11 @@ message Connector {
       (google.api.field_behavior) = OUTPUT_ONLY
     ];
   }
-  // Connector creation time
+  // ConnectorResource creation time
   google.protobuf.Timestamp create_time = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector update time
+  // ConnectorResource update time
   google.protobuf.Timestamp update_time = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Connector visibility including public or private
+  // ConnectorResource visibility including public or private
   Visibility visibility = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Embed the content of the connector_definition
   ConnectorDefinition connector_definition = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -122,293 +122,293 @@ message Connector {
 // RPC messages
 ///////////////////////////////////////////////////////////////////////
 
-// CreateConnectorRequest represents a request to create a
-// Connector resource
-message CreateConnectorRequest {
-  // Connector resource
-  Connector connector = 1 [(google.api.field_behavior) = REQUIRED];
+// CreateConnectorResourceRequest represents a request to create a
+// ConnectorResource resource
+message CreateConnectorResourceRequest {
+  // ConnectorResource resource
+  ConnectorResource connector_resource = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
-// CreateConnectorResponse represents a response for a
-// Connector resource
-message CreateConnectorResponse {
-  // Connector resource
-  Connector connector = 1;
+// CreateConnectorResourceResponse represents a response for a
+// ConnectorResource resource
+message CreateConnectorResourceResponse {
+  // ConnectorResource resource
+  ConnectorResource connector_resource = 1;
 }
 
-// ListConnectorsRequest represents a request to list
-// Connector resources
-message ListConnectorsRequest {
-  // The maximum number of connectors to return. The service may return fewer
-  // than this value. If unspecified, at most 10 connectors will be returned.
+// ListConnectorResourcesRequest represents a request to list
+// ConnectorResource resources
+message ListConnectorResourcesRequest {
+  // The maximum number of connector-resources to return. The service may return fewer
+  // than this value. If unspecified, at most 10 connector-resources will be returned.
   // The maximum value is 100; values above 100 will be coerced to 100.
   optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
-  // Connector view (default is VIEW_BASIC)
+  // ConnectorResource view (default is VIEW_BASIC)
   optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
-  // Filter expression to list connectors
+  // Filter expression to list connector-resources
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
-// ListConnectorsResponse represents a response for a list of
-// Connector resources
-message ListConnectorsResponse {
-  // A list of Connector resources
-  repeated Connector connectors = 1;
+// ListConnectorResourcesResponse represents a response for a list of
+// ConnectorResource resources
+message ListConnectorResourcesResponse {
+  // A list of ConnectorResource resources
+  repeated ConnectorResource connector_resources = 1;
   // Next page token
   string next_page_token = 2;
-  // Total count of connector resources
+  // Total count of connector_resource resources
   int64 total_size = 3;
 }
 
-// GetConnectorRequest represents a request to query a
-// Connector resource
-message GetConnectorRequest {
-  // ConnectorConnector resource name. It must have the format of
-  // "connectors/*"
+// GetConnectorResourceRequest represents a request to query a
+// ConnectorResource resource
+message GetConnectorResourceRequest {
+  // ConnectorResourceConnectorResource resource name. It must have the format of
+  // "connector-resources/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Connector"},
+    (google.api.resource_reference) = {type: "api.instill.tech/ConnectorResource"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "connector.name"}
+      field_configuration: {path_param_name: "connector_resource.name"}
     }
   ];
-  // Connector view (default is VIEW_BASIC)
+  // ConnectorResource view (default is VIEW_BASIC)
   optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
-// GetConnectorResponse represents a response for a
-// Connector resource
-message GetConnectorResponse {
-  // Connector resource
-  Connector connector = 1;
+// GetConnectorResourceResponse represents a response for a
+// ConnectorResource resource
+message GetConnectorResourceResponse {
+  // ConnectorResource resource
+  ConnectorResource connector_resource = 1;
 }
 
-// UpdateConnectorRequest represents a request to update a
-// Connector resource
-message UpdateConnectorRequest {
-  // Connector resource
-  Connector connector = 1 [(google.api.field_behavior) = REQUIRED];
-  // Update mask for a Connector resource
+// UpdateConnectorResourceRequest represents a request to update a
+// ConnectorResource resource
+message UpdateConnectorResourceRequest {
+  // ConnectorResource resource
+  ConnectorResource connector_resource = 1 [(google.api.field_behavior) = REQUIRED];
+  // Update mask for a ConnectorResource resource
   google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// UpdateConnectorResponse represents a response for a
-// Connector resource
-message UpdateConnectorResponse {
-  // Connector resource
-  Connector connector = 1;
+// UpdateConnectorResourceResponse represents a response for a
+// ConnectorResource resource
+message UpdateConnectorResourceResponse {
+  // ConnectorResource resource
+  ConnectorResource connector_resource = 1;
 }
 
-// DeleteConnectorRequest represents a request to delete a
-// Connector resource
-message DeleteConnectorRequest {
-  // Connector resource name. It must have the format of
-  // "connectors/*"
+// DeleteConnectorResourceRequest represents a request to delete a
+// ConnectorResource resource
+message DeleteConnectorResourceRequest {
+  // ConnectorResource resource name. It must have the format of
+  // "connector-resources/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Connector"},
+    (google.api.resource_reference) = {type: "api.instill.tech/ConnectorResource"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "connector.name"}
+      field_configuration: {path_param_name: "connector_resource.name"}
     }
   ];
 }
 
-// DeleteConnectorResponse represents an empty response
-message DeleteConnectorResponse {}
+// DeleteConnectorResourceResponse represents an empty response
+message DeleteConnectorResourceResponse {}
 
-// LookUpConnectorRequest represents a request to query a
-// connector via permalink
-message LookUpConnectorRequest {
-  // Permalink of a connector. For example:
-  // "connectors/{uid}"
+// LookUpConnectorResourceRequest represents a request to query a
+// connector_resource via permalink
+message LookUpConnectorResourceRequest {
+  // Permalink of a connector_resource. For example:
+  // "connector-resources/{uid}"
   string permalink = 1 [(google.api.field_behavior) = REQUIRED];
-  // Connector view (default is VIEW_BASIC)
+  // ConnectorResource view (default is VIEW_BASIC)
   optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
-// LookUpConnectorResponse represents a response for a
-// connector
-message LookUpConnectorResponse {
-  // Connector resource
-  Connector connector = 1;
+// LookUpConnectorResourceResponse represents a response for a
+// connector_resource
+message LookUpConnectorResourceResponse {
+  // ConnectorResource resource
+  ConnectorResource connector_resource = 1;
 }
 
-// ConnectConnectorRequest represents a request to connect a
-// connector
-message ConnectConnectorRequest {
-  // Connector resource name. It must have the format of
-  // "connectors/*"
+// ConnectConnectorResourceRequest represents a request to connect a
+// connector_resource
+message ConnectConnectorResourceRequest {
+  // ConnectorResource resource name. It must have the format of
+  // "connector-resources/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
+    (google.api.resource_reference) = {type: "api.instill.tech/ConnectorResource"}
   ];
 }
 
-// ConnectConnectorResponse represents a connected
-// connector
-message ConnectConnectorResponse {
-  // A Connector resource
-  Connector connector = 1;
+// ConnectConnectorResourceResponse represents a connected
+// connector_resource
+message ConnectConnectorResourceResponse {
+  // A ConnectorResource resource
+  ConnectorResource connector_resource = 1;
 }
 
-// DisconnectConnectorRequest represents a request to disconnect a
-// connector
-message DisconnectConnectorRequest {
-  // Connector resource name. It must have the format of
-  // "connectors/*"
+// DisconnectConnectorResourceRequest represents a request to disconnect a
+// connector_resource
+message DisconnectConnectorResourceRequest {
+  // ConnectorResource resource name. It must have the format of
+  // "connector-resources/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
+    (google.api.resource_reference) = {type: "api.instill.tech/ConnectorResource"}
   ];
 }
 
-// DisconnectConnectorResponse represents a disconnected
-// connector
-message DisconnectConnectorResponse {
-  // A Connector resource
-  Connector connector = 1;
+// DisconnectConnectorResourceResponse represents a disconnected
+// connector_resource
+message DisconnectConnectorResourceResponse {
+  // A ConnectorResource resource
+  ConnectorResource connector_resource = 1;
 }
 
-// RenameConnectorRequest represents a request to rename the
-// Connector resource name
-message RenameConnectorRequest {
-  // Connector resource name. It must have the format of
-  // "connectors/*"
+// RenameConnectorResourceRequest represents a request to rename the
+// ConnectorResource resource name
+message RenameConnectorResourceRequest {
+  // ConnectorResource resource name. It must have the format of
+  // "connector-resources/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
+    (google.api.resource_reference) = {type: "api.instill.tech/ConnectorResource"}
   ];
-  // Connector new resource id to replace with the
-  // Connector resource name to be
-  // "connectors/{new_connector_id}"
+  // ConnectorResource new resource id to replace with the
+  // ConnectorResource resource name to be
+  // "connector-resources/{new_connector_id}"
   string new_connector_id = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
-// RenameConnectorResponse represents a renamed Connector
+// RenameConnectorResourceResponse represents a renamed ConnectorResource
 // resource
-message RenameConnectorResponse {
-  // A Connector resource
-  Connector connector = 1;
+message RenameConnectorResourceResponse {
+  // A ConnectorResource resource
+  ConnectorResource connector_resource = 1;
 }
 
 // ========== Private endpoints
 
-// ListConnectorsAdminRequest represents a request to list
-// Connector resources from all users by admin
-message ListConnectorsAdminRequest {
-  // The maximum number of connectors to return. The service may return fewer
-  // than this value. If unspecified, at most 10 connectors will be returned.
+// ListConnectorResourcesAdminRequest represents a request to list
+// ConnectorResource resources from all users by admin
+message ListConnectorResourcesAdminRequest {
+  // The maximum number of connector-resources to return. The service may return fewer
+  // than this value. If unspecified, at most 10 connector-resources will be returned.
   // The maximum value is 100; values above 100 will be coerced to 100.
   optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
-  // Connector view (default is VIEW_BASIC)
+  // ConnectorResource view (default is VIEW_BASIC)
   optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
-  // Filter expression to list connectors
+  // Filter expression to list connector-resources
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
-// ListConnectorsAdminResponse represents a response for a list of
-// Connector resources
-message ListConnectorsAdminResponse {
-  // A list of Connector resources
-  repeated Connector connectors = 1;
+// ListConnectorResourcesAdminResponse represents a response for a list of
+// ConnectorResource resources
+message ListConnectorResourcesAdminResponse {
+  // A list of ConnectorResource resources
+  repeated ConnectorResource connector_resources = 1;
   // Next page token
   string next_page_token = 2;
-  // Total count of connector resources
+  // Total count of connector_resource resources
   int64 total_size = 3;
 }
 
-// LookUpConnectorAdminRequest represents a request to query a
-// connector via permalink by admin
-message LookUpConnectorAdminRequest {
-  // Permalink of a connector. For example:
-  // "connectors/{uid}"
+// LookUpConnectorResourceAdminRequest represents a request to query a
+// connector_resource via permalink by admin
+message LookUpConnectorResourceAdminRequest {
+  // Permalink of a connector_resource. For example:
+  // "connector-resources/{uid}"
   string permalink = 1 [(google.api.field_behavior) = REQUIRED];
-  // Connector view (default is VIEW_BASIC)
+  // ConnectorResource view (default is VIEW_BASIC)
   optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
-// LookUpConnectorAdminResponse represents a response for a
-// connector
-message LookUpConnectorAdminResponse {
-  // Connector resource
-  Connector connector = 1;
+// LookUpConnectorResourceAdminResponse represents a response for a
+// connector_resource
+message LookUpConnectorResourceAdminResponse {
+  // ConnectorResource resource
+  ConnectorResource connector_resource = 1;
 }
 
-// WatchConnectorRequest represents a public request to query
-// a connector's current state
-message WatchConnectorRequest {
-  // Connector resource name. It must have the format of
-  // "connectors/*"
+// WatchConnectorResourceRequest represents a public request to query
+// a connector_resource's current state
+message WatchConnectorResourceRequest {
+  // ConnectorResource resource name. It must have the format of
+  // "connector-resources/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type = "api.instill.tech/Connector",
+    (google.api.resource_reference).type = "api.instill.tech/ConnectorResource",
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "connector.name"}
+      field_configuration: {path_param_name: "connector_resource.name"}
     }
   ];
 }
 
-// WatchConnectorResponse represents a response to fetch a
-// connector's current state
-message WatchConnectorResponse {
-  // Retrieved connector state
-  Connector.State state = 1;
+// WatchConnectorResourceResponse represents a response to fetch a
+// connector_resource's current state
+message WatchConnectorResourceResponse {
+  // Retrieved connector_resource state
+  ConnectorResource.State state = 1;
 }
 
-// CheckConnectorRequest represents a private request to query
-// a connector's current state
-message CheckConnectorRequest {
-  // Permalink of a connector. For example:
-  // "connectors/{uid}"
-  string connector_permalink = 1 [(google.api.field_behavior) = REQUIRED];
+// CheckConnectorResourceRequest represents a private request to query
+// a connector_resource's current state
+message CheckConnectorResourceRequest {
+  // Permalink of a connector_resource. For example:
+  // "connector-resources/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
-// CheckConnectorResponse represents a response to fetch a
-// connector's current state
-message CheckConnectorResponse {
-  // Retrieved connector state
-  Connector.State state = 1;
+// CheckConnectorResourceResponse represents a response to fetch a
+// connector_resource's current state
+message CheckConnectorResourceResponse {
+  // Retrieved connector_resource state
+  ConnectorResource.State state = 1;
 }
 
-// TestConnectorRequest represents a public request to trigger check
-// action on a connector
-message TestConnectorRequest {
-  // Connector resource name. It must have the format of
-  // "connectors/*"
+// TestConnectorResourceRequest represents a public request to trigger check
+// action on a connector_resource
+message TestConnectorResourceRequest {
+  // ConnectorResource resource name. It must have the format of
+  // "connector-resources/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type = "api.instill.tech/Connector",
+    (google.api.resource_reference).type = "api.instill.tech/ConnectorResource",
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "connector.name"}
+      field_configuration: {path_param_name: "connector_resource.name"}
     }
   ];
 }
 
-// TestConnectorResponse represents a response containing a
-// connector's current state
-message TestConnectorResponse {
-  // Retrieved connector state
-  Connector.State state = 1;
+// TestConnectorResourceResponse represents a response containing a
+// connector_resource's current state
+message TestConnectorResourceResponse {
+  // Retrieved connector_resource state
+  ConnectorResource.State state = 1;
 }
 
-// ExecuteConnectorRequest represents a private request to execution
-// connector
-message ExecuteConnectorRequest {
-  // Name of a connector. For example:
-  // "connectors/{name}"
+// ExecuteConnectorResourceRequest represents a private request to execution
+// connector_resource
+message ExecuteConnectorResourceRequest {
+  // Name of a connector_resource. For example:
+  // "connector-resources/{name}"
   string name = 1 [(google.api.field_behavior) = REQUIRED];
 
   // Inputs
   repeated google.protobuf.Struct inputs = 2;
 }
 
-// ExecuteConnectorResponse represents a response for execution
+// ExecuteConnectorResourceResponse represents a response for execution
 // output
-message ExecuteConnectorResponse {
+message ExecuteConnectorResourceResponse {
   // Outputs
   repeated google.protobuf.Struct outputs = 1;
 }

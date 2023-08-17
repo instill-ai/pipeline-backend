@@ -18,24 +18,24 @@ service ConnectorPrivateService {
     option (google.api.method_signature) = "permalink";
   }
 
-  // ListConnectorsAdmin method receives a ListConnectorsAdminRequest
-  // message and returns a ListConnectorsResponse message.
-  rpc ListConnectorsAdmin(ListConnectorsAdminRequest) returns (ListConnectorsAdminResponse) {
-    option (google.api.http) = {get: "/v1alpha/admin/connectors"};
+  // ListConnectorResourcesAdmin method receives a ListConnectorResourcesAdminRequest
+  // message and returns a ListConnectorResourcesResponse message.
+  rpc ListConnectorResourcesAdmin(ListConnectorResourcesAdminRequest) returns (ListConnectorResourcesAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/connector-resources"};
   }
 
-  // LookUpConnectorAdmin method receives a
-  // LookUpConnectorAdminRequest message and returns a
-  // LookUpConnectorAdminResponse
-  rpc LookUpConnectorAdmin(LookUpConnectorAdminRequest) returns (LookUpConnectorAdminResponse) {
-    option (google.api.http) = {get: "/v1alpha/admin/{permalink=connectors/*}/lookUp"};
+  // LookUpConnectorResourceAdmin method receives a
+  // LookUpConnectorResourceAdminRequest message and returns a
+  // LookUpConnectorResourceAdminResponse
+  rpc LookUpConnectorResourceAdmin(LookUpConnectorResourceAdminRequest) returns (LookUpConnectorResourceAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/{permalink=connector-resources/*}/lookUp"};
     option (google.api.method_signature) = "permalink";
   }
 
-  // CheckConnector method receives a CheckConnectorRequest message and returns a
-  // CheckConnectorResponse
-  rpc CheckConnector(CheckConnectorRequest) returns (CheckConnectorResponse) {
-    option (google.api.http) = {get: "/v1alpha/admin/{connector_permalink=connectors/*}/check"};
-    option (google.api.method_signature) = "connector_permalink";
+  // CheckConnectorResource method receives a CheckConnectorResourceRequest message and returns a
+  // CheckConnectorResourceResponse
+  rpc CheckConnectorResource(CheckConnectorResourceRequest) returns (CheckConnectorResourceResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/{permalink=connector-resources/*}/check"};
+    option (google.api.method_signature) = "permalink";
   }
 }
