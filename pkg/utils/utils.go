@@ -2,18 +2,23 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 func GenOwnerPermalink(owner *mgmtPB.User) string {
@@ -125,4 +130,51 @@ func ParseDependency(dep map[string]string) ([]string, map[string][]string, erro
 		parent = append(parent, k)
 	}
 	return parent, depMap, nil
+}
+
+func GenerateTraces(comps []*datamodel.Component, inputCache []map[string]interface{}, outputCache []map[string]interface{}, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
+	trace := map[string]*pipelinePB.Trace{}
+	for compIdx := range comps {
+		inputs := []*structpb.Struct{}
+		outputs := []*structpb.Struct{}
+
+		for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
+			if _, ok := inputCache[dataIdx][comps[compIdx].Id]; ok {
+				data, err := json.Marshal(inputCache[dataIdx][comps[compIdx].Id])
+				if err != nil {
+					return nil, err
+				}
+				inputStruct := &structpb.Struct{}
+				err = protojson.Unmarshal(data, inputStruct)
+				if err != nil {
+					return nil, err
+				}
+				inputs = append(inputs, inputStruct)
+			}
+
+		}
+		for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
+			if _, ok := outputCache[dataIdx][comps[compIdx].Id]; ok {
+				data, err := json.Marshal(outputCache[dataIdx][comps[compIdx].Id])
+				if err != nil {
+					return nil, err
+				}
+				outputStruct := &structpb.Struct{}
+				err = protojson.Unmarshal(data, outputStruct)
+				if err != nil {
+					return nil, err
+				}
+				outputs = append(outputs, outputStruct)
+			}
+
+		}
+
+		trace[comps[compIdx].Id] = &pipelinePB.Trace{
+			Success:              true,
+			Inputs:               inputs,
+			Outputs:              outputs,
+			ComputeTimeInSeconds: computeTime[comps[compIdx].Id],
+		}
+	}
+	return trace, nil
 }

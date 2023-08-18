@@ -15,7 +15,6 @@ import (
 	"go.einride.tech/aip/filtering"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/converter"
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -56,8 +55,8 @@ type Service interface {
 	DeletePipeline(id string, owner *mgmtPB.User) error
 	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
-	TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline, pipelineTriggerId string) (*pipelinePB.TriggerPipelineResponse, error)
-	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, pipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error)
+	TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline, pipelineTriggerId string, returnTraces bool) (*pipelinePB.TriggerPipelineResponse, error)
+	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, pipeline *datamodel.Pipeline, returnTraces bool) (*pipelinePB.TriggerAsyncPipelineResponse, error)
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
@@ -492,7 +491,7 @@ func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInp
 	return nil
 }
 
-func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, pipelineTriggerId string) (*pipelinePB.TriggerPipelineResponse, error) {
+func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, pipelineTriggerId string, returnTraces bool) (*pipelinePB.TriggerPipelineResponse, error) {
 
 	err := s.preTriggerPipeline(dbPipeline, req.Inputs)
 	if err != nil {
@@ -523,27 +522,33 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		return nil, err
 	}
 
-	orderedComp, err := dag.TopoloicalSort()
+	orderedComp, err := dag.TopologicalSort()
 	if err != nil {
 		return nil, err
 	}
 
-	cache := make([]map[string]interface{}, batchSize)
+	inputCache := make([]map[string]interface{}, batchSize)
+	outputCache := make([]map[string]interface{}, batchSize)
+	computeTime := map[string]float32{}
 
 	for idx := range inputs {
-		cache[idx] = map[string]interface{}{}
+		inputCache[idx] = map[string]interface{}{}
+		outputCache[idx] = map[string]interface{}{}
 		var inputStruct map[string]interface{}
 		err := json.Unmarshal(inputs[idx], &inputStruct)
 		if err != nil {
 			return nil, err
 		}
 
-		cache[idx][orderedComp[0].Id] = inputStruct
+		inputCache[idx][orderedComp[0].Id] = inputStruct
+		outputCache[idx][orderedComp[0].Id] = inputStruct
+		computeTime[orderedComp[0].Id] = 0
 
 	}
 
 	responseCompId := ""
 	for _, comp := range orderedComp[1:] {
+
 		var compInputs []*structpb.Struct
 
 		for idx := 0; idx < batchSize; idx++ {
@@ -559,7 +564,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 				return nil, err
 			}
 
-			compInputStruct, err := utils.RenderInput(compInputTemplateStruct, cache[idx])
+			compInputStruct, err := utils.RenderInput(compInputTemplateStruct, outputCache[idx])
 			if err != nil {
 				return nil, err
 			}
@@ -574,10 +579,13 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 				return nil, err
 			}
 
+			inputCache[idx][comp.Id] = compInput
 			compInputs = append(compInputs, compInput)
 		}
 
 		if comp.ResourceName != "" {
+
+			start := time.Now()
 			resp, err := s.connectorPublicServiceClient.ExecuteConnectorResource(
 				utils.InjectOwnerToContextWithOwnerPermalink(
 					metadata.AppendToOutgoingContext(ctx,
@@ -592,6 +600,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 					Inputs: compInputs,
 				},
 			)
+			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 			if err != nil {
 				return nil, err
 			}
@@ -606,7 +615,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 				if err != nil {
 					return nil, err
 				}
-				cache[idx][comp.Id] = outputStruct
+				outputCache[idx][comp.Id] = outputStruct
 			}
 
 		}
@@ -623,8 +632,9 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 				if err != nil {
 					return nil, err
 				}
-				cache[idx][comp.Id] = outputStruct
+				outputCache[idx][comp.Id] = outputStruct
 			}
+			computeTime[comp.Id] = 0
 
 		}
 
@@ -632,7 +642,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 	pipelineOutputs := []*structpb.Struct{}
 	for idx := 0; idx < batchSize; idx++ {
-		pipelineOutputJson, err := json.Marshal(cache[idx][responseCompId].(map[string]interface{})["body"])
+		pipelineOutputJson, err := json.Marshal(outputCache[idx][responseCompId].(map[string]interface{})["body"])
 		if err != nil {
 			return nil, err
 		}
@@ -644,13 +654,23 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		pipelineOutputs = append(pipelineOutputs, pipelineOutput)
 
 	}
+	var traces map[string]*pipelinePB.Trace
+	if returnTraces {
+		traces, err = utils.GenerateTraces(orderedComp, inputCache, outputCache, computeTime, batchSize)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return &pipelinePB.TriggerPipelineResponse{
 		Outputs: pipelineOutputs,
+		Metadata: &pipelinePB.TriggerPipelineResponse_Metadata{
+			Traces: traces,
+		},
 	}, nil
 }
 
-func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, returnTraces bool) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
 
 	inputs := req.Inputs
 	err := s.preTriggerPipeline(dbPipeline, inputs)
@@ -695,6 +715,7 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		&worker.TriggerAsyncPipelineWorkflowRequest{
 			PipelineInputBlobRedisKeys: inputBlobRedisKeys,
 			Pipeline:                   dbPipeline,
+			ReturnTraces:               returnTraces,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -726,33 +747,21 @@ func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb
 
 	switch workflowExecutionInfo.Status {
 	case enums.WORKFLOW_EXECUTION_STATUS_COMPLETED:
-		payloads := []*structpb.Struct{}
-		numberOfData := 0
-		err := converter.GetDefaultDataConverter().FromPayload(workflowExecutionInfo.Memo.GetFields()["number_of_data"], &numberOfData)
+
+		pipelineResp := &pipelinePB.TriggerPipelineResponse{}
+
+		blobRedisKey := fmt.Sprintf("async_pipeline_response:%s", workflowExecutionInfo.Execution.WorkflowId)
+		blob, err := s.redisClient.Get(context.Background(), blobRedisKey).Bytes()
 		if err != nil {
 			return nil, err
 		}
 
-		for idx := 0; idx < numberOfData; idx++ {
-			blobRedisKey := fmt.Sprintf("async_pipeline_response:%s:%d", workflowExecutionInfo.Execution.WorkflowId, idx)
-			blob, err := s.redisClient.Get(context.Background(), blobRedisKey).Bytes()
-			if err != nil {
-				return nil, err
-			}
-			payload := &structpb.Struct{}
-			err = protojson.Unmarshal(blob, payload)
-			if err != nil {
-				return nil, err
-			}
-
-			payloads = append(payloads, payload)
-
-		}
-		pipelineResp := pipelinePB.TriggerPipelineResponse{
-			Outputs: payloads,
+		err = protojson.Unmarshal(blob, pipelineResp)
+		if err != nil {
+			return nil, err
 		}
 
-		resp, err := anypb.New(&pipelineResp)
+		resp, err := anypb.New(pipelineResp)
 		if err != nil {
 			return nil, err
 		}

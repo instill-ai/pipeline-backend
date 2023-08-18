@@ -159,7 +159,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipePermalink *datamodel.Rec
 		return err
 	}
 
-	_, err = dag.TopoloicalSort()
+	_, err = dag.TopologicalSort()
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "[pipeline-backend] The recipe is not legal: %v", err.Error())
 	}

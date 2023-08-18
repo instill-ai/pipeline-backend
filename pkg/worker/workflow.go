@@ -24,11 +24,13 @@ import (
 
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 type TriggerAsyncPipelineWorkflowRequest struct {
 	PipelineInputBlobRedisKeys []string
 	Pipeline                   *datamodel.Pipeline
+	ReturnTraces               bool
 }
 
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
@@ -131,7 +133,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		return err
 	}
 
-	orderedComp, err := dag.TopoloicalSort()
+	orderedComp, err := dag.TopologicalSort()
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -170,10 +172,13 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		inputs = append(inputs, input)
 	}
 
-	cache := make([]map[string]interface{}, batchSize)
+	inputCache := make([]map[string]interface{}, batchSize)
+	outputCache := make([]map[string]interface{}, batchSize)
+	computeTime := map[string]float32{}
 
 	for idx := range inputs {
-		cache[idx] = map[string]interface{}{}
+		inputCache[idx] = map[string]interface{}{}
+		outputCache[idx] = map[string]interface{}{}
 		var inputStruct map[string]interface{}
 		err := json.Unmarshal(inputs[idx], &inputStruct)
 		if err != nil {
@@ -183,7 +188,10 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return err
 		}
-		cache[idx][orderedComp[0].Id] = inputStruct
+		inputCache[idx][orderedComp[0].Id] = inputStruct
+		outputCache[idx][orderedComp[0].Id] = inputStruct
+		computeTime[orderedComp[0].Id] = 0
+
 	}
 
 	responseCompId := ""
@@ -211,7 +219,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				return err
 			}
 
-			compInputStruct, err := utils.RenderInput(compInputTemplateStruct, cache[idx])
+			compInputStruct, err := utils.RenderInput(compInputTemplateStruct, outputCache[idx])
 			if err != nil {
 				span.SetStatus(1, err.Error())
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -238,6 +246,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				return err
 			}
 
+			inputCache[idx][comp.Id] = compInput
 			compInputs = append(compInputs, compInput)
 		}
 
@@ -255,6 +264,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			}
 			result := ExecuteConnectorActivityResponse{}
 			ctx = workflow.WithActivityOptions(ctx, ao)
+
+			start := time.Now()
 			if err := workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
 				InputBlobRedisKeys: inputBlobRedisKeys,
 				Name:               comp.ResourceName,
@@ -272,6 +283,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				_ = w.writeNewDataPoint(sCtx, dataPoint)
 				return err
 			}
+			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 
 			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
 			for idx := range result.OutputBlobRedisKeys {
@@ -295,7 +307,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				if err != nil {
 					return err
 				}
-				cache[idx][comp.Id] = outputStruct
+				outputCache[idx][comp.Id] = outputStruct
 			}
 
 		}
@@ -312,8 +324,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				if err != nil {
 					return err
 				}
-				cache[idx][comp.Id] = outputStruct
+				outputCache[idx][comp.Id] = outputStruct
 			}
+			computeTime[comp.Id] = 0
 
 		}
 	}
@@ -325,7 +338,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		}
 	} else {
 		for idx := 0; idx < batchSize; idx++ {
-			pipelineOutputJson, err := json.Marshal(cache[idx][responseCompId].(map[string]interface{})["body"])
+			pipelineOutputJson, err := json.Marshal(outputCache[idx][responseCompId].(map[string]interface{})["body"])
 			if err != nil {
 				return err
 			}
@@ -339,8 +352,10 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		}
 	}
 
-	for idx := range pipelineOutputs {
-		outputJson, err := protojson.Marshal(pipelineOutputs[idx])
+	var traces map[string]*pipelinePB.Trace
+	if param.ReturnTraces {
+		traces, err = utils.GenerateTraces(orderedComp, inputCache, outputCache, computeTime, batchSize)
+
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -348,15 +363,29 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return err
 		}
-
-		blobRedisKey := fmt.Sprintf("async_pipeline_response:%s:%d", workflow.GetInfo(ctx).WorkflowExecution.ID, idx)
-		w.redisClient.Set(
-			context.Background(),
-			blobRedisKey,
-			outputJson,
-			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
-		)
 	}
+
+	pipelineResp := &pipelinePB.TriggerPipelineResponse{
+		Outputs: pipelineOutputs,
+		Metadata: &pipelinePB.TriggerPipelineResponse_Metadata{
+			Traces: traces,
+		},
+	}
+	outputJson, err := protojson.Marshal(pipelineResp)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
+		_ = w.writeNewDataPoint(sCtx, dataPoint)
+		return err
+	}
+	blobRedisKey := fmt.Sprintf("async_pipeline_response:%s", workflow.GetInfo(ctx).WorkflowExecution.ID)
+	w.redisClient.Set(
+		context.Background(),
+		blobRedisKey,
+		outputJson,
+		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
+	)
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
