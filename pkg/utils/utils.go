@@ -170,7 +170,7 @@ func GenerateTraces(comps []*datamodel.Component, inputCache []map[string]interf
 		}
 
 		trace[comps[compIdx].Id] = &pipelinePB.Trace{
-			Suceess:              true,
+			Success:              true,
 			Inputs:               inputs,
 			Outputs:              outputs,
 			ComputeTimeInSeconds: computeTime[comps[compIdx].Id],
