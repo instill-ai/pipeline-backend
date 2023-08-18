@@ -133,7 +133,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		return err
 	}
 
-	orderedComp, err := dag.TopoloicalSort()
+	orderedComp, err := dag.TopologicalSort()
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()

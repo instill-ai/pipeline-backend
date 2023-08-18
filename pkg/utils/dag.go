@@ -78,7 +78,7 @@ func (d *dag) AddEdge(from *datamodel.Component, to *datamodel.Component) {
 	d.uf.Union(d.compsIdx[from.Id], d.compsIdx[to.Id])
 }
 
-func (d *dag) TopoloicalSort() ([]*datamodel.Component, error) {
+func (d *dag) TopologicalSort() ([]*datamodel.Component, error) {
 	if len(d.comps) == 0 {
 		return nil, fmt.Errorf("no components")
 	}

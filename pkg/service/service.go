@@ -522,7 +522,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		return nil, err
 	}
 
-	orderedComp, err := dag.TopoloicalSort()
+	orderedComp, err := dag.TopologicalSort()
 	if err != nil {
 		return nil, err
 	}
