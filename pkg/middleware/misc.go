@@ -157,6 +157,8 @@ func CustomMatcher(key string) (string, bool) {
 		return key, true
 	case constant.HeaderOwnerIDKey:
 		return key, true
+	case "Instill-Return-Traces":
+		return key, true
 	case "X-B3-Traceid", "X-B3-Spanid", "X-B3-Sampled":
 		return key, true
 	default:

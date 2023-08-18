@@ -22,6 +22,7 @@ import (
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/operator"
@@ -775,29 +776,39 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 	return &resp, nil
 }
 
-func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (*mgmtPB.User, *datamodel.Pipeline, error) {
+func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (*mgmtPB.User, *datamodel.Pipeline, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
-		return nil, nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, nil, false, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 
 	id, err := resource.GetRscNameID(req.GetName())
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 
 	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
+	}
+	returnTraces := false
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		fmt.Println("md", md)
+		if len(md.Get(constant.ReturnTracesKey)) > 0 {
+			returnTraces, err = strconv.ParseBool(md.Get(constant.ReturnTracesKey)[0])
+			if err != nil {
+				return nil, nil, false, err
+			}
+		}
 	}
 
-	return owner, dbPipeline, nil
+	return owner, dbPipeline, returnTraces, nil
 
 }
 
@@ -814,7 +825,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
+	owner, dbPipeline, returnTraces, err := h.PreTriggerPipeline(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.TriggerPipelineResponse{}, err
@@ -829,7 +840,7 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
 
-	resp, err := h.service.TriggerPipeline(ctx, req, owner, dbPipeline, logUUID.String())
+	resp, err := h.service.TriggerPipeline(ctx, req, owner, dbPipeline, logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -867,13 +878,13 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, dbPipeline, err := h.PreTriggerPipeline(ctx, req)
+	owner, dbPipeline, returnTraces, err := h.PreTriggerPipeline(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
 	}
 
-	resp, err := h.service.TriggerAsyncPipeline(ctx, req, logUUID.String(), owner, dbPipeline)
+	resp, err := h.service.TriggerAsyncPipeline(ctx, req, logUUID.String(), owner, dbPipeline, returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
