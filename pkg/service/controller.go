@@ -10,11 +10,11 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-func (s *service) GetResourceState(pipelineUID uuid.UUID) (*pipelinePB.Pipeline_State, error) {
+func (s *service) GetResourceState(pipelineUID uuid.UUID) (*pipelinePB.State, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipelines")
+	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipeline_releases")
 
 	resp, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
 		ResourcePermalink: resourcePermalink,
@@ -27,11 +27,11 @@ func (s *service) GetResourceState(pipelineUID uuid.UUID) (*pipelinePB.Pipeline_
 	return resp.Resource.GetPipelineState().Enum(), nil
 }
 
-func (s *service) UpdateResourceState(pipelineUID uuid.UUID, state pipelinePB.Pipeline_State, progress *int32) error {
+func (s *service) UpdateResourceState(pipelineUID uuid.UUID, state pipelinePB.State, progress *int32) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipelines")
+	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipeline_releases")
 
 	_, err := s.controllerClient.UpdateResource(ctx, &controllerPB.UpdateResourceRequest{
 		Resource: &controllerPB.Resource{
@@ -54,7 +54,7 @@ func (s *service) DeleteResourceState(pipelineUID uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipelines")
+	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipeline_releases")
 
 	_, err := s.controllerClient.DeleteResource(ctx, &controllerPB.DeleteResourceRequest{
 		ResourcePermalink: resourcePermalink,

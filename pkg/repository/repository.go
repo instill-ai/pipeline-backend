@@ -16,6 +16,8 @@ import (
 	"github.com/instill-ai/x/paginate"
 )
 
+// TODO: in the repository, we'd better use uid as our function params
+
 // DefaultPageSize is the default pagination page size when page size is not assigned
 const DefaultPageSize = 10
 
@@ -31,11 +33,20 @@ type Repository interface {
 	UpdatePipeline(id string, owner string, pipeline *datamodel.Pipeline) error
 	DeletePipeline(id string, owner string) error
 	UpdatePipelineID(id string, owner string, newID string) error
-	UpdatePipelineState(id string, owner string, state datamodel.PipelineState) error
 
 	ListPipelinesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.Pipeline, int64, string, error)
 	GetPipelineByIDAdmin(id string, isBasicView bool) (*datamodel.Pipeline, error)
 	GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
+
+	CreatePipelineRelease(pipelineRelease *datamodel.PipelineRelease) error
+	ListPipelineReleases(pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.PipelineRelease, int64, string, error)
+	GetPipelineReleaseByID(id string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
+	GetPipelineReleaseByUID(uid uuid.UUID, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
+	UpdatePipelineRelease(id string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error
+	DeletePipelineRelease(id string, pipelineUid uuid.UUID) error
+	UpdatePipelineReleaseID(id string, pipelineUid uuid.UUID, newID string) error
+
+	ListPipelineReleasesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.PipelineRelease, int64, string, error)
 }
 
 type repository struct {
@@ -282,20 +293,218 @@ func (r *repository) UpdatePipelineID(id string, owner string, newID string) err
 	return nil
 }
 
-func (r *repository) UpdatePipelineState(id string, owner string, state datamodel.PipelineState) error {
-	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("id = ? AND owner = ?", id, owner).
-		Update("state", state); result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
-	} else if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[UpdatePipelineState] The pipeline id %s you specified is not found", id)
-	}
-	return nil
-}
-
 // TranspileFilter transpiles a parsed AIP filter expression to GORM DB clauses
 func (r *repository) transpileFilter(filter filtering.Filter) (*clause.Expr, error) {
 	return (&Transpiler{
 		filter: filter,
 	}).Transpile()
+}
+
+func (r *repository) CreatePipelineRelease(pipelineRelease *datamodel.PipelineRelease) error {
+	if result := r.db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) {
+			if pgErr.Code == "23505" {
+				return status.Errorf(codes.AlreadyExists, pgErr.Message)
+			}
+		}
+	}
+	return nil
+}
+
+func (r *repository) ListPipelineReleases(pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) (pipelineReleases []datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
+
+	if result := r.db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUid).Count(&totalSize); result.Error != nil {
+		return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
+	}
+
+	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Order("create_time DESC, uid DESC").Where("pipeline_uid = ?", pipelineUid)
+
+	if pageSize == 0 {
+		pageSize = DefaultPageSize
+	} else if pageSize > MaxPageSize {
+		pageSize = MaxPageSize
+	}
+
+	queryBuilder = queryBuilder.Limit(int(pageSize))
+
+	if pageToken != "" {
+		createTime, uid, err := paginate.DecodeToken(pageToken)
+		if err != nil {
+			return nil, 0, "", status.Errorf(codes.InvalidArgument, "Invalid page token: %s", err.Error())
+		}
+		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
+	}
+
+	if isBasicView {
+		queryBuilder.Omit("pipeline_release.recipe")
+	}
+
+	if expr, err := r.transpileFilter(filter); err != nil {
+		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+	} else if expr != nil {
+		queryBuilder.Where("(?)", expr)
+	}
+
+	var createTime time.Time
+	rows, err := queryBuilder.Rows()
+	if err != nil {
+		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var item datamodel.PipelineRelease
+		if err = r.db.ScanRows(rows, &item); err != nil {
+			return nil, 0, "", status.Error(codes.Internal, err.Error())
+		}
+		createTime = item.CreateTime
+		pipelineReleases = append(pipelineReleases, item)
+	}
+
+	if len(pipelineReleases) > 0 {
+		lastUID := (pipelineReleases)[len(pipelineReleases)-1].UID
+		lastItem := &datamodel.PipelineRelease{}
+		if result := r.db.Model(&datamodel.PipelineRelease{}).
+			Where("pipeline_uid = ?", pipelineUid).
+			Order("create_time ASC, uid ASC").
+			Limit(1).Find(lastItem); result.Error != nil {
+			return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
+		}
+		if lastItem.UID.String() == lastUID.String() {
+			nextPageToken = ""
+		} else {
+			nextPageToken = paginate.EncodeToken(createTime, lastUID.String())
+		}
+	}
+
+	return pipelineReleases, totalSize, nextPageToken, nil
+}
+
+func (r *repository) ListPipelineReleasesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) (pipelineReleases []datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
+
+	if result := r.db.Model(&datamodel.PipelineRelease{}).Count(&totalSize); result.Error != nil {
+		return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
+	}
+
+	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Order("create_time DESC, uid DESC")
+
+	if pageSize == 0 {
+		pageSize = DefaultPageSize
+	} else if pageSize > MaxPageSize {
+		pageSize = MaxPageSize
+	}
+
+	queryBuilder = queryBuilder.Limit(int(pageSize))
+
+	if pageToken != "" {
+		createTime, uid, err := paginate.DecodeToken(pageToken)
+		if err != nil {
+			return nil, 0, "", status.Errorf(codes.InvalidArgument, "Invalid page token: %s", err.Error())
+		}
+		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
+	}
+
+	if isBasicView {
+		queryBuilder.Omit("pipeline.recipe")
+	}
+
+	if expr, err := r.transpileFilter(filter); err != nil {
+		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+	} else if expr != nil {
+		queryBuilder.Clauses(expr)
+	}
+
+	var createTime time.Time
+	rows, err := queryBuilder.Rows()
+	if err != nil {
+		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var item datamodel.PipelineRelease
+		if err = r.db.ScanRows(rows, &item); err != nil {
+			return nil, 0, "", status.Error(codes.Internal, err.Error())
+		}
+		createTime = item.CreateTime
+		pipelineReleases = append(pipelineReleases, item)
+	}
+
+	if len(pipelineReleases) > 0 {
+		lastUID := (pipelineReleases)[len(pipelineReleases)-1].UID
+		lastItem := &datamodel.PipelineRelease{}
+		if result := r.db.Model(&datamodel.PipelineRelease{}).
+			Order("create_time ASC, uid ASC").
+			Limit(1).Find(lastItem); result.Error != nil {
+			return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
+		}
+		if lastItem.UID.String() == lastUID.String() {
+			nextPageToken = ""
+		} else {
+			nextPageToken = paginate.EncodeToken(createTime, lastUID.String())
+		}
+	}
+
+	return pipelineReleases, totalSize, nextPageToken, nil
+}
+
+func (r *repository) GetPipelineReleaseByID(id string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("id = ? AND pipeline_uid = ?", id, pipelineUid)
+	if isBasicView {
+		queryBuilder.Omit("pipeline_release.recipe")
+	}
+	var pipelineRelease datamodel.PipelineRelease
+	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
+		return nil, status.Errorf(codes.NotFound, "[GetPipelineReleaseByID] The pipeline_release id %s you specified is not found", id)
+	}
+	return &pipelineRelease, nil
+}
+
+func (r *repository) GetPipelineReleaseByUID(uid uuid.UUID, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("uid = ? AND pipeline_uid = ?", uid, pipelineUid)
+	if isBasicView {
+		queryBuilder.Omit("pipeline_release.recipe")
+	}
+	var pipelineRelease datamodel.PipelineRelease
+	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
+		return nil, status.Errorf(codes.NotFound, "[GetPipelineReleaseByUID] The pipeline_release uid %s you specified is not found", uid.String())
+	}
+	return &pipelineRelease, nil
+}
+
+func (r *repository) UpdatePipelineRelease(id string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error {
+	if result := r.db.Model(&datamodel.PipelineRelease{}).
+		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
+		Updates(pipelineRelease); result.Error != nil {
+		return status.Error(codes.Internal, result.Error.Error())
+	} else if result.RowsAffected == 0 {
+		return status.Errorf(codes.NotFound, "[UpdatePipelineRelease] The pipeline_release id %s you specified is not found", id)
+	}
+	return nil
+}
+
+func (r *repository) DeletePipelineRelease(id string, pipelineUid uuid.UUID) error {
+	result := r.db.Model(&datamodel.PipelineRelease{}).
+		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
+		Delete(&datamodel.PipelineRelease{})
+
+	if result.Error != nil {
+		return status.Error(codes.Internal, result.Error.Error())
+	}
+
+	if result.RowsAffected == 0 {
+		return status.Errorf(codes.NotFound, "[DeletePipelineRelease] The pipeline_release id %s you specified is not found", id)
+	}
+
+	return nil
+}
+
+func (r *repository) UpdatePipelineReleaseID(id string, pipelineUid uuid.UUID, newID string) error {
+	if result := r.db.Model(&datamodel.PipelineRelease{}).
+		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
+		Update("id", newID); result.Error != nil {
+		return status.Error(codes.Internal, result.Error.Error())
+	} else if result.RowsAffected == 0 {
+		return status.Errorf(codes.NotFound, "[UpdatePipelineReleaseID] The pipeline_release id %s you specified is not found", id)
+	}
+	return nil
 }

@@ -29,7 +29,6 @@ func PBToDBPipeline(ctx context.Context, owner string, pbPipeline *pipelinePB.Pi
 	return &datamodel.Pipeline{
 		Owner: owner,
 		ID:    pbPipeline.GetId(),
-		State: datamodel.PipelineState(pbPipeline.GetState()),
 
 		BaseDynamic: datamodel.BaseDynamic{
 			UID: func() uuid.UUID {
@@ -89,7 +88,6 @@ func DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) *pipeli
 		Name:        fmt.Sprintf("pipelines/%s", dbPipeline.ID),
 		Uid:         dbPipeline.BaseDynamic.UID.String(),
 		Id:          dbPipeline.ID,
-		State:       pipelinePB.Pipeline_State(dbPipeline.State),
 		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
 		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),
 		Description: &dbPipeline.Description.String,
@@ -138,6 +136,100 @@ func DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) *pipeli
 	}
 
 	return &pbPipeline
+}
+
+// PBToDBPipelineRelease converts protobuf data model to db data model
+func PBToDBPipelineRelease(ctx context.Context, owner string, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) *datamodel.PipelineRelease {
+	logger, _ := logger.GetZapLogger(ctx)
+
+	return &datamodel.PipelineRelease{
+		ID: pbPipelineRelease.GetId(),
+
+		BaseDynamic: datamodel.BaseDynamic{
+			UID: func() uuid.UUID {
+				if pbPipelineRelease.GetUid() == "" {
+					return uuid.UUID{}
+				}
+				id, err := uuid.FromString(pbPipelineRelease.GetUid())
+				if err != nil {
+					logger.Error(err.Error())
+				}
+				return id
+			}(),
+
+			CreateTime: func() time.Time {
+				if pbPipelineRelease.GetCreateTime() != nil {
+					return pbPipelineRelease.GetCreateTime().AsTime()
+				}
+				return time.Time{}
+			}(),
+
+			UpdateTime: func() time.Time {
+				if pbPipelineRelease.GetUpdateTime() != nil {
+					return pbPipelineRelease.GetUpdateTime().AsTime()
+				}
+				return time.Time{}
+			}(),
+		},
+
+		Description: sql.NullString{
+			String: pbPipelineRelease.GetDescription(),
+			Valid:  true,
+		},
+
+		PipelineUID: pipelineUid,
+	}
+}
+
+// DBToPBPipelineRelease converts db data model to protobuf data model
+func DBToPBPipelineRelease(ctx context.Context, pipelineId string, dbPipelineRelease *datamodel.PipelineRelease) *pipelinePB.PipelineRelease {
+	logger, _ := logger.GetZapLogger(ctx)
+
+	pbPipelineRelease := pipelinePB.PipelineRelease{
+		Name:        fmt.Sprintf("pipelines/%s/releases/%s", pipelineId, dbPipelineRelease.ID),
+		Uid:         dbPipelineRelease.BaseDynamic.UID.String(),
+		Id:          dbPipelineRelease.ID,
+		CreateTime:  timestamppb.New(dbPipelineRelease.CreateTime),
+		UpdateTime:  timestamppb.New(dbPipelineRelease.UpdateTime),
+		Description: &dbPipelineRelease.Description.String,
+		Recipe: func() *pipelinePB.Recipe {
+			if dbPipelineRelease.Recipe != nil {
+				b, err := json.Marshal(dbPipelineRelease.Recipe)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+				pbRecipe := pipelinePB.Recipe{}
+
+				err = protojson.Unmarshal(b, &pbRecipe)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+
+				for i := range pbRecipe.Components {
+					// TODO: use enum
+					if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions/") {
+						if pbRecipe.Components[i].Resource != nil {
+							switch pbRecipe.Components[i].Resource.ConnectorType {
+							case connectorPB.ConnectorType_CONNECTOR_TYPE_AI:
+								pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
+							case connectorPB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN:
+								pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN
+							case connectorPB.ConnectorType_CONNECTOR_TYPE_DATA:
+								pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA
+							}
+						}
+					} else if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions/") {
+						pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR
+					}
+				}
+
+				return &pbRecipe
+			}
+			return nil
+		}(),
+	}
+
+	return &pbPipelineRelease
 }
 
 func IncludeDetailInRecipeAdmin(recipe *pipelinePB.Recipe, s service.Service) error {

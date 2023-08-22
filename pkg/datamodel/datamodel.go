@@ -11,8 +11,6 @@ import (
 	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gorm.io/gorm"
-
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 // BaseDynamic contains common columns for all tables with dynamic UUID as primary key generated when creating
@@ -36,25 +34,20 @@ func (base *BaseDynamic) BeforeCreate(db *gorm.DB) error {
 // Pipeline is the data model of the pipeline table
 type Pipeline struct {
 	BaseDynamic
+	ID                string
+	Owner             string
+	Description       sql.NullString
+	Recipe            *Recipe `gorm:"type:jsonb"`
+	DefaultReleaseUID uuid.UUID
+}
+
+// PipelineRelease is the data model of the pipeline release table
+type PipelineRelease struct {
+	BaseDynamic
 	ID          string
-	Owner       string
+	PipelineUID uuid.UUID
 	Description sql.NullString
-	State       PipelineState
 	Recipe      *Recipe `gorm:"type:jsonb"`
-}
-
-// PipelineState is an alias type for Protobuf enum Pipeline.State
-type PipelineState pipelinePB.Pipeline_State
-
-// Scan function for custom GORM type PipelineState
-func (p *PipelineState) Scan(value interface{}) error {
-	*p = PipelineState(pipelinePB.Pipeline_State_value[value.(string)])
-	return nil
-}
-
-// Value function for custom GORM type PipelineState
-func (p PipelineState) Value() (driver.Value, error) {
-	return pipelinePB.Pipeline_State(p).String(), nil
 }
 
 // Recipe is the data model of the pipeline recipe

@@ -55,27 +55,6 @@ export function CheckCreate() {
           new Date().setTime(0),
     });
 
-    client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-      {
-        name: `pipelines/${reqBody.id}`,
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline",
-        {
-          name: `pipelines/${reqBody.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create sync response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create sync response pipeline state ACTIVE`]:
-          (r) => r.message.state === "STATE_ACTIVE",
-      }
-    );
 
     check(
       client.invoke(
@@ -260,12 +239,6 @@ export function CheckList() {
             (r) => r.status === grpc.StatusOK,
         }
       );
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBody.id}`,
-        }
-      );
 
     }
 
@@ -379,31 +352,15 @@ export function CheckList() {
       client.invoke(
         "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
         {
-          filter: "state=STATE_ACTIVE",
-        },
-        {}
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=STATE_ACTIVE response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=STATE_ACTIVE response pipelines.length`]:
-          (r) => r.message.pipelines.length > 0,
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
-        {
           filter:
-            'state=STATE_ACTIVE AND create_time>timestamp("2000-06-19T23:31:08.657Z")',
+            'create_time>timestamp("2000-06-19T23:31:08.657Z")',
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=STATE_ACTIVE AND create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=STATE_ACTIVE AND create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -702,212 +659,6 @@ export function CheckUpdate() {
   });
 }
 
-export function CheckUpdateState() {
-  group("Pipelines API: Update a pipeline state", () => {
-    client.connect(constant.pipelineGRPCPublicHost, {
-      plaintext: true,
-    });
-
-    var reqBodySync = Object.assign(
-      {
-        id: randomString(10),
-      },
-      constant.simpleRecipe
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
-        {
-          pipeline: reqBodySync,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Sync response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-
-    client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-      {
-        name: `pipelines/${reqBodySync.id}`,
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline",
-        {
-          name: `pipelines/${reqBodySync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline Sync response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline Sync response pipeline state ACTIVE`]:
-          (r) => r.message.state === "STATE_ACTIVE",
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline",
-        {
-          name: `pipelines/${reqBodySync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline ${reqBodySync.id} response status is StatusOK for sync pipeline`]:
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBodySync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline ${reqBodySync.id} response status is StatusOK for sync pipeline`]:
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-
-    var reqBodyAsync = Object.assign(
-      {
-        id: randomString(10),
-      },
-      constant.simpleRecipe
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
-        {
-          pipeline: reqBodyAsync,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline async response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-
-    client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-      {
-        name: `pipelines/${reqBodyAsync.id}`,
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline",
-        {
-          name: `pipelines/${reqBodyAsync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create async response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create async response pipeline state ACTIVE`]:
-          (r) => r.message.state === "STATE_ACTIVE",
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBodyAsync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline ${reqBodyAsync.id} response status is StatusOK for async pipeline`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline ${reqBodyAsync.id} response pipeline state ACTIVE`]:
-          (r) => r.message.pipeline.state === "STATE_ACTIVE",
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline",
-        {
-          name: `pipelines/${reqBodyAsync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline activate async response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline activate async response pipeline state ACTIVE`]:
-          (r) => r.message.state === "STATE_ACTIVE",
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline",
-        {
-          name: `pipelines/${reqBodyAsync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline ${reqBodyAsync.id} response status is StatusOK for async pipeline`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline ${reqBodyAsync.id} response pipeline state INACTIVE`]:
-          (r) => r.message.pipeline.state === "STATE_INACTIVE",
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline",
-        {
-          name: `pipelines/${reqBodyAsync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline deactivate async response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline deactivate async response pipeline state ACTIVE`]:
-          (r) => r.message.state === "STATE_INACTIVE",
-      }
-    );
-
-    // Delete the pipeline
-    check(
-      client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
-        {
-          name: `pipelines/${reqBodySync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-
-    check(
-      client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
-        {
-          name: `pipelines/${reqBodyAsync.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-
-    client.close();
-  });
-}
 
 export function CheckRename() {
   group("Pipelines API: Rename a pipeline", () => {
@@ -1016,77 +767,6 @@ export function CheckLookUp() {
           (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
       }
     );
-
-    // Delete the pipeline
-    check(
-      client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
-        {
-          name: `pipelines/${reqBody.id}`,
-        }
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-      }
-    );
-
-    client.close();
-  });
-}
-
-export function CheckWatch() {
-  group("Pipelines API: Watch a pipeline", () => {
-    client.connect(constant.pipelineGRPCPublicHost, {
-      plaintext: true,
-    });
-
-    var reqBody = Object.assign(
-      {
-        id: randomString(10),
-      },
-      constant.simpleRecipe
-    );
-
-    // Create a pipeline
-    var res = client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
-      {
-        pipeline: reqBody,
-      }
-    );
-
-    check(res, {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
-        (r) => r.status === grpc.StatusOK,
-    });
-
-    client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-      {
-        name: `pipelines/${reqBody.id}`,
-      }
-    );
-
-    // Watch the pipeline
-    // Note: controller update state every three seconds. We should check more than one times to ensure the state is correct.
-    for (var i = 0; i < 5; i++) {
-      check(
-        client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline",
-          {
-            name: `pipelines/${reqBody.id}`,
-          }
-        ),
-        {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create sync response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline create sync response pipeline state ACTIVE`]:
-            (r) => r.message.state === "STATE_ACTIVE",
-        }
-      );
-      sleep(3);
-    }
 
     // Delete the pipeline
     check(

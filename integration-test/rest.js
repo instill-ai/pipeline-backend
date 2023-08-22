@@ -90,20 +90,16 @@ export default function (data) {
     pipelinePublicWithJwt.CheckList()
     pipelinePublicWithJwt.CheckGet()
     pipelinePublicWithJwt.CheckUpdate()
-    pipelinePublicWithJwt.CheckUpdateState()
     pipelinePublicWithJwt.CheckRename()
     pipelinePublicWithJwt.CheckLookUp()
   }
 
   pipelinePublic.CheckCreate()
-  pipelinePublic.CheckActivate()
   pipelinePublic.CheckList()
   pipelinePublic.CheckGet()
   pipelinePublic.CheckUpdate()
-  pipelinePublic.CheckUpdateState()
   pipelinePublic.CheckRename()
   pipelinePublic.CheckLookUp()
-  pipelinePublic.CheckWatch()
 
   trigger.CheckTrigger()
   triggerAsync.CheckTrigger()

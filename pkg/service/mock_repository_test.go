@@ -50,6 +50,20 @@ func (mr *MockRepositoryMockRecorder) CreatePipeline(arg0 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePipeline", reflect.TypeOf((*MockRepository)(nil).CreatePipeline), arg0)
 }
 
+// CreatePipelineRelease mocks base method.
+func (m *MockRepository) CreatePipelineRelease(arg0 *datamodel.PipelineRelease) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreatePipelineRelease", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreatePipelineRelease indicates an expected call of CreatePipelineRelease.
+func (mr *MockRepositoryMockRecorder) CreatePipelineRelease(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePipelineRelease", reflect.TypeOf((*MockRepository)(nil).CreatePipelineRelease), arg0)
+}
+
 // DeletePipeline mocks base method.
 func (m *MockRepository) DeletePipeline(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -62,6 +76,20 @@ func (m *MockRepository) DeletePipeline(arg0, arg1 string) error {
 func (mr *MockRepositoryMockRecorder) DeletePipeline(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePipeline", reflect.TypeOf((*MockRepository)(nil).DeletePipeline), arg0, arg1)
+}
+
+// DeletePipelineRelease mocks base method.
+func (m *MockRepository) DeletePipelineRelease(arg0 string, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletePipelineRelease", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeletePipelineRelease indicates an expected call of DeletePipelineRelease.
+func (mr *MockRepositoryMockRecorder) DeletePipelineRelease(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePipelineRelease", reflect.TypeOf((*MockRepository)(nil).DeletePipelineRelease), arg0, arg1)
 }
 
 // GetPipelineByID mocks base method.
@@ -122,6 +150,53 @@ func (m *MockRepository) GetPipelineByUIDAdmin(arg0 uuid.UUID, arg1 bool) (*data
 func (mr *MockRepositoryMockRecorder) GetPipelineByUIDAdmin(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByUIDAdmin", reflect.TypeOf((*MockRepository)(nil).GetPipelineByUIDAdmin), arg0, arg1)
+}
+
+// GetPipelineReleaseByID mocks base method.
+func (m *MockRepository) GetPipelineReleaseByID(arg0 string, arg1 uuid.UUID, arg2 bool) (*datamodel.PipelineRelease, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPipelineReleaseByID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*datamodel.PipelineRelease)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPipelineReleaseByID indicates an expected call of GetPipelineReleaseByID.
+func (mr *MockRepositoryMockRecorder) GetPipelineReleaseByID(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineReleaseByID", reflect.TypeOf((*MockRepository)(nil).GetPipelineReleaseByID), arg0, arg1, arg2)
+}
+
+// GetPipelineReleaseByUID mocks base method.
+func (m *MockRepository) GetPipelineReleaseByUID(arg0, arg1 uuid.UUID, arg2 bool) (*datamodel.PipelineRelease, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPipelineReleaseByUID", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*datamodel.PipelineRelease)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPipelineReleaseByUID indicates an expected call of GetPipelineReleaseByUID.
+func (mr *MockRepositoryMockRecorder) GetPipelineReleaseByUID(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineReleaseByUID", reflect.TypeOf((*MockRepository)(nil).GetPipelineReleaseByUID), arg0, arg1, arg2)
+}
+
+// ListPipelineReleases mocks base method.
+func (m *MockRepository) ListPipelineReleases(arg0 uuid.UUID, arg1 int64, arg2 string, arg3 bool, arg4 filtering.Filter) ([]datamodel.PipelineRelease, int64, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPipelineReleases", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].([]datamodel.PipelineRelease)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(string)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// ListPipelineReleases indicates an expected call of ListPipelineReleases.
+func (mr *MockRepositoryMockRecorder) ListPipelineReleases(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelineReleases", reflect.TypeOf((*MockRepository)(nil).ListPipelineReleases), arg0, arg1, arg2, arg3, arg4)
 }
 
 // ListPipelines mocks base method.
@@ -186,16 +261,16 @@ func (mr *MockRepositoryMockRecorder) UpdatePipelineID(arg0, arg1, arg2 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePipelineID", reflect.TypeOf((*MockRepository)(nil).UpdatePipelineID), arg0, arg1, arg2)
 }
 
-// UpdatePipelineState mocks base method.
-func (m *MockRepository) UpdatePipelineState(arg0, arg1 string, arg2 datamodel.PipelineState) error {
+// UpdatePipelineRelease mocks base method.
+func (m *MockRepository) UpdatePipelineRelease(arg0 string, arg1 uuid.UUID, arg2 *datamodel.PipelineRelease) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePipelineState", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdatePipelineRelease", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdatePipelineState indicates an expected call of UpdatePipelineState.
-func (mr *MockRepositoryMockRecorder) UpdatePipelineState(arg0, arg1, arg2 interface{}) *gomock.Call {
+// UpdatePipelineRelease indicates an expected call of UpdatePipelineRelease.
+func (mr *MockRepositoryMockRecorder) UpdatePipelineRelease(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePipelineState", reflect.TypeOf((*MockRepository)(nil).UpdatePipelineState), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePipelineRelease", reflect.TypeOf((*MockRepository)(nil).UpdatePipelineRelease), arg0, arg1, arg2)
 }

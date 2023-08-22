@@ -13,10 +13,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-func (s *service) checkState(recipePermalink *datamodel.Recipe) (datamodel.PipelineState, error) {
+func (s *service) checkState(recipePermalink *datamodel.Recipe) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
@@ -29,13 +28,12 @@ func (s *service) checkState(recipePermalink *datamodel.Recipe) (datamodel.Pipel
 		if IsConnector(component.ResourceName) {
 			connectorUID, err := resource.GetPermalinkUID(component.ResourceName)
 			if err != nil {
-				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), err
+				return err
 			}
 			if dstResource, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
 				ResourcePermalink: ConvertResourceUIDToControllerResourcePermalink(connectorUID, "connectors"),
 			}); err != nil {
-				return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED),
-					status.Errorf(codes.Internal, "[Controller] Error %s at %s: %v", "GetResourceState", component.ResourceName, err.Error())
+				return status.Errorf(codes.Internal, "[Controller] Error %s at %s: %v", "GetResourceState", component.ResourceName, err.Error())
 			} else {
 				states = append(states, int(dstResource.GetResource().GetConnectorState().Number()))
 			}
@@ -45,21 +43,21 @@ func (s *service) checkState(recipePermalink *datamodel.Recipe) (datamodel.Pipel
 
 	// State precedence rule (i.e., enum_number state logic) : 3 error (any of) > 0 unspecified (any of) > 1 negative (any of) > 2 positive (all of)
 	if contains(states, 3) {
-		logger.Info(fmt.Sprintf("Component state: %v", states))
-		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_ERROR), nil
+		logger.Info(fmt.Sprintf("component state: %v", states))
+		return fmt.Errorf("component state: %v", states)
 	}
 
 	if contains(states, 0) {
-		logger.Info(fmt.Sprintf("Component state: %v", states))
-		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED), nil
+		logger.Info(fmt.Sprintf("component state: %v", states))
+		return fmt.Errorf("component state: %v", states)
 	}
 
 	if contains(states, 1) {
-		logger.Info(fmt.Sprintf("Component state: %v", states))
-		return datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE), nil
+		logger.Info(fmt.Sprintf("component state: %v", states))
+		return fmt.Errorf("component state: %v", states)
 	}
 
-	return datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE), nil
+	return nil
 }
 
 func contains(slice interface{}, elem interface{}) bool {

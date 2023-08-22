@@ -125,10 +125,8 @@ export default function (data) {
   pipeline.CheckList()
   pipeline.CheckGet()
   pipeline.CheckUpdate()
-  pipeline.CheckUpdateState()
   pipeline.CheckRename()
   pipeline.CheckLookUp()
-  pipeline.CheckWatch()
 
   trigger.CheckTrigger();
   triggerAsync.CheckTrigger();
@@ -140,7 +138,6 @@ export default function (data) {
     pipelineWithJwt.CheckList()
     pipelineWithJwt.CheckGet()
     pipelineWithJwt.CheckUpdate()
-    pipelineWithJwt.CheckUpdateState()
     pipelineWithJwt.CheckRename()
     pipelineWithJwt.CheckLookUp()
   }

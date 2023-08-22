@@ -44,7 +44,6 @@ type Pipeline02 struct {
 	ID          string
 	Owner       string
 	Description sql.NullString
-	State       datamodel.PipelineState
 	Recipe      *Recipe02 `gorm:"type:jsonb"`
 }
 
