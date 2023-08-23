@@ -52,12 +52,6 @@ export function CheckList() {
             (r) => r.status === 201,
         }
       );
-      http.request(
-        "POST",
-        `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`,
-        {},
-        constant.params
-      );
     }
 
     check(
@@ -171,29 +165,14 @@ export function CheckList() {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=state=STATE_ACTIVE`,
+        `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines?filter=state=STATE_ACTIVE response 200`]:
+        [`GET /v1alpha/admin/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
           (r) => r.status == 200,
-        [`GET /v1alpha/admin/pipelines?filter=state=STATE_ACTIVE response pipelines.length > 0`]:
-          (r) => r.json().pipelines.length > 0,
-      }
-    );
-
-    check(
-      http.request(
-        "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
-        null,
-        constant.params
-      ),
-      {
-        [`GET /v1alpha/admin/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
-          (r) => r.status == 200,
-        [`GET /v1alpha/admin/pipelines?filter=state=STATE_ACTIVE%20AND%20create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
+        [`GET /v1alpha/admin/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
           (r) => r.json().pipelines.length > 0,
       }
     );

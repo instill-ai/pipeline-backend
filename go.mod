@@ -13,7 +13,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230818142648-6dd14ff7ac1f
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230823024646-ea338cc75012
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20230814155646-874e57a1e4b0
 	github.com/instill-ai/x v0.3.0-alpha
 	github.com/knadh/koanf v1.5.0
@@ -33,6 +33,7 @@ require (
 	go.temporal.io/api v1.16.0
 	go.temporal.io/sdk v1.21.0
 	go.uber.org/zap v1.24.0
+	golang.org/x/mod v0.12.0
 	golang.org/x/net v0.10.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc

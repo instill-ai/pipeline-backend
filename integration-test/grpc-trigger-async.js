@@ -37,12 +37,7 @@ export function CheckTrigger() {
             (r) => r.status === grpc.StatusOK,
         }
       );
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBody.id}`,
-        }
-      );
+
 
       check(client.invoke(
         "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",

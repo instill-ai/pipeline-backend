@@ -29,7 +29,10 @@ import (
 
 type TriggerAsyncPipelineWorkflowRequest struct {
 	PipelineInputBlobRedisKeys []string
-	Pipeline                   *datamodel.Pipeline
+	PipelineId                 string
+	PipelineUid                uuid.UUID
+	PipelineRecipe             *datamodel.Recipe
+	Owner                      string
 	ReturnTraces               bool
 }
 
@@ -108,10 +111,10 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	logger.Info("TriggerAsyncPipelineWorkflow started")
 
 	dataPoint := utils.UsageMetricData{
-		OwnerUID:           strings.Split(param.Pipeline.Owner, "/")[1],
+		OwnerUID:           strings.Split(param.Owner, "/")[1],
 		TriggerMode:        mgmtPB.Mode_MODE_ASYNC,
-		PipelineID:         param.Pipeline.ID,
-		PipelineUID:        param.Pipeline.UID.String(),
+		PipelineID:         param.PipelineId,
+		PipelineUID:        param.PipelineUid.String(),
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
@@ -124,7 +127,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	}
 
 	// TODO: parallel
-	dag, err := utils.GenerateDAG(param.Pipeline.Recipe.Components)
+	dag, err := utils.GenerateDAG(param.PipelineRecipe.Components)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -269,11 +272,11 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			if err := workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
 				InputBlobRedisKeys: inputBlobRedisKeys,
 				Name:               comp.ResourceName,
-				OwnerPermalink:     param.Pipeline.Owner,
+				OwnerPermalink:     param.Owner,
 				PipelineMetadata: PipelineMetadataStruct{
-					Id:        param.Pipeline.ID,
-					Uid:       param.Pipeline.BaseDynamic.UID.String(),
-					Owner:     param.Pipeline.Owner,
+					Id:        param.PipelineId,
+					Uid:       param.PipelineUid.String(),
+					Owner:     param.Owner,
 					TriggerId: workflow.GetInfo(ctx).WorkflowExecution.ID,
 				},
 			}).Get(ctx, &result); err != nil {
@@ -367,7 +370,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 
 	pipelineResp := &pipelinePB.TriggerPipelineResponse{
 		Outputs: pipelineOutputs,
-		Metadata: &pipelinePB.TriggerPipelineResponse_Metadata{
+		Metadata: &pipelinePB.TriggerMetadata{
 			Traces: traces,
 		},
 	}

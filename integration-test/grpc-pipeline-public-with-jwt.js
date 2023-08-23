@@ -37,12 +37,6 @@ export function CheckCreate() {
             (r) => r.status === grpc.StatusNotFound,
         }
       );
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBody.id}`,
-        }
-      );
 
       client.close();
     }
@@ -98,12 +92,7 @@ export function CheckGet() {
           (r) => r.status === grpc.StatusOK,
       }
     );
-    client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-      {
-        name: `pipelines/${reqBody.id}`,
-      }
-    );
+
 
     // Cannot get a pipeline of a non-exist user
     check(
@@ -165,12 +154,7 @@ export function CheckUpdate() {
         [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       });
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBody.id}`,
-        }
-      );
+
 
       var reqBodyUpdate = Object.assign({
         id: reqBody.id,
@@ -214,105 +198,6 @@ export function CheckUpdate() {
   );
 }
 
-export function CheckUpdateState() {
-  group(
-    `Pipelines API: Update a pipeline state [with random "jwt-sub" header]`,
-    () => {
-      client.connect(constant.pipelineGRPCPublicHost, {
-        plaintext: true,
-      });
-
-      var reqBodySync = Object.assign(
-        {
-          id: randomString(10),
-        },
-        constant.simpleRecipe
-      );
-
-      check(
-        client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
-          {
-            pipeline: reqBodySync,
-          }
-        ),
-        {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Sync response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBodySync.id}`,
-        }
-      );
-
-      check(
-        client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline",
-          {
-            name: `pipelines/${reqBodySync.id}`,
-          }
-        ),
-        {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline Sync response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/WatchPipeline Sync response pipeline state ACTIVE`]:
-            (r) => r.message.state === "STATE_ACTIVE",
-        }
-      );
-
-      // Cannot activate a pipeline of a non-exist user
-      check(
-        client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-          {
-            name: `pipelines/${reqBodySync.id}`,
-          },
-          constant.paramsGRPCWithJwt
-        ),
-        {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline response StatusNotFound`]:
-            (r) => r.status === grpc.StatusNotFound,
-        }
-      );
-
-      // Cannot deactivate a pipeline of a non-exist user
-      check(
-        client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline",
-          {
-            name: `pipelines/${reqBodySync.id}`,
-          },
-          constant.paramsGRPCWithJwt
-        ),
-        {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/DeactivatePipeline response StatusNotFound`]:
-            (r) => r.status === grpc.StatusNotFound,
-        }
-      );
-
-      // Delete the pipeline
-      check(
-        client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
-          {
-            name: `pipelines/${reqBodySync.id}`,
-          }
-        ),
-        {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-
-      client.close();
-    }
-  );
-}
-
 export function CheckRename() {
   group(
     `Pipelines API: Rename a pipeline [with random "jwt-sub" header]`,
@@ -343,12 +228,6 @@ export function CheckRename() {
           (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
       });
 
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBody.id}`,
-        }
-      );
 
       var new_pipeline_id = randomString(10);
 
@@ -415,12 +294,6 @@ export function CheckLookUp() {
           (r) => r.status === grpc.StatusOK,
       });
 
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBody.id}`,
-        }
-      );
 
       // Cannot look up a pipeline of a non-exist user
       check(

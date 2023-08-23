@@ -50,7 +50,6 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	var state pipelinePB.Pipeline_State
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
 		filtering.DeclareFunction("time.now", filtering.NewFunctionOverload("time.now", filtering.TypeTimestamp)),
@@ -59,7 +58,6 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 		filtering.DeclareIdent("description", filtering.TypeString),
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
-		filtering.DeclareEnumIdent("state", state.Type()),
 		filtering.DeclareIdent("owner", filtering.TypeString),
 		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
 		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
@@ -160,4 +158,58 @@ func (h *PrivateHandler) LookUpOperatorDefinitionAdmin(ctx context.Context, req 
 
 	logger.Info("GetOperatorDefinitionAdmin")
 	return resp, nil
+}
+
+func (h *PrivateHandler) ListPipelineReleasesAdmin(ctx context.Context, req *pipelinePB.ListPipelineReleasesAdminRequest) (*pipelinePB.ListPipelineReleasesAdminResponse, error) {
+
+	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
+
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareFunction("time.now", filtering.NewFunctionOverload("time.now", filtering.TypeTimestamp)),
+		filtering.DeclareIdent("uid", filtering.TypeString),
+		filtering.DeclareIdent("id", filtering.TypeString),
+		filtering.DeclareIdent("description", filtering.TypeString),
+		// only support "recipe.components.resource_name" for now
+		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
+		filtering.DeclareIdent("owner", filtering.TypeString),
+		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
+		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
+	}...)
+	if err != nil {
+		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
+	}
+
+	dbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleasesAdmin(req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	if err != nil {
+		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
+	}
+
+	pbPipelineReleases := []*pipelinePB.PipelineRelease{}
+	for idx := range dbPipelineReleases {
+		dbPipeline, err := h.service.GetPipelineByUIDAdmin(dbPipelineReleases[idx].PipelineUID, true)
+		if err != nil {
+			return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
+		}
+		pbPipelineRelease := DBToPBPipelineRelease(ctx, dbPipeline.ID, &dbPipelineReleases[idx])
+		if !isBasicView {
+			if err := IncludeDetailInRecipeAdmin(pbPipelineRelease.Recipe, h.service); err != nil {
+				return nil, err
+			}
+		}
+		pbPipelineReleases = append(pbPipelineReleases, pbPipelineRelease)
+	}
+
+	resp := pipelinePB.ListPipelineReleasesAdminResponse{
+		Releases:      pbPipelineReleases,
+		NextPageToken: nextPageToken,
+		TotalSize:     totalSize,
+	}
+
+	return &resp, nil
 }

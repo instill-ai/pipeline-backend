@@ -69,12 +69,6 @@ export function CheckList() {
             (r) => r.status === grpc.StatusOK,
         }
       );
-      clientPublic.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqBody.id}`,
-        }
-      );
     }
 
     check(
@@ -185,31 +179,15 @@ export function CheckList() {
       clientPrivate.invoke(
         "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
         {
-          filter: "state=STATE_ACTIVE",
-        },
-        {}
-      ),
-      {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: state=STATE_ACTIVE response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: state=STATE_ACTIVE response pipelines.length`]:
-          (r) => r.message.pipelines.length > 0,
-      }
-    );
-
-    check(
-      clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
-        {
           filter:
-            'state=STATE_ACTIVE AND create_time>timestamp("2000-06-19T23:31:08.657Z")',
+            'create_time>timestamp("2000-06-19T23:31:08.657Z")',
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: state=STATE_ACTIVE AND create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: state=STATE_ACTIVE AND create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
+        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -275,12 +253,6 @@ export function CheckLookUp() {
       "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
       {
         pipeline: reqBody,
-      }
-    );
-    clientPublic.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-      {
-        name: `pipelines/${reqBody.id}`,
       }
     );
 

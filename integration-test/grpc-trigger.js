@@ -37,13 +37,6 @@ export function CheckTrigger() {
         }
       );
 
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqGRPC.id}`,
-        }
-      );
-
       check(
         client.invoke(
           "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
@@ -72,60 +65,7 @@ export function CheckTrigger() {
         }
       );
 
-      var reqHTTP = Object.assign(
-        {
-          id: randomString(10),
-          description: randomString(50),
-        },
-        constant.simpleRecipe
-      );
 
-      check(
-        client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
-          {
-            pipeline: reqHTTP,
-          }
-        ),
-        {
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline (HTTP pipeline) response StatusOK":
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ActivatePipeline",
-        {
-          name: `pipelines/${reqGRPC.id}`,
-        }
-      );
-
-      check(
-        client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
-          {
-            name: `pipelines/${reqHTTP.id}`,
-            inputs: constant.simplePayload.inputs,
-          }
-        ),
-        {
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (HTTP pipeline triggered by gRPC) response StatusFailedPrecondition":
-            (r) => r.status === grpc.StatusFailedPrecondition,
-        }
-      );
-
-      check(
-        client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
-          {
-            name: `pipelines/${reqHTTP.id}`,
-          }
-        ),
-        {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
 
       client.close();
     }

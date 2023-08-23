@@ -22,7 +22,6 @@ export function CheckTrigger() {
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqBody), constant.params), {
       "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
     });
-    http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/activate`, {}, constant.params)
 
 
     check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(constant.simplePayload), constant.params), {

@@ -39,6 +39,8 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
+// TODO: in the service, we'd better use uid as our function params
+
 // Service interface
 type Service interface {
 	GetMgmtPrivateServiceClient() mgmtPB.MgmtPrivateServiceClient
@@ -53,7 +55,7 @@ type Service interface {
 	GetPipelineByUID(uid uuid.UUID, owner *mgmtPB.User, isBasicView bool) (*datamodel.Pipeline, error)
 	UpdatePipeline(id string, owner *mgmtPB.User, updatedPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error)
 	DeletePipeline(id string, owner *mgmtPB.User) error
-	UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error)
+	ValidatePipeline(id string, owner *mgmtPB.User) (*datamodel.Pipeline, error)
 	UpdatePipelineID(id string, owner *mgmtPB.User, newID string) (*datamodel.Pipeline, error)
 	TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, pipeline *datamodel.Pipeline, pipelineTriggerId string, returnTraces bool) (*pipelinePB.TriggerPipelineResponse, error)
 	TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, pipeline *datamodel.Pipeline, returnTraces bool) (*pipelinePB.TriggerAsyncPipelineResponse, error)
@@ -62,13 +64,27 @@ type Service interface {
 	GetPipelineByUIDAdmin(uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
 
 	// Controller APIs
-	GetResourceState(uid uuid.UUID) (*pipelinePB.Pipeline_State, error)
-	UpdateResourceState(uid uuid.UUID, state pipelinePB.Pipeline_State, progress *int32) error
+	GetResourceState(uid uuid.UUID) (*pipelinePB.State, error)
+	UpdateResourceState(uid uuid.UUID, state pipelinePB.State, progress *int32) error
 	DeleteResourceState(uid uuid.UUID) error
 	// Influx API
 	WriteNewDataPoint(ctx context.Context, data utils.UsageMetricData) error
 
 	GetOperation(ctx context.Context, workflowId string) (*longrunningpb.Operation, error)
+
+	CreatePipelineRelease(pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (*datamodel.PipelineRelease, error)
+	ListPipelineReleases(pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.PipelineRelease, int64, string, error)
+	GetPipelineReleaseByID(id string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
+	GetPipelineReleaseByUID(uid uuid.UUID, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
+	UpdatePipelineRelease(id string, pipelineUid uuid.UUID, updatedPipelineRelease *datamodel.PipelineRelease) (*datamodel.PipelineRelease, error)
+	DeletePipelineRelease(id string, pipelineUid uuid.UUID) error
+	RestorePipelineRelease(id string, pipelineUid uuid.UUID) error
+	SetDefaultPipelineRelease(id string, pipelineUid uuid.UUID) error
+	UpdatePipelineReleaseID(id string, pipelineUid uuid.UUID, newID string) (*datamodel.PipelineRelease, error)
+	TriggerPipelineRelease(ctx context.Context, req *pipelinePB.TriggerPipelineReleaseRequest, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease, pipelineTriggerId string, returnTraces bool) (*pipelinePB.TriggerPipelineReleaseResponse, error)
+	TriggerAsyncPipelineRelease(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineReleaseRequest, pipelineTriggerID string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease, returnTraces bool) (*pipelinePB.TriggerAsyncPipelineReleaseResponse, error)
+
+	ListPipelineReleasesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.PipelineRelease, int64, string, error)
 }
 
 type service struct {
@@ -130,8 +146,6 @@ func (h *service) GetRedisClient() *redis.Client {
 
 func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipeline) (*datamodel.Pipeline, error) {
 
-	dbPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
-
 	ownerPermalink := utils.GenOwnerPermalink(owner)
 	dbPipeline.Owner = ownerPermalink
 
@@ -151,17 +165,12 @@ func (s *service) CreatePipeline(owner *mgmtPB.User, dbPipeline *datamodel.Pipel
 		return nil, err
 	}
 
-	createdCecipeRscName, err := s.recipePermalinkToName(dbCreatedPipeline.Recipe)
+	createdRecipeRscName, err := s.recipePermalinkToName(dbCreatedPipeline.Recipe)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	// Add resource entry to controller
-	if err := s.UpdateResourceState(dbCreatedPipeline.UID, pipelinePB.Pipeline_STATE_INACTIVE, nil); err != nil {
-		return nil, err
-	}
-
-	dbCreatedPipeline.Recipe = createdCecipeRscName
+	dbCreatedPipeline.Recipe = createdRecipeRscName
 
 	return dbCreatedPipeline, nil
 }
@@ -251,8 +260,6 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 
 	if toUpdPipeline.Recipe != nil {
 
-		toUpdPipeline.State = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
-
 		recipePermalink, err := s.recipeNameToPermalink(owner, toUpdPipeline.Recipe)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -280,11 +287,6 @@ func (s *service) UpdatePipeline(id string, owner *mgmtPB.User, toUpdPipeline *d
 		return nil, err
 	}
 
-	// Update resource entry in controller
-	if err := s.UpdateResourceState(dbPipeline.UID, pipelinePB.Pipeline_STATE_INACTIVE, nil); err != nil {
-		return nil, err
-	}
-
 	recipeRscName, err := s.recipePermalinkToName(dbPipeline.Recipe)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -309,11 +311,7 @@ func (s *service) DeletePipeline(id string, owner *mgmtPB.User) error {
 	return s.repository.DeletePipeline(id, ownerPermalink)
 }
 
-func (s *service) UpdatePipelineState(id string, owner *mgmtPB.User, state datamodel.PipelineState) (*datamodel.Pipeline, error) {
-
-	if state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_UNSPECIFIED) {
-		return nil, status.Errorf(codes.InvalidArgument, "State update with unspecified is not allowed")
-	}
+func (s *service) ValidatePipeline(id string, owner *mgmtPB.User) (*datamodel.Pipeline, error) {
 
 	ownerPermalink := utils.GenOwnerPermalink(owner)
 
@@ -324,40 +322,19 @@ func (s *service) UpdatePipelineState(id string, owner *mgmtPB.User, state datam
 
 	// user desires to be active or inactive, state stay the same
 	// but update etcd storage with checkState
-	var resourceState datamodel.PipelineState
-	if state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-		resourceState, err = s.checkState(dbPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		resourceState = datamodel.PipelineState(pipelinePB.Pipeline_STATE_INACTIVE)
-	}
-
+	err = s.checkState(dbPipeline.Recipe)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
-	}
-
-	if state == datamodel.PipelineState(pipelinePB.Pipeline_STATE_ACTIVE) {
-		recipeErr := s.checkRecipe(owner, dbPipeline.Recipe)
-
-		if recipeErr != nil {
-			return nil, recipeErr
-		}
-
-	}
-
-	if err := s.repository.UpdatePipelineState(id, ownerPermalink, state); err != nil {
 		return nil, err
+	}
+
+	recipeErr := s.checkRecipe(owner, dbPipeline.Recipe)
+
+	if recipeErr != nil {
+		return nil, recipeErr
 	}
 
 	dbPipeline, err = s.repository.GetPipelineByID(id, ownerPermalink, false)
 	if err != nil {
-		return nil, err
-	}
-
-	// Update resource entry in controller to start checking components' state
-	if err := s.UpdateResourceState(dbPipeline.UID, pipelinePB.Pipeline_State(resourceState), nil); err != nil {
 		return nil, err
 	}
 
@@ -394,16 +371,10 @@ func (s *service) UpdatePipelineID(id string, owner *mgmtPB.User, newID string) 
 	return dbPipeline, nil
 }
 
-func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInputs []*structpb.Struct) error {
-	state, err := s.GetResourceState(dbPipeline.UID)
-	if err != nil {
-		return err
-	}
-	if *state != pipelinePB.Pipeline_STATE_ACTIVE {
-		return status.Error(codes.FailedPrecondition, fmt.Sprintf("The pipeline %s is not active", dbPipeline.ID))
-	}
+func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
+
 	typeMap := map[string]string{}
-	for _, comp := range dbPipeline.Recipe.Components {
+	for _, comp := range recipe.Components {
 		if comp.DefinitionName == "operator-definitions/start-operator" {
 			for key, value := range comp.Configuration.Fields["body"].GetStructValue().Fields {
 				typeMap[key] = value.GetStructValue().Fields["type"].GetStringValue()
@@ -491,14 +462,11 @@ func (s *service) preTriggerPipeline(dbPipeline *datamodel.Pipeline, pipelineInp
 	return nil
 }
 
-func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, pipelineTriggerId string, returnTraces bool) (*pipelinePB.TriggerPipelineResponse, error) {
-
-	err := s.preTriggerPipeline(dbPipeline, req.Inputs)
+func (s *service) triggerPipeline(ctx context.Context, pipelineInputs []*structpb.Struct, owner string, recipe *datamodel.Recipe, pipelineId string, pipelineUid uuid.UUID, pipelineTriggerId string, returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
+	err := s.preTriggerPipeline(recipe, pipelineInputs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-
-	pipelineInputs := req.Inputs
 
 	var inputs [][]byte
 
@@ -512,19 +480,19 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 
 		input, err := protojson.Marshal(inputStruct)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		inputs = append(inputs, input)
 	}
 
-	dag, err := utils.GenerateDAG(dbPipeline.Recipe.Components)
+	dag, err := utils.GenerateDAG(recipe.Components)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	orderedComp, err := dag.TopologicalSort()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	inputCache := make([]map[string]interface{}, batchSize)
@@ -537,7 +505,7 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 		var inputStruct map[string]interface{}
 		err := json.Unmarshal(inputs[idx], &inputStruct)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		inputCache[idx][orderedComp[0].Id] = inputStruct
@@ -555,28 +523,28 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 			compInputTemplate := comp.Configuration
 			compInputTemplateJson, err := protojson.Marshal(compInputTemplate)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			var compInputTemplateStruct interface{}
 			err = json.Unmarshal(compInputTemplateJson, &compInputTemplateStruct)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			compInputStruct, err := utils.RenderInput(compInputTemplateStruct, outputCache[idx])
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			compInputJson, err := json.Marshal(compInputStruct)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			compInput := &structpb.Struct{}
 			err = protojson.Unmarshal([]byte(compInputJson), compInput)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			inputCache[idx][comp.Id] = compInput
@@ -589,12 +557,12 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 			resp, err := s.connectorPublicServiceClient.ExecuteConnectorResource(
 				utils.InjectOwnerToContextWithOwnerPermalink(
 					metadata.AppendToOutgoingContext(ctx,
-						"id", dbPipeline.ID,
-						"uid", dbPipeline.BaseDynamic.UID.String(),
-						"owner", dbPipeline.Owner,
+						"id", pipelineId,
+						"uid", pipelineUid.String(),
+						"owner", owner,
 						"trigger_id", pipelineTriggerId,
 					),
-					utils.GenOwnerPermalink(owner)),
+					owner),
 				&connectorPB.ExecuteConnectorResourceRequest{
 					Name:   comp.ResourceName,
 					Inputs: compInputs,
@@ -602,18 +570,18 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 			)
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			for idx := range resp.Outputs {
 
 				outputJson, err := protojson.Marshal(resp.Outputs[idx])
 				if err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 				var outputStruct map[string]interface{}
 				err = json.Unmarshal(outputJson, &outputStruct)
 				if err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 				outputCache[idx][comp.Id] = outputStruct
 			}
@@ -625,12 +593,12 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 			for idx := range compInputs {
 				outputJson, err := protojson.Marshal(compInputs[idx])
 				if err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 				var outputStruct map[string]interface{}
 				err = json.Unmarshal(outputJson, &outputStruct)
 				if err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 				outputCache[idx][comp.Id] = outputStruct
 			}
@@ -644,12 +612,12 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 	for idx := 0; idx < batchSize; idx++ {
 		pipelineOutputJson, err := json.Marshal(outputCache[idx][responseCompId].(map[string]interface{})["body"])
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		pipelineOutput := &structpb.Struct{}
 		err = protojson.Unmarshal(pipelineOutputJson, pipelineOutput)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		pipelineOutputs = append(pipelineOutputs, pipelineOutput)
 
@@ -658,35 +626,32 @@ func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPi
 	if returnTraces {
 		traces, err = utils.GenerateTraces(orderedComp, inputCache, outputCache, computeTime, batchSize)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
+	metadata := &pipelinePB.TriggerMetadata{
+		Traces: traces,
+	}
 
-	return &pipelinePB.TriggerPipelineResponse{
-		Outputs: pipelineOutputs,
-		Metadata: &pipelinePB.TriggerPipelineResponse_Metadata{
-			Traces: traces,
-		},
-	}, nil
+	return pipelineOutputs, metadata, nil
 }
 
-func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, returnTraces bool) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+func (s *service) triggerAsyncPipeline(ctx context.Context, pipelineInputs []*structpb.Struct, owner string, recipe *datamodel.Recipe, pipelineId string, pipelineUid uuid.UUID, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
 
-	inputs := req.Inputs
-	err := s.preTriggerPipeline(dbPipeline, inputs)
+	err := s.preTriggerPipeline(recipe, pipelineInputs)
 	if err != nil {
 		return nil, err
 	}
 	logger, _ := logger.GetZapLogger(ctx)
 
 	inputBlobRedisKeys := []string{}
-	for idx, input := range inputs {
+	for idx, input := range pipelineInputs {
 		inputJson, err := protojson.Marshal(input)
 		if err != nil {
 			return nil, err
 		}
 
-		inputBlobRedisKey := fmt.Sprintf("async_pipeline_request:%s:%d", pipelineTriggerID, idx)
+		inputBlobRedisKey := fmt.Sprintf("async_pipeline_request:%s:%d", pipelineTriggerId, idx)
 		s.redisClient.Set(
 			context.Background(),
 			inputBlobRedisKey,
@@ -699,7 +664,7 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 	memo["number_of_data"] = len(inputBlobRedisKeys)
 
 	workflowOptions := client.StartWorkflowOptions{
-		ID:                       pipelineTriggerID,
+		ID:                       pipelineTriggerId,
 		TaskQueue:                worker.TaskQueue,
 		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -714,7 +679,10 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 		"TriggerAsyncPipelineWorkflow",
 		&worker.TriggerAsyncPipelineWorkflowRequest{
 			PipelineInputBlobRedisKeys: inputBlobRedisKeys,
-			Pipeline:                   dbPipeline,
+			PipelineId:                 pipelineId,
+			PipelineUid:                pipelineUid,
+			PipelineRecipe:             recipe,
+			Owner:                      owner,
 			ReturnTraces:               returnTraces,
 		})
 	if err != nil {
@@ -724,11 +692,31 @@ func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.Trig
 
 	logger.Info(fmt.Sprintf("started workflow with WorkflowID %s and RunID %s", we.GetID(), we.GetRunID()))
 
+	return &longrunningpb.Operation{
+		Name: fmt.Sprintf("operations/%s", pipelineTriggerId),
+		Done: false,
+	}, nil
+
+}
+
+func (s *service) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, pipelineTriggerId string, returnTraces bool) (*pipelinePB.TriggerPipelineResponse, error) {
+
+	outputs, metadata, err := s.triggerPipeline(ctx, req.Inputs, utils.GenOwnerPermalink(owner), dbPipeline.Recipe, dbPipeline.ID, dbPipeline.BaseDynamic.UID, pipelineTriggerId, returnTraces)
+	if err != nil {
+		return nil, err
+	}
+	return &pipelinePB.TriggerPipelineResponse{Outputs: outputs, Metadata: metadata}, nil
+
+}
+
+func (s *service) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest, pipelineTriggerID string, owner *mgmtPB.User, dbPipeline *datamodel.Pipeline, returnTraces bool) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+
+	operation, err := s.triggerAsyncPipeline(ctx, req.Inputs, utils.GenOwnerPermalink(owner), dbPipeline.Recipe, dbPipeline.ID, dbPipeline.BaseDynamic.UID, pipelineTriggerID, returnTraces)
+	if err != nil {
+		return nil, err
+	}
 	return &pipelinePB.TriggerAsyncPipelineResponse{
-		Operation: &longrunningpb.Operation{
-			Name: fmt.Sprintf("operations/%s", pipelineTriggerID),
-			Done: false,
-		},
+		Operation: operation,
 	}, nil
 
 }
@@ -795,4 +783,229 @@ func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb
 
 	operation.Name = fmt.Sprintf("operations/%s", workflowExecutionInfo.Execution.WorkflowId)
 	return &operation, nil
+}
+
+func (s *service) CreatePipelineRelease(pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (*datamodel.PipelineRelease, error) {
+
+	pipeline, err := s.GetPipelineByUIDAdmin(pipelineUid, false)
+	if err != nil {
+		return nil, err
+	}
+	pipelineRelease.Recipe = pipeline.Recipe
+	if err := s.repository.CreatePipelineRelease(pipelineRelease); err != nil {
+		return nil, err
+	}
+
+	dbCreatedPipelineRelease, err := s.repository.GetPipelineReleaseByID(pipelineRelease.ID, pipeline.UID, false)
+	if err != nil {
+		return nil, err
+	}
+
+	createdRecipeRscName, err := s.recipePermalinkToName(dbCreatedPipelineRelease.Recipe)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	dbCreatedPipelineRelease.Recipe = createdRecipeRscName
+
+	return dbCreatedPipelineRelease, nil
+
+}
+func (s *service) ListPipelineReleases(pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.PipelineRelease, int64, string, error) {
+
+	dbPipelineReleases, ps, pt, err := s.repository.ListPipelineReleases(pipelineUid, pageSize, pageToken, isBasicView, filter)
+	if err != nil {
+		return nil, 0, "", err
+	}
+
+	if !isBasicView {
+		for idx := range dbPipelineReleases {
+			recipeRscName, err := s.recipePermalinkToName(dbPipelineReleases[idx].Recipe)
+			if err != nil {
+				return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+			}
+			dbPipelineReleases[idx].Recipe = recipeRscName
+		}
+	}
+
+	return dbPipelineReleases, ps, pt, nil
+}
+
+func (s *service) ListPipelineReleasesAdmin(pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]datamodel.PipelineRelease, int64, string, error) {
+
+	dbPipelineReleases, ps, pt, err := s.repository.ListPipelineReleasesAdmin(pageSize, pageToken, isBasicView, filter)
+	if err != nil {
+		return nil, 0, "", err
+	}
+
+	return dbPipelineReleases, ps, pt, nil
+}
+
+func (s *service) GetPipelineReleaseByID(id string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+
+	dbPipelineRelease, err := s.repository.GetPipelineReleaseByID(id, pipelineUid, isBasicView)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isBasicView {
+		recipeRscName, err := s.recipePermalinkToName(dbPipelineRelease.Recipe)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		dbPipelineRelease.Recipe = recipeRscName
+	}
+
+	return dbPipelineRelease, nil
+
+}
+func (s *service) GetPipelineReleaseByUID(uid uuid.UUID, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+
+	dbPipelineRelease, err := s.repository.GetPipelineReleaseByUID(uid, pipelineUid, isBasicView)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isBasicView {
+		recipeRscName, err := s.recipePermalinkToName(dbPipelineRelease.Recipe)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+		dbPipelineRelease.Recipe = recipeRscName
+	}
+
+	return dbPipelineRelease, nil
+
+}
+
+func (s *service) UpdatePipelineRelease(id string, pipelineUid uuid.UUID, toUpdPipeline *datamodel.PipelineRelease) (*datamodel.PipelineRelease, error) {
+
+	// Validation: Pipeline existence
+	if existingPipeline, _ := s.repository.GetPipelineReleaseByID(id, pipelineUid, true); existingPipeline == nil {
+		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
+	}
+
+	if err := s.repository.UpdatePipelineRelease(id, pipelineUid, toUpdPipeline); err != nil {
+		return nil, err
+	}
+
+	dbPipelineRelease, err := s.repository.GetPipelineReleaseByID(toUpdPipeline.ID, pipelineUid, false)
+	if err != nil {
+		return nil, err
+	}
+
+	recipeRscName, err := s.recipePermalinkToName(dbPipelineRelease.Recipe)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	}
+	dbPipelineRelease.Recipe = recipeRscName
+
+	return dbPipelineRelease, nil
+}
+
+func (s *service) UpdatePipelineReleaseID(id string, pipelineUid uuid.UUID, newID string) (*datamodel.PipelineRelease, error) {
+
+	// Validation: Pipeline existence
+	existingPipeline, _ := s.repository.GetPipelineReleaseByID(id, pipelineUid, true)
+	if existingPipeline == nil {
+		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
+	}
+
+	if err := s.repository.UpdatePipelineReleaseID(id, pipelineUid, newID); err != nil {
+		return nil, err
+	}
+
+	dbPipelineRelease, err := s.repository.GetPipelineReleaseByID(newID, pipelineUid, false)
+	if err != nil {
+		return nil, err
+	}
+
+	recipeRscName, err := s.recipePermalinkToName(dbPipelineRelease.Recipe)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	dbPipelineRelease.Recipe = recipeRscName
+
+	return dbPipelineRelease, nil
+}
+
+func (s *service) DeletePipelineRelease(id string, pipelineUid uuid.UUID) error {
+	dbPipelineRelease, err := s.repository.GetPipelineReleaseByID(id, pipelineUid, false)
+	if err != nil {
+		return err
+	}
+
+	if err := s.DeleteResourceState(dbPipelineRelease.UID); err != nil {
+		return err
+	}
+
+	return s.repository.DeletePipelineRelease(id, pipelineUid)
+}
+
+func (s *service) RestorePipelineRelease(id string, pipelineUid uuid.UUID) error {
+	dbPipelineRelease, err := s.repository.GetPipelineReleaseByID(id, pipelineUid, false)
+	if err != nil {
+		return err
+	}
+
+	var existingPipeline *datamodel.Pipeline
+	// Validation: Pipeline existence
+	if existingPipeline, _ = s.repository.GetPipelineByUIDAdmin(pipelineUid, false); existingPipeline == nil {
+		return status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
+	}
+	existingPipeline.Recipe = dbPipelineRelease.Recipe
+
+	if err := s.repository.UpdatePipeline(id, existingPipeline.Owner, existingPipeline); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *service) SetDefaultPipelineRelease(id string, pipelineUid uuid.UUID) error {
+
+	dbPipelineRelease, err := s.repository.GetPipelineReleaseByID(id, pipelineUid, false)
+	if err != nil {
+		return err
+	}
+
+	var existingPipeline *datamodel.Pipeline
+	// Validation: Pipeline existence
+	if existingPipeline, _ = s.repository.GetPipelineByUIDAdmin(pipelineUid, false); existingPipeline == nil {
+		return status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
+	}
+
+	existingPipeline.DefaultReleaseUID = dbPipelineRelease.UID
+
+	if err := s.repository.UpdatePipeline(existingPipeline.ID, existingPipeline.Owner, existingPipeline); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) TriggerPipelineRelease(ctx context.Context, req *pipelinePB.TriggerPipelineReleaseRequest, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease, pipelineTriggerId string, returnTraces bool) (*pipelinePB.TriggerPipelineReleaseResponse, error) {
+
+	pipeline, err := s.GetPipelineByUIDAdmin(pipelineUid, false)
+	if err != nil {
+		return nil, err
+	}
+	outputs, metadata, err := s.triggerPipeline(ctx, req.Inputs, pipeline.Owner, pipelineRelease.Recipe, pipeline.ID, pipelineUid, pipelineTriggerId, returnTraces)
+	if err != nil {
+		return nil, err
+	}
+	return &pipelinePB.TriggerPipelineReleaseResponse{Outputs: outputs, Metadata: metadata}, nil
+}
+
+func (s *service) TriggerAsyncPipelineRelease(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineReleaseRequest, pipelineTriggerID string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease, returnTraces bool) (*pipelinePB.TriggerAsyncPipelineReleaseResponse, error) {
+
+	pipeline, err := s.GetPipelineByUIDAdmin(pipelineUid, false)
+	if err != nil {
+		return nil, err
+	}
+	operation, err := s.triggerAsyncPipeline(ctx, req.Inputs, pipeline.Owner, pipelineRelease.Recipe, pipeline.ID, pipelineUid, pipelineTriggerID, returnTraces)
+	if err != nil {
+		return nil, err
+	}
+	return &pipelinePB.TriggerAsyncPipelineReleaseResponse{Operation: operation}, nil
 }
