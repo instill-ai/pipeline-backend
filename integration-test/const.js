@@ -105,7 +105,7 @@ export const simpleRecipe = {
         configuration: {
           body: {
             input: {
-              display_name: "Input",
+              title: "Input",
               type: "text"
             }
           }
@@ -116,7 +116,9 @@ export const simpleRecipe = {
         definition_name: "operator-definitions/end-operator",
         configuration: {
           body: {
-            output: "{ start.body.input }"
+            output: {
+              value: "{ start.body.input }"
+            }
           }
         }
       },
@@ -150,7 +152,7 @@ export const simpleRecipeWithoutCSV = {
         configuration: {
           body: {
             input: {
-              display_name: "Input",
+              title: "Input",
               type: "text"
             }
           }
@@ -161,7 +163,9 @@ export const simpleRecipeWithoutCSV = {
         definition_name: "operator-definitions/end-operator",
         configuration: {
           body: {
-            output: "{ start.body.input }"
+            output: {
+              value: "{ start.body.input }"
+            }
           }
         }
       },
@@ -179,7 +183,7 @@ export const simpleRecipeDupId = {
         configuration: {
           body: {
             input: {
-              display_name: "Input",
+              title: "Input",
               type: "text"
             }
           }
@@ -190,7 +194,9 @@ export const simpleRecipeDupId = {
         definition_name: "operator-definitions/end-operator",
         configuration: {
           body: {
-            output: "{ start.body.input }"
+            output: {
+              value: "{ start.body.input }"
+            }
           }
         }
       },
