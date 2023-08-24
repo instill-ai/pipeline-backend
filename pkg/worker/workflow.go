@@ -341,14 +341,14 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		}
 	} else {
 		for idx := 0; idx < batchSize; idx++ {
-			pipelineOutputJson, err := json.Marshal(outputCache[idx][responseCompId].(map[string]interface{})["body"])
-			if err != nil {
-				return err
-			}
-			pipelineOutput := &structpb.Struct{}
-			err = protojson.Unmarshal(pipelineOutputJson, pipelineOutput)
-			if err != nil {
-				return err
+			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+			for key, value := range outputCache[idx][responseCompId].(map[string]interface{})["body"].(map[string]interface{}) {
+				structVal, err := structpb.NewValue(value.(map[string]interface{})["value"])
+				if err != nil {
+					return err
+				}
+				pipelineOutput.Fields[key] = structVal
+
 			}
 			pipelineOutputs = append(pipelineOutputs, pipelineOutput)
 
