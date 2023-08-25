@@ -27,29 +27,30 @@ export function CheckTrigger() {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
           {
+            parent: `${constant.namespace}`,
             pipeline: reqBody,
           }
         ),
         {
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline Async GRPC pipeline response StatusOK":
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline Async GRPC pipeline response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
 
 
       check(client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncUserPipeline",
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
           inputs: constant.simplePayload.inputs,
         }
       ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncUserPipeline (url) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline (url) response has operation id`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncUserPipeline (url) response has operation id`]:
             (r) => r.message.operation.name.startsWith("operations/"),
         }
       );
@@ -57,13 +58,13 @@ export function CheckTrigger() {
 
       check(
         client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${reqBody.id}`,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

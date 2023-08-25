@@ -11,6 +11,8 @@ import (
 	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gorm.io/gorm"
+
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 // BaseDynamic contains common columns for all tables with dynamic UUID as primary key generated when creating
@@ -39,6 +41,7 @@ type Pipeline struct {
 	Description       sql.NullString
 	Recipe            *Recipe `gorm:"type:jsonb"`
 	DefaultReleaseUID uuid.UUID
+	Visibility        PipelineVisibility `sql:"type:valid_visibility"`
 }
 
 // PipelineRelease is the data model of the pipeline release table
@@ -47,7 +50,8 @@ type PipelineRelease struct {
 	ID          string
 	PipelineUID uuid.UUID
 	Description sql.NullString
-	Recipe      *Recipe `gorm:"type:jsonb"`
+	Recipe      *Recipe            `gorm:"type:jsonb"`
+	Visibility  PipelineVisibility `sql:"type:valid_visibility"`
 }
 
 // Recipe is the data model of the pipeline recipe
@@ -62,6 +66,9 @@ type Component struct {
 	ResourceName   string           `json:"resource_name"`
 	Configuration  *structpb.Struct `json:"configuration"`
 }
+
+// PipelineVisibility is an alias type for Protobuf enum ConnectorType
+type PipelineVisibility pipelinePB.Visibility
 
 // Scan function for custom GORM type Recipe
 func (r *Recipe) Scan(value interface{}) error {
@@ -81,4 +88,15 @@ func (r *Recipe) Scan(value interface{}) error {
 func (r *Recipe) Value() (driver.Value, error) {
 	valueString, err := json.Marshal(r)
 	return string(valueString), err
+}
+
+// Scan function for custom GORM type ReleaseStage
+func (p *PipelineVisibility) Scan(value interface{}) error {
+	*p = PipelineVisibility(pipelinePB.Visibility_value[value.(string)])
+	return nil
+}
+
+// Value function for custom GORM type ReleaseStage
+func (p PipelineVisibility) Value() (driver.Value, error) {
+	return pipelinePB.Visibility(p).String(), nil
 }

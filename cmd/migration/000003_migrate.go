@@ -109,13 +109,13 @@ func migratePipelineRecipeUp000003() error {
 				panic(err)
 			}
 
-			if connector.ConnectorResource.ConnectorType == connectorPB.ConnectorType_CONNECTOR_TYPE_SOURCE {
+			if connector.ConnectorResource.Type == connectorPB.ConnectorType_CONNECTOR_TYPE_SOURCE {
 				source = items[idx].Recipe.Components[compIdx]
 			}
-			if connector.ConnectorResource.ConnectorType == connectorPB.ConnectorType_CONNECTOR_TYPE_AI {
+			if connector.ConnectorResource.Type == connectorPB.ConnectorType_CONNECTOR_TYPE_AI {
 				model = items[idx].Recipe.Components[compIdx]
 			}
-			if connector.ConnectorResource.ConnectorType == connectorPB.ConnectorType_CONNECTOR_TYPE_DESTINATION {
+			if connector.ConnectorResource.Type == connectorPB.ConnectorType_CONNECTOR_TYPE_DESTINATION {
 				destination = items[idx].Recipe.Components[compIdx]
 			}
 

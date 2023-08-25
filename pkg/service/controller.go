@@ -14,7 +14,7 @@ func (s *service) GetResourceState(pipelineUID uuid.UUID) (*pipelinePB.State, er
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipeline_releases")
+	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID, "pipeline_releases")
 
 	resp, err := s.controllerClient.GetResource(ctx, &controllerPB.GetResourceRequest{
 		ResourcePermalink: resourcePermalink,
@@ -31,7 +31,7 @@ func (s *service) UpdateResourceState(pipelineUID uuid.UUID, state pipelinePB.St
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipeline_releases")
+	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID, "pipeline_releases")
 
 	_, err := s.controllerClient.UpdateResource(ctx, &controllerPB.UpdateResourceRequest{
 		Resource: &controllerPB.Resource{
@@ -54,7 +54,7 @@ func (s *service) DeleteResourceState(pipelineUID uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID.String(), "pipeline_releases")
+	resourcePermalink := ConvertResourceUIDToControllerResourcePermalink(pipelineUID, "pipeline_releases")
 
 	_, err := s.controllerClient.DeleteResource(ctx, &controllerPB.DeleteResourceRequest{
 		ResourcePermalink: resourcePermalink,

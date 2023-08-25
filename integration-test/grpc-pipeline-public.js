@@ -25,31 +25,33 @@ export function CheckCreate() {
 
     // Create a pipeline
     var resOrigin = client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
       {
+        parent: `${constant.namespace}`,
         pipeline: reqBody,
       }
     );
+
     check(resOrigin, {
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK":
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK":
         (r) => r.status === grpc.StatusOK,
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline name":
-        (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline uid":
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline name":
+        (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline uid":
         (r) => helper.isUUID(r.message.pipeline.uid),
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline id":
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline id":
         (r) => r.message.pipeline.id === reqBody.id,
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline description":
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline description":
         (r) => r.message.pipeline.description === reqBody.description,
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline recipe is valid":
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline recipe is valid":
         (r) => helper.validateRecipeGRPC(r.message.pipeline.recipe, false),
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline owner is UUID":
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline owner is UUID":
         (r) => helper.isValidOwner(r.message.pipeline.user),
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline create_time":
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline create_time":
         (r) =>
           new Date(r.message.pipeline.createTime).getTime() >
           new Date().setTime(0),
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline update_time":
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline update_time":
         (r) =>
           new Date(r.message.pipeline.updateTime).getTime() >
           new Date().setTime(0),
@@ -58,61 +60,67 @@ export function CheckCreate() {
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
-        {}
-      ),
-      {
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusInvalidArgument":
-          (r) => r.status === grpc.StatusInvalidArgument,
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
-        {}
-      ),
-      {
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusInvalidArgument":
-          (r) => r.status === grpc.StatusInvalidArgument,
-      }
-    );
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
+        }
+      ),
+      {
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusInvalidArgument":
+          (r) => r.status === grpc.StatusInvalidArgument,
+      }
+    );
+
+    check(
+      client.invoke(
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
+        {
+          parent: `${constant.namespace}`,
+        }
+      ),
+      {
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusInvalidArgument":
+          (r) => r.status === grpc.StatusInvalidArgument,
+      }
+    );
+
+    check(
+      client.invoke(
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
+        {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       ),
       {
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusAlreadyExists":
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusAlreadyExists":
           (r) => r.status === grpc.StatusAlreadyExists,
       }
     );
 
     check(
       client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+        `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline ${reqBody.id} response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline ${reqBody.id} response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       ),
       {
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK":
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK":
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -120,13 +128,14 @@ export function CheckCreate() {
     reqBody.id = null;
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       ),
       {
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline with null id response StatusInvalidArgument":
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline with null id response StatusInvalidArgument":
           (r) => r.status === grpc.StatusInvalidArgument,
       }
     );
@@ -134,13 +143,14 @@ export function CheckCreate() {
     reqBody.id = "abcd?*&efg!";
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       ),
       {
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline with non-RFC-1034 naming id response StatusInvalidArgument":
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline with non-RFC-1034 naming id response StatusInvalidArgument":
           (r) => r.status === grpc.StatusInvalidArgument,
       }
     );
@@ -148,13 +158,14 @@ export function CheckCreate() {
     reqBody.id = randomString(64);
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       ),
       {
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline with > 63-character id response StatusInvalidArgument":
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline with > 63-character id response StatusInvalidArgument":
           (r) => r.status === grpc.StatusInvalidArgument,
       }
     );
@@ -162,13 +173,14 @@ export function CheckCreate() {
     reqBody.id = "🧡💜我愛潤物科技💚💙";
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       ),
       {
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline with non-ASCII id response StatusInvalidArgument":
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline with non-ASCII id response StatusInvalidArgument":
           (r) => r.status === grpc.StatusInvalidArgument,
       }
     );
@@ -176,13 +188,13 @@ export function CheckCreate() {
     // Delete the pipeline
     check(
       client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+        `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
-          name: `pipelines/${resOrigin.message.pipeline.id}`,
+          name: `${constant.namespace}/pipelines/${resOrigin.message.pipeline.id}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -199,16 +211,18 @@ export function CheckList() {
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
-        {},
+        "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
+        {
+          parent: `${constant.namespace}`,
+        },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response nextPageToken is empty`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response nextPageToken is empty`]:
           (r) => r.message.nextPageToken === "",
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response totalSize is 0`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response totalSize is 0`]:
           (r) => r.message.totalSize == 0,
       }
     );
@@ -229,13 +243,14 @@ export function CheckList() {
     for (const reqBody of reqBodies) {
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
           {
+            parent: `${constant.namespace}`,
             pipeline: reqBody,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline x${reqBodies.length} response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline x${reqBodies.length} response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -245,34 +260,37 @@ export function CheckList() {
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
-        {},
+        "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
+        {
+          parent: `${constant.namespace}`,
+        },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response pipelines.length == 10`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response pipelines.length == 10`]:
           (r) => r.message.pipelines.length === 10,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response pipelines[0].recipe is null`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response pipelines[0].recipe is null`]:
           (r) => r.message.pipelines[0].recipe === null,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response totalSize == 200`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response totalSize == 200`]:
           (r) => r.message.totalSize == 200,
       }
     );
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
+        "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
         {
+          parent: `${constant.namespace}`,
           view: "VIEW_FULL",
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines view=VIEW_FULL response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines view=VIEW_FULL response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines view=VIEW_FULL response pipelines[0].recipe is valid`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines view=VIEW_FULL response pipelines[0].recipe is valid`]:
           (r) =>
             helper.validateRecipeGRPC(r.message.pipelines[0].recipe, false),
       }
@@ -280,69 +298,74 @@ export function CheckList() {
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
+        "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
         {
+          parent: `${constant.namespace}`,
           view: "VIEW_BASIC",
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines view=VIEW_BASIC response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines view=VIEW_BASIC response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines view=VIEW_BASIC response pipelines[0].recipe is null`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines view=VIEW_BASIC response pipelines[0].recipe is null`]:
           (r) => r.message.pipelines[0].recipe === null,
       }
     );
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
+        "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
         {
+          parent: `${constant.namespace}`,
           pageSize: 3,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response pipelines.length == 3`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response pipelines.length == 3`]:
           (r) => r.message.pipelines.length === 3,
       }
     );
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
+        "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
         {
+          parent: `${constant.namespace}`,
           pageSize: 101,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response pipelines.length == 100`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response pipelines.length == 100`]:
           (r) => r.message.pipelines.length === 100,
       }
     );
 
     var resFirst100 = client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
+      "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
       {
+        parent: `${constant.namespace}`,
         pageSize: 100,
       },
       {}
     );
     var resSecond100 = client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
+      "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
       {
+        parent: `${constant.namespace}`,
         pageSize: 100,
         pageToken: resFirst100.message.nextPageToken,
       },
       {}
     );
     check(resSecond100, {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines pageSize=100 pageToken=${resFirst100.message.nextPageToken} response StatusOK`]:
+      [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines pageSize=100 pageToken=${resFirst100.message.nextPageToken} response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines pageSize=100 pageToken=${resFirst100.message.nextPageToken} response 100 results`]:
+      [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines pageSize=100 pageToken=${resFirst100.message.nextPageToken} response 100 results`]:
         (r) => r.message.pipelines.length === 100,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines pageSize=100 pageToken=${resFirst100.message.nextPageToken} nextPageToken is empty`]:
+      [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines pageSize=100 pageToken=${resFirst100.message.nextPageToken} nextPageToken is empty`]:
         (r) => r.message.nextPageToken === "",
     });
 
@@ -350,17 +373,18 @@ export function CheckList() {
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
+        "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
         {
+          parent: `${constant.namespace}`,
           filter:
             'create_time>timestamp("2000-06-19T23:31:08.657Z")',
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -370,16 +394,17 @@ export function CheckList() {
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
+        "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
         {
+          parent: `${constant.namespace}`,
           filter: `recipe.components.definition_name:"${srcConnPermalink}"`,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: recipe.components.definition_name:"${srcConnPermalink}" response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines filter: recipe.components.definition_name:"${srcConnPermalink}" response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines filter: recipe.components.definition_name:"${srcConnPermalink}" response pipelines.length`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines filter: recipe.components.definition_name:"${srcConnPermalink}" response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -388,13 +413,13 @@ export function CheckList() {
     for (const reqBody of reqBodies) {
       check(
         client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${reqBody.id}`,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -420,72 +445,73 @@ export function CheckGet() {
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline",
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline name`]:
-          (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline uid`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline name`]:
+          (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline uid`]:
           (r) => helper.isUUID(r.message.pipeline.uid),
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline id`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline id`]:
           (r) => r.message.pipeline.id === reqBody.id,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline description`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline description`]:
           (r) => r.message.pipeline.description === reqBody.description,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline recipe is null`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline recipe is null`]:
           (r) => r.message.pipeline.recipe === null,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} response pipeline owner is UUID`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline owner is UUID`]:
           (r) => helper.isValidOwner(r.message.pipeline.user),
       }
     );
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline",
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
           view: "VIEW_FULL",
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline recipe is null`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline recipe is null`]:
           (r) => r.message.pipeline.recipe !== null,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline owner is UUID`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline owner is UUID`]:
           (r) => helper.isValidOwner(r.message.pipeline.user),
       }
     );
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline",
         {
-          name: `this-id-does-not-exist`,
+          name: `${constant.namespace}/pipelines/this-id-does-not-exist`,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline name: this-id-does-not-exist response StatusNotFound`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline name: this-id-does-not-exist response StatusNotFound`]:
           (r) => r.status === grpc.StatusNotFound,
       }
     );
@@ -493,13 +519,13 @@ export function CheckGet() {
     // Delete the pipeline
     check(
       client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+        `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -523,58 +549,59 @@ export function CheckUpdate() {
 
     // Create a pipeline
     var resOrigin = client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
       {
+        parent: `${constant.namespace}`,
         pipeline: reqBody,
       }
     );
 
     check(resOrigin, {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
+      [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
     var reqBodyUpdate = Object.assign({
       id: reqBody.id,
-      name: `pipelines/${reqBody.id}`,
+      name: `${constant.namespace}/pipelines/${reqBody.id}`,
       uid: "output-only-to-be-ignored",
       description: randomString(50),
     });
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline",
         {
           pipeline: reqBodyUpdate,
           update_mask: "description",
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline name (OUTPUT_ONLY)`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline name (OUTPUT_ONLY)`]:
           (r) =>
             r.message.pipeline.name ===
-            `pipelines/${resOrigin.message.pipeline.id}`,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline uid (OUTPUT_ONLY)`]:
+            `${constant.namespace}/pipelines/${resOrigin.message.pipeline.id}`,
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline uid (OUTPUT_ONLY)`]:
           (r) => r.message.pipeline.uid === resOrigin.message.pipeline.uid,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline id (IMMUTABLE)`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline id (IMMUTABLE)`]:
           (r) => r.message.pipeline.id === resOrigin.message.pipeline.id,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline state (OUTPUT_ONLY)`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline state (OUTPUT_ONLY)`]:
           (r) => r.message.pipeline.state === resOrigin.message.pipeline.state,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline description (OPTIONAL)`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline description (OPTIONAL)`]:
           (r) => r.message.pipeline.description === reqBodyUpdate.description,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline recipe (IMMUTABLE)`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline recipe (IMMUTABLE)`]:
           (r) => r.message.pipeline.recipe !== null,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline createTime (OUTPUT_ONLY)`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline createTime (OUTPUT_ONLY)`]:
           (r) =>
             new Date(r.message.pipeline.createTime).getTime() >
             new Date().setTime(0),
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline updateTime (OUTPUT_ONLY)`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline updateTime (OUTPUT_ONLY)`]:
           (r) =>
             new Date(r.message.pipeline.updateTime).getTime() >
             new Date().setTime(0),
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline updateTime > create_time`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline updateTime > create_time`]:
           (r) =>
             new Date(r.message.pipeline.updateTime).getTime() >
             new Date(r.message.pipeline.createTime).getTime(),
@@ -584,14 +611,14 @@ export function CheckUpdate() {
     reqBodyUpdate.description = "";
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline",
         {
           pipeline: reqBodyUpdate,
           update_mask: "description",
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline description empty`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline description empty`]:
           (r) => r.message.pipeline.description === "",
       }
     );
@@ -599,14 +626,14 @@ export function CheckUpdate() {
     reqBodyUpdate.description = randomString(10);
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline",
         {
           pipeline: reqBodyUpdate,
           update_mask: "description",
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response pipeline description non-empty`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response pipeline description non-empty`]:
           (r) => r.message.pipeline.description === reqBodyUpdate.description,
       }
     );
@@ -614,14 +641,14 @@ export function CheckUpdate() {
     reqBodyUpdate.id = randomString(10);
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline",
         {
           pipeline: reqBodyUpdate,
           update_mask: "id",
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline updating IMMUTABLE field with different id response StatusInvalidArgument`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline updating IMMUTABLE field with different id response StatusInvalidArgument`]:
           (r) => r.status === grpc.StatusInvalidArgument,
       }
     );
@@ -629,14 +656,14 @@ export function CheckUpdate() {
     reqBodyUpdate.id = reqBody.id;
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline",
         {
           pipeline: reqBodyUpdate,
           update_mask: "id",
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline updating IMMUTABLE field with the same id response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline updating IMMUTABLE field with the same id response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -644,13 +671,13 @@ export function CheckUpdate() {
     // Delete the pipeline
     check(
       client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+        `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -675,36 +702,37 @@ export function CheckRename() {
 
     // Create a pipeline
     var res = client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
       {
+        parent: `${constant.namespace}`,
         pipeline: reqBody,
       }
     );
 
     check(res, {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
+      [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline name`]:
-        (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
+      [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline name`]:
+        (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
     });
 
     reqBody.new_pipeline_id = randomString(10);
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/RenamePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/RenameUserPipeline",
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
           new_pipeline_id: reqBody.new_pipeline_id,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/RenamePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/RenameUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/RenamePipeline response pipeline new name`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/RenameUserPipeline response pipeline new name`]:
           (r) =>
-            r.message.pipeline.name === `pipelines/${reqBody.new_pipeline_id}`,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/RenamePipeline response pipeline new id`]:
+            r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.new_pipeline_id}`,
+        [`vdp.pipeline.v1alpha.PipelinePublicService/RenameUserPipeline response pipeline new id`]:
           (r) => r.message.pipeline.id === reqBody.new_pipeline_id,
       }
     );
@@ -712,13 +740,13 @@ export function CheckRename() {
     // Delete the pipeline
     check(
       client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+        `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
-          name: `pipelines/${reqBody.new_pipeline_id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.new_pipeline_id}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -742,42 +770,43 @@ export function CheckLookUp() {
 
     // Create a pipeline
     var res = client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
       {
+        parent: `${constant.namespace}`,
         pipeline: reqBody,
       }
     );
 
     check(res, {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
+      [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline",
         {
-          permalink: `pipelines/${res.message.pipeline.uid}`,
+          permalink: `${constant.namespace}/pipelines/${res.message.pipeline.uid}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline response pipeline new name`]:
-          (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
+        [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline response pipeline new name`]:
+          (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       }
     );
 
     // Delete the pipeline
     check(
       client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+        `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );

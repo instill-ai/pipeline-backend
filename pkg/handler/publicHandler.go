@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -207,9 +206,89 @@ func (h *PublicHandler) GetOperatorDefinition(ctx context.Context, req *pipeline
 	return resp, nil
 }
 
-func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.CreatePipelineRequest) (*pipelinePB.CreatePipelineResponse, error) {
+func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
-	eventName := "CreatePipeline"
+	eventName := "ListPipelines"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
+
+	userUid, err := h.service.GetUserUid(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.ListPipelinesResponse{}, err
+	}
+
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareFunction("time.now", filtering.NewFunctionOverload("time.now", filtering.TypeTimestamp)),
+		filtering.DeclareIdent("uid", filtering.TypeString),
+		filtering.DeclareIdent("id", filtering.TypeString),
+		filtering.DeclareIdent("description", filtering.TypeString),
+		// only support "recipe.components.resource_name" for now
+		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
+		filtering.DeclareIdent("owner", filtering.TypeString),
+		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
+		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
+	}...)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.ListPipelinesResponse{}, err
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.ListPipelinesResponse{}, err
+	}
+
+	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(ctx, userUid, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.ListPipelinesResponse{}, err
+	}
+
+	pbPipelines := []*pipelinePB.Pipeline{}
+	for idx := range dbPipelines {
+		pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipelines[idx])
+		if err != nil {
+			span.SetStatus(1, err.Error())
+			return &pipelinePB.ListPipelinesResponse{}, err
+		}
+		if !isBasicView {
+			if err := h.service.IncludeDetailInRecipe(pbPipeline.Recipe); err != nil {
+				return nil, err
+			}
+		}
+		pbPipelines = append(pbPipelines, pbPipeline)
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+	)))
+
+	resp := pipelinePB.ListPipelinesResponse{
+		Pipelines:     pbPipelines,
+		NextPageToken: nextPageToken,
+		TotalSize:     totalSize,
+	}
+
+	return &resp, nil
+}
+
+func (h *PublicHandler) CreateUserPipeline(ctx context.Context, req *pipelinePB.CreateUserPipelineRequest) (*pipelinePB.CreateUserPipelineResponse, error) {
+
+	eventName := "CreateUserPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -228,44 +307,71 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req.Pipeline, append(createRequiredFields, immutableFields...)); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &pipelinePB.CreateUserPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Set all OUTPUT_ONLY fields to zero value on the requested payload pipeline resource
 	if err := checkfield.CheckCreateOutputOnlyFields(req.Pipeline, outputOnlyFields); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &pipelinePB.CreateUserPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Return error if resource ID does not follow RFC-1034
 	if err := checkfield.CheckResourceID(req.Pipeline.GetId()); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.CreatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &pipelinePB.CreateUserPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, _, err := h.service.GetRscNamespaceAndNameID(req.Parent)
+
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.CreatePipelineResponse{}, err
+		return &pipelinePB.CreateUserPipelineResponse{}, err
 	}
 
-	dbPipeline, err := h.service.CreatePipeline(owner, PBToDBPipeline(ctx, owner.GetName(), req.GetPipeline()))
+	userUid, err := h.service.GetUserUid(ctx)
+
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.CreateUserPipelineResponse{}, err
+	}
+
+	pipeline := req.GetPipeline()
+
+	name, err := h.service.ConvertOwnerPermalinkToName(fmt.Sprintf("users/%s", userUid))
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.CreateUserPipelineResponse{}, err
+	}
+
+	pipeline.Owner = &pipelinePB.Pipeline_User{User: name}
+	dbPipeline, err := h.service.PBToDBPipeline(ctx, pipeline)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.CreateUserPipelineResponse{}, err
+	}
+
+	dbPipeline, err = h.service.CreateUserPipeline(ctx, ns, userUid, dbPipeline)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		// Manually set the custom header to have a StatusBadRequest http response for REST endpoint
 		if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusBadRequest))); err != nil {
-			return &pipelinePB.CreatePipelineResponse{Pipeline: &pipelinePB.Pipeline{Recipe: &pipelinePB.Recipe{}}}, err
+			return &pipelinePB.CreateUserPipelineResponse{Pipeline: &pipelinePB.Pipeline{Recipe: &pipelinePB.Recipe{}}}, err
 		}
-		return &pipelinePB.CreatePipelineResponse{Pipeline: &pipelinePB.Pipeline{}}, err
+		return &pipelinePB.CreateUserPipelineResponse{Pipeline: &pipelinePB.Pipeline{}}, err
 	}
 
-	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
+	pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipeline)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.CreateUserPipelineResponse{}, err
+	}
 
-	if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+	if err := h.service.IncludeDetailInRecipe(pbPipeline.Recipe); err != nil {
 		return nil, err
 	}
 
-	resp := pipelinePB.CreatePipelineResponse{
+	resp := pipelinePB.CreateUserPipelineResponse{
 		Pipeline: pbPipeline,
 	}
 
@@ -278,7 +384,7 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
@@ -286,9 +392,9 @@ func (h *PublicHandler) CreatePipeline(ctx context.Context, req *pipelinePB.Crea
 	return &resp, nil
 }
 
-func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
+func (h *PublicHandler) ListUserPipelines(ctx context.Context, req *pipelinePB.ListUserPipelinesRequest) (*pipelinePB.ListUserPipelinesResponse, error) {
 
-	eventName := "ListPipelines"
+	eventName := "ListUserPipelines"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -300,10 +406,15 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, _, err := h.service.GetRscNamespaceAndNameID(req.Parent)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ListPipelinesResponse{}, err
+		return &pipelinePB.ListUserPipelinesResponse{}, err
+	}
+	userUid, err := h.service.GetUserUid(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.ListUserPipelinesResponse{}, err
 	}
 
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
@@ -320,26 +431,30 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 	}...)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ListPipelinesResponse{}, err
+		return &pipelinePB.ListUserPipelinesResponse{}, err
 	}
 
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ListPipelinesResponse{}, err
+		return &pipelinePB.ListUserPipelinesResponse{}, err
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(owner, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	dbPipelines, totalSize, nextPageToken, err := h.service.ListUserPipelines(ctx, ns, userUid, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ListPipelinesResponse{}, err
+		return &pipelinePB.ListUserPipelinesResponse{}, err
 	}
 
 	pbPipelines := []*pipelinePB.Pipeline{}
 	for idx := range dbPipelines {
-		pbPipeline := DBToPBPipeline(ctx, &dbPipelines[idx])
+		pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipelines[idx])
+		if err != nil {
+			span.SetStatus(1, err.Error())
+			return &pipelinePB.ListUserPipelinesResponse{}, err
+		}
 		if !isBasicView {
-			if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+			if err := h.service.IncludeDetailInRecipe(pbPipeline.Recipe); err != nil {
 				return nil, err
 			}
 		}
@@ -349,11 +464,11 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 	)))
 
-	resp := pipelinePB.ListPipelinesResponse{
+	resp := pipelinePB.ListUserPipelinesResponse{
 		Pipelines:     pbPipelines,
 		NextPageToken: nextPageToken,
 		TotalSize:     totalSize,
@@ -362,9 +477,9 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 	return &resp, nil
 }
 
-func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipelineRequest) (*pipelinePB.GetPipelineResponse, error) {
+func (h *PublicHandler) GetUserPipeline(ctx context.Context, req *pipelinePB.GetUserPipelineRequest) (*pipelinePB.GetUserPipelineResponse, error) {
 
-	eventName := "GetPipeline"
+	eventName := "GetUserPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -376,39 +491,43 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, id, err := h.service.GetRscNamespaceAndNameID(req.Name)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.GetPipelineResponse{}, err
+		return nil, err
 	}
-
-	id, err := resource.GetRscNameID(req.GetName())
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.GetPipelineResponse{}, err
+		return nil, err
 	}
 
-	dbPipeline, err := h.service.GetPipelineByID(id, owner, isBasicView)
+	dbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, isBasicView)
+
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.GetPipelineResponse{}, err
+		return nil, err
 	}
 
-	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
+	pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipeline)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
 	if !isBasicView {
-		if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+		if err := h.service.IncludeDetailInRecipe(pbPipeline.Recipe); err != nil {
 			return nil, err
 		}
 	}
 
-	resp := pipelinePB.GetPipelineResponse{
+	resp := pipelinePB.GetUserPipelineResponse{
 		Pipeline: pbPipeline,
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
@@ -416,9 +535,9 @@ func (h *PublicHandler) GetPipeline(ctx context.Context, req *pipelinePB.GetPipe
 	return &resp, nil
 }
 
-func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.UpdatePipelineRequest) (*pipelinePB.UpdatePipelineResponse, error) {
+func (h *PublicHandler) UpdateUserPipeline(ctx context.Context, req *pipelinePB.UpdateUserPipelineRequest) (*pipelinePB.UpdateUserPipelineResponse, error) {
 
-	eventName := "UpdatePipeline"
+	eventName := "UpdateUserPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -428,10 +547,15 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, id, err := h.service.GetRscNamespaceAndNameID(req.Pipeline.Name)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineResponse{}, err
+		return nil, err
+	}
+	userUid, err := h.service.GetUserUid(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
 	}
 
 	pbPipelineReq := req.GetPipeline()
@@ -439,19 +563,19 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 
 	// Validate the field mask
 	if !pbUpdateMask.IsValid(pbPipelineReq) {
-		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.InvalidArgument, "The update_mask is invalid")
+		return nil, status.Error(codes.InvalidArgument, "The update_mask is invalid")
 	}
 
-	getResp, err := h.GetPipeline(ctx, &pipelinePB.GetPipelineRequest{Name: pbPipelineReq.GetName()})
+	getResp, err := h.GetUserPipeline(ctx, &pipelinePB.GetUserPipelineRequest{Name: pbPipelineReq.GetName()})
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineResponse{}, err
+		return nil, err
 	}
 
 	pbUpdateMask, err = checkfield.CheckUpdateOutputOnlyFields(pbUpdateMask, outputOnlyFields)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	mask, err := fieldmask_utils.MaskFromProtoFieldMask(pbUpdateMask, strcase.ToCamel)
@@ -461,7 +585,7 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 	}
 
 	if mask.IsEmpty() {
-		return &pipelinePB.UpdatePipelineResponse{
+		return &pipelinePB.UpdateUserPipelineResponse{
 			Pipeline: getResp.GetPipeline(),
 		}, nil
 	}
@@ -471,34 +595,44 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 	// Return error if IMMUTABLE fields are intentionally changed
 	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReq, pbPipelineToUpdate, immutableFields); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Only the fields mentioned in the field mask will be copied to `pbPipelineToUpdate`, other fields are left intact
 	err = fieldmask_utils.StructToStruct(mask, pbPipelineReq, pbPipelineToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineResponse{}, err
-	}
-
-	dbPipeline, err := h.service.UpdatePipeline(pbPipelineToUpdate.GetId(), owner, PBToDBPipeline(ctx, owner.GetName(), pbPipelineToUpdate))
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineResponse{}, err
-	}
-	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
-	if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
 		return nil, err
 	}
 
-	resp := pipelinePB.UpdatePipelineResponse{
+	dbPipelineToUpdate, err := h.service.PBToDBPipeline(ctx, pbPipelineToUpdate)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	dbPipeline, err := h.service.UpdateUserPipelineByID(ctx, ns, userUid, id, dbPipelineToUpdate)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+	pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipeline)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+	if err := h.service.IncludeDetailInRecipe(pbPipeline.Recipe); err != nil {
+		return nil, err
+	}
+
+	resp := pipelinePB.UpdateUserPipelineResponse{
 		Pipeline: pbPipeline,
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
@@ -506,9 +640,9 @@ func (h *PublicHandler) UpdatePipeline(ctx context.Context, req *pipelinePB.Upda
 	return &resp, nil
 }
 
-func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.DeletePipelineRequest) (*pipelinePB.DeletePipelineResponse, error) {
+func (h *PublicHandler) DeleteUserPipeline(ctx context.Context, req *pipelinePB.DeleteUserPipelineRequest) (*pipelinePB.DeleteUserPipelineResponse, error) {
 
-	eventName := "DeletePipeline"
+	eventName := "DeleteUserPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -518,43 +652,47 @@ func (h *PublicHandler) DeletePipeline(ctx context.Context, req *pipelinePB.Dele
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, id, err := h.service.GetRscNamespaceAndNameID(req.Name)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.DeletePipelineResponse{}, err
+		return nil, err
 	}
-
-	existPipeline, err := h.GetPipeline(ctx, &pipelinePB.GetPipelineRequest{Name: req.GetName()})
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.DeletePipelineResponse{}, err
+		return nil, err
+	}
+	existPipeline, err := h.GetUserPipeline(ctx, &pipelinePB.GetUserPipelineRequest{Name: req.GetName()})
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
 	}
 
-	if err := h.service.DeletePipeline(existPipeline.GetPipeline().GetId(), owner); err != nil {
+	if err := h.service.DeleteUserPipelineByID(ctx, ns, userUid, id); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.DeletePipelineResponse{}, err
+		return nil, err
 	}
 
 	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
 	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent))); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.DeletePipelineResponse{}, err
+		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(existPipeline.GetPipeline()),
 	)))
 
-	return &pipelinePB.DeletePipelineResponse{}, nil
+	return &pipelinePB.DeleteUserPipelineResponse{}, nil
 }
 
-func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipelineRequest) (*pipelinePB.LookUpPipelineResponse, error) {
+func (h *PublicHandler) LookUpUserPipeline(ctx context.Context, req *pipelinePB.LookUpUserPipelineRequest) (*pipelinePB.LookUpUserPipelineResponse, error) {
 
-	eventName := "LookUpPipeline"
+	eventName := "LookUpUserPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -567,49 +705,46 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, lookUpRequiredFields); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.LookUpPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, uid, err := h.service.GetRscNamespaceAndPermalinkUID(req.Permalink)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.LookUpPipelineResponse{}, err
+		return nil, err
 	}
-
-	uidStr, err := resource.GetPermalinkUID(req.GetPermalink())
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.LookUpPipelineResponse{}, err
+		return nil, err
 	}
 
-	uid, err := uuid.FromString(uidStr)
+	dbPipeline, err := h.service.GetUserPipelineByUID(ctx, ns, userUid, uid, isBasicView)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.LookUpPipelineResponse{}, err
+		return nil, err
 	}
 
-	dbPipeline, err := h.service.GetPipelineByUID(uid, owner, isBasicView)
+	pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipeline)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.LookUpPipelineResponse{}, err
+		return nil, err
 	}
-
-	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
 	if !isBasicView {
-		if err := IncludeDetailInRecipe(pbPipeline.Recipe, h.service); err != nil {
+		if err := h.service.IncludeDetailInRecipe(pbPipeline.Recipe); err != nil {
 			return nil, err
 		}
 	}
-	resp := pipelinePB.LookUpPipelineResponse{
+	resp := pipelinePB.LookUpUserPipelineResponse{
 		Pipeline: pbPipeline,
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
@@ -617,9 +752,9 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 	return &resp, nil
 }
 
-func (h *PublicHandler) ValidatePipeline(ctx context.Context, req *pipelinePB.ValidatePipelineRequest) (*pipelinePB.ValidatePipelineResponse, error) {
+func (h *PublicHandler) ValidateUserPipeline(ctx context.Context, req *pipelinePB.ValidateUserPipelineRequest) (*pipelinePB.ValidateUserPipelineResponse, error) {
 
-	eventName := "ValidatePipeline"
+	eventName := "ValidateUserPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -632,35 +767,39 @@ func (h *PublicHandler) ValidatePipeline(ctx context.Context, req *pipelinePB.Va
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, validateRequiredFields); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ValidatePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, id, err := h.service.GetRscNamespaceAndNameID(req.Name)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ValidatePipelineResponse{}, err
+		return nil, err
 	}
-
-	id, err := resource.GetRscNameID(req.GetName())
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ValidatePipelineResponse{}, err
+		return nil, err
 	}
 
-	dbPipeline, err := h.service.ValidatePipeline(id, owner)
+	dbPipeline, err := h.service.ValidateUserPipelineByID(ctx, ns, userUid, id)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ValidatePipelineResponse{}, err
+		return nil, err
 	}
 
-	resp := pipelinePB.ValidatePipelineResponse{
-		Pipeline: DBToPBPipeline(ctx, dbPipeline),
+	pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipeline)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+	resp := pipelinePB.ValidateUserPipelineResponse{
+		Pipeline: pbPipeline,
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
@@ -668,9 +807,9 @@ func (h *PublicHandler) ValidatePipeline(ctx context.Context, req *pipelinePB.Va
 	return &resp, nil
 }
 
-func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.RenamePipelineRequest) (*pipelinePB.RenamePipelineResponse, error) {
+func (h *PublicHandler) RenameUserPipeline(ctx context.Context, req *pipelinePB.RenameUserPipelineRequest) (*pipelinePB.RenameUserPipelineResponse, error) {
 
-	eventName := "RenamePipeline"
+	eventName := "RenameUserPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -683,41 +822,45 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, renameRequiredFields); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.RenamePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, id, err := h.service.GetRscNamespaceAndNameID(req.Name)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.RenamePipelineResponse{}, err
+		return nil, err
 	}
-
-	id, err := resource.GetRscNameID(req.GetName())
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.RenamePipelineResponse{}, err
+		return nil, err
 	}
 
 	newID := req.GetNewPipelineId()
 	if err := checkfield.CheckResourceID(newID); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.RenamePipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	dbPipeline, err := h.service.UpdatePipelineID(id, owner, newID)
+	dbPipeline, err := h.service.UpdateUserPipelineIDByID(ctx, ns, userUid, id, newID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.RenamePipelineResponse{}, err
+		return nil, err
+	}
+	pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipeline)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
 	}
 
-	resp := pipelinePB.RenamePipelineResponse{
-		Pipeline: DBToPBPipeline(ctx, dbPipeline),
+	resp := pipelinePB.RenameUserPipelineResponse{
+		Pipeline: pbPipeline,
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
@@ -725,45 +868,44 @@ func (h *PublicHandler) RenamePipeline(ctx context.Context, req *pipelinePB.Rena
 	return &resp, nil
 }
 
-func (h *PublicHandler) PreTriggerPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (*mgmtPB.User, *datamodel.Pipeline, bool, error) {
+func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (resource.Namespace, uuid.UUID, string, *datamodel.Pipeline, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
-		return nil, nil, false, status.Error(codes.InvalidArgument, err.Error())
+		return resource.Namespace{}, uuid.Nil, "", nil, false, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, id, err := h.service.GetRscNamespaceAndNameID(req.GetName())
 	if err != nil {
-		return nil, nil, false, err
+		return ns, uuid.Nil, id, nil, false, err
+	}
+	userUid, err := h.service.GetUserUid(ctx)
+	if err != nil {
+		return ns, uuid.Nil, id, nil, false, err
 	}
 
-	id, err := resource.GetRscNameID(req.GetName())
+	dbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, false)
 	if err != nil {
-		return nil, nil, false, err
-	}
-
-	dbPipeline, err := h.service.GetPipelineByID(id, owner, false)
-	if err != nil {
-		return nil, nil, false, err
+		return ns, uuid.Nil, id, nil, false, err
 	}
 	returnTraces := false
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		if len(md.Get(constant.ReturnTracesKey)) > 0 {
 			returnTraces, err = strconv.ParseBool(md.Get(constant.ReturnTracesKey)[0])
 			if err != nil {
-				return nil, nil, false, err
+				return ns, uuid.Nil, id, nil, false, err
 			}
 		}
 	}
 
-	return owner, dbPipeline, returnTraces, nil
+	return ns, userUid, id, dbPipeline, returnTraces, nil
 
 }
 
-func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.TriggerPipelineRequest) (*pipelinePB.TriggerPipelineResponse, error) {
+func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pipelinePB.TriggerUserPipelineRequest) (*pipelinePB.TriggerUserPipelineResponse, error) {
 
 	startTime := time.Now()
-	eventName := "TriggerPipeline"
+	eventName := "TriggerUserPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -773,14 +915,14 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, dbPipeline, returnTraces, err := h.PreTriggerPipeline(ctx, req)
+	ns, userUid, id, dbPipeline, returnTraces, err := h.preTriggerUserPipeline(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.TriggerPipelineResponse{}, err
+		return nil, err
 	}
 
 	dataPoint := utils.UsageMetricData{
-		OwnerUID:           *owner.Uid,
+		OwnerUID:           userUid.String(),
 		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
 		PipelineID:         dbPipeline.ID,
 		PipelineUID:        dbPipeline.UID.String(),
@@ -788,19 +930,19 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
 
-	resp, err := h.service.TriggerPipeline(ctx, req, owner, dbPipeline, logUUID.String(), returnTraces)
+	outputs, metadata, err := h.service.TriggerUserPipelineByID(ctx, ns, userUid, id, req.Inputs, logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 		_ = h.service.WriteNewDataPoint(ctx, dataPoint)
-		return &pipelinePB.TriggerPipelineResponse{}, err
+		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
@@ -811,12 +953,12 @@ func (h *PublicHandler) TriggerPipeline(ctx context.Context, req *pipelinePB.Tri
 		logger.Warn(err.Error())
 	}
 
-	return resp, nil
+	return &pipelinePB.TriggerUserPipelineResponse{Outputs: outputs, Metadata: metadata}, nil
 }
 
-func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineRequest) (*pipelinePB.TriggerAsyncPipelineResponse, error) {
+func (h *PublicHandler) TriggerAsyncUserPipeline(ctx context.Context, req *pipelinePB.TriggerAsyncUserPipelineRequest) (*pipelinePB.TriggerAsyncUserPipelineResponse, error) {
 
-	eventName := "TriggerAsyncPipeline"
+	eventName := "TriggerAsyncUserPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -826,27 +968,29 @@ func (h *PublicHandler) TriggerAsyncPipeline(ctx context.Context, req *pipelineP
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, dbPipeline, returnTraces, err := h.PreTriggerPipeline(ctx, req)
+	ns, userUid, id, dbPipeline, returnTraces, err := h.preTriggerUserPipeline(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
+		return nil, err
 	}
 
-	resp, err := h.service.TriggerAsyncPipeline(ctx, req, logUUID.String(), owner, dbPipeline, returnTraces)
+	operation, err := h.service.TriggerAsyncUserPipelineByID(ctx, ns, userUid, id, req.Inputs, logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.TriggerAsyncPipelineResponse{}, err
+		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipeline),
 	)))
 
-	return resp, nil
+	return &pipelinePB.TriggerAsyncUserPipelineResponse{
+		Operation: operation,
+	}, nil
 }
 
 func (h *PublicHandler) GetOperation(ctx context.Context, req *pipelinePB.GetOperationRequest) (*pipelinePB.GetOperationResponse, error) {
@@ -865,8 +1009,8 @@ func (h *PublicHandler) GetOperation(ctx context.Context, req *pipelinePB.GetOpe
 	}, nil
 }
 
-func (h *PublicHandler) CreatePipelineRelease(ctx context.Context, req *pipelinePB.CreatePipelineReleaseRequest) (*pipelinePB.CreatePipelineReleaseResponse, error) {
-	eventName := "CreatePipelineRelease"
+func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipelinePB.CreateUserPipelineReleaseRequest) (*pipelinePB.CreateUserPipelineReleaseResponse, error) {
+	eventName := "CreateUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -879,56 +1023,64 @@ func (h *PublicHandler) CreatePipelineRelease(ctx context.Context, req *pipeline
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req.Release, append(releaseCreateRequiredFields, immutableFields...)); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.CreatePipelineReleaseResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Set all OUTPUT_ONLY fields to zero value on the requested payload pipeline resource
 	if err := checkfield.CheckCreateOutputOnlyFields(req.Release, releaseOutputOnlyFields); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.CreatePipelineReleaseResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Return error if resource ID does not a semantic version
 	if !semver.IsValid(req.Release.GetId()) {
-		fmt.Println(req.Release.GetId())
 		err := fmt.Errorf("not a sematic version")
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.CreatePipelineReleaseResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.CreatePipelineReleaseResponse{}, err
-	}
-
-	pipelineId := strings.Split(req.Parent, "/")[1]
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	ns, pipelineId, err := h.service.GetRscNamespaceAndNameID(req.GetParent())
 	if err != nil {
 		return nil, err
 	}
-	_, err = h.service.ValidatePipeline(pipeline.ID, owner)
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	dbPipelineRelease, err := h.service.CreatePipelineRelease(pipeline.UID, PBToDBPipelineRelease(ctx, owner.GetName(), pipeline.UID, req.GetRelease()))
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	if err != nil {
+		return nil, err
+	}
+	_, err = h.service.ValidateUserPipelineByID(ctx, ns, userUid, pipeline.ID)
+	if err != nil {
+		return nil, err
+	}
+	dbPipelineReleaseToCreated, err := h.service.PBToDBPipelineRelease(ctx, pipeline.UID, req.GetRelease())
+	if err != nil {
+		return nil, err
+	}
+
+	dbPipelineRelease, err := h.service.CreateUserPipelineRelease(ctx, ns, userUid, pipeline.UID, dbPipelineReleaseToCreated)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		// Manually set the custom header to have a StatusBadRequest http response for REST endpoint
 		if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusBadRequest))); err != nil {
-			return &pipelinePB.CreatePipelineReleaseResponse{Release: &pipelinePB.PipelineRelease{Recipe: &pipelinePB.Recipe{}}}, err
+			return nil, err
 		}
-		return &pipelinePB.CreatePipelineReleaseResponse{Release: &pipelinePB.PipelineRelease{}}, err
-	}
-
-	pbPipelineRelease := DBToPBPipelineRelease(ctx, pipeline.ID, dbPipelineRelease)
-
-	if err := IncludeDetailInRecipe(pbPipelineRelease.Recipe, h.service); err != nil {
 		return nil, err
 	}
 
-	resp := pipelinePB.CreatePipelineReleaseResponse{
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipelineId, pipeline, dbPipelineRelease)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := h.service.IncludeDetailInRecipe(pbPipelineRelease.Recipe); err != nil {
+		return nil, err
+	}
+
+	resp := pipelinePB.CreateUserPipelineReleaseResponse{
 		Release: pbPipelineRelease,
 	}
 
@@ -941,7 +1093,7 @@ func (h *PublicHandler) CreatePipelineRelease(ctx context.Context, req *pipeline
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(pbPipelineRelease),
 	)))
@@ -950,9 +1102,9 @@ func (h *PublicHandler) CreatePipelineRelease(ctx context.Context, req *pipeline
 
 }
 
-func (h *PublicHandler) ListPipelineReleases(ctx context.Context, req *pipelinePB.ListPipelineReleasesRequest) (*pipelinePB.ListPipelineReleasesResponse, error) {
+func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pipelinePB.ListUserPipelineReleasesRequest) (*pipelinePB.ListUserPipelineReleasesResponse, error) {
 
-	eventName := "ListPipelineReleases"
+	eventName := "ListUserPipelineReleases"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -964,10 +1116,13 @@ func (h *PublicHandler) ListPipelineReleases(ctx context.Context, req *pipelineP
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, pipelineId, err := h.service.GetRscNamespaceAndNameID(req.GetParent())
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.ListPipelineReleasesResponse{}, err
+		return nil, err
+	}
+	userUid, err := h.service.GetUserUid(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
@@ -984,32 +1139,35 @@ func (h *PublicHandler) ListPipelineReleases(ctx context.Context, req *pipelineP
 	}...)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ListPipelineReleasesResponse{}, err
+		return nil, err
 	}
 
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ListPipelineReleasesResponse{}, err
+		return nil, err
 	}
 
-	pipelineId := strings.Split(req.Parent, "/")[1]
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
 	if err != nil {
 		return nil, err
 	}
 
-	dbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleases(pipeline.UID, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	dbPipelineReleases, totalSize, nextPageToken, err := h.service.ListUserPipelineReleases(ctx, ns, userUid, pipeline.UID, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.ListPipelineReleasesResponse{}, err
+		return nil, err
 	}
 
 	pbPipelineReleases := []*pipelinePB.PipelineRelease{}
 	for idx := range dbPipelineReleases {
-		pbPipelineRelease := DBToPBPipelineRelease(ctx, pipelineId, &dbPipelineReleases[idx])
+		pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipelineId, pipeline, dbPipelineReleases[idx])
+		if err != nil {
+			span.SetStatus(1, err.Error())
+			return nil, err
+		}
 		if !isBasicView {
-			if err := IncludeDetailInRecipe(pbPipelineRelease.Recipe, h.service); err != nil {
+			if err := h.service.IncludeDetailInRecipe(pbPipelineRelease.Recipe); err != nil {
 				return nil, err
 			}
 		}
@@ -1019,11 +1177,11 @@ func (h *PublicHandler) ListPipelineReleases(ctx context.Context, req *pipelineP
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 	)))
 
-	resp := pipelinePB.ListPipelineReleasesResponse{
+	resp := pipelinePB.ListUserPipelineReleasesResponse{
 		Releases:      pbPipelineReleases,
 		NextPageToken: nextPageToken,
 		TotalSize:     totalSize,
@@ -1033,9 +1191,9 @@ func (h *PublicHandler) ListPipelineReleases(ctx context.Context, req *pipelineP
 
 }
 
-func (h *PublicHandler) GetPipelineRelease(ctx context.Context, req *pipelinePB.GetPipelineReleaseRequest) (*pipelinePB.GetPipelineReleaseResponse, error) {
+func (h *PublicHandler) GetUserPipelineRelease(ctx context.Context, req *pipelinePB.GetUserPipelineReleaseRequest) (*pipelinePB.GetUserPipelineReleaseResponse, error) {
 
-	eventName := "GetPipelineRelease"
+	eventName := "GetUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1047,40 +1205,45 @@ func (h *PublicHandler) GetPipelineRelease(ctx context.Context, req *pipelinePB.
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.GetPipelineReleaseResponse{}, err
+		return nil, err
 	}
-
-	id := strings.Split(req.Name, "/")[3]
-	pipelineId := strings.Split(req.Name, "/")[1]
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	dbPipelineRelease, err := h.service.GetPipelineReleaseByID(id, pipeline.UID, isBasicView)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.GetPipelineReleaseResponse{}, err
+		return nil, err
 	}
 
-	pbPipelineRelease := DBToPBPipelineRelease(ctx, pipeline.ID, dbPipelineRelease)
+	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, pipeline.UID, releaseId, isBasicView)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
 	if !isBasicView {
-		if err := IncludeDetailInRecipe(pbPipelineRelease.Recipe, h.service); err != nil {
+		if err := h.service.IncludeDetailInRecipe(pbPipelineRelease.Recipe); err != nil {
 			return nil, err
 		}
 	}
 
-	resp := pipelinePB.GetPipelineReleaseResponse{
+	resp := pipelinePB.GetUserPipelineReleaseResponse{
 		Release: pbPipelineRelease,
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipelineRelease),
 	)))
@@ -1089,9 +1252,9 @@ func (h *PublicHandler) GetPipelineRelease(ctx context.Context, req *pipelinePB.
 
 }
 
-func (h *PublicHandler) UpdatePipelineRelease(ctx context.Context, req *pipelinePB.UpdatePipelineReleaseRequest) (*pipelinePB.UpdatePipelineReleaseResponse, error) {
+func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pipelinePB.UpdateUserPipelineReleaseRequest) (*pipelinePB.UpdateUserPipelineReleaseResponse, error) {
 
-	eventName := "UpdatePipelineRelease"
+	eventName := "UpdateUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1101,10 +1264,13 @@ func (h *PublicHandler) UpdatePipelineRelease(ctx context.Context, req *pipeline
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.Release.GetName())
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineReleaseResponse{}, err
+		return nil, err
+	}
+	userUid, err := h.service.GetUserUid(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	pbPipelineReleaseReq := req.GetRelease()
@@ -1112,25 +1278,24 @@ func (h *PublicHandler) UpdatePipelineRelease(ctx context.Context, req *pipeline
 
 	// Validate the field mask
 	if !pbUpdateMask.IsValid(pbPipelineReleaseReq) {
-		return &pipelinePB.UpdatePipelineReleaseResponse{}, status.Error(codes.InvalidArgument, "The update_mask is invalid")
+		return nil, status.Error(codes.InvalidArgument, "The update_mask is invalid")
 	}
 
-	pipelineId := strings.Split(req.Release.Name, "/")[1]
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
 	if err != nil {
 		return nil, err
 	}
 
-	getResp, err := h.GetPipelineRelease(ctx, &pipelinePB.GetPipelineReleaseRequest{Name: pbPipelineReleaseReq.GetName()})
+	getResp, err := h.GetUserPipelineRelease(ctx, &pipelinePB.GetUserPipelineReleaseRequest{Name: pbPipelineReleaseReq.GetName()})
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineReleaseResponse{}, err
+		return nil, err
 	}
 
 	pbUpdateMask, err = checkfield.CheckUpdateOutputOnlyFields(pbUpdateMask, releaseOutputOnlyFields)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineReleaseResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	mask, err := fieldmask_utils.MaskFromProtoFieldMask(pbUpdateMask, strcase.ToCamel)
@@ -1140,7 +1305,7 @@ func (h *PublicHandler) UpdatePipelineRelease(ctx context.Context, req *pipeline
 	}
 
 	if mask.IsEmpty() {
-		return &pipelinePB.UpdatePipelineReleaseResponse{
+		return &pipelinePB.UpdateUserPipelineReleaseResponse{
 			Release: getResp.GetRelease(),
 		}, nil
 	}
@@ -1150,34 +1315,44 @@ func (h *PublicHandler) UpdatePipelineRelease(ctx context.Context, req *pipeline
 	// Return error if IMMUTABLE fields are intentionally changed
 	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReleaseReq, pbPipelineReleaseToUpdate, immutableFields); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineReleaseResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Only the fields mentioned in the field mask will be copied to `pbPipelineToUpdate`, other fields are left intact
 	err = fieldmask_utils.StructToStruct(mask, pbPipelineReleaseReq, pbPipelineReleaseToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineReleaseResponse{}, err
-	}
-
-	dbPipelineRelease, err := h.service.UpdatePipelineRelease(pbPipelineReleaseToUpdate.GetId(), pipeline.UID, PBToDBPipelineRelease(ctx, owner.GetName(), pipeline.UID, pbPipelineReleaseToUpdate))
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.UpdatePipelineReleaseResponse{}, err
-	}
-	pbPipelineRelease := DBToPBPipelineRelease(ctx, pipeline.ID, dbPipelineRelease)
-	if err := IncludeDetailInRecipe(pbPipelineRelease.Recipe, h.service); err != nil {
 		return nil, err
 	}
 
-	resp := pipelinePB.UpdatePipelineReleaseResponse{
+	dbPipelineReleaseToUpdate, err := h.service.PBToDBPipelineRelease(ctx, pipeline.UID, pbPipelineReleaseToUpdate)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	dbPipelineRelease, err := h.service.UpdateUserPipelineReleaseByID(ctx, ns, userUid, pipeline.UID, releaseId, dbPipelineReleaseToUpdate)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+	if err := h.service.IncludeDetailInRecipe(pbPipelineRelease.Recipe); err != nil {
+		return nil, err
+	}
+
+	resp := pipelinePB.UpdateUserPipelineReleaseResponse{
 		Release: pbPipelineRelease,
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipelineRelease),
 	)))
@@ -1185,9 +1360,9 @@ func (h *PublicHandler) UpdatePipelineRelease(ctx context.Context, req *pipeline
 	return &resp, nil
 }
 
-func (h *PublicHandler) RenamePipelineRelease(ctx context.Context, req *pipelinePB.RenamePipelineReleaseRequest) (*pipelinePB.RenamePipelineReleaseResponse, error) {
+func (h *PublicHandler) RenameUserPipelineRelease(ctx context.Context, req *pipelinePB.RenameUserPipelineReleaseRequest) (*pipelinePB.RenameUserPipelineReleaseResponse, error) {
 
-	eventName := "RenamePipelineRelease"
+	eventName := "RenameUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1200,17 +1375,18 @@ func (h *PublicHandler) RenamePipelineRelease(ctx context.Context, req *pipeline
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, releaseRenameRequiredFields); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.RenamePipelineReleaseResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.RenamePipelineReleaseResponse{}, err
+		return nil, err
 	}
-	id := strings.Split(req.Name, "/")[3]
-	pipelineId := strings.Split(req.Name, "/")[1]
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	userUid, err := h.service.GetUserUid(ctx)
+	if err != nil {
+		return nil, err
+	}
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
 	if err != nil {
 		return nil, err
 	}
@@ -1220,33 +1396,39 @@ func (h *PublicHandler) RenamePipelineRelease(ctx context.Context, req *pipeline
 	if !semver.IsValid(newID) {
 		err := fmt.Errorf("not a sematic version")
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.RenamePipelineReleaseResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	dbPipeline, err := h.service.UpdatePipelineReleaseID(id, pipeline.UID, newID)
+	dbPipelineRelease, err := h.service.UpdateUserPipelineReleaseIDByID(ctx, ns, userUid, pipeline.UID, releaseId, newID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.RenamePipelineReleaseResponse{}, err
+		return nil, err
 	}
 
-	resp := pipelinePB.RenamePipelineReleaseResponse{
-		Release: DBToPBPipelineRelease(ctx, pipeline.ID, dbPipeline),
+	pbRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	resp := pipelinePB.RenameUserPipelineReleaseResponse{
+		Release: pbRelease,
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
-		custom_otel.SetEventResource(dbPipeline),
+		custom_otel.SetEventResource(dbPipelineRelease),
 	)))
 
 	return &resp, nil
 }
 
-func (h *PublicHandler) DeletePipelineRelease(ctx context.Context, req *pipelinePB.DeletePipelineReleaseRequest) (*pipelinePB.DeletePipelineReleaseResponse, error) {
+func (h *PublicHandler) DeleteUserPipelineRelease(ctx context.Context, req *pipelinePB.DeleteUserPipelineReleaseRequest) (*pipelinePB.DeleteUserPipelineReleaseResponse, error) {
 
-	eventName := "DeletePipelineRelease"
+	eventName := "DeleteUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1256,50 +1438,50 @@ func (h *PublicHandler) DeletePipelineRelease(ctx context.Context, req *pipeline
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
+	if err != nil {
+		return nil, err
+	}
+	userUid, err := h.service.GetUserUid(ctx)
+	if err != nil {
+		return nil, err
+	}
+	existPipelineRelease, err := h.GetUserPipelineRelease(ctx, &pipelinePB.GetUserPipelineReleaseRequest{Name: req.GetName()})
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.DeletePipelineReleaseResponse{}, err
+		return nil, err
 	}
 
-	existPipelineRelease, err := h.GetPipelineRelease(ctx, &pipelinePB.GetPipelineReleaseRequest{Name: req.GetName()})
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.DeletePipelineReleaseResponse{}, err
-	}
-
-	id := strings.Split(req.Name, "/")[3]
-	pipelineId := strings.Split(req.Name, "/")[1]
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := h.service.DeletePipelineRelease(id, pipeline.UID); err != nil {
+	if err := h.service.DeleteUserPipelineReleaseByID(ctx, ns, userUid, pipeline.UID, releaseId); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.DeletePipelineReleaseResponse{}, err
+		return nil, err
 	}
 
 	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
 	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent))); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.DeletePipelineReleaseResponse{}, err
+		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(existPipelineRelease.GetRelease()),
 	)))
 
-	return &pipelinePB.DeletePipelineReleaseResponse{}, nil
+	return &pipelinePB.DeleteUserPipelineReleaseResponse{}, nil
 }
 
-func (h *PublicHandler) SetDefaultPipelineRelease(ctx context.Context, req *pipelinePB.SetDefaultPipelineReleaseRequest) (*pipelinePB.SetDefaultPipelineReleaseResponse, error) {
+func (h *PublicHandler) SetDefaultUserPipelineRelease(ctx context.Context, req *pipelinePB.SetDefaultUserPipelineReleaseRequest) (*pipelinePB.SetDefaultUserPipelineReleaseResponse, error) {
 
-	eventName := "SetDefaultPipelineRelease"
+	eventName := "SetDefaultUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1309,56 +1491,63 @@ func (h *PublicHandler) SetDefaultPipelineRelease(ctx context.Context, req *pipe
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.SetDefaultPipelineReleaseResponse{}, err
+		return nil, err
 	}
-
-	existPipelineRelease, err := h.GetPipelineRelease(ctx, &pipelinePB.GetPipelineReleaseRequest{Name: req.GetName()})
-
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.SetDefaultPipelineReleaseResponse{}, err
-	}
-
-	id := strings.Split(req.Name, "/")[3]
-	pipelineId := strings.Split(req.Name, "/")[1]
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := h.service.SetDefaultPipelineRelease(id, pipeline.UID); err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.SetDefaultPipelineReleaseResponse{}, err
-	}
+	existPipelineRelease, err := h.GetUserPipelineRelease(ctx, &pipelinePB.GetUserPipelineReleaseRequest{Name: req.GetName()})
 
-	dbPipelineRelease, err := h.service.GetPipelineReleaseByID(id, pipeline.UID, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.SetDefaultPipelineReleaseResponse{}, err
+		return nil, err
 	}
 
-	pbPipelineRelease := DBToPBPipelineRelease(ctx, pipeline.ID, dbPipelineRelease)
-	if err := IncludeDetailInRecipe(pbPipelineRelease.Recipe, h.service); err != nil {
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := h.service.SetDefaultUserPipelineReleaseByID(ctx, ns, userUid, pipeline.UID, releaseId); err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, pipeline.UID, releaseId, false)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	if err := h.service.IncludeDetailInRecipe(pbPipelineRelease.Recipe); err != nil {
+		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(existPipelineRelease.GetRelease()),
 	)))
 
-	return &pipelinePB.SetDefaultPipelineReleaseResponse{Release: pbPipelineRelease}, nil
+	return &pipelinePB.SetDefaultUserPipelineReleaseResponse{Release: pbPipelineRelease}, nil
 }
 
-func (h *PublicHandler) RestorePipelineRelease(ctx context.Context, req *pipelinePB.RestorePipelineReleaseRequest) (*pipelinePB.RestorePipelineReleaseResponse, error) {
+func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pipelinePB.RestoreUserPipelineReleaseRequest) (*pipelinePB.RestoreUserPipelineReleaseResponse, error) {
 
-	eventName := "RestorePipelineRelease"
+	eventName := "RestoreUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1368,101 +1557,110 @@ func (h *PublicHandler) RestorePipelineRelease(ctx context.Context, req *pipelin
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.RestorePipelineReleaseResponse{}, err
+		return nil, err
 	}
-
-	existPipelineRelease, err := h.GetPipelineRelease(ctx, &pipelinePB.GetPipelineReleaseRequest{Name: req.GetName()})
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.RestorePipelineReleaseResponse{}, err
-	}
-
-	id := strings.Split(req.Name, "/")[3]
-	pipelineId := strings.Split(req.Name, "/")[1]
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := h.service.RestorePipelineRelease(id, pipeline.UID); err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.RestorePipelineReleaseResponse{}, err
-	}
-
-	dbPipelineRelease, err := h.service.GetPipelineReleaseByID(id, pipeline.UID, false)
+	existPipelineRelease, err := h.GetUserPipelineRelease(ctx, &pipelinePB.GetUserPipelineReleaseRequest{Name: req.GetName()})
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.RestorePipelineReleaseResponse{}, err
+		return nil, err
 	}
 
-	pbPipelineRelease := DBToPBPipelineRelease(ctx, pipeline.ID, dbPipelineRelease)
-	if err := IncludeDetailInRecipe(pbPipelineRelease.Recipe, h.service); err != nil {
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := h.service.RestoreUserPipelineReleaseByID(ctx, ns, userUid, pipeline.UID, releaseId); err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, pipeline.UID, releaseId, false)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	if err := h.service.IncludeDetailInRecipe(pbPipelineRelease.Recipe); err != nil {
+		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(existPipelineRelease.GetRelease()),
 	)))
 
-	return &pipelinePB.RestorePipelineReleaseResponse{Release: pbPipelineRelease}, nil
+	return &pipelinePB.RestoreUserPipelineReleaseResponse{Release: pbPipelineRelease}, nil
 }
 
-func (h *PublicHandler) PreTriggerPipelineRelease(ctx context.Context, req TriggerPipelineRequestInterface) (*mgmtPB.User, *datamodel.Pipeline, *datamodel.PipelineRelease, bool, error) {
+func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req TriggerPipelineRequestInterface) (resource.Namespace, uuid.UUID, string, *datamodel.Pipeline, *datamodel.PipelineRelease, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
-		return nil, nil, nil, false, status.Error(codes.InvalidArgument, err.Error())
+		return resource.Namespace{}, uuid.Nil, "", nil, nil, false, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
-		return nil, nil, nil, false, err
+		return ns, uuid.Nil, "", nil, nil, false, err
 	}
-
-	id := strings.Split(req.GetName(), "/")[3]
-	pipelineId := strings.Split(req.GetName(), "/")[1]
-
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	userUid, err := h.service.GetUserUid(ctx)
 	if err != nil {
-		return nil, nil, nil, false, err
+		return ns, uuid.Nil, "", nil, nil, false, err
 	}
-	if id == "default" {
-		dbPipelineRelease, err := h.service.GetPipelineReleaseByUID(pipeline.DefaultReleaseUID, pipeline.UID, false)
+
+	dbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, false)
+	if err != nil {
+		return ns, uuid.Nil, "", nil, nil, false, err
+	}
+
+	if releaseId == "default" {
+		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, dbPipeline.UID, dbPipeline.DefaultReleaseUID, false)
 		if err != nil {
-			return nil, nil, nil, false, err
+			return ns, uuid.Nil, "", nil, nil, false, err
 		}
-		id = dbPipelineRelease.ID
+		releaseId = dbPipelineRelease.ID
 	}
 
-	dbPipelineRelease, err := h.service.GetPipelineReleaseByID(id, pipeline.UID, false)
+	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, dbPipeline.UID, releaseId, false)
 	if err != nil {
-		return nil, nil, nil, false, err
+		return ns, uuid.Nil, "", nil, nil, false, err
 	}
 	returnTraces := false
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		if len(md.Get(constant.ReturnTracesKey)) > 0 {
 			returnTraces, err = strconv.ParseBool(md.Get(constant.ReturnTracesKey)[0])
 			if err != nil {
-				return nil, nil, nil, false, err
+				return ns, uuid.Nil, "", nil, nil, false, err
 			}
 		}
 	}
 
-	return owner, pipeline, dbPipelineRelease, returnTraces, nil
+	return ns, userUid, releaseId, dbPipeline, dbPipelineRelease, returnTraces, nil
 
 }
 
-func (h *PublicHandler) TriggerPipelineRelease(ctx context.Context, req *pipelinePB.TriggerPipelineReleaseRequest) (*pipelinePB.TriggerPipelineReleaseResponse, error) {
+func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pipelinePB.TriggerUserPipelineReleaseRequest) (*pipelinePB.TriggerUserPipelineReleaseResponse, error) {
 
 	startTime := time.Now()
-	eventName := "TriggerPipelineRelease"
+	eventName := "TriggerUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1472,14 +1670,14 @@ func (h *PublicHandler) TriggerPipelineRelease(ctx context.Context, req *pipelin
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, dbPipeline, dbPipelineRelease, returnTraces, err := h.PreTriggerPipelineRelease(ctx, req)
+	ns, userUid, releaseId, dbPipeline, dbPipelineRelease, returnTraces, err := h.preTriggerUserPipelineRelease(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.TriggerPipelineReleaseResponse{}, err
+		return nil, err
 	}
 
 	dataPoint := utils.UsageMetricData{
-		OwnerUID:           *owner.Uid,
+		OwnerUID:           userUid.String(),
 		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
 		PipelineID:         dbPipelineRelease.ID,
 		PipelineUID:        dbPipelineRelease.UID.String(),
@@ -1487,19 +1685,19 @@ func (h *PublicHandler) TriggerPipelineRelease(ctx context.Context, req *pipelin
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
 
-	resp, err := h.service.TriggerPipelineRelease(ctx, req, dbPipeline.UID, dbPipelineRelease, logUUID.String(), returnTraces)
+	outputs, metadata, err := h.service.TriggerUserPipelineReleaseByID(ctx, ns, userUid, dbPipeline.UID, releaseId, req.Inputs, logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 		_ = h.service.WriteNewDataPoint(ctx, dataPoint)
-		return &pipelinePB.TriggerPipelineReleaseResponse{}, err
+		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipelineRelease),
 	)))
@@ -1510,12 +1708,12 @@ func (h *PublicHandler) TriggerPipelineRelease(ctx context.Context, req *pipelin
 		logger.Warn(err.Error())
 	}
 
-	return resp, nil
+	return &pipelinePB.TriggerUserPipelineReleaseResponse{Outputs: outputs, Metadata: metadata}, nil
 }
 
-func (h *PublicHandler) TriggerAsyncPipelineRelease(ctx context.Context, req *pipelinePB.TriggerAsyncPipelineReleaseRequest) (*pipelinePB.TriggerAsyncPipelineReleaseResponse, error) {
+func (h *PublicHandler) TriggerAsyncUserPipelineRelease(ctx context.Context, req *pipelinePB.TriggerAsyncUserPipelineReleaseRequest) (*pipelinePB.TriggerAsyncUserPipelineReleaseResponse, error) {
 
-	eventName := "TriggerAsyncPipelineRelease"
+	eventName := "TriggerAsyncUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1525,32 +1723,32 @@ func (h *PublicHandler) TriggerAsyncPipelineRelease(ctx context.Context, req *pi
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, dbPipeline, dbPipelineRelease, returnTraces, err := h.PreTriggerPipelineRelease(ctx, req)
+	ns, userUid, releaseId, dbPipeline, dbPipelineRelease, returnTraces, err := h.preTriggerUserPipelineRelease(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.TriggerAsyncPipelineReleaseResponse{}, err
+		return nil, err
 	}
 
-	resp, err := h.service.TriggerAsyncPipelineRelease(ctx, req, logUUID.String(), dbPipeline.UID, dbPipelineRelease, returnTraces)
+	operation, err := h.service.TriggerAsyncUserPipelineReleaseByID(ctx, ns, userUid, dbPipeline.UID, releaseId, req.Inputs, logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pipelinePB.TriggerAsyncPipelineReleaseResponse{}, err
+		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		owner,
+		userUid,
 		eventName,
 		custom_otel.SetEventResource(dbPipelineRelease),
 	)))
 
-	return resp, nil
+	return &pipelinePB.TriggerAsyncUserPipelineReleaseResponse{Operation: operation}, nil
 }
 
-func (h *PublicHandler) WatchPipelineRelease(ctx context.Context, req *pipelinePB.WatchPipelineReleaseRequest) (*pipelinePB.WatchPipelineReleaseResponse, error) {
+func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipelinePB.WatchUserPipelineReleaseRequest) (*pipelinePB.WatchUserPipelineReleaseResponse, error) {
 
-	eventName := "WatchPipelineRelease"
+	eventName := "WatchUserPipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1560,64 +1758,57 @@ func (h *PublicHandler) WatchPipelineRelease(ctx context.Context, req *pipelineP
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := resource.GetOwner(ctx, h.service.GetMgmtPrivateServiceClient(), h.service.GetRedisClient())
+	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		logger.Info(string(custom_otel.NewLogMessage(
-			span,
-			logUUID.String(),
-			owner,
-			eventName,
-			custom_otel.SetErrorMessage(err.Error()),
-		)))
-		return &pipelinePB.WatchPipelineReleaseResponse{}, err
+		return nil, err
+	}
+	userUid, err := h.service.GetUserUid(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	id := strings.Split(req.GetName(), "/")[3]
-	pipelineId := strings.Split(req.GetName(), "/")[1]
-
-	pipeline, err := h.service.GetPipelineByID(pipelineId, owner, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
 			logUUID.String(),
-			owner,
+			userUid,
 			eventName,
 			custom_otel.SetErrorMessage(err.Error()),
 			custom_otel.SetEventResource(req.GetName()),
 		)))
 		return nil, err
 	}
-	if id == "default" {
-		dbPipelineRelease, err := h.service.GetPipelineReleaseByUID(pipeline.DefaultReleaseUID, pipeline.UID, false)
+	if releaseId == "default" {
+		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, pipeline.UID, pipeline.DefaultReleaseUID, false)
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			logger.Info(string(custom_otel.NewLogMessage(
 				span,
 				logUUID.String(),
-				owner,
+				userUid,
 				eventName,
 				custom_otel.SetErrorMessage(err.Error()),
 				custom_otel.SetEventResource(req.GetName()),
 			)))
 			return nil, err
 		}
-		id = dbPipelineRelease.ID
+		releaseId = dbPipelineRelease.ID
 	}
 
-	dbPipelineRelease, err := h.service.GetPipelineReleaseByID(id, pipeline.UID, true)
+	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, pipeline.UID, releaseId, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
 			logUUID.String(),
-			owner,
+			userUid,
 			eventName,
 			custom_otel.SetErrorMessage(err.Error()),
 			custom_otel.SetEventResource(req.GetName()),
 		)))
-		return &pipelinePB.WatchPipelineReleaseResponse{}, err
+		return nil, err
 	}
 	state, err := h.service.GetResourceState(dbPipelineRelease.UID)
 	if err != nil {
@@ -1625,15 +1816,15 @@ func (h *PublicHandler) WatchPipelineRelease(ctx context.Context, req *pipelineP
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
 			logUUID.String(),
-			owner,
+			userUid,
 			eventName,
 			custom_otel.SetErrorMessage(err.Error()),
 			custom_otel.SetEventResource(req.GetName()),
 		)))
-		return &pipelinePB.WatchPipelineReleaseResponse{}, err
+		return nil, err
 	}
 
-	return &pipelinePB.WatchPipelineReleaseResponse{
+	return &pipelinePB.WatchUserPipelineReleaseResponse{
 		State: *state,
 	}, nil
 }

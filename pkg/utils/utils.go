@@ -30,8 +30,8 @@ func InjectOwnerToContext(ctx context.Context, owner *mgmtPB.User) context.Conte
 	return ctx
 }
 func InjectOwnerToContextWithOwnerPermalink(ctx context.Context, permalink string) context.Context {
-	uid, _ := resource.GetPermalinkUID(permalink)
-	ctx = metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", uid)
+	uid, _ := resource.GetRscPermalinkUID(permalink)
+	ctx = metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", uid.String())
 	return ctx
 }
 

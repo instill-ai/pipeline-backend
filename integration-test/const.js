@@ -63,6 +63,8 @@ export const dogRGBAImg = encoding.b64encode(
   open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog-rgba.png`, "b")
 );
 
+export const namespace = "users/instill-ai"
+
 export const params = {
   headers: {
     "Content-Type": "application/json",
@@ -124,7 +126,7 @@ export const simpleRecipe = {
       },
       {
         id: "d01",
-        resource_name: `connector-resources/${dstCSVConnID1}`,
+        resource_name: `users/instill-ai/connector-resources/${dstCSVConnID1}`,
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
           text: "{ start.body.input }"
@@ -132,7 +134,7 @@ export const simpleRecipe = {
       },
       {
         id: "d02",
-        resource_name: `connector-resources/${dstCSVConnID2}`,
+        resource_name: `users/instill-ai/connector-resources/${dstCSVConnID2}`,
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
           text: "{ start.body.input }"
@@ -202,7 +204,7 @@ export const simpleRecipeDupId = {
       },
       {
         id: "d01",
-        resource_name: `connector-resources/${dstCSVConnID1}`,
+        resource_name: `users/instill-ai/connector-resources/${dstCSVConnID1}`,
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
           text: "{ start.body.input }"
@@ -210,7 +212,7 @@ export const simpleRecipeDupId = {
       },
       {
         id: "d01",
-        resource_name: `connector-resources/${dstCSVConnID2}`,
+        resource_name: `users/instill-ai/connector-resources/${dstCSVConnID2}`,
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
           text: "{ start.body.input }"

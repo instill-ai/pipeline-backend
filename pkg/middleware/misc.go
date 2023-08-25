@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 )
 
@@ -154,8 +153,6 @@ func CustomMatcher(key string) (string, bool) {
 
 	switch key {
 	case "request-id":
-		return key, true
-	case constant.HeaderOwnerIDKey:
 		return key, true
 	case "Instill-Return-Traces":
 		return key, true

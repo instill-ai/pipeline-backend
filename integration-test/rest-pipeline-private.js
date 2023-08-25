@@ -43,12 +43,12 @@ export function CheckList() {
       check(
         http.request(
           "POST",
-          `${pipelinePublicHost}/v1alpha/pipelines`,
+          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
           JSON.stringify(reqBody),
           constant.params
         ),
         {
-          [`POST /v1alpha/pipelines x${reqBodies.length} response status is 201`]:
+          [`POST /v1alpha/${constant.namespace}/pipelines x${reqBodies.length} response status is 201`]:
             (r) => r.status === 201,
         }
       );
@@ -202,12 +202,12 @@ export function CheckList() {
       check(
         http.request(
           "DELETE",
-          `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`,
+          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
           JSON.stringify(reqBody),
           constant.params
         ),
         {
-          [`DELETE /v1alpha/pipelines x${reqBodies.length} response status is 204`]:
+          [`DELETE /v1alpha/${constant.namespace}/pipelines x${reqBodies.length} response status is 204`]:
             (r) => r.status === 204,
         }
       );
@@ -227,13 +227,13 @@ export function CheckLookUp() {
     // Create a pipeline
     var res = http.request(
       "POST",
-      `${pipelinePublicHost}/v1alpha/pipelines`,
+      `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
       JSON.stringify(reqBody),
       constant.params
     );
 
     check(res, {
-      "POST /v1alpha/pipelines response status is 201": (r) => r.status === 201,
+      "POST /v1alpha/${constant.namespace}/pipelines response status is 201": (r) => r.status === 201,
     });
 
     check(
@@ -247,7 +247,7 @@ export function CheckLookUp() {
           }/lookUp response status is 200"`]: (r) => r.status === 200,
         [`GET /v1alpha/admin/pipelines/${res.json().pipeline.uid
           }/lookUp response pipeline new name"`]: (r) =>
-            r.json().pipeline.name === `pipelines/${reqBody.id}`,
+            r.json().pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       }
     );
 
@@ -255,12 +255,12 @@ export function CheckLookUp() {
     check(
       http.request(
         "DELETE",
-        `${pipelinePublicHost}/v1alpha/pipelines/${reqBody.id}`,
+        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
         constant.params
       ),
       {
-        [`DELETE /v1alpha/pipelines/${reqBody.id} response status 204`]: (r) =>
+        [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
           r.status === 204,
       }
     );

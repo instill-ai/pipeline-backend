@@ -20,7 +20,7 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-var forward_PipelinePublicService_TriggerPipeline_0 = runtime.ForwardResponseMessage
+var forward_PipelinePublicService_TriggerUserPipeline_0 = runtime.ForwardResponseMessage
 
 func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Request) ([]*structpb.Struct, error) {
 
@@ -187,7 +187,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServic
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=pipelines/*}/trigger"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerUserPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=users/*/pipelines/*}/trigger"))
 	if err != nil {
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return
@@ -200,7 +200,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServic
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err = request_PipelinePublicService_TriggerPipeline_0_form(annotatedContext, inboundMarshaler, client, &pipelinePB.TriggerPipelineRequest{
+		resp, md, err = request_PipelinePublicService_TriggerUserPipeline_0_form(annotatedContext, inboundMarshaler, client, &pipelinePB.TriggerUserPipelineRequest{
 			Inputs: inputs,
 		}, pathParams)
 		if err != nil {
@@ -209,7 +209,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServic
 		}
 
 	} else {
-		resp, md, err = request_PipelinePublicService_TriggerPipeline_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err = request_PipelinePublicService_TriggerUserPipeline_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
@@ -218,7 +218,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServic
 
 	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 
-	forward_PipelinePublicService_TriggerPipeline_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	forward_PipelinePublicService_TriggerUserPipeline_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 }
 
@@ -234,7 +234,7 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pipelinePB.PipelinePublicS
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=pipelines/*}/triggerAsync"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncUserPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=users/*/pipelines/*}/triggerAsync"))
 	if err != nil {
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return
@@ -247,7 +247,7 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pipelinePB.PipelinePublicS
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err = request_PipelinePublicService_TriggerAsyncPipeline_0_form(annotatedContext, inboundMarshaler, client, &pipelinePB.TriggerAsyncPipelineRequest{
+		resp, md, err = request_PipelinePublicService_TriggerAsyncUserPipeline_0_form(annotatedContext, inboundMarshaler, client, &pipelinePB.TriggerAsyncUserPipelineRequest{
 			Inputs: inputs,
 		}, pathParams)
 		if err != nil {
@@ -256,7 +256,7 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pipelinePB.PipelinePublicS
 		}
 
 	} else {
-		resp, md, err = request_PipelinePublicService_TriggerAsyncPipeline_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err = request_PipelinePublicService_TriggerAsyncUserPipeline_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
@@ -265,13 +265,13 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pipelinePB.PipelinePublicS
 
 	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 
-	forward_PipelinePublicService_TriggerPipeline_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	forward_PipelinePublicService_TriggerUserPipeline_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerPipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinePB.TriggerPipelineRequest
+func request_PipelinePublicService_TriggerUserPipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pipelinePB.TriggerUserPipelineRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -299,13 +299,13 @@ func request_PipelinePublicService_TriggerPipeline_0(ctx context.Context, marsha
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
-	msg, err := client.TriggerPipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerUserPipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerPipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, protoReq *pipelinePB.TriggerPipelineRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerUserPipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, protoReq *pipelinePB.TriggerUserPipelineRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -325,13 +325,13 @@ func request_PipelinePublicService_TriggerPipeline_0_form(ctx context.Context, m
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
-	msg, err := client.TriggerPipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerUserPipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func request_PipelinePublicService_TriggerAsyncPipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinePB.TriggerAsyncPipelineRequest
+func request_PipelinePublicService_TriggerAsyncUserPipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pipelinePB.TriggerAsyncUserPipelineRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -359,13 +359,13 @@ func request_PipelinePublicService_TriggerAsyncPipeline_0(ctx context.Context, m
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
-	msg, err := client.TriggerAsyncPipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerAsyncUserPipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerAsyncPipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, protoReq *pipelinePB.TriggerAsyncPipelineRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerAsyncUserPipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, protoReq *pipelinePB.TriggerAsyncUserPipelineRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -385,7 +385,7 @@ func request_PipelinePublicService_TriggerAsyncPipeline_0_form(ctx context.Conte
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
-	msg, err := client.TriggerAsyncPipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.TriggerAsyncUserPipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }

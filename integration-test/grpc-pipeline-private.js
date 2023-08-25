@@ -59,13 +59,14 @@ export function CheckList() {
     for (const reqBody of reqBodies) {
       check(
         clientPublic.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
           {
+            parent: `${constant.namespace}`,
             pipeline: reqBody,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline x${reqBodies.length} response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline x${reqBodies.length} response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -214,13 +215,13 @@ export function CheckList() {
     for (const reqBody of reqBodies) {
       check(
         clientPublic.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${reqBody.id}`,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -250,14 +251,15 @@ export function CheckLookUp() {
 
     // Create a pipeline
     var res = clientPublic.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
       {
+        parent: `${constant.namespace}`,
         pipeline: reqBody,
       }
     );
 
     check(res, {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
+      [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
@@ -265,27 +267,27 @@ export function CheckLookUp() {
       clientPrivate.invoke(
         "vdp.pipeline.v1alpha.PipelinePrivateService/LookUpPipelineAdmin",
         {
-          permalink: `pipelines/${res.message.pipeline.uid}`,
+          permalink: `${constant.namespace}/pipelines/${res.message.pipeline.uid}`,
         }
       ),
       {
         [`vdp.pipeline.v1alpha.PipelinePrivateService/LookUpPipelineAdmin response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
         [`vdp.pipeline.v1alpha.PipelinePrivateService/LookUpPipelineAdmin response pipeline new name`]:
-          (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
+          (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       }
     );
 
     // Delete the pipeline
     check(
       clientPublic.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+        `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );

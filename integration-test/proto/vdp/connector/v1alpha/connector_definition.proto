@@ -69,7 +69,7 @@ message ConnectorDefinition {
   // ConnectorDefinition spec
   Spec spec = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connector Type
-  ConnectorType connector_type = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  ConnectorType type = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
   // ConnectorDefinition tombstone, i.e., if not set or false, the
   // configuration is active, or otherwise, if true, this configuration is
   // permanently off
