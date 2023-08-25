@@ -26,7 +26,7 @@ func (s *service) checkState(recipePermalink *datamodel.Recipe) error {
 	for _, component := range recipePermalink.Components {
 
 		if IsConnector(component.ResourceName) {
-			connectorUID, err := resource.GetPermalinkUID(component.ResourceName)
+			connectorUID, err := resource.GetRscPermalinkUID(component.ResourceName)
 			if err != nil {
 				return err
 			}

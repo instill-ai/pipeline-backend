@@ -11,7 +11,7 @@
       "patternProperties": {
         "^[a-zA-Z_][a-zA-Z_0-9]*$": {
           "type": "object",
-          "required": ["type", "display_name"],
+          "required": ["type"],
           "properties": {
             "type": {
               "enum": [
@@ -33,7 +33,10 @@
               "title": "Type",
               "description": "Data Type"
             },
-            "display_name": {
+            "title": {
+              "type": "string"
+            },
+            "description": {
               "type": "string"
             }
           }

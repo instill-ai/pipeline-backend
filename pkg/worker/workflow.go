@@ -32,7 +32,7 @@ type TriggerAsyncPipelineWorkflowRequest struct {
 	PipelineId                 string
 	PipelineUid                uuid.UUID
 	PipelineRecipe             *datamodel.Recipe
-	Owner                      string
+	OwnerPermalink             string
 	ReturnTraces               bool
 }
 
@@ -111,7 +111,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	logger.Info("TriggerAsyncPipelineWorkflow started")
 
 	dataPoint := utils.UsageMetricData{
-		OwnerUID:           strings.Split(param.Owner, "/")[1],
+		OwnerUID:           strings.Split(param.OwnerPermalink, "/")[1],
 		TriggerMode:        mgmtPB.Mode_MODE_ASYNC,
 		PipelineID:         param.PipelineId,
 		PipelineUID:        param.PipelineUid.String(),
@@ -272,11 +272,11 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			if err := workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
 				InputBlobRedisKeys: inputBlobRedisKeys,
 				Name:               comp.ResourceName,
-				OwnerPermalink:     param.Owner,
+				OwnerPermalink:     param.OwnerPermalink,
 				PipelineMetadata: PipelineMetadataStruct{
 					Id:        param.PipelineId,
 					Uid:       param.PipelineUid.String(),
-					Owner:     param.Owner,
+					Owner:     param.OwnerPermalink,
 					TriggerId: workflow.GetInfo(ctx).WorkflowExecution.ID,
 				},
 			}).Get(ctx, &result); err != nil {
@@ -341,14 +341,14 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		}
 	} else {
 		for idx := 0; idx < batchSize; idx++ {
-			pipelineOutputJson, err := json.Marshal(outputCache[idx][responseCompId].(map[string]interface{})["body"])
-			if err != nil {
-				return err
-			}
-			pipelineOutput := &structpb.Struct{}
-			err = protojson.Unmarshal(pipelineOutputJson, pipelineOutput)
-			if err != nil {
-				return err
+			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+			for key, value := range outputCache[idx][responseCompId].(map[string]interface{})["body"].(map[string]interface{}) {
+				structVal, err := structpb.NewValue(value.(map[string]interface{})["value"])
+				if err != nil {
+					return err
+				}
+				pipelineOutput.Fields[key] = structVal
+
 			}
 			pipelineOutputs = append(pipelineOutputs, pipelineOutput)
 
@@ -368,7 +368,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		}
 	}
 
-	pipelineResp := &pipelinePB.TriggerPipelineResponse{
+	pipelineResp := &pipelinePB.TriggerUserPipelineResponse{
 		Outputs: pipelineOutputs,
 		Metadata: &pipelinePB.TriggerMetadata{
 			Traces: traces,
@@ -408,7 +408,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		return nil, err
 	}
 
-	resp, err := w.connectorPublicServiceClient.ExecuteConnectorResource(
+	resp, err := w.connectorPublicServiceClient.ExecuteUserConnectorResource(
 		utils.InjectOwnerToContextWithOwnerPermalink(
 			metadata.AppendToOutgoingContext(ctx,
 				"id", param.PipelineMetadata.Id,
@@ -417,7 +417,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 				"trigger_id", param.PipelineMetadata.TriggerId,
 			),
 			param.OwnerPermalink),
-		&connectorPB.ExecuteConnectorResourceRequest{
+		&connectorPB.ExecuteUserConnectorResourceRequest{
 			Name:   param.Name,
 			Inputs: inputs,
 		},

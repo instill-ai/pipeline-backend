@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/grpc/codes"
@@ -71,16 +70,19 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelinesAdmin(req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	dbPipelines, totalSize, nextPageToken, err := h.service.ListPipelinesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}
 
 	pbPipelines := []*pipelinePB.Pipeline{}
 	for idx := range dbPipelines {
-		pbPipeline := DBToPBPipeline(ctx, &dbPipelines[idx])
+		pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipelines[idx])
+		if err != nil {
+			return &pipelinePB.ListPipelinesAdminResponse{}, err
+		}
 		if !isBasicView {
-			if err := IncludeDetailInRecipeAdmin(pbPipeline.Recipe, h.service); err != nil {
+			if err := h.service.IncludeDetailInRecipeAdmin(pbPipeline.Recipe); err != nil {
 				return nil, err
 			}
 		}
@@ -105,24 +107,22 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelineP
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	uidStr, err := resource.GetPermalinkUID(req.GetPermalink())
+	uid, err := resource.GetRscPermalinkUID(req.GetPermalink())
 	if err != nil {
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err
 	}
 
-	uid, err := uuid.FromString(uidStr)
+	dbPipeline, err := h.service.GetPipelineByUIDAdmin(ctx, uid, isBasicView)
 	if err != nil {
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err
 	}
 
-	dbPipeline, err := h.service.GetPipelineByUIDAdmin(uid, isBasicView)
+	pbPipeline, err := h.service.DBToPBPipeline(ctx, dbPipeline)
 	if err != nil {
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err
 	}
-
-	pbPipeline := DBToPBPipeline(ctx, dbPipeline)
 	if !isBasicView {
-		if err := IncludeDetailInRecipeAdmin(pbPipeline.Recipe, h.service); err != nil {
+		if err := h.service.IncludeDetailInRecipeAdmin(pbPipeline.Recipe); err != nil {
 			return nil, err
 		}
 	}
@@ -185,20 +185,23 @@ func (h *PrivateHandler) ListPipelineReleasesAdmin(ctx context.Context, req *pip
 		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
 	}
 
-	dbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleasesAdmin(req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	dbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleasesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
 	if err != nil {
 		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
 	}
 
 	pbPipelineReleases := []*pipelinePB.PipelineRelease{}
 	for idx := range dbPipelineReleases {
-		dbPipeline, err := h.service.GetPipelineByUIDAdmin(dbPipelineReleases[idx].PipelineUID, true)
+		dbPipeline, err := h.service.GetPipelineByUIDAdmin(ctx, dbPipelineReleases[idx].PipelineUID, true)
 		if err != nil {
 			return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
 		}
-		pbPipelineRelease := DBToPBPipelineRelease(ctx, dbPipeline.ID, &dbPipelineReleases[idx])
+		pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, dbPipeline.ID, dbPipelineReleases[idx])
+		if err != nil {
+			return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
+		}
 		if !isBasicView {
-			if err := IncludeDetailInRecipeAdmin(pbPipelineRelease.Recipe, h.service); err != nil {
+			if err := h.service.IncludeDetailInRecipeAdmin(pbPipelineRelease.Recipe); err != nil {
 				return nil, err
 			}
 		}

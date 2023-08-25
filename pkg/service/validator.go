@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"google.golang.org/grpc/codes"
@@ -17,7 +16,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
-	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 )
 
@@ -30,7 +28,7 @@ const (
 	Pull        SourceCategory = 3
 )
 
-func (s *service) checkRecipe(owner *mgmtPB.User, recipePermalink *datamodel.Recipe) error {
+func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.Recipe) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -73,7 +71,7 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipePermalink *datamodel.Rec
 		if IsConnector(recipePermalink.Components[idx].ResourceName) {
 
 			checkResp, err := s.connectorPrivateServiceClient.CheckConnectorResource(
-				utils.InjectOwnerToContext(ctx, owner),
+				utils.InjectOwnerToContextWithOwnerPermalink(ctx, ownerPermalink),
 				&connectorPB.CheckConnectorResourceRequest{
 					Permalink: recipePermalink.Components[idx].ResourceName,
 				},
@@ -110,12 +108,12 @@ func (s *service) checkRecipe(owner *mgmtPB.User, recipePermalink *datamodel.Rec
 		}
 		if IsOperatorDefinition(recipePermalink.Components[idx].DefinitionName) {
 
-			uid, err := resource.GetPermalinkUID(recipePermalink.Components[idx].DefinitionName)
+			uid, err := resource.GetRscPermalinkUID(recipePermalink.Components[idx].DefinitionName)
 			if err != nil {
 				return err
 			}
 
-			def, err := s.operator.GetOperatorDefinitionByUid(uuid.FromStringOrNil(uid))
+			def, err := s.operator.GetOperatorDefinitionByUid(uid)
 			if err != nil {
 				return err
 			}

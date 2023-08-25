@@ -11,6 +11,8 @@ import (
 	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gorm.io/gorm"
+
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 // BaseDynamic contains common columns for all tables with dynamic UUID as primary key generated when creating
@@ -62,6 +64,9 @@ type Component struct {
 	ResourceName   string           `json:"resource_name"`
 	Configuration  *structpb.Struct `json:"configuration"`
 }
+
+// PipelineVisibility is an alias type for Protobuf enum ConnectorType
+type PipelineVisibility pipelinePB.Pipeline_Visibility
 
 // Scan function for custom GORM type Recipe
 func (r *Recipe) Scan(value interface{}) error {

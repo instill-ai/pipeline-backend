@@ -112,7 +112,7 @@ func (o *Operator) ListOperatorDefinitions() []*pipelinePB.OperatorDefinition {
 func (o *Operator) GetOperatorDefinitionByUid(defUid uuid.UUID) (*pipelinePB.OperatorDefinition, error) {
 	val, ok := o.definitionMapByUid[defUid]
 	if !ok {
-		return nil, fmt.Errorf("get operator defintion error1 %s", defUid.String())
+		return nil, fmt.Errorf("get operator definition error1 %s", defUid.String())
 	}
 	return val, nil
 }
@@ -121,7 +121,7 @@ func (o *Operator) GetOperatorDefinitionById(defId string) (*pipelinePB.Operator
 
 	val, ok := o.definitionMapById[defId]
 	if !ok {
-		return nil, fmt.Errorf("get operator defintion error %s", defId)
+		return nil, fmt.Errorf("get operator definition error %s", defId)
 	}
 	return val, nil
 }

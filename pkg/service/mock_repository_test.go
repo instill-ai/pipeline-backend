@@ -5,6 +5,7 @@
 package service_test
 
 import (
+	context "context"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -36,174 +37,174 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
-// CreatePipeline mocks base method.
-func (m *MockRepository) CreatePipeline(arg0 *datamodel.Pipeline) error {
+// CreateUserPipeline mocks base method.
+func (m *MockRepository) CreateUserPipeline(arg0 context.Context, arg1, arg2 string, arg3 *datamodel.Pipeline) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePipeline", arg0)
+	ret := m.ctrl.Call(m, "CreateUserPipeline", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreatePipeline indicates an expected call of CreatePipeline.
-func (mr *MockRepositoryMockRecorder) CreatePipeline(arg0 interface{}) *gomock.Call {
+// CreateUserPipeline indicates an expected call of CreateUserPipeline.
+func (mr *MockRepositoryMockRecorder) CreateUserPipeline(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePipeline", reflect.TypeOf((*MockRepository)(nil).CreatePipeline), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserPipeline", reflect.TypeOf((*MockRepository)(nil).CreateUserPipeline), arg0, arg1, arg2, arg3)
 }
 
-// CreatePipelineRelease mocks base method.
-func (m *MockRepository) CreatePipelineRelease(arg0 *datamodel.PipelineRelease) error {
+// CreateUserPipelineRelease mocks base method.
+func (m *MockRepository) CreateUserPipelineRelease(arg0 context.Context, arg1, arg2 string, arg3 uuid.UUID, arg4 *datamodel.PipelineRelease) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePipelineRelease", arg0)
+	ret := m.ctrl.Call(m, "CreateUserPipelineRelease", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreatePipelineRelease indicates an expected call of CreatePipelineRelease.
-func (mr *MockRepositoryMockRecorder) CreatePipelineRelease(arg0 interface{}) *gomock.Call {
+// CreateUserPipelineRelease indicates an expected call of CreateUserPipelineRelease.
+func (mr *MockRepositoryMockRecorder) CreateUserPipelineRelease(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePipelineRelease", reflect.TypeOf((*MockRepository)(nil).CreatePipelineRelease), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserPipelineRelease", reflect.TypeOf((*MockRepository)(nil).CreateUserPipelineRelease), arg0, arg1, arg2, arg3, arg4)
 }
 
-// DeletePipeline mocks base method.
-func (m *MockRepository) DeletePipeline(arg0, arg1 string) error {
+// DeleteUserPipelineByID mocks base method.
+func (m *MockRepository) DeleteUserPipelineByID(arg0 context.Context, arg1, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePipeline", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteUserPipelineByID", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeletePipeline indicates an expected call of DeletePipeline.
-func (mr *MockRepositoryMockRecorder) DeletePipeline(arg0, arg1 interface{}) *gomock.Call {
+// DeleteUserPipelineByID indicates an expected call of DeleteUserPipelineByID.
+func (mr *MockRepositoryMockRecorder) DeleteUserPipelineByID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePipeline", reflect.TypeOf((*MockRepository)(nil).DeletePipeline), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserPipelineByID", reflect.TypeOf((*MockRepository)(nil).DeleteUserPipelineByID), arg0, arg1, arg2, arg3)
 }
 
-// DeletePipelineRelease mocks base method.
-func (m *MockRepository) DeletePipelineRelease(arg0 string, arg1 uuid.UUID) error {
+// DeleteUserPipelineReleaseByID mocks base method.
+func (m *MockRepository) DeleteUserPipelineReleaseByID(arg0 context.Context, arg1, arg2 string, arg3 uuid.UUID, arg4 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeletePipelineRelease", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteUserPipelineReleaseByID", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeletePipelineRelease indicates an expected call of DeletePipelineRelease.
-func (mr *MockRepositoryMockRecorder) DeletePipelineRelease(arg0, arg1 interface{}) *gomock.Call {
+// DeleteUserPipelineReleaseByID indicates an expected call of DeleteUserPipelineReleaseByID.
+func (mr *MockRepositoryMockRecorder) DeleteUserPipelineReleaseByID(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePipelineRelease", reflect.TypeOf((*MockRepository)(nil).DeletePipelineRelease), arg0, arg1)
-}
-
-// GetPipelineByID mocks base method.
-func (m *MockRepository) GetPipelineByID(arg0, arg1 string, arg2 bool) (*datamodel.Pipeline, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPipelineByID", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*datamodel.Pipeline)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPipelineByID indicates an expected call of GetPipelineByID.
-func (mr *MockRepositoryMockRecorder) GetPipelineByID(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByID", reflect.TypeOf((*MockRepository)(nil).GetPipelineByID), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserPipelineReleaseByID", reflect.TypeOf((*MockRepository)(nil).DeleteUserPipelineReleaseByID), arg0, arg1, arg2, arg3, arg4)
 }
 
 // GetPipelineByIDAdmin mocks base method.
-func (m *MockRepository) GetPipelineByIDAdmin(arg0 string, arg1 bool) (*datamodel.Pipeline, error) {
+func (m *MockRepository) GetPipelineByIDAdmin(arg0 context.Context, arg1 string, arg2 bool) (*datamodel.Pipeline, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPipelineByIDAdmin", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetPipelineByIDAdmin", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*datamodel.Pipeline)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPipelineByIDAdmin indicates an expected call of GetPipelineByIDAdmin.
-func (mr *MockRepositoryMockRecorder) GetPipelineByIDAdmin(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetPipelineByIDAdmin(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByIDAdmin", reflect.TypeOf((*MockRepository)(nil).GetPipelineByIDAdmin), arg0, arg1)
-}
-
-// GetPipelineByUID mocks base method.
-func (m *MockRepository) GetPipelineByUID(arg0 uuid.UUID, arg1 string, arg2 bool) (*datamodel.Pipeline, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPipelineByUID", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*datamodel.Pipeline)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPipelineByUID indicates an expected call of GetPipelineByUID.
-func (mr *MockRepositoryMockRecorder) GetPipelineByUID(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByUID", reflect.TypeOf((*MockRepository)(nil).GetPipelineByUID), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByIDAdmin", reflect.TypeOf((*MockRepository)(nil).GetPipelineByIDAdmin), arg0, arg1, arg2)
 }
 
 // GetPipelineByUIDAdmin mocks base method.
-func (m *MockRepository) GetPipelineByUIDAdmin(arg0 uuid.UUID, arg1 bool) (*datamodel.Pipeline, error) {
+func (m *MockRepository) GetPipelineByUIDAdmin(arg0 context.Context, arg1 uuid.UUID, arg2 bool) (*datamodel.Pipeline, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPipelineByUIDAdmin", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetPipelineByUIDAdmin", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*datamodel.Pipeline)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPipelineByUIDAdmin indicates an expected call of GetPipelineByUIDAdmin.
-func (mr *MockRepositoryMockRecorder) GetPipelineByUIDAdmin(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetPipelineByUIDAdmin(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByUIDAdmin", reflect.TypeOf((*MockRepository)(nil).GetPipelineByUIDAdmin), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByUIDAdmin", reflect.TypeOf((*MockRepository)(nil).GetPipelineByUIDAdmin), arg0, arg1, arg2)
 }
 
-// GetPipelineReleaseByID mocks base method.
-func (m *MockRepository) GetPipelineReleaseByID(arg0 string, arg1 uuid.UUID, arg2 bool) (*datamodel.PipelineRelease, error) {
+// GetUserPipelineByID mocks base method.
+func (m *MockRepository) GetUserPipelineByID(arg0 context.Context, arg1, arg2, arg3 string, arg4 bool) (*datamodel.Pipeline, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPipelineReleaseByID", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetUserPipelineByID", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*datamodel.Pipeline)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserPipelineByID indicates an expected call of GetUserPipelineByID.
+func (mr *MockRepositoryMockRecorder) GetUserPipelineByID(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPipelineByID", reflect.TypeOf((*MockRepository)(nil).GetUserPipelineByID), arg0, arg1, arg2, arg3, arg4)
+}
+
+// GetUserPipelineByUID mocks base method.
+func (m *MockRepository) GetUserPipelineByUID(arg0 context.Context, arg1, arg2 string, arg3 uuid.UUID, arg4 bool) (*datamodel.Pipeline, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserPipelineByUID", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].(*datamodel.Pipeline)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserPipelineByUID indicates an expected call of GetUserPipelineByUID.
+func (mr *MockRepositoryMockRecorder) GetUserPipelineByUID(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPipelineByUID", reflect.TypeOf((*MockRepository)(nil).GetUserPipelineByUID), arg0, arg1, arg2, arg3, arg4)
+}
+
+// GetUserPipelineReleaseByID mocks base method.
+func (m *MockRepository) GetUserPipelineReleaseByID(arg0 context.Context, arg1, arg2 string, arg3 uuid.UUID, arg4 string, arg5 bool) (*datamodel.PipelineRelease, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserPipelineReleaseByID", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(*datamodel.PipelineRelease)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetPipelineReleaseByID indicates an expected call of GetPipelineReleaseByID.
-func (mr *MockRepositoryMockRecorder) GetPipelineReleaseByID(arg0, arg1, arg2 interface{}) *gomock.Call {
+// GetUserPipelineReleaseByID indicates an expected call of GetUserPipelineReleaseByID.
+func (mr *MockRepositoryMockRecorder) GetUserPipelineReleaseByID(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineReleaseByID", reflect.TypeOf((*MockRepository)(nil).GetPipelineReleaseByID), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPipelineReleaseByID", reflect.TypeOf((*MockRepository)(nil).GetUserPipelineReleaseByID), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
-// GetPipelineReleaseByUID mocks base method.
-func (m *MockRepository) GetPipelineReleaseByUID(arg0, arg1 uuid.UUID, arg2 bool) (*datamodel.PipelineRelease, error) {
+// GetUserPipelineReleaseByUID mocks base method.
+func (m *MockRepository) GetUserPipelineReleaseByUID(arg0 context.Context, arg1, arg2 string, arg3, arg4 uuid.UUID, arg5 bool) (*datamodel.PipelineRelease, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPipelineReleaseByUID", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetUserPipelineReleaseByUID", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(*datamodel.PipelineRelease)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetPipelineReleaseByUID indicates an expected call of GetPipelineReleaseByUID.
-func (mr *MockRepositoryMockRecorder) GetPipelineReleaseByUID(arg0, arg1, arg2 interface{}) *gomock.Call {
+// GetUserPipelineReleaseByUID indicates an expected call of GetUserPipelineReleaseByUID.
+func (mr *MockRepositoryMockRecorder) GetUserPipelineReleaseByUID(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineReleaseByUID", reflect.TypeOf((*MockRepository)(nil).GetPipelineReleaseByUID), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPipelineReleaseByUID", reflect.TypeOf((*MockRepository)(nil).GetUserPipelineReleaseByUID), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
-// ListPipelineReleases mocks base method.
-func (m *MockRepository) ListPipelineReleases(arg0 uuid.UUID, arg1 int64, arg2 string, arg3 bool, arg4 filtering.Filter) ([]datamodel.PipelineRelease, int64, string, error) {
+// ListPipelineReleasesAdmin mocks base method.
+func (m *MockRepository) ListPipelineReleasesAdmin(arg0 context.Context, arg1 int64, arg2 string, arg3 bool, arg4 filtering.Filter) ([]*datamodel.PipelineRelease, int64, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListPipelineReleases", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].([]datamodel.PipelineRelease)
+	ret := m.ctrl.Call(m, "ListPipelineReleasesAdmin", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].([]*datamodel.PipelineRelease)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(string)
 	ret3, _ := ret[3].(error)
 	return ret0, ret1, ret2, ret3
 }
 
-// ListPipelineReleases indicates an expected call of ListPipelineReleases.
-func (mr *MockRepositoryMockRecorder) ListPipelineReleases(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+// ListPipelineReleasesAdmin indicates an expected call of ListPipelineReleasesAdmin.
+func (mr *MockRepositoryMockRecorder) ListPipelineReleasesAdmin(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelineReleases", reflect.TypeOf((*MockRepository)(nil).ListPipelineReleases), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelineReleasesAdmin", reflect.TypeOf((*MockRepository)(nil).ListPipelineReleasesAdmin), arg0, arg1, arg2, arg3, arg4)
 }
 
 // ListPipelines mocks base method.
-func (m *MockRepository) ListPipelines(arg0 string, arg1 int64, arg2 string, arg3 bool, arg4 filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
+func (m *MockRepository) ListPipelines(arg0 context.Context, arg1 string, arg2 int64, arg3 string, arg4 bool, arg5 filtering.Filter) ([]*datamodel.Pipeline, int64, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListPipelines", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].([]datamodel.Pipeline)
+	ret := m.ctrl.Call(m, "ListPipelines", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret0, _ := ret[0].([]*datamodel.Pipeline)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(string)
 	ret3, _ := ret[3].(error)
@@ -211,16 +212,16 @@ func (m *MockRepository) ListPipelines(arg0 string, arg1 int64, arg2 string, arg
 }
 
 // ListPipelines indicates an expected call of ListPipelines.
-func (mr *MockRepositoryMockRecorder) ListPipelines(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) ListPipelines(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelines", reflect.TypeOf((*MockRepository)(nil).ListPipelines), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelines", reflect.TypeOf((*MockRepository)(nil).ListPipelines), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // ListPipelinesAdmin mocks base method.
-func (m *MockRepository) ListPipelinesAdmin(arg0 int64, arg1 string, arg2 bool, arg3 filtering.Filter) ([]datamodel.Pipeline, int64, string, error) {
+func (m *MockRepository) ListPipelinesAdmin(arg0 context.Context, arg1 int64, arg2 string, arg3 bool, arg4 filtering.Filter) ([]*datamodel.Pipeline, int64, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListPipelinesAdmin", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].([]datamodel.Pipeline)
+	ret := m.ctrl.Call(m, "ListPipelinesAdmin", arg0, arg1, arg2, arg3, arg4)
+	ret0, _ := ret[0].([]*datamodel.Pipeline)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(string)
 	ret3, _ := ret[3].(error)
@@ -228,49 +229,97 @@ func (m *MockRepository) ListPipelinesAdmin(arg0 int64, arg1 string, arg2 bool, 
 }
 
 // ListPipelinesAdmin indicates an expected call of ListPipelinesAdmin.
-func (mr *MockRepositoryMockRecorder) ListPipelinesAdmin(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) ListPipelinesAdmin(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelinesAdmin", reflect.TypeOf((*MockRepository)(nil).ListPipelinesAdmin), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPipelinesAdmin", reflect.TypeOf((*MockRepository)(nil).ListPipelinesAdmin), arg0, arg1, arg2, arg3, arg4)
 }
 
-// UpdatePipeline mocks base method.
-func (m *MockRepository) UpdatePipeline(arg0, arg1 string, arg2 *datamodel.Pipeline) error {
+// ListUserPipelineReleases mocks base method.
+func (m *MockRepository) ListUserPipelineReleases(arg0 context.Context, arg1, arg2 string, arg3 uuid.UUID, arg4 int64, arg5 string, arg6 bool, arg7 filtering.Filter) ([]*datamodel.PipelineRelease, int64, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePipeline", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ListUserPipelineReleases", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	ret0, _ := ret[0].([]*datamodel.PipelineRelease)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(string)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// ListUserPipelineReleases indicates an expected call of ListUserPipelineReleases.
+func (mr *MockRepositoryMockRecorder) ListUserPipelineReleases(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUserPipelineReleases", reflect.TypeOf((*MockRepository)(nil).ListUserPipelineReleases), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+}
+
+// ListUserPipelines mocks base method.
+func (m *MockRepository) ListUserPipelines(arg0 context.Context, arg1, arg2 string, arg3 int64, arg4 string, arg5 bool, arg6 filtering.Filter) ([]*datamodel.Pipeline, int64, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListUserPipelines", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret0, _ := ret[0].([]*datamodel.Pipeline)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(string)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// ListUserPipelines indicates an expected call of ListUserPipelines.
+func (mr *MockRepositoryMockRecorder) ListUserPipelines(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUserPipelines", reflect.TypeOf((*MockRepository)(nil).ListUserPipelines), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+}
+
+// UpdateUserPipelineByID mocks base method.
+func (m *MockRepository) UpdateUserPipelineByID(arg0 context.Context, arg1, arg2, arg3 string, arg4 *datamodel.Pipeline) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPipelineByID", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdatePipeline indicates an expected call of UpdatePipeline.
-func (mr *MockRepositoryMockRecorder) UpdatePipeline(arg0, arg1, arg2 interface{}) *gomock.Call {
+// UpdateUserPipelineByID indicates an expected call of UpdateUserPipelineByID.
+func (mr *MockRepositoryMockRecorder) UpdateUserPipelineByID(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePipeline", reflect.TypeOf((*MockRepository)(nil).UpdatePipeline), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPipelineByID", reflect.TypeOf((*MockRepository)(nil).UpdateUserPipelineByID), arg0, arg1, arg2, arg3, arg4)
 }
 
-// UpdatePipelineID mocks base method.
-func (m *MockRepository) UpdatePipelineID(arg0, arg1, arg2 string) error {
+// UpdateUserPipelineIDByID mocks base method.
+func (m *MockRepository) UpdateUserPipelineIDByID(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePipelineID", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateUserPipelineIDByID", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdatePipelineID indicates an expected call of UpdatePipelineID.
-func (mr *MockRepositoryMockRecorder) UpdatePipelineID(arg0, arg1, arg2 interface{}) *gomock.Call {
+// UpdateUserPipelineIDByID indicates an expected call of UpdateUserPipelineIDByID.
+func (mr *MockRepositoryMockRecorder) UpdateUserPipelineIDByID(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePipelineID", reflect.TypeOf((*MockRepository)(nil).UpdatePipelineID), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPipelineIDByID", reflect.TypeOf((*MockRepository)(nil).UpdateUserPipelineIDByID), arg0, arg1, arg2, arg3, arg4)
 }
 
-// UpdatePipelineRelease mocks base method.
-func (m *MockRepository) UpdatePipelineRelease(arg0 string, arg1 uuid.UUID, arg2 *datamodel.PipelineRelease) error {
+// UpdateUserPipelineReleaseByID mocks base method.
+func (m *MockRepository) UpdateUserPipelineReleaseByID(arg0 context.Context, arg1, arg2 string, arg3 uuid.UUID, arg4 string, arg5 *datamodel.PipelineRelease) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePipelineRelease", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateUserPipelineReleaseByID", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdatePipelineRelease indicates an expected call of UpdatePipelineRelease.
-func (mr *MockRepositoryMockRecorder) UpdatePipelineRelease(arg0, arg1, arg2 interface{}) *gomock.Call {
+// UpdateUserPipelineReleaseByID indicates an expected call of UpdateUserPipelineReleaseByID.
+func (mr *MockRepositoryMockRecorder) UpdateUserPipelineReleaseByID(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePipelineRelease", reflect.TypeOf((*MockRepository)(nil).UpdatePipelineRelease), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPipelineReleaseByID", reflect.TypeOf((*MockRepository)(nil).UpdateUserPipelineReleaseByID), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
+// UpdateUserPipelineReleaseIDByID mocks base method.
+func (m *MockRepository) UpdateUserPipelineReleaseIDByID(arg0 context.Context, arg1, arg2 string, arg3 uuid.UUID, arg4, arg5 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPipelineReleaseIDByID", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserPipelineReleaseIDByID indicates an expected call of UpdateUserPipelineReleaseIDByID.
+func (mr *MockRepositoryMockRecorder) UpdateUserPipelineReleaseIDByID(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPipelineReleaseIDByID", reflect.TypeOf((*MockRepository)(nil).UpdateUserPipelineReleaseIDByID), arg0, arg1, arg2, arg3, arg4, arg5)
 }
