@@ -30,4 +30,10 @@ service PipelinePrivateService {
     option (google.api.http) = {get: "/v1alpha/admin/{permalink=operator-definitions/*}/lookUp"};
     option (google.api.method_signature) = "permalink";
   }
+
+  // ListPipelineReleasesAdmin method receives a ListPipelineReleasesAdminRequest message and
+  // returns a ListPipelineReleasesAdminResponse message.
+  rpc ListPipelineReleasesAdmin(ListPipelineReleasesAdminRequest) returns (ListPipelineReleasesAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/releases"};
+  }
 }

@@ -26,15 +26,16 @@ export function CheckCreate() {
       // Cannot create a pipeline of a non-exist user
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
           {
+            parent: `${constant.namespace}`,
             pipeline: reqBody,
           },
           constant.paramsGRPCWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusNotFound`]:
-            (r) => r.status === grpc.StatusNotFound,
+          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusUnauthenticated`]:
+            (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
 
@@ -52,13 +53,15 @@ export function CheckList() {
     // Cannot list pipelines of a non-exist user
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines",
-        {},
+        "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
+        {
+          parent: `${constant.namespace}`,
+        },
         constant.paramsGRPCWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines response StatusNotFound`]:
-          (r) => r.status === grpc.StatusNotFound,
+        [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response StatusUnauthenticated`]:
+          (r) => r.status === grpc.StatusUnauthenticated,
       }
     );
 
@@ -82,13 +85,14 @@ export function CheckGet() {
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -97,28 +101,28 @@ export function CheckGet() {
     // Cannot get a pipeline of a non-exist user
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline",
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
         },
         constant.paramsGRPCWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/GetPipeline response StatusNotFound`]:
-          (r) => r.status === grpc.StatusNotFound,
+        [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline response StatusUnauthenticated`]:
+          (r) => r.status === grpc.StatusUnauthenticated,
       }
     );
 
     // Delete the pipeline
     check(
       client.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+        `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
-          name: `pipelines/${reqBody.id}`,
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -144,21 +148,22 @@ export function CheckUpdate() {
 
       // Create a pipeline
       var resOrigin = client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       );
 
       check(resOrigin, {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       });
 
 
       var reqBodyUpdate = Object.assign({
         id: reqBody.id,
-        name: `pipelines/${reqBody.id}`,
+        name: `${constant.namespace}/pipelines/${reqBody.id}`,
         uid: "output-only-to-be-ignored",
         description: randomString(50),
       });
@@ -166,7 +171,7 @@ export function CheckUpdate() {
       // Cannot update a pipeline of a non-exist user
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline",
           {
             pipeline: reqBodyUpdate,
             update_mask: "description",
@@ -174,21 +179,21 @@ export function CheckUpdate() {
           constant.paramsGRPCWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/UpdatePipeline response StatusNotFound`]:
-            (r) => r.status === grpc.StatusNotFound,
+          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/UpdateUserPipeline response StatusUnauthenticated`]:
+            (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
 
       // Delete the pipeline
       check(
         client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${reqBody.id}`,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -215,17 +220,18 @@ export function CheckRename() {
 
       // Create a pipeline
       var res = client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       );
 
       check(res, {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response pipeline name`]:
-          (r) => r.message.pipeline.name === `pipelines/${reqBody.id}`,
+        [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response pipeline name`]:
+          (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       });
 
 
@@ -234,29 +240,29 @@ export function CheckRename() {
       // Cannot rename a pipeline of a non-exist user
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/RenamePipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/RenameUserPipeline",
           {
-            name: `pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${reqBody.id}`,
             new_pipeline_id: new_pipeline_id,
           },
           constant.paramsGRPCWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/RenamePipeline response StatusNotFound`]:
-            (r) => r.status === grpc.StatusNotFound,
+          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/RenameUserPipeline response StatusUnauthenticated`]:
+            (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
 
       // Delete the pipeline
       check(
         client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${reqBody.id}`,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -283,14 +289,15 @@ export function CheckLookUp() {
 
       // Create a pipeline
       var res = client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
         {
+          parent: `${constant.namespace}`,
           pipeline: reqBody,
         }
       );
 
       check(res, {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       });
 
@@ -298,28 +305,28 @@ export function CheckLookUp() {
       // Cannot look up a pipeline of a non-exist user
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline",
           {
-            permalink: `pipelines/${res.message.pipeline.uid}`,
+            permalink: `${constant.namespace}/pipelines/${res.message.pipeline.uid}`,
           },
           constant.paramsGRPCWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline response StatusNotFound`]:
-            (r) => r.status === grpc.StatusNotFound,
+          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline response StatusUnauthenticated`]:
+            (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
 
       // Delete the pipeline
       check(
         client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `pipelines/${reqBody.id}`,
+            name: `${constant.namespace}/pipelines/${reqBody.id}`,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

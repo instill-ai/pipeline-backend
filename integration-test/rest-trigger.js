@@ -19,17 +19,17 @@ export function CheckTrigger() {
       constant.simpleRecipe
     );
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines`, JSON.stringify(reqHTTP), constant.params), {
-      "POST /v1alpha/pipelines response status is 201 (HTTP pipeline)": (r) => r.status === 201,
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`, JSON.stringify(reqHTTP), constant.params), {
+      "POST /v1alpha/${constant.namespace}/pipelines response status is 201 (HTTP pipeline)": (r) => r.status === 201,
     });
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(constant.simplePayload), constant.params), {
-      [`POST /v1alpha/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(constant.simplePayload), constant.params), {
+      [`POST /v1alpha/${constant.namespace}/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
     });
 
 
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${reqHTTP.id}`, null, constant.params), {
-      [`DELETE /v1alpha/pipelines/${reqHTTP.id} response status 204`]: (r) => r.status === 204,
+    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqHTTP.id}`, null, constant.params), {
+      [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqHTTP.id} response status 204`]: (r) => r.status === 204,
     });
 
   });

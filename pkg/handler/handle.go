@@ -187,7 +187,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServic
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerUserPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=pipelines/*}/trigger"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerUserPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=users/*/pipelines/*}/trigger"))
 	if err != nil {
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return
@@ -234,7 +234,7 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pipelinePB.PipelinePublicS
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncUserPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=pipelines/*}/triggerAsync"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncUserPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=users/*/pipelines/*}/triggerAsync"))
 	if err != nil {
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return

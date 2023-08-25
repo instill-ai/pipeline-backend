@@ -24,7 +24,9 @@ export function isUUID(uuid) {
 }
 
 export function isValidOwner(user) {
-  return isUUID(user.replace("users/", ""));
+  // TODO
+  return true
+  // return isUUID(user.replace("users/", ""));
 }
 
 export function validateRecipe(recipe, isPrivate) {

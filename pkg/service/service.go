@@ -98,7 +98,7 @@ type Service interface {
 	PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error)
 	DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) (*pipelinePB.Pipeline, error)
 	PBToDBPipelineRelease(ctx context.Context, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error)
-	DBToPBPipelineRelease(ctx context.Context, pipelineId string, dbPipelineRelease *datamodel.PipelineRelease) (*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineRelease(ctx context.Context, pipelineId string, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease) (*pipelinePB.PipelineRelease, error)
 	GetUserUid(ctx context.Context) (uuid.UUID, error)
 }
 
@@ -144,7 +144,6 @@ func NewService(r repository.Repository,
 func (s *service) GetUserUid(ctx context.Context) (uuid.UUID, error) {
 	// Verify if "jwt-sub" is in the header
 	headerUserUId := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
-	fmt.Println("headerUserUId", headerUserUId)
 	if headerUserUId != "" {
 		_, err := uuid.FromString(headerUserUId)
 		if err != nil {
@@ -177,11 +176,13 @@ func (s *service) ConvertOwnerNameToPermalink(name string) (string, error) {
 }
 
 func (s *service) GetRscNamespaceAndNameID(path string) (resource.Namespace, string, error) {
+
 	splits := strings.Split(path, "/")
 	if len(splits) < 2 {
 		return resource.Namespace{}, "", fmt.Errorf("namespace error")
 	}
-	uidStr, err := s.ConvertOwnerNameToPermalink(splits[1])
+	uidStr, err := s.ConvertOwnerNameToPermalink(fmt.Sprintf("%s/%s", splits[0], splits[1]))
+
 	if err != nil {
 		return resource.Namespace{}, "", fmt.Errorf("namespace error")
 	}
@@ -202,7 +203,7 @@ func (s *service) GetRscNamespaceAndPermalinkUID(path string) (resource.Namespac
 	if len(splits) < 2 {
 		return resource.Namespace{}, uuid.Nil, fmt.Errorf("namespace error")
 	}
-	uidStr, err := s.ConvertOwnerNameToPermalink(splits[1])
+	uidStr, err := s.ConvertOwnerNameToPermalink((fmt.Sprintf("%s/%s", splits[0], splits[1])))
 	if err != nil {
 		return resource.Namespace{}, uuid.Nil, fmt.Errorf("namespace error")
 	}
@@ -1106,10 +1107,12 @@ func (s *service) TriggerUserPipelineReleaseByID(ctx context.Context, ns resourc
 	if err != nil {
 		return nil, nil, err
 	}
-	dbPipeline, err := s.repository.GetUserPipelineByUID(ctx, ownerPermalink, userPermalink, dbPipelineRelease.UID, false)
+
+	dbPipeline, err := s.repository.GetUserPipelineReleaseByUID(ctx, ownerPermalink, userPermalink, pipelineUid, dbPipelineRelease.UID, false)
 	if err != nil {
 		return nil, nil, err
 	}
+
 	recipe, err := s.recipePermalinkToName(dbPipelineRelease.Recipe)
 	if err != nil {
 		return nil, nil, err
@@ -1125,7 +1128,7 @@ func (s *service) TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns re
 	if err != nil {
 		return nil, err
 	}
-	dbPipeline, err := s.repository.GetUserPipelineByUID(ctx, ownerPermalink, userPermalink, dbPipelineRelease.UID, false)
+	dbPipeline, err := s.repository.GetUserPipelineReleaseByUID(ctx, ownerPermalink, userPermalink, pipelineUid, dbPipelineRelease.UID, false)
 	if err != nil {
 		return nil, err
 	}

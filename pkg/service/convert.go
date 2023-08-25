@@ -24,6 +24,9 @@ import (
 func IsConnector(resourceName string) bool {
 	return strings.HasPrefix(resourceName, "connector-resources/")
 }
+func IsConnectorWithNamespace(resourceName string) bool {
+	return len(strings.Split(resourceName, "/")) > 3 && strings.Split(resourceName, "/")[2] == "connector-resources"
+}
 
 func IsConnectorDefinition(resourceName string) bool {
 	return strings.HasPrefix(resourceName, "connector-definitions/")
@@ -48,7 +51,7 @@ func (s *service) recipeNameToPermalink(ownerPermalink string, recipeRscName *da
 
 		permalink := ""
 		var err error
-		if IsConnector(component.ResourceName) {
+		if IsConnectorWithNamespace(component.ResourceName) {
 			permalink, err = s.connectorNameToPermalink(ctx, component.ResourceName)
 			if err != nil {
 				return nil, err
@@ -286,7 +289,7 @@ func (s *service) IncludeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 
 	for idx := range recipe.Components {
 
-		if IsConnector(recipe.Components[idx].ResourceName) {
+		if IsConnectorWithNamespace(recipe.Components[idx].ResourceName) {
 			resp, err := s.connectorPublicServiceClient.GetUserConnectorResource(ctx, &connectorPB.GetUserConnectorResourceRequest{
 				Name: recipe.Components[idx].ResourceName,
 				View: connectorPB.View_VIEW_FULL.Enum(),
@@ -424,6 +427,7 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 			}
 			return nil
 		}(),
+		Visibility: datamodel.PipelineVisibility(pbPipeline.Visibility),
 	}, nil
 }
 
@@ -431,13 +435,18 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline) (*pipelinePB.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
+	owner, err := s.ConvertOwnerPermalinkToName(dbPipeline.Owner)
+	if err != nil {
+		return nil, err
+	}
 	pbPipeline := pipelinePB.Pipeline{
-		Name:        fmt.Sprintf("pipelines/%s", dbPipeline.ID),
+		Name:        fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
 		Uid:         dbPipeline.BaseDynamic.UID.String(),
 		Id:          dbPipeline.ID,
 		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
 		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),
 		Description: &dbPipeline.Description.String,
+		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 
 		Recipe: func() *pipelinePB.Recipe {
 			if dbPipeline.Recipe != nil {
@@ -477,9 +486,9 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	}
 
 	if strings.HasPrefix(dbPipeline.Owner, "users/") {
-		pbPipeline.Owner = &pipelinePB.Pipeline_User{User: dbPipeline.Owner}
+		pbPipeline.Owner = &pipelinePB.Pipeline_User{User: owner}
 	} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-		pbPipeline.Owner = &pipelinePB.Pipeline_Org{Org: dbPipeline.Owner}
+		pbPipeline.Owner = &pipelinePB.Pipeline_Org{Org: owner}
 	}
 
 	return &pbPipeline, nil
@@ -525,20 +534,26 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUid uuid.UU
 		},
 
 		PipelineUID: pipelineUid,
+		Visibility:  datamodel.PipelineVisibility(pbPipelineRelease.Visibility),
 	}, nil
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineRelease(ctx context.Context, pipelineId string, dbPipelineRelease *datamodel.PipelineRelease) (*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineRelease(ctx context.Context, pipelineId string, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease) (*pipelinePB.PipelineRelease, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
+	owner, err := s.ConvertOwnerPermalinkToName(dbPipeline.Owner)
+	if err != nil {
+		return nil, err
+	}
 	pbPipelineRelease := pipelinePB.PipelineRelease{
-		Name:        fmt.Sprintf("pipelines/%s/releases/%s", pipelineId, dbPipelineRelease.ID),
+		Name:        fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, pipelineId, dbPipelineRelease.ID),
 		Uid:         dbPipelineRelease.BaseDynamic.UID.String(),
 		Id:          dbPipelineRelease.ID,
 		CreateTime:  timestamppb.New(dbPipelineRelease.CreateTime),
 		UpdateTime:  timestamppb.New(dbPipelineRelease.UpdateTime),
 		Description: &dbPipelineRelease.Description.String,
+		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 		Recipe: func() *pipelinePB.Recipe {
 			if dbPipelineRelease.Recipe != nil {
 				b, err := json.Marshal(dbPipelineRelease.Recipe)

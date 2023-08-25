@@ -1076,8 +1076,8 @@ github.com/influxdata/influxdb-client-go/v2 v2.12.3 h1:28nRlNMRIV4QbtIUvxhWqaxn0
 github.com/influxdata/influxdb-client-go/v2 v2.12.3/go.mod h1:IrrLUbCjjfkmRuaCiGQg4m2GbkaeJDcuWoxiWdQEbA0=
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 h1:W9WBk7wlPfJLvMCdtV4zPulc4uCPrlywQOmbFOhgQNU=
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839/go.mod h1:xaLFMmpvUxqXtVkUJfg9QmT88cDaCJ3ZKgdZ78oO8Qo=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230823024646-ea338cc75012 h1:gj5iyRnIzS0829UvBRWfvdNTw5+dvR39uUxJ3Qn34vs=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230823024646-ea338cc75012/go.mod h1:qsq5ecnA1xi2rLnVQFo/9xksA7I7wQu8c7rqM5xbIrQ=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230825102713-c8b9766c23da h1:E2oPbnae1GDTaXHbt0p9l0Bh1THW3LCzaMOXsVhmcgo=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230825102713-c8b9766c23da/go.mod h1:qsq5ecnA1xi2rLnVQFo/9xksA7I7wQu8c7rqM5xbIrQ=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20230814155646-874e57a1e4b0 h1:9QoCxaktvqGJYGjN8KhkWsv1DVfwbt5G1d/Ycx1kJxo=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20230814155646-874e57a1e4b0/go.mod h1:SELFgirs+28Wfnh0kGw02zttit4pUeKLKp17zGsTu6g=
 github.com/instill-ai/x v0.3.0-alpha h1:z9fedROOG2dVHhswBfVwU/hzHuq8/JKSUON7inF+FH8=

@@ -26,27 +26,28 @@ export function CheckTrigger() {
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
           {
+            parent: `${constant.namespace}`,
             pipeline: reqGRPC,
           }
         ),
         {
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreatePipeline GRPC pipeline response StatusOK":
+          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline GRPC pipeline response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
 
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/TriggerUserPipeline",
           {
-            name: `pipelines/${reqGRPC.id}`,
+            name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
             inputs: constant.simplePayload.inputs,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerPipeline (url) response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/TriggerUserPipeline (url) response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -54,13 +55,13 @@ export function CheckTrigger() {
 
       check(
         client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline`,
+          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
-            name: `pipelines/${reqGRPC.id}`,
+            name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
           }
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeletePipeline ${reqGRPC.id} response StatusOK`]:
+          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline ${reqGRPC.id} response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

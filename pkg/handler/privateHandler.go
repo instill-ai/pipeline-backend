@@ -196,7 +196,7 @@ func (h *PrivateHandler) ListPipelineReleasesAdmin(ctx context.Context, req *pip
 		if err != nil {
 			return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
 		}
-		pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, dbPipeline.ID, dbPipelineReleases[idx])
+		pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, dbPipeline.ID, dbPipeline, dbPipelineReleases[idx])
 		if err != nil {
 			return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
 		}

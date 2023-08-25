@@ -53,17 +53,6 @@ service ConnectorPublicService {
   // Connector-Resource methods
   /////////////////////////////////
 
-  // CreateConnectorResource method receives a
-  // CreateConnectorResourceRequest message and returns a
-  // CreateConnectorResourceResponse message.
-  rpc CreateConnectorResource(CreateConnectorResourceRequest) returns (CreateConnectorResourceResponse) {
-    option (google.api.http) = {
-      post: "/v1alpha/connector-resources"
-      body: "connector_resource"
-    };
-    option (google.api.method_signature) = "connector_resource";
-  }
-
   // ListConnectorResources method receives a
   // ListConnectorResourcesRequest message and returns a
   // ListConnectorResourcesResponse message.
@@ -71,48 +60,67 @@ service ConnectorPublicService {
     option (google.api.http) = {get: "/v1alpha/connector-resources"};
   }
 
-  // GetConnectorResource method receives a GetConnectorResourceRequest
-  // message and returns a GetConnectorResourceResponse message.
-  rpc GetConnectorResource(GetConnectorResourceRequest) returns (GetConnectorResourceResponse) {
-    option (google.api.http) = {get: "/v1alpha/{name=connector-resources/*}"};
+  // CreateUserConnectorResource method receives a
+  // CreateUserConnectorResourceRequest message and returns a
+  // CreateUserConnectorResourceResponse message.
+  rpc CreateUserConnectorResource(CreateUserConnectorResourceRequest) returns (CreateUserConnectorResourceResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha/{parent=users/*}/connector-resources"
+      body: "connector_resource"
+    };
+    option (google.api.method_signature) = "parent,connector_resource";
+  }
+
+  // ListUserConnectorResources method receives a
+  // ListUserConnectorResourcesRequest message and returns a
+  // ListUserConnectorResourcesResponse message.
+  rpc ListUserConnectorResources(ListUserConnectorResourcesRequest) returns (ListUserConnectorResourcesResponse) {
+    option (google.api.http) = {get: "/v1alpha/{parent=users/*}/connector-resources"};
+    option (google.api.method_signature) = "parent";
+  }
+
+  // GetUserConnectorResource method receives a GetUserConnectorResourceRequest
+  // message and returns a GetUserConnectorResourceResponse message.
+  rpc GetUserConnectorResource(GetUserConnectorResourceRequest) returns (GetUserConnectorResourceResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=users/*/connector-resources/*}"};
     option (google.api.method_signature) = "name";
   }
 
-  // UpdateConnectorResource method receives a
-  // UpdateConnectorResourceRequest message and returns a
-  // UpdateConnectorResourceResponse message.
-  rpc UpdateConnectorResource(UpdateConnectorResourceRequest) returns (UpdateConnectorResourceResponse) {
+  // UpdateUserConnectorResource method receives a
+  // UpdateUserConnectorResourceRequest message and returns a
+  // UpdateUserConnectorResourceResponse message.
+  rpc UpdateUserConnectorResource(UpdateUserConnectorResourceRequest) returns (UpdateUserConnectorResourceResponse) {
     option (google.api.http) = {
-      patch: "/v1alpha/{connector_resource.name=connector-resources/*}"
+      patch: "/v1alpha/{connector_resource.name=users/*/connector-resources/*}"
       body: "connector_resource"
     };
     option (google.api.method_signature) = "connector_resource,update_mask";
   }
 
-  // DeleteConnectorResource method receives a
-  // DeleteConnectorResourceRequest message and returns a
-  // DeleteConnectorResourceResponse message.
-  rpc DeleteConnectorResource(DeleteConnectorResourceRequest) returns (DeleteConnectorResourceResponse) {
-    option (google.api.http) = {delete: "/v1alpha/{name=connector-resources/*}"};
+  // DeleteUserConnectorResource method receives a
+  // DeleteUserConnectorResourceRequest message and returns a
+  // DeleteUserConnectorResourceResponse message.
+  rpc DeleteUserConnectorResource(DeleteUserConnectorResourceRequest) returns (DeleteUserConnectorResourceResponse) {
+    option (google.api.http) = {delete: "/v1alpha/{name=users/*/connector-resources/*}"};
     option (google.api.method_signature) = "name";
   }
 
-  // LookUpConnectorResource method receives a
-  // LookUpConnectorResourceRequest message and returns a
-  // LookUpConnectorResourceResponse
-  rpc LookUpConnectorResource(LookUpConnectorResourceRequest) returns (LookUpConnectorResourceResponse) {
-    option (google.api.http) = {get: "/v1alpha/{permalink=connector-resources/*}/lookUp"};
+  // LookUpUserConnectorResource method receives a
+  // LookUpUserConnectorResourceRequest message and returns a
+  // LookUpUserConnectorResourceResponse
+  rpc LookUpUserConnectorResource(LookUpUserConnectorResourceRequest) returns (LookUpUserConnectorResourceResponse) {
+    option (google.api.http) = {get: "/v1alpha/{permalink=users/*/connector-resources/*}/lookUp"};
     option (google.api.method_signature) = "permalink";
   }
 
   // Connect a connector resource.
   // The "state" of the connector resource after connecting is "CONNECTED".
-  // ConnectConnectorResource can be called on ConnectorResource in the
+  // ConnectUserConnectorResource can be called on ConnectorResource in the
   // state `DISCONNECTED`; ConnectorResource in a different state (including
   // `CONNECTED`) returns an error.
-  rpc ConnectConnectorResource(ConnectConnectorResourceRequest) returns (ConnectConnectorResourceResponse) {
+  rpc ConnectUserConnectorResource(ConnectUserConnectorResourceRequest) returns (ConnectUserConnectorResourceResponse) {
     option (google.api.http) = {
-      post: "/v1alpha/{name=connector-resources/*}/connect"
+      post: "/v1alpha/{name=users/*/connector-resources/*}/connect"
       body: "*"
     };
     option (google.api.method_signature) = "name";
@@ -120,51 +128,51 @@ service ConnectorPublicService {
 
   // Disconnect a connectorResource.
   // The "state" of the connectorResource after disconnecting is "DISCONNECTED".
-  // DisconnectConnectorResource can be called on ConnectorResource in the
+  // DisconnectUserConnectorResource can be called on ConnectorResource in the
   // state `CONNECTED`; ConnectorResource in a different state (including
   // `DISCONNECTED`) returns an error.
-  rpc DisconnectConnectorResource(DisconnectConnectorResourceRequest) returns (DisconnectConnectorResourceResponse) {
+  rpc DisconnectUserConnectorResource(DisconnectUserConnectorResourceRequest) returns (DisconnectUserConnectorResourceResponse) {
     option (google.api.http) = {
-      post: "/v1alpha/{name=connector-resources/*}/disconnect"
+      post: "/v1alpha/{name=users/*/connector-resources/*}/disconnect"
       body: "*"
     };
     option (google.api.method_signature) = "name";
   }
 
-  // RenameConnectorResource method receives a
-  // RenameConnectorResourceRequest message and returns a
-  // RenameConnectorResourceResponse message.
-  rpc RenameConnectorResource(RenameConnectorResourceRequest) returns (RenameConnectorResourceResponse) {
+  // RenameUserConnectorResource method receives a
+  // RenameUserConnectorResourceRequest message and returns a
+  // RenameUserConnectorResourceResponse message.
+  rpc RenameUserConnectorResource(RenameUserConnectorResourceRequest) returns (RenameUserConnectorResourceResponse) {
     option (google.api.http) = {
-      post: "/v1alpha/{name=connector-resources/*}/rename"
+      post: "/v1alpha/{name=users/*/connector-resources/*}/rename"
       body: "*"
     };
     option (google.api.method_signature) = "name,new_connector_resource_id";
   }
 
-  // ExecuteConnectorResource method receives a
-  // ExecuteConnectorResourceRequest message and returns a
-  // ExecuteConnectorResourceResponse message.
-  rpc ExecuteConnectorResource(ExecuteConnectorResourceRequest) returns (ExecuteConnectorResourceResponse) {
+  // ExecuteUserConnectorResource method receives a
+  // ExecuteUserConnectorResourceRequest message and returns a
+  // ExecuteUserConnectorResourceResponse message.
+  rpc ExecuteUserConnectorResource(ExecuteUserConnectorResourceRequest) returns (ExecuteUserConnectorResourceResponse) {
     option (google.api.http) = {
-      post: "/v1alpha/{name=connector-resources/*}/execute"
+      post: "/v1alpha/{name=users/*/connector-resources/*}/execute"
       body: "*"
     };
     option (google.api.method_signature) = "name";
   }
 
-  // WatchConnectorResource method receives a
-  // WatchConnectorResourceRequest message and returns a
-  // WatchConnectorResourceResponse
-  rpc WatchConnectorResource(WatchConnectorResourceRequest) returns (WatchConnectorResourceResponse) {
-    option (google.api.http) = {get: "/v1alpha/{name=connector-resources/*}/watch"};
+  // WatchUserConnectorResource method receives a
+  // WatchUserConnectorResourceRequest message and returns a
+  // WatchUserConnectorResourceResponse
+  rpc WatchUserConnectorResource(WatchUserConnectorResourceRequest) returns (WatchUserConnectorResourceResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=users/*/connector-resources/*}/watch"};
     option (google.api.method_signature) = "name";
   }
 
-  // TestConnectorResource method receives a TestConnectorResourceRequest
-  // message and returns a TestConnectorResourceResponse
-  rpc TestConnectorResource(TestConnectorResourceRequest) returns (TestConnectorResourceResponse) {
-    option (google.api.http) = {post: "/v1alpha/{name=connector-resources/*}/testConnection"};
+  // TestUserConnectorResource method receives a TestUserConnectorResourceRequest
+  // message and returns a TestUserConnectorResourceResponse
+  rpc TestUserConnectorResource(TestUserConnectorResourceRequest) returns (TestUserConnectorResourceResponse) {
+    option (google.api.http) = {post: "/v1alpha/{name=users/*/connector-resources/*}/testConnection"};
     option (google.api.method_signature) = "name";
   }
 }

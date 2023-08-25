@@ -323,6 +323,7 @@ func (h *PublicHandler) CreateUserPipeline(ctx context.Context, req *pipelinePB.
 	}
 
 	ns, _, err := h.service.GetRscNamespaceAndNameID(req.Parent)
+
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.CreateUserPipelineResponse{}, err
@@ -336,7 +337,14 @@ func (h *PublicHandler) CreateUserPipeline(ctx context.Context, req *pipelinePB.
 	}
 
 	pipeline := req.GetPipeline()
-	pipeline.Owner = &pipelinePB.Pipeline_User{User: resource.UserUidToUserPermalink(userUid)}
+
+	name, err := h.service.ConvertOwnerPermalinkToName(fmt.Sprintf("users/%s", userUid))
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pipelinePB.CreateUserPipelineResponse{}, err
+	}
+
+	pipeline.Owner = &pipelinePB.Pipeline_User{User: name}
 	dbPipeline, err := h.service.PBToDBPipeline(ctx, pipeline)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -495,6 +503,7 @@ func (h *PublicHandler) GetUserPipeline(ctx context.Context, req *pipelinePB.Get
 	}
 
 	dbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, isBasicView)
+
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1025,7 +1034,6 @@ func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipe
 
 	// Return error if resource ID does not a semantic version
 	if !semver.IsValid(req.Release.GetId()) {
-		fmt.Println(req.Release.GetId())
 		err := fmt.Errorf("not a sematic version")
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -1063,7 +1071,7 @@ func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipelineId, dbPipelineRelease)
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipelineId, pipeline, dbPipelineRelease)
 	if err != nil {
 		return nil, err
 	}
@@ -1153,7 +1161,7 @@ func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pipel
 
 	pbPipelineReleases := []*pipelinePB.PipelineRelease{}
 	for idx := range dbPipelineReleases {
-		pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipelineId, dbPipelineReleases[idx])
+		pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipelineId, pipeline, dbPipelineReleases[idx])
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			return nil, err
@@ -1217,7 +1225,7 @@ func (h *PublicHandler) GetUserPipelineRelease(ctx context.Context, req *pipelin
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, dbPipelineRelease)
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1328,7 +1336,7 @@ func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pipe
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, dbPipelineRelease)
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1391,13 +1399,13 @@ func (h *PublicHandler) RenameUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	dbPipeline, err := h.service.UpdateUserPipelineReleaseIDByID(ctx, ns, userUid, pipeline.UID, releaseId, newID)
+	dbPipelineRelease, err := h.service.UpdateUserPipelineReleaseIDByID(ctx, ns, userUid, pipeline.UID, releaseId, newID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	pbRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, dbPipeline)
+	pbRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1412,7 +1420,7 @@ func (h *PublicHandler) RenameUserPipelineRelease(ctx context.Context, req *pipe
 		logUUID.String(),
 		userUid,
 		eventName,
-		custom_otel.SetEventResource(dbPipeline),
+		custom_otel.SetEventResource(dbPipelineRelease),
 	)))
 
 	return &resp, nil
@@ -1515,7 +1523,7 @@ func (h *PublicHandler) SetDefaultUserPipelineRelease(ctx context.Context, req *
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, dbPipelineRelease)
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1580,7 +1588,7 @@ func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pip
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, dbPipelineRelease)
+	pbPipelineRelease, err := h.service.DBToPBPipelineRelease(ctx, pipeline.ID, pipeline, dbPipelineRelease)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err

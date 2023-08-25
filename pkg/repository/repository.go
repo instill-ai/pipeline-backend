@@ -31,7 +31,7 @@ const DefaultPageSize = 10
 // MaxPageSize is the maximum pagination page size if the assigned value is over this number
 const MaxPageSize = 100
 
-const VisibilityPublic = datamodel.PipelineVisibility(pipelinePB.Pipeline_VISIBILITY_PUBLIC)
+const VisibilityPublic = datamodel.PipelineVisibility(pipelinePB.Visibility_VISIBILITY_PUBLIC)
 
 // Repository interface
 type Repository interface {
@@ -133,7 +133,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	if isBasicView {
-		queryBuilder.Omit("configuration")
+		queryBuilder.Omit("pipeline.recipe")
 	}
 
 	var createTime time.Time // only using one for all loops, we only need the latest one in the end
