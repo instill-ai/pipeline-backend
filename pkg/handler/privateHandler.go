@@ -97,7 +97,6 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelineP
 	if err != nil {
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err
 	}
-
 	pbPipeline, err := h.service.GetPipelineByUIDAdmin(ctx, uid, isBasicView)
 	if err != nil {
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err

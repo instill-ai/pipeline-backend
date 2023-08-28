@@ -733,13 +733,13 @@ export function CheckLookUp() {
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${res.json().pipeline.uid
+        `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.uid
         }/lookUp`
       ),
       {
-        [`GET /v1alpha/${constant.namespace}/pipelines/${res.json().pipeline.uid
+        [`GET /v1alpha/pipelines/${res.json().pipeline.uid
           }/lookUp response status is 200"`]: (r) => r.status === 200,
-        [`GET /v1alpha/${constant.namespace}/pipelines/${res.json().pipeline.uid
+        [`GET /v1alpha/pipelines/${res.json().pipeline.uid
           }/lookUp response pipeline new name"`]: (r) =>
             r.json().pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       }

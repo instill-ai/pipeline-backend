@@ -220,7 +220,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
@@ -314,14 +314,14 @@ func (h *PublicHandler) CreateUserPipeline(ctx context.Context, req *pipelinePB.
 		return &pipelinePB.CreateUserPipelineResponse{}, err
 	}
 
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.CreateUserPipelineResponse{}, err
 	}
 
-	pipeline := req.GetPipeline()
+	pipelineToCreate := req.GetPipeline()
 
 	name, err := h.service.ConvertOwnerPermalinkToName(fmt.Sprintf("users/%s", userUid))
 	if err != nil {
@@ -329,21 +329,16 @@ func (h *PublicHandler) CreateUserPipeline(ctx context.Context, req *pipelinePB.
 		return &pipelinePB.CreateUserPipelineResponse{}, err
 	}
 
-	pipeline.Owner = &pipelinePB.Pipeline_User{User: name}
-	dbPipeline, err := h.service.PBToDBPipeline(ctx, pipeline)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return &pipelinePB.CreateUserPipelineResponse{}, err
-	}
+	pipelineToCreate.Owner = &pipelinePB.Pipeline_User{User: name}
 
-	pbPipeline, err := h.service.CreateUserPipeline(ctx, ns, userUid, dbPipeline)
+	pipeline, err := h.service.CreateUserPipeline(ctx, ns, userUid, pipelineToCreate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.CreateUserPipelineResponse{}, err
 	}
 
 	resp := pipelinePB.CreateUserPipelineResponse{
-		Pipeline: pbPipeline,
+		Pipeline: pipeline,
 	}
 
 	// Manually set the custom header to have a StatusCreated http response for REST endpoint
@@ -357,7 +352,7 @@ func (h *PublicHandler) CreateUserPipeline(ctx context.Context, req *pipelinePB.
 		logUUID.String(),
 		userUid,
 		eventName,
-		custom_otel.SetEventResource(dbPipeline),
+		custom_otel.SetEventResource(pipeline),
 	)))
 
 	return &resp, nil
@@ -382,7 +377,7 @@ func (h *PublicHandler) ListUserPipelines(ctx context.Context, req *pipelinePB.L
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListUserPipelinesResponse{}, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListUserPipelinesResponse{}, err
@@ -452,7 +447,7 @@ func (h *PublicHandler) GetUserPipeline(ctx context.Context, req *pipelinePB.Get
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -497,7 +492,7 @@ func (h *PublicHandler) UpdateUserPipeline(ctx context.Context, req *pipelinePB.
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -550,13 +545,7 @@ func (h *PublicHandler) UpdateUserPipeline(ctx context.Context, req *pipelinePB.
 		return nil, err
 	}
 
-	dbPipelineToUpdate, err := h.service.PBToDBPipeline(ctx, pbPipelineToUpdate)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, err
-	}
-
-	pbPipeline, err := h.service.UpdateUserPipelineByID(ctx, ns, userUid, id, dbPipelineToUpdate)
+	pbPipeline, err := h.service.UpdateUserPipelineByID(ctx, ns, userUid, id, pbPipelineToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -594,7 +583,7 @@ func (h *PublicHandler) DeleteUserPipeline(ctx context.Context, req *pipelinePB.
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -627,9 +616,9 @@ func (h *PublicHandler) DeleteUserPipeline(ctx context.Context, req *pipelinePB.
 	return &pipelinePB.DeleteUserPipelineResponse{}, nil
 }
 
-func (h *PublicHandler) LookUpUserPipeline(ctx context.Context, req *pipelinePB.LookUpUserPipelineRequest) (*pipelinePB.LookUpUserPipelineResponse, error) {
+func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.LookUpPipelineRequest) (*pipelinePB.LookUpPipelineResponse, error) {
 
-	eventName := "LookUpUserPipeline"
+	eventName := "LookUpPipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -647,24 +636,24 @@ func (h *PublicHandler) LookUpUserPipeline(ctx context.Context, req *pipelinePB.
 
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	ns, uid, err := h.service.GetRscNamespaceAndPermalinkUID(req.Permalink)
+	uid, err := resource.GetRscPermalinkUID(req.Permalink)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, err
-	}
-
-	pbPipeline, err := h.service.GetUserPipelineByUID(ctx, ns, userUid, uid, isBasicView)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	resp := pipelinePB.LookUpUserPipelineResponse{
+	pbPipeline, err := h.service.GetPipelineByUID(ctx, userUid, uid, isBasicView)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	resp := pipelinePB.LookUpPipelineResponse{
 		Pipeline: pbPipeline,
 	}
 
@@ -702,7 +691,7 @@ func (h *PublicHandler) ValidateUserPipeline(ctx context.Context, req *pipelineP
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -752,7 +741,7 @@ func (h *PublicHandler) RenameUserPipeline(ctx context.Context, req *pipelinePB.
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -796,7 +785,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 	if err != nil {
 		return ns, uuid.Nil, id, nil, false, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return ns, uuid.Nil, id, nil, false, err
 	}
@@ -960,7 +949,7 @@ func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -973,12 +962,8 @@ func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	dbPipelineReleaseToCreated, err := h.service.PBToDBPipelineRelease(ctx, uuid.FromStringOrNil(pipeline.Uid), req.GetRelease())
-	if err != nil {
-		return nil, err
-	}
 
-	pbPipelineRelease, err := h.service.CreateUserPipelineRelease(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), dbPipelineReleaseToCreated)
+	pbPipelineRelease, err := h.service.CreateUserPipelineRelease(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), req.GetRelease())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		// Manually set the custom header to have a StatusBadRequest http response for REST endpoint
@@ -1028,7 +1013,7 @@ func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pipel
 	if err != nil {
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1102,7 +1087,7 @@ func (h *PublicHandler) GetUserPipelineRelease(ctx context.Context, req *pipelin
 	if err != nil {
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1150,7 +1135,7 @@ func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1207,13 +1192,7 @@ func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, err
 	}
 
-	dbPipelineReleaseToUpdate, err := h.service.PBToDBPipelineRelease(ctx, uuid.FromStringOrNil(pipeline.Uid), pbPipelineReleaseToUpdate)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, err
-	}
-
-	pbPipelineRelease, err := h.service.UpdateUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, dbPipelineReleaseToUpdate)
+	pbPipelineRelease, err := h.service.UpdateUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, pbPipelineReleaseToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1256,7 +1235,7 @@ func (h *PublicHandler) RenameUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1310,7 +1289,7 @@ func (h *PublicHandler) DeleteUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1363,7 +1342,7 @@ func (h *PublicHandler) SetDefaultUserPipelineRelease(ctx context.Context, req *
 	if err != nil {
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1418,7 +1397,7 @@ func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pip
 	if err != nil {
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1467,7 +1446,7 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 	if err != nil {
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
@@ -1608,7 +1587,7 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 	if err != nil {
 		return nil, err
 	}
-	userUid, err := h.service.GetUserUid(ctx)
+	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}

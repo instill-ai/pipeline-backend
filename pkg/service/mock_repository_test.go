@@ -108,6 +108,21 @@ func (mr *MockRepositoryMockRecorder) GetPipelineByIDAdmin(arg0, arg1, arg2 inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByIDAdmin", reflect.TypeOf((*MockRepository)(nil).GetPipelineByIDAdmin), arg0, arg1, arg2)
 }
 
+// GetPipelineByUID mocks base method.
+func (m *MockRepository) GetPipelineByUID(arg0 context.Context, arg1 string, arg2 uuid.UUID, arg3 bool) (*datamodel.Pipeline, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPipelineByUID", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(*datamodel.Pipeline)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPipelineByUID indicates an expected call of GetPipelineByUID.
+func (mr *MockRepositoryMockRecorder) GetPipelineByUID(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelineByUID", reflect.TypeOf((*MockRepository)(nil).GetPipelineByUID), arg0, arg1, arg2, arg3)
+}
+
 // GetPipelineByUIDAdmin mocks base method.
 func (m *MockRepository) GetPipelineByUIDAdmin(arg0 context.Context, arg1 uuid.UUID, arg2 bool) (*datamodel.Pipeline, error) {
 	m.ctrl.T.Helper()
@@ -136,21 +151,6 @@ func (m *MockRepository) GetUserPipelineByID(arg0 context.Context, arg1, arg2, a
 func (mr *MockRepositoryMockRecorder) GetUserPipelineByID(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPipelineByID", reflect.TypeOf((*MockRepository)(nil).GetUserPipelineByID), arg0, arg1, arg2, arg3, arg4)
-}
-
-// GetUserPipelineByUID mocks base method.
-func (m *MockRepository) GetUserPipelineByUID(arg0 context.Context, arg1, arg2 string, arg3 uuid.UUID, arg4 bool) (*datamodel.Pipeline, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserPipelineByUID", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].(*datamodel.Pipeline)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserPipelineByUID indicates an expected call of GetUserPipelineByUID.
-func (mr *MockRepositoryMockRecorder) GetUserPipelineByUID(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPipelineByUID", reflect.TypeOf((*MockRepository)(nil).GetUserPipelineByUID), arg0, arg1, arg2, arg3, arg4)
 }
 
 // GetUserPipelineReleaseByID mocks base method.

@@ -47,11 +47,11 @@ import (
 // Service interface
 type Service interface {
 	ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error)
-	CreateUserPipeline(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipeline *datamodel.Pipeline) (*pipelinePB.Pipeline, error)
+	GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error)
+	CreateUserPipeline(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error)
 	ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error)
 	GetUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, isBasicView bool) (*pipelinePB.Pipeline, error)
-	GetUserPipelineByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error)
-	UpdateUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, updatedPipeline *datamodel.Pipeline) (*pipelinePB.Pipeline, error)
+	UpdateUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, updatedPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error)
 	UpdateUserPipelineIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, newID string) (*pipelinePB.Pipeline, error)
 	DeleteUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error
 	ValidateUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) (*pipelinePB.Pipeline, error)
@@ -59,11 +59,11 @@ type Service interface {
 	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error)
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error)
 
-	CreateUserPipelineRelease(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (*pipelinePB.PipelineRelease, error)
+	CreateUserPipelineRelease(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error)
 	ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error)
 	GetUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, isBasicView bool) (*pipelinePB.PipelineRelease, error)
 	GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.PipelineRelease, error)
-	UpdateUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, updatedPipelineRelease *datamodel.PipelineRelease) (*pipelinePB.PipelineRelease, error)
+	UpdateUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, updatedPipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error)
 	DeleteUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error
 	RestoreUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error
 	SetDefaultUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error
@@ -93,15 +93,19 @@ type Service interface {
 	ConvertOwnerPermalinkToName(permalink string) (string, error)
 	ConvertOwnerNameToPermalink(name string) (string, error)
 
-	PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error)
-	DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, isBasicView bool) (*pipelinePB.Pipeline, error)
-	DBToPBPipelines(ctx context.Context, dbPipeline []*datamodel.Pipeline, isBasicView bool) ([]*pipelinePB.Pipeline, error)
+	PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error)
+	DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipeline *datamodel.Pipeline, isBasicView bool) (*pipelinePB.Pipeline, error)
+	DBToPBPipelines(ctx context.Context, userUid uuid.UUID, dbPipeline []*datamodel.Pipeline, isBasicView bool) ([]*pipelinePB.Pipeline, error)
+	DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel.Pipeline, isBasicView bool) (*pipelinePB.Pipeline, error)
+	DBToPBPipelinesAdmin(ctx context.Context, dbPipeline []*datamodel.Pipeline, isBasicView bool) ([]*pipelinePB.Pipeline, error)
 
-	PBToDBPipelineRelease(ctx context.Context, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error)
-	DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, isBasicView bool) (*pipelinePB.PipelineRelease, error)
-	DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, isBasicView bool) ([]*pipelinePB.PipelineRelease, error)
+	PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error)
+	DBToPBPipelineRelease(ctx context.Context, userUid uuid.UUID, dbPipelineRelease *datamodel.PipelineRelease, isBasicView bool) (*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineReleases(ctx context.Context, userUid uuid.UUID, dbPipelineRelease []*datamodel.PipelineRelease, isBasicView bool) ([]*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineReleaseAdmin(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, isBasicView bool) (*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineReleasesAdmin(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, isBasicView bool) ([]*pipelinePB.PipelineRelease, error)
 
-	GetUserUid(ctx context.Context) (uuid.UUID, error)
+	GetUser(ctx context.Context) (string, uuid.UUID, error)
 }
 
 type service struct {
@@ -143,23 +147,23 @@ func NewService(r repository.Repository,
 }
 
 // GetUserPermalink returns the api user
-func (s *service) GetUserUid(ctx context.Context) (uuid.UUID, error) {
+func (s *service) GetUser(ctx context.Context) (string, uuid.UUID, error) {
 	// Verify if "jwt-sub" is in the header
 	headerUserUId := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 	if headerUserUId != "" {
 		_, err := uuid.FromString(headerUserUId)
 		if err != nil {
-			return uuid.Nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
+			return "", uuid.Nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
 		}
-		_, err = s.mgmtPrivateServiceClient.LookUpUserAdmin(context.Background(), &mgmtPB.LookUpUserAdminRequest{Permalink: "users/" + headerUserUId})
+		resp, err := s.mgmtPrivateServiceClient.LookUpUserAdmin(context.Background(), &mgmtPB.LookUpUserAdminRequest{Permalink: "users/" + headerUserUId})
 		if err != nil {
-			return uuid.Nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
+			return "", uuid.Nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
 		}
 
-		return uuid.FromStringOrNil(headerUserUId), nil
+		return resp.User.Id, uuid.FromStringOrNil(headerUserUId), nil
 	}
 
-	return s.defaultUserUid, nil
+	return constant.DefaultUserID, s.defaultUserUid, nil
 }
 
 func (s *service) ConvertOwnerPermalinkToName(permalink string) (string, error) {
@@ -241,23 +245,33 @@ func (s *service) ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize
 	if err != nil {
 		return nil, 0, "", err
 	}
-	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, isBasicView)
+	pbPipelines, err := s.DBToPBPipelines(ctx, userUid, dbPipelines, isBasicView)
 	return pbPipelines, totalSize, nextPageToken, err
 
 }
 
-func (s *service) CreateUserPipeline(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, dbPipeline *datamodel.Pipeline) (*pipelinePB.Pipeline, error) {
+func (s *service) GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error) {
+
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, isBasicView)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, isBasicView)
+}
+
+func (s *service) CreateUserPipeline(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pbPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipeline.Owner = ownerPermalink
 
-	recipePermalink, err := s.recipeNameToPermalink(ownerPermalink, dbPipeline.Recipe)
+	dbPipeline, err := s.PBToDBPipeline(ctx, userUid, pbPipeline)
+
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
-
-	dbPipeline.Recipe = recipePermalink
 
 	if err := s.repository.CreateUserPipeline(ctx, ownerPermalink, userPermalink, dbPipeline); err != nil {
 		return nil, err
@@ -268,7 +282,7 @@ func (s *service) CreateUserPipeline(ctx context.Context, ns resource.Namespace,
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbCreatedPipeline, false)
+	return s.DBToPBPipeline(ctx, userUid, dbCreatedPipeline, false)
 }
 
 func (s *service) ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error) {
@@ -280,7 +294,7 @@ func (s *service) ListUserPipelines(ctx context.Context, ns resource.Namespace, 
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, isBasicView)
+	pbPipelines, err := s.DBToPBPipelines(ctx, userUid, dbPipelines, isBasicView)
 	return pbPipelines, ps, pt, err
 }
 
@@ -291,7 +305,7 @@ func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageTo
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, isBasicView)
+	pbPipelines, err := s.DBToPBPipelinesAdmin(ctx, dbPipelines, isBasicView)
 	return pbPipelines, ps, pt, err
 
 }
@@ -306,20 +320,7 @@ func (s *service) GetUserPipelineByID(ctx context.Context, ns resource.Namespace
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, isBasicView)
-}
-
-func (s *service) GetUserPipelineByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error) {
-
-	ownerPermalink := ns.String()
-	userPermalink := resource.UserUidToUserPermalink(userUid)
-
-	dbPipeline, err := s.repository.GetUserPipelineByUID(ctx, ownerPermalink, userPermalink, uid, isBasicView)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.DBToPBPipeline(ctx, dbPipeline, isBasicView)
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, isBasicView)
 }
 
 func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error) {
@@ -329,42 +330,34 @@ func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBa
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, isBasicView)
+	return s.DBToPBPipelineAdmin(ctx, dbPipeline, isBasicView)
 
 }
 
-func (s *service) UpdateUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, toUpdPipeline *datamodel.Pipeline) (*pipelinePB.Pipeline, error) {
+func (s *service) UpdateUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, toUpdPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	if toUpdPipeline.Recipe != nil {
-
-		recipePermalink, err := s.recipeNameToPermalink(ownerPermalink, toUpdPipeline.Recipe)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, err.Error())
-		}
-
-		toUpdPipeline.Recipe = recipePermalink
-
+	dbPipelineToCreate, err := s.PBToDBPipeline(ctx, userUid, toUpdPipeline)
+	if err != nil {
+		return nil, err
 	}
-
-	toUpdPipeline.Owner = ownerPermalink
 
 	// Validation: Pipeline existence
 	if existingPipeline, _ := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, true); existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
 
-	if err := s.repository.UpdateUserPipelineByID(ctx, ownerPermalink, userPermalink, id, toUpdPipeline); err != nil {
+	if err := s.repository.UpdateUserPipelineByID(ctx, ownerPermalink, userPermalink, id, dbPipelineToCreate); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, toUpdPipeline.ID, false)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, toUpdPipeline.Id, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, false)
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, false)
 }
 
 func (s *service) DeleteUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error {
@@ -411,7 +404,7 @@ func (s *service) ValidateUserPipelineByID(ctx context.Context, ns resource.Name
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, false)
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, false)
 
 }
 
@@ -435,7 +428,7 @@ func (s *service) UpdateUserPipelineIDByID(ctx context.Context, ns resource.Name
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, false)
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, false)
 }
 
 func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
@@ -593,25 +586,29 @@ func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb
 	return &operation, nil
 }
 
-func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) (*pipelinePB.PipelineRelease, error) {
+func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, pipelineUid, false)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, false)
 	if err != nil {
 		return nil, err
 	}
-	pipelineRelease.Recipe = dbPipeline.Recipe
-	if err := s.repository.CreateUserPipelineRelease(ctx, ownerPermalink, userPermalink, pipelineUid, pipelineRelease); err != nil {
+	pipelineRelease.Recipe = pipeline.Recipe
+	dbPipelineReleaseToCreate, err := s.PBToDBPipelineRelease(ctx, userUid, pipelineUid, pipelineRelease)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.repository.CreateUserPipelineRelease(ctx, ownerPermalink, userPermalink, pipelineUid, dbPipelineReleaseToCreate); err != nil {
 		return nil, err
 	}
 
-	dbCreatedPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, pipelineRelease.ID, false)
+	dbCreatedPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, pipelineRelease.Id, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbCreatedPipelineRelease, false)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbCreatedPipelineRelease, false)
 
 }
 func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error) {
@@ -624,7 +621,7 @@ func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Name
 		return nil, 0, "", err
 	}
 
-	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, dbPipelineReleases, isBasicView)
+	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, userUid, dbPipelineReleases, isBasicView)
 	return pbPipelineReleases, ps, pt, err
 }
 
@@ -634,7 +631,7 @@ func (s *service) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64,
 	if err != nil {
 		return nil, 0, "", err
 	}
-	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, dbPipelineReleases, isBasicView)
+	pbPipelineReleases, err := s.DBToPBPipelineReleasesAdmin(ctx, dbPipelineReleases, isBasicView)
 	return pbPipelineReleases, ps, pt, err
 
 }
@@ -648,7 +645,7 @@ func (s *service) GetUserPipelineReleaseByID(ctx context.Context, ns resource.Na
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, isBasicView)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, isBasicView)
 
 }
 func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.PipelineRelease, error) {
@@ -660,29 +657,33 @@ func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.N
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, isBasicView)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, isBasicView)
 
 }
 
-func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, toUpdPipeline *datamodel.PipelineRelease) (*pipelinePB.PipelineRelease, error) {
+func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, toUpdPipeline *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 	// Validation: Pipeline existence
-	if existingPipeline, _ := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, true); existingPipeline == nil {
+	if existingPipeline, _ := s.GetUserPipelineReleaseByID(ctx, ns, userUid, pipelineUid, id, true); existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
 
-	if err := s.repository.UpdateUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, toUpdPipeline); err != nil {
+	pbPipelineReleaseToUpdate, err := s.PBToDBPipelineRelease(ctx, userUid, pipelineUid, toUpdPipeline)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.repository.UpdateUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, pbPipelineReleaseToUpdate); err != nil {
 		return nil, err
 	}
 
-	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, toUpdPipeline.ID, false)
+	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, toUpdPipeline.Id, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, false)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, false)
 }
 
 func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error) {
@@ -704,7 +705,7 @@ func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resour
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, false)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, false)
 }
 
 func (s *service) DeleteUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error {
@@ -1013,7 +1014,7 @@ func (s *service) TriggerUserPipelineByID(ctx context.Context, ns resource.Names
 	if err != nil {
 		return nil, nil, err
 	}
-	recipe, err := s.recipePermalinkToName(dbPipeline.Recipe)
+	recipe, err := s.recipePermalinkToName(userUid, dbPipeline.Recipe)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1029,7 +1030,7 @@ func (s *service) TriggerAsyncUserPipelineByID(ctx context.Context, ns resource.
 	if err != nil {
 		return nil, err
 	}
-	recipe, err := s.recipePermalinkToName(dbPipeline.Recipe)
+	recipe, err := s.recipePermalinkToName(userUid, dbPipeline.Recipe)
 	if err != nil {
 		return nil, err
 	}
@@ -1052,7 +1053,7 @@ func (s *service) TriggerUserPipelineReleaseByID(ctx context.Context, ns resourc
 		return nil, nil, err
 	}
 
-	recipe, err := s.recipePermalinkToName(dbPipelineRelease.Recipe)
+	recipe, err := s.recipePermalinkToName(userUid, dbPipelineRelease.Recipe)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1071,7 +1072,7 @@ func (s *service) TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns re
 	if err != nil {
 		return nil, err
 	}
-	recipe, err := s.recipePermalinkToName(dbPipelineRelease.Recipe)
+	recipe, err := s.recipePermalinkToName(userUid, dbPipelineRelease.Recipe)
 	if err != nil {
 		return nil, err
 	}

@@ -258,13 +258,13 @@ export function CheckLookUp() {
       check(
         http.request(
           "GET",
-          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${res.json().pipeline.id
+          `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.id
           }/lookUp`,
           null,
           constant.paramsHTTPWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] POST /v1alpha/${constant.namespace}/pipelines/${res.json().pipeline.id
+          [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${res.json().pipeline.id
             }/lookUp response status is 401`]: (r) => r.status === 401,
         }
       );

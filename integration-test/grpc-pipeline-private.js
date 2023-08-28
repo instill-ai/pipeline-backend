@@ -267,7 +267,7 @@ export function CheckLookUp() {
       clientPrivate.invoke(
         "vdp.pipeline.v1alpha.PipelinePrivateService/LookUpPipelineAdmin",
         {
-          permalink: `${constant.namespace}/pipelines/${res.message.pipeline.uid}`,
+          permalink: `pipelines/${res.message.pipeline.uid}`,
         }
       ),
       {

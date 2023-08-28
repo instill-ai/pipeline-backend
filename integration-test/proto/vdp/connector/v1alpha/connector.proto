@@ -145,6 +145,23 @@ message ListConnectorResourcesResponse {
   int64 total_size = 3;
 }
 
+// LookUpConnectorResourceRequest represents a request to query a
+// connector_resource via permalink
+message LookUpConnectorResourceRequest {
+  // Permalink of a connector_resource. For example:
+  // "connector-resources/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+  // ConnectorResource view (default is VIEW_BASIC)
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LookUpConnectorResourceResponse represents a response for a
+// connector_resource
+message LookUpConnectorResourceResponse {
+  // ConnectorResource resource
+  ConnectorResource connector_resource = 1;
+}
+
 // CreateUserConnectorResourceRequest represents a request to create a
 // ConnectorResource resource
 message CreateUserConnectorResourceRequest {
@@ -252,23 +269,6 @@ message DeleteUserConnectorResourceRequest {
 
 // DeleteUserConnectorResourceResponse represents an empty response
 message DeleteUserConnectorResourceResponse {}
-
-// LookUpUserConnectorResourceRequest represents a request to query a
-// connector_resource via permalink
-message LookUpUserConnectorResourceRequest {
-  // Permalink of a connector_resource. For example:
-  // "connector-resources/{uid}"
-  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
-  // ConnectorResource view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// LookUpUserConnectorResourceResponse represents a response for a
-// connector_resource
-message LookUpUserConnectorResourceResponse {
-  // ConnectorResource resource
-  ConnectorResource connector_resource = 1;
-}
 
 // ConnectUserConnectorResourceRequest represents a request to connect a
 // connector_resource

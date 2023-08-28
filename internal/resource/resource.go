@@ -40,11 +40,13 @@ func GetRscNameID(path string) (string, error) {
 
 // GetRscPermalinkUID returns the resource UID given a resource permalink
 func GetRscPermalinkUID(path string) (uuid.UUID, error) {
-	uid := path[strings.LastIndex(path, "/")+1:]
-	if uid == "" {
+
+	splits := strings.Split(path, "/")
+	if len(splits) < 2 {
 		return uuid.Nil, fmt.Errorf("error when extract resource id from resource permalink '%s'", path)
 	}
-	return uuid.FromStringOrNil(uid), nil
+
+	return uuid.FromStringOrNil(splits[1]), nil
 }
 
 type NamespaceType string

@@ -256,24 +256,24 @@ func (mr *MockConnectorPublicServiceClientMockRecorder) Liveness(arg0, arg1 inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Liveness", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).Liveness), varargs...)
 }
 
-// LookUpUserConnectorResource mocks base method.
-func (m *MockConnectorPublicServiceClient) LookUpUserConnectorResource(arg0 context.Context, arg1 *connectorv1alpha.LookUpUserConnectorResourceRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.LookUpUserConnectorResourceResponse, error) {
+// LookUpConnectorResource mocks base method.
+func (m *MockConnectorPublicServiceClient) LookUpConnectorResource(arg0 context.Context, arg1 *connectorv1alpha.LookUpConnectorResourceRequest, arg2 ...grpc.CallOption) (*connectorv1alpha.LookUpConnectorResourceResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "LookUpUserConnectorResource", varargs...)
-	ret0, _ := ret[0].(*connectorv1alpha.LookUpUserConnectorResourceResponse)
+	ret := m.ctrl.Call(m, "LookUpConnectorResource", varargs...)
+	ret0, _ := ret[0].(*connectorv1alpha.LookUpConnectorResourceResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// LookUpUserConnectorResource indicates an expected call of LookUpUserConnectorResource.
-func (mr *MockConnectorPublicServiceClientMockRecorder) LookUpUserConnectorResource(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+// LookUpConnectorResource indicates an expected call of LookUpConnectorResource.
+func (mr *MockConnectorPublicServiceClientMockRecorder) LookUpConnectorResource(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookUpUserConnectorResource", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).LookUpUserConnectorResource), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookUpConnectorResource", reflect.TypeOf((*MockConnectorPublicServiceClient)(nil).LookUpConnectorResource), varargs...)
 }
 
 // Readiness mocks base method.

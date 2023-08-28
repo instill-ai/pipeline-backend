@@ -784,15 +784,15 @@ export function CheckLookUp() {
 
     check(
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline",
+        "vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline",
         {
-          permalink: `${constant.namespace}/pipelines/${res.message.pipeline.uid}`,
+          permalink: `pipelines/${res.message.pipeline.uid}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline response StatusOK`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline response pipeline new name`]:
+        [`vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline response pipeline new name`]:
           (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       }
     );

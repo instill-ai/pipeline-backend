@@ -305,14 +305,14 @@ export function CheckLookUp() {
       // Cannot look up a pipeline of a non-exist user
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline",
+          "vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline",
           {
-            permalink: `${constant.namespace}/pipelines/${res.message.pipeline.uid}`,
+            permalink: `pipelines/${res.message.pipeline.uid}`,
           },
           constant.paramsGRPCWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/LookUpUserPipeline response StatusUnauthenticated`]:
+          [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/LookUpPipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
