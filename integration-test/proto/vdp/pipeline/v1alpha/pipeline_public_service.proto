@@ -51,6 +51,13 @@ service PipelinePublicService {
     option (google.api.http) = {get: "/v1alpha/pipelines"};
   }
 
+  // LookUpPipeline method receives a LookUpPipelineRequest message and returns
+  // a LookUpPipelineResponse
+  rpc LookUpPipeline(LookUpPipelineRequest) returns (LookUpPipelineResponse) {
+    option (google.api.http) = {get: "/v1alpha/{permalink=pipelines/*}/lookUp"};
+    option (google.api.method_signature) = "permalink";
+  }
+
   // CreateUserPipeline method receives a CreateUserPipelineRequest message and returns
   // a CreateUserPipelineResponse message.
   rpc CreateUserPipeline(CreateUserPipelineRequest) returns (CreateUserPipelineResponse) {
@@ -90,13 +97,6 @@ service PipelinePublicService {
   rpc DeleteUserPipeline(DeleteUserPipelineRequest) returns (DeleteUserPipelineResponse) {
     option (google.api.http) = {delete: "/v1alpha/{name=users/*/pipelines/*}"};
     option (google.api.method_signature) = "name";
-  }
-
-  // LookUpUserPipeline method receives a LookUpUserPipelineRequest message and returns
-  // a LookUpUserPipelineResponse
-  rpc LookUpUserPipeline(LookUpUserPipelineRequest) returns (LookUpUserPipelineResponse) {
-    option (google.api.http) = {get: "/v1alpha/{permalink=users/*/pipelines/*}/lookUp"};
-    option (google.api.method_signature) = "permalink";
   }
 
   // Validate a pipeline.

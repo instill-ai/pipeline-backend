@@ -272,6 +272,21 @@ message ListUserPipelinesResponse {
   int64 total_size = 3;
 }
 
+// LookUpPipelineRequest represents a request to query a pipeline via permalink
+message LookUpPipelineRequest {
+  // Permalink of a pipeline. For example:
+  // "pipelines/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+  // View view (default is VIEW_BASIC)
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LookUpPipelineResponse represents a response for a pipeline resource
+message LookUpPipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
 // GetUserPipelineRequest represents a request to query a pipeline
 message GetUserPipelineRequest {
   // Pipeline resource name. It must have the format of "users/*/pipelines/*"
@@ -320,21 +335,6 @@ message DeleteUserPipelineRequest {
 
 // DeleteUserPipelineResponse represents an empty response
 message DeleteUserPipelineResponse {}
-
-// LookUpUserPipelineRequest represents a request to query a pipeline via permalink
-message LookUpUserPipelineRequest {
-  // Permalink of a pipeline. For example:
-  // "users/*/pipelines/{uid}"
-  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
-  // View view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// LookUpUserPipelineResponse represents a response for a pipeline resource
-message LookUpUserPipelineResponse {
-  // A pipeline resource
-  Pipeline pipeline = 1;
-}
 
 // ValidatePUseripelineRequest represents a request to validate a pipeline
 message ValidateUserPipelineRequest {
@@ -680,27 +680,6 @@ message ListPipelineReleasesAdminResponse {
   string next_page_token = 2;
   // Total count of pipeline resources
   int64 total_size = 3;
-}
-
-// GetPipelineAdminRequest represents a request to query a user's pipeline by
-// admin
-message GetPipelineAdminRequest {
-  // Pipeline resource name. It must have the format of "users/*/pipelines/*"
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      field_configuration: {path_param_name: "pipeline.name"}
-    }
-  ];
-  // Pipeline resource view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// GetPipelineAdminResponse represents a response for a pipeline resource
-message GetPipelineAdminResponse {
-  // A pipeline resource
-  Pipeline pipeline = 1;
 }
 
 // LookUpPipelineAdminRequest represents a request to query a user's pipeline

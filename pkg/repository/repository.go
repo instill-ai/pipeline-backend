@@ -36,11 +36,12 @@ const VisibilityPublic = datamodel.PipelineVisibility(pipelinePB.Visibility_VISI
 // Repository interface
 type Repository interface {
 	ListPipelines(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*datamodel.Pipeline, int64, string, error)
+	GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
 
 	CreateUserPipeline(ctx context.Context, ownerPermalink string, userPermalink string, pipeline *datamodel.Pipeline) error
 	ListUserPipelines(ctx context.Context, ownerPermalink string, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*datamodel.Pipeline, int64, string, error)
 	GetUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, isBasicView bool) (*datamodel.Pipeline, error)
-	GetUserPipelineByUID(ctx context.Context, ownerPermalink string, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
+
 	UpdateUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, pipeline *datamodel.Pipeline) error
 	DeleteUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string) error
 	UpdateUserPipelineIDByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, newID string) error
@@ -257,10 +258,11 @@ func (r *repository) GetUserPipelineByID(ctx context.Context, ownerPermalink str
 		isBasicView)
 }
 
-func (r *repository) GetUserPipelineByUID(ctx context.Context, ownerPermalink string, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error) {
+func (r *repository) GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error) {
+	// TODO: ACL
 	return r.getUserPipeline(ctx,
-		"(uid = ? AND (owner = ? AND (visibility = ? OR ? = ?)))",
-		[]interface{}{uid, ownerPermalink, VisibilityPublic, ownerPermalink, userPermalink},
+		"(uid = ? AND (visibility = ? OR owner = ?))",
+		[]interface{}{uid, VisibilityPublic, userPermalink},
 		isBasicView)
 }
 

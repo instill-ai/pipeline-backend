@@ -60,6 +60,14 @@ service ConnectorPublicService {
     option (google.api.http) = {get: "/v1alpha/connector-resources"};
   }
 
+  // LookUpConnectorResource method receives a
+  // LookUpConnectorResourceRequest message and returns a
+  // LookUpConnectorResourceResponse
+  rpc LookUpConnectorResource(LookUpConnectorResourceRequest) returns (LookUpConnectorResourceResponse) {
+    option (google.api.http) = {get: "/v1alpha/{permalink=connector-resources/*}/lookUp"};
+    option (google.api.method_signature) = "permalink";
+  }
+
   // CreateUserConnectorResource method receives a
   // CreateUserConnectorResourceRequest message and returns a
   // CreateUserConnectorResourceResponse message.
@@ -103,14 +111,6 @@ service ConnectorPublicService {
   rpc DeleteUserConnectorResource(DeleteUserConnectorResourceRequest) returns (DeleteUserConnectorResourceResponse) {
     option (google.api.http) = {delete: "/v1alpha/{name=users/*/connector-resources/*}"};
     option (google.api.method_signature) = "name";
-  }
-
-  // LookUpUserConnectorResource method receives a
-  // LookUpUserConnectorResourceRequest message and returns a
-  // LookUpUserConnectorResourceResponse
-  rpc LookUpUserConnectorResource(LookUpUserConnectorResourceRequest) returns (LookUpUserConnectorResourceResponse) {
-    option (google.api.http) = {get: "/v1alpha/{permalink=users/*/connector-resources/*}/lookUp"};
-    option (google.api.method_signature) = "permalink";
   }
 
   // Connect a connector resource.

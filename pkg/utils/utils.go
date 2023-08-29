@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -32,6 +33,10 @@ func InjectOwnerToContext(ctx context.Context, owner *mgmtPB.User) context.Conte
 func InjectOwnerToContextWithOwnerPermalink(ctx context.Context, permalink string) context.Context {
 	uid, _ := resource.GetRscPermalinkUID(permalink)
 	ctx = metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", uid.String())
+	return ctx
+}
+func InjectOwnerToContextWithUserUid(ctx context.Context, userUid uuid.UUID) context.Context {
+	ctx = metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", userUid.String())
 	return ctx
 }
 
