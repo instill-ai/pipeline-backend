@@ -218,8 +218,6 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
-
 	_, userUid, err := h.service.GetUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -249,7 +247,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(ctx, userUid, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(ctx, userUid, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
@@ -370,8 +368,6 @@ func (h *PublicHandler) ListUserPipelines(ctx context.Context, req *pipelinePB.L
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
-
 	ns, _, err := h.service.GetRscNamespaceAndNameID(req.Parent)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -406,7 +402,7 @@ func (h *PublicHandler) ListUserPipelines(ctx context.Context, req *pipelinePB.L
 		return &pipelinePB.ListUserPipelinesResponse{}, err
 	}
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListUserPipelines(ctx, ns, userUid, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListUserPipelines(ctx, ns, userUid, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListUserPipelinesResponse{}, err
@@ -440,8 +436,6 @@ func (h *PublicHandler) GetUserPipeline(ctx context.Context, req *pipelinePB.Get
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
-
 	ns, id, err := h.service.GetRscNamespaceAndNameID(req.Name)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -453,7 +447,7 @@ func (h *PublicHandler) GetUserPipeline(ctx context.Context, req *pipelinePB.Get
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, isBasicView)
+	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, parseView(req.GetView()))
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -634,8 +628,6 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
-
 	uid, err := resource.GetRscPermalinkUID(req.Permalink)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -647,7 +639,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.GetPipelineByUID(ctx, userUid, uid, isBasicView)
+	pbPipeline, err := h.service.GetPipelineByUID(ctx, userUid, uid, parseView(req.GetView()))
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -790,7 +782,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 		return ns, uuid.Nil, id, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, false)
+	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, pipelinePB.View_VIEW_FULL)
 	if err != nil {
 		return ns, uuid.Nil, id, nil, false, err
 	}
@@ -954,7 +946,7 @@ func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1007,8 +999,6 @@ func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pipel
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
-
 	ns, pipelineId, err := h.service.GetRscNamespaceAndNameID(req.GetParent())
 	if err != nil {
 		return nil, err
@@ -1041,12 +1031,12 @@ func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pipel
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListUserPipelineReleases(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListUserPipelineReleases(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1081,8 +1071,6 @@ func (h *PublicHandler) GetUserPipelineRelease(ctx context.Context, req *pipelin
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
-
 	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
 		return nil, err
@@ -1092,12 +1080,12 @@ func (h *PublicHandler) GetUserPipelineRelease(ctx context.Context, req *pipelin
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, isBasicView)
+	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, parseView(req.GetView()))
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1148,7 +1136,7 @@ func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, status.Error(codes.InvalidArgument, "The update_mask is invalid")
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1239,7 +1227,7 @@ func (h *PublicHandler) RenameUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1299,7 +1287,7 @@ func (h *PublicHandler) DeleteUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1354,7 +1342,7 @@ func (h *PublicHandler) SetDefaultUserPipelineRelease(ctx context.Context, req *
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1364,7 +1352,7 @@ func (h *PublicHandler) SetDefaultUserPipelineRelease(ctx context.Context, req *
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, false)
+	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, pipelinePB.View_VIEW_FULL)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1408,7 +1396,7 @@ func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pip
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1418,7 +1406,7 @@ func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pip
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, false)
+	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, pipelinePB.View_VIEW_FULL)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1451,7 +1439,7 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, false)
+	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_FULL)
 	if err != nil {
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
@@ -1461,14 +1449,14 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		if err != nil {
 			return ns, uuid.Nil, "", nil, nil, false, err
 		}
-		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), defaultReleaseUid, false)
+		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), defaultReleaseUid, pipelinePB.View_VIEW_FULL)
 		if err != nil {
 			return ns, uuid.Nil, "", nil, nil, false, err
 		}
 		releaseId = dbPipelineRelease.Id
 	}
 
-	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), releaseId, false)
+	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), releaseId, pipelinePB.View_VIEW_FULL)
 	if err != nil {
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
@@ -1596,7 +1584,7 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, true)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
@@ -1615,7 +1603,7 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 			span.SetStatus(1, err.Error())
 			return nil, err
 		}
-		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), defaultReleaseUid, false)
+		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), defaultReleaseUid, pipelinePB.View_VIEW_FULL)
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			logger.Info(string(custom_otel.NewLogMessage(
@@ -1631,7 +1619,7 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 		releaseId = dbPipelineRelease.Id
 	}
 
-	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, true)
+	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(

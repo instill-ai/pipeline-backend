@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -46,31 +47,31 @@ import (
 
 // Service interface
 type Service interface {
-	ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error)
-	GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error)
+	ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error)
+	GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.Pipeline, error)
 	CreateUserPipeline(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error)
-	ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error)
-	GetUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, isBasicView bool) (*pipelinePB.Pipeline, error)
+	ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error)
+	GetUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, view pipelinePB.View) (*pipelinePB.Pipeline, error)
 	UpdateUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, updatedPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error)
 	UpdateUserPipelineIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, newID string) (*pipelinePB.Pipeline, error)
 	DeleteUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error
 	ValidateUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) (*pipelinePB.Pipeline, error)
 	GetUserPipelineDefaultReleaseUid(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) (uuid.UUID, error)
 
-	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error)
-	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error)
+	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error)
+	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.Pipeline, error)
 
 	CreateUserPipelineRelease(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error)
-	ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error)
-	GetUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, isBasicView bool) (*pipelinePB.PipelineRelease, error)
-	GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.PipelineRelease, error)
+	ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error)
+	GetUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
+	GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
 	UpdateUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, updatedPipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error)
 	DeleteUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error
 	RestoreUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error
 	SetDefaultUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error
 	UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error)
 
-	ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error)
+	ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error)
 
 	// Controller APIs
 	GetResourceState(uid uuid.UUID) (*pipelinePB.State, error)
@@ -95,16 +96,16 @@ type Service interface {
 	ConvertOwnerNameToPermalink(name string) (string, error)
 
 	PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error)
-	DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipeline *datamodel.Pipeline, isBasicView bool) (*pipelinePB.Pipeline, error)
-	DBToPBPipelines(ctx context.Context, userUid uuid.UUID, dbPipeline []*datamodel.Pipeline, isBasicView bool) ([]*pipelinePB.Pipeline, error)
-	DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel.Pipeline, isBasicView bool) (*pipelinePB.Pipeline, error)
-	DBToPBPipelinesAdmin(ctx context.Context, dbPipeline []*datamodel.Pipeline, isBasicView bool) ([]*pipelinePB.Pipeline, error)
+	DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipeline *datamodel.Pipeline, view pipelinePB.View) (*pipelinePB.Pipeline, error)
+	DBToPBPipelines(ctx context.Context, userUid uuid.UUID, dbPipeline []*datamodel.Pipeline, view pipelinePB.View) ([]*pipelinePB.Pipeline, error)
+	DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel.Pipeline, view pipelinePB.View) (*pipelinePB.Pipeline, error)
+	DBToPBPipelinesAdmin(ctx context.Context, dbPipeline []*datamodel.Pipeline, view pipelinePB.View) ([]*pipelinePB.Pipeline, error)
 
 	PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error)
-	DBToPBPipelineRelease(ctx context.Context, userUid uuid.UUID, dbPipelineRelease *datamodel.PipelineRelease, isBasicView bool) (*pipelinePB.PipelineRelease, error)
-	DBToPBPipelineReleases(ctx context.Context, userUid uuid.UUID, dbPipelineRelease []*datamodel.PipelineRelease, isBasicView bool) ([]*pipelinePB.PipelineRelease, error)
-	DBToPBPipelineReleaseAdmin(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, isBasicView bool) (*pipelinePB.PipelineRelease, error)
-	DBToPBPipelineReleasesAdmin(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, isBasicView bool) ([]*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineRelease(ctx context.Context, userUid uuid.UUID, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineReleases(ctx context.Context, userUid uuid.UUID, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View) ([]*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineReleaseAdmin(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineReleasesAdmin(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View) ([]*pipelinePB.PipelineRelease, error)
 
 	GetUser(ctx context.Context) (string, uuid.UUID, error)
 }
@@ -239,28 +240,28 @@ func (s *service) GetRscNamespaceAndNameIDAndReleaseID(path string) (resource.Na
 	return ns, pipelineId, splits[5], err
 }
 
-func (s *service) ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error) {
+func (s *service) ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error) {
 
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, userPermalink, pageSize, pageToken, isBasicView, filter)
+	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, userPermalink, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter)
 	if err != nil {
 		return nil, 0, "", err
 	}
-	pbPipelines, err := s.DBToPBPipelines(ctx, userUid, dbPipelines, isBasicView)
+	pbPipelines, err := s.DBToPBPipelines(ctx, userUid, dbPipelines, view)
 	return pbPipelines, totalSize, nextPageToken, err
 
 }
 
-func (s *service) GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error) {
+func (s *service) GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.Pipeline, error) {
 
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, isBasicView)
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, view == pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, isBasicView)
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, view)
 }
 
 func (s *service) CreateUserPipeline(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pbPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
@@ -283,45 +284,45 @@ func (s *service) CreateUserPipeline(ctx context.Context, ns resource.Namespace,
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbCreatedPipeline, false)
+	return s.DBToPBPipeline(ctx, userUid, dbCreatedPipeline, pipelinePB.View_VIEW_FULL)
 }
 
-func (s *service) ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error) {
+func (s *service) ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipelines, ps, pt, err := s.repository.ListUserPipelines(ctx, ownerPermalink, userPermalink, pageSize, pageToken, isBasicView, filter)
+	dbPipelines, ps, pt, err := s.repository.ListUserPipelines(ctx, ownerPermalink, userPermalink, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter)
 	if err != nil {
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelines(ctx, userUid, dbPipelines, isBasicView)
+	pbPipelines, err := s.DBToPBPipelines(ctx, userUid, dbPipelines, view)
 	return pbPipelines, ps, pt, err
 }
 
-func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error) {
+func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.Pipeline, int64, string, error) {
 
-	dbPipelines, ps, pt, err := s.repository.ListPipelinesAdmin(ctx, pageSize, pageToken, isBasicView, filter)
+	dbPipelines, ps, pt, err := s.repository.ListPipelinesAdmin(ctx, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter)
 	if err != nil {
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelinesAdmin(ctx, dbPipelines, isBasicView)
+	pbPipelines, err := s.DBToPBPipelinesAdmin(ctx, dbPipelines, view)
 	return pbPipelines, ps, pt, err
 
 }
 
-func (s *service) GetUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, isBasicView bool) (*pipelinePB.Pipeline, error) {
+func (s *service) GetUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, view pipelinePB.View) (*pipelinePB.Pipeline, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, isBasicView)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, view == pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, isBasicView)
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, view)
 }
 
 func (s *service) GetUserPipelineDefaultReleaseUid(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) (uuid.UUID, error) {
@@ -337,14 +338,14 @@ func (s *service) GetUserPipelineDefaultReleaseUid(ctx context.Context, ns resou
 	return dbPipeline.DefaultReleaseUID, nil
 }
 
-func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*pipelinePB.Pipeline, error) {
+func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.Pipeline, error) {
 
-	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, uid, isBasicView)
+	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, uid, view == pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.DBToPBPipelineAdmin(ctx, dbPipeline, isBasicView)
+	return s.DBToPBPipelineAdmin(ctx, dbPipeline, view)
 
 }
 
@@ -371,7 +372,7 @@ func (s *service) UpdateUserPipelineByID(ctx context.Context, ns resource.Namesp
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, false)
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, pipelinePB.View_VIEW_FULL)
 }
 
 func (s *service) DeleteUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error {
@@ -418,7 +419,7 @@ func (s *service) ValidateUserPipelineByID(ctx context.Context, ns resource.Name
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, false)
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, pipelinePB.View_VIEW_FULL)
 
 }
 
@@ -442,7 +443,7 @@ func (s *service) UpdateUserPipelineIDByID(ctx context.Context, ns resource.Name
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, false)
+	return s.DBToPBPipeline(ctx, userUid, dbPipeline, pipelinePB.View_VIEW_FULL)
 }
 
 func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
@@ -604,74 +605,80 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, false)
+	fmt.Println()
+	fmt.Println(1)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_FULL)
 	if err != nil {
 		return nil, err
 	}
-	pipelineRelease.Recipe = pipeline.Recipe
+
+	pipelineRelease.Recipe = proto.Clone(pipeline.Recipe).(*pipelinePB.Recipe)
+	fmt.Println(2, pipelineRelease)
 	dbPipelineReleaseToCreate, err := s.PBToDBPipelineRelease(ctx, userUid, pipelineUid, pipelineRelease)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(3, dbPipelineReleaseToCreate)
 	if err := s.repository.CreateUserPipelineRelease(ctx, ownerPermalink, userPermalink, pipelineUid, dbPipelineReleaseToCreate); err != nil {
 		return nil, err
 	}
+	fmt.Println(4)
 
 	dbCreatedPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, pipelineRelease.Id, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbCreatedPipelineRelease, false)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbCreatedPipelineRelease, pipelinePB.View_VIEW_FULL)
 
 }
-func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error) {
+func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipelineReleases, ps, pt, err := s.repository.ListUserPipelineReleases(ctx, ownerPermalink, userPermalink, pipelineUid, pageSize, pageToken, isBasicView, filter)
+	dbPipelineReleases, ps, pt, err := s.repository.ListUserPipelineReleases(ctx, ownerPermalink, userPermalink, pipelineUid, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter)
 	if err != nil {
 		return nil, 0, "", err
 	}
 
-	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, userUid, dbPipelineReleases, isBasicView)
+	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, userUid, dbPipelineReleases, view)
 	return pbPipelineReleases, ps, pt, err
 }
 
-func (s *service) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error) {
+func (s *service) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter) ([]*pipelinePB.PipelineRelease, int64, string, error) {
 
-	dbPipelineReleases, ps, pt, err := s.repository.ListPipelineReleasesAdmin(ctx, pageSize, pageToken, isBasicView, filter)
+	dbPipelineReleases, ps, pt, err := s.repository.ListPipelineReleasesAdmin(ctx, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter)
 	if err != nil {
 		return nil, 0, "", err
 	}
-	pbPipelineReleases, err := s.DBToPBPipelineReleasesAdmin(ctx, dbPipelineReleases, isBasicView)
+	pbPipelineReleases, err := s.DBToPBPipelineReleasesAdmin(ctx, dbPipelineReleases, view)
 	return pbPipelineReleases, ps, pt, err
 
 }
 
-func (s *service) GetUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, isBasicView bool) (*pipelinePB.PipelineRelease, error) {
+func (s *service) GetUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, view pipelinePB.View) (*pipelinePB.PipelineRelease, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, isBasicView)
+	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, view == pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, isBasicView)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, view)
 
 }
-func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*pipelinePB.PipelineRelease, error) {
+func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.PipelineRelease, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByUID(ctx, ownerPermalink, userPermalink, pipelineUid, uid, isBasicView)
+	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByUID(ctx, ownerPermalink, userPermalink, pipelineUid, uid, view == pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, isBasicView)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, view)
 
 }
 
@@ -680,7 +687,7 @@ func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 	// Validation: Pipeline existence
-	if existingPipeline, _ := s.GetUserPipelineReleaseByID(ctx, ns, userUid, pipelineUid, id, true); existingPipeline == nil {
+	if existingPipeline, _ := s.GetUserPipelineReleaseByID(ctx, ns, userUid, pipelineUid, id, pipelinePB.View_VIEW_BASIC); existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
 
@@ -697,7 +704,7 @@ func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, false)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, pipelinePB.View_VIEW_FULL)
 }
 
 func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error) {
@@ -719,7 +726,7 @@ func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resour
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, false)
+	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, pipelinePB.View_VIEW_FULL)
 }
 
 func (s *service) DeleteUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error {
