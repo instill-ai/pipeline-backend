@@ -462,15 +462,14 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 	}
 
 	pbPipeline := pipelinePB.Pipeline{
-		Name:              fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
-		Uid:               dbPipeline.BaseDynamic.UID.String(),
-		Id:                dbPipeline.ID,
-		CreateTime:        timestamppb.New(dbPipeline.CreateTime),
-		UpdateTime:        timestamppb.New(dbPipeline.UpdateTime),
-		Description:       &dbPipeline.Description.String,
-		Visibility:        pipelinePB.Visibility(dbPipeline.Visibility),
-		DefaultReleaseUid: dbPipeline.DefaultReleaseUID.String(),
-		Recipe:            pbRecipe,
+		Name:        fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
+		Uid:         dbPipeline.BaseDynamic.UID.String(),
+		Id:          dbPipeline.ID,
+		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
+		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),
+		Description: &dbPipeline.Description.String,
+		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
+		Recipe:      pbRecipe,
 	}
 
 	if strings.HasPrefix(dbPipeline.Owner, "users/") {
@@ -552,15 +551,14 @@ func (s *service) DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel
 	}
 
 	pbPipeline := pipelinePB.Pipeline{
-		Name:              fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
-		Uid:               dbPipeline.BaseDynamic.UID.String(),
-		Id:                dbPipeline.ID,
-		CreateTime:        timestamppb.New(dbPipeline.CreateTime),
-		UpdateTime:        timestamppb.New(dbPipeline.UpdateTime),
-		Description:       &dbPipeline.Description.String,
-		Visibility:        pipelinePB.Visibility(dbPipeline.Visibility),
-		DefaultReleaseUid: dbPipeline.DefaultReleaseUID.String(),
-		Recipe:            pbRecipe,
+		Name:        fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
+		Uid:         dbPipeline.BaseDynamic.UID.String(),
+		Id:          dbPipeline.ID,
+		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
+		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),
+		Description: &dbPipeline.Description.String,
+		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
+		Recipe:      pbRecipe,
 	}
 
 	if strings.HasPrefix(dbPipeline.Owner, "users/") {

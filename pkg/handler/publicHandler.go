@@ -1457,7 +1457,11 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 	}
 
 	if releaseId == "default" {
-		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), uuid.FromStringOrNil(pbPipeline.DefaultReleaseUid), false)
+		defaultReleaseUid, err := h.service.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipelineId)
+		if err != nil {
+			return ns, uuid.Nil, "", nil, nil, false, err
+		}
+		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), defaultReleaseUid, false)
 		if err != nil {
 			return ns, uuid.Nil, "", nil, nil, false, err
 		}
@@ -1606,7 +1610,12 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 		return nil, err
 	}
 	if releaseId == "default" {
-		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), uuid.FromStringOrNil(pipeline.DefaultReleaseUid), false)
+		defaultReleaseUid, err := h.service.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipelineId)
+		if err != nil {
+			span.SetStatus(1, err.Error())
+			return nil, err
+		}
+		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), defaultReleaseUid, false)
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			logger.Info(string(custom_otel.NewLogMessage(

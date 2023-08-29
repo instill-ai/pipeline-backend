@@ -152,8 +152,6 @@ message Pipeline {
   google.protobuf.Timestamp update_time = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Visibility
   Visibility visibility = 12;
-  // Default Release Uid
-  string default_release_uid = 13;
 }
 
 // The metadata
