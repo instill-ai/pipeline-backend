@@ -50,9 +50,11 @@ func (s *service) recipeNameToPermalink(userUid uuid.UUID, recipeRscName *pipeli
 		if IsConnectorWithNamespace(component.ResourceName) {
 			permalink, err = s.connectorNameToPermalink(userUid, component.ResourceName)
 			if err != nil {
-				return nil, err
+				// Allow not created resource
+				componentPermalink.ResourceName = ""
+			} else {
+				componentPermalink.ResourceName = permalink
 			}
-			componentPermalink.ResourceName = permalink
 		}
 
 		if IsConnectorDefinition(component.DefinitionName) {
@@ -87,9 +89,11 @@ func (s *service) recipePermalinkToName(userUid uuid.UUID, recipePermalink *data
 		if IsConnector(componentPermalink.ResourceName) {
 			name, err := s.connectorPermalinkToName(userUid, componentPermalink.ResourceName)
 			if err != nil {
-				return nil, err
+				// Allow resource not created
+				component.ResourceName = ""
+			} else {
+				component.ResourceName = name
 			}
-			component.ResourceName = name
 		}
 		if IsConnectorDefinition(componentPermalink.DefinitionName) {
 			name, err := s.connectorDefinitionPermalinkToName(componentPermalink.DefinitionName)
@@ -123,9 +127,11 @@ func (s *service) recipePermalinkToNameAdmin(recipePermalink *datamodel.Recipe) 
 		if IsConnector(componentPermalink.ResourceName) {
 			name, err := s.connectorPermalinkToNameAdmin(componentPermalink.ResourceName)
 			if err != nil {
-				return nil, err
+				// Allow resource not created
+				component.ResourceName = ""
+			} else {
+				component.ResourceName = name
 			}
-			component.ResourceName = name
 		}
 		if IsConnectorDefinition(componentPermalink.DefinitionName) {
 			name, err := s.connectorDefinitionPermalinkToName(componentPermalink.DefinitionName)
@@ -276,20 +282,23 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 				View: connectorPB.View_VIEW_FULL.Enum(),
 			})
 			if err != nil {
-				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetConnector", recipe.Components[idx].ResourceName, err)
-			}
-			detail := &structpb.Struct{}
-			// Note: need to deal with camelCase or under_score for grpc in future
-			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnectorResource())
-			if marshalErr != nil {
-				return marshalErr
-			}
-			unmarshalErr := detail.UnmarshalJSON(json)
-			if unmarshalErr != nil {
-				return unmarshalErr
+				// Allow resource not created
+				recipe.Components[idx].Resource = nil
+			} else {
+				detail := &structpb.Struct{}
+				// Note: need to deal with camelCase or under_score for grpc in future
+				json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(resp.GetConnectorResource())
+				if marshalErr != nil {
+					return marshalErr
+				}
+				unmarshalErr := detail.UnmarshalJSON(json)
+				if unmarshalErr != nil {
+					return unmarshalErr
+				}
+
+				recipe.Components[idx].Resource = resp.ConnectorResource
 			}
 
-			recipe.Components[idx].Resource = resp.ConnectorResource
 		}
 		if IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
 			resp, err := s.connectorPublicServiceClient.GetConnectorDefinition(ctx, &connectorPB.GetConnectorDefinitionRequest{
@@ -297,7 +306,7 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 				View: connectorPB.View_VIEW_FULL.Enum(),
 			})
 			if err != nil {
-				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetConnector", recipe.Components[idx].ResourceName, err)
+				return fmt.Errorf("[connector-backend] Error %s at %s: %s", "GetConnectorDefinition", recipe.Components[idx].ResourceName, err)
 			}
 			detail := &structpb.Struct{}
 			// Note: need to deal with camelCase or under_score for grpc in future
@@ -417,7 +426,7 @@ func (s *service) PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipel
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipeline *datamodel.Pipeline, isBasicView bool) (*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipeline *datamodel.Pipeline, view pipelinePB.View) (*pipelinePB.Pipeline, error) {
 
 	owner, err := s.ConvertOwnerPermalinkToName(dbPipeline.Owner)
 	if err != nil {
@@ -477,7 +486,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 	} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
 		pbPipeline.Owner = &pipelinePB.Pipeline_Org{Org: owner}
 	}
-	if !isBasicView {
+	if view == pipelinePB.View_VIEW_FULL {
 		if err := s.includeDetailInRecipe(pbPipeline.Recipe); err != nil {
 			return nil, err
 		}
@@ -487,7 +496,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipelines(ctx context.Context, userUid uuid.UUID, dbPipelines []*datamodel.Pipeline, isBasicView bool) ([]*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipelines(ctx context.Context, userUid uuid.UUID, dbPipelines []*datamodel.Pipeline, view pipelinePB.View) ([]*pipelinePB.Pipeline, error) {
 	var err error
 	pbPipelines := make([]*pipelinePB.Pipeline, len(dbPipelines))
 	for idx := range dbPipelines {
@@ -495,7 +504,7 @@ func (s *service) DBToPBPipelines(ctx context.Context, userUid uuid.UUID, dbPipe
 			ctx,
 			userUid,
 			dbPipelines[idx],
-			isBasicView,
+			view,
 		)
 		if err != nil {
 			return nil, err
@@ -506,7 +515,7 @@ func (s *service) DBToPBPipelines(ctx context.Context, userUid uuid.UUID, dbPipe
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel.Pipeline, isBasicView bool) (*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel.Pipeline, view pipelinePB.View) (*pipelinePB.Pipeline, error) {
 
 	owner, err := s.ConvertOwnerPermalinkToName(dbPipeline.Owner)
 	if err != nil {
@@ -566,7 +575,7 @@ func (s *service) DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel
 	} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
 		pbPipeline.Owner = &pipelinePB.Pipeline_Org{Org: owner}
 	}
-	if !isBasicView {
+	if view == pipelinePB.View_VIEW_FULL {
 		if err := s.includeDetailInRecipe(pbPipeline.Recipe); err != nil {
 			return nil, err
 		}
@@ -577,14 +586,14 @@ func (s *service) DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel
 
 // DBToPBPipeline converts db data model to protobuf data model
 // TODO: refactor this
-func (s *service) DBToPBPipelinesAdmin(ctx context.Context, dbPipelines []*datamodel.Pipeline, isBasicView bool) ([]*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipelinesAdmin(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pipelinePB.View) ([]*pipelinePB.Pipeline, error) {
 	var err error
 	pbPipelines := make([]*pipelinePB.Pipeline, len(dbPipelines))
 	for idx := range dbPipelines {
 		pbPipelines[idx], err = s.DBToPBPipelineAdmin(
 			ctx,
 			dbPipelines[idx],
-			isBasicView,
+			view,
 		)
 		if err != nil {
 			return nil, err
@@ -598,6 +607,22 @@ func (s *service) DBToPBPipelinesAdmin(ctx context.Context, dbPipelines []*datam
 func (s *service) PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
+	recipe := &datamodel.Recipe{}
+	if pbPipelineRelease.GetRecipe() != nil {
+		recipePermalink, err := s.recipeNameToPermalink(userUid, pbPipelineRelease.Recipe)
+		if err != nil {
+			return nil, err
+		}
+
+		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(recipePermalink)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(b, &recipe); err != nil {
+			return nil, err
+		}
+
+	}
 	return &datamodel.PipelineRelease{
 		ID: pbPipelineRelease.GetId(),
 
@@ -633,13 +658,14 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, 
 			Valid:  true,
 		},
 
+		Recipe:      recipe,
 		PipelineUID: pipelineUid,
 		Visibility:  datamodel.PipelineVisibility(pbPipelineRelease.Visibility),
 	}, nil
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineRelease(ctx context.Context, userUid uuid.UUID, dbPipelineRelease *datamodel.PipelineRelease, isBasicView bool) (*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineRelease(ctx context.Context, userUid uuid.UUID, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View) (*pipelinePB.PipelineRelease, error) {
 
 	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, dbPipelineRelease.PipelineUID, true)
 	if err != nil {
@@ -696,7 +722,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, userUid uuid.UUID, 
 		Recipe:      pbRecipe,
 	}
 
-	if !isBasicView {
+	if view == pipelinePB.View_VIEW_FULL {
 		if err := s.includeDetailInRecipe(pbPipelineRelease.Recipe); err != nil {
 			return nil, err
 		}
@@ -706,7 +732,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, userUid uuid.UUID, 
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineReleases(ctx context.Context, userUid uuid.UUID, dbPipelineRelease []*datamodel.PipelineRelease, isBasicView bool) ([]*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineReleases(ctx context.Context, userUid uuid.UUID, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View) ([]*pipelinePB.PipelineRelease, error) {
 	var err error
 	pbPipelineReleases := make([]*pipelinePB.PipelineRelease, len(dbPipelineRelease))
 	for idx := range dbPipelineRelease {
@@ -714,7 +740,7 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, userUid uuid.UUID,
 			ctx,
 			userUid,
 			dbPipelineRelease[idx],
-			isBasicView,
+			view,
 		)
 		if err != nil {
 			return nil, err
@@ -726,7 +752,7 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, userUid uuid.UUID,
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
 // TODO: refactor this
-func (s *service) DBToPBPipelineReleaseAdmin(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, isBasicView bool) (*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineReleaseAdmin(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View) (*pipelinePB.PipelineRelease, error) {
 
 	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, dbPipelineRelease.PipelineUID, true)
 	if err != nil {
@@ -783,7 +809,7 @@ func (s *service) DBToPBPipelineReleaseAdmin(ctx context.Context, dbPipelineRele
 		Recipe:      pbRecipe,
 	}
 
-	if !isBasicView {
+	if view == pipelinePB.View_VIEW_FULL {
 		if err := s.includeDetailInRecipe(pbPipelineRelease.Recipe); err != nil {
 			return nil, err
 		}
@@ -794,14 +820,14 @@ func (s *service) DBToPBPipelineReleaseAdmin(ctx context.Context, dbPipelineRele
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
 // TODO: refactor this
-func (s *service) DBToPBPipelineReleasesAdmin(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, isBasicView bool) ([]*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineReleasesAdmin(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View) ([]*pipelinePB.PipelineRelease, error) {
 	var err error
 	pbPipelineReleases := make([]*pipelinePB.PipelineRelease, len(dbPipelineRelease))
 	for idx := range dbPipelineRelease {
 		pbPipelineReleases[idx], err = s.DBToPBPipelineReleaseAdmin(
 			ctx,
 			dbPipelineRelease[idx],
-			isBasicView,
+			view,
 		)
 		if err != nil {
 			return nil, err

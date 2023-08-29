@@ -47,8 +47,6 @@ func (h *PrivateHandler) SetService(s service.Service) {
 
 func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB.ListPipelinesAdminRequest) (*pipelinePB.ListPipelinesAdminResponse, error) {
 
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
-
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
 		filtering.DeclareFunction("time.now", filtering.NewFunctionOverload("time.now", filtering.TypeTimestamp)),
@@ -70,7 +68,7 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelinesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelinesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter)
 	if err != nil {
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}
@@ -91,13 +89,16 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelineP
 		return &pipelinePB.LookUpPipelineAdminResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
+	view := pipelinePB.View_VIEW_BASIC
+	if req.GetView() != pipelinePB.View_VIEW_UNSPECIFIED {
+		view = req.GetView()
+	}
 
 	uid, err := resource.GetRscPermalinkUID(req.GetPermalink())
 	if err != nil {
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err
 	}
-	pbPipeline, err := h.service.GetPipelineByUIDAdmin(ctx, uid, isBasicView)
+	pbPipeline, err := h.service.GetPipelineByUIDAdmin(ctx, uid, view)
 	if err != nil {
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err
 	}
@@ -120,14 +121,13 @@ func (h *PrivateHandler) LookUpOperatorDefinitionAdmin(ctx context.Context, req 
 	if connID, err = resource.GetRscNameID(req.GetPermalink()); err != nil {
 		return resp, err
 	}
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
 	dbDef, err := h.operator.GetOperatorDefinitionById(connID)
 	if err != nil {
 		return resp, err
 	}
 	resp.OperatorDefinition = proto.Clone(dbDef).(*pipelinePB.OperatorDefinition)
-	if isBasicView {
+	if parseView(req.GetView()) == pipelinePB.View_VIEW_BASIC {
 		resp.OperatorDefinition.Spec = nil
 	}
 	resp.OperatorDefinition.Name = fmt.Sprintf("operator-definitions/%s", resp.OperatorDefinition.GetId())
@@ -137,8 +137,6 @@ func (h *PrivateHandler) LookUpOperatorDefinitionAdmin(ctx context.Context, req 
 }
 
 func (h *PrivateHandler) ListPipelineReleasesAdmin(ctx context.Context, req *pipelinePB.ListPipelineReleasesAdminRequest) (*pipelinePB.ListPipelineReleasesAdminResponse, error) {
-
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
@@ -161,7 +159,7 @@ func (h *PrivateHandler) ListPipelineReleasesAdmin(ctx context.Context, req *pip
 		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
 	}
 
-	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleasesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), isBasicView, filter)
+	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleasesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter)
 	if err != nil {
 		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
 	}
