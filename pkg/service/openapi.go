@@ -177,17 +177,49 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 	for k, v := range endComp.Configuration.Fields["body"].GetStructValue().Fields {
 		var m *structpb.Value
 
-		m, err = structpb.NewValue(map[string]interface{}{
-			"title":       v.GetStructValue().Fields["title"].GetStringValue(),
-			"description": v.GetStructValue().Fields["description"].GetStringValue(),
-			// "type":        attrType,
-		})
+		var err error
+		switch v.GetStructValue().Fields["value"].AsInterface().(type) {
+		case string:
+			str := v.GetStructValue().Fields["value"].GetStringValue()
+			if strings.HasPrefix(str, "{") && strings.HasSuffix(str, "}") && !strings.HasPrefix(str, "{{") && !strings.HasSuffix(str, "}}") {
+				// TODO
+				m, err = structpb.NewValue(map[string]interface{}{
+					"title":       v.GetStructValue().Fields["title"].GetStringValue(),
+					"description": v.GetStructValue().Fields["description"].GetStringValue(),
+					"type":        "object",
+				})
+			} else {
+				m, err = structpb.NewValue(map[string]interface{}{
+					"title":       v.GetStructValue().Fields["title"].GetStringValue(),
+					"description": v.GetStructValue().Fields["description"].GetStringValue(),
+					"type":        "string",
+				})
+			}
 
+		case float64:
+			m, err = structpb.NewValue(map[string]interface{}{
+				"title":       v.GetStructValue().Fields["title"].GetStringValue(),
+				"description": v.GetStructValue().Fields["description"].GetStringValue(),
+				"type":        "number",
+			})
+		case bool:
+			m, err = structpb.NewValue(map[string]interface{}{
+				"title":       v.GetStructValue().Fields["title"].GetStringValue(),
+				"description": v.GetStructValue().Fields["description"].GetStringValue(),
+				"type":        "boolean",
+			})
+		case structpb.NullValue:
+			m, err = structpb.NewValue(map[string]interface{}{
+				"title":       v.GetStructValue().Fields["title"].GetStringValue(),
+				"description": v.GetStructValue().Fields["description"].GetStringValue(),
+				"type":        "null",
+			})
+		}
 		if err != nil {
 			success = false
+		} else {
+			openApiOutput.Fields["properties"].GetStructValue().Fields[k] = m
 		}
-
-		openApiOutput.Fields["properties"].GetStructValue().Fields[k] = m
 
 	}
 

@@ -605,24 +605,22 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	fmt.Println()
-	fmt.Println(1)
+
 	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_FULL)
 	if err != nil {
 		return nil, err
 	}
 
 	pipelineRelease.Recipe = proto.Clone(pipeline.Recipe).(*pipelinePB.Recipe)
-	fmt.Println(2, pipelineRelease)
+
 	dbPipelineReleaseToCreate, err := s.PBToDBPipelineRelease(ctx, userUid, pipelineUid, pipelineRelease)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(3, dbPipelineReleaseToCreate)
+
 	if err := s.repository.CreateUserPipelineRelease(ctx, ownerPermalink, userPermalink, pipelineUid, dbPipelineReleaseToCreate); err != nil {
 		return nil, err
 	}
-	fmt.Println(4)
 
 	dbCreatedPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, pipelineRelease.Id, false)
 	if err != nil {
