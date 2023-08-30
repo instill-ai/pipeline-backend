@@ -480,6 +480,11 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 			}
 		}
 	}
+	if view == pipelinePB.View_VIEW_FULL {
+		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
+			return nil, err
+		}
+	}
 
 	pbPipeline := pipelinePB.Pipeline{
 		Name:        fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
@@ -493,7 +498,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 	}
 
 	if pbRecipe != nil && view == pipelinePB.View_VIEW_FULL && startComp != nil && endComp != nil {
-		spec, err := s.GenerateOpenApiSpec(startComp, endComp)
+		spec, err := s.GenerateOpenApiSpec(startComp, endComp, pbRecipe.Components)
 		if err == nil {
 			pbPipeline.OpenapiSchema = spec
 		}
@@ -503,11 +508,6 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 		pbPipeline.Owner = &pipelinePB.Pipeline_User{User: owner}
 	} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
 		pbPipeline.Owner = &pipelinePB.Pipeline_Org{Org: owner}
-	}
-	if view == pipelinePB.View_VIEW_FULL {
-		if err := s.includeDetailInRecipe(pbPipeline.Recipe); err != nil {
-			return nil, err
-		}
 	}
 
 	return &pbPipeline, nil
