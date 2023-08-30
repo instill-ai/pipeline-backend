@@ -434,6 +434,10 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 	}
 
 	var pbRecipe *pipelinePB.Recipe
+
+	var startComp *pipelinePB.Component
+	var endComp *pipelinePB.Component
+
 	if dbPipeline.Recipe != nil {
 		pbRecipe = &pipelinePB.Recipe{}
 		recipeRscName, err := s.recipePermalinkToName(userUid, dbPipeline.Recipe)
@@ -467,6 +471,13 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 			} else if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions/") {
 				pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR
 			}
+
+			if pbRecipe.Components[i].DefinitionName == "operator-definitions/start-operator" {
+				startComp = pbRecipe.Components[i]
+			}
+			if pbRecipe.Components[i].DefinitionName == "operator-definitions/end-operator" {
+				endComp = pbRecipe.Components[i]
+			}
 		}
 	}
 
@@ -479,6 +490,13 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 		Description: &dbPipeline.Description.String,
 		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 		Recipe:      pbRecipe,
+	}
+
+	if pbRecipe != nil && view == pipelinePB.View_VIEW_FULL && startComp != nil && endComp != nil {
+		spec, err := s.GenerateOpenApiSpec(startComp, endComp)
+		if err == nil {
+			pbPipeline.OpenapiSchema = spec
+		}
 	}
 
 	if strings.HasPrefix(dbPipeline.Owner, "users/") {
