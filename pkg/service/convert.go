@@ -434,6 +434,10 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 	}
 
 	var pbRecipe *pipelinePB.Recipe
+
+	var startComp *pipelinePB.Component
+	var endComp *pipelinePB.Component
+
 	if dbPipeline.Recipe != nil {
 		pbRecipe = &pipelinePB.Recipe{}
 		recipeRscName, err := s.recipePermalinkToName(userUid, dbPipeline.Recipe)
@@ -467,6 +471,18 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 			} else if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions/") {
 				pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR
 			}
+
+			if pbRecipe.Components[i].DefinitionName == "operator-definitions/start-operator" {
+				startComp = pbRecipe.Components[i]
+			}
+			if pbRecipe.Components[i].DefinitionName == "operator-definitions/end-operator" {
+				endComp = pbRecipe.Components[i]
+			}
+		}
+	}
+	if view == pipelinePB.View_VIEW_FULL {
+		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
+			return nil, err
 		}
 	}
 
@@ -481,15 +497,17 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 		Recipe:      pbRecipe,
 	}
 
+	if pbRecipe != nil && view == pipelinePB.View_VIEW_FULL && startComp != nil && endComp != nil {
+		spec, err := s.GenerateOpenApiSpec(startComp, endComp, pbRecipe.Components)
+		if err == nil {
+			pbPipeline.OpenapiSchema = spec
+		}
+	}
+
 	if strings.HasPrefix(dbPipeline.Owner, "users/") {
 		pbPipeline.Owner = &pipelinePB.Pipeline_User{User: owner}
 	} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
 		pbPipeline.Owner = &pipelinePB.Pipeline_Org{Org: owner}
-	}
-	if view == pipelinePB.View_VIEW_FULL {
-		if err := s.includeDetailInRecipe(pbPipeline.Recipe); err != nil {
-			return nil, err
-		}
 	}
 
 	return &pbPipeline, nil

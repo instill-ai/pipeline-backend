@@ -460,23 +460,41 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 		for key, val := range pipelineInputs[idx].Fields {
 			switch typeMap[key] {
 			case "integer":
-				v, err := strconv.ParseInt(val.GetStringValue(), 10, 64)
-				if err != nil {
-					return err
+				switch val.AsInterface().(type) {
+				case string:
+					v, err := strconv.ParseInt(val.GetStringValue(), 10, 64)
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(float64(v))
+				default:
+					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(val.GetNumberValue())
 				}
-				pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(float64(v))
+
 			case "number":
-				v, err := strconv.ParseFloat(val.GetStringValue(), 64)
-				if err != nil {
-					return err
+				switch val.AsInterface().(type) {
+				case string:
+					v, err := strconv.ParseFloat(val.GetStringValue(), 64)
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(v)
+				default:
+					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(val.GetNumberValue())
 				}
-				pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(v)
+
 			case "boolean":
-				v, err := strconv.ParseBool(val.GetStringValue())
-				if err != nil {
-					return err
+				switch val.AsInterface().(type) {
+				case string:
+					v, err := strconv.ParseBool(val.GetStringValue())
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(v)
+				default:
+					pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(val.GetBoolValue())
 				}
-				pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(v)
+
 			case "text", "image", "audio", "video":
 			case "integer_array", "number_array", "boolean_array", "text_array", "image_array", "audio_array", "video_array":
 				if val.GetListValue() == nil {
@@ -605,24 +623,22 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	fmt.Println()
-	fmt.Println(1)
+
 	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_FULL)
 	if err != nil {
 		return nil, err
 	}
 
 	pipelineRelease.Recipe = proto.Clone(pipeline.Recipe).(*pipelinePB.Recipe)
-	fmt.Println(2, pipelineRelease)
+
 	dbPipelineReleaseToCreate, err := s.PBToDBPipelineRelease(ctx, userUid, pipelineUid, pipelineRelease)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(3, dbPipelineReleaseToCreate)
+
 	if err := s.repository.CreateUserPipelineRelease(ctx, ownerPermalink, userPermalink, pipelineUid, dbPipelineReleaseToCreate); err != nil {
 		return nil, err
 	}
-	fmt.Println(4)
 
 	dbCreatedPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, pipelineRelease.Id, false)
 	if err != nil {
