@@ -460,23 +460,41 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 		for key, val := range pipelineInputs[idx].Fields {
 			switch typeMap[key] {
 			case "integer":
-				v, err := strconv.ParseInt(val.GetStringValue(), 10, 64)
-				if err != nil {
-					return err
+				switch val.AsInterface().(type) {
+				case string:
+					v, err := strconv.ParseInt(val.GetStringValue(), 10, 64)
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(float64(v))
+				default:
+					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(val.GetNumberValue())
 				}
-				pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(float64(v))
+
 			case "number":
-				v, err := strconv.ParseFloat(val.GetStringValue(), 64)
-				if err != nil {
-					return err
+				switch val.AsInterface().(type) {
+				case string:
+					v, err := strconv.ParseFloat(val.GetStringValue(), 64)
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(v)
+				default:
+					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(val.GetNumberValue())
 				}
-				pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(v)
+
 			case "boolean":
-				v, err := strconv.ParseBool(val.GetStringValue())
-				if err != nil {
-					return err
+				switch val.AsInterface().(type) {
+				case string:
+					v, err := strconv.ParseBool(val.GetStringValue())
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(v)
+				default:
+					pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(val.GetBoolValue())
 				}
-				pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(v)
+
 			case "text", "image", "audio", "video":
 			case "integer_array", "number_array", "boolean_array", "text_array", "image_array", "audio_array", "video_array":
 				if val.GetListValue() == nil {
