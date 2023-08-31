@@ -53,6 +53,7 @@ type Repository interface {
 	UpdateUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error
 	DeleteUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string) error
 	UpdateUserPipelineReleaseIDByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string, newID string) error
+	GetLatestUserPipelineRelease(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
 
 	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByIDAdmin(ctx context.Context, id string, isBasicView bool) (*datamodel.Pipeline, error)
@@ -532,4 +533,16 @@ func (r *repository) UpdateUserPipelineReleaseIDByID(ctx context.Context, ownerP
 		return status.Errorf(codes.NotFound, "[UpdatePipelineReleaseID] The pipeline_release id %s you specified is not found", id)
 	}
 	return nil
+}
+
+func (r *repository) GetLatestUserPipelineRelease(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUid).Order("id DESC")
+	if isBasicView {
+		queryBuilder.Omit("pipeline_release.recipe")
+	}
+	var pipelineRelease datamodel.PipelineRelease
+	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
+		return nil, status.Errorf(codes.NotFound, "[GetPipelineReleaseByUID] no release")
+	}
+	return &pipelineRelease, nil
 }

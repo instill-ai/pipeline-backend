@@ -1079,6 +1079,10 @@ func (h *PublicHandler) GetUserPipelineRelease(ctx context.Context, req *pipelin
 	if err != nil {
 		return nil, err
 	}
+	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, userUid, pipelineId, releaseId)
+	if err != nil {
+		return nil, err
+	}
 
 	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
@@ -1124,6 +1128,10 @@ func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, err
 	}
 	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, userUid, pipelineId, releaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -1227,6 +1235,11 @@ func (h *PublicHandler) RenameUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
+	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, userUid, pipelineId, releaseId)
+	if err != nil {
+		return nil, err
+	}
+
 	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
 		return nil, err
@@ -1281,6 +1294,11 @@ func (h *PublicHandler) DeleteUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
+	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, userUid, pipelineId, releaseId)
+	if err != nil {
+		return nil, err
+	}
+
 	existPipelineRelease, err := h.GetUserPipelineRelease(ctx, &pipelinePB.GetUserPipelineReleaseRequest{Name: req.GetName()})
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -1331,6 +1349,10 @@ func (h *PublicHandler) SetDefaultUserPipelineRelease(ctx context.Context, req *
 		return nil, err
 	}
 	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, userUid, pipelineId, releaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -1389,6 +1411,10 @@ func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pip
 	if err != nil {
 		return nil, err
 	}
+	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, userUid, pipelineId, releaseId)
+	if err != nil {
+		return nil, err
+	}
 
 	existPipelineRelease, err := h.GetUserPipelineRelease(ctx, &pipelinePB.GetUserPipelineReleaseRequest{Name: req.GetName()})
 	if err != nil {
@@ -1439,21 +1465,14 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_FULL)
+	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, userUid, pipelineId, releaseId)
 	if err != nil {
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
 
-	if releaseId == "default" {
-		defaultReleaseUid, err := h.service.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipelineId)
-		if err != nil {
-			return ns, uuid.Nil, "", nil, nil, false, err
-		}
-		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), defaultReleaseUid, pipelinePB.View_VIEW_FULL)
-		if err != nil {
-			return ns, uuid.Nil, "", nil, nil, false, err
-		}
-		releaseId = dbPipelineRelease.Id
+	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_FULL)
+	if err != nil {
+		return ns, uuid.Nil, "", nil, nil, false, err
 	}
 
 	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), releaseId, pipelinePB.View_VIEW_FULL)
@@ -1583,6 +1602,10 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 	if err != nil {
 		return nil, err
 	}
+	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, userUid, pipelineId, releaseId)
+	if err != nil {
+		return nil, err
+	}
 
 	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
@@ -1596,27 +1619,6 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 			custom_otel.SetEventResource(req.GetName()),
 		)))
 		return nil, err
-	}
-	if releaseId == "default" {
-		defaultReleaseUid, err := h.service.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipelineId)
-		if err != nil {
-			span.SetStatus(1, err.Error())
-			return nil, err
-		}
-		dbPipelineRelease, err := h.service.GetUserPipelineReleaseByUID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), defaultReleaseUid, pipelinePB.View_VIEW_FULL)
-		if err != nil {
-			span.SetStatus(1, err.Error())
-			logger.Info(string(custom_otel.NewLogMessage(
-				span,
-				logUUID.String(),
-				userUid,
-				eventName,
-				custom_otel.SetErrorMessage(err.Error()),
-				custom_otel.SetEventResource(req.GetName()),
-			)))
-			return nil, err
-		}
-		releaseId = dbPipelineRelease.Id
 	}
 
 	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, pipelinePB.View_VIEW_BASIC)
