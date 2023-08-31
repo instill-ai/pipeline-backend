@@ -342,10 +342,16 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=pipelines/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=users/*/pipelines/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=pipelines/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=users/*/pipelines/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync)); err != nil {
+		logger.Fatal(err.Error())
+	}
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=users/*/pipelines/*/releases/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerRelease)); err != nil {
+		logger.Fatal(err.Error())
+	}
+	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=users/*/pipelines/*/releases/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease)); err != nil {
 		logger.Fatal(err.Error())
 	}
 	privateHTTPServer := &http.Server{
