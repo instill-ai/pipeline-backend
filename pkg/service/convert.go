@@ -279,7 +279,7 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 		if IsConnectorWithNamespace(recipe.Components[idx].ResourceName) {
 			resp, err := s.connectorPublicServiceClient.GetUserConnectorResource(ctx, &connectorPB.GetUserConnectorResourceRequest{
 				Name: recipe.Components[idx].ResourceName,
-				View: connectorPB.View_VIEW_FULL.Enum(),
+				View: connectorPB.View_VIEW_CONFIGURATION.Enum(),
 			})
 			if err != nil {
 				// Allow resource not created
