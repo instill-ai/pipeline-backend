@@ -128,7 +128,7 @@ export const simpleRecipe = {
           },
           input: {
             body: {
-              value: "{ start.body.input }"
+              output: "{ start.body.input }"
             }
           }
         }
@@ -189,7 +189,7 @@ export const simpleRecipeWithoutCSV = {
           },
           input: {
             body: {
-              value: "{ start.body.input }"
+              output: "{ start.body.input }"
             }
           }
         }
