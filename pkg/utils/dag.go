@@ -141,6 +141,8 @@ func traverseBinding(bindings interface{}, path string) (interface{}, error) {
 }
 func RenderInput(input interface{}, bindings map[string]interface{}) (interface{}, error) {
 
+	fmt.Println()
+	fmt.Println("input", input)
 	switch input := input.(type) {
 	case string:
 		if strings.HasPrefix(input, "{") && strings.HasSuffix(input, "}") && !strings.HasPrefix(input, "{{") && !strings.HasSuffix(input, "}}") {
@@ -182,10 +184,9 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 			ret = append(ret, converted)
 		}
 		return ret, nil
-
+	default:
+		return input, nil
 	}
-
-	return nil, fmt.Errorf("error")
 }
 
 func GenerateDAG(components []*datamodel.Component) (*dag, error) {
