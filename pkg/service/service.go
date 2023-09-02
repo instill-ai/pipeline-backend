@@ -508,7 +508,7 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 	typeMap := map[string]string{}
 	for _, comp := range recipe.Components {
 		if comp.DefinitionName == "operator-definitions/start-operator" {
-			for key, value := range comp.Configuration.Fields["body"].GetStructValue().Fields {
+			for key, value := range comp.Configuration.Fields["metadata"].GetStructValue().Fields["body"].GetStructValue().Fields {
 				typeMap[key] = value.GetStructValue().Fields["type"].GetStringValue()
 			}
 		}
@@ -922,7 +922,7 @@ func (s *service) triggerPipeline(ctx context.Context, ownerPermalink string, re
 
 		for idx := 0; idx < batchSize; idx++ {
 			compInputTemplate := comp.Configuration
-			compInputTemplateJson, err := protojson.Marshal(compInputTemplate)
+			compInputTemplateJson, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
 			if err != nil {
 				return nil, nil, err
 			}
@@ -1013,7 +1013,7 @@ func (s *service) triggerPipeline(ctx context.Context, ownerPermalink string, re
 	for idx := 0; idx < batchSize; idx++ {
 		pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
 		for key, value := range outputCache[idx][responseCompId].(map[string]interface{})["body"].(map[string]interface{}) {
-			structVal, err := structpb.NewValue(value.(map[string]interface{})["value"])
+			structVal, err := structpb.NewValue(value)
 			if err != nil {
 				return nil, nil, err
 			}

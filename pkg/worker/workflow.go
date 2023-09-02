@@ -203,7 +203,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		var compInputs []*structpb.Struct
 		for idx := 0; idx < batchSize; idx++ {
 			compInputTemplate := comp.Configuration
-			compInputTemplateJson, err := protojson.Marshal(compInputTemplate)
+			compInputTemplateJson, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
 			if err != nil {
 				span.SetStatus(1, err.Error())
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -343,7 +343,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		for idx := 0; idx < batchSize; idx++ {
 			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
 			for key, value := range outputCache[idx][responseCompId].(map[string]interface{})["body"].(map[string]interface{}) {
-				structVal, err := structpb.NewValue(value.(map[string]interface{})["value"])
+				structVal, err := structpb.NewValue(value)
 				if err != nil {
 					return err
 				}

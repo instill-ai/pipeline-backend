@@ -161,7 +161,7 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 	openApiInput.Fields["type"] = structpb.NewStringValue("object")
 	openApiInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
-	for k, v := range startComp.Configuration.Fields["body"].GetStructValue().Fields {
+	for k, v := range startComp.Configuration.Fields["metadata"].GetStructValue().Fields["body"].GetStructValue().Fields {
 		var m *structpb.Value
 		attrType := ""
 		arrType := ""
@@ -224,14 +224,15 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 	openApiOutput.Fields["type"] = structpb.NewStringValue("object")
 	openApiOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
-	for k, v := range endComp.Configuration.Fields["body"].GetStructValue().Fields {
+	inputFields := endComp.Configuration.Fields["input"].GetStructValue().Fields["body"].GetStructValue().Fields
+	for k, v := range endComp.Configuration.Fields["metadata"].GetStructValue().Fields["body"].GetStructValue().Fields {
 		var m *structpb.Value
 
 		var err error
 
-		switch v.GetStructValue().Fields["value"].AsInterface().(type) {
+		switch inputFields[k].AsInterface().(type) {
 		case string:
-			str := v.GetStructValue().Fields["value"].GetStringValue()
+			str := inputFields[k].GetStringValue()
 			if strings.HasPrefix(str, "{") && strings.HasSuffix(str, "}") && !strings.HasPrefix(str, "{{") && !strings.HasSuffix(str, "}}") {
 				// TODO
 				str = str[1:]
@@ -264,7 +265,7 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 					for compIdx := range comps {
 						if comps[compIdx].Id == compId {
 							if strings.HasPrefix(comps[compIdx].DefinitionName, "connector-definitions") {
-								task := comps[compIdx].GetConfiguration().Fields["task"].GetStringValue()
+								task := comps[compIdx].GetConfiguration().Fields["input"].GetStructValue().Fields["task"].GetStringValue()
 								walk = comps[compIdx].GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()[task]
 								for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
 									walk = walk.GetStructValue().Fields[key]
@@ -307,7 +308,7 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 								isFullBody := str == ".body"
 								str := str[len(strings.Split(str, ".")[1])+1:]
 
-								walk = comps[compIdx].GetConfiguration().Fields["body"]
+								walk = comps[compIdx].GetConfiguration().Fields["metadata"].GetStructValue().Fields["body"]
 								for {
 
 									splits := strings.Split(str, ".")
