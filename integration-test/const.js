@@ -105,10 +105,12 @@ export const simpleRecipe = {
         id: "start",
         definition_name: "operator-definitions/start-operator",
         configuration: {
-          body: {
-            input: {
-              title: "Input",
-              type: "text"
+          metadata: {
+            body: {
+              input: {
+                title: "Input",
+                type: "text"
+              }
             }
           }
         }
@@ -117,8 +119,15 @@ export const simpleRecipe = {
         id: "end",
         definition_name: "operator-definitions/end-operator",
         configuration: {
-          body: {
-            output: {
+          metadata: {
+            body: {
+              output: {
+                title: "output"
+              }
+            }
+          },
+          input: {
+            body: {
               value: "{ start.body.input }"
             }
           }
@@ -129,7 +138,9 @@ export const simpleRecipe = {
         resource_name: `users/instill-ai/connector-resources/${dstCSVConnID1}`,
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
-          text: "{ start.body.input }"
+          input: {
+            text: "{ start.body.input }"
+          }
         }
       },
       {
@@ -137,7 +148,9 @@ export const simpleRecipe = {
         resource_name: `users/instill-ai/connector-resources/${dstCSVConnID2}`,
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
-          text: "{ start.body.input }"
+          input: {
+            text: "{ start.body.input }"
+          }
         }
       },
     ],
@@ -152,10 +165,12 @@ export const simpleRecipeWithoutCSV = {
         id: "start",
         definition_name: "operator-definitions/start-operator",
         configuration: {
-          body: {
-            input: {
-              title: "Input",
-              type: "text"
+          metadata: {
+            body: {
+              input: {
+                title: "Input",
+                type: "text"
+              }
             }
           }
         }
@@ -164,8 +179,16 @@ export const simpleRecipeWithoutCSV = {
         id: "end",
         definition_name: "operator-definitions/end-operator",
         configuration: {
-          body: {
-            output: {
+          metadata: {
+            body: {
+              output: {
+                title: "output"
+
+              }
+            }
+          },
+          input: {
+            body: {
               value: "{ start.body.input }"
             }
           }
@@ -183,10 +206,12 @@ export const simpleRecipeDupId = {
         id: "start",
         definition_name: "operator-definitions/start-operator",
         configuration: {
-          body: {
-            input: {
-              title: "Input",
-              type: "text"
+          metadata: {
+            body: {
+              input: {
+                title: "Input",
+                type: "text"
+              }
             }
           }
         }
@@ -207,7 +232,9 @@ export const simpleRecipeDupId = {
         resource_name: `users/instill-ai/connector-resources/${dstCSVConnID1}`,
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
-          text: "{ start.body.input }"
+          input: {
+            text: "{ start.body.input }"
+          }
         }
       },
       {
@@ -215,7 +242,9 @@ export const simpleRecipeDupId = {
         resource_name: `users/instill-ai/connector-resources/${dstCSVConnID2}`,
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
-          text: "{ start.body.input }"
+          input: {
+            text: "{ start.body.input }"
+          }
         }
       },
     ],
