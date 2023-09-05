@@ -455,6 +455,11 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 			return nil, err
 		}
 
+	}
+	if view == pipelinePB.View_VIEW_FULL {
+		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
+			return nil, err
+		}
 		for i := range pbRecipe.Components {
 			// TODO: use enum
 			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions/") {
@@ -478,11 +483,6 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 			if pbRecipe.Components[i].DefinitionName == "operator-definitions/end-operator" {
 				endComp = pbRecipe.Components[i]
 			}
-		}
-	}
-	if view == pipelinePB.View_VIEW_FULL {
-		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
-			return nil, err
 		}
 	}
 
