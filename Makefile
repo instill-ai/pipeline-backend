@@ -17,7 +17,17 @@ dev:							## Run dev container
 	@docker run -d --rm \
 		-e DOCKER_HOST=${SOCAT_HOST}:${SOCAT_PORT} \
 		-v $(PWD):/${SERVICE_NAME} \
+		-p 3081:3081 \
 		-p ${SERVICE_PORT}:${SERVICE_PORT} \
+		-v $(PWD)/../connector:/connector \
+		-v $(PWD)/../connector-ai:/connector-ai \
+		-v $(PWD)/../connector-data:/connector-data \
+		-v $(PWD)/../connector-blockchain:/connector-blockchain \
+		-v $(PWD)/../connector-backend:/connector-backend \
+		-v $(PWD)/../protogengo:/protogengo \
+		-v $(PWD)/../controller-vdp:/controller-vdp \
+		-v $(PWD)/../go.work:/go.work \
+		-v $(PWD)/../go.work.sum:/go.work.sum \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
 		instill/${SERVICE_NAME}:dev >/dev/null 2>&1

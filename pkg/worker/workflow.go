@@ -159,10 +159,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	}
 	batchSize := len(pipelineInputs)
 	for idx := range pipelineInputs {
-		inputStruct := &structpb.Struct{
-			Fields: map[string]*structpb.Value{},
-		}
-		inputStruct.Fields["body"] = structpb.NewStructValue(pipelineInputs[idx])
+		inputStruct := structpb.NewStructValue(pipelineInputs[idx])
 
 		input, err := protojson.Marshal(inputStruct)
 		if err != nil {
@@ -342,7 +339,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	} else {
 		for idx := 0; idx < batchSize; idx++ {
 			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-			for key, value := range outputCache[idx][responseCompId].(map[string]interface{})["body"].(map[string]interface{}) {
+			for key, value := range outputCache[idx][responseCompId].(map[string]interface{}) {
 				structVal, err := structpb.NewValue(value)
 				if err != nil {
 					return err

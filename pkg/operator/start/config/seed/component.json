@@ -7,39 +7,37 @@
     "metadata": {
       "type": "object",
       "properties": {
-        "body": {
-          "type": "object",
-          "additionalProperties": false,
-          "patternProperties": {
-            "^[a-zA-Z_][a-zA-Z_0-9]*$": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "enum": [
-                    "integer",
-                    "integer_array",
-                    "number",
-                    "number_array",
-                    "boolean",
-                    "boolean_array",
-                    "text",
-                    "text_array",
-                    "image",
-                    "image_array",
-                    "audio",
-                    "audio_array",
-                    "video",
-                    "video_array"
-                  ],
-                  "title": "Type",
-                  "description": "Data Type"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "description": {
-                  "type": "string"
-                }
+        "type": "object",
+        "additionalProperties": false,
+        "patternProperties": {
+          "^[a-zA-Z_][a-zA-Z_0-9]*$": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "integer",
+                  "integer_array",
+                  "number",
+                  "number_array",
+                  "boolean",
+                  "boolean_array",
+                  "text",
+                  "text_array",
+                  "image",
+                  "image_array",
+                  "audio",
+                  "audio_array",
+                  "video",
+                  "video_array"
+                ],
+                "title": "Type",
+                "description": "Data Type"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
               }
             }
           }
