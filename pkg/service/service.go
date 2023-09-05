@@ -508,7 +508,7 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 	typeMap := map[string]string{}
 	for _, comp := range recipe.Components {
 		if comp.DefinitionName == "operator-definitions/start-operator" {
-			for key, value := range comp.Configuration.Fields["metadata"].GetStructValue().Fields["body"].GetStructValue().Fields {
+			for key, value := range comp.Configuration.Fields["metadata"].GetStructValue().Fields {
 				typeMap[key] = value.GetStructValue().Fields["type"].GetStringValue()
 			}
 		}
@@ -874,11 +874,7 @@ func (s *service) triggerPipeline(ctx context.Context, ownerPermalink string, re
 	batchSize := len(pipelineInputs)
 
 	for idx := range pipelineInputs {
-		inputStruct := &structpb.Struct{
-			Fields: map[string]*structpb.Value{},
-		}
-		inputStruct.Fields["body"] = structpb.NewStructValue(pipelineInputs[idx])
-
+		inputStruct := structpb.NewStructValue(pipelineInputs[idx])
 		input, err := protojson.Marshal(inputStruct)
 		if err != nil {
 			return nil, nil, err
@@ -1012,7 +1008,7 @@ func (s *service) triggerPipeline(ctx context.Context, ownerPermalink string, re
 	pipelineOutputs := []*structpb.Struct{}
 	for idx := 0; idx < batchSize; idx++ {
 		pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-		for key, value := range outputCache[idx][responseCompId].(map[string]interface{})["body"].(map[string]interface{}) {
+		for key, value := range outputCache[idx][responseCompId].(map[string]interface{}) {
 			structVal, err := structpb.NewValue(value)
 			if err != nil {
 				return nil, nil, err

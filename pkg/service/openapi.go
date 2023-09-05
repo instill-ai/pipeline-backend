@@ -161,7 +161,7 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 	openApiInput.Fields["type"] = structpb.NewStringValue("object")
 	openApiInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
-	for k, v := range startComp.Configuration.Fields["metadata"].GetStructValue().Fields["body"].GetStructValue().Fields {
+	for k, v := range startComp.Configuration.Fields["metadata"].GetStructValue().Fields {
 		var m *structpb.Value
 		attrType := ""
 		arrType := ""
@@ -224,8 +224,8 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 	openApiOutput.Fields["type"] = structpb.NewStringValue("object")
 	openApiOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
-	inputFields := endComp.Configuration.Fields["input"].GetStructValue().Fields["body"].GetStructValue().Fields
-	for k, v := range endComp.Configuration.Fields["metadata"].GetStructValue().Fields["body"].GetStructValue().Fields {
+	inputFields := endComp.Configuration.Fields["input"].GetStructValue().Fields
+	for k, v := range endComp.Configuration.Fields["metadata"].GetStructValue().Fields {
 		var m *structpb.Value
 
 		var err error
@@ -305,10 +305,10 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 
 							if comps[compIdx].DefinitionName == "operator-definitions/start-operator" {
 
-								isFullBody := str == ".body"
+								isFullBody := str == ""
 								str := str[len(strings.Split(str, ".")[1])+1:]
 
-								walk = comps[compIdx].GetConfiguration().Fields["metadata"].GetStructValue().Fields["body"]
+								walk = comps[compIdx].GetConfiguration().Fields["metadata"]
 								for {
 
 									splits := strings.Split(str, ".")
