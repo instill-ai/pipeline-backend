@@ -23,8 +23,6 @@ const DefaultTopK int = 40
 // Constants for resource owner
 const DefaultUserID string = "instill-ai"
 const HeaderUserUIDKey = "jwt-sub"
-const HeaderAuthorization = "Authorization"
-const AccessTokenKeyFormat = "access_token:%s:owner_permalink"
 const StartConnectorId = "start-operator"
 const EndConnectorId = "end-operator"
 const ReturnTracesKey = "instill-return-traces"
