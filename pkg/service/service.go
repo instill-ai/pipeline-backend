@@ -154,27 +154,6 @@ func NewService(r repository.Repository,
 func (s *service) GetUser(ctx context.Context) (string, uuid.UUID, error) {
 	// Verify if "jwt-sub" is in the header
 	headerUserUId := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
-
-	// TODO: convert api_token in gateway
-	authorization := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthorization)
-	apiToken := strings.Replace(authorization, "Bearer ", "", 1)
-	if apiToken != "" {
-		ownerPermalink, err := s.redisClient.Get(context.Background(), fmt.Sprintf(constant.AccessTokenKeyFormat, apiToken)).Result()
-		if err != nil {
-			return "", uuid.Nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
-		}
-
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		resp, err := s.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: ownerPermalink})
-		if err != nil {
-			return "", uuid.Nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
-		}
-
-		return resp.User.Id, uuid.FromStringOrNil(*resp.User.Uid), nil
-	}
-
 	if headerUserUId != "" {
 		_, err := uuid.FromString(headerUserUId)
 		if err != nil {
