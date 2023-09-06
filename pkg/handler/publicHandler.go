@@ -824,6 +824,8 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pipelinePB
 		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
 		PipelineID:         pbPipeline.Id,
 		PipelineUID:        pbPipeline.Uid,
+		PipelineReleaseID:  "",
+		PipelineReleaseUID: uuid.Nil.String(),
 		PipelineTriggerUID: logUUID.String(),
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
