@@ -863,7 +863,17 @@ func (s *service) SetDefaultUserPipelineReleaseByID(ctx context.Context, ns reso
 	return nil
 }
 
-func (s *service) triggerPipeline(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, pipelineId string, pipelineUid uuid.UUID, pipelineInputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
+func (s *service) triggerPipeline(
+	ctx context.Context,
+	ownerPermalink string,
+	recipe *datamodel.Recipe,
+	pipelineId string,
+	pipelineUid uuid.UUID,
+	pipelineReleaseId string,
+	pipelineReleaseUid string,
+	pipelineInputs []*structpb.Struct,
+	pipelineTriggerId string,
+	returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
 	err := s.preTriggerPipeline(recipe, pipelineInputs)
 	if err != nil {
 		return nil, nil, err
@@ -956,6 +966,8 @@ func (s *service) triggerPipeline(ctx context.Context, ownerPermalink string, re
 					metadata.AppendToOutgoingContext(ctx,
 						"id", pipelineId,
 						"uid", pipelineUid.String(),
+						"release_id", pipelineReleaseId,
+						"release_uid", pipelineReleaseUid,
 						"owner", ownerPermalink,
 						"trigger_id", pipelineTriggerId,
 					),
@@ -1034,9 +1046,12 @@ func (s *service) triggerPipeline(ctx context.Context, ownerPermalink string, re
 }
 
 func (s *service) triggerAsyncPipeline(
-	ctx context.Context, ownerPermalink string,
-	recipe *datamodel.Recipe, pipelineId string,
-	pipelineUid uuid.UUID, pipelineReleaseId string,
+	ctx context.Context,
+	ownerPermalink string,
+	recipe *datamodel.Recipe,
+	pipelineId string,
+	pipelineUid uuid.UUID,
+	pipelineReleaseId string,
 	pipelineReleaseUid string,
 	pipelineInputs []*structpb.Struct,
 	pipelineTriggerId string,
@@ -1117,7 +1132,7 @@ func (s *service) TriggerUserPipelineByID(ctx context.Context, ns resource.Names
 	if err != nil {
 		return nil, nil, err
 	}
-	return s.triggerPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, "", "", inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1156,7 +1171,7 @@ func (s *service) TriggerUserPipelineReleaseByID(ctx context.Context, ns resourc
 	if err != nil {
 		return nil, nil, err
 	}
-	return s.triggerPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID.String(), inputs, pipelineTriggerId, returnTraces)
 }
 
 func (s *service) TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
