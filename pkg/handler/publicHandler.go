@@ -1515,8 +1515,10 @@ func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pip
 	dataPoint := utils.UsageMetricData{
 		OwnerUID:           userUid.String(),
 		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
-		PipelineID:         pbPipelineRelease.Id,
-		PipelineUID:        pbPipelineRelease.Uid,
+		PipelineID:         pbPipeline.Id,
+		PipelineUID:        pbPipeline.Uid,
+		PipelineReleaseID:  pbPipelineRelease.Id,
+		PipelineReleaseUID: pbPipelineRelease.Uid,
 		PipelineTriggerUID: logUUID.String(),
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}

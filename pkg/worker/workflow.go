@@ -31,6 +31,8 @@ type TriggerAsyncPipelineWorkflowRequest struct {
 	PipelineInputBlobRedisKeys []string
 	PipelineId                 string
 	PipelineUid                uuid.UUID
+	PipelineReleaseId          string
+	PipelineReleaseUid         uuid.UUID
 	PipelineRecipe             *datamodel.Recipe
 	OwnerPermalink             string
 	ReturnTraces               bool
@@ -45,10 +47,12 @@ type ExecuteConnectorActivityRequest struct {
 }
 
 type PipelineMetadataStruct struct {
-	Id        string
-	Uid       string
-	Owner     string
-	TriggerId string
+	Id         string
+	Uid        string
+	ReleaseId  string
+	ReleaseUid string
+	Owner      string
+	TriggerId  string
 }
 
 type ExecuteConnectorActivityResponse struct {
@@ -115,6 +119,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		TriggerMode:        mgmtPB.Mode_MODE_ASYNC,
 		PipelineID:         param.PipelineId,
 		PipelineUID:        param.PipelineUid.String(),
+		PipelineReleaseID:  param.PipelineReleaseId,
+		PipelineReleaseUID: param.PipelineReleaseUid.String(),
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
@@ -271,10 +277,12 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				Name:               comp.ResourceName,
 				OwnerPermalink:     param.OwnerPermalink,
 				PipelineMetadata: PipelineMetadataStruct{
-					Id:        param.PipelineId,
-					Uid:       param.PipelineUid.String(),
-					Owner:     param.OwnerPermalink,
-					TriggerId: workflow.GetInfo(ctx).WorkflowExecution.ID,
+					Id:         param.PipelineId,
+					Uid:        param.PipelineUid.String(),
+					ReleaseId:  param.PipelineReleaseId,
+					ReleaseUid: param.PipelineReleaseUid.String(),
+					Owner:      param.OwnerPermalink,
+					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
 				},
 			}).Get(ctx, &result); err != nil {
 				span.SetStatus(1, err.Error())
@@ -410,6 +418,8 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 			metadata.AppendToOutgoingContext(ctx,
 				"id", param.PipelineMetadata.Id,
 				"uid", param.PipelineMetadata.Uid,
+				"release_id", param.PipelineMetadata.ReleaseId,
+				"release_uid", param.PipelineMetadata.ReleaseUid,
 				"owner", param.PipelineMetadata.Owner,
 				"trigger_id", param.PipelineMetadata.TriggerId,
 			),

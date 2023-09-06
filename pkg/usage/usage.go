@@ -113,11 +113,13 @@ func (u *usage) RetrieveUsageData() interface{} {
 					triggerDataList = append(
 						triggerDataList,
 						&usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{
-							PipelineUid: triggerData.PipelineUID,
-							TriggerUid:  triggerData.PipelineTriggerUID,
-							TriggerTime: timestamppb.New(triggerTime),
-							TriggerMode: triggerData.TriggerMode,
-							Status:      triggerData.Status,
+							PipelineUid:        triggerData.PipelineUID,
+							PipelineReleaseId:  triggerData.PipelineReleaseID,
+							PipelineReleaseUid: triggerData.PipelineReleaseUID,
+							TriggerUid:         triggerData.PipelineTriggerUID,
+							TriggerTime:        timestamppb.New(triggerTime),
+							TriggerMode:        triggerData.TriggerMode,
+							Status:             triggerData.Status,
 						},
 					)
 				}
