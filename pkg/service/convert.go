@@ -487,12 +487,18 @@ func (s *service) DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipel
 	}
 
 	pbPipeline := pipelinePB.Pipeline{
-		Name:        fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
-		Uid:         dbPipeline.BaseDynamic.UID.String(),
-		Id:          dbPipeline.ID,
-		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
-		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),
-		DeleteTime:  timestamppb.New(dbPipeline.DeleteTime.Time),
+		Name:       fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
+		Uid:        dbPipeline.BaseDynamic.UID.String(),
+		Id:         dbPipeline.ID,
+		CreateTime: timestamppb.New(dbPipeline.CreateTime),
+		UpdateTime: timestamppb.New(dbPipeline.UpdateTime),
+		DeleteTime: func() *timestamppb.Timestamp {
+			if dbPipeline.DeleteTime.Time.IsZero() {
+				return nil
+			} else {
+				return timestamppb.New(dbPipeline.DeleteTime.Time)
+			}
+		}(),
 		Description: &dbPipeline.Description.String,
 		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 		Recipe:      pbRecipe,
@@ -579,12 +585,18 @@ func (s *service) DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel
 	}
 
 	pbPipeline := pipelinePB.Pipeline{
-		Name:        fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
-		Uid:         dbPipeline.BaseDynamic.UID.String(),
-		Id:          dbPipeline.ID,
-		CreateTime:  timestamppb.New(dbPipeline.CreateTime),
-		UpdateTime:  timestamppb.New(dbPipeline.UpdateTime),
-		DeleteTime:  timestamppb.New(dbPipeline.DeleteTime.Time),
+		Name:       fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
+		Uid:        dbPipeline.BaseDynamic.UID.String(),
+		Id:         dbPipeline.ID,
+		CreateTime: timestamppb.New(dbPipeline.CreateTime),
+		UpdateTime: timestamppb.New(dbPipeline.UpdateTime),
+		DeleteTime: func() *timestamppb.Timestamp {
+			if dbPipeline.DeleteTime.Time.IsZero() {
+				return nil
+			} else {
+				return timestamppb.New(dbPipeline.DeleteTime.Time)
+			}
+		}(),
 		Description: &dbPipeline.Description.String,
 		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 		Recipe:      pbRecipe,
@@ -732,12 +744,18 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, userUid uuid.UUID, 
 	}
 
 	pbPipelineRelease := pipelinePB.PipelineRelease{
-		Name:        fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, dbPipeline.ID, dbPipelineRelease.ID),
-		Uid:         dbPipelineRelease.BaseDynamic.UID.String(),
-		Id:          dbPipelineRelease.ID,
-		CreateTime:  timestamppb.New(dbPipelineRelease.CreateTime),
-		UpdateTime:  timestamppb.New(dbPipelineRelease.UpdateTime),
-		DeleteTime:  timestamppb.New(dbPipelineRelease.DeleteTime.Time),
+		Name:       fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, dbPipeline.ID, dbPipelineRelease.ID),
+		Uid:        dbPipelineRelease.BaseDynamic.UID.String(),
+		Id:         dbPipelineRelease.ID,
+		CreateTime: timestamppb.New(dbPipelineRelease.CreateTime),
+		UpdateTime: timestamppb.New(dbPipelineRelease.UpdateTime),
+		DeleteTime: func() *timestamppb.Timestamp {
+			if dbPipelineRelease.DeleteTime.Time.IsZero() {
+				return nil
+			} else {
+				return timestamppb.New(dbPipelineRelease.DeleteTime.Time)
+			}
+		}(),
 		Description: &dbPipelineRelease.Description.String,
 		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 		Recipe:      pbRecipe,
@@ -820,12 +838,18 @@ func (s *service) DBToPBPipelineReleaseAdmin(ctx context.Context, dbPipelineRele
 
 	}
 	pbPipelineRelease := pipelinePB.PipelineRelease{
-		Name:        fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, dbPipeline.ID, dbPipelineRelease.ID),
-		Uid:         dbPipelineRelease.BaseDynamic.UID.String(),
-		Id:          dbPipelineRelease.ID,
-		CreateTime:  timestamppb.New(dbPipelineRelease.CreateTime),
-		UpdateTime:  timestamppb.New(dbPipelineRelease.UpdateTime),
-		DeleteTime:  timestamppb.New(dbPipelineRelease.DeleteTime.Time),
+		Name:       fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, dbPipeline.ID, dbPipelineRelease.ID),
+		Uid:        dbPipelineRelease.BaseDynamic.UID.String(),
+		Id:         dbPipelineRelease.ID,
+		CreateTime: timestamppb.New(dbPipelineRelease.CreateTime),
+		UpdateTime: timestamppb.New(dbPipelineRelease.UpdateTime),
+		DeleteTime: func() *timestamppb.Timestamp {
+			if dbPipelineRelease.DeleteTime.Time.IsZero() {
+				return nil
+			} else {
+				return timestamppb.New(dbPipelineRelease.DeleteTime.Time)
+			}
+		}(),
 		Description: &dbPipelineRelease.Description.String,
 		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 		Recipe:      pbRecipe,
