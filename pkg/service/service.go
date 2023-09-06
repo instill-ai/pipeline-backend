@@ -1162,7 +1162,7 @@ func (s *service) TriggerUserPipelineReleaseByID(ctx context.Context, ns resourc
 		return nil, nil, err
 	}
 
-	dbPipeline, err := s.repository.GetUserPipelineReleaseByUID(ctx, ownerPermalink, userPermalink, pipelineUid, dbPipelineRelease.UID, false)
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1182,7 +1182,7 @@ func (s *service) TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns re
 	if err != nil {
 		return nil, err
 	}
-	dbPipeline, err := s.repository.GetUserPipelineReleaseByUID(ctx, ownerPermalink, userPermalink, pipelineUid, dbPipelineRelease.UID, false)
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false)
 	if err != nil {
 		return nil, err
 	}
