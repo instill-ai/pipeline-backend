@@ -271,7 +271,10 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 
 					if upstreamCompIdx != -1 {
 						if strings.HasPrefix(comps[upstreamCompIdx].DefinitionName, "connector-definitions") {
-							task := comps[upstreamCompIdx].GetConfiguration().Fields["input"].GetStructValue().Fields["task"].GetStringValue()
+							task := "default"
+							if parsedTask, ok := comps[upstreamCompIdx].GetConfiguration().Fields["input"].GetStructValue().Fields["task"]; ok {
+								task = parsedTask.GetStringValue()
+							}
 							walk = comps[upstreamCompIdx].GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()[task]
 							for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
 								walk = walk.GetStructValue().Fields[key]
