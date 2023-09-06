@@ -31,6 +31,8 @@ type TriggerAsyncPipelineWorkflowRequest struct {
 	PipelineInputBlobRedisKeys []string
 	PipelineId                 string
 	PipelineUid                uuid.UUID
+	PipelineReleaseId          string
+	PipelineReleaseUid         string
 	PipelineRecipe             *datamodel.Recipe
 	OwnerPermalink             string
 	ReturnTraces               bool
@@ -115,6 +117,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		TriggerMode:        mgmtPB.Mode_MODE_ASYNC,
 		PipelineID:         param.PipelineId,
 		PipelineUID:        param.PipelineUid.String(),
+		PipelineReleaseID:  param.PipelineReleaseId,
+		PipelineReleaseUID: param.PipelineReleaseUid,
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}

@@ -68,6 +68,8 @@ type UsageMetricData struct {
 	Status              mgmtPB.Status
 	PipelineID          string
 	PipelineUID         string
+	PipelineReleaseID   string
+	PipelineReleaseUID  string
 	PipelineTriggerUID  string
 	TriggerTime         string
 	ComputeTimeDuration float64
@@ -84,6 +86,8 @@ func NewDataPoint(data UsageMetricData) *write.Point {
 			"owner_uid":             data.OwnerUID,
 			"pipeline_id":           data.PipelineID,
 			"pipeline_uid":          data.PipelineUID,
+			"pipeline_release_id":   data.PipelineReleaseID,
+			"pipeline_release_uid":  data.PipelineReleaseUID,
 			"pipeline_trigger_id":   data.PipelineTriggerUID,
 			"trigger_time":          data.TriggerTime,
 			"compute_time_duration": data.ComputeTimeDuration,

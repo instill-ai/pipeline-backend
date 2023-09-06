@@ -1033,7 +1033,14 @@ func (s *service) triggerPipeline(ctx context.Context, ownerPermalink string, re
 	return pipelineOutputs, metadata, nil
 }
 
-func (s *service) triggerAsyncPipeline(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, pipelineId string, pipelineUid uuid.UUID, pipelineInputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
+func (s *service) triggerAsyncPipeline(
+	ctx context.Context, ownerPermalink string,
+	recipe *datamodel.Recipe, pipelineId string,
+	pipelineUid uuid.UUID, pipelineReleaseId string,
+	pipelineReleaseUid string,
+	pipelineInputs []*structpb.Struct,
+	pipelineTriggerId string,
+	returnTraces bool) (*longrunningpb.Operation, error) {
 
 	err := s.preTriggerPipeline(recipe, pipelineInputs)
 	if err != nil {
@@ -1078,6 +1085,8 @@ func (s *service) triggerAsyncPipeline(ctx context.Context, ownerPermalink strin
 			PipelineInputBlobRedisKeys: inputBlobRedisKeys,
 			PipelineId:                 pipelineId,
 			PipelineUid:                pipelineUid,
+			PipelineReleaseId:          pipelineReleaseId,
+			PipelineReleaseUid:         pipelineReleaseUid,
 			PipelineRecipe:             recipe,
 			OwnerPermalink:             ownerPermalink,
 			ReturnTraces:               returnTraces,
@@ -1124,7 +1133,7 @@ func (s *service) TriggerAsyncUserPipelineByID(ctx context.Context, ns resource.
 	if err != nil {
 		return nil, err
 	}
-	return s.triggerAsyncPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerAsyncPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, "", "", inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1166,5 +1175,5 @@ func (s *service) TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns re
 	if err != nil {
 		return nil, err
 	}
-	return s.triggerAsyncPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerAsyncPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID.String(), inputs, pipelineTriggerId, returnTraces)
 }
