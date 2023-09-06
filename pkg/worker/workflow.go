@@ -32,7 +32,7 @@ type TriggerAsyncPipelineWorkflowRequest struct {
 	PipelineId                 string
 	PipelineUid                uuid.UUID
 	PipelineReleaseId          string
-	PipelineReleaseUid         string
+	PipelineReleaseUid         uuid.UUID
 	PipelineRecipe             *datamodel.Recipe
 	OwnerPermalink             string
 	ReturnTraces               bool
@@ -120,7 +120,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		PipelineID:         param.PipelineId,
 		PipelineUID:        param.PipelineUid.String(),
 		PipelineReleaseID:  param.PipelineReleaseId,
-		PipelineReleaseUID: param.PipelineReleaseUid,
+		PipelineReleaseUID: param.PipelineReleaseUid.String(),
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
@@ -280,7 +280,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					Id:         param.PipelineId,
 					Uid:        param.PipelineUid.String(),
 					ReleaseId:  param.PipelineReleaseId,
-					ReleaseUid: param.PipelineReleaseUid,
+					ReleaseUid: param.PipelineReleaseUid.String(),
 					Owner:      param.OwnerPermalink,
 					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
 				},
