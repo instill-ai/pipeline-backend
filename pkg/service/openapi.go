@@ -262,129 +262,84 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 				} else {
 					compId := strings.Split(str, ".")[0]
 					str = str[len(strings.Split(str, ".")[0]):]
+					upstreamCompIdx := -1
 					for compIdx := range comps {
 						if comps[compIdx].Id == compId {
-							if strings.HasPrefix(comps[compIdx].DefinitionName, "connector-definitions") {
-								task := comps[compIdx].GetConfiguration().Fields["input"].GetStructValue().Fields["task"].GetStringValue()
-								walk = comps[compIdx].GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()[task]
-								for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
-									walk = walk.GetStructValue().Fields[key]
-								}
+							upstreamCompIdx = compIdx
+						}
+					}
 
-								for {
-									splits := strings.Split(str, ".")
-									if len(str) == 0 {
-										break
-									}
-
-									curr := splits[1]
-
-									if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
-										walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[strings.Split(curr, "[")[0]].GetStructValue().Fields["items"]
-									} else {
-										walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[curr]
-
-									}
-
-									str = str[len(curr)+1:]
-								}
-								m = structpb.NewStructValue(walk.GetStructValue())
-
-								if _, ok := v.GetStructValue().Fields["title"]; ok {
-									m.GetStructValue().Fields["title"] = v.GetStructValue().Fields["title"]
-								} else {
-									m.GetStructValue().Fields["title"] = structpb.NewStringValue("")
-								}
-								if _, ok := v.GetStructValue().Fields["description"]; ok {
-									m.GetStructValue().Fields["description"] = v.GetStructValue().Fields["description"]
-								} else {
-									m.GetStructValue().Fields["description"] = structpb.NewStringValue("")
-								}
-
+					if upstreamCompIdx != -1 {
+						if strings.HasPrefix(comps[upstreamCompIdx].DefinitionName, "connector-definitions") {
+							task := comps[upstreamCompIdx].GetConfiguration().Fields["input"].GetStructValue().Fields["task"].GetStringValue()
+							walk = comps[upstreamCompIdx].GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()[task]
+							for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
+								walk = walk.GetStructValue().Fields[key]
 							}
 
-							if comps[compIdx].DefinitionName == "operator-definitions/start-operator" {
-
-								isFullBody := str == ""
-								str := str[len(strings.Split(str, ".")[1])+1:]
-
-								walk = comps[compIdx].GetConfiguration().Fields["metadata"]
-								for {
-
-									splits := strings.Split(str, ".")
-									if len(str) == 0 {
-										break
-									}
-
-									curr := splits[1]
-
-									if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
-										walk = walk.GetStructValue().Fields[strings.Split(curr, "[")[0]]
-									} else {
-										walk = walk.GetStructValue().Fields[curr]
-									}
-
-									str = str[len(curr)+1:]
+							for {
+								splits := strings.Split(str, ".")
+								if len(str) == 0 {
+									break
 								}
 
-								if isFullBody {
-									props := structpb.Struct{Fields: make(map[string]*structpb.Value)}
-									// props := structpb.NewStructValue(walk.GetStructValue())
-									for bodyK, bodyV := range walk.GetStructValue().Fields {
-										attrType := ""
-										arrType := ""
-										switch t := bodyV.GetStructValue().Fields["type"].GetStringValue(); t {
-										case "integer", "number", "boolean":
-											attrType = t
-										case "text", "image", "audio", "video":
-											attrType = "string"
-										default:
-											attrType = "array"
-											switch t {
-											case "integer_array", "number_array", "boolean_array":
-												arrType = strings.Split(t, "_")[0]
-											case "text_array", "image_array", "audio_array", "video_array":
-												arrType = "string"
-											}
-										}
-										if attrType != "array" {
+								curr := splits[1]
 
-											props.Fields[bodyK], err = structpb.NewValue(map[string]interface{}{
-												"title":       v.GetStructValue().Fields["title"].GetStringValue(),
-												"description": v.GetStructValue().Fields["description"].GetStringValue(),
-												"type":        attrType,
-											})
-											if err != nil {
-												success = false
-											}
-										} else {
-											props.Fields[bodyK], err = structpb.NewValue(map[string]interface{}{
-												"title":       v.GetStructValue().Fields["title"].GetStringValue(),
-												"description": v.GetStructValue().Fields["description"].GetStringValue(),
-												"type":        attrType,
-												"items": map[string]interface{}{
-													"type": arrType,
-												},
-											})
-											if err != nil {
-												success = false
-											}
-										}
-									}
-									m, err = structpb.NewValue(map[string]interface{}{
-										"title":       v.GetStructValue().Fields["title"].GetStringValue(),
-										"description": v.GetStructValue().Fields["description"].GetStringValue(),
-										"type":        "object",
-									})
-
-									if err != nil {
-										success = false
-									}
-									m.GetStructValue().Fields["properties"] = structpb.NewStructValue(&props)
+								if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
+									walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[strings.Split(curr, "[")[0]].GetStructValue().Fields["items"]
 								} else {
+									walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[curr]
+
+								}
+
+								str = str[len(curr)+1:]
+							}
+							m = structpb.NewStructValue(walk.GetStructValue())
+
+							if _, ok := v.GetStructValue().Fields["title"]; ok {
+								m.GetStructValue().Fields["title"] = v.GetStructValue().Fields["title"]
+							} else {
+								m.GetStructValue().Fields["title"] = structpb.NewStringValue("")
+							}
+							if _, ok := v.GetStructValue().Fields["description"]; ok {
+								m.GetStructValue().Fields["description"] = v.GetStructValue().Fields["description"]
+							} else {
+								m.GetStructValue().Fields["description"] = structpb.NewStringValue("")
+							}
+
+						}
+
+						if comps[upstreamCompIdx].DefinitionName == "operator-definitions/start-operator" {
+
+							isFullBody := str == ""
+							str := str[len(strings.Split(str, ".")[1])+1:]
+
+							walk = comps[upstreamCompIdx].GetConfiguration().Fields["metadata"]
+							for {
+
+								splits := strings.Split(str, ".")
+								if len(str) == 0 {
+									break
+								}
+
+								curr := splits[1]
+
+								if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
+									walk = walk.GetStructValue().Fields[strings.Split(curr, "[")[0]]
+								} else {
+									walk = walk.GetStructValue().Fields[curr]
+								}
+
+								str = str[len(curr)+1:]
+							}
+
+							if isFullBody {
+								props := structpb.Struct{Fields: make(map[string]*structpb.Value)}
+								// props := structpb.NewStructValue(walk.GetStructValue())
+								for bodyK, bodyV := range walk.GetStructValue().Fields {
 									attrType := ""
 									arrType := ""
-									switch t := walk.GetStructValue().Fields["type"].GetStringValue(); t {
+									switch t := bodyV.GetStructValue().Fields["type"].GetStringValue(); t {
 									case "integer", "number", "boolean":
 										attrType = t
 									case "text", "image", "audio", "video":
@@ -399,7 +354,8 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 										}
 									}
 									if attrType != "array" {
-										m, err = structpb.NewValue(map[string]interface{}{
+
+										props.Fields[bodyK], err = structpb.NewValue(map[string]interface{}{
 											"title":       v.GetStructValue().Fields["title"].GetStringValue(),
 											"description": v.GetStructValue().Fields["description"].GetStringValue(),
 											"type":        attrType,
@@ -408,7 +364,7 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 											success = false
 										}
 									} else {
-										m, err = structpb.NewValue(map[string]interface{}{
+										props.Fields[bodyK], err = structpb.NewValue(map[string]interface{}{
 											"title":       v.GetStructValue().Fields["title"].GetStringValue(),
 											"description": v.GetStructValue().Fields["description"].GetStringValue(),
 											"type":        attrType,
@@ -421,10 +377,61 @@ func (s *service) GenerateOpenApiSpec(startComp *pipelinePB.Component, endComp *
 										}
 									}
 								}
+								m, err = structpb.NewValue(map[string]interface{}{
+									"title":       v.GetStructValue().Fields["title"].GetStringValue(),
+									"description": v.GetStructValue().Fields["description"].GetStringValue(),
+									"type":        "object",
+								})
 
+								if err != nil {
+									success = false
+								}
+								m.GetStructValue().Fields["properties"] = structpb.NewStructValue(&props)
+							} else {
+								attrType := ""
+								arrType := ""
+								switch t := walk.GetStructValue().Fields["type"].GetStringValue(); t {
+								case "integer", "number", "boolean":
+									attrType = t
+								case "text", "image", "audio", "video":
+									attrType = "string"
+								default:
+									attrType = "array"
+									switch t {
+									case "integer_array", "number_array", "boolean_array":
+										arrType = strings.Split(t, "_")[0]
+									case "text_array", "image_array", "audio_array", "video_array":
+										arrType = "string"
+									}
+								}
+								if attrType != "array" {
+									m, err = structpb.NewValue(map[string]interface{}{
+										"title":       v.GetStructValue().Fields["title"].GetStringValue(),
+										"description": v.GetStructValue().Fields["description"].GetStringValue(),
+										"type":        attrType,
+									})
+									if err != nil {
+										success = false
+									}
+								} else {
+									m, err = structpb.NewValue(map[string]interface{}{
+										"title":       v.GetStructValue().Fields["title"].GetStringValue(),
+										"description": v.GetStructValue().Fields["description"].GetStringValue(),
+										"type":        attrType,
+										"items": map[string]interface{}{
+											"type": arrType,
+										},
+									})
+									if err != nil {
+										success = false
+									}
+								}
 							}
 
 						}
+
+					} else {
+						return nil, fmt.Errorf("generate OpenAPI spec error")
 					}
 
 				}

@@ -68,7 +68,7 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelinesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter)
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelinesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
 	if err != nil {
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}
@@ -159,7 +159,7 @@ func (h *PrivateHandler) ListPipelineReleasesAdmin(ctx context.Context, req *pip
 		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
 	}
 
-	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleasesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter)
+	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleasesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
 	if err != nil {
 		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
 	}
