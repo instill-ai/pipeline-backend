@@ -127,10 +127,11 @@ func traverseBinding(bindings interface{}, path string) (interface{}, error) {
 
 	res, err := jsonpath.JsonPathLookup(bindings, "$."+path)
 	if err != nil {
+		// check primitive value
 		var ret interface{}
 		err := json.Unmarshal([]byte(path), &ret)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("neither reference or primitive type")
 		}
 		return ret, nil
 	}
@@ -210,7 +211,9 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 				parents = append(parents, upstream)
 			}
 			for idx := range parents {
-				graph.AddEdge(componentIdMap[parents[idx]], component)
+				if _, ok := componentIdMap[parents[idx]]; ok {
+					graph.AddEdge(componentIdMap[parents[idx]], component)
+				}
 			}
 		}
 		parents := FindReferenceParent(string(template))
