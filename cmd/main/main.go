@@ -87,7 +87,7 @@ func InitPipelinePublicServiceClient(ctx context.Context) (pipelinePB.PipelinePu
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf(":%v", config.Config.Server.PublicPort), clientDialOpts)
+	clientConn, err := grpc.Dial(fmt.Sprintf(":%v", config.Config.Server.PublicPort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, nil
@@ -199,6 +199,9 @@ func main() {
 		}
 		grpcServerOpts = append(grpcServerOpts, grpc.Creds(creds))
 	}
+
+	grpcServerOpts = append(grpcServerOpts, grpc.MaxRecvMsgSize(constant.MaxPayloadSize))
+	grpcServerOpts = append(grpcServerOpts, grpc.MaxSendMsgSize(constant.MaxPayloadSize))
 
 	pipelinePublicServiceClient, pipelinePublicServiceClientConn := InitPipelinePublicServiceClient(ctx)
 	if pipelinePublicServiceClientConn != nil {

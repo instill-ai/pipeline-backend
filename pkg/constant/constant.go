@@ -9,16 +9,7 @@ const (
 )
 
 const MaxBatchSize int = 32
-
-// Constants for text to image task.
-const DefaultStep int = 10
-const DefaultCfgScale float64 = 7.0
-const DefaultSeed int = 1024
-const DefaultSamples int = 1
-
-// Constants for text generation task.
-const DefaultOutputLen int = 100
-const DefaultTopK int = 40
+const MaxPayloadSize = 1024 * 1024 * 32
 
 // Constants for resource owner
 const DefaultUserID string = "instill-ai"
