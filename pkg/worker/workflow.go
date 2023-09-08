@@ -198,6 +198,11 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		outputCache[idx][orderedComp[0].Id] = inputStruct
 		computeTime[orderedComp[0].Id] = 0
 
+		outputCache[idx]["global"], err = utils.GenerateGlobalValue(param.PipelineUid, param.PipelineRecipe, param.OwnerPermalink)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	responseCompId := ""
@@ -206,6 +211,40 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		var compInputs []*structpb.Struct
 		for idx := 0; idx < batchSize; idx++ {
 			compInputTemplate := comp.Configuration
+
+			// TODO: remove this hardcode injection
+			if comp.DefinitionName == "connector-definitions/blockchain-numbers" {
+				recipeByte, err := json.Marshal(param.PipelineRecipe)
+				if err != nil {
+					return err
+				}
+				recipePb := &structpb.Struct{}
+				err = protojson.Unmarshal(recipeByte, recipePb)
+				if err != nil {
+					return err
+				}
+
+				// TODO: remove this hardcode injection
+				if comp.DefinitionName == "connector-definitions/blockchain-numbers" {
+					metadata, err := structpb.NewValue(map[string]interface{}{
+						"pipeline": map[string]interface{}{
+							"uid":    "{global.pipeline.uid}",
+							"recipe": "{global.pipeline.recipe}",
+						},
+						"owner": map[string]interface{}{
+							"uid": "{global.owner.uid}",
+						},
+					})
+					if err != nil {
+						return err
+					}
+					if compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue() == nil {
+						compInputTemplate.Fields["input"].GetStructValue().Fields["custom"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
+					}
+					compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue().Fields["metadata"] = metadata
+				}
+			}
+
 			compInputTemplateJson, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
 			if err != nil {
 				span.SetStatus(1, err.Error())

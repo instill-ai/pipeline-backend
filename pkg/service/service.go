@@ -644,7 +644,7 @@ func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb
 		if err != nil {
 			return nil, err
 		}
-		resp.TypeUrl = "buf.build/instill-ai/protobufs/vdp.pipeline.v1alpha.TriggerPipelineResponse"
+		resp.TypeUrl = "buf.build/instill-ai/protobufs/vdp.pipeline.v1alpha.TriggerUserPipelineResponse"
 		operation = longrunningpb.Operation{
 			Done: true,
 			Result: &longrunningpb.Operation_Response{
@@ -919,6 +919,10 @@ func (s *service) triggerPipeline(
 		outputCache[idx][orderedComp[0].Id] = inputStruct
 		computeTime[orderedComp[0].Id] = 0
 
+		outputCache[idx]["global"], err = utils.GenerateGlobalValue(pipelineUid, recipe, ownerPermalink)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	responseCompId := ""
@@ -928,6 +932,36 @@ func (s *service) triggerPipeline(
 
 		for idx := 0; idx < batchSize; idx++ {
 			compInputTemplate := comp.Configuration
+			// TODO: remove this hardcode injection
+			if comp.DefinitionName == "connector-definitions/blockchain-numbers" {
+				recipeByte, err := json.Marshal(recipe)
+				if err != nil {
+					return nil, nil, err
+				}
+				recipePb := &structpb.Struct{}
+				err = protojson.Unmarshal(recipeByte, recipePb)
+				if err != nil {
+					return nil, nil, err
+				}
+
+				metadata, err := structpb.NewValue(map[string]interface{}{
+					"pipeline": map[string]interface{}{
+						"uid":    "{global.pipeline.uid}",
+						"recipe": "{global.pipeline.recipe}",
+					},
+					"owner": map[string]interface{}{
+						"uid": "{global.owner.uid}",
+					},
+				})
+				if err != nil {
+					return nil, nil, err
+				}
+				if compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue() == nil {
+					compInputTemplate.Fields["input"].GetStructValue().Fields["custom"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
+				}
+				compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue().Fields["metadata"] = metadata
+			}
+
 			compInputTemplateJson, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
 			if err != nil {
 				return nil, nil, err
