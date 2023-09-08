@@ -692,7 +692,7 @@ func (h *PublicHandler) ValidateUserPipeline(ctx context.Context, req *pipelineP
 	pbPipeline, err := h.service.ValidateUserPipelineByID(ctx, ns, userUid, id)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("recipe error: %+v", err.Error()))
 	}
 
 	resp := pipelinePB.ValidateUserPipelineResponse{
@@ -836,7 +836,7 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pipelinePB
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 		_ = h.service.WriteNewDataPoint(ctx, dataPoint)
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("error: %+v", err.Error()))
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
@@ -877,7 +877,7 @@ func (h *PublicHandler) TriggerAsyncUserPipeline(ctx context.Context, req *pipel
 	operation, err := h.service.TriggerAsyncUserPipelineByID(ctx, ns, userUid, id, req.Inputs, logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("error: %+v", err.Error()))
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
