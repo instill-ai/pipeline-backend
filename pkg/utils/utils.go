@@ -187,3 +187,17 @@ func GenerateTraces(comps []*datamodel.Component, inputCache []map[string]interf
 	}
 	return trace, nil
 }
+
+func GenerateGlobalValue(pipelineUid uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]interface{}, error) {
+	global := map[string]interface{}{}
+
+	global["pipeline"] = map[string]interface{}{
+		"uid":    pipelineUid.String(),
+		"recipe": recipe,
+	}
+	global["owner"] = map[string]interface{}{
+		"uid": uuid.FromStringOrNil(strings.Split(ownerPermalink, "/")[1]),
+	}
+
+	return global, nil
+}
