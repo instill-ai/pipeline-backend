@@ -98,16 +98,12 @@ type Service interface {
 	ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineId string, releaseId string) (string, error)
 
 	PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error)
-	DBToPBPipeline(ctx context.Context, userUid uuid.UUID, dbPipeline *datamodel.Pipeline, view pipelinePB.View) (*pipelinePB.Pipeline, error)
-	DBToPBPipelines(ctx context.Context, userUid uuid.UUID, dbPipeline []*datamodel.Pipeline, view pipelinePB.View) ([]*pipelinePB.Pipeline, error)
-	DBToPBPipelineAdmin(ctx context.Context, dbPipeline *datamodel.Pipeline, view pipelinePB.View) (*pipelinePB.Pipeline, error)
-	DBToPBPipelinesAdmin(ctx context.Context, dbPipeline []*datamodel.Pipeline, view pipelinePB.View) ([]*pipelinePB.Pipeline, error)
+	DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view pipelinePB.View) (*pipelinePB.Pipeline, error)
+	DBToPBPipelines(ctx context.Context, dbPipeline []*datamodel.Pipeline, view pipelinePB.View) ([]*pipelinePB.Pipeline, error)
 
 	PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error)
-	DBToPBPipelineRelease(ctx context.Context, userUid uuid.UUID, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
-	DBToPBPipelineReleases(ctx context.Context, userUid uuid.UUID, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View) ([]*pipelinePB.PipelineRelease, error)
-	DBToPBPipelineReleaseAdmin(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
-	DBToPBPipelineReleasesAdmin(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View) ([]*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View) ([]*pipelinePB.PipelineRelease, error)
 
 	GetUser(ctx context.Context) (string, uuid.UUID, error)
 }
@@ -286,7 +282,7 @@ func (s *service) ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize
 	if err != nil {
 		return nil, 0, "", err
 	}
-	pbPipelines, err := s.DBToPBPipelines(ctx, userUid, dbPipelines, view)
+	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, view)
 	return pbPipelines, totalSize, nextPageToken, err
 
 }
@@ -300,7 +296,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid u
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, view)
+	return s.DBToPBPipeline(ctx, dbPipeline, view)
 }
 
 func (s *service) CreateUserPipeline(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pbPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
@@ -323,7 +319,7 @@ func (s *service) CreateUserPipeline(ctx context.Context, ns resource.Namespace,
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbCreatedPipeline, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbCreatedPipeline, pipelinePB.View_VIEW_FULL)
 }
 
 func (s *service) ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error) {
@@ -335,7 +331,7 @@ func (s *service) ListUserPipelines(ctx context.Context, ns resource.Namespace, 
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelines(ctx, userUid, dbPipelines, view)
+	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, view)
 	return pbPipelines, ps, pt, err
 }
 
@@ -346,7 +342,7 @@ func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageTo
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelinesAdmin(ctx, dbPipelines, view)
+	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, view)
 	return pbPipelines, ps, pt, err
 
 }
@@ -361,7 +357,7 @@ func (s *service) GetUserPipelineByID(ctx context.Context, ns resource.Namespace
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, view)
+	return s.DBToPBPipeline(ctx, dbPipeline, view)
 }
 
 func (s *service) GetUserPipelineDefaultReleaseUid(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) (uuid.UUID, error) {
@@ -402,7 +398,7 @@ func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view
 		return nil, err
 	}
 
-	return s.DBToPBPipelineAdmin(ctx, dbPipeline, view)
+	return s.DBToPBPipeline(ctx, dbPipeline, view)
 
 }
 
@@ -429,7 +425,7 @@ func (s *service) UpdateUserPipelineByID(ctx context.Context, ns resource.Namesp
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbPipeline, pipelinePB.View_VIEW_FULL)
 }
 
 func (s *service) DeleteUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error {
@@ -476,7 +472,7 @@ func (s *service) ValidateUserPipelineByID(ctx context.Context, ns resource.Name
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbPipeline, pipelinePB.View_VIEW_FULL)
 
 }
 
@@ -500,7 +496,7 @@ func (s *service) UpdateUserPipelineIDByID(ctx context.Context, ns resource.Name
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, userUid, dbPipeline, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbPipeline, pipelinePB.View_VIEW_FULL)
 }
 
 func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
@@ -702,7 +698,7 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbCreatedPipelineRelease, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipelineRelease(ctx, dbCreatedPipelineRelease, pipelinePB.View_VIEW_FULL)
 
 }
 func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error) {
@@ -715,7 +711,7 @@ func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Name
 		return nil, 0, "", err
 	}
 
-	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, userUid, dbPipelineReleases, view)
+	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, dbPipelineReleases, view)
 	return pbPipelineReleases, ps, pt, err
 }
 
@@ -725,7 +721,7 @@ func (s *service) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64,
 	if err != nil {
 		return nil, 0, "", err
 	}
-	pbPipelineReleases, err := s.DBToPBPipelineReleasesAdmin(ctx, dbPipelineReleases, view)
+	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, dbPipelineReleases, view)
 	return pbPipelineReleases, ps, pt, err
 
 }
@@ -739,7 +735,7 @@ func (s *service) GetUserPipelineReleaseByID(ctx context.Context, ns resource.Na
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, view)
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, view)
 
 }
 func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.PipelineRelease, error) {
@@ -751,7 +747,7 @@ func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.N
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, view)
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, view)
 
 }
 
@@ -777,7 +773,7 @@ func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, pipelinePB.View_VIEW_FULL)
 }
 
 func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error) {
@@ -799,7 +795,7 @@ func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resour
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, userUid, dbPipelineRelease, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, pipelinePB.View_VIEW_FULL)
 }
 
 func (s *service) DeleteUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error {
@@ -874,7 +870,12 @@ func (s *service) triggerPipeline(
 	pipelineInputs []*structpb.Struct,
 	pipelineTriggerId string,
 	returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
-	err := s.preTriggerPipeline(recipe, pipelineInputs)
+
+	recipe, err := s.dbRecipePermalinkToName(recipe)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = s.preTriggerPipeline(recipe, pipelineInputs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1091,7 +1092,11 @@ func (s *service) triggerAsyncPipeline(
 	pipelineTriggerId string,
 	returnTraces bool) (*longrunningpb.Operation, error) {
 
-	err := s.preTriggerPipeline(recipe, pipelineInputs)
+	recipe, err := s.dbRecipePermalinkToName(recipe)
+	if err != nil {
+		return nil, err
+	}
+	err = s.preTriggerPipeline(recipe, pipelineInputs)
 	if err != nil {
 		return nil, err
 	}
@@ -1162,11 +1167,8 @@ func (s *service) TriggerUserPipelineByID(ctx context.Context, ns resource.Names
 	if err != nil {
 		return nil, nil, err
 	}
-	recipe, err := s.recipePermalinkToName(userUid, dbPipeline.Recipe)
-	if err != nil {
-		return nil, nil, err
-	}
-	return s.triggerPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
+
+	return s.triggerPipeline(ctx, ownerPermalink, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1178,11 +1180,8 @@ func (s *service) TriggerAsyncUserPipelineByID(ctx context.Context, ns resource.
 	if err != nil {
 		return nil, err
 	}
-	recipe, err := s.recipePermalinkToName(userUid, dbPipeline.Recipe)
-	if err != nil {
-		return nil, err
-	}
-	return s.triggerAsyncPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
+
+	return s.triggerAsyncPipeline(ctx, ownerPermalink, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1201,11 +1200,7 @@ func (s *service) TriggerUserPipelineReleaseByID(ctx context.Context, ns resourc
 		return nil, nil, err
 	}
 
-	recipe, err := s.recipePermalinkToName(userUid, dbPipelineRelease.Recipe)
-	if err != nil {
-		return nil, nil, err
-	}
-	return s.triggerPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerPipeline(ctx, ownerPermalink, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
 }
 
 func (s *service) TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
@@ -1220,9 +1215,6 @@ func (s *service) TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns re
 	if err != nil {
 		return nil, err
 	}
-	recipe, err := s.recipePermalinkToName(userUid, dbPipelineRelease.Recipe)
-	if err != nil {
-		return nil, err
-	}
-	return s.triggerAsyncPipeline(ctx, ownerPermalink, recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
+
+	return s.triggerAsyncPipeline(ctx, ownerPermalink, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
 }
