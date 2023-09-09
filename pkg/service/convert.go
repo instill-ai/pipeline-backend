@@ -459,10 +459,10 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 				pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR
 			}
 
-			if pbRecipe.Components[i].DefinitionName == "operator-definitions/start-operator" {
+			if pbRecipe.Components[i].DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
 				startComp = pbRecipe.Components[i]
 			}
-			if pbRecipe.Components[i].DefinitionName == "operator-definitions/end-operator" {
+			if pbRecipe.Components[i].DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
 				endComp = pbRecipe.Components[i]
 			}
 		}
