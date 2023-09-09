@@ -468,9 +468,11 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 
-	pbRecipe, err = s.recipePermalinkToName(pbRecipe)
-	if err != nil {
-		return nil, err
+	if pbRecipe != nil {
+		pbRecipe, err = s.recipePermalinkToName(pbRecipe)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	pbPipeline := pipelinePB.Pipeline{
@@ -629,10 +631,11 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 			}
 		}
 	}
-
-	pbRecipe, err = s.recipePermalinkToName(pbRecipe)
-	if err != nil {
-		return nil, err
+	if pbRecipe != nil {
+		pbRecipe, err = s.recipePermalinkToName(pbRecipe)
+		if err != nil {
+			return nil, err
+		}
 	}
 	pbPipelineRelease := pipelinePB.PipelineRelease{
 		Name:       fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, dbPipeline.ID, dbPipelineRelease.ID),
