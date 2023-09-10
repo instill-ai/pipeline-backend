@@ -333,9 +333,17 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 							curr := splits[1]
 
 							if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
-								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[strings.Split(curr, "[")[0]].GetStructValue().Fields["items"]
+								target := strings.Split(curr, "[")[0]
+								if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+									return nil, fmt.Errorf("openapi error")
+								}
+								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
 							} else {
-								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[curr]
+								target := curr
+								if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+									return nil, fmt.Errorf("openapi error")
+								}
+								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
 
 							}
 
