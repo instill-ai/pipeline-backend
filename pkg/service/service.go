@@ -548,7 +548,13 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 					pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(val.GetBoolValue())
 				}
 
-			case "text", "image", "audio", "video":
+			case "text":
+			case "image", "audio", "video":
+				dataSplits := strings.Split(pipelineInputs[idx].Fields[key].GetStringValue(), ",")
+				if len(dataSplits) > 1 {
+					pipelineInputs[idx].Fields[key] = structpb.NewStringValue(dataSplits[1])
+				}
+
 			case "integer_array", "number_array", "boolean_array", "text_array", "image_array", "audio_array", "video_array":
 				if val.GetListValue() == nil {
 					return fmt.Errorf("%s should be a array", key)
@@ -599,6 +605,21 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 					}
 					pipelineInputs[idx].Fields[key] = structpb.NewListValue(structVal)
 
+				case "image_array", "audio_array", "video_array":
+					vals := []interface{}{}
+					for _, val := range val.GetListValue().AsSlice() {
+						dataSplits := strings.Split(val.(string), ",")
+						if len(dataSplits) > 1 {
+							vals = append(vals, dataSplits[1])
+						} else {
+							vals = append(vals, dataSplits[0])
+						}
+					}
+					structVal, err := structpb.NewList(vals)
+					if err != nil {
+						return err
+					}
+					pipelineInputs[idx].Fields[key] = structpb.NewListValue(structVal)
 				}
 			}
 
