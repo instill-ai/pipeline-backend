@@ -178,13 +178,11 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		inputs = append(inputs, input)
 	}
 
-	inputCache := make([]map[string]interface{}, batchSize)
-	outputCache := make([]map[string]interface{}, batchSize)
+	memory := make([]map[string]interface{}, batchSize)
 	computeTime := map[string]float32{}
 
 	for idx := range inputs {
-		inputCache[idx] = map[string]interface{}{}
-		outputCache[idx] = map[string]interface{}{}
+		memory[idx] = map[string]interface{}{}
 		var inputStruct map[string]interface{}
 		err := json.Unmarshal(inputs[idx], &inputStruct)
 		if err != nil {
@@ -194,11 +192,10 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return err
 		}
-		inputCache[idx][orderedComp[0].Id] = inputStruct
-		outputCache[idx][orderedComp[0].Id] = inputStruct
+		memory[idx][orderedComp[0].Id] = inputStruct
 		computeTime[orderedComp[0].Id] = 0
 
-		outputCache[idx]["global"], err = utils.GenerateGlobalValue(param.PipelineUid, param.PipelineRecipe, param.OwnerPermalink)
+		memory[idx]["global"], err = utils.GenerateGlobalValue(param.PipelineUid, param.PipelineRecipe, param.OwnerPermalink)
 		if err != nil {
 			return err
 		}
@@ -210,6 +207,12 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	for _, comp := range orderedComp[1:] {
 		var compInputs []*structpb.Struct
 		for idx := 0; idx < batchSize; idx++ {
+
+			memory[idx][comp.Id] = map[string]interface{}{
+				"input":  map[string]interface{}{},
+				"output": map[string]interface{}{},
+			}
+
 			compInputTemplate := comp.Configuration
 
 			// TODO: remove this hardcode injection
@@ -264,7 +267,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				return err
 			}
 
-			compInputStruct, err := utils.RenderInput(compInputTemplateStruct, outputCache[idx])
+			compInputStruct, err := utils.RenderInput(compInputTemplateStruct, memory[idx])
 			if err != nil {
 				span.SetStatus(1, err.Error())
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -291,7 +294,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				return err
 			}
 
-			inputCache[idx][comp.Id] = compInput
+			memory[idx][comp.Id].(map[string]interface{})["input"] = compInputStruct
 			compInputs = append(compInputs, compInput)
 		}
 
@@ -354,27 +357,14 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				if err != nil {
 					return err
 				}
-				outputCache[idx][comp.Id] = outputStruct
+				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
 			}
 
 		}
 
 		if comp.DefinitionName == "operator-definitions/end-operator" {
 			responseCompId = comp.Id
-			for idx := range compInputs {
-				outputJson, err := protojson.Marshal(compInputs[idx])
-				if err != nil {
-					return err
-				}
-				var outputStruct map[string]interface{}
-				err = json.Unmarshal(outputJson, &outputStruct)
-				if err != nil {
-					return err
-				}
-				outputCache[idx][comp.Id] = outputStruct
-			}
 			computeTime[comp.Id] = 0
-
 		}
 	}
 
@@ -386,7 +376,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	} else {
 		for idx := 0; idx < batchSize; idx++ {
 			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-			for key, value := range outputCache[idx][responseCompId].(map[string]interface{}) {
+			for key, value := range memory[idx][responseCompId].(map[string]interface{})["input"].(map[string]interface{}) {
 				structVal, err := structpb.NewValue(value)
 				if err != nil {
 					return err
@@ -401,7 +391,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 
 	var traces map[string]*pipelinePB.Trace
 	if param.ReturnTraces {
-		traces, err = utils.GenerateTraces(orderedComp, inputCache, outputCache, computeTime, batchSize)
+		traces, err = utils.GenerateTraces(orderedComp, memory, computeTime, batchSize)
 
 		if err != nil {
 			span.SetStatus(1, err.Error())
