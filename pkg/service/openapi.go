@@ -316,20 +316,31 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 							}
 
 							walk = comp.GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()[task]
-							for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
-								walk = walk.GetStructValue().Fields[key]
+
+							splits := strings.Split(str, ".")
+
+							if splits[1] == "output" {
+								for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
+									walk = walk.GetStructValue().Fields[key]
+								}
+							} else {
+								for _, key := range []string{"paths", "/execute", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
+									walk = walk.GetStructValue().Fields[key]
+								}
 							}
+							str = str[len(splits[1])+1:]
+
 						}
 						if comp.DefinitionName == "operator-definitions/start-operator" {
 							walk = structpb.NewStructValue(openApiInput)
 						}
 
 						for {
-							splits := strings.Split(str, ".")
 							if len(str) == 0 {
 								break
 							}
 
+							splits := strings.Split(str, ".")
 							curr := splits[1]
 
 							if strings.Contains(curr, "[") && strings.Contains(curr, "]") {

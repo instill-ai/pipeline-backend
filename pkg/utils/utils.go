@@ -141,15 +141,15 @@ func ParseDependency(dep map[string]string) ([]string, map[string][]string, erro
 	return parent, depMap, nil
 }
 
-func GenerateTraces(comps []*datamodel.Component, inputCache []map[string]interface{}, outputCache []map[string]interface{}, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
+func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{}, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
 	trace := map[string]*pipelinePB.Trace{}
 	for compIdx := range comps {
 		inputs := []*structpb.Struct{}
 		outputs := []*structpb.Struct{}
 
 		for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-			if _, ok := inputCache[dataIdx][comps[compIdx].Id]; ok {
-				data, err := json.Marshal(inputCache[dataIdx][comps[compIdx].Id])
+			if _, ok := memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["input"]; ok {
+				data, err := json.Marshal(memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["input"])
 				if err != nil {
 					return nil, err
 				}
@@ -163,8 +163,8 @@ func GenerateTraces(comps []*datamodel.Component, inputCache []map[string]interf
 
 		}
 		for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-			if _, ok := outputCache[dataIdx][comps[compIdx].Id]; ok {
-				data, err := json.Marshal(outputCache[dataIdx][comps[compIdx].Id])
+			if _, ok := memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["output"]; ok {
+				data, err := json.Marshal(memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["output"])
 				if err != nil {
 					return nil, err
 				}
