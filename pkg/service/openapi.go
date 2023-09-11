@@ -156,7 +156,7 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 		return nil, err
 	}
 
-	var tepmlateWalk *structpb.Value
+	var templateWalk *structpb.Value
 
 	openApiInput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	openApiInput.Fields["type"] = structpb.NewStringValue("object")
@@ -212,16 +212,16 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 
 	}
 
-	tepmlateWalk = template.GetFields()["paths"]
+	templateWalk = template.GetFields()["paths"]
 	for _, key := range []string{"/trigger", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
-		tepmlateWalk = tepmlateWalk.GetStructValue().Fields[key]
+		templateWalk = templateWalk.GetStructValue().Fields[key]
 	}
-	*tepmlateWalk = *structpb.NewStructValue(openApiInput)
-	tepmlateWalk = template.GetFields()["paths"]
+	*templateWalk = *structpb.NewStructValue(openApiInput)
+	templateWalk = template.GetFields()["paths"]
 	for _, key := range []string{"/triggerAsync", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
-		tepmlateWalk = tepmlateWalk.GetStructValue().Fields[key]
+		templateWalk = templateWalk.GetStructValue().Fields[key]
 	}
-	*tepmlateWalk = *structpb.NewStructValue(openApiInput)
+	*templateWalk = *structpb.NewStructValue(openApiInput)
 
 	// output
 
@@ -323,10 +323,12 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 								for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
 									walk = walk.GetStructValue().Fields[key]
 								}
-							} else {
+							} else if splits[1] == "input" {
 								for _, key := range []string{"paths", "/execute", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
 									walk = walk.GetStructValue().Fields[key]
 								}
+							} else {
+								return nil, fmt.Errorf("generate OpenAPI spec error")
 							}
 							str = str[len(splits[1])+1:]
 
@@ -429,11 +431,11 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 
 	}
 
-	tepmlateWalk = template.GetFields()["paths"]
+	templateWalk = template.GetFields()["paths"]
 	for _, key := range []string{"/trigger", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
-		tepmlateWalk = tepmlateWalk.GetStructValue().Fields[key]
+		templateWalk = templateWalk.GetStructValue().Fields[key]
 	}
-	*tepmlateWalk = *structpb.NewStructValue(openApiOutput)
+	*templateWalk = *structpb.NewStructValue(openApiOutput)
 
 	if success {
 		return template, nil
