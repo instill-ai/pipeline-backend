@@ -5,50 +5,34 @@ let proto;
 let pHost, cHost;
 let pPrivatePort, pPublicPort, cPublicPort;
 
-if (
-  (__ENV.API_GATEWAY_VDP_HOST && !__ENV.API_GATEWAY_VDP_PORT) ||
-  (!__ENV.API_GATEWAY_VDP_HOST && __ENV.API_GATEWAY_VDP_PORT)
-) {
-  fail(
-    "both API_GATEWAY_HOST and API_GATEWAY_VDP_PORT should be properly configured."
-  );
-}
-
-export const apiGatewayMode =
-  __ENV.API_GATEWAY_VDP_HOST && __ENV.API_GATEWAY_VDP_PORT;
+export const apiGatewayMode = (__ENV.API_GATEWAY_URL && true);
 
 if (__ENV.API_GATEWAY_PROTOCOL) {
-  if (
-    __ENV.API_GATEWAY_PROTOCOL !== "http" &&
-    __ENV.API_GATEWAY_PROTOCOL != "https"
-  ) {
-    fail("only allow `http` or `https` for API_GATEWAY_PROTOCOL");
+  if (__ENV.API_GATEWAY_PROTOCOL !== "http" && __ENV.API_GATEWAY_PROTOCOL != "https") {
+    fail("only allow `http` or `https` for API_GATEWAY_PROTOCOL")
   }
-  proto = __ENV.API_GATEWAY_PROTOCOL;
+  proto = __ENV.API_GATEWAY_PROTOCOL
 } else {
-  proto = "http";
+  proto = "http"
 }
 
-if (apiGatewayMode) {
-  // internal mode for accessing api-gateway from container
-  pHost = cHost = __ENV.API_GATEWAY_VDP_HOST;
-  pPrivatePort = 3081;
-  pPublicPort = cPublicPort = __ENV.API_GATEWAY_VDP_PORT;
+if (__ENV.API_GATEWAY_PROTOCOL) {
+  if (__ENV.API_GATEWAY_PROTOCOL !== "http" && __ENV.API_GATEWAY_PROTOCOL != "https") {
+    fail("only allow `http` or `https` for API_GATEWAY_PROTOCOL")
+  }
+  proto = __ENV.API_GATEWAY_PROTOCOL
 } else {
-  // direct microservice mode
-  pHost = "pipeline-backend";
-  cHost = "connector-backend";
-  pPrivatePort = 3081;
-  pPublicPort = 8081;
-  cPublicPort = 8082;
+  proto = "http"
 }
 
-export const pipelinePrivateHost = `${proto}://${pHost}:${pPrivatePort}`;
-export const pipelinePublicHost = `${proto}://${pHost}:${pPublicPort}`;
-export const pipelineGRPCPrivateHost = `${pHost}:${pPrivatePort}`;
-export const pipelineGRPCPublicHost = `${pHost}:${pPublicPort}`;
-export const connectorPublicHost = `${proto}://${cHost}:${cPublicPort}`;
-export const connectorGRPCPublicHost = `${cHost}:${cPublicPort}`;
+
+export const pipelinePrivateHost = `http://pipeline-backend:3081`;
+export const pipelinePublicHost = apiGatewayMode ? `${proto}://${__ENV.API_GATEWAY_URL}/vdp` : `http://pipeline-backend:8081`
+export const connectorPublicHost = apiGatewayMode ? `${proto}://${__ENV.API_GATEWAY_URL}/vdp` : `http://connector-backend:8082`
+export const mgmtPublicHost = apiGatewayMode ? `${proto}://${__ENV.API_GATEWAY_URL}/base` : `http://mgmt-backend:8084`
+export const pipelineGRPCPrivateHost = `${__ENV.API_GATEWAY_URL}`;
+export const pipelineGRPCPublicHost = apiGatewayMode ? `${__ENV.API_GATEWAY_URL}`: `pipeline-backend:8081`;
+export const connectorGRPCPublicHost = apiGatewayMode ? `${__ENV.API_GATEWAY_URL}`: `connector-backend:8082`;
 
 export const dogImg = encoding.b64encode(
   open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b")
