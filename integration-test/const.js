@@ -28,12 +28,11 @@ if (__ENV.API_GATEWAY_PROTOCOL) {
 
 export const pipelinePrivateHost = `http://pipeline-backend:3081`;
 export const pipelinePublicHost = apiGatewayMode ? `${proto}://${__ENV.API_GATEWAY_URL}/vdp` : `http://pipeline-backend:8081`
-export const pipelineGRPCPrivateHost = `${__ENV.API_GATEWAY_URL}`;
-export const pipelineGRPCPublicHost = `${__ENV.API_GATEWAY_URL}`;
 export const connectorPublicHost = apiGatewayMode ? `${proto}://${__ENV.API_GATEWAY_URL}/vdp` : `http://connector-backend:8082`
-export const connectorGRPCPublicHost = `${__ENV.API_GATEWAY_URL}`;
 export const mgmtPublicHost = apiGatewayMode ? `${proto}://${__ENV.API_GATEWAY_URL}/base` : `http://mgmt-backend:8084`
-
+export const pipelineGRPCPrivateHost = `${__ENV.API_GATEWAY_URL}`;
+export const pipelineGRPCPublicHost = apiGatewayMode ? `${__ENV.API_GATEWAY_URL}`: `pipeline-backend:8081`;
+export const connectorGRPCPublicHost = apiGatewayMode ? `${__ENV.API_GATEWAY_URL}`: `connector-backend:8082`;
 
 export const dogImg = encoding.b64encode(
   open(`${__ENV.TEST_FOLDER_ABS_PATH}/integration-test/data/dog.jpg`, "b")
