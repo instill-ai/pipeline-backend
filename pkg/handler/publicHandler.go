@@ -167,7 +167,7 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipeli
 			def)
 	}
 	resp.NextPageToken = nextPageToken
-	resp.TotalSize = int64(len(defs))
+	resp.TotalSize = int32(len(defs))
 
 	logger.Info("ListOperatorDefinitions")
 
@@ -247,7 +247,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(ctx, userUid, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(ctx, userUid, int64(req.GetPageSize()), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
@@ -263,7 +263,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 	resp := pipelinePB.ListPipelinesResponse{
 		Pipelines:     pbPipelines,
 		NextPageToken: nextPageToken,
-		TotalSize:     totalSize,
+		TotalSize:     int32(totalSize),
 	}
 
 	return &resp, nil
@@ -402,7 +402,7 @@ func (h *PublicHandler) ListUserPipelines(ctx context.Context, req *pipelinePB.L
 		return &pipelinePB.ListUserPipelinesResponse{}, err
 	}
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListUserPipelines(ctx, ns, userUid, req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListUserPipelines(ctx, ns, userUid, int64(req.GetPageSize()), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListUserPipelinesResponse{}, err
@@ -418,7 +418,7 @@ func (h *PublicHandler) ListUserPipelines(ctx context.Context, req *pipelinePB.L
 	resp := pipelinePB.ListUserPipelinesResponse{
 		Pipelines:     pbPipelines,
 		NextPageToken: nextPageToken,
-		TotalSize:     totalSize,
+		TotalSize:     int32(totalSize),
 	}
 
 	return &resp, nil
@@ -1038,7 +1038,7 @@ func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pipel
 		return nil, err
 	}
 
-	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListUserPipelineReleases(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), req.GetPageSize(), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
+	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListUserPipelineReleases(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), int64(req.GetPageSize()), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1054,7 +1054,7 @@ func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pipel
 	resp := pipelinePB.ListUserPipelineReleasesResponse{
 		Releases:      pbPipelineReleases,
 		NextPageToken: nextPageToken,
-		TotalSize:     totalSize,
+		TotalSize:     int32(totalSize),
 	}
 
 	return &resp, nil

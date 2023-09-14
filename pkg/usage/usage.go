@@ -80,7 +80,7 @@ func (u *usage) RetrieveUsageData() interface{} {
 
 	// Roll over all users and update the metrics with the cached uuid
 	userPageToken := ""
-	userPageSizeMax := int64(repository.MaxPageSize)
+	userPageSizeMax := int32(repository.MaxPageSize)
 	for {
 		userResp, err := u.mgmtPrivateServiceClient.ListUsersAdmin(ctx, &mgmtPB.ListUsersAdminRequest{
 			PageSize:  &userPageSizeMax,
