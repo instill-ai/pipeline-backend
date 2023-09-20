@@ -612,6 +612,11 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 		if err != nil {
 			return nil, err
 		}
+	}
+	if view == pipelinePB.View_VIEW_FULL {
+		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
+			return nil, err
+		}
 
 		for i := range pbRecipe.Components {
 			// TODO: use enum
@@ -653,12 +658,6 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 		Description: &dbPipelineRelease.Description.String,
 		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 		Recipe:      pbRecipe,
-	}
-
-	if view == pipelinePB.View_VIEW_FULL {
-		if err := s.includeDetailInRecipe(pbPipelineRelease.Recipe); err != nil {
-			return nil, err
-		}
 	}
 
 	return &pbPipelineRelease, nil
