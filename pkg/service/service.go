@@ -436,9 +436,16 @@ func (s *service) DeleteUserPipelineByID(ctx context.Context, ns resource.Namesp
 	if err != nil {
 		return err
 	}
-
-	if err := s.DeleteResourceState(dbPipeline.UID); err != nil {
+	// TODO: pagination
+	pipelineReleases, _, _, err := s.repository.ListUserPipelineReleases(ctx, ownerPermalink, userPermalink, dbPipeline.UID, 1000, "", false, filtering.Filter{}, false)
+	if err != nil {
 		return err
+	}
+	for _, pipelineRelease := range pipelineReleases {
+		err := s.DeleteUserPipelineReleaseByID(ctx, ns, userUid, dbPipeline.UID, pipelineRelease.ID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return s.repository.DeleteUserPipelineByID(ctx, ownerPermalink, userPermalink, id)
