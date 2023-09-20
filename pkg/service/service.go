@@ -118,7 +118,6 @@ type service struct {
 	temporalClient                client.Client
 	influxDBWriteClient           api.WriteAPI
 	operator                      operator.Operator
-	defaultUserUid                uuid.UUID
 }
 
 // NewService initiates a service instance
@@ -130,7 +129,6 @@ func NewService(r repository.Repository,
 	rc *redis.Client,
 	t client.Client,
 	i api.WriteAPI,
-	defaultUserUid uuid.UUID,
 ) Service {
 	return &service{
 		repository:                    r,
@@ -142,7 +140,6 @@ func NewService(r repository.Repository,
 		temporalClient:                t,
 		influxDBWriteClient:           i,
 		operator:                      operator.InitOperator(),
-		defaultUserUid:                defaultUserUid,
 	}
 }
 
@@ -163,7 +160,7 @@ func (s *service) GetUser(ctx context.Context) (string, uuid.UUID, error) {
 		return resp.User.Id, uuid.FromStringOrNil(headerUserUId), nil
 	}
 
-	return constant.DefaultUserID, s.defaultUserUid, nil
+	return "", uuid.Nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
 }
 
 func (s *service) ConvertOwnerPermalinkToName(permalink string) (string, error) {

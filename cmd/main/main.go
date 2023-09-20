@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v9"
-	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
@@ -46,7 +45,6 @@ import (
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -242,11 +240,6 @@ func main() {
 
 	repository := repository.NewRepository(db)
 
-	resp, err := mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: "users/" + constant.DefaultUserID})
-	if err != nil {
-		panic(err)
-	}
-	defaultUserUID := uuid.FromStringOrNil(*resp.User.Uid)
 	service := service.NewService(
 		repository,
 		mgmtPrivateServiceClient,
@@ -256,7 +249,6 @@ func main() {
 		redisClient,
 		temporalClient,
 		influxDBWriteClient,
-		defaultUserUID,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)
