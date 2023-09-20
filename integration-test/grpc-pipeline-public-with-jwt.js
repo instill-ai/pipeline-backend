@@ -7,7 +7,7 @@ import * as constant from "./const.js";
 const client = new grpc.Client();
 client.load(["proto/vdp/pipeline/v1alpha"], "pipeline_public_service.proto");
 
-export function CheckCreate() {
+export function CheckCreate(metadata) {
   group(
     `Pipelines API: Create a pipeline [with random "jwt-sub" header]`,
     () => {
@@ -44,7 +44,7 @@ export function CheckCreate() {
   );
 }
 
-export function CheckList() {
+export function CheckList(metadata) {
   group(`Pipelines API: List pipelines [with random "jwt-sub" header]`, () => {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true,
@@ -69,7 +69,7 @@ export function CheckList() {
   });
 }
 
-export function CheckGet() {
+export function CheckGet(metadata) {
   group(`Pipelines API: Get a pipeline [with random "jwt-sub" header]`, () => {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true,
@@ -89,7 +89,8 @@ export function CheckGet() {
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
-        }
+        },
+        metadata
       ),
       {
         [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
@@ -119,7 +120,8 @@ export function CheckGet() {
         `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
           name: `${constant.namespace}/pipelines/${reqBody.id}`,
-        }
+        },
+        metadata
       ),
       {
         [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
@@ -131,7 +133,7 @@ export function CheckGet() {
   });
 }
 
-export function CheckUpdate() {
+export function CheckUpdate(metadata) {
   group(
     `Pipelines API: Update a pipeline [with random "jwt-sub" header]`,
     () => {
@@ -152,7 +154,8 @@ export function CheckUpdate() {
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
-        }
+        },
+        metadata
       );
 
       check(resOrigin, {
@@ -190,7 +193,8 @@ export function CheckUpdate() {
           `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqBody.id}`,
-          }
+          },
+          metadata
         ),
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
@@ -203,7 +207,7 @@ export function CheckUpdate() {
   );
 }
 
-export function CheckRename() {
+export function CheckRename(metadata) {
   group(
     `Pipelines API: Rename a pipeline [with random "jwt-sub" header]`,
     () => {
@@ -224,7 +228,8 @@ export function CheckRename() {
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
-        }
+        },
+        metadata
       );
 
       check(res, {
@@ -259,7 +264,8 @@ export function CheckRename() {
           `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqBody.id}`,
-          }
+          },
+          metadata
         ),
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
@@ -272,7 +278,7 @@ export function CheckRename() {
   );
 }
 
-export function CheckLookUp() {
+export function CheckLookUp(metadata) {
   group(
     `Pipelines API: Look up a pipeline by uid [with random "jwt-sub" header]`,
     () => {
@@ -293,7 +299,8 @@ export function CheckLookUp() {
         {
           parent: `${constant.namespace}`,
           pipeline: reqBody,
-        }
+        },
+        metadata
       );
 
       check(res, {
@@ -323,7 +330,8 @@ export function CheckLookUp() {
           `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqBody.id}`,
-          }
+          },
+          metadata
         ),
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:

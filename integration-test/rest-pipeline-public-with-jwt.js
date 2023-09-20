@@ -6,7 +6,7 @@ import { pipelinePublicHost } from "./const.js";
 
 import * as constant from "./const.js";
 
-export function CheckCreate() {
+export function CheckCreate(header) {
   group(
     `Pipelines API: Create a pipeline [with random "jwt-sub" header]`,
     () => {
@@ -35,7 +35,7 @@ export function CheckCreate() {
   );
 }
 
-export function CheckList() {
+export function CheckList(header) {
   group(`Pipelines API: List pipelines [with random "jwt-sub" header]`, () => {
     // Cannot list pipelines of a non-exist user
     check(
@@ -53,7 +53,7 @@ export function CheckList() {
   });
 }
 
-export function CheckGet() {
+export function CheckGet(header) {
   group(`Pipelines API: Get a pipeline [with random "jwt-sub" header]`, () => {
     var reqBody = Object.assign(
       {
@@ -69,7 +69,7 @@ export function CheckGet() {
         "POST",
         `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        constant.params
+        header
       ),
       {
         "POST /v1alpha/${constant.namespace}/pipelines response status is 201": (r) =>
@@ -97,7 +97,7 @@ export function CheckGet() {
         "DELETE",
         `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
-        constant.params
+        header
       ),
       {
         [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
@@ -107,7 +107,7 @@ export function CheckGet() {
   });
 }
 
-export function CheckUpdate() {
+export function CheckUpdate(header) {
   group(
     `Pipelines API: Update a pipeline [with random "jwt-sub" header]`,
     () => {
@@ -123,7 +123,7 @@ export function CheckUpdate() {
         "POST",
         `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        constant.params
+        header
       );
 
       check(resOrigin, {
@@ -157,7 +157,7 @@ export function CheckUpdate() {
           "DELETE",
           `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
           null,
-          constant.params
+          header
         ),
         {
           [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (
@@ -169,7 +169,7 @@ export function CheckUpdate() {
   );
 }
 
-export function CheckRename() {
+export function CheckRename(header) {
   group(
     `Pipelines API: Rename a pipeline [with random "jwt-sub" header]`,
     () => {
@@ -186,7 +186,7 @@ export function CheckRename() {
         "POST",
         `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        constant.params
+        header
       );
 
       check(res, {
@@ -219,7 +219,7 @@ export function CheckRename() {
           "DELETE",
           `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${id}`,
           null,
-          constant.params
+          header
         ),
         {
           [`DELETE /v1alpha/${constant.namespace}/pipelines/${id} response status 204`]: (r) =>
@@ -230,7 +230,7 @@ export function CheckRename() {
   );
 }
 
-export function CheckLookUp() {
+export function CheckLookUp(header) {
   group(
     `Pipelines API: Look up a pipeline by uid [with random "jwt-sub" header]`,
     () => {
@@ -246,7 +246,7 @@ export function CheckLookUp() {
         "POST",
         `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        constant.params
+        header
       );
 
       check(res, {
@@ -275,7 +275,7 @@ export function CheckLookUp() {
           "DELETE",
           `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
           null,
-          constant.params
+          header
         ),
         {
           [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (
