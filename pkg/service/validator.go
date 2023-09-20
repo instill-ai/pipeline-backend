@@ -68,23 +68,6 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 		if recipePermalink.Components[idx].DefinitionName == fmt.Sprintf("operator-definitions/%s", endOpDef.Uid) {
 			endCnt += 1
 		}
-		if IsConnector(recipePermalink.Components[idx].ResourceName) {
-
-			checkResp, err := s.connectorPrivateServiceClient.CheckConnectorResource(
-				utils.InjectOwnerToContextWithOwnerPermalink(ctx, ownerPermalink),
-				&connectorPB.CheckConnectorResourceRequest{
-					Permalink: recipePermalink.Components[idx].ResourceName,
-				},
-			)
-			if err != nil {
-				return status.Errorf(codes.InvalidArgument, "[connector-backend] Error %s at %s: %v",
-					"CheckConnector", recipePermalink.Components[idx].ResourceName, err.Error())
-
-			}
-			if checkResp.State != connectorPB.ConnectorResource_STATE_CONNECTED {
-				return status.Errorf(codes.InvalidArgument, "[connector-backend] %s is not connected", recipePermalink.Components[idx].ResourceName)
-			}
-		}
 
 		var compJsonSchema []byte
 		if IsConnectorDefinition(recipePermalink.Components[idx].DefinitionName) {
