@@ -17,7 +17,7 @@ clientPublic.load(
   "pipeline_public_service.proto"
 );
 
-export function CheckList() {
+export function CheckList(metadata) {
   group("Pipelines API: List pipelines by admin", () => {
     clientPrivate.connect(constant.pipelineGRPCPrivateHost, {
       plaintext: true,
@@ -63,7 +63,8 @@ export function CheckList() {
           {
             parent: `${constant.namespace}`,
             pipeline: reqBody,
-          }
+          },
+          metadata
         ),
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline x${reqBodies.length} response StatusOK`]:
@@ -218,7 +219,8 @@ export function CheckList() {
           `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqBody.id}`,
-          }
+          },
+          metadata
         ),
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
@@ -232,7 +234,7 @@ export function CheckList() {
   });
 }
 
-export function CheckLookUp() {
+export function CheckLookUp(metadata) {
   group("Pipelines API: Look up a pipeline by uid by admin", () => {
     clientPrivate.connect(constant.pipelineGRPCPrivateHost, {
       plaintext: true,
@@ -255,7 +257,8 @@ export function CheckLookUp() {
       {
         parent: `${constant.namespace}`,
         pipeline: reqBody,
-      }
+      },
+      metadata
     );
 
     check(res, {
@@ -284,7 +287,8 @@ export function CheckLookUp() {
         `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
         {
           name: `${constant.namespace}/pipelines/${reqBody.id}`,
-        }
+        },
+        metadata
       ),
       {
         [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:

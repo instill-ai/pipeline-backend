@@ -7,7 +7,7 @@ import { pipelinePublicHost } from "./const.js";
 
 import * as constant from "./const.js"
 
-export function CheckTrigger() {
+export function CheckTrigger(header) {
 
   var reqBody = Object.assign(
     {
@@ -19,12 +19,12 @@ export function CheckTrigger() {
 
   group("Pipelines API: Trigger an async pipeline for single image and single model", () => {
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`, JSON.stringify(reqBody), constant.params), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`, JSON.stringify(reqBody), header), {
       "POST /v1alpha/${constant.namespace}/pipelines response status is 201": (r) => r.status === 201,
     });
 
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(constant.simplePayload), constant.params), {
+    check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(constant.simplePayload), header), {
       [`POST /v1alpha/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
       [`POST /v1alpha/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.json().operation.name.startsWith("operations/"),
     });
@@ -32,7 +32,7 @@ export function CheckTrigger() {
   });
 
   // Delete the pipeline
-  check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`, null, constant.params), {
+  check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`, null, header), {
     [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
   });
 }

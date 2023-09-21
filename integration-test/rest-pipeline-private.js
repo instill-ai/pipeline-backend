@@ -11,10 +11,10 @@ import {
 import * as constant from "./const.js";
 import * as helper from "./helper.js";
 
-export function CheckList() {
+export function CheckList(header) {
   group("Pipelines API: List pipelines by admin", () => {
     check(
-      http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines`),
+      http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines`, null, header),
       {
         [`GET /v1alpha/admin/pipelines response status is 200`]: (r) =>
           r.status === 200,
@@ -45,7 +45,7 @@ export function CheckList() {
           "POST",
           `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
           JSON.stringify(reqBody),
-          constant.params
+          header
         ),
         {
           [`POST /v1alpha/${constant.namespace}/pipelines x${reqBodies.length} response status is 201`]:
@@ -204,7 +204,7 @@ export function CheckList() {
           "DELETE",
           `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
           JSON.stringify(reqBody),
-          constant.params
+          header
         ),
         {
           [`DELETE /v1alpha/${constant.namespace}/pipelines x${reqBodies.length} response status is 204`]:
@@ -215,7 +215,7 @@ export function CheckList() {
   });
 }
 
-export function CheckLookUp() {
+export function CheckLookUp(header) {
   group("Pipelines API: Look up a pipeline by uid by admin", () => {
     var reqBody = Object.assign(
       {
@@ -229,7 +229,7 @@ export function CheckLookUp() {
       "POST",
       `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
       JSON.stringify(reqBody),
-      constant.params
+      header
     );
 
     check(res, {
@@ -257,7 +257,7 @@ export function CheckLookUp() {
         "DELETE",
         `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
-        constant.params
+        header
       ),
       {
         [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>

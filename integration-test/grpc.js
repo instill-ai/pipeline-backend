@@ -1,4 +1,5 @@
 import grpc from "k6/net/grpc";
+import http from "k6/http";
 
 import { check, group } from "k6";
 
@@ -29,6 +30,23 @@ export function setup() {
     timeout: "10s",
   });
 
+  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1alpha/auth/login`, JSON.stringify({
+    "username": constant.defaultUsername,
+    "password": constant.defaultPassword,
+  }))
+
+  check(loginResp, {
+    [`POST ${constant.mgmtPublicHost}/v1alpha/auth/login response status is 200`]: (
+      r
+    ) => r.status === 200,
+  });
+
+  var metadata = {
+    "metadata": {
+      "Authorization": `Bearer ${loginResp.json().access_token}`
+    },
+    "timeout": "600s",
+  }
 
   group(
     "Connector Backend API: Create a CSV destination connector 1",
@@ -47,7 +65,7 @@ export function setup() {
               },
             },
           },
-          constant.paramsGrpc
+          metadata
         ),
         {
           "vdp.connector.v1alpha.ConnectorPublicService/CreateUserConnectorResource CSV response StatusOK":
@@ -58,7 +76,8 @@ export function setup() {
         "vdp.connector.v1alpha.ConnectorPublicService/ConnectUserConnectorResource",
         {
           name: `${constant.namespace}/connector-resources/${constant.dstCSVConnID1}`,
-        }
+        },
+        metadata
       );
     }
   );
@@ -79,7 +98,7 @@ export function setup() {
               },
             },
           },
-          constant.paramsGrpc
+          metadata
         ),
         {
           "vdp.connector.v1alpha.ConnectorPublicService/CreateUserConnectorResource CSV response StatusOK":
@@ -90,15 +109,17 @@ export function setup() {
         "vdp.connector.v1alpha.ConnectorPublicService/ConnectUserConnectorResource",
         {
           name: `${constant.namespace}/connector-resources/${constant.dstCSVConnID2}`,
-        }
+        },
+        metadata
       );
     }
   );
 
   client.close();
+  return metadata
 }
 
-export default function (data) {
+export default function (metadata) {
   /*
    * Pipelines API - API CALLS
    */
@@ -123,29 +144,30 @@ export default function (data) {
     });
   }
 
-  pipeline.CheckCreate()
-  pipeline.CheckList()
-  pipeline.CheckGet()
-  pipeline.CheckUpdate()
-  pipeline.CheckRename()
-  pipeline.CheckLookUp()
-
-  trigger.CheckTrigger();
-  triggerAsync.CheckTrigger();
-
   if (!constant.apiGatewayMode) {
-    pipelinePrivate.CheckList()
-    pipelinePrivate.CheckLookUp()
-    pipelineWithJwt.CheckCreate()
-    pipelineWithJwt.CheckList()
-    pipelineWithJwt.CheckGet()
-    pipelineWithJwt.CheckUpdate()
-    pipelineWithJwt.CheckRename()
-    pipelineWithJwt.CheckLookUp()
+    pipelinePrivate.CheckList(metadata)
+    pipelinePrivate.CheckLookUp(metadata)
+
+  } else {
+    pipelineWithJwt.CheckCreate(metadata)
+    pipelineWithJwt.CheckList(metadata)
+    pipelineWithJwt.CheckGet(metadata)
+    pipelineWithJwt.CheckUpdate(metadata)
+    pipelineWithJwt.CheckRename(metadata)
+    pipelineWithJwt.CheckLookUp(metadata)
+    pipeline.CheckCreate(metadata)
+    pipeline.CheckList(metadata)
+    pipeline.CheckGet(metadata)
+    pipeline.CheckUpdate(metadata)
+    pipeline.CheckRename(metadata)
+    pipeline.CheckLookUp(metadata)
+
+    trigger.CheckTrigger(metadata);
+    triggerAsync.CheckTrigger(metadata);
   }
 }
 
-export function teardown(data) {
+export function teardown(metadata) {
   group("Pipeline API: Delete all pipelines created by this test", () => {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true,
@@ -157,14 +179,15 @@ export function teardown(data) {
         parent: `${constant.namespace}`,
         pageSize: 1000,
       },
-      {}
+      metadata
     ).message.pipelines) {
       check(
         client.invoke(
           `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${pipeline.id}`,
-          }
+          },
+          metadata
         ),
         {
           [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
@@ -180,7 +203,6 @@ export function teardown(data) {
     plaintext: true,
   });
 
-
   group(
     "Connector Backend API: Delete the csv destination connector 1",
     function () {
@@ -189,7 +211,8 @@ export function teardown(data) {
           `vdp.connector.v1alpha.ConnectorPublicService/DeleteUserConnectorResource`,
           {
             name: `${constant.namespace}/connector-resources/${constant.dstCSVConnID1}`,
-          }
+          },
+          metadata
         ),
         {
           [`vdp.connector.v1alpha.ConnectorPublicService/DeleteUserConnectorResource response StatusOK`]:
@@ -206,7 +229,8 @@ export function teardown(data) {
           `vdp.connector.v1alpha.ConnectorPublicService/DeleteUserConnectorResource`,
           {
             name: `${constant.namespace}/connector-resources/${constant.dstCSVConnID2}`,
-          }
+          },
+          metadata
         ),
         {
           [`vdp.connector.v1alpha.ConnectorPublicService/DeleteUserConnectorResource response StatusOK`]:
