@@ -13,11 +13,9 @@ Please refer to the [community contributing section](https://github.com/instill-
 
 Before delving into the details to come up with your first PR, please familiarise yourself with the project structure of [Instill Core](https://github.com/instill-ai/community#instill-core).
 
-### Prerequisites
+### Prerequisites & Development
 
-Please refer to [here](../README.md#prerequisites) to make sure your environment has been all set.
-
-### Development
+Please refer to [here](../README.md).
 
 ### Sending PRs
 
