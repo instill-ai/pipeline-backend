@@ -455,27 +455,37 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 
 	}
+
+	if view == pipelinePB.View_VIEW_RECIPE || view == pipelinePB.View_VIEW_FULL {
+		for i := range pbRecipe.Components {
+			fmt.Println(pbRecipe.Components[i].DefinitionName)
+			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions") {
+				resp, err := s.connectorPrivateServiceClient.LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
+					Permalink: pbRecipe.Components[i].DefinitionName,
+				})
+				if err != nil {
+					return nil, err
+				}
+				switch resp.ConnectorDefinition.Type {
+				case connectorPB.ConnectorType_CONNECTOR_TYPE_AI:
+					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
+				case connectorPB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN:
+					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN
+				case connectorPB.ConnectorType_CONNECTOR_TYPE_DATA:
+					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA
+				}
+
+			}
+			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions") {
+				pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR
+			}
+		}
+	}
 	if view == pipelinePB.View_VIEW_FULL {
 		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
 			return nil, err
 		}
 		for i := range pbRecipe.Components {
-			// TODO: use enum
-			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions/") {
-				if pbRecipe.Components[i].Resource != nil {
-					switch pbRecipe.Components[i].Resource.Type {
-					case connectorPB.ConnectorType_CONNECTOR_TYPE_AI:
-						pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
-					case connectorPB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN:
-						pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN
-					case connectorPB.ConnectorType_CONNECTOR_TYPE_DATA:
-						pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA
-					}
-				}
-			} else if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions/") {
-				pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR
-			}
-
 			if pbRecipe.Components[i].DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
 				startComp = pbRecipe.Components[i]
 			}
@@ -644,29 +654,50 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 			return nil, err
 		}
 	}
-	if view == pipelinePB.View_VIEW_FULL {
-		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
-			return nil, err
-		}
 
+	if view == pipelinePB.View_VIEW_RECIPE || view == pipelinePB.View_VIEW_FULL {
 		for i := range pbRecipe.Components {
-			// TODO: use enum
-			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions/") {
-				if pbRecipe.Components[i].Resource != nil {
-					switch pbRecipe.Components[i].Resource.Type {
-					case connectorPB.ConnectorType_CONNECTOR_TYPE_AI:
-						pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
-					case connectorPB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN:
-						pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN
-					case connectorPB.ConnectorType_CONNECTOR_TYPE_DATA:
-						pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA
-					}
+			fmt.Println(pbRecipe.Components[i].DefinitionName)
+			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions") {
+				resp, err := s.connectorPrivateServiceClient.LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
+					Permalink: pbRecipe.Components[i].DefinitionName,
+				})
+				if err != nil {
+					return nil, err
 				}
-			} else if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions/") {
+				switch resp.ConnectorDefinition.Type {
+				case connectorPB.ConnectorType_CONNECTOR_TYPE_AI:
+					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
+				case connectorPB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN:
+					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN
+				case connectorPB.ConnectorType_CONNECTOR_TYPE_DATA:
+					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA
+				}
+
+			}
+			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions") {
 				pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR
 			}
 		}
 	}
+
+	var startComp *pipelinePB.Component
+	var endComp *pipelinePB.Component
+
+	if view == pipelinePB.View_VIEW_FULL {
+		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
+			return nil, err
+		}
+		for i := range pbRecipe.Components {
+			if pbRecipe.Components[i].DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
+				startComp = pbRecipe.Components[i]
+			}
+			if pbRecipe.Components[i].DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
+				endComp = pbRecipe.Components[i]
+			}
+		}
+	}
+
 	if pbRecipe != nil {
 		pbRecipe, err = s.recipePermalinkToName(pbRecipe)
 		if err != nil {
@@ -688,6 +719,12 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 		}(),
 		Description: &dbPipelineRelease.Description.String,
 		Recipe:      pbRecipe,
+	}
+	if pbRecipe != nil && view == pipelinePB.View_VIEW_FULL && startComp != nil && endComp != nil {
+		spec, err := s.GenerateOpenApiSpec(startComp, endComp, pbRecipe.Components)
+		if err == nil {
+			pbPipelineRelease.OpenapiSchema = spec
+		}
 	}
 
 	return &pbPipelineRelease, nil
