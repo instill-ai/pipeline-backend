@@ -370,6 +370,23 @@ func (s *service) PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipel
 
 	}
 
+	dbPermission := &datamodel.Permission{}
+	if pbPipeline.GetPermission() != nil {
+
+		if err != nil {
+			return nil, err
+		}
+
+		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetPermission())
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(b, &dbPermission); err != nil {
+			return nil, err
+		}
+
+	}
+
 	return &datamodel.Pipeline{
 		Owner: owner,
 		ID:    pbPipeline.GetId(),
@@ -407,7 +424,7 @@ func (s *service) PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipel
 		},
 
 		Recipe:     recipe,
-		Visibility: datamodel.PipelineVisibility(pbPipeline.Visibility),
+		Permission: dbPermission,
 	}, nil
 }
 
@@ -475,6 +492,21 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 
+	pbPermission := &pipelinePB.Permission{}
+
+	b, err := json.Marshal(dbPipeline.Permission)
+	if err != nil {
+		return nil, err
+	}
+
+	err = protojson.Unmarshal(b, pbPermission)
+	if err != nil {
+		return nil, err
+	}
+	if pbPermission != nil && pbPermission.ShareCode != nil {
+		pbPermission.ShareCode.Code = dbPipeline.ShareCode
+	}
+
 	pbPipeline := pipelinePB.Pipeline{
 		Name:       fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
 		Uid:        dbPipeline.BaseDynamic.UID.String(),
@@ -489,8 +521,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			}
 		}(),
 		Description: &dbPipeline.Description.String,
-		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 		Recipe:      pbRecipe,
+		Permission:  pbPermission,
 	}
 
 	if pbRecipe != nil && view == pipelinePB.View_VIEW_FULL && startComp != nil && endComp != nil {
@@ -584,7 +616,6 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, 
 
 		Recipe:      recipe,
 		PipelineUID: pipelineUid,
-		Visibility:  datamodel.PipelineVisibility(pbPipelineRelease.Visibility),
 	}, nil
 }
 
@@ -656,7 +687,6 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 			}
 		}(),
 		Description: &dbPipelineRelease.Description.String,
-		Visibility:  pipelinePB.Visibility(dbPipeline.Visibility),
 		Recipe:      pbRecipe,
 	}
 

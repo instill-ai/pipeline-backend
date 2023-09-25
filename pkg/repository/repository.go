@@ -19,8 +19,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/paginate"
 	"github.com/instill-ai/x/sterr"
-
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
 // TODO: in the repository, we'd better use uid as our function params
@@ -31,16 +29,14 @@ const DefaultPageSize = 10
 // MaxPageSize is the maximum pagination page size if the assigned value is over this number
 const MaxPageSize = 100
 
-const VisibilityPublic = datamodel.PipelineVisibility(pipelinePB.Visibility_VISIBILITY_PUBLIC)
-
 // Repository interface
 type Repository interface {
 	ListPipelines(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
-	GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
+	GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool, code string) (*datamodel.Pipeline, error)
 
 	CreateUserPipeline(ctx context.Context, ownerPermalink string, userPermalink string, pipeline *datamodel.Pipeline) error
 	ListUserPipelines(ctx context.Context, ownerPermalink string, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
-	GetUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, isBasicView bool) (*datamodel.Pipeline, error)
+	GetUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, isBasicView bool, code string) (*datamodel.Pipeline, error)
 
 	UpdateUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, pipeline *datamodel.Pipeline) error
 	DeleteUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string) error
@@ -215,14 +211,14 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 
 func (r *repository) ListPipelines(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
-		"(owner = ? OR visibility = ?)",
-		[]interface{}{userPermalink, VisibilityPublic},
+		"(owner = ? OR (permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}'))",
+		[]interface{}{userPermalink},
 		pageSize, pageToken, isBasicView, filter, showDeleted)
 }
 func (r *repository) ListUserPipelines(ctx context.Context, ownerPermalink string, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
-		"(owner = ? AND (visibility = ? OR ? = ?))",
-		[]interface{}{ownerPermalink, VisibilityPublic, ownerPermalink, userPermalink},
+		"(owner = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}') OR ? = ?))",
+		[]interface{}{ownerPermalink, ownerPermalink, userPermalink},
 		pageSize, pageToken, isBasicView, filter, showDeleted)
 }
 
@@ -258,18 +254,18 @@ func (r *repository) getUserPipeline(ctx context.Context, where string, whereArg
 	return &pipeline, nil
 }
 
-func (r *repository) GetUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, isBasicView bool) (*datamodel.Pipeline, error) {
+func (r *repository) GetUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, isBasicView bool, code string) (*datamodel.Pipeline, error) {
 	return r.getUserPipeline(ctx,
-		"(id = ? AND (owner = ? AND (visibility = ? OR ? = ?)))",
-		[]interface{}{id, ownerPermalink, VisibilityPublic, ownerPermalink, userPermalink},
+		"(id = ? AND owner = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}') OR (permission @> '{\"share_code\":{\"user\":\"users/*\", \"role\": \"ROLE_VIEWER\", \"enabled\": true}}' AND share_code = ?) OR ? = ?))",
+		[]interface{}{id, ownerPermalink, code, ownerPermalink, userPermalink},
 		isBasicView)
 }
 
-func (r *repository) GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error) {
+func (r *repository) GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool, code string) (*datamodel.Pipeline, error) {
 	// TODO: ACL
 	return r.getUserPipeline(ctx,
-		"(uid = ? AND (visibility = ? OR owner = ?))",
-		[]interface{}{uid, VisibilityPublic, userPermalink},
+		"(uid = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}') OR (permission @> '{\"share_code\":{\"user\":\"users/*\", \"role\": \"ROLE_VIEWER\", \"enabled\": true}}' AND share_code = ?) OR owner = ?))",
+		[]interface{}{uid, code, userPermalink},
 		isBasicView)
 }
 
