@@ -27,7 +27,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/operator"
+
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
@@ -48,8 +48,7 @@ var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
 // PublicHandler handles public API
 type PublicHandler struct {
 	pipelinePB.UnimplementedPipelinePublicServiceServer
-	service  service.Service
-	operator operator.Operator
+	service service.Service
 }
 
 type Streamer interface {
@@ -64,8 +63,7 @@ type TriggerPipelineRequestInterface interface {
 func NewPublicHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePublicServiceServer {
 	datamodel.InitJSONSchema(ctx)
 	return &PublicHandler{
-		service:  s,
-		operator: operator.InitOperator(),
+		service: s,
 	}
 }
 
@@ -134,7 +132,7 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipeli
 		pageSize = repository.MaxPageSize
 	}
 
-	defs := h.operator.ListOperatorDefinitions()
+	defs := h.service.ListOperatorDefinitions(ctx)
 
 	startIdx := 0
 	lastUid := ""
@@ -191,7 +189,7 @@ func (h *PublicHandler) GetOperatorDefinition(ctx context.Context, req *pipeline
 	}
 	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
 
-	dbDef, err := h.operator.GetOperatorDefinitionById(connID)
+	dbDef, err := h.service.GetOperatorDefinitionById(ctx, connID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err

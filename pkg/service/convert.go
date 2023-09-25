@@ -21,21 +21,6 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
-func IsConnector(resourceName string) bool {
-	return strings.HasPrefix(resourceName, "connector-resources/")
-}
-func IsConnectorWithNamespace(resourceName string) bool {
-	return len(strings.Split(resourceName, "/")) > 3 && strings.Split(resourceName, "/")[2] == "connector-resources"
-}
-
-func IsConnectorDefinition(resourceName string) bool {
-	return strings.HasPrefix(resourceName, "connector-definitions/")
-}
-
-func IsOperatorDefinition(resourceName string) bool {
-	return strings.HasPrefix(resourceName, "operator-definitions/")
-}
-
 func (s *service) recipeNameToPermalink(userUid uuid.UUID, recipeRscName *pipelinePB.Recipe) (*pipelinePB.Recipe, error) {
 
 	recipePermalink := &pipelinePB.Recipe{Version: recipeRscName.Version}
@@ -47,7 +32,7 @@ func (s *service) recipeNameToPermalink(userUid uuid.UUID, recipeRscName *pipeli
 
 		permalink := ""
 		var err error
-		if IsConnectorWithNamespace(component.ResourceName) {
+		if utils.IsConnectorWithNamespace(component.ResourceName) {
 			permalink, err = s.connectorNameToPermalink(userUid, component.ResourceName)
 			if err != nil {
 				// Allow not created resource
@@ -57,13 +42,13 @@ func (s *service) recipeNameToPermalink(userUid uuid.UUID, recipeRscName *pipeli
 			}
 		}
 
-		if IsConnectorDefinition(component.DefinitionName) {
+		if utils.IsConnectorDefinition(component.DefinitionName) {
 			permalink, err = s.connectorDefinitionNameToPermalink(component.DefinitionName)
 			if err != nil {
 				return nil, err
 			}
 			componentPermalink.DefinitionName = permalink
-		} else if IsOperatorDefinition(component.DefinitionName) {
+		} else if utils.IsOperatorDefinition(component.DefinitionName) {
 			permalink, err = s.operatorDefinitionNameToPermalink(component.DefinitionName)
 			if err != nil {
 				return nil, err
@@ -86,7 +71,7 @@ func (s *service) dbRecipePermalinkToName(recipePermalink *datamodel.Recipe) (*d
 			Configuration: componentPermalink.Configuration,
 		}
 
-		if IsConnector(componentPermalink.ResourceName) {
+		if utils.IsConnector(componentPermalink.ResourceName) {
 			name, err := s.connectorPermalinkToName(componentPermalink.ResourceName)
 			if err != nil {
 				// Allow resource not created
@@ -95,13 +80,13 @@ func (s *service) dbRecipePermalinkToName(recipePermalink *datamodel.Recipe) (*d
 				component.ResourceName = name
 			}
 		}
-		if IsConnectorDefinition(componentPermalink.DefinitionName) {
+		if utils.IsConnectorDefinition(componentPermalink.DefinitionName) {
 			name, err := s.connectorDefinitionPermalinkToName(componentPermalink.DefinitionName)
 			if err != nil {
 				return nil, err
 			}
 			component.DefinitionName = name
-		} else if IsOperatorDefinition(componentPermalink.DefinitionName) {
+		} else if utils.IsOperatorDefinition(componentPermalink.DefinitionName) {
 			name, err := s.operatorDefinitionPermalinkToName(componentPermalink.DefinitionName)
 			if err != nil {
 				return nil, err
@@ -127,7 +112,7 @@ func (s *service) recipePermalinkToName(recipePermalink *pipelinePB.Recipe) (*pi
 			Type:          componentPermalink.Type,
 		}
 
-		if IsConnector(componentPermalink.ResourceName) {
+		if utils.IsConnector(componentPermalink.ResourceName) {
 			name, err := s.connectorPermalinkToName(componentPermalink.ResourceName)
 			if err != nil {
 				// Allow resource not created
@@ -136,13 +121,13 @@ func (s *service) recipePermalinkToName(recipePermalink *pipelinePB.Recipe) (*pi
 				component.ResourceName = name
 			}
 		}
-		if IsConnectorDefinition(componentPermalink.DefinitionName) {
+		if utils.IsConnectorDefinition(componentPermalink.DefinitionName) {
 			name, err := s.connectorDefinitionPermalinkToName(componentPermalink.DefinitionName)
 			if err != nil {
 				return nil, err
 			}
 			component.DefinitionName = name
-		} else if IsOperatorDefinition(componentPermalink.DefinitionName) {
+		} else if utils.IsOperatorDefinition(componentPermalink.DefinitionName) {
 			name, err := s.operatorDefinitionPermalinkToName(componentPermalink.DefinitionName)
 			if err != nil {
 				return nil, err
@@ -262,7 +247,7 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 
 	for idx := range recipe.Components {
 
-		if IsConnector(recipe.Components[idx].ResourceName) {
+		if utils.IsConnector(recipe.Components[idx].ResourceName) {
 			resp, err := s.connectorPrivateServiceClient.LookUpConnectorResourceAdmin(ctx, &connectorPB.LookUpConnectorResourceAdminRequest{
 				Permalink: recipe.Components[idx].ResourceName,
 				View:      connectorPB.View_VIEW_CONFIGURATION.Enum(),
@@ -286,7 +271,7 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 			}
 
 		}
-		if IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
+		if utils.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
 			resp, err := s.connectorPrivateServiceClient.LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
 				Permalink: recipe.Components[idx].DefinitionName,
 				View:      connectorPB.View_VIEW_FULL.Enum(),
@@ -307,7 +292,7 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 
 			recipe.Components[idx].Definition = &pipelinePB.Component_ConnectorDefinition{ConnectorDefinition: resp.ConnectorDefinition}
 		}
-		if IsOperatorDefinition(recipe.Components[idx].DefinitionName) {
+		if utils.IsOperatorDefinition(recipe.Components[idx].DefinitionName) {
 			uid, err := resource.GetRscPermalinkUID(recipe.Components[idx].DefinitionName)
 			if err != nil {
 				return err
@@ -458,7 +443,6 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	if view == pipelinePB.View_VIEW_RECIPE || view == pipelinePB.View_VIEW_FULL {
 		for i := range pbRecipe.Components {
-			fmt.Println(pbRecipe.Components[i].DefinitionName)
 			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions") {
 				resp, err := s.connectorPrivateServiceClient.LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
 					Permalink: pbRecipe.Components[i].DefinitionName,
@@ -657,7 +641,6 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 
 	if view == pipelinePB.View_VIEW_RECIPE || view == pipelinePB.View_VIEW_FULL {
 		for i := range pbRecipe.Components {
-			fmt.Println(pbRecipe.Components[i].DefinitionName)
 			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions") {
 				resp, err := s.connectorPrivateServiceClient.LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
 					Permalink: pbRecipe.Components[i].DefinitionName,

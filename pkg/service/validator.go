@@ -70,7 +70,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 		}
 
 		var compJsonSchema []byte
-		if IsConnectorDefinition(recipePermalink.Components[idx].DefinitionName) {
+		if utils.IsConnectorDefinition(recipePermalink.Components[idx].DefinitionName) {
 
 			resp, err := s.connectorPrivateServiceClient.LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
 				Permalink: recipePermalink.Components[idx].DefinitionName,
@@ -89,7 +89,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 			}
 
 		}
-		if IsOperatorDefinition(recipePermalink.Components[idx].DefinitionName) {
+		if utils.IsOperatorDefinition(recipePermalink.Components[idx].DefinitionName) {
 
 			uid, err := resource.GetRscPermalinkUID(recipePermalink.Components[idx].DefinitionName)
 			if err != nil {

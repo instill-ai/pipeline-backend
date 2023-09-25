@@ -80,7 +80,7 @@ func (d *dag) AddEdge(from *datamodel.Component, to *datamodel.Component) {
 
 func (d *dag) TopologicalSort() ([]*datamodel.Component, error) {
 	if len(d.comps) == 0 {
-		return nil, fmt.Errorf("no components")
+		return nil, fmt.Errorf("[recipe error] no components")
 	}
 
 	indegreesMap := map[*datamodel.Component]int{}
@@ -113,11 +113,11 @@ func (d *dag) TopologicalSort() ([]*datamodel.Component, error) {
 	}
 
 	if len(ans) < len(d.comps) {
-		return nil, fmt.Errorf("not a valid dag")
+		return nil, fmt.Errorf("[recipe error] not a valid dag")
 	}
 
 	if d.uf.Count() != 1 {
-		return nil, fmt.Errorf("more than a dag")
+		return nil, fmt.Errorf("[recipe error] more than a dag")
 	}
 
 	return ans, nil
@@ -131,7 +131,7 @@ func traverseBinding(bindings interface{}, path string) (interface{}, error) {
 		var ret interface{}
 		err := json.Unmarshal([]byte(path), &ret)
 		if err != nil {
-			return nil, fmt.Errorf("neither reference or primitive type")
+			return nil, fmt.Errorf("[recipe error] reference not correct: '%s'", path)
 		}
 		return ret, nil
 	}
@@ -232,7 +232,12 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 		}
 		parents := FindReferenceParent(string(template))
 		for idx := range parents {
-			graph.AddEdge(componentIdMap[parents[idx]], component)
+			if upstream, ok := componentIdMap[parents[idx]]; ok {
+				graph.AddEdge(upstream, component)
+			} else {
+				return nil, fmt.Errorf("[recipe error] no upstream component '%s'", parents[idx])
+			}
+
 		}
 	}
 

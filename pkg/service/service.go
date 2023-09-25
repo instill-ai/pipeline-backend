@@ -33,11 +33,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/operator"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 
+	component "github.com/instill-ai/component/pkg/base"
+	operator "github.com/instill-ai/operator/pkg"
 	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
@@ -48,6 +49,9 @@ import (
 
 // Service interface
 type Service interface {
+	GetOperatorDefinitionById(ctx context.Context, defId string) (*pipelinePB.OperatorDefinition, error)
+	ListOperatorDefinitions(ctx context.Context) []*pipelinePB.OperatorDefinition
+
 	ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error)
 	GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.Pipeline, error)
 	CreateUserPipeline(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error)
@@ -118,7 +122,7 @@ type service struct {
 	redisClient                   *redis.Client
 	temporalClient                client.Client
 	influxDBWriteClient           api.WriteAPI
-	operator                      operator.Operator
+	operator                      component.IOperator
 }
 
 // NewService initiates a service instance
@@ -131,6 +135,7 @@ func NewService(r repository.Repository,
 	t client.Client,
 	i api.WriteAPI,
 ) Service {
+	logger, _ := logger.GetZapLogger(context.Background())
 	return &service{
 		repository:                    r,
 		mgmtPrivateServiceClient:      u,
@@ -140,7 +145,7 @@ func NewService(r repository.Repository,
 		redisClient:                   rc,
 		temporalClient:                t,
 		influxDBWriteClient:           i,
-		operator:                      operator.InitOperator(),
+		operator:                      operator.Init(logger, operator.OperatorOptions{}),
 	}
 }
 
@@ -296,6 +301,15 @@ func (s *service) ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespa
 	return releaseId, nil
 
 }
+
+func (s *service) GetOperatorDefinitionById(ctx context.Context, defId string) (*pipelinePB.OperatorDefinition, error) {
+	return s.operator.GetOperatorDefinitionById(defId)
+}
+
+func (s *service) ListOperatorDefinitions(ctx context.Context) []*pipelinePB.OperatorDefinition {
+	return s.operator.ListOperatorDefinitions()
+}
+
 func (s *service) ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error) {
 
 	userPermalink := resource.UserUidToUserPermalink(userUid)
@@ -967,6 +981,8 @@ func (s *service) triggerPipeline(
 	pipelineTriggerId string,
 	returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
 
+	logger, _ := logger.GetZapLogger(ctx)
+
 	recipe, err := s.dbRecipePermalinkToName(recipe)
 	if err != nil {
 		return nil, nil, err
@@ -1092,8 +1108,7 @@ func (s *service) triggerPipeline(
 			compInputs = append(compInputs, compInput)
 		}
 
-		if comp.ResourceName != "" {
-
+		if utils.IsConnectorDefinition(comp.DefinitionName) && comp.ResourceName != "" {
 			start := time.Now()
 			resp, err := s.connectorPublicServiceClient.ExecuteUserConnectorResource(
 				utils.InjectOwnerToContextWithOwnerPermalink(
@@ -1129,11 +1144,41 @@ func (s *service) triggerPipeline(
 				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
 			}
 
-		}
-
-		if comp.DefinitionName == "operator-definitions/end-operator" {
+		} else if comp.DefinitionName == "operator-definitions/end-operator" {
 			responseCompId = comp.Id
 			computeTime[comp.Id] = 0
+		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
+
+			op, err := s.operator.GetOperatorDefinitionById(strings.Split(comp.DefinitionName, "/")[1])
+			if err != nil {
+				return nil, nil, err
+			}
+
+			execution, err := s.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), comp.Configuration, logger)
+			if err != nil {
+				return nil, nil, err
+			}
+			start := time.Now()
+			compOutputs, err := execution.Execute(compInputs)
+
+			computeTime[comp.Id] = float32(time.Since(start).Seconds())
+			if err != nil {
+				return nil, nil, err
+			}
+			for idx := range compOutputs {
+
+				outputJson, err := protojson.Marshal(compOutputs[idx])
+				if err != nil {
+					return nil, nil, err
+				}
+				var outputStruct map[string]interface{}
+				err = json.Unmarshal(outputJson, &outputStruct)
+				if err != nil {
+					return nil, nil, err
+				}
+				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
+			}
+
 		}
 
 	}
