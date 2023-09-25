@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -332,9 +333,33 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 							}
 							str = str[len(splits[1])+1:]
 
-						}
-						if comp.DefinitionName == "operator-definitions/start-operator" {
+						} else if comp.DefinitionName == "operator-definitions/start-operator" {
+
 							walk = structpb.NewStructValue(openApiInput)
+
+						} else if utils.IsOperatorDefinition(comp.DefinitionName) {
+
+							task := "default"
+							if parsedTask, ok := comp.GetConfiguration().Fields["input"].GetStructValue().Fields["task"]; ok {
+								task = parsedTask.GetStringValue()
+							}
+
+							walk = comp.GetOperatorDefinition().Spec.OpenapiSpecifications.GetFields()[task]
+
+							splits := strings.Split(str, ".")
+
+							if splits[1] == "output" {
+								for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
+									walk = walk.GetStructValue().Fields[key]
+								}
+							} else if splits[1] == "input" {
+								for _, key := range []string{"paths", "/execute", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
+									walk = walk.GetStructValue().Fields[key]
+								}
+							} else {
+								return nil, fmt.Errorf("generate OpenAPI spec error")
+							}
+							str = str[len(splits[1])+1:]
 						}
 
 						for {

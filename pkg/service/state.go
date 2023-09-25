@@ -11,6 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 )
@@ -25,7 +26,7 @@ func (s *service) checkState(recipePermalink *datamodel.Recipe) error {
 	states := []int{}
 	for _, component := range recipePermalink.Components {
 
-		if IsConnectorWithNamespace(component.ResourceName) {
+		if utils.IsConnectorWithNamespace(component.ResourceName) {
 			connectorUID, err := resource.GetRscPermalinkUID(component.ResourceName)
 			if err != nil {
 				return err

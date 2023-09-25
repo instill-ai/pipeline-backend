@@ -110,6 +110,7 @@ func main() {
 
 	w.RegisterWorkflow(cw.TriggerAsyncPipelineWorkflow)
 	w.RegisterActivity(cw.ConnectorActivity)
+	w.RegisterActivity(cw.OperatorActivity)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())

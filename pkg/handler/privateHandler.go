@@ -12,7 +12,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/operator"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/checkfield"
 
@@ -22,16 +21,14 @@ import (
 // PrivateHandler handles private API
 type PrivateHandler struct {
 	pipelinePB.UnimplementedPipelinePrivateServiceServer
-	service  service.Service
-	operator operator.Operator
+	service service.Service
 }
 
 // NewPrivateHandler initiates a handler instance
 func NewPrivateHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePrivateServiceServer {
 	datamodel.InitJSONSchema(ctx)
 	return &PrivateHandler{
-		service:  s,
-		operator: operator.InitOperator(),
+		service: s,
 	}
 }
 
@@ -122,7 +119,7 @@ func (h *PrivateHandler) LookUpOperatorDefinitionAdmin(ctx context.Context, req 
 		return resp, err
 	}
 
-	dbDef, err := h.operator.GetOperatorDefinitionById(connID)
+	dbDef, err := h.service.GetOperatorDefinitionById(ctx, connID)
 	if err != nil {
 		return resp, err
 	}

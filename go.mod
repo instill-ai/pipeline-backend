@@ -13,7 +13,9 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230925031115-0d2b2294c423
+	github.com/instill-ai/component v0.4.0-alpha.0.20230925171029-e3485c428e72
+	github.com/instill-ai/operator v0.0.0-20230925171700-a6531f0f304b
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20230925170910-6416b8d2be1a
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20230814155646-874e57a1e4b0
 	github.com/instill-ai/x v0.3.0-alpha
 	github.com/knadh/koanf v1.5.0
@@ -32,7 +34,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.16.0
 	go.temporal.io/api v1.16.0
 	go.temporal.io/sdk v1.21.0
-	go.uber.org/zap v1.24.0
+	go.uber.org/zap v1.26.0
 	golang.org/x/mod v0.12.0
 	golang.org/x/net v0.10.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
@@ -44,19 +46,35 @@ require (
 )
 
 require (
+	code.sajari.com/docconv v1.3.7 // indirect
+	github.com/JalfResi/justext v0.0.0-20170829062021-c0282dea7198 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/benbjohnson/clock v1.3.0 // indirect
+	github.com/PuerkitoBio/goquery v1.5.1 // indirect
+	github.com/advancedlogic/GoOse v0.0.0-20191112112754-e742535969c1 // indirect
+	github.com/andybalholm/cascadia v1.2.0 // indirect
+	github.com/araddon/dateparse v0.0.0-20200409225146-d820a6159ab1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
 	github.com/docker/docker v24.0.2+incompatible // indirect
 	github.com/docker/go-units v0.5.0 // indirect
+	github.com/fatih/set v0.2.1 // indirect
+	github.com/gigawattio/window v0.0.0-20180317192513-0f5467e35573 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-resty/resty/v2 v2.3.0 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
+	github.com/jaytaylor/html2text v0.0.0-20230321000545-74c2419ad056 // indirect
+	github.com/levigross/exp-html v0.0.0-20120902181939-8df60c69a8f5 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc2 // indirect
 	github.com/osteele/tuesday v1.0.3 // indirect
+	github.com/otiai10/gosseract/v2 v2.2.4 // indirect
+	github.com/richardlehane/mscfb v1.0.3 // indirect
+	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/stretchr/testify v1.8.3 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.16.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric v0.39.0 // indirect
@@ -100,7 +118,7 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.0
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.9.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect

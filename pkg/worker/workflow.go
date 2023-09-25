@@ -46,6 +46,22 @@ type ExecuteConnectorActivityRequest struct {
 	PipelineMetadata   PipelineMetadataStruct
 }
 
+type ExecuteConnectorActivityResponse struct {
+	OutputBlobRedisKeys []string
+}
+
+// ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
+type ExecuteOperatorActivityRequest struct {
+	InputBlobRedisKeys []string
+	DefinitionName     string
+	Configuration      *structpb.Struct
+	PipelineMetadata   PipelineMetadataStruct
+}
+
+type ExecuteOperatorActivityResponse struct {
+	OutputBlobRedisKeys []string
+}
+
 type PipelineMetadataStruct struct {
 	Id         string
 	Uid        string
@@ -53,10 +69,6 @@ type PipelineMetadataStruct struct {
 	ReleaseUid string
 	Owner      string
 	TriggerId  string
-}
-
-type ExecuteConnectorActivityResponse struct {
-	OutputBlobRedisKeys []string
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -298,7 +310,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			compInputs = append(compInputs, compInput)
 		}
 
-		if comp.ResourceName != "" {
+		// TODO: refactor
+		if utils.IsConnectorDefinition(comp.DefinitionName) && comp.ResourceName != "" {
 			inputBlobRedisKeys, err := w.SetBlob(compInputs)
 			if err != nil {
 				span.SetStatus(1, err.Error())
@@ -360,11 +373,74 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
 			}
 
-		}
-
-		if comp.DefinitionName == "operator-definitions/end-operator" {
+		} else if comp.DefinitionName == "operator-definitions/end-operator" {
 			responseCompId = comp.Id
 			computeTime[comp.Id] = 0
+		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
+
+			inputBlobRedisKeys, err := w.SetBlob(compInputs)
+			if err != nil {
+				span.SetStatus(1, err.Error())
+				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
+				_ = w.writeNewDataPoint(sCtx, dataPoint)
+				return err
+			}
+			for idx := range result.OutputBlobRedisKeys {
+				defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
+			}
+			result := ExecuteConnectorActivityResponse{}
+			ctx = workflow.WithActivityOptions(ctx, ao)
+
+			start := time.Now()
+			if err := workflow.ExecuteActivity(ctx, w.OperatorActivity, &ExecuteOperatorActivityRequest{
+				InputBlobRedisKeys: inputBlobRedisKeys,
+				DefinitionName:     comp.DefinitionName,
+				Configuration:      comp.Configuration,
+				PipelineMetadata: PipelineMetadataStruct{
+					Id:         param.PipelineId,
+					Uid:        param.PipelineUid.String(),
+					ReleaseId:  param.PipelineReleaseId,
+					ReleaseUid: param.PipelineReleaseUid.String(),
+					Owner:      param.OwnerPermalink,
+					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
+				},
+			}).Get(ctx, &result); err != nil {
+				span.SetStatus(1, err.Error())
+				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
+				_ = w.writeNewDataPoint(sCtx, dataPoint)
+				return err
+			}
+			computeTime[comp.Id] = float32(time.Since(start).Seconds())
+			if err != nil {
+				return err
+			}
+			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
+			for idx := range result.OutputBlobRedisKeys {
+				defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
+			}
+			if err != nil {
+				span.SetStatus(1, err.Error())
+				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
+				_ = w.writeNewDataPoint(sCtx, dataPoint)
+				return err
+			}
+			for idx := range outputs {
+
+				outputJson, err := protojson.Marshal(outputs[idx])
+				if err != nil {
+					return err
+				}
+				var outputStruct map[string]interface{}
+				err = json.Unmarshal(outputJson, &outputStruct)
+				if err != nil {
+					return err
+				}
+				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
+			}
+
 		}
 	}
 
@@ -470,4 +546,37 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 
 	logger.Info("ConnectorActivity completed")
 	return &ExecuteConnectorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
+}
+
+func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorActivityRequest) (*ExecuteOperatorActivityResponse, error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("OperatorActivity started")
+
+	compInputs, err := w.GetBlob(param.InputBlobRedisKeys)
+	if err != nil {
+		return nil, err
+	}
+
+	op, err := w.operator.GetOperatorDefinitionById(strings.Split(param.DefinitionName, "/")[1])
+	if err != nil {
+		return nil, err
+	}
+
+	execution, err := w.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), param.Configuration, logger)
+	if err != nil {
+		return nil, err
+	}
+	compOutputs, err := execution.Execute(compInputs)
+	if err != nil {
+		return nil, err
+	}
+
+	outputBlobRedisKeys, err := w.SetBlob(compOutputs)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("OperatorActivity completed")
+	return &ExecuteOperatorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
 }
