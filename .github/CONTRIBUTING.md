@@ -15,7 +15,7 @@ Before delving into the details to come up with your first PR, please familiaris
 
 ### Prerequisites
 
-- [Instill Model](https://github.com/instill-ai/vdp)
+- [Instill VDP](https://github.com/instill-ai/vdp)
 
 ### Pre-commit hooks
 
