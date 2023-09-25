@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -143,6 +144,23 @@ func NewService(r repository.Repository,
 	}
 }
 
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+var seededRand *rand.Rand = rand.New(
+	rand.NewSource(time.Now().UnixNano()))
+
+func randomStrWithCharset(length int, charset string) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
+func GenerateShareCode() string {
+	return randomStrWithCharset(32, charset)
+}
+
 // GetUserPermalink returns the api user
 func (s *service) GetUser(ctx context.Context) (string, uuid.UUID, error) {
 	// Verify if "jwt-sub" is in the header
@@ -161,6 +179,12 @@ func (s *service) GetUser(ctx context.Context) (string, uuid.UUID, error) {
 	}
 
 	return "", uuid.Nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
+}
+
+func (s *service) getCode(ctx context.Context) string {
+	headerInstillCode := resource.GetRequestSingleHeader(ctx, constant.HeaderInstillCodeKey)
+	return headerInstillCode
+
 }
 
 func (s *service) ConvertOwnerPermalinkToName(permalink string) (string, error) {
@@ -245,7 +269,7 @@ func (s *service) ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespa
 		if err != nil {
 			return "", err
 		}
-		dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, pipelineId, true)
+		dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, pipelineId, true, s.getCode(ctx))
 		if err != nil {
 			return "", err
 		}
@@ -259,7 +283,7 @@ func (s *service) ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespa
 		if err != nil {
 			return "", err
 		}
-		dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, pipelineId, true)
+		dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, pipelineId, true, s.getCode(ctx))
 		if err != nil {
 			return "", err
 		}
@@ -288,7 +312,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid u
 
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, view == pipelinePB.View_VIEW_BASIC)
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, view == pipelinePB.View_VIEW_BASIC, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -307,11 +331,15 @@ func (s *service) CreateUserPipeline(ctx context.Context, ns resource.Namespace,
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
+	if dbPipeline.ShareCode == "" {
+		dbPipeline.ShareCode = GenerateShareCode()
+	}
+
 	if err := s.repository.CreateUserPipeline(ctx, ownerPermalink, userPermalink, dbPipeline); err != nil {
 		return nil, err
 	}
 
-	dbCreatedPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, dbPipeline.ID, false)
+	dbCreatedPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, dbPipeline.ID, false, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -349,7 +377,7 @@ func (s *service) GetUserPipelineByID(ctx context.Context, ns resource.Namespace
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, view == pipelinePB.View_VIEW_BASIC)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, view == pipelinePB.View_VIEW_BASIC, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -362,7 +390,7 @@ func (s *service) GetUserPipelineDefaultReleaseUid(ctx context.Context, ns resou
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, true)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, true, s.getCode(ctx))
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -375,7 +403,7 @@ func (s *service) GetUserPipelineLatestReleaseUid(ctx context.Context, ns resour
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, true)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, true, s.getCode(ctx))
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -408,16 +436,25 @@ func (s *service) UpdateUserPipelineByID(ctx context.Context, ns resource.Namesp
 		return nil, err
 	}
 
+	var existingPipeline *datamodel.Pipeline
 	// Validation: Pipeline existence
-	if existingPipeline, _ := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, true); existingPipeline == nil {
+	if existingPipeline, _ = s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, true, s.getCode(ctx)); existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
+	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return nil, status.Errorf(codes.PermissionDenied, "Permission Denied")
+	}
+
+	if existingPipeline.ShareCode == "" {
+		dbPipelineToCreate.ShareCode = GenerateShareCode()
 	}
 
 	if err := s.repository.UpdateUserPipelineByID(ctx, ownerPermalink, userPermalink, id, dbPipelineToCreate); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, toUpdPipeline.Id, false)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, toUpdPipeline.Id, false, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -429,10 +466,15 @@ func (s *service) DeleteUserPipelineByID(ctx context.Context, ns resource.Namesp
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false, s.getCode(ctx))
 	if err != nil {
 		return err
 	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return status.Errorf(codes.PermissionDenied, "Permission Denied")
+	}
+
 	// TODO: pagination
 	pipelineReleases, _, _, err := s.repository.ListUserPipelineReleases(ctx, ownerPermalink, userPermalink, dbPipeline.UID, 1000, "", false, filtering.Filter{}, false)
 	if err != nil {
@@ -453,7 +495,7 @@ func (s *service) ValidateUserPipelineByID(ctx context.Context, ns resource.Name
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -471,7 +513,7 @@ func (s *service) ValidateUserPipelineByID(ctx context.Context, ns resource.Name
 		return nil, recipeErr
 	}
 
-	dbPipeline, err = s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false)
+	dbPipeline, err = s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -486,16 +528,21 @@ func (s *service) UpdateUserPipelineIDByID(ctx context.Context, ns resource.Name
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
 	// Validation: Pipeline existence
-	existingPipeline, _ := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, true)
+	existingPipeline, _ := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, true, s.getCode(ctx))
 	if existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
+	}
+
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return nil, status.Errorf(codes.PermissionDenied, "Permission Denied")
 	}
 
 	if err := s.repository.UpdateUserPipelineIDByID(ctx, ownerPermalink, userPermalink, id, newID); err != nil {
 		return nil, err
 	}
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, newID, false)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, newID, false, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -706,6 +753,10 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 	if err != nil {
 		return nil, err
 	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return nil, status.Errorf(codes.PermissionDenied, "Permission Denied")
+	}
 
 	pipelineRelease.Recipe = proto.Clone(pipeline.Recipe).(*pipelinePB.Recipe)
 
@@ -784,6 +835,10 @@ func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource
 	if existingPipeline, _ := s.GetUserPipelineReleaseByID(ctx, ns, userUid, pipelineUid, id, pipelinePB.View_VIEW_BASIC); existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return nil, status.Errorf(codes.PermissionDenied, "Permission Denied")
+	}
 
 	pbPipelineReleaseToUpdate, err := s.PBToDBPipelineRelease(ctx, userUid, pipelineUid, toUpdPipeline)
 	if err != nil {
@@ -810,6 +865,10 @@ func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resour
 	if existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return nil, status.Errorf(codes.PermissionDenied, "Permission Denied")
+	}
 
 	if err := s.repository.UpdateUserPipelineReleaseIDByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, newID); err != nil {
 		return nil, err
@@ -830,6 +889,10 @@ func (s *service) DeleteUserPipelineReleaseByID(ctx context.Context, ns resource
 	if err != nil {
 		return err
 	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return status.Errorf(codes.PermissionDenied, "Permission Denied")
+	}
 
 	if err := s.DeleteResourceState(dbPipelineRelease.UID); err != nil {
 		return err
@@ -845,6 +908,10 @@ func (s *service) RestoreUserPipelineReleaseByID(ctx context.Context, ns resourc
 	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, false)
 	if err != nil {
 		return err
+	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return status.Errorf(codes.PermissionDenied, "Permission Denied")
 	}
 
 	var existingPipeline *datamodel.Pipeline
@@ -868,6 +935,10 @@ func (s *service) SetDefaultUserPipelineReleaseByID(ctx context.Context, ns reso
 	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, false)
 	if err != nil {
 		return err
+	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return status.Errorf(codes.PermissionDenied, "Permission Denied")
 	}
 
 	var existingPipeline *datamodel.Pipeline
@@ -1178,9 +1249,13 @@ func (s *service) TriggerUserPipelineByID(ctx context.Context, ns resource.Names
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false, s.getCode(ctx))
 	if err != nil {
 		return nil, nil, err
+	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return nil, nil, status.Errorf(codes.PermissionDenied, "Permission Denied")
 	}
 
 	return s.triggerPipeline(ctx, ownerPermalink, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
@@ -1191,9 +1266,13 @@ func (s *service) TriggerAsyncUserPipelineByID(ctx context.Context, ns resource.
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false)
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, false, s.getCode(ctx))
 	if err != nil {
 		return nil, err
+	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return nil, status.Errorf(codes.PermissionDenied, "Permission Denied")
 	}
 
 	return s.triggerAsyncPipeline(ctx, ownerPermalink, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
@@ -1210,9 +1289,13 @@ func (s *service) TriggerUserPipelineReleaseByID(ctx context.Context, ns resourc
 		return nil, nil, err
 	}
 
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false)
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false, s.getCode(ctx))
 	if err != nil {
 		return nil, nil, err
+	}
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return nil, nil, status.Errorf(codes.PermissionDenied, "Permission Denied")
 	}
 
 	return s.triggerPipeline(ctx, ownerPermalink, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
@@ -1226,7 +1309,11 @@ func (s *service) TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns re
 	if err != nil {
 		return nil, err
 	}
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false)
+	// TODO: use ACL
+	if ownerPermalink != userPermalink {
+		return nil, status.Errorf(codes.PermissionDenied, "Permission Denied")
+	}
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}

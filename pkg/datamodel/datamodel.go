@@ -41,7 +41,8 @@ type Pipeline struct {
 	Description       sql.NullString
 	Recipe            *Recipe `gorm:"type:jsonb"`
 	DefaultReleaseUID uuid.UUID
-	Visibility        PipelineVisibility `sql:"type:valid_visibility"`
+	Permission        *Permission `gorm:"type:jsonb"`
+	ShareCode         string
 }
 
 // PipelineRelease is the data model of the pipeline release table
@@ -50,8 +51,7 @@ type PipelineRelease struct {
 	ID          string
 	PipelineUID uuid.UUID
 	Description sql.NullString
-	Recipe      *Recipe            `gorm:"type:jsonb"`
-	Visibility  PipelineVisibility `sql:"type:valid_visibility"`
+	Recipe      *Recipe `gorm:"type:jsonb"`
 }
 
 // Recipe is the data model of the pipeline recipe
@@ -67,8 +67,26 @@ type Component struct {
 	Configuration  *structpb.Struct `json:"configuration"`
 }
 
-// PipelineVisibility is an alias type for Protobuf enum ConnectorType
-type PipelineVisibility pipelinePB.Visibility
+type Permission struct {
+	Users     map[string]*PermissionUser `json:"users,omitempty"`
+	ShareCode *PermissionCode            `json:"share_code,omitempty"`
+}
+
+// Permission
+type PermissionUser struct {
+	Enabled bool   `json:"enabled,omitempty"`
+	Role    string `json:"role,omitempty"`
+}
+
+type PermissionCode struct {
+	User    string `json:"user"`
+	Code    string `json:"code"`
+	Enabled bool   `json:"enabled,omitempty"`
+	Role    string `json:"role,omitempty"`
+}
+
+// PipelineRole is an alias type for Protobuf enum
+type PipelineRole pipelinePB.Role
 
 // Scan function for custom GORM type Recipe
 func (r *Recipe) Scan(value interface{}) error {
@@ -90,13 +108,73 @@ func (r *Recipe) Value() (driver.Value, error) {
 	return string(valueString), err
 }
 
+// Scan function for custom GORM type Recipe
+func (p *Permission) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal value:", value))
+	}
+
+	if err := json.Unmarshal(bytes, &p); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Value function for custom GORM type Recipe
+func (p *Permission) Value() (driver.Value, error) {
+	valueString, err := json.Marshal(p)
+	return string(valueString), err
+}
+
+// Scan function for custom GORM type Recipe
+func (p *PermissionUser) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal value:", value))
+	}
+
+	if err := json.Unmarshal(bytes, &p); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Value function for custom GORM type Recipe
+func (p *PermissionUser) Value() (driver.Value, error) {
+	valueString, err := json.Marshal(p)
+	return string(valueString), err
+}
+
+// Scan function for custom GORM type Recipe
+func (p *PermissionCode) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal value:", value))
+	}
+
+	if err := json.Unmarshal(bytes, &p); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Value function for custom GORM type Recipe
+func (p *PermissionCode) Value() (driver.Value, error) {
+	valueString, err := json.Marshal(p)
+	return string(valueString), err
+}
+
 // Scan function for custom GORM type ReleaseStage
-func (p *PipelineVisibility) Scan(value interface{}) error {
-	*p = PipelineVisibility(pipelinePB.Visibility_value[value.(string)])
+func (p *PipelineRole) Scan(value interface{}) error {
+	*p = PipelineRole(pipelinePB.Role_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type ReleaseStage
-func (p PipelineVisibility) Value() (driver.Value, error) {
-	return pipelinePB.Visibility(p).String(), nil
+func (p PipelineRole) Value() (driver.Value, error) {
+	return pipelinePB.Role(p).String(), nil
 }
