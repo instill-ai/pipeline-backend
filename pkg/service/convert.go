@@ -614,7 +614,7 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, 
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View) (*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View, latestUUID uuid.UUID, defaultUUID uuid.UUID) (*pipelinePB.PipelineRelease, error) {
 
 	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, dbPipelineRelease.PipelineUID, true)
 	if err != nil {
@@ -709,12 +709,18 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 			pbPipelineRelease.OpenapiSchema = spec
 		}
 	}
+	if pbPipelineRelease.Uid == latestUUID.String() {
+		pbPipelineRelease.Alias = "latest"
+	}
+	if pbPipelineRelease.Uid == defaultUUID.String() {
+		pbPipelineRelease.Alias = "default"
+	}
 
 	return &pbPipelineRelease, nil
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View) ([]*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View, latestUUID uuid.UUID, defaultUUID uuid.UUID) ([]*pipelinePB.PipelineRelease, error) {
 	var err error
 	pbPipelineReleases := make([]*pipelinePB.PipelineRelease, len(dbPipelineRelease))
 	for idx := range dbPipelineRelease {
@@ -722,6 +728,8 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease 
 			ctx,
 			dbPipelineRelease[idx],
 			view,
+			latestUUID,
+			defaultUUID,
 		)
 		if err != nil {
 			return nil, err
