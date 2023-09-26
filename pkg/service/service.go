@@ -107,8 +107,8 @@ type Service interface {
 	DBToPBPipelines(ctx context.Context, dbPipeline []*datamodel.Pipeline, view pipelinePB.View) ([]*pipelinePB.Pipeline, error)
 
 	PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error)
-	DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
-	DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View) ([]*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View, latestUUID uuid.UUID, defaultUUID uuid.UUID) (*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View, latestUUID uuid.UUID, defaultUUID uuid.UUID) ([]*pipelinePB.PipelineRelease, error)
 
 	GetUser(ctx context.Context) (string, uuid.UUID, error)
 }
@@ -787,8 +787,10 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 	if err != nil {
 		return nil, err
 	}
+	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
+	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
 
-	return s.DBToPBPipelineRelease(ctx, dbCreatedPipelineRelease, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipelineRelease(ctx, dbCreatedPipelineRelease, pipelinePB.View_VIEW_FULL, latestUUID, defaultUUID)
 
 }
 func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error) {
@@ -801,7 +803,14 @@ func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Name
 		return nil, 0, "", err
 	}
 
-	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, dbPipelineReleases, view)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	if err != nil {
+		return nil, 0, "", err
+	}
+	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
+	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
+
+	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, dbPipelineReleases, view, latestUUID, defaultUUID)
 	return pbPipelineReleases, ps, pt, err
 }
 
@@ -811,7 +820,7 @@ func (s *service) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64,
 	if err != nil {
 		return nil, 0, "", err
 	}
-	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, dbPipelineReleases, view)
+	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, dbPipelineReleases, view, uuid.Nil, uuid.Nil)
 	return pbPipelineReleases, ps, pt, err
 
 }
@@ -825,7 +834,14 @@ func (s *service) GetUserPipelineReleaseByID(ctx context.Context, ns resource.Na
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, view)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	if err != nil {
+		return nil, err
+	}
+	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
+	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
+
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, view, latestUUID, defaultUUID)
 
 }
 func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.PipelineRelease, error) {
@@ -837,7 +853,15 @@ func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.N
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, view)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	if err != nil {
+		return nil, err
+	}
+
+	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
+	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
+
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, view, latestUUID, defaultUUID)
 
 }
 
@@ -867,7 +891,15 @@ func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, pipelinePB.View_VIEW_FULL)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	if err != nil {
+		return nil, err
+	}
+
+	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
+	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
+
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, pipelinePB.View_VIEW_FULL, latestUUID, defaultUUID)
 }
 
 func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error) {
@@ -893,7 +925,14 @@ func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resour
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, pipelinePB.View_VIEW_FULL)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	if err != nil {
+		return nil, err
+	}
+	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
+	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
+
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, pipelinePB.View_VIEW_FULL, latestUUID, defaultUUID)
 }
 
 func (s *service) DeleteUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error {
