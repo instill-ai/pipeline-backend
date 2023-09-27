@@ -14,15 +14,23 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-migrate ./cmd/migration
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-worker ./cmd/worker
 
-FROM debian:latest
+FROM debian:latest AS dependencies
 
 # install dependencies for text extraction (refer https://github.com/sajari/docconv)
 RUN apt update
 RUN apt install poppler-utils wv unrtf tidy -y
+RUN apt clean
+
+FROM gcr.io/distroless/base:nonroot
 
 ARG SERVICE_NAME
 
 WORKDIR /${SERVICE_NAME}
+
+COPY --from=dependencies /usr/bin/* /usr/bin/*
+COPY --from=dependencies /usr/lib/* /usr/lib/*
+COPY --from=dependencies /usr/local/bin/* /usr/local/bin/*
+COPY --from=dependencies /usr/local/lib/* /usr/local/lib/*
 
 COPY --from=build --chown=nonroot:nonroot /src/config ./config
 COPY --from=build --chown=nonroot:nonroot /src/release-please ./release-please
