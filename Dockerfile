@@ -9,9 +9,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 
-# install dependencies for text extraction (refer https://github.com/sajari/docconv)
-RUN apt-get install poppler-utils wv unrtf tidy
-
 ARG TARGETOS TARGETARCH
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME} ./cmd/main
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-migrate ./cmd/migration
@@ -20,6 +17,9 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 FROM gcr.io/distroless/base-debian12:nonroot
 
 USER nonroot:nonroot
+
+# install dependencies for text extraction (refer https://github.com/sajari/docconv)
+RUN apt-get install poppler-utils wv unrtf tidy
 
 ARG SERVICE_NAME
 
