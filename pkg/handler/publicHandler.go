@@ -498,7 +498,7 @@ func (h *PublicHandler) UpdateUserPipeline(ctx context.Context, req *pipelinePB.
 		return nil, status.Error(codes.InvalidArgument, "The update_mask is invalid")
 	}
 
-	getResp, err := h.GetUserPipeline(ctx, &pipelinePB.GetUserPipelineRequest{Name: pbPipelineReq.GetName()})
+	getResp, err := h.GetUserPipeline(ctx, &pipelinePB.GetUserPipelineRequest{Name: pbPipelineReq.GetName(), View: pipelinePB.View_VIEW_RECIPE.Enum()})
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
