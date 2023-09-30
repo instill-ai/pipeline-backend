@@ -373,7 +373,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
 			}
 
-		} else if comp.DefinitionName == "operator-definitions/end-operator" {
+		} else if comp.DefinitionName == "operator-definitions/op-end" {
 			responseCompId = comp.Id
 			computeTime[comp.Id] = 0
 		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
