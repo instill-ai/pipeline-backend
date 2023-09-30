@@ -19,16 +19,16 @@ FROM alpine:3.16
 RUN apk add poppler-utils wv tidyhtml libc6-compat
 RUN apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
 
-# USER nobody:nogroup
+USER nobody:nogroup
 
 ARG SERVICE_NAME
 
 WORKDIR /${SERVICE_NAME}
 
-COPY --from=build /src/config ./config
-COPY --from=build /src/release-please ./release-please
-COPY --from=build  /src/pkg/db/migration ./pkg/db/migration
+COPY --from=build --chown=nobody:nogroup /src/config ./config
+COPY --from=build --chown=nobody:nogroup /src/release-please ./release-please
+COPY --from=build --chown=nobody:nogroup /src/pkg/db/migration ./pkg/db/migration
 
-COPY --from=build /${SERVICE_NAME}-migrate ./
-COPY --from=build  /${SERVICE_NAME}-worker ./
-COPY --from=build  /${SERVICE_NAME} ./
+COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-migrate ./
+COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-worker ./
+COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME} ./
