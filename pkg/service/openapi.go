@@ -232,6 +232,9 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 
 	endComp := proto.Clone(endCompOrigin).(*pipelinePB.Component)
 	inputFields := endComp.Configuration.Fields["input"].GetStructValue().Fields
+	if endComp.Configuration.Fields["metadata"] == nil {
+		return nil, fmt.Errorf("metadata of end-operator can not be empty")
+	}
 	for k, v := range endComp.Configuration.Fields["metadata"].GetStructValue().Fields {
 		var m *structpb.Value
 
