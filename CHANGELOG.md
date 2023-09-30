@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.15.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.15.0-alpha...v0.15.1-alpha) (2023-09-30)
+
+
+### Features
+
+* **permission:** support permission setting, sharing public, sharing by code(link) ([#256](https://github.com/instill-ai/pipeline-backend/issues/256)) ([a9e42e2](https://github.com/instill-ai/pipeline-backend/commit/a9e42e29055f672f668f45957ce8b86360173a89))
+
+
+### Bug Fixes
+
+* **handler:** fix PATCH pipeline mask bug ([#263](https://github.com/instill-ai/pipeline-backend/issues/263)) ([60c41d5](https://github.com/instill-ai/pipeline-backend/commit/60c41d5b3a9d7290551320c8ca7aa20de0102661))
+* **proto,handler:** use `int32` in proto pkg to prevent the `total_size` converted to `string` ([#248](https://github.com/instill-ai/pipeline-backend/issues/248)) ([7ca469b](https://github.com/instill-ai/pipeline-backend/commit/7ca469b67fbf35d0edecd0215e2c0f963fdabdf7))
+* **service:** delete pipeline_release when pipeline is deleted ([#254](https://github.com/instill-ai/pipeline-backend/issues/254)) ([066682d](https://github.com/instill-ai/pipeline-backend/commit/066682dfa046ab238c755dcce41c9749442188d0))
+* **service:** fix pipeline_release recipe conversion bug ([#251](https://github.com/instill-ai/pipeline-backend/issues/251)) ([5558d7c](https://github.com/instill-ai/pipeline-backend/commit/5558d7c877a674cf62906c5e0b5f86c9fab348b8))
+* **service:** fix pipeline_release state bug ([#264](https://github.com/instill-ai/pipeline-backend/issues/264)) ([d642f8d](https://github.com/instill-ai/pipeline-backend/commit/d642f8d7c65219a6f06c01dad357334ad7ee1dac))
+* **service:** fix the component type is unspecified when `resource_name` in not set ([#258](https://github.com/instill-ai/pipeline-backend/issues/258)) ([1410706](https://github.com/instill-ai/pipeline-backend/commit/141070603f54c7b2cda03b8ac10ea29a8381b730))
+
+
+### Miscellaneous Chores
+
+* **release:** release v0.15.1-alpha ([2c1528e](https://github.com/instill-ai/pipeline-backend/commit/2c1528e4fed163819863d809bc001880fc7ca376))
+
 ## [0.15.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.14.1-alpha...v0.15.0-alpha) (2023-09-13)
 
 
