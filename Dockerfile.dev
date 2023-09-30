@@ -35,6 +35,8 @@ ENV GOENV /go/.config/go/env
 RUN mkdir /etc/vdp && chown -R nobody:nogroup /etc/vdp
 RUN mkdir /vdp && chown -R nobody:nogroup /vdp
 
+RUN apt update && apt install poppler-utils wv unrtf tidy -y
+
 USER nobody:nogroup
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]

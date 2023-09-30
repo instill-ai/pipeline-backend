@@ -14,18 +14,21 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-migrate ./cmd/migration
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-worker ./cmd/worker
 
-FROM gcr.io/distroless/base:nonroot
+FROM alpine:3.16
 
-USER nonroot:nonroot
+RUN apk add poppler-utils wv tidyhtml libc6-compat
+RUN apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+
+USER nobody:nogroup
 
 ARG SERVICE_NAME
 
 WORKDIR /${SERVICE_NAME}
 
-COPY --from=build --chown=nonroot:nonroot /src/config ./config
-COPY --from=build --chown=nonroot:nonroot /src/release-please ./release-please
-COPY --from=build --chown=nonroot:nonroot /src/pkg/db/migration ./pkg/db/migration
+COPY --from=build --chown=nobody:nogroup /src/config ./config
+COPY --from=build --chown=nobody:nogroup /src/release-please ./release-please
+COPY --from=build --chown=nobody:nogroup /src/pkg/db/migration ./pkg/db/migration
 
-COPY --from=build --chown=nonroot:nonroot /${SERVICE_NAME}-migrate ./
-COPY --from=build --chown=nonroot:nonroot /${SERVICE_NAME}-worker ./
-COPY --from=build --chown=nonroot:nonroot /${SERVICE_NAME} ./
+COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-migrate ./
+COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-worker ./
+COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME} ./
