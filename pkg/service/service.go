@@ -787,6 +787,11 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 	if err != nil {
 		return nil, err
 	}
+	// Add resource entry to controller
+	if err := s.UpdateResourceState(dbCreatedPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
+		return nil, err
+	}
+
 	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
 	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
 
@@ -895,6 +900,10 @@ func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource
 	if err != nil {
 		return nil, err
 	}
+	// Add resource entry to controller
+	if err := s.UpdateResourceState(dbPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
+		return nil, err
+	}
 
 	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
 	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
@@ -927,6 +936,10 @@ func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resour
 
 	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
 	if err != nil {
+		return nil, err
+	}
+	// Add resource entry to controller
+	if err := s.UpdateResourceState(dbPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
 		return nil, err
 	}
 	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
