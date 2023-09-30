@@ -87,7 +87,7 @@ export const simpleRecipe = {
     components: [
       {
         id: "start",
-        definition_name: "operator-definitions/start-operator",
+        definition_name: "operator-definitions/op-start",
         configuration: {
           metadata: {
             input: {
@@ -99,7 +99,7 @@ export const simpleRecipe = {
       },
       {
         id: "end",
-        definition_name: "operator-definitions/end-operator",
+        definition_name: "operator-definitions/op-end",
         configuration: {
           metadata: {
             answer: {
@@ -141,7 +141,7 @@ export const simpleRecipeWithoutCSV = {
     components: [
       {
         id: "start",
-        definition_name: "operator-definitions/start-operator",
+        definition_name: "operator-definitions/op-start",
         configuration: {
           metadata: {
             input: {
@@ -153,7 +153,7 @@ export const simpleRecipeWithoutCSV = {
       },
       {
         id: "end",
-        definition_name: "operator-definitions/end-operator",
+        definition_name: "operator-definitions/op-end",
         configuration: {
           metadata: {
             answer: {
@@ -175,7 +175,7 @@ export const simpleRecipeDupId = {
     components: [
       {
         id: "start",
-        definition_name: "operator-definitions/start-operator",
+        definition_name: "operator-definitions/op-start",
         configuration: {
           metadata: {
             input: {
@@ -187,7 +187,7 @@ export const simpleRecipeDupId = {
       },
       {
         id: "end",
-        definition_name: "operator-definitions/end-operator",
+        definition_name: "operator-definitions/op-end",
         configuration: {
           metadata: {
             answer: {

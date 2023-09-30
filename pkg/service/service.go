@@ -568,7 +568,7 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 
 	typeMap := map[string]string{}
 	for _, comp := range recipe.Components {
-		if comp.DefinitionName == "operator-definitions/start-operator" {
+		if comp.DefinitionName == "operator-definitions/op-start" {
 			for key, value := range comp.Configuration.Fields["metadata"].GetStructValue().Fields {
 				typeMap[key] = value.GetStructValue().Fields["type"].GetStringValue()
 			}
@@ -1196,7 +1196,7 @@ func (s *service) triggerPipeline(
 				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
 			}
 
-		} else if comp.DefinitionName == "operator-definitions/end-operator" {
+		} else if comp.DefinitionName == "operator-definitions/op-end" {
 			responseCompId = comp.Id
 			computeTime[comp.Id] = 0
 		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
