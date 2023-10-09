@@ -209,7 +209,7 @@ func (s *service) operatorDefinitionNameToPermalink(name string) (string, error)
 	if err != nil {
 		return "", err
 	}
-	def, err := s.operator.GetOperatorDefinitionById(id)
+	def, err := s.operator.GetOperatorDefinitionByID(id)
 	if err != nil {
 		return "", err
 	}
@@ -222,7 +222,7 @@ func (s *service) operatorDefinitionPermalinkToName(permalink string) (string, e
 	if err != nil {
 		return "", err
 	}
-	def, err := s.operator.GetOperatorDefinitionByUid(uid)
+	def, err := s.operator.GetOperatorDefinitionByUID(uid)
 	if err != nil {
 		return "", err
 	}
@@ -297,7 +297,7 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 			if err != nil {
 				return err
 			}
-			def, err := s.operator.GetOperatorDefinitionByUid(uid)
+			def, err := s.operator.GetOperatorDefinitionByUID(uid)
 			if err != nil {
 				return err
 			}
