@@ -145,7 +145,7 @@ func NewService(r repository.Repository,
 		redisClient:                   rc,
 		temporalClient:                t,
 		influxDBWriteClient:           i,
-		operator:                      operator.Init(logger, operator.OperatorOptions{}),
+		operator:                      operator.Init(logger),
 	}
 }
 
@@ -303,7 +303,7 @@ func (s *service) ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespa
 }
 
 func (s *service) GetOperatorDefinitionById(ctx context.Context, defId string) (*pipelinePB.OperatorDefinition, error) {
-	return s.operator.GetOperatorDefinitionById(defId)
+	return s.operator.GetOperatorDefinitionByID(defId)
 }
 
 func (s *service) ListOperatorDefinitions(ctx context.Context) []*pipelinePB.OperatorDefinition {
@@ -1160,6 +1160,11 @@ func (s *service) triggerPipeline(
 			compInputs = append(compInputs, compInput)
 		}
 
+		task := "default"
+		if comp.Configuration.Fields["task"] != nil {
+			task = comp.Configuration.Fields["task"].GetStringValue()
+		}
+
 		if utils.IsConnectorDefinition(comp.DefinitionName) && comp.ResourceName != "" {
 			start := time.Now()
 			resp, err := s.connectorPublicServiceClient.ExecuteUserConnectorResource(
@@ -1175,6 +1180,7 @@ func (s *service) triggerPipeline(
 					ownerPermalink),
 				&connectorPB.ExecuteUserConnectorResourceRequest{
 					Name:   comp.ResourceName,
+					Task:   task,
 					Inputs: compInputs,
 				},
 			)
@@ -1201,17 +1207,17 @@ func (s *service) triggerPipeline(
 			computeTime[comp.Id] = 0
 		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
 
-			op, err := s.operator.GetOperatorDefinitionById(strings.Split(comp.DefinitionName, "/")[1])
+			op, err := s.operator.GetOperatorDefinitionByID(strings.Split(comp.DefinitionName, "/")[1])
 			if err != nil {
 				return nil, nil, err
 			}
 
-			execution, err := s.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), comp.Configuration, logger)
+			execution, err := s.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), task, comp.Configuration, logger)
 			if err != nil {
 				return nil, nil, err
 			}
 			start := time.Now()
-			compOutputs, err := execution.Execute(compInputs)
+			compOutputs, err := execution.ExecuteWithValidation(compInputs)
 
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 			if err != nil {

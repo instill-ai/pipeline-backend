@@ -39,6 +39,6 @@ func NewWorker(c connectorPB.ConnectorPublicServiceClient, r *redis.Client, i ap
 		connectorPublicServiceClient: c,
 		redisClient:                  r,
 		influxDBWriteClient:          i,
-		operator:                     operator.Init(logger, operator.OperatorOptions{}),
+		operator:                     operator.Init(logger),
 	}
 }

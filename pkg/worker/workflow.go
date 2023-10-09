@@ -44,6 +44,7 @@ type ExecuteConnectorActivityRequest struct {
 	Name               string
 	OwnerPermalink     string
 	PipelineMetadata   PipelineMetadataStruct
+	Task               string
 }
 
 type ExecuteConnectorActivityResponse struct {
@@ -56,6 +57,7 @@ type ExecuteOperatorActivityRequest struct {
 	DefinitionName     string
 	Configuration      *structpb.Struct
 	PipelineMetadata   PipelineMetadataStruct
+	Task               string
 }
 
 type ExecuteOperatorActivityResponse struct {
@@ -310,6 +312,11 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			compInputs = append(compInputs, compInput)
 		}
 
+		task := "default"
+		if comp.Configuration.Fields["task"] != nil {
+			task = comp.Configuration.Fields["task"].GetStringValue()
+		}
+
 		// TODO: refactor
 		if utils.IsConnectorDefinition(comp.DefinitionName) && comp.ResourceName != "" {
 			inputBlobRedisKeys, err := w.SetBlob(compInputs)
@@ -339,6 +346,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					Owner:      param.OwnerPermalink,
 					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
 				},
+				Task: task,
 			}).Get(ctx, &result); err != nil {
 				span.SetStatus(1, err.Error())
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -405,6 +413,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					Owner:      param.OwnerPermalink,
 					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
 				},
+				Task: task,
 			}).Get(ctx, &result); err != nil {
 				span.SetStatus(1, err.Error())
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -531,6 +540,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 			param.OwnerPermalink),
 		&connectorPB.ExecuteUserConnectorResourceRequest{
 			Name:   param.Name,
+			Task:   param.Task,
 			Inputs: inputs,
 		},
 	)
@@ -558,16 +568,16 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 		return nil, err
 	}
 
-	op, err := w.operator.GetOperatorDefinitionById(strings.Split(param.DefinitionName, "/")[1])
+	op, err := w.operator.GetOperatorDefinitionByID(strings.Split(param.DefinitionName, "/")[1])
 	if err != nil {
 		return nil, err
 	}
 
-	execution, err := w.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), param.Configuration, logger)
+	execution, err := w.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), param.Task, param.Configuration, logger)
 	if err != nil {
 		return nil, err
 	}
-	compOutputs, err := execution.Execute(compInputs)
+	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
 		return nil, err
 	}

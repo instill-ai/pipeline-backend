@@ -315,7 +315,7 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 						var walk *structpb.Value
 						if strings.HasPrefix(comp.DefinitionName, "connector-definitions") {
 							task := "default"
-							if parsedTask, ok := comp.GetConfiguration().Fields["input"].GetStructValue().Fields["task"]; ok {
+							if parsedTask, ok := comp.GetConfiguration().Fields["task"]; ok {
 								task = parsedTask.GetStringValue()
 							}
 
@@ -343,7 +343,7 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 						} else if utils.IsOperatorDefinition(comp.DefinitionName) {
 
 							task := "default"
-							if parsedTask, ok := comp.GetConfiguration().Fields["input"].GetStructValue().Fields["task"]; ok {
+							if parsedTask, ok := comp.GetConfiguration().Fields["task"]; ok {
 								task = parsedTask.GetStringValue()
 							}
 
