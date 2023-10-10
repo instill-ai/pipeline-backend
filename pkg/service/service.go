@@ -773,6 +773,7 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 	}
 
 	pipelineRelease.Recipe = proto.Clone(pipeline.Recipe).(*pipelinePB.Recipe)
+	pipelineRelease.Metadata = proto.Clone(pipeline.Metadata).(*structpb.Struct)
 
 	dbPipelineReleaseToCreate, err := s.PBToDBPipelineRelease(ctx, userUid, pipelineUid, pipelineRelease)
 	if err != nil {

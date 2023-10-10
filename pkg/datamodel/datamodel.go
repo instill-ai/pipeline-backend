@@ -10,6 +10,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
@@ -43,6 +44,7 @@ type Pipeline struct {
 	DefaultReleaseUID uuid.UUID
 	Permission        *Permission `gorm:"type:jsonb"`
 	ShareCode         string
+	Metadata          datatypes.JSON `gorm:"type:jsonb"`
 }
 
 // PipelineRelease is the data model of the pipeline release table
@@ -51,7 +53,8 @@ type PipelineRelease struct {
 	ID          string
 	PipelineUID uuid.UUID
 	Description sql.NullString
-	Recipe      *Recipe `gorm:"type:jsonb"`
+	Recipe      *Recipe        `gorm:"type:jsonb"`
+	Metadata    datatypes.JSON `gorm:"type:jsonb"`
 }
 
 // Recipe is the data model of the pipeline recipe

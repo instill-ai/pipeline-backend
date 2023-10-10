@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"strconv"
 	"time"
@@ -493,6 +494,12 @@ func (h *PublicHandler) UpdateUserPipeline(ctx context.Context, req *pipelinePB.
 	pbPipelineReq := req.GetPipeline()
 	pbUpdateMask := req.GetUpdateMask()
 
+	// metadata field is type google.protobuf.Struct, which needs to be updated as a whole
+	for idx, path := range pbUpdateMask.Paths {
+		if strings.Contains(path, "metadata") {
+			pbUpdateMask.Paths[idx] = "metadata"
+		}
+	}
 	// Validate the field mask
 	if !pbUpdateMask.IsValid(pbPipelineReq) {
 		return nil, status.Error(codes.InvalidArgument, "The update_mask is invalid")
