@@ -410,11 +410,23 @@ func (s *service) PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipel
 
 		Recipe:     recipe,
 		Permission: dbPermission,
+		Metadata: func() []byte {
+			if pbPipeline.GetMetadata() != nil {
+				b, err := pbPipeline.GetMetadata().MarshalJSON()
+				if err != nil {
+					logger.Error(err.Error())
+				}
+				return b
+			}
+			return []byte{}
+		}(),
 	}, nil
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
 func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view pipelinePB.View) (*pipelinePB.Pipeline, error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	owner, err := s.ConvertOwnerPermalinkToName(dbPipeline.Owner)
 	if err != nil {
@@ -519,6 +531,17 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		Permission:  pbPermission,
 	}
 
+	if view != pipelinePB.View_VIEW_BASIC {
+		if dbPipeline.Metadata != nil {
+			str := structpb.Struct{}
+			err := str.UnmarshalJSON(dbPipeline.Metadata)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+			pbPipeline.Metadata = &str
+		}
+	}
+
 	if pbRecipe != nil && view == pipelinePB.View_VIEW_FULL && startComp != nil && endComp != nil {
 		spec, err := s.GenerateOpenApiSpec(startComp, endComp, pbRecipe.Components)
 		if err == nil {
@@ -610,11 +633,24 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, 
 
 		Recipe:      recipe,
 		PipelineUID: pipelineUid,
+
+		Metadata: func() []byte {
+			if pbPipelineRelease.GetMetadata() != nil {
+				b, err := pbPipelineRelease.GetMetadata().MarshalJSON()
+				if err != nil {
+					logger.Error(err.Error())
+				}
+				return b
+			}
+			return []byte{}
+		}(),
 	}, nil
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
 func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View, latestUUID uuid.UUID, defaultUUID uuid.UUID) (*pipelinePB.PipelineRelease, error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
 
 	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, dbPipelineRelease.PipelineUID, true)
 	if err != nil {
@@ -703,6 +739,18 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 		Description: &dbPipelineRelease.Description.String,
 		Recipe:      pbRecipe,
 	}
+
+	if view != pipelinePB.View_VIEW_BASIC {
+		if dbPipelineRelease.Metadata != nil {
+			str := structpb.Struct{}
+			err := str.UnmarshalJSON(dbPipelineRelease.Metadata)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+			pbPipelineRelease.Metadata = &str
+		}
+	}
+
 	if pbRecipe != nil && view == pipelinePB.View_VIEW_FULL && startComp != nil && endComp != nil {
 		spec, err := s.GenerateOpenApiSpec(startComp, endComp, pbRecipe.Components)
 		if err == nil {
