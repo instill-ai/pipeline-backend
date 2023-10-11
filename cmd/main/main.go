@@ -122,6 +122,9 @@ func main() {
 		_ = logger.Sync()
 	}()
 
+	// verbosity 3 will avoid [transport] from emitting
+	grpc_zap.ReplaceGrpcLoggerV2WithVerbosity(logger, 3)
+
 	db := database.GetConnection()
 	defer database.Close(db)
 
@@ -163,6 +166,10 @@ func main() {
 				if match, _ := regexp.MatchString("vdp.pipeline.v1alpha.PipelinePublicService/.*ness$", fullMethodName); match {
 					return false
 				}
+				// stop logging successful private function calls
+				if match, _ := regexp.MatchString("vdp.pipeline.v1alpha.PipelinePrivateService/.*Admin$", fullMethodName); match {
+					return false
+				}
 			}
 			// by default everything will be logged
 			return true
@@ -181,8 +188,6 @@ func main() {
 			grpc_recovery.UnaryServerInterceptor(middleware.RecoveryInterceptorOpt()),
 		)),
 	}
-
-	grpc_zap.ReplaceGrpcLoggerV2(logger)
 
 	// Create tls based credential.
 	var creds credentials.TransportCredentials
