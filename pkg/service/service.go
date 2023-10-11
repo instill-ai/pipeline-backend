@@ -629,11 +629,16 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 				case "integer_array":
 					vals := []interface{}{}
 					for _, val := range val.GetListValue().AsSlice() {
-						n, err := strconv.ParseInt(val.(string), 10, 64)
-						if err != nil {
-							return err
+						switch val := val.(type) {
+						case string:
+							n, err := strconv.ParseInt(val, 10, 64)
+							if err != nil {
+								return err
+							}
+							vals = append(vals, n)
+						default:
+							vals = append(vals, val)
 						}
-						vals = append(vals, n)
 					}
 					structVal, err := structpb.NewList(vals)
 					if err != nil {
@@ -644,11 +649,16 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 				case "number_array":
 					vals := []interface{}{}
 					for _, val := range val.GetListValue().AsSlice() {
-						n, err := strconv.ParseFloat(val.(string), 64)
-						if err != nil {
-							return err
+						switch val := val.(type) {
+						case string:
+							n, err := strconv.ParseFloat(val, 64)
+							if err != nil {
+								return err
+							}
+							vals = append(vals, n)
+						default:
+							vals = append(vals, val)
 						}
-						vals = append(vals, n)
 					}
 					structVal, err := structpb.NewList(vals)
 					if err != nil {
@@ -658,11 +668,16 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 				case "boolean_array":
 					vals := []interface{}{}
 					for _, val := range val.GetListValue().AsSlice() {
-						n, err := strconv.ParseBool(val.(string))
-						if err != nil {
-							return err
+						switch val := val.(type) {
+						case string:
+							n, err := strconv.ParseBool(val)
+							if err != nil {
+								return err
+							}
+							vals = append(vals, n)
+						default:
+							vals = append(vals, val)
 						}
-						vals = append(vals, n)
 					}
 					structVal, err := structpb.NewList(vals)
 					if err != nil {
@@ -1161,7 +1176,7 @@ func (s *service) triggerPipeline(
 			compInputs = append(compInputs, compInput)
 		}
 
-		task := "default"
+		task := ""
 		if comp.Configuration.Fields["task"] != nil {
 			task = comp.Configuration.Fields["task"].GetStringValue()
 		}

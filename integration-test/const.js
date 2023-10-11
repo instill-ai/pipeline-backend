@@ -117,7 +117,9 @@ export const simpleRecipe = {
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
           input: {
-            text: "{ start.input }"
+            data: {
+              text: "{ start.input }"
+            }
           }
         }
       },
@@ -127,7 +129,9 @@ export const simpleRecipe = {
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
           input: {
-            text: "{ start.input }"
+            data: {
+              text: "{ start.input }"
+            }
           }
         }
       },
@@ -205,7 +209,9 @@ export const simpleRecipeDupId = {
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
           input: {
-            text: "{ start.input }"
+            data: {
+              text: "{ start.input }"
+            }
           }
         }
       },
@@ -215,7 +221,9 @@ export const simpleRecipeDupId = {
         definition_name: "connector-definitions/airbyte-destination-csv",
         configuration: {
           input: {
-            text: "{ start.input }"
+            data: {
+              text: "{ start.input }"
+            }
           }
         }
       },

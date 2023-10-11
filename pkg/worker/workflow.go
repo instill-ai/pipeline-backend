@@ -312,7 +312,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			compInputs = append(compInputs, compInput)
 		}
 
-		task := "default"
+		task := ""
 		if comp.Configuration.Fields["task"] != nil {
 			task = comp.Configuration.Fields["task"].GetStringValue()
 		}
