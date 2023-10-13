@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.16.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.15.1-alpha...v0.16.0-alpha) (2023-10-13)
+
+
+### Features
+
+* **repository:** add metadata field for pipeline ([#272](https://github.com/instill-ai/pipeline-backend/issues/272)) ([550e606](https://github.com/instill-ai/pipeline-backend/commit/550e606f20526141528adfe44a66abbef44655bf))
+
+
+### Bug Fixes
+
+* **component:** fix task bug ([#275](https://github.com/instill-ai/pipeline-backend/issues/275)) ([48427d8](https://github.com/instill-ai/pipeline-backend/commit/48427d882c45a15a5ed7e5f6e2da188775e82dfb))
+
+
+### Miscellaneous Chores
+
+* **release:** release v0.16.0-alpha ([ee1fc5e](https://github.com/instill-ai/pipeline-backend/commit/ee1fc5e8b6984988c2c5ef596270ed8af769eca1))
+
 ## [0.15.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.15.0-alpha...v0.15.1-alpha) (2023-09-30)
 
 
