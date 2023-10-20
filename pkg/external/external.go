@@ -18,8 +18,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
-	mgmtPB "github.com/instill-ai/protogen-go/base/mgmt/v1alpha"
-	usagePB "github.com/instill-ai/protogen-go/base/usage/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1alpha"
+	usagePB "github.com/instill-ai/protogen-go/core/usage/v1alpha"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 )

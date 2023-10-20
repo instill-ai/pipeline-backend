@@ -80,6 +80,12 @@ $ make integration-test
 $ make stop
 ```
 
+### Remove the dev container
+
+```bash
+$ make rm
+```
+
 ### Sending PRs
 
 Please take these general guidelines into consideration when you are sending a PR:

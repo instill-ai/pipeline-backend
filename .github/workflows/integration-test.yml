@@ -21,12 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        component:
-          [
-            pipeline-backend,
-            connector-backend,
-            controller-vdp,
-          ]
+        component: [pipeline-backend, connector-backend, controller-vdp]
     uses: instill-ai/vdp/.github/workflows/integration-test-backend.yml@main
     with:
       component: ${{ matrix.component }}
@@ -79,17 +74,17 @@ jobs:
             GOLANG_VERSION=${{ env.GOLANG_VERSION }}
           tags: instill/pipeline-backend:latest
 
-      - name: Checkout repo (base)
+      - name: Checkout repo (core)
         uses: actions/checkout@v3
         with:
-          repository: instill-ai/base
+          repository: instill-ai/core
 
-      - name: Load .env file (base)
+      - name: Load .env file (core)
         uses: cardinalby/export-env-action@v2
         with:
           envFile: .env
 
-      - name: Launch Instill Base (latest)
+      - name: Launch Instill core (latest)
         run: |
           COMPOSE_PROFILES=all \
           EDITION=local-ce:test \

@@ -3,8 +3,8 @@ package service_test
 //go:generate mockgen -destination mock_repository_test.go -package $GOPACKAGE github.com/instill-ai/pipeline-backend/pkg/repository Repository
 //go:generate mockgen -destination mock_connector_public_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/connector/v1alpha ConnectorPublicServiceClient
 //go:generate mockgen -destination mock_connector_private_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/connector/v1alpha ConnectorPrivateServiceClient
-//go:generate mockgen -destination mock_user_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/base/mgmt/v1alpha MgmtPrivateServiceClient
-//go:generate mockgen -destination mock_usage_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/base/usage/v1alpha UsageServiceClient
+//go:generate mockgen -destination mock_user_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/core/mgmt/v1alpha MgmtPrivateServiceClient
+//go:generate mockgen -destination mock_usage_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/core/usage/v1alpha UsageServiceClient
 //go:generate mockgen -destination mock_controller_grpc_test.go -package $GOPACKAGE github.com/instill-ai/protogen-go/vdp/controller/v1alpha ControllerPrivateServiceClient
 
 // func TestCreatePipeline(t *testing.T) {
