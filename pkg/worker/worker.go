@@ -7,9 +7,10 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"go.temporal.io/sdk/workflow"
 
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
+
 	component "github.com/instill-ai/component/pkg/base"
 	operator "github.com/instill-ai/operator/pkg"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 )
 
