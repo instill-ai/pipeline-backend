@@ -438,7 +438,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	var startComp *pipelinePB.Component
 	var endComp *pipelinePB.Component
 
-	if dbPipeline.Recipe != nil {
+	if dbPipeline.Recipe != nil && view != pipelinePB.View_VIEW_BASIC {
 		pbRecipe = &pipelinePB.Recipe{}
 
 		b, err := json.Marshal(dbPipeline.Recipe)
@@ -661,7 +661,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 		return nil, err
 	}
 	var pbRecipe *pipelinePB.Recipe
-	if dbPipelineRelease.Recipe != nil {
+	if dbPipelineRelease.Recipe != nil && view != pipelinePB.View_VIEW_BASIC {
 		pbRecipe = &pipelinePB.Recipe{}
 
 		b, err := json.Marshal(dbPipelineRelease.Recipe)
