@@ -14,34 +14,33 @@ import (
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 )
 
-// Pipeline is the data model of the pipeline table
-type Pipeline06 struct {
+type pipeline06 struct {
 	datamodel.BaseDynamic
 	ID          string
 	Owner       string
 	Description sql.NullString
-	Recipe      *Recipe06 `gorm:"type:jsonb"`
+	Recipe      *recipe06 `gorm:"type:jsonb"`
 }
 
-func (Pipeline06) TableName() string {
+func (pipeline06) TableName() string {
 	return "pipeline"
 }
 
 // Recipe is the data model of the pipeline recipe
-type Recipe06 struct {
+type recipe06 struct {
 	Version    string         `json:"version,omitempty"`
-	Components []*Component06 `json:"components,omitempty"`
+	Components []*component06 `json:"components,omitempty"`
 }
 
-type Component06 struct {
-	Id             string           `json:"id"`
+type component06 struct {
+	ID             string           `json:"id"`
 	DefinitionName string           `json:"definition_name"`
 	ResourceName   string           `json:"resource_name"`
 	Configuration  *structpb.Struct `json:"configuration"`
 }
 
 // Scan function for custom GORM type Recipe
-func (r *Recipe06) Scan(value interface{}) error {
+func (r *recipe06) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal Recipe value:", value))
@@ -55,7 +54,7 @@ func (r *Recipe06) Scan(value interface{}) error {
 }
 
 // Value function for custom GORM type Recipe
-func (r *Recipe06) Value() (driver.Value, error) {
+func (r *recipe06) Value() (driver.Value, error) {
 	valueString, err := json.Marshal(r)
 	return string(valueString), err
 }
@@ -64,8 +63,8 @@ func migratePipelineRecipeUp000006() error {
 	db := database.GetConnection()
 	defer database.Close(db)
 
-	var items []Pipeline06
-	result := db.Model(&Pipeline06{})
+	var items []pipeline06
+	result := db.Model(&pipeline06{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -78,7 +77,7 @@ func migratePipelineRecipeUp000006() error {
 	defer rows.Close()
 
 	for rows.Next() {
-		var item Pipeline06
+		var item pipeline06
 		if err = db.ScanRows(rows, &item); err != nil {
 			return err
 		}

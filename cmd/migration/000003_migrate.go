@@ -18,27 +18,25 @@ import (
 	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 )
 
-// Pipeline is the data model of the pipeline table
-type Pipeline03 struct {
+type pipeline03 struct {
 	datamodel.BaseDynamic
 	ID          string
 	Owner       string
 	Description sql.NullString
-	Recipe      *Recipe03 `gorm:"type:jsonb"`
+	Recipe      *recipe03 `gorm:"type:jsonb"`
 }
 
-func (Pipeline03) TableName() string {
+func (pipeline03) TableName() string {
 	return "pipeline"
 }
 
-// Recipe is the data model of the pipeline recipe
-type Recipe03 struct {
+type recipe03 struct {
 	Version    string       `json:"version,omitempty"`
-	Components []*Component `json:"components,omitempty"`
+	Components []*component `json:"components,omitempty"`
 }
 
-type Component struct {
-	Id             string            `json:"id,omitempty"`
+type component struct {
+	ID             string            `json:"id,omitempty"`
 	ResourceName   string            `json:"resource_name,omitempty"`
 	ResourceDetail *structpb.Struct  `json:"resource_detail,omitempty"`
 	Metadata       *structpb.Struct  `json:"metadata,omitempty"`
@@ -47,7 +45,7 @@ type Component struct {
 }
 
 // Scan function for custom GORM type Recipe
-func (r *Recipe03) Scan(value interface{}) error {
+func (r *recipe03) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal Recipe value:", value))
@@ -61,7 +59,7 @@ func (r *Recipe03) Scan(value interface{}) error {
 }
 
 // Value function for custom GORM type Recipe
-func (r *Recipe03) Value() (driver.Value, error) {
+func (r *recipe03) Value() (driver.Value, error) {
 	valueString, err := json.Marshal(r)
 	return string(valueString), err
 }
@@ -70,8 +68,8 @@ func migratePipelineRecipeUp000003() error {
 	db := database.GetConnection()
 	defer database.Close(db)
 
-	var items []Pipeline03
-	result := db.Model(&Pipeline03{})
+	var items []pipeline03
+	result := db.Model(&pipeline03{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -84,7 +82,7 @@ func migratePipelineRecipeUp000003() error {
 	defer rows.Close()
 
 	for rows.Next() {
-		var item Pipeline03
+		var item pipeline03
 		if err = db.ScanRows(rows, &item); err != nil {
 			return err
 		}
@@ -98,9 +96,9 @@ func migratePipelineRecipeUp000003() error {
 	}
 	for idx := range items {
 		fmt.Printf("migrate %s\n", items[idx].UID)
-		var source *Component
-		var model *Component
-		var destination *Component
+		var source *component
+		var model *component
+		var destination *component
 		for compIdx := range items[idx].Recipe.Components {
 			connector, err := connectorPrivateServiceClient.LookUpConnectorResourceAdmin(context.Background(), &connectorPB.LookUpConnectorResourceAdminRequest{
 				Permalink: items[idx].Recipe.Components[compIdx].ResourceName,
@@ -134,18 +132,18 @@ func migratePipelineRecipeUp000003() error {
 		}
 		if model.Dependencies == nil {
 			model.Dependencies = map[string]string{
-				"texts":           fmt.Sprintf("[*%s.texts]", source.Id),
-				"images":          fmt.Sprintf("[*%s.images]", source.Id),
-				"structured_data": fmt.Sprintf("{**%s.structured_data}", source.Id),
-				"metadata":        fmt.Sprintf("{**%s.metadata}", source.Id),
+				"texts":           fmt.Sprintf("[*%s.texts]", source.ID),
+				"images":          fmt.Sprintf("[*%s.images]", source.ID),
+				"structured_data": fmt.Sprintf("{**%s.structured_data}", source.ID),
+				"metadata":        fmt.Sprintf("{**%s.metadata}", source.ID),
 			}
 		}
 		if destination.Dependencies == nil {
 			destination.Dependencies = map[string]string{
-				"texts":           fmt.Sprintf("[*%s.texts]", model.Id),
-				"images":          fmt.Sprintf("[*%s.images]", model.Id),
-				"structured_data": fmt.Sprintf("{**%s.structured_data}", model.Id),
-				"metadata":        fmt.Sprintf("{**%s.metadata}", model.Id),
+				"texts":           fmt.Sprintf("[*%s.texts]", model.ID),
+				"images":          fmt.Sprintf("[*%s.images]", model.ID),
+				"structured_data": fmt.Sprintf("{**%s.structured_data}", model.ID),
+				"metadata":        fmt.Sprintf("{**%s.metadata}", model.ID),
 			}
 		}
 		updateErr := db.Transaction(func(tx *gorm.DB) error {
