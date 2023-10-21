@@ -50,7 +50,7 @@ func main() {
 		_ = logger.Sync()
 	}()
 
-	db := database.GetConnection()
+	db := database.GetSharedConnection()
 	defer database.Close(db)
 
 	var err error
