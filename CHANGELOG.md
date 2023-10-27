@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.16.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.16.0-alpha...v0.16.1-alpha) (2023-10-27)
+
+
+### Bug Fixes
+
+* **migration:** fix db connection bug ([#279](https://github.com/instill-ai/pipeline-backend/issues/279)) ([028a093](https://github.com/instill-ai/pipeline-backend/commit/028a093d7e8eeeb12755f144c9a9b0b7bbf7d01c))
+* **service:** fix basic view should return null recipe ([#281](https://github.com/instill-ai/pipeline-backend/issues/281)) ([5d0367c](https://github.com/instill-ai/pipeline-backend/commit/5d0367c441b77b176c0fe0c509b47d98ba123bc1))
+
+
+### Miscellaneous Chores
+
+* **release:** release v0.16.1-alpha ([8552d59](https://github.com/instill-ai/pipeline-backend/commit/8552d59a7c10ee711b2153dadd504acd5fea7ec8))
+
 ## [0.16.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.15.1-alpha...v0.16.0-alpha) (2023-10-13)
 
 
