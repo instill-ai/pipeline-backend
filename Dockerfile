@@ -20,7 +20,7 @@ RUN apk add poppler-utils wv tidyhtml libc6-compat
 
 ARG TARGETARCH
 ARG BUILDARCH
-RUN if [[ "$BUILDARCH" = "amd64" && "$TARGETARCH" = "arm64" ]] ; \
+RUN if [[ "$TARGETARCH" = "arm64" ]] ; \
     then \
     apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/; \
     else \
