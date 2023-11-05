@@ -147,6 +147,10 @@ func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{
 		inputs := []*structpb.Struct{}
 		outputs := []*structpb.Struct{}
 
+		// The traces data of op-start is different and we should skip it
+		if comps[compIdx].DefinitionName == "operator-definitions/op-start" {
+			continue
+		}
 		for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
 			if _, ok := memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["input"]; ok {
 				data, err := json.Marshal(memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["input"])
