@@ -17,7 +17,15 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 FROM alpine:3.16
 
 RUN apk add poppler-utils wv tidyhtml libc6-compat
-RUN apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+
+ARG TARGETARCH
+ARG BUILDARCH
+RUN if [[ "$BUILDARCH" = "amd64" && "$TARGETARCH" = "arm64" ]] ; \
+    then \
+    apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/; \
+    else \
+    apk add unrtf; \
+    fi
 
 USER nobody:nogroup
 
