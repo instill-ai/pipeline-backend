@@ -24,7 +24,7 @@ RUN if [[ "$TARGETARCH" = "arm64" ]] ; \
     then \
     apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/ ; \
     else \
-    apk add unrtf; \
+    apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/ ; \
     fi
 
 USER nobody:nogroup
