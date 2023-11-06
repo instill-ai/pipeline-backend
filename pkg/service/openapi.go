@@ -202,7 +202,6 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 					"type":          arrType,
 					"instillFormat": strings.Split(v.GetStructValue().Fields["type"].GetStringValue(), "_")[0],
 				},
-				"instillFormat": v.GetStructValue().Fields["type"].GetStringValue(),
 			})
 			if err != nil {
 				success = false
@@ -281,10 +280,9 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 					}
 					if isArrayReference {
 						m, err = structpb.NewValue(map[string]interface{}{
-							"title":         v.GetStructValue().Fields["title"].GetStringValue(),
-							"description":   v.GetStructValue().Fields["description"].GetStringValue(),
-							"type":          "array",
-							"instillFormat": instillFormat + "_array",
+							"title":       v.GetStructValue().Fields["title"].GetStringValue(),
+							"description": v.GetStructValue().Fields["description"].GetStringValue(),
+							"type":        "array",
 							"items": map[string]interface{}{
 								"type":          attrType,
 								"instillFormat": instillFormat,
@@ -418,7 +416,6 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 								"description": v.GetStructValue().Fields["description"].GetStringValue(),
 								"type":        "array",
 							})
-							m.GetStructValue().Fields["instillFormat"] = structpb.NewStringValue(walk.GetStructValue().Fields["instillFormat"].GetStringValue() + "_array")
 							m.GetStructValue().Fields["items"] = structpb.NewStructValue(walk.GetStructValue())
 
 						} else {

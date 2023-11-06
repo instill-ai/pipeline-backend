@@ -775,6 +775,7 @@ github.com/fatih/set v0.2.1/go.mod h1:+RKtMCH+favT2+3YecHGxcc0b4KyVWA1QWWJUs4E0C
 github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga6PJ7M=
 github.com/felixge/httpsnoop v1.0.1/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
+github.com/fogleman/gg v1.3.0 h1:/7zJX8F6AaYQc57WQCyN9cAIz+4bCJGO9B+dyW29am8=
 github.com/fogleman/gg v1.3.0/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
 github.com/form3tech-oss/jwt-go v3.2.2+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
 github.com/form3tech-oss/jwt-go v3.2.3+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
@@ -908,6 +909,7 @@ github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 h1:au07oEsX2xN0kt
 github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9/go.mod h1:8vg3r2VgvsThLBIFL93Qb5yWzgyZWhEmBwUJWevAkK0=
 github.com/golang-sql/sqlexp v0.0.0-20170517235910-f1bb20e5a188 h1:+eHOFJl1BaXrQxKX+T06f78590z4qA2ZzBTqahsKSE4=
 github.com/golang-sql/sqlexp v0.0.0-20170517235910-f1bb20e5a188/go.mod h1:vXjM/+wXQnTPR4KqTKDgJukSZ6amVRtWMPEjE6sQoK8=
+github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 h1:DACJavvAHhabrF08vX0COfcOBJRhZ8lUbR+ZWIs0Y5g=
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/glog v1.0.0/go.mod h1:EWib/APOK0SL3dFbYqvxE3UYd8E6s1ouQ7iEp/0LWV4=
@@ -1110,10 +1112,10 @@ github.com/influxdata/influxdb-client-go/v2 v2.12.3 h1:28nRlNMRIV4QbtIUvxhWqaxn0
 github.com/influxdata/influxdb-client-go/v2 v2.12.3/go.mod h1:IrrLUbCjjfkmRuaCiGQg4m2GbkaeJDcuWoxiWdQEbA0=
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 h1:W9WBk7wlPfJLvMCdtV4zPulc4uCPrlywQOmbFOhgQNU=
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839/go.mod h1:xaLFMmpvUxqXtVkUJfg9QmT88cDaCJ3ZKgdZ78oO8Qo=
-github.com/instill-ai/component v0.6.1-alpha.0.20231031143033-bafafe960082 h1:WpboD93FlrAr1QmSrmaGZ22NMdB6yDdoYZow+HvioTU=
-github.com/instill-ai/component v0.6.1-alpha.0.20231031143033-bafafe960082/go.mod h1:crtctDOgLbxGzFXNhO8Sx3VNrjdup0F/LQlSmLixFzo=
-github.com/instill-ai/operator v0.3.0-alpha.0.20231031145039-bd8e925b9cc1 h1:tqdlhRR6w7e6khtdoFe7uNEXU7akFO8OqTcvCbjQArQ=
-github.com/instill-ai/operator v0.3.0-alpha.0.20231031145039-bd8e925b9cc1/go.mod h1:GPH3ft0SuvkCQvuh7kKK5UknbQ6f9UThq3YXH/5fwIM=
+github.com/instill-ai/component v0.6.1-alpha.0.20231106092458-e4a7b537a08e h1:fEKsQ9ZCGoWLkLm6BBArFUj4zcMU6ngTFj3eNywSLrI=
+github.com/instill-ai/component v0.6.1-alpha.0.20231106092458-e4a7b537a08e/go.mod h1:aQfeKtOn74cRQJOxvua1mQGpecasDaD+l46C60ILgdA=
+github.com/instill-ai/operator v0.3.0-alpha.0.20231106092646-9d0caa7af524 h1:eOA47/Glmy6LO+ULgswfmoQ1IZ6Y4wV7GagDTL4v9lA=
+github.com/instill-ai/operator v0.3.0-alpha.0.20231106092646-9d0caa7af524/go.mod h1:s2cWvyAzgrxj5m2S5A3p152wjtfrxhEeDoy7FI9fmoA=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231019202606-71607ddcd93f h1:hweU93u6qsg8GH/YSogOfa+wOZEnkilGsijcy1xKX7E=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231019202606-71607ddcd93f/go.mod h1:q/YL5TZXD9nvmJ7Rih4gY3/B2HT2+GiFdxeZp9D+yE4=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061 h1:lOp2fORCj76/gfPuLqB3TEN2cvFRJHUQOxwFSl4qxEw=
@@ -1844,6 +1846,8 @@ golang.org/x/image v0.0.0-20200430140353-33d19683fad8/go.mod h1:FeLwcggjj3mMvU+o
 golang.org/x/image v0.0.0-20200618115811-c13761719519/go.mod h1:FeLwcggjj3mMvU+oOTbSwawSJRM1uh48EjtB4UJZlP0=
 golang.org/x/image v0.0.0-20201208152932-35266b937fa6/go.mod h1:FeLwcggjj3mMvU+oOTbSwawSJRM1uh48EjtB4UJZlP0=
 golang.org/x/image v0.0.0-20210216034530-4410531fe030/go.mod h1:FeLwcggjj3mMvU+oOTbSwawSJRM1uh48EjtB4UJZlP0=
+golang.org/x/image v0.13.0 h1:3cge/F/QTkNLauhf2QoE9zp+7sr+ZcL4HnoZmdwg9sg=
+golang.org/x/image v0.13.0/go.mod h1:6mmbMOeV28HuMTgA6OSRkdXKYw/t5W9Uwn2Yv1r3Yxk=
 golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
 golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961/go.mod h1:wehouNa3lNwaWXcvxsM5YxQ5yQlVC4a0KAMCusXpPoU=
 golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
