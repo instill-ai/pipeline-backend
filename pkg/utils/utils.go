@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
@@ -94,51 +93,6 @@ func NewDataPoint(data UsageMetricData) *write.Point {
 		},
 		time.Now(),
 	)
-}
-
-// we only support the simple case for now
-//
-//	"dependencies": {
-//		"texts": "[*c1.texts, *c2.texts]",
-//		"images": "[*c1.images, *c2.images]",
-//		"structured_data": "{**c1.structured_data, **c2.structured_data}",
-//		"metadata": "{**c1.metadata, **c2.metadata}"
-//	}
-//
-//	"dependencies": {
-//		"texts": "[*c2.texts]",
-//		"images": "[*c1.images]",
-//		"structured_data": "{**c1.structured_data}",
-//		"metadata": "{**c1.metadata, **c2.metadata}"
-//	}
-func ParseDependency(dep map[string]string) ([]string, map[string][]string, error) {
-	parentMap := map[string]bool{}
-	depMap := map[string][]string{}
-	for _, key := range []string{"images", "audios", "texts", "structured_data", "metadata"} {
-		depMap[key] = []string{}
-
-		if str, ok := dep[key]; ok {
-			str = strings.ReplaceAll(str, " ", "")
-			str = str[1 : len(str)-1]
-			if len(str) > 0 {
-				items := strings.Split(str, ",")
-				for idx := range items {
-
-					name := strings.Split(items[idx], ".")[0]
-					depKey := strings.Split(items[idx], ".")[1]
-					name = strings.ReplaceAll(name, "*", "")
-					parentMap[name] = true
-					depMap[key] = append(depMap[key], fmt.Sprintf("%s.%s", name, depKey))
-				}
-			}
-
-		}
-	}
-	parent := []string{}
-	for k := range parentMap {
-		parent = append(parent, k)
-	}
-	return parent, depMap, nil
 }
 
 func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{}, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
