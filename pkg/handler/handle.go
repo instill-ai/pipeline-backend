@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
@@ -71,10 +72,19 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 				if _, ok := inputsMap[inputIdx][key]; !ok {
 					inputsMap[inputIdx][key] = map[int]interface{}{}
 				}
-
-				inputsMap[inputIdx][key].(map[int]interface{})[keyIdx] = v[0]
+				var b interface{}
+				unmarshalErr := json.Unmarshal([]byte(v[0]), &b)
+				if unmarshalErr != nil {
+					return nil, unmarshalErr
+				}
+				inputsMap[inputIdx][key].(map[int]interface{})[keyIdx] = b
 			} else {
-				inputsMap[inputIdx][key] = v[0]
+				var b interface{}
+				unmarshalErr := json.Unmarshal([]byte(v[0]), &b)
+				if unmarshalErr != nil {
+					return nil, unmarshalErr
+				}
+				inputsMap[inputIdx][key] = b
 			}
 
 		}
@@ -144,12 +154,6 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 		for key, value := range inputValue {
 
 			switch value := value.(type) {
-			case string:
-				structVal, err := structpb.NewValue(value)
-				if err != nil {
-					return nil, err
-				}
-				inputs[inputIdx].GetFields()[key] = structVal
 			case map[int]interface{}:
 				maxItemIdx := 0
 				for itemIdx := range value {
@@ -169,6 +173,12 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 
 				inputs[inputIdx].GetFields()[key] = structpb.NewListValue(structVal)
 
+			default:
+				structVal, err := structpb.NewValue(value)
+				if err != nil {
+					return nil, err
+				}
+				inputs[inputIdx].GetFields()[key] = structVal
 			}
 
 		}

@@ -165,51 +165,7 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 
 	startComp := proto.Clone(startCompOrigin).(*pipelinePB.Component)
 	for k, v := range startComp.Configuration.Fields["metadata"].GetStructValue().Fields {
-		var m *structpb.Value
-		attrType := ""
-		arrType := ""
-		switch t := v.GetStructValue().Fields["type"].GetStringValue(); t {
-		case "integer", "number", "boolean":
-			attrType = t
-		case "text", "image", "audio", "video":
-			attrType = "string"
-		default:
-			attrType = "array"
-			switch t {
-			case "integer_array", "number_array", "boolean_array":
-				arrType = strings.Split(t, "_")[0]
-			case "text_array", "image_array", "audio_array", "video_array":
-				arrType = "string"
-			}
-
-		}
-		if attrType != "array" {
-			m, err = structpb.NewValue(map[string]interface{}{
-				"title":         v.GetStructValue().Fields["title"].GetStringValue(),
-				"description":   v.GetStructValue().Fields["description"].GetStringValue(),
-				"type":          attrType,
-				"instillFormat": v.GetStructValue().Fields["type"].GetStringValue(),
-			})
-			if err != nil {
-				success = false
-			}
-		} else {
-			m, err = structpb.NewValue(map[string]interface{}{
-				"title":       v.GetStructValue().Fields["title"].GetStringValue(),
-				"description": v.GetStructValue().Fields["description"].GetStringValue(),
-				"type":        attrType,
-				"items": map[string]interface{}{
-					"type":          arrType,
-					"instillFormat": strings.Split(v.GetStructValue().Fields["type"].GetStringValue(), "_")[0],
-				},
-			})
-			if err != nil {
-				success = false
-			}
-		}
-
-		openApiInput.Fields["properties"].GetStructValue().Fields[k] = m
-
+		openApiInput.Fields["properties"].GetStructValue().Fields[k] = v
 	}
 
 	templateWalk = template.GetFields()["paths"]
