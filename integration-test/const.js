@@ -92,7 +92,8 @@ export const simpleRecipe = {
           metadata: {
             input: {
               title: "Input",
-              type: "text"
+              type: "string",
+              instillAcceptFormats: ["string"]
             }
           }
         }
@@ -150,7 +151,8 @@ export const simpleRecipeWithoutCSV = {
           metadata: {
             input: {
               title: "Input",
-              type: "text"
+              type: "string",
+              instillAcceptFormats: ["string"]
             }
           }
         }
@@ -184,7 +186,8 @@ export const simpleRecipeDupId = {
           metadata: {
             input: {
               title: "Input",
-              type: "text"
+              type: "string",
+              instillAcceptFormats: ["string"]
             }
           }
         }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"strconv"
 	"strings"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.einride.tech/aip/filtering"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
@@ -566,143 +566,38 @@ func (s *service) UpdateUserPipelineIDByID(ctx context.Context, ns resource.Name
 
 func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
 
-	typeMap := map[string]string{}
+	var metadata []byte
+	var err error
 	for _, comp := range recipe.Components {
 		if comp.DefinitionName == "operator-definitions/op-start" {
-			for key, value := range comp.Configuration.Fields["metadata"].GetStructValue().Fields {
-				typeMap[key] = value.GetStructValue().Fields["type"].GetStringValue()
+			schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+			schStruct.Fields["type"] = structpb.NewStringValue("object")
+			schStruct.Fields["properties"] = structpb.NewStructValue(comp.Configuration.Fields["metadata"].GetStructValue())
+			metadata, err = protojson.Marshal(schStruct)
+			if err != nil {
+				return err
 			}
 		}
 	}
-	for idx := range pipelineInputs {
-		for key, val := range pipelineInputs[idx].Fields {
-			switch typeMap[key] {
-			case "integer":
-				switch val.AsInterface().(type) {
-				case string:
-					v, err := strconv.ParseInt(val.GetStringValue(), 10, 64)
-					if err != nil {
-						return err
-					}
-					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(float64(v))
-				default:
-					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(val.GetNumberValue())
-				}
 
-			case "number":
-				switch val.AsInterface().(type) {
-				case string:
-					v, err := strconv.ParseFloat(val.GetStringValue(), 64)
-					if err != nil {
-						return err
-					}
-					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(v)
-				default:
-					pipelineInputs[idx].Fields[key] = structpb.NewNumberValue(val.GetNumberValue())
-				}
+	sch, err := jsonschema.CompileString("", string(metadata))
+	sch.Location = ""
+	if err != nil {
+		return err
+	}
 
-			case "boolean":
-				switch val.AsInterface().(type) {
-				case string:
-					v, err := strconv.ParseBool(val.GetStringValue())
-					if err != nil {
-						return err
-					}
-					pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(v)
-				default:
-					pipelineInputs[idx].Fields[key] = structpb.NewBoolValue(val.GetBoolValue())
-				}
+	for _, pipelineInput := range pipelineInputs {
+		b, err := protojson.Marshal(pipelineInput)
+		if err != nil {
+			return err
+		}
+		var v interface{}
+		if err := json.Unmarshal(b, &v); err != nil {
+			return err
+		}
 
-			case "text":
-			case "image", "audio", "video":
-				dataSplits := strings.Split(pipelineInputs[idx].Fields[key].GetStringValue(), ",")
-				if len(dataSplits) > 1 {
-					pipelineInputs[idx].Fields[key] = structpb.NewStringValue(dataSplits[1])
-				}
-
-			case "integer_array", "number_array", "boolean_array", "text_array", "image_array", "audio_array", "video_array":
-				if val.GetListValue() == nil {
-					return fmt.Errorf("%s should be a array", key)
-				}
-
-				switch typeMap[key] {
-				case "integer_array":
-					vals := []interface{}{}
-					for _, val := range val.GetListValue().AsSlice() {
-						switch val := val.(type) {
-						case string:
-							n, err := strconv.ParseInt(val, 10, 64)
-							if err != nil {
-								return err
-							}
-							vals = append(vals, n)
-						default:
-							vals = append(vals, val)
-						}
-					}
-					structVal, err := structpb.NewList(vals)
-					if err != nil {
-						return err
-					}
-					pipelineInputs[idx].Fields[key] = structpb.NewListValue(structVal)
-
-				case "number_array":
-					vals := []interface{}{}
-					for _, val := range val.GetListValue().AsSlice() {
-						switch val := val.(type) {
-						case string:
-							n, err := strconv.ParseFloat(val, 64)
-							if err != nil {
-								return err
-							}
-							vals = append(vals, n)
-						default:
-							vals = append(vals, val)
-						}
-					}
-					structVal, err := structpb.NewList(vals)
-					if err != nil {
-						return err
-					}
-					pipelineInputs[idx].Fields[key] = structpb.NewListValue(structVal)
-				case "boolean_array":
-					vals := []interface{}{}
-					for _, val := range val.GetListValue().AsSlice() {
-						switch val := val.(type) {
-						case string:
-							n, err := strconv.ParseBool(val)
-							if err != nil {
-								return err
-							}
-							vals = append(vals, n)
-						default:
-							vals = append(vals, val)
-						}
-					}
-					structVal, err := structpb.NewList(vals)
-					if err != nil {
-						return err
-					}
-					pipelineInputs[idx].Fields[key] = structpb.NewListValue(structVal)
-
-				case "image_array", "audio_array", "video_array":
-					vals := []interface{}{}
-					for _, val := range val.GetListValue().AsSlice() {
-						dataSplits := strings.Split(val.(string), ",")
-						if len(dataSplits) > 1 {
-							vals = append(vals, dataSplits[1])
-						} else {
-							vals = append(vals, dataSplits[0])
-						}
-					}
-					structVal, err := structpb.NewList(vals)
-					if err != nil {
-						return err
-					}
-					pipelineInputs[idx].Fields[key] = structpb.NewListValue(structVal)
-				}
-			}
-
+		if err := sch.Validate(v); err != nil {
+			return err
 		}
 	}
 
