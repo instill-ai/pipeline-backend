@@ -11,7 +11,6 @@ import (
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"github.com/go-redis/redis/v9"
 	"github.com/gofrs/uuid"
-	"github.com/gogo/status"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.einride.tech/aip/filtering"
@@ -20,6 +19,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -573,6 +573,10 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 			schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 			schStruct.Fields["type"] = structpb.NewStringValue("object")
 			schStruct.Fields["properties"] = structpb.NewStructValue(comp.Configuration.Fields["metadata"].GetStructValue())
+			err = component.CompileInstillAcceptFormats(schStruct)
+			if err != nil {
+				return err
+			}
 			metadata, err = protojson.Marshal(schStruct)
 			if err != nil {
 				return err
@@ -580,25 +584,47 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 		}
 	}
 
-	sch, err := jsonschema.CompileString("", string(metadata))
-	sch.Location = ""
+	c := jsonschema.NewCompiler()
+	c.RegisterExtension("instillAcceptFormats", component.InstillAcceptFormatsMeta, component.InstillAcceptFormatsCompiler{})
+	if err := c.AddResource("schema.json", strings.NewReader(string(metadata))); err != nil {
+		return err
+	}
+
+	sch, err := c.Compile("schema.json")
+
 	if err != nil {
 		return err
 	}
 
-	for _, pipelineInput := range pipelineInputs {
+	errors := []string{}
+
+	for idx, pipelineInput := range pipelineInputs {
 		b, err := protojson.Marshal(pipelineInput)
 		if err != nil {
-			return err
+			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
+			continue
 		}
 		var v interface{}
 		if err := json.Unmarshal(b, &v); err != nil {
-			return err
+			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
+			continue
 		}
 
-		if err := sch.Validate(v); err != nil {
-			return err
+		if err = sch.Validate(v); err != nil {
+			e := err.(*jsonschema.ValidationError)
+
+			for _, valErr := range e.DetailedOutput().Errors {
+				inputPath := fmt.Sprintf("%s/%d", "inputs", idx)
+				component.FormatErrors(inputPath, valErr, &errors)
+				for _, subValErr := range valErr.Errors {
+					component.FormatErrors(inputPath, subValErr, &errors)
+				}
+			}
 		}
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("[Pipeline Trigger Data Error] %s", strings.Join(errors, "; "))
 	}
 
 	return nil
@@ -1097,7 +1123,7 @@ func (s *service) triggerPipeline(
 			)
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, fmt.Errorf("[Component %s Execution Data Error] %s", comp.Id, status.Convert(err).Message())
 			}
 			for idx := range resp.Outputs {
 

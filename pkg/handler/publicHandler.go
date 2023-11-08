@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/gogo/status"
 	"github.com/iancoleman/strcase"
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
@@ -20,6 +19,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
@@ -841,7 +841,7 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pipelinePB
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 		_ = h.service.WriteNewDataPoint(ctx, dataPoint)
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("error: %+v", err.Error()))
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
@@ -882,7 +882,7 @@ func (h *PublicHandler) TriggerAsyncUserPipeline(ctx context.Context, req *pipel
 	operation, err := h.service.TriggerAsyncUserPipelineByID(ctx, ns, userUid, id, req.Inputs, logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("error: %+v", err.Error()))
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
