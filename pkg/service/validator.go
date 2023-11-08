@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/gogo/status"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"

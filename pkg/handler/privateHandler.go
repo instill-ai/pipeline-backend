@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gogo/status"
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"

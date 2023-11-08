@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/gogo/status"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/activity"
@@ -45,6 +46,7 @@ type ExecuteConnectorActivityRequest struct {
 	OwnerPermalink     string
 	PipelineMetadata   PipelineMetadataStruct
 	Task               string
+	CompID             string
 }
 
 type ExecuteConnectorActivityResponse struct {
@@ -346,7 +348,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					Owner:      param.OwnerPermalink,
 					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
 				},
-				Task: task,
+				Task:   task,
+				CompID: comp.Id,
 			}).Get(ctx, &result); err != nil {
 				span.SetStatus(1, err.Error())
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -545,8 +548,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		},
 	)
 	if err != nil {
-		logger.Error(fmt.Sprintf("[connector-backend] Error %s at connector %s: %v", "ExecuteConnector", param.Name, err.Error()))
-		return nil, err
+		return nil, fmt.Errorf("[Component %s Execution Data Error] %s", param.CompID, status.Convert(err).Message())
 	}
 
 	outputBlobRedisKeys, err := w.SetBlob(resp.Outputs)

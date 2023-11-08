@@ -13,8 +13,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.6.1-alpha.0.20231106153938-6032b6ce48ed
-	github.com/instill-ai/operator v0.3.0-alpha.0.20231106160006-74980c141828
+	github.com/instill-ai/component v0.6.1-alpha.0.20231108090255-582dc5f90db9
+	github.com/instill-ai/operator v0.3.0-alpha.0.20231108090504-e3aaed942577
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231019202606-71607ddcd93f
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061
 	github.com/instill-ai/x v0.3.0-alpha
@@ -48,6 +48,7 @@ require (
 
 require (
 	github.com/fogleman/gg v1.3.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/lestrrat-go/jspointer v0.0.0-20181205001929-82fadba7561c // indirect
 	github.com/lestrrat-go/jsref v0.0.0-20211028120858-c0bcbb5abf20 // indirect
