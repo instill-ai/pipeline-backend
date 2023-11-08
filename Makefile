@@ -18,6 +18,12 @@ dev:							## Run dev container
 		-e DOCKER_HOST=${SOCAT_HOST}:${SOCAT_PORT} \
 		-v $(PWD):/${SERVICE_NAME} \
 		-p ${SERVICE_PORT}:${SERVICE_PORT} \
+		-v $(PWD)/../go.work:/go.work \
+		-v $(PWD)/../go.work.sum:/go.work.sum \
+		-v $(PWD)/../component:/component \
+		-v $(PWD)/../operator:/operator \
+		-v $(PWD)/../connector:/connector \
+		-v $(PWD)/../connector-backend:/connector-backend \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
 		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
