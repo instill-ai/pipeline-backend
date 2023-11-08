@@ -3,7 +3,6 @@ package handler
 // *RequiredFields are Protobuf message fields with REQUIRED field_behavior annotation
 var createRequiredFields = []string{}
 var lookUpRequiredFields = []string{"permalink"}
-var validateRequiredFields = []string{"name"}
 var renameRequiredFields = []string{"name", "new_pipeline_id"}
 var triggerRequiredFields = []string{"name", "inputs"}
 

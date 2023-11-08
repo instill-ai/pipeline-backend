@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
@@ -41,23 +39,21 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 
 	for idx := range recipePermalink.Components {
 		if match := r.MatchString(recipePermalink.Components[idx].Id); !match {
-			return status.Errorf(codes.InvalidArgument,
-				fmt.Sprintf("[pipeline-backend] component `id` needs to be following with a regexp (%s)", exp))
+			return fmt.Errorf("component `id` needs to be started with a letter (uppercase or lowercase) or an underscore, followed by zero or more alphanumeric characters or underscores")
 		}
 		if _, ok := componentIdMap[recipePermalink.Components[idx].Id]; ok {
-			return status.Errorf(codes.InvalidArgument,
-				"[pipeline-backend] component `id` duplicated")
+			return fmt.Errorf("component `id` can not be duplicated")
 		}
 		componentIdMap[recipePermalink.Components[idx].Id] = recipePermalink.Components[idx]
 	}
 
 	startOpDef, err := s.operator.GetOperatorDefinitionByID("op-start")
 	if err != nil {
-		return err
+		return fmt.Errorf("operator-definitions/op-start not found")
 	}
 	endOpDef, err := s.operator.GetOperatorDefinitionByID("op-end")
 	if err != nil {
-		return err
+		return fmt.Errorf("operator-definitions/op-end not found")
 	}
 
 	for idx := range recipePermalink.Components {
@@ -77,7 +73,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 				View:      connectorPB.View_VIEW_FULL.Enum(),
 			})
 			if err != nil {
-				return nil
+				return fmt.Errorf("connector definition for component %s is not found", recipePermalink.Components[idx].Id)
 			}
 
 			def := resp.ConnectorDefinition
@@ -85,7 +81,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 			compJsonSchema, err = protojson.Marshal(def.Spec.ComponentSpecification)
 
 			if err != nil {
-				return err
+				return fmt.Errorf("connector definition for component %s is wrong", recipePermalink.Components[idx].Id)
 			}
 
 		}
@@ -93,23 +89,23 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 
 			uid, err := resource.GetRscPermalinkUID(recipePermalink.Components[idx].DefinitionName)
 			if err != nil {
-				return err
+				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
 			}
 
 			def, err := s.operator.GetOperatorDefinitionByUID(uid)
 			if err != nil {
-				return err
+				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
 			}
 
 			compJsonSchema, err = protojson.Marshal(def.Spec.ComponentSpecification)
 			if err != nil {
-				return err
+				return fmt.Errorf("operator definition for component %s is wrong", recipePermalink.Components[idx].Id)
 			}
 		}
 
 		configJson, err := protojson.Marshal(recipePermalink.Components[idx].Configuration)
 		if err != nil {
-			return err
+			return fmt.Errorf("configuration for component %s is wrong", recipePermalink.Components[idx].Id)
 		}
 
 		sch, err := jsonschema.CompileString("schema.json", string(compJsonSchema))
@@ -123,16 +119,16 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 		}
 
 		if err = sch.Validate(v); err != nil {
-			return err
+			return fmt.Errorf("configuration for component %s is wrong", recipePermalink.Components[idx].Id)
 		}
 
 	}
 
 	if startCnt != 1 {
-		return status.Errorf(codes.InvalidArgument, "[pipeline-backend] need to have exactly one start operator")
+		return fmt.Errorf("need to have exactly one start operator")
 	}
 	if endCnt != 1 {
-		return status.Errorf(codes.InvalidArgument, "[pipeline-backend] need to have exactly one end operator")
+		return fmt.Errorf("need to have exactly one end operator")
 	}
 
 	dag, err := utils.GenerateDAG(recipePermalink.Components)
@@ -142,7 +138,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 
 	_, err = dag.TopologicalSort()
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, "[pipeline-backend] The recipe is not legal: %v", err.Error())
+		return err
 	}
 
 	return nil
