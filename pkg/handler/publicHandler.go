@@ -677,12 +677,6 @@ func (h *PublicHandler) ValidateUserPipeline(ctx context.Context, req *pipelineP
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(req, validateRequiredFields); err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
 	ns, id, err := h.service.GetRscNamespaceAndNameID(req.Name)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -697,7 +691,7 @@ func (h *PublicHandler) ValidateUserPipeline(ctx context.Context, req *pipelineP
 	pbPipeline, err := h.service.ValidateUserPipelineByID(ctx, ns, userUid, id)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("recipe error: %+v", err.Error()))
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	}
 
 	resp := pipelinePB.ValidateUserPipelineResponse{
@@ -790,6 +784,10 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, pipelinePB.View_VIEW_FULL)
 	if err != nil {
 		return ns, uuid.Nil, id, nil, false, err
+	}
+	_, err = h.service.ValidateUserPipelineByID(ctx, ns, userUid, id)
+	if err != nil {
+		return ns, uuid.Nil, id, nil, false, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	}
 	returnTraces := false
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
@@ -959,7 +957,7 @@ func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipe
 	}
 	_, err = h.service.ValidateUserPipelineByID(ctx, ns, userUid, pipeline.Id)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	}
 
 	pbPipelineRelease, err := h.service.CreateUserPipelineRelease(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), req.GetRelease())
