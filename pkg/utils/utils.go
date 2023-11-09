@@ -105,6 +105,11 @@ func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{
 		if comps[compIdx].DefinitionName == "operator-definitions/op-start" {
 			continue
 		}
+		// we don't need to return traces data of op-end since the response already contain it
+		if comps[compIdx].DefinitionName == "operator-definitions/op-end" {
+			continue
+		}
+
 		for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
 			if _, ok := memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["input"]; ok {
 				data, err := json.Marshal(memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["input"])
