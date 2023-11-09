@@ -350,15 +350,25 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 
 							if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
 								target := strings.Split(curr, "[")[0]
-								if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+								if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+									if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+										return nil, fmt.Errorf("openapi error")
+									}
+								} else {
 									return nil, fmt.Errorf("openapi error")
 								}
 								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
 							} else {
 								target := curr
-								if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+
+								if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+									if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+										return nil, fmt.Errorf("openapi error")
+									}
+								} else {
 									return nil, fmt.Errorf("openapi error")
 								}
+
 								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
 
 							}
