@@ -577,6 +577,10 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 			if err != nil {
 				return err
 			}
+			err = component.CompileInstillFormat(schStruct)
+			if err != nil {
+				return err
+			}
 			metadata, err = protojson.Marshal(schStruct)
 			if err != nil {
 				return err
@@ -586,6 +590,8 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 
 	c := jsonschema.NewCompiler()
 	c.RegisterExtension("instillAcceptFormats", component.InstillAcceptFormatsMeta, component.InstillAcceptFormatsCompiler{})
+	c.RegisterExtension("instillFormat", component.InstillFormatMeta, component.InstillFormatCompiler{})
+
 	if err := c.AddResource("schema.json", strings.NewReader(string(metadata))); err != nil {
 		return err
 	}
