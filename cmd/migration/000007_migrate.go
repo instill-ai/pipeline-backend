@@ -90,61 +90,60 @@ func migratePipelineRecipeUp000007() error {
 		fmt.Printf("migrate %s\n", items[idx].UID)
 
 		updateErr := db.Transaction(func(tx *gorm.DB) error {
-			for idx := range items {
 
-				for compIdx := range items[idx].Recipe.Components {
-					if items[idx].Recipe.Components[compIdx].ID == "start" {
-						if metadata, ok := items[idx].Recipe.Components[compIdx].Configuration.Fields["metadata"]; ok {
-							for k := range metadata.GetStructValue().Fields {
-								vType := metadata.GetStructValue().Fields[k].GetStructValue().Fields["type"].GetStringValue()
-								instillFormat := ""
-								switch vType {
-								case "number", "integer", "boolean", "string":
-									instillFormat = vType
-								case "text":
-									instillFormat = "string"
-									vType = "string"
-								case "audio", "image", "video":
-									instillFormat = fmt.Sprintf("%s/*", vType)
-									vType = "string"
+			for compIdx := range items[idx].Recipe.Components {
+				if items[idx].Recipe.Components[compIdx].ID == "start" {
+					if metadata, ok := items[idx].Recipe.Components[compIdx].Configuration.Fields["metadata"]; ok {
+						for k := range metadata.GetStructValue().Fields {
+							vType := metadata.GetStructValue().Fields[k].GetStructValue().Fields["type"].GetStringValue()
+							instillFormat := ""
+							switch vType {
+							case "number", "integer", "boolean", "string":
+								instillFormat = vType
+							case "text":
+								instillFormat = "string"
+								vType = "string"
+							case "audio", "image", "video":
+								instillFormat = fmt.Sprintf("%s/*", vType)
+								vType = "string"
 
-								case "text_array":
-									instillFormat = "array:string"
-									items := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-									items.Fields["type"] = structpb.NewStringValue("string")
-									metadata.GetStructValue().Fields[k].GetStructValue().Fields["items"] = structpb.NewStructValue(items)
-									vType = "array"
+							case "text_array":
+								instillFormat = "array:string"
+								items := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+								items.Fields["type"] = structpb.NewStringValue("string")
+								metadata.GetStructValue().Fields[k].GetStructValue().Fields["items"] = structpb.NewStructValue(items)
+								vType = "array"
 
-								case "audio_array", "image_array", "video_array":
-									instillFormat = fmt.Sprintf("array:%s/*", strings.Split(vType, "_")[0])
-									items := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-									items.Fields["type"] = structpb.NewStringValue("string")
-									metadata.GetStructValue().Fields[k].GetStructValue().Fields["items"] = structpb.NewStructValue(items)
-									vType = "array"
+							case "audio_array", "image_array", "video_array":
+								instillFormat = fmt.Sprintf("array:%s/*", strings.Split(vType, "_")[0])
+								items := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+								items.Fields["type"] = structpb.NewStringValue("string")
+								metadata.GetStructValue().Fields[k].GetStructValue().Fields["items"] = structpb.NewStructValue(items)
+								vType = "array"
 
-								case "number_array", "integer_array", "boolean_array":
-									instillFormat = fmt.Sprintf("array:%s", strings.Split(vType, "_")[0])
-									items := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-									items.Fields["type"] = structpb.NewStringValue(strings.Split(vType, "_")[0])
-									metadata.GetStructValue().Fields[k].GetStructValue().Fields["items"] = structpb.NewStructValue(items)
-									vType = "array"
-
-								}
-								metadata.GetStructValue().Fields[k].GetStructValue().Fields["type"] = structpb.NewStringValue(vType)
-								metadata.GetStructValue().Fields[k].GetStructValue().Fields["instillFormat"], _ = structpb.NewValue(instillFormat)
+							case "number_array", "integer_array", "boolean_array":
+								instillFormat = fmt.Sprintf("array:%s", strings.Split(vType, "_")[0])
+								items := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+								items.Fields["type"] = structpb.NewStringValue(strings.Split(vType, "_")[0])
+								metadata.GetStructValue().Fields[k].GetStructValue().Fields["items"] = structpb.NewStructValue(items)
+								vType = "array"
 
 							}
-							items[idx].Recipe.Components[compIdx].Configuration.Fields["metadata"] = metadata
-							continue
+							metadata.GetStructValue().Fields[k].GetStructValue().Fields["type"] = structpb.NewStringValue(vType)
+							metadata.GetStructValue().Fields[k].GetStructValue().Fields["instillFormat"], _ = structpb.NewValue(instillFormat)
+
 						}
+						items[idx].Recipe.Components[compIdx].Configuration.Fields["metadata"] = structpb.NewStructValue(metadata.GetStructValue())
+						continue
 					}
 				}
-
-				result := tx.Unscoped().Model(&datamodel.Pipeline{}).Where("uid = ?", items[idx].UID).Update("recipe", &items[idx].Recipe)
-				if result.Error != nil {
-					return result.Error
-				}
 			}
+
+			result := tx.Unscoped().Model(&datamodel.Pipeline{}).Where("uid = ?", items[idx].UID).Update("recipe", &items[idx].Recipe)
+			if result.Error != nil {
+				return result.Error
+			}
+
 			return nil
 		})
 		if updateErr != nil {
