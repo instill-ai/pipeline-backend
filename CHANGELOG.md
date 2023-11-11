@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.2-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.16.1-alpha...v0.16.2-alpha) (2023-11-11)
+
+
+### Bug Fixes
+
+* **pipeline:** fix trigger error when start operator has field `input` ([#287](https://github.com/instill-ai/pipeline-backend/issues/287)) ([9f7ae76](https://github.com/instill-ai/pipeline-backend/commit/9f7ae76cf35a5fb47e86eb8d66408a6d85e6b6a5))
+
 ## [0.16.1-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.16.0-alpha...v0.16.1-alpha) (2023-10-27)
 
 
