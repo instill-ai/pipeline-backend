@@ -21,6 +21,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
@@ -104,7 +105,7 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipeli
 	resp = &pipelinePB.ListOperatorDefinitionsResponse{}
 	pageSize := req.GetPageSize()
 	pageToken := req.GetPageToken()
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
+	isBasicView := (req.GetView() == pipelinePB.ListOperatorDefinitionsRequest_VIEW_BASIC) || (req.GetView() == pipelinePB.ListOperatorDefinitionsRequest_VIEW_UNSPECIFIED)
 
 	prevLastUid := ""
 
@@ -188,7 +189,7 @@ func (h *PublicHandler) GetOperatorDefinition(ctx context.Context, req *pipeline
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	isBasicView := (req.GetView() == pipelinePB.View_VIEW_BASIC) || (req.GetView() == pipelinePB.View_VIEW_UNSPECIFIED)
+	isBasicView := (req.GetView() == pipelinePB.GetOperatorDefinitionRequest_VIEW_BASIC) || (req.GetView() == pipelinePB.GetOperatorDefinitionRequest_VIEW_UNSPECIFIED)
 
 	dbDef, err := h.service.GetOperatorDefinitionById(ctx, connID)
 	if err != nil {
@@ -246,7 +247,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 		return &pipelinePB.ListPipelinesResponse{}, err
 	}
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(ctx, userUid, int64(req.GetPageSize()), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(ctx, userUid, int64(req.GetPageSize()), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
@@ -287,13 +288,13 @@ func (h *PublicHandler) CreateUserPipeline(ctx context.Context, req *pipelinePB.
 	// }
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(req.Pipeline, append(createRequiredFields, immutableFields...)); err != nil {
+	if err := checkfield.CheckRequiredFields(req.Pipeline, append(createPipelineRequiredFields, immutablePipelineFields...)); err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.CreateUserPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Set all OUTPUT_ONLY fields to zero value on the requested payload pipeline resource
-	if err := checkfield.CheckCreateOutputOnlyFields(req.Pipeline, outputOnlyFields); err != nil {
+	if err := checkfield.CheckCreateOutputOnlyFields(req.Pipeline, outputOnlyPipelineFields); err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.CreateUserPipelineResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -401,7 +402,7 @@ func (h *PublicHandler) ListUserPipelines(ctx context.Context, req *pipelinePB.L
 		return &pipelinePB.ListUserPipelinesResponse{}, err
 	}
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListUserPipelines(ctx, ns, userUid, int64(req.GetPageSize()), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListUserPipelines(ctx, ns, userUid, int64(req.GetPageSize()), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListUserPipelinesResponse{}, err
@@ -446,7 +447,7 @@ func (h *PublicHandler) GetUserPipeline(ctx context.Context, req *pipelinePB.Get
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, parseView(req.GetView()))
+	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, parseView(int32(*req.GetView().Enum())))
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -505,13 +506,13 @@ func (h *PublicHandler) UpdateUserPipeline(ctx context.Context, req *pipelinePB.
 		return nil, status.Error(codes.InvalidArgument, "The update_mask is invalid")
 	}
 
-	getResp, err := h.GetUserPipeline(ctx, &pipelinePB.GetUserPipelineRequest{Name: pbPipelineReq.GetName(), View: pipelinePB.View_VIEW_RECIPE.Enum()})
+	getResp, err := h.GetUserPipeline(ctx, &pipelinePB.GetUserPipelineRequest{Name: pbPipelineReq.GetName(), View: pipelinePB.GetUserPipelineRequest_VIEW_RECIPE.Enum()})
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	pbUpdateMask, err = checkfield.CheckUpdateOutputOnlyFields(pbUpdateMask, outputOnlyFields)
+	pbUpdateMask, err = checkfield.CheckUpdateOutputOnlyFields(pbUpdateMask, outputOnlyPipelineFields)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -532,7 +533,7 @@ func (h *PublicHandler) UpdateUserPipeline(ctx context.Context, req *pipelinePB.
 	pbPipelineToUpdate := getResp.GetPipeline()
 
 	// Return error if IMMUTABLE fields are intentionally changed
-	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReq, pbPipelineToUpdate, immutableFields); err != nil {
+	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReq, pbPipelineToUpdate, immutablePipelineFields); err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -628,7 +629,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(req, lookUpRequiredFields); err != nil {
+	if err := checkfield.CheckRequiredFields(req, lookUpPipelineRequiredFields); err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -644,7 +645,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.GetPipelineByUID(ctx, userUid, uid, parseView(req.GetView()))
+	pbPipeline, err := h.service.GetPipelineByUID(ctx, userUid, uid, parseView(int32(*req.GetView().Enum())))
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -722,7 +723,7 @@ func (h *PublicHandler) RenameUserPipeline(ctx context.Context, req *pipelinePB.
 	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(req, renameRequiredFields); err != nil {
+	if err := checkfield.CheckRequiredFields(req, renamePipelineRequiredFields); err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -768,7 +769,7 @@ func (h *PublicHandler) RenameUserPipeline(ctx context.Context, req *pipelinePB.
 func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (resource.Namespace, uuid.UUID, string, *pipelinePB.Pipeline, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
+	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
 		return resource.Namespace{}, uuid.Nil, "", nil, false, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -781,7 +782,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 		return ns, uuid.Nil, id, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, pipelinePB.View_VIEW_FULL)
+	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, id, service.VIEW_FULL)
 	if err != nil {
 		return ns, uuid.Nil, id, nil, false, err
 	}
@@ -822,7 +823,7 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pipelinePB
 		return nil, err
 	}
 
-	dataPoint := utils.UsageMetricData{
+	dataPoint := utils.PipelineUsageMetricData{
 		OwnerUID:           userUid.String(),
 		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
 		PipelineID:         pbPipeline.Id,
@@ -838,7 +839,7 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pipelinePB
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		_ = h.service.WriteNewDataPoint(ctx, dataPoint)
+		_ = h.service.WriteNewPipelineDataPoint(ctx, dataPoint)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -852,7 +853,7 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pipelinePB
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
-	if err := h.service.WriteNewDataPoint(ctx, dataPoint); err != nil {
+	if err := h.service.WriteNewPipelineDataPoint(ctx, dataPoint); err != nil {
 		logger.Warn(err.Error())
 	}
 
@@ -924,7 +925,7 @@ func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipe
 	logger, _ := logger.GetZapLogger(ctx)
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(req.Release, append(releaseCreateRequiredFields, immutableFields...)); err != nil {
+	if err := checkfield.CheckRequiredFields(req.Release, append(releaseCreateRequiredFields, immutablePipelineFields...)); err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -951,7 +952,7 @@ func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1036,12 +1037,12 @@ func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pipel
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListUserPipelineReleases(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), int64(req.GetPageSize()), req.GetPageToken(), parseView(req.GetView()), filter, req.GetShowDeleted())
+	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListUserPipelineReleases(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), int64(req.GetPageSize()), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1089,12 +1090,12 @@ func (h *PublicHandler) GetUserPipelineRelease(ctx context.Context, req *pipelin
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, parseView(req.GetView()))
+	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, parseView(int32(*req.GetView().Enum())))
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1149,7 +1150,7 @@ func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, status.Error(codes.InvalidArgument, "The update_mask is invalid")
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1181,7 +1182,7 @@ func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pipe
 	pbPipelineReleaseToUpdate := getResp.GetRelease()
 
 	// Return error if IMMUTABLE fields are intentionally changed
-	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReleaseReq, pbPipelineReleaseToUpdate, immutableFields); err != nil {
+	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReleaseReq, pbPipelineReleaseToUpdate, immutablePipelineFields); err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -1245,7 +1246,7 @@ func (h *PublicHandler) RenameUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1310,7 +1311,7 @@ func (h *PublicHandler) DeleteUserPipelineRelease(ctx context.Context, req *pipe
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1369,7 +1370,7 @@ func (h *PublicHandler) SetDefaultUserPipelineRelease(ctx context.Context, req *
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1379,7 +1380,7 @@ func (h *PublicHandler) SetDefaultUserPipelineRelease(ctx context.Context, req *
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, pipelinePB.View_VIEW_FULL)
+	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, service.VIEW_FULL)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1427,7 +1428,7 @@ func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pip
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1437,7 +1438,7 @@ func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pip
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, pipelinePB.View_VIEW_FULL)
+	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, service.VIEW_FULL)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1457,7 +1458,7 @@ func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pip
 func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req TriggerPipelineRequestInterface) (resource.Namespace, uuid.UUID, string, *pipelinePB.Pipeline, *pipelinePB.PipelineRelease, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
-	if err := checkfield.CheckRequiredFields(req, triggerRequiredFields); err != nil {
+	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
 		return resource.Namespace{}, uuid.Nil, "", nil, nil, false, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -1475,12 +1476,12 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_FULL)
+	pbPipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_FULL)
 	if err != nil {
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
 
-	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), releaseId, pipelinePB.View_VIEW_FULL)
+	pbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pbPipeline.Uid), releaseId, service.VIEW_FULL)
 	if err != nil {
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
@@ -1517,7 +1518,7 @@ func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pip
 		return nil, err
 	}
 
-	dataPoint := utils.UsageMetricData{
+	dataPoint := utils.PipelineUsageMetricData{
 		OwnerUID:           userUid.String(),
 		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
 		PipelineID:         pbPipeline.Id,
@@ -1533,7 +1534,7 @@ func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pip
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		_ = h.service.WriteNewDataPoint(ctx, dataPoint)
+		_ = h.service.WriteNewPipelineDataPoint(ctx, dataPoint)
 		return nil, err
 	}
 
@@ -1547,7 +1548,7 @@ func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pip
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
-	if err := h.service.WriteNewDataPoint(ctx, dataPoint); err != nil {
+	if err := h.service.WriteNewPipelineDataPoint(ctx, dataPoint); err != nil {
 		logger.Warn(err.Error())
 	}
 
@@ -1614,7 +1615,7 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := h.service.GetUserPipelineByID(ctx, ns, userUid, pipelineId, service.VIEW_BASIC)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
@@ -1628,7 +1629,7 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 		return nil, err
 	}
 
-	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, pipelinePB.View_VIEW_BASIC)
+	dbPipelineRelease, err := h.service.GetUserPipelineReleaseByID(ctx, ns, userUid, uuid.FromStringOrNil(pipeline.Uid), releaseId, service.VIEW_BASIC)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
@@ -1641,7 +1642,7 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 		)))
 		return nil, err
 	}
-	state, err := h.service.GetResourceState(uuid.FromStringOrNil(dbPipelineRelease.Uid))
+	state, err := h.service.GetPipelineState(uuid.FromStringOrNil(dbPipelineRelease.Uid))
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
@@ -1658,4 +1659,1142 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 	return &pipelinePB.WatchUserPipelineReleaseResponse{
 		State: *state,
 	}, nil
+}
+
+func (h *PublicHandler) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.ListConnectorDefinitionsRequest) (resp *pipelinePB.ListConnectorDefinitionsResponse, err error) {
+	ctx, span := tracer.Start(ctx, "ListConnectorDefinitions",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp = &pipelinePB.ListConnectorDefinitionsResponse{}
+	pageSize := int64(req.GetPageSize())
+	pageToken := req.GetPageToken()
+
+	var connType pipelinePB.ConnectorType
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareEnumIdent("connector_type", connType.Type()),
+	}...)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	defs, totalSize, nextPageToken, err := h.service.ListConnectorDefinitions(ctx, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp.ConnectorDefinitions = defs
+	resp.NextPageToken = nextPageToken
+	resp.TotalSize = int32(totalSize)
+
+	logger.Info("ListConnectorDefinitions")
+
+	return resp, nil
+}
+
+func (h *PublicHandler) GetConnectorDefinition(ctx context.Context, req *pipelinePB.GetConnectorDefinitionRequest) (resp *pipelinePB.GetConnectorDefinitionResponse, err error) {
+	ctx, span := tracer.Start(ctx, "GetConnectorDefinition",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp = &pipelinePB.GetConnectorDefinitionResponse{}
+
+	var connID string
+
+	if connID, err = resource.GetRscNameID(req.GetName()); err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	dbDef, err := h.service.GetConnectorDefinitionByID(ctx, connID, parseView(int32(*req.GetView().Enum())))
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	resp.ConnectorDefinition = dbDef
+
+	logger.Info("GetConnectorDefinition")
+	return resp, nil
+
+}
+
+func (h *PublicHandler) ListConnectors(ctx context.Context, req *pipelinePB.ListConnectorsRequest) (resp *pipelinePB.ListConnectorsResponse, err error) {
+
+	eventName := "ListConnectors"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var pageSize int64
+	var pageToken string
+
+	resp = &pipelinePB.ListConnectorsResponse{}
+	pageSize = int64(req.GetPageSize())
+	pageToken = req.GetPageToken()
+
+	var connType pipelinePB.ConnectorType
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareEnumIdent("connector_type", connType.Type()),
+	}...)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	connectorResources, totalSize, nextPageToken, err := h.service.ListConnectors(ctx, userUid, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+	)))
+
+	resp.Connectors = connectorResources
+	resp.NextPageToken = nextPageToken
+	resp.TotalSize = int32(totalSize)
+
+	return resp, nil
+
+}
+
+func (h *PublicHandler) LookUpConnector(ctx context.Context, req *pipelinePB.LookUpConnectorRequest) (resp *pipelinePB.LookUpConnectorResponse, err error) {
+
+	eventName := "LookUpConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp = &pipelinePB.LookUpConnectorResponse{}
+
+	connUID, err := resource.GetRscPermalinkUID(req.GetPermalink())
+	if err != nil {
+		return nil, err
+	}
+
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	// Return error if REQUIRED fields are not provided in the requested payload
+	if err := checkfield.CheckRequiredFields(req, lookUpConnectorRequiredFields); err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] lookup connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "REQUIRED fields",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	connectorResource, err := h.service.GetConnectorByUID(ctx, userUid, connUID, parseView(int32(*req.GetView().Enum())), true)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+		custom_otel.SetEventResource(connectorResource),
+	)))
+
+	resp.Connector = connectorResource
+
+	return resp, nil
+}
+
+func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB.CreateUserConnectorRequest) (resp *pipelinePB.CreateUserConnectorResponse, err error) {
+
+	eventName := "CreateUserConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var connID string
+
+	resp = &pipelinePB.CreateUserConnectorResponse{}
+
+	ns, _, err := h.service.GetRscNamespaceAndNameID(req.Parent)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	userId, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	// TODO: ACL
+	if ns.String() != resource.UserUidToUserPermalink(userUid) {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] create connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Description: "can not create in other user's namespace",
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	// Set all OUTPUT_ONLY fields to zero value on the requested payload
+	if err := checkfield.CheckCreateOutputOnlyFields(req.GetConnector(), outputOnlyConnectorFields); err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] create connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "OUTPUT_ONLY fields",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	// Return error if REQUIRED fields are not provided in the requested payload
+	if err := checkfield.CheckRequiredFields(req.GetConnector(), append(createConnectorRequiredFields, immutableConnectorFields...)); err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] create connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "REQUIRED fields",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	connID = req.GetConnector().GetId()
+	if len(connID) > 8 && connID[:8] == "instill-" {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] create connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "connector",
+					Description: "the id can not start with instill-",
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	// Return error if resource ID does not follow RFC-1034
+	if err := checkfield.CheckResourceID(connID); err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] create connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "id",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	req.Connector.Owner = &pipelinePB.Connector_User{User: fmt.Sprintf("users/%s", userId)}
+
+	connectorResource, err := h.service.CreateUserConnector(ctx, ns, userUid, req.Connector)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+		custom_otel.SetEventResource(connectorResource),
+	)))
+
+	resp.Connector = connectorResource
+
+	if err != nil {
+		return resp, err
+	}
+
+	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusCreated))); err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
+func (h *PublicHandler) ListUserConnectors(ctx context.Context, req *pipelinePB.ListUserConnectorsRequest) (resp *pipelinePB.ListUserConnectorsResponse, err error) {
+
+	eventName := "ListUserConnectors"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var pageSize int64
+	var pageToken string
+
+	resp = &pipelinePB.ListUserConnectorsResponse{}
+	pageSize = int64(req.GetPageSize())
+	pageToken = req.GetPageToken()
+
+	var connType pipelinePB.ConnectorType
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareEnumIdent("connector_type", connType.Type()),
+	}...)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	ns, _, err := h.service.GetRscNamespaceAndNameID(req.Parent)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	connectorResources, totalSize, nextPageToken, err := h.service.ListUserConnectors(ctx, ns, userUid, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+	)))
+
+	resp.Connectors = connectorResources
+	resp.NextPageToken = nextPageToken
+	resp.TotalSize = int32(totalSize)
+
+	return resp, nil
+
+}
+
+func (h *PublicHandler) GetUserConnector(ctx context.Context, req *pipelinePB.GetUserConnectorRequest) (resp *pipelinePB.GetUserConnectorResponse, err error) {
+	eventName := "GetUserConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp = &pipelinePB.GetUserConnectorResponse{}
+
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Name)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	connectorResource, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, parseView(int32(*req.GetView().Enum())), true)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	resp.Connector = connectorResource
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+		custom_otel.SetEventResource(connectorResource),
+	)))
+
+	return resp, nil
+}
+
+func (h *PublicHandler) UpdateUserConnector(ctx context.Context, req *pipelinePB.UpdateUserConnectorRequest) (resp *pipelinePB.UpdateUserConnectorResponse, err error) {
+
+	eventName := "UpdateUserConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var mask fieldmask_utils.Mask
+
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Connector.Name)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	resp = &pipelinePB.UpdateUserConnectorResponse{}
+
+	pbConnectorReq := req.GetConnector()
+	pbUpdateMask := req.GetUpdateMask()
+
+	// configuration filed is type google.protobuf.Struct, which needs to be updated as a whole
+	for idx, path := range pbUpdateMask.Paths {
+		if strings.Contains(path, "configuration") {
+			pbUpdateMask.Paths[idx] = "configuration"
+		}
+	}
+
+	if !pbUpdateMask.IsValid(req.GetConnector()) {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] update connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "update_mask",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	// Remove all OUTPUT_ONLY fields in the requested payload
+	pbUpdateMask, err = checkfield.CheckUpdateOutputOnlyFields(pbUpdateMask, outputOnlyConnectorFields)
+	if err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] update connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "OUTPUT_ONLY fields",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	existedConnector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, false)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	// Return error if IMMUTABLE fields are intentionally changed
+	if err := checkfield.CheckUpdateImmutableFields(req.GetConnector(), existedConnector, immutableConnectorFields); err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] update connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "IMMUTABLE fields",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	mask, err = fieldmask_utils.MaskFromProtoFieldMask(pbUpdateMask, strcase.ToCamel)
+	if err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] update connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "update_mask",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	if mask.IsEmpty() {
+		existedConnector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, true)
+		if err != nil {
+			span.SetStatus(1, err.Error())
+			return resp, err
+		}
+		return &pipelinePB.UpdateUserConnectorResponse{
+			Connector: existedConnector,
+		}, nil
+	}
+
+	pbConnectorToUpdate := existedConnector
+	if pbConnectorToUpdate.State == pipelinePB.Connector_STATE_CONNECTED {
+		st, err := sterr.CreateErrorPreconditionFailure(
+			"[service] update connector",
+			[]*errdetails.PreconditionFailure_Violation{
+				{
+					Type:        "UPDATE",
+					Subject:     fmt.Sprintf("id %s", req.Connector.Id),
+					Description: fmt.Sprintf("Cannot update a connected %s connector", req.Connector.Id),
+				},
+			})
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return nil, st.Err()
+	}
+
+	dbConnDefID, err := resource.GetRscNameID(existedConnector.GetConnectorDefinitionName())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	configuration := &structpb.Struct{}
+	h.service.KeepCredentialFieldsWithMaskString(dbConnDefID, pbConnectorToUpdate.Configuration)
+	proto.Merge(configuration, pbConnectorToUpdate.Configuration)
+
+	// Only the fields mentioned in the field mask will be copied to `pbPipelineToUpdate`, other fields are left intact
+	err = fieldmask_utils.StructToStruct(mask, pbConnectorReq, pbConnectorToUpdate)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	h.service.RemoveCredentialFieldsWithMaskString(dbConnDefID, req.Connector.Configuration)
+	proto.Merge(configuration, req.Connector.Configuration)
+	pbConnectorToUpdate.Configuration = configuration
+
+	connectorResource, err := h.service.UpdateUserConnectorByID(ctx, ns, userUid, connID, pbConnectorToUpdate)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	resp.Connector = connectorResource
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+		custom_otel.SetEventResource(connectorResource),
+	)))
+	return resp, nil
+}
+
+func (h *PublicHandler) DeleteUserConnector(ctx context.Context, req *pipelinePB.DeleteUserConnectorRequest) (resp *pipelinePB.DeleteUserConnectorResponse, err error) {
+
+	eventName := "DeleteUserConnectorByID"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var connID string
+
+	// Cast all used types and data
+
+	resp = &pipelinePB.DeleteUserConnectorResponse{}
+
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Name)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	dbConnector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	if err := h.service.DeleteUserConnectorByID(ctx, ns, userUid, connID); err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+		custom_otel.SetEventResource(dbConnector),
+	)))
+
+	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent))); err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (h *PublicHandler) ConnectUserConnector(ctx context.Context, req *pipelinePB.ConnectUserConnectorRequest) (resp *pipelinePB.ConnectUserConnectorResponse, err error) {
+
+	eventName := "ConnectUserConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var connID string
+
+	resp = &pipelinePB.ConnectUserConnectorResponse{}
+
+	// Return error if REQUIRED fields are not provided in the requested payload
+	if err := checkfield.CheckRequiredFields(req, connectConnectorRequiredFields); err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] connect connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "REQUIRED fields",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Name)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	connectorResource, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	state, err := h.service.CheckConnectorByUID(ctx, uuid.FromStringOrNil(connectorResource.Uid))
+
+	if err != nil {
+		st, _ := sterr.CreateErrorBadRequest(
+			fmt.Sprintf("[handler] connect connector error %v", err),
+			[]*errdetails.BadRequest_FieldViolation{},
+		)
+		span.SetStatus(1, fmt.Sprintf("connect connector error %v", err))
+		return resp, st.Err()
+	}
+	if *state != pipelinePB.Connector_STATE_CONNECTED {
+		st, _ := sterr.CreateErrorBadRequest(
+			"[handler] connect connector error not Connector_STATE_CONNECTED",
+			[]*errdetails.BadRequest_FieldViolation{},
+		)
+		span.SetStatus(1, "connect connector error not Connector_STATE_CONNECTED")
+		return resp, st.Err()
+	}
+
+	connectorResource, err = h.service.UpdateUserConnectorStateByID(ctx, ns, userUid, connID, *state)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+		custom_otel.SetEventResource(connectorResource),
+	)))
+
+	resp.Connector = connectorResource
+
+	return resp, nil
+}
+
+func (h *PublicHandler) DisconnectUserConnector(ctx context.Context, req *pipelinePB.DisconnectUserConnectorRequest) (resp *pipelinePB.DisconnectUserConnectorResponse, err error) {
+
+	eventName := "DisconnectUserConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var connID string
+
+	resp = &pipelinePB.DisconnectUserConnectorResponse{}
+
+	// Return error if REQUIRED fields are not provided in the requested payload
+	if err := checkfield.CheckRequiredFields(req, disconnectConnectorRequiredFields); err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] disconnect connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "REQUIRED fields",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Name)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	connectorResource, err := h.service.UpdateUserConnectorStateByID(ctx, ns, userUid, connID, pipelinePB.Connector_STATE_DISCONNECTED)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+		custom_otel.SetEventResource(connectorResource),
+	)))
+
+	resp.Connector = connectorResource
+
+	return resp, nil
+}
+
+func (h *PublicHandler) RenameUserConnector(ctx context.Context, req *pipelinePB.RenameUserConnectorRequest) (resp *pipelinePB.RenameUserConnectorResponse, err error) {
+
+	eventName := "RenameUserConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var connID string
+	var connNewID string
+
+	resp = &pipelinePB.RenameUserConnectorResponse{}
+
+	// Return error if REQUIRED fields are not provided in the requested payload
+	if err := checkfield.CheckRequiredFields(req, renameConnectorRequiredFields); err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] rename connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "REQUIRED fields",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Name)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	connNewID = req.GetNewConnectorId()
+	if len(connNewID) > 8 && connNewID[:8] == "instill-" {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] create connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "connector",
+					Description: "the id can not start with instill-",
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	// Return error if resource ID does not follow RFC-1034
+	if err := checkfield.CheckResourceID(connNewID); err != nil {
+		st, err := sterr.CreateErrorBadRequest(
+			"[handler] rename connector error",
+			[]*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "id",
+					Description: err.Error(),
+				},
+			},
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		span.SetStatus(1, st.Err().Error())
+		return resp, st.Err()
+	}
+
+	connectorResource, err := h.service.UpdateUserConnectorIDByID(ctx, ns, userUid, connID, connNewID)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+		custom_otel.SetEventResource(connectorResource),
+	)))
+
+	resp.Connector = connectorResource
+	return resp, nil
+}
+
+func (h *PublicHandler) WatchUserConnector(ctx context.Context, req *pipelinePB.WatchUserConnectorRequest) (resp *pipelinePB.WatchUserConnectorResponse, err error) {
+
+	eventName := "WatchUserConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var connID string
+
+	resp = &pipelinePB.WatchUserConnectorResponse{}
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Name)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	connectorResource, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		logger.Info(string(custom_otel.NewLogMessage(
+			span,
+			logUUID.String(),
+			userUid,
+			eventName,
+			custom_otel.SetErrorMessage(err.Error()),
+		)))
+		return resp, err
+	}
+
+	state, err := h.service.GetConnectorState(uuid.FromStringOrNil(connectorResource.Uid))
+
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		logger.Info(string(custom_otel.NewLogMessage(
+			span,
+			logUUID.String(),
+			userUid,
+			eventName,
+			custom_otel.SetErrorMessage(err.Error()),
+			custom_otel.SetEventResource(connectorResource),
+		)))
+		state = pipelinePB.Connector_STATE_ERROR.Enum()
+	}
+
+	resp.State = *state
+
+	return resp, nil
+}
+
+func (h *PublicHandler) TestUserConnector(ctx context.Context, req *pipelinePB.TestUserConnectorRequest) (resp *pipelinePB.TestUserConnectorResponse, err error) {
+
+	eventName := "TestUserConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var connID string
+
+	resp = &pipelinePB.TestUserConnectorResponse{}
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Name)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	connectorResource, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	state, err := h.service.CheckConnectorByUID(ctx, uuid.FromStringOrNil(connectorResource.Uid))
+
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		userUid,
+		eventName,
+		custom_otel.SetEventResource(connectorResource),
+	)))
+
+	resp.State = *state
+
+	return resp, nil
+}
+
+func (h *PublicHandler) ExecuteUserConnector(ctx context.Context, req *pipelinePB.ExecuteUserConnectorRequest) (resp *pipelinePB.ExecuteUserConnectorResponse, err error) {
+
+	startTime := time.Now()
+	eventName := "ExecuteUserConnector"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp = &pipelinePB.ExecuteUserConnectorResponse{}
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Name)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	_, userUid, err := h.service.GetUser(ctx)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	connectorResource, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, true)
+	if err != nil {
+		return resp, err
+	}
+	if connectorResource.Tombstone {
+		st, _ := sterr.CreateErrorPreconditionFailure(
+			"ExecuteConnector",
+			[]*errdetails.PreconditionFailure_Violation{
+				{
+					Type:        "STATE",
+					Subject:     fmt.Sprintf("id %s", connID),
+					Description: "the connector definition is deprecated, you can not use it anymore",
+				},
+			})
+		return resp, st.Err()
+	}
+
+	dataPoint := utils.ConnectorUsageMetricData{
+		OwnerUID:               userUid.String(),
+		ConnectorID:            connectorResource.Id,
+		ConnectorUID:           connectorResource.Uid,
+		ConnectorExecuteUID:    logUUID.String(),
+		ConnectorDefinitionUid: connectorResource.ConnectorDefinition.Uid,
+		ExecuteTime:            startTime.Format(time.RFC3339Nano),
+	}
+
+	md, _ := metadata.FromIncomingContext(ctx)
+
+	pipelineVal := &structpb.Value{}
+	if len(md.Get("id")) > 0 &&
+		len(md.Get("uid")) > 0 &&
+		len(md.Get("release_id")) > 0 &&
+		len(md.Get("release_uid")) > 0 &&
+		len(md.Get("owner")) > 0 &&
+		len(md.Get("trigger_id")) > 0 {
+		pipelineVal, _ = structpb.NewValue(map[string]interface{}{
+			"id":          md.Get("id")[0],
+			"uid":         md.Get("uid")[0],
+			"release_id":  md.Get("release_id")[0],
+			"release_uid": md.Get("release_uid")[0],
+			"owner":       md.Get("owner")[0],
+			"trigger_id":  md.Get("trigger_id")[0],
+		})
+	}
+
+	if outputs, err := h.service.Execute(ctx, ns, userUid, connID, req.GetTask(), req.GetInputs()); err != nil {
+		span.SetStatus(1, err.Error())
+		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
+		_ = h.service.WriteNewConnectorDataPoint(ctx, dataPoint, pipelineVal)
+		return nil, err
+	} else {
+		resp.Outputs = outputs
+		logger.Info(string(custom_otel.NewLogMessage(
+			span,
+			logUUID.String(),
+			userUid,
+			eventName,
+		)))
+		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+		dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
+		if err := h.service.WriteNewConnectorDataPoint(ctx, dataPoint, pipelineVal); err != nil {
+			logger.Warn("usage and metric data write fail")
+		}
+	}
+	return resp, nil
+
 }

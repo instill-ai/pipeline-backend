@@ -13,6 +13,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/temporal"
 	"github.com/instill-ai/x/zapadapter"
 
@@ -52,6 +53,7 @@ func main() {
 
 	db := database.GetSharedConnection()
 	defer database.Close(db)
+	repository := repository.NewRepository(db)
 
 	var err error
 
@@ -87,11 +89,6 @@ func main() {
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
-	connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient(ctx)
-	if connectorPublicServiceClientConn != nil {
-		defer connectorPublicServiceClientConn.Close()
-	}
-
 	influxDBClient, influxDBWriteClient := external.InitInfluxDBServiceClient(ctx)
 	defer influxDBClient.Close()
 
@@ -102,7 +99,7 @@ func main() {
 		}
 	}()
 
-	cw := pipelineWorker.NewWorker(connectorPublicServiceClient, redisClient, influxDBWriteClient)
+	cw := pipelineWorker.NewWorker(repository, redisClient, influxDBWriteClient)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
 		MaxConcurrentActivityExecutionSize: 2,

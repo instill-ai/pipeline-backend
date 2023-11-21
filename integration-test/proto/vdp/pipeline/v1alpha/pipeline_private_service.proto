@@ -5,6 +5,8 @@ package vdp.pipeline.v1alpha;
 // Google API
 import "google/api/annotations.proto";
 import "google/api/client.proto";
+import "../../../vdp/pipeline/v1alpha/connector.proto";
+import "../../../vdp/pipeline/v1alpha/connector_definition.proto";
 import "../../../vdp/pipeline/v1alpha/operator_definition.proto";
 import "../../../vdp/pipeline/v1alpha/pipeline.proto";
 
@@ -35,5 +37,34 @@ service PipelinePrivateService {
   // returns a ListPipelineReleasesAdminResponse message.
   rpc ListPipelineReleasesAdmin(ListPipelineReleasesAdminRequest) returns (ListPipelineReleasesAdminResponse) {
     option (google.api.http) = {get: "/v1alpha/admin/releases"};
+  }
+
+  // LookUpConnectorDefinitionAdmin method receives a
+  // LookUpConnectorDefinitionAdminRequest message and returns a
+  // LookUpConnectorDefinitionAdminResponse
+  rpc LookUpConnectorDefinitionAdmin(LookUpConnectorDefinitionAdminRequest) returns (LookUpConnectorDefinitionAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/{permalink=connector-definitions/*}/lookUp"};
+    option (google.api.method_signature) = "permalink";
+  }
+
+  // ListConnectorsAdmin method receives a ListConnectorsAdminRequest
+  // message and returns a ListConnectorsResponse message.
+  rpc ListConnectorsAdmin(ListConnectorsAdminRequest) returns (ListConnectorsAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/connectors"};
+  }
+
+  // LookUpConnectorAdmin method receives a
+  // LookUpConnectorAdminRequest message and returns a
+  // LookUpConnectorAdminResponse
+  rpc LookUpConnectorAdmin(LookUpConnectorAdminRequest) returns (LookUpConnectorAdminResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/{permalink=connectors/*}/lookUp"};
+    option (google.api.method_signature) = "permalink";
+  }
+
+  // CheckConnector method receives a CheckConnectorRequest message and returns a
+  // CheckConnectorResponse
+  rpc CheckConnector(CheckConnectorRequest) returns (CheckConnectorResponse) {
+    option (google.api.http) = {get: "/v1alpha/admin/{permalink=connectors/*}/check"};
+    option (google.api.method_signature) = "permalink";
   }
 }

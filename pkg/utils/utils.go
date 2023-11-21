@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -14,9 +15,13 @@ import (
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
+	componentBase "github.com/instill-ai/component/pkg/base"
+	connector "github.com/instill-ai/connector/pkg"
+	connectorAirbyte "github.com/instill-ai/connector/pkg/airbyte"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
@@ -40,12 +45,17 @@ func InjectOwnerToContextWithUserUid(ctx context.Context, userUid uuid.UUID) con
 }
 
 const (
-	CreateEvent     string = "Create"
-	UpdateEvent     string = "Update"
-	DeleteEvent     string = "Delete"
-	ActivateEvent   string = "Activate"
-	DeactivateEvent string = "Deactivate"
-	TriggerEvent    string = "Trigger"
+	CreateEvent          string = "Create"
+	UpdateEvent          string = "Update"
+	DeleteEvent          string = "Delete"
+	ActivateEvent        string = "Activate"
+	DeactivateEvent      string = "Deactivate"
+	TriggerEvent         string = "Trigger"
+	ConnectEvent         string = "Connect"
+	DisconnectEvent      string = "Disconnect"
+	RenameEvent          string = "Rename"
+	ExecuteEvent         string = "Execute"
+	credentialMaskString string = "*****MASK*****"
 )
 
 func IsAuditEvent(eventName string) bool {
@@ -54,14 +64,18 @@ func IsAuditEvent(eventName string) bool {
 		strings.HasPrefix(eventName, DeleteEvent) ||
 		strings.HasPrefix(eventName, ActivateEvent) ||
 		strings.HasPrefix(eventName, DeactivateEvent) ||
-		strings.HasPrefix(eventName, TriggerEvent)
+		strings.HasPrefix(eventName, ConnectEvent) ||
+		strings.HasPrefix(eventName, DisconnectEvent) ||
+		strings.HasPrefix(eventName, TriggerEvent) ||
+		strings.HasPrefix(eventName, RenameEvent) ||
+		strings.HasPrefix(eventName, ExecuteEvent)
 }
 
 func IsBillableEvent(eventName string) bool {
 	return strings.HasPrefix(eventName, TriggerEvent)
 }
 
-type UsageMetricData struct {
+type PipelineUsageMetricData struct {
 	OwnerUID            string
 	TriggerMode         mgmtPB.Mode
 	Status              mgmtPB.Status
@@ -74,7 +88,7 @@ type UsageMetricData struct {
 	ComputeTimeDuration float64
 }
 
-func NewDataPoint(data UsageMetricData) *write.Point {
+func NewPipelineDataPoint(data PipelineUsageMetricData) *write.Point {
 	return influxdb2.NewPoint(
 		"pipeline.trigger",
 		map[string]string{
@@ -90,6 +104,43 @@ func NewDataPoint(data UsageMetricData) *write.Point {
 			"pipeline_trigger_id":   data.PipelineTriggerUID,
 			"trigger_time":          data.TriggerTime,
 			"compute_time_duration": data.ComputeTimeDuration,
+		},
+		time.Now(),
+	)
+}
+
+type ConnectorUsageMetricData struct {
+	OwnerUID               string
+	Status                 mgmtPB.Status
+	ConnectorID            string
+	ConnectorUID           string
+	ConnectorExecuteUID    string
+	ConnectorDefinitionUid string
+	ExecuteTime            string
+	ComputeTimeDuration    float64
+}
+
+func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *structpb.Value) *write.Point {
+	pipelineOwnerUUID, _ := resource.GetRscPermalinkUID(pipelineMetadata.GetStructValue().GetFields()["owner"].GetStringValue())
+	return influxdb2.NewPoint(
+		"connector.execute",
+		map[string]string{
+			"status": data.Status.String(),
+		},
+		map[string]interface{}{
+			"pipeline_id":              pipelineMetadata.GetStructValue().GetFields()["id"].GetStringValue(),
+			"pipeline_uid":             pipelineMetadata.GetStructValue().GetFields()["uid"].GetStringValue(),
+			"pipeline_release_id":      pipelineMetadata.GetStructValue().GetFields()["release_id"].GetStringValue(),
+			"pipeline_release_uid":     pipelineMetadata.GetStructValue().GetFields()["release_uid"].GetStringValue(),
+			"pipeline_owner":           pipelineOwnerUUID,
+			"pipeline_trigger_id":      pipelineMetadata.GetStructValue().GetFields()["trigger_id"].GetStringValue(),
+			"connector_owner_uid":      data.OwnerUID,
+			"connector_id":             data.ConnectorID,
+			"connector_uid":            data.ConnectorUID,
+			"connector_definition_uid": data.ConnectorDefinitionUid,
+			"connector_execute_id":     data.ConnectorExecuteUID,
+			"execute_time":             data.ExecuteTime,
+			"compute_time_duration":    data.ComputeTimeDuration,
 		},
 		time.Now(),
 	)
@@ -178,4 +229,73 @@ func IsConnectorDefinition(resourceName string) bool {
 
 func IsOperatorDefinition(resourceName string) bool {
 	return strings.HasPrefix(resourceName, "operator-definitions/")
+}
+
+func MaskCredentialFields(connector componentBase.IConnector, defId string, config *structpb.Struct) {
+	maskCredentialFields(connector, defId, config, "")
+}
+
+func maskCredentialFields(connector componentBase.IConnector, defId string, config *structpb.Struct, prefix string) {
+
+	for k, v := range config.GetFields() {
+		key := prefix + k
+		if connector.IsCredentialField(defId, key) {
+			config.GetFields()[k] = structpb.NewStringValue(credentialMaskString)
+		}
+		if v.GetStructValue() != nil {
+			maskCredentialFields(connector, defId, v.GetStructValue(), fmt.Sprintf("%s.", key))
+		}
+
+	}
+}
+
+func RemoveCredentialFieldsWithMaskString(connector componentBase.IConnector, defId string, config *structpb.Struct) {
+	removeCredentialFieldsWithMaskString(connector, defId, config, "")
+}
+
+func KeepCredentialFieldsWithMaskString(connector componentBase.IConnector, defId string, config *structpb.Struct) {
+	keepCredentialFieldsWithMaskString(connector, defId, config, "")
+}
+
+func removeCredentialFieldsWithMaskString(connector componentBase.IConnector, defId string, config *structpb.Struct, prefix string) {
+
+	for k, v := range config.GetFields() {
+		key := prefix + k
+		if connector.IsCredentialField(defId, key) {
+			if v.GetStringValue() == credentialMaskString {
+				delete(config.GetFields(), k)
+			}
+		}
+		if v.GetStructValue() != nil {
+			removeCredentialFieldsWithMaskString(connector, defId, v.GetStructValue(), fmt.Sprintf("%s.", key))
+		}
+
+	}
+}
+func keepCredentialFieldsWithMaskString(connector componentBase.IConnector, defId string, config *structpb.Struct, prefix string) {
+
+	for k, v := range config.GetFields() {
+		key := prefix + k
+		if !connector.IsCredentialField(defId, key) {
+			delete(config.GetFields(), k)
+		}
+		if v.GetStructValue() != nil {
+			keepCredentialFieldsWithMaskString(connector, defId, v.GetStructValue(), fmt.Sprintf("%s.", key))
+		}
+
+	}
+}
+
+func GetConnectorOptions() connector.ConnectorOptions {
+	return connector.ConnectorOptions{
+		Airbyte: connectorAirbyte.ConnectorOptions{
+			MountSourceVDP:        config.Config.Connector.Airbyte.MountSource.VDP,
+			MountTargetVDP:        config.Config.Connector.Airbyte.MountTarget.VDP,
+			MountSourceAirbyte:    config.Config.Connector.Airbyte.MountSource.Airbyte,
+			MountTargetAirbyte:    config.Config.Connector.Airbyte.MountTarget.Airbyte,
+			ExcludeLocalConnector: config.Config.Connector.Airbyte.ExcludeLocalConnector,
+			VDPProtocolPath:       "/etc/vdp/vdp_protocol.yaml",
+		},
+	}
+
 }

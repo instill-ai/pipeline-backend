@@ -18,6 +18,12 @@ type Transpiler struct {
 	filter filtering.Filter
 }
 
+func NewTranspiler(filter filtering.Filter) Transpiler {
+	return Transpiler{
+		filter: filter,
+	}
+}
+
 // Transpile executes the transpilation on the filter
 func (t *Transpiler) Transpile() (*clause.Expr, error) {
 	if t.filter.CheckedExpr == nil {

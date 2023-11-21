@@ -13,8 +13,17 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
+	taskPB "github.com/instill-ai/protogen-go/common/task/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
+
+// BaseStatic contains common columns for all tables with static UUID as primary key
+type BaseStatic struct {
+	UID        uuid.UUID      `gorm:"type:uuid;primary_key;<-:create"` // allow read and create
+	CreateTime time.Time      `gorm:"autoCreateTime:nano"`
+	UpdateTime time.Time      `gorm:"autoUpdateTime:nano"`
+	DeleteTime gorm.DeletedAt `sql:"index"`
+}
 
 // BaseDynamic contains common columns for all tables with dynamic UUID as primary key generated when creating
 type BaseDynamic struct {
@@ -180,4 +189,78 @@ func (p *PipelineRole) Scan(value interface{}) error {
 // Value function for custom GORM type ReleaseStage
 func (p PipelineRole) Value() (driver.Value, error) {
 	return pipelinePB.Role(p).String(), nil
+}
+
+// Connector is the data model of the connector table
+type Connector struct {
+	BaseDynamic
+	ID                     string
+	Owner                  string
+	ConnectorDefinitionUID uuid.UUID
+	Description            sql.NullString
+	Tombstone              bool
+	Configuration          datatypes.JSON      `gorm:"type:jsonb"`
+	ConnectorType          ConnectorType       `sql:"type:CONNECTOR_VALID_CONNECTOR_TYPE"`
+	State                  ConnectorState      `sql:"type:CONNECTOR_VALID_CONNECTOR_STATE"`
+	Visibility             ConnectorVisibility `sql:"type:CONNECTOR_VALID_CONNECTOR_VISIBILITY"`
+}
+
+func (Connector) TableName() string {
+	return "connector"
+}
+
+// ConnectorType is an alias type for Protobuf enum ConnectorType
+type ConnectorVisibility pipelinePB.Connector_Visibility
+
+// ConnectorType is an alias type for Protobuf enum ConnectorType
+type ConnectorType pipelinePB.ConnectorType
+
+// ConnectorType is an alias type for Protobuf enum ConnectorType
+type Task taskPB.Task
+
+// Scan function for custom GORM type ConnectorType
+func (c *ConnectorType) Scan(value interface{}) error {
+	*c = ConnectorType(pipelinePB.ConnectorType_value[value.(string)])
+	return nil
+}
+
+// Value function for custom GORM type ConnectorType
+func (c ConnectorType) Value() (driver.Value, error) {
+	return pipelinePB.ConnectorType(c).String(), nil
+}
+
+// ConnectorState is an alias type for Protobuf enum ConnectorState
+type ConnectorState pipelinePB.Connector_State
+
+// Scan function for custom GORM type ConnectorState
+func (r *ConnectorState) Scan(value interface{}) error {
+	*r = ConnectorState(pipelinePB.Connector_State_value[value.(string)])
+	return nil
+}
+
+// Value function for custom GORM type ConnectorState
+func (r ConnectorState) Value() (driver.Value, error) {
+	return pipelinePB.Connector_State(r).String(), nil
+}
+
+// Scan function for custom GORM type ReleaseStage
+func (r *ConnectorVisibility) Scan(value interface{}) error {
+	*r = ConnectorVisibility(pipelinePB.Connector_Visibility_value[value.(string)])
+	return nil
+}
+
+// Value function for custom GORM type ReleaseStage
+func (r ConnectorVisibility) Value() (driver.Value, error) {
+	return pipelinePB.Connector_Visibility(r).String(), nil
+}
+
+// Scan function for custom GORM type Task
+func (r *Task) Scan(value interface{}) error {
+	*r = Task(taskPB.Task_value[value.(string)])
+	return nil
+}
+
+// Value function for custom GORM type Task
+func (r Task) Value() (driver.Value, error) {
+	return taskPB.Task(r).String(), nil
 }

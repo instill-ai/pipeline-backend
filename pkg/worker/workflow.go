@@ -8,13 +8,10 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/gogo/status"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -24,7 +21,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1alpha"
-	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
 
@@ -42,11 +38,10 @@ type TriggerAsyncPipelineWorkflowRequest struct {
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
 type ExecuteConnectorActivityRequest struct {
 	InputBlobRedisKeys []string
-	Name               string
-	OwnerPermalink     string
+	DefinitionName     string
+	ResourceName       string
 	PipelineMetadata   PipelineMetadataStruct
 	Task               string
-	CompID             string
 }
 
 type ExecuteConnectorActivityResponse struct {
@@ -57,7 +52,6 @@ type ExecuteConnectorActivityResponse struct {
 type ExecuteOperatorActivityRequest struct {
 	InputBlobRedisKeys []string
 	DefinitionName     string
-	Configuration      *structpb.Struct
 	PipelineMetadata   PipelineMetadataStruct
 	Task               string
 }
@@ -130,7 +124,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerAsyncPipelineWorkflow started")
 
-	dataPoint := utils.UsageMetricData{
+	dataPoint := utils.PipelineUsageMetricData{
 		OwnerUID:           strings.Split(param.OwnerPermalink, "/")[1],
 		TriggerMode:        mgmtPB.Mode_MODE_ASYNC,
 		PipelineID:         param.PipelineId,
@@ -232,7 +226,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			compInputTemplate := comp.Configuration
 
 			// TODO: remove this hardcode injection
-			if comp.DefinitionName == "connector-definitions/blockchain-numbers" {
+			// blockchain-numbers
+			if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
 				recipeByte, err := json.Marshal(param.PipelineRecipe)
 				if err != nil {
 					return err
@@ -244,7 +239,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				}
 
 				// TODO: remove this hardcode injection
-				if comp.DefinitionName == "connector-definitions/blockchain-numbers" {
+				if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
 					metadata, err := structpb.NewValue(map[string]interface{}{
 						"pipeline": map[string]interface{}{
 							"uid":    "{global.pipeline.uid}",
@@ -338,8 +333,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			start := time.Now()
 			if err := workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
 				InputBlobRedisKeys: inputBlobRedisKeys,
-				Name:               comp.ResourceName,
-				OwnerPermalink:     param.OwnerPermalink,
+				DefinitionName:     comp.DefinitionName,
+				ResourceName:       comp.ResourceName,
 				PipelineMetadata: PipelineMetadataStruct{
 					Id:         param.PipelineId,
 					Uid:        param.PipelineUid.String(),
@@ -348,8 +343,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					Owner:      param.OwnerPermalink,
 					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
 				},
-				Task:   task,
-				CompID: comp.Id,
+				Task: task,
 			}).Get(ctx, &result); err != nil {
 				span.SetStatus(1, err.Error())
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -358,7 +352,6 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				return err
 			}
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
-
 			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
 			for idx := range result.OutputBlobRedisKeys {
 				defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
@@ -384,7 +377,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
 			}
 
-		} else if comp.DefinitionName == "operator-definitions/op-end" {
+		} else if comp.DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
 			responseCompId = comp.Id
 			computeTime[comp.Id] = 0
 		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
@@ -407,7 +400,6 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			if err := workflow.ExecuteActivity(ctx, w.OperatorActivity, &ExecuteOperatorActivityRequest{
 				InputBlobRedisKeys: inputBlobRedisKeys,
 				DefinitionName:     comp.DefinitionName,
-				Configuration:      comp.Configuration,
 				PipelineMetadata: PipelineMetadataStruct{
 					Id:         param.PipelineId,
 					Uid:        param.PipelineUid.String(),
@@ -425,9 +417,6 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				return err
 			}
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
-			if err != nil {
-				return err
-			}
 			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
 			for idx := range result.OutputBlobRedisKeys {
 				defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
@@ -522,36 +511,47 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 }
 
 func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorActivityRequest) (*ExecuteConnectorActivityResponse, error) {
-	logger := activity.GetLogger(ctx)
+	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ConnectorActivity started")
 
-	inputs, err := w.GetBlob(param.InputBlobRedisKeys)
+	compInputs, err := w.GetBlob(param.InputBlobRedisKeys)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := w.connectorPublicServiceClient.ExecuteUserConnectorResource(
-		utils.InjectOwnerToContextWithOwnerPermalink(
-			metadata.AppendToOutgoingContext(ctx,
-				"id", param.PipelineMetadata.Id,
-				"uid", param.PipelineMetadata.Uid,
-				"release_id", param.PipelineMetadata.ReleaseId,
-				"release_uid", param.PipelineMetadata.ReleaseUid,
-				"owner", param.PipelineMetadata.Owner,
-				"trigger_id", param.PipelineMetadata.TriggerId,
-			),
-			param.OwnerPermalink),
-		&connectorPB.ExecuteUserConnectorResourceRequest{
-			Name:   param.Name,
-			Task:   param.Task,
-			Inputs: inputs,
-		},
-	)
+	con, err := w.connector.GetConnectorDefinitionByID(strings.Split(param.DefinitionName, "/")[1])
 	if err != nil {
-		return nil, fmt.Errorf("[Component %s Execution Data Error] %s", param.CompID, status.Convert(err).Message())
+		return nil, err
 	}
 
-	outputBlobRedisKeys, err := w.SetBlob(resp.Outputs)
+	dbConnector, err := w.repository.GetConnectorByUIDAdmin(ctx, uuid.FromStringOrNil(strings.Split(param.ResourceName, "/")[1]), false)
+	if err != nil {
+		return nil, err
+	}
+
+	configuration := func() *structpb.Struct {
+		if dbConnector.Configuration != nil {
+			str := structpb.Struct{}
+			err := str.UnmarshalJSON(dbConnector.Configuration)
+			if err != nil {
+				logger.Fatal(err.Error())
+			}
+			return &str
+		}
+		return nil
+	}()
+
+	// TODO
+	execution, err := w.connector.CreateExecution(uuid.FromStringOrNil(con.Uid), param.Task, configuration, logger)
+	if err != nil {
+		return nil, err
+	}
+	compOutputs, err := execution.ExecuteWithValidation(compInputs)
+	if err != nil {
+		return nil, err
+	}
+
+	outputBlobRedisKeys, err := w.SetBlob(compOutputs)
 	if err != nil {
 		return nil, err
 	}
@@ -575,7 +575,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 		return nil, err
 	}
 
-	execution, err := w.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), param.Task, param.Configuration, logger)
+	execution, err := w.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), param.Task, nil, logger)
 	if err != nil {
 		return nil, err
 	}

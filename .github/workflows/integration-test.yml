@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        component: [pipeline-backend, connector-backend, controller-vdp]
+        component: [pipeline-backend, controller-vdp]
     uses: instill-ai/vdp/.github/workflows/integration-test-backend.yml@main
     with:
       component: ${{ matrix.component }}
@@ -114,20 +114,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Load .env file
-        uses: cardinalby/export-env-action@v2
-        with:
-          envFile: .env
-
-      - name: Run integration-test
-        run: |
-          make integration-test API_GATEWAY_URL=localhost:8080
-
-      - name: Checkout (connector)
-        uses: actions/checkout@v3
-        with:
-          repository: instill-ai/connector-backend
 
       - name: Load .env file
         uses: cardinalby/export-env-action@v2

@@ -8,12 +8,13 @@ import "google/api/resource.proto";
 // Protocol Buffers Well-Known Types
 import "google/protobuf/struct.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
-import "../../../vdp/pipeline/v1alpha/common.proto";
 
 // View enumerates the definition views
-message Spec {
+message OperatorSpec {
   // Spec operator specification
   google.protobuf.Struct component_specification = 1 [(google.api.field_behavior) = REQUIRED];
+  // Spec openapi specification
+  google.protobuf.Struct openapi_specifications = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -45,7 +46,7 @@ message OperatorDefinition {
   // Operator icon
   string icon = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Operator spec
-  Spec spec = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  OperatorSpec spec = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Operator tombstone, i.e., if not set or false, the
   // configuration is active, or otherwise, if true, this configuration is
   // permanently off
@@ -67,11 +68,21 @@ message OperatorDefinition {
 // ListOperatorDefinitionsRequest represents a request to list
 // OperatorDefinitions
 message ListOperatorDefinitionsRequest {
+  // Operator View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+  }
+
   // The maximum number of OperatorDefinitions to return. The
   // service may return fewer than this value. If unspecified, at most 10
   // OperatorDefinitions will be returned. The maximum value is 100;
   // values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // Definition view (default is DEFINITION_VIEW_BASIC)
@@ -88,12 +99,21 @@ message ListOperatorDefinitionsResponse {
   // Next page token
   string next_page_token = 2;
   // Total count of Operator resources
-  int64 total_size = 3;
+  int32 total_size = 3;
 }
 
 // GetOperatorDefinitionRequest represents a request to query a
 // Operator resource
 message GetOperatorDefinitionRequest {
+  // Operator View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+  }
   // Operator resource name. It must have the format of
   // "operator-definitions/*"
   string name = 1 [
@@ -118,6 +138,15 @@ message GetOperatorDefinitionResponse {
 // LookUpOperatorDefinitionAdminRequest represents a request to query a
 // operatorDefinition via permalink by admin
 message LookUpOperatorDefinitionAdminRequest {
+  // Operator View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+  }
   // Permalink of a operator. For example:
   // "operator-definitions/{uid}"
   string permalink = 1 [(google.api.field_behavior) = REQUIRED];

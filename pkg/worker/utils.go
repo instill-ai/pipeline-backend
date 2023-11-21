@@ -9,7 +9,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 )
 
-func (w *worker) writeNewDataPoint(ctx context.Context, data utils.UsageMetricData) error {
+func (w *worker) writeNewDataPoint(ctx context.Context, data utils.PipelineUsageMetricData) error {
 
 	if config.Config.Server.Usage.Enabled {
 
@@ -21,7 +21,7 @@ func (w *worker) writeNewDataPoint(ctx context.Context, data utils.UsageMetricDa
 		w.redisClient.RPush(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", data.OwnerUID), string(bData))
 	}
 
-	w.influxDBWriteClient.WritePoint(utils.NewDataPoint(data))
+	w.influxDBWriteClient.WritePoint(utils.NewPipelineDataPoint(data))
 
 	return nil
 }

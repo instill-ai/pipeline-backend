@@ -120,16 +120,6 @@ func main() {
 			fmt.Printf("Migration to version %d complete\n", ExpectedVersion)
 			break
 		} else {
-			if step == 1 {
-				if err := migratePipelineRecipeUp000002(); err != nil {
-					panic(err)
-				}
-			}
-			if step == 2 {
-				if err := migratePipelineRecipeUp000003(); err != nil {
-					panic(err)
-				}
-			}
 			if step == 5 {
 				if err := migratePipelineRecipeUp000006(); err != nil {
 					panic(err)

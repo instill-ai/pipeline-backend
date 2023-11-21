@@ -24,7 +24,8 @@ import (
 
 // Usage interface
 type Usage interface {
-	RetrieveUsageData() interface{}
+	RetrievePipelineUsageData() interface{}
+	RetrieveConnectorUsageData() interface{}
 	StartReporter(ctx context.Context)
 	TriggerSingleReporter(ctx context.Context)
 }
@@ -33,7 +34,8 @@ type usage struct {
 	repository               repository.Repository
 	mgmtPrivateServiceClient mgmtPB.MgmtPrivateServiceClient
 	redisClient              *redis.Client
-	reporter                 usageReporter.Reporter
+	pipelineReporter         usageReporter.Reporter
+	connectorReporter        usageReporter.Reporter
 	version                  string
 }
 
@@ -54,7 +56,12 @@ func NewUsage(ctx context.Context, r repository.Repository, mu mgmtPB.MgmtPrivat
 		logger.Error(err.Error())
 	}
 
-	reporter, err := usageClient.InitReporter(ctx, usc, usagePB.Session_SERVICE_MODEL, config.Config.Server.Edition, version, defaultOwnerUID)
+	pipelineReporter, err := usageClient.InitReporter(ctx, usc, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, version, defaultOwnerUID)
+	if err != nil {
+		logger.Error(err.Error())
+		return nil
+	}
+	connectorReporter, err := usageClient.InitReporter(ctx, usc, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, version, defaultOwnerUID)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil
@@ -64,12 +71,13 @@ func NewUsage(ctx context.Context, r repository.Repository, mu mgmtPB.MgmtPrivat
 		repository:               r,
 		mgmtPrivateServiceClient: mu,
 		redisClient:              rc,
-		reporter:                 reporter,
+		pipelineReporter:         pipelineReporter,
+		connectorReporter:        connectorReporter,
 		version:                  version,
 	}
 }
 
-func (u *usage) RetrieveUsageData() interface{} {
+func (u *usage) RetrievePipelineUsageData() interface{} {
 
 	ctx := context.Background()
 	logger, _ := logger.GetZapLogger(ctx)
@@ -103,7 +111,7 @@ func (u *usage) RetrieveUsageData() interface{} {
 
 					strData := u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", user.GetUid())).Val()
 
-					triggerData := &utils.UsageMetricData{}
+					triggerData := &utils.PipelineUsageMetricData{}
 					if err := json.Unmarshal([]byte(strData), triggerData); err != nil {
 						logger.Warn("Usage data might be corrupted")
 					}
@@ -148,8 +156,86 @@ func (u *usage) RetrieveUsageData() interface{} {
 	}
 }
 
+func (u *usage) RetrieveConnectorUsageData() interface{} {
+
+	ctx := context.Background()
+	logger, _ := logger.GetZapLogger(ctx)
+
+	logger.Debug("Retrieve usage data...")
+
+	pbConnectorUsageData := []*usagePB.ConnectorUsageData_UserUsageData{}
+
+	// Roll over all users and update the metrics with the cached uuid
+	userPageToken := ""
+	userPageSizeMax := int32(repository.MaxPageSize)
+
+	for {
+		userResp, err := u.mgmtPrivateServiceClient.ListUsersAdmin(ctx, &mgmtPB.ListUsersAdminRequest{
+			PageSize:  &userPageSizeMax,
+			PageToken: &userPageToken,
+		})
+		if err != nil {
+			logger.Error(fmt.Sprintf("[mgmt-backend: ListUser] %s", err))
+			break
+		}
+
+		// Roll all pipeline resources on a user
+		for _, user := range userResp.Users {
+
+			executeDataList := []*usagePB.ConnectorUsageData_UserUsageData_ConnectorExecuteData{}
+
+			executeCount := u.redisClient.LLen(ctx, fmt.Sprintf("user:%s:connector.execute_data", user.GetUid())).Val() // O(1)
+
+			if executeCount != 0 {
+				for i := int64(0); i < executeCount; i++ {
+					// LPop O(1)
+					strData := u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:connector.execute_data", user.GetUid())).Val()
+
+					executeData := &utils.ConnectorUsageMetricData{}
+					if err := json.Unmarshal([]byte(strData), executeData); err != nil {
+						logger.Warn("Usage data might be corrupted")
+					}
+
+					executeTime, _ := time.Parse(time.RFC3339Nano, executeData.ExecuteTime)
+
+					executeDataList = append(
+						executeDataList,
+						&usagePB.ConnectorUsageData_UserUsageData_ConnectorExecuteData{
+							ExecuteUid:             executeData.ConnectorExecuteUID,
+							ExecuteTime:            timestamppb.New(executeTime),
+							ConnectorUid:           executeData.ConnectorUID,
+							ConnectorDefinitionUid: executeData.ConnectorDefinitionUid,
+							Status:                 executeData.Status,
+						},
+					)
+				}
+			}
+
+			pbConnectorUsageData = append(pbConnectorUsageData, &usagePB.ConnectorUsageData_UserUsageData{
+				UserUid:              user.GetUid(),
+				ConnectorExecuteData: executeDataList,
+			})
+
+		}
+
+		if userResp.NextPageToken == "" {
+			break
+		} else {
+			userPageToken = userResp.NextPageToken
+		}
+	}
+
+	logger.Debug("Send retrieved usage data...")
+
+	return &usagePB.SessionReport_ConnectorUsageData{
+		ConnectorUsageData: &usagePB.ConnectorUsageData{
+			Usages: pbConnectorUsageData,
+		},
+	}
+}
+
 func (u *usage) StartReporter(ctx context.Context) {
-	if u.reporter == nil {
+	if u.pipelineReporter == nil || u.connectorReporter == nil {
 		return
 	}
 
@@ -165,7 +251,11 @@ func (u *usage) StartReporter(ctx context.Context) {
 
 	go func() {
 		time.Sleep(5 * time.Second)
-		err := usageClient.StartReporter(ctx, u.reporter, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, u.version, defaultOwnerUID, u.RetrieveUsageData)
+		err := usageClient.StartReporter(ctx, u.pipelineReporter, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, u.version, defaultOwnerUID, u.RetrievePipelineUsageData)
+		if err != nil {
+			logger.Error(fmt.Sprintf("unable to start reporter: %v\n", err))
+		}
+		err = usageClient.StartReporter(ctx, u.connectorReporter, usagePB.Session_SERVICE_CONNECTOR, config.Config.Server.Edition, u.version, defaultOwnerUID, u.RetrieveConnectorUsageData)
 		if err != nil {
 			logger.Error(fmt.Sprintf("unable to start reporter: %v\n", err))
 		}
@@ -173,7 +263,7 @@ func (u *usage) StartReporter(ctx context.Context) {
 }
 
 func (u *usage) TriggerSingleReporter(ctx context.Context) {
-	if u.reporter == nil {
+	if u.pipelineReporter == nil || u.connectorReporter == nil {
 		return
 	}
 
@@ -187,7 +277,11 @@ func (u *usage) TriggerSingleReporter(ctx context.Context) {
 		return
 	}
 
-	err := usageClient.SingleReporter(ctx, u.reporter, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, u.version, defaultOwnerUID, u.RetrieveUsageData())
+	err := usageClient.SingleReporter(ctx, u.pipelineReporter, usagePB.Session_SERVICE_PIPELINE, config.Config.Server.Edition, u.version, defaultOwnerUID, u.RetrievePipelineUsageData())
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to trigger single reporter: %v\n", err))
+	}
+	err = usageClient.SingleReporter(ctx, u.connectorReporter, usagePB.Session_SERVICE_CONNECTOR, config.Config.Server.Edition, u.version, defaultOwnerUID, u.RetrieveConnectorUsageData())
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to trigger single reporter: %v\n", err))
 	}
