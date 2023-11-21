@@ -40,7 +40,4 @@ RUN apt update && apt install poppler-utils wv unrtf tidy -y
 
 USER nobody:nogroup
 
-# Download vdp protocol YAML file
-RUN curl https://raw.githubusercontent.com/instill-ai/vdp/main/protocol/vdp_protocol.yaml -so /etc/vdp/vdp_protocol.yaml
-
 ENTRYPOINT ["tail", "-f", "/dev/null"]

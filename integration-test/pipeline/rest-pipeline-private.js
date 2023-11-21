@@ -5,7 +5,6 @@ import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 import {
   pipelinePrivateHost,
   pipelinePublicHost,
-  pipelinePublicHost,
 } from "./const.js";
 
 import * as constant from "./const.js";

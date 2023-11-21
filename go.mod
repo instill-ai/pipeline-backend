@@ -13,7 +13,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/component v0.7.0-alpha.0.20231121165153-d69c0e07286c
-	github.com/instill-ai/connector v0.6.0-alpha.0.20231121173910-63826bd071f4
+	github.com/instill-ai/connector v0.6.0-alpha.0.20231121200022-956fd33ed104
 	github.com/instill-ai/operator v0.4.0-alpha.0.20231121174020-97ddefff5a9f
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231121163720-206d6eff20a7
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061
@@ -62,7 +62,6 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/gogo/status v1.1.1 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect

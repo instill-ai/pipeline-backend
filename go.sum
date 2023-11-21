@@ -826,7 +826,6 @@ github.com/garyburd/redigo v0.0.0-20150301180006-535138d7bcd7/go.mod h1:NR3MbYis
 github.com/getkin/kin-openapi v0.61.0/go.mod h1:7Yn5whZr5kJi6t+kShccXS8ae1APpYTW6yheSwk8Yi4=
 github.com/getsentry/raven-go v0.2.0/go.mod h1:KungGk8q33+aIAZUIVWZDr2OfAEBsO49PX4NzFV5kcQ=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
-github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/gigawattio/window v0.0.0-20180317192513-0f5467e35573 h1:u8AQ9bPa9oC+8/A/jlWouakhIvkFfuxgIIRjiy8av7I=
 github.com/gigawattio/window v0.0.0-20180317192513-0f5467e35573/go.mod h1:eBvb3i++NHDH4Ugo9qCvMw8t0mTSctaEa5blJbWcNxs=
@@ -1167,8 +1166,8 @@ github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 h1:W9WBk7
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839/go.mod h1:xaLFMmpvUxqXtVkUJfg9QmT88cDaCJ3ZKgdZ78oO8Qo=
 github.com/instill-ai/component v0.7.0-alpha.0.20231121165153-d69c0e07286c h1:FFxkE1197A3LF4mu++VjHEnOKLCk6Qx8S9B5lgpHPN0=
 github.com/instill-ai/component v0.7.0-alpha.0.20231121165153-d69c0e07286c/go.mod h1:GgpdzmunwTzpZh4Fxrb8MPpBRm1Yl7kdCED2ph2O3tA=
-github.com/instill-ai/connector v0.6.0-alpha.0.20231121173910-63826bd071f4 h1:nM3IofgTNDefHzAVmUascqi6x2j8eyEbx4M8/tz+7mY=
-github.com/instill-ai/connector v0.6.0-alpha.0.20231121173910-63826bd071f4/go.mod h1:d/EJF/bY+r/dkKMJr/7hjl3WCEkH/zcaPCAvyuLcIKc=
+github.com/instill-ai/connector v0.6.0-alpha.0.20231121200022-956fd33ed104 h1:6+FLG11EkX/2RLHOHXfP7PFPhhHFXX9ffp0vkcmQdl4=
+github.com/instill-ai/connector v0.6.0-alpha.0.20231121200022-956fd33ed104/go.mod h1:d/EJF/bY+r/dkKMJr/7hjl3WCEkH/zcaPCAvyuLcIKc=
 github.com/instill-ai/operator v0.4.0-alpha.0.20231121174020-97ddefff5a9f h1:55HFttCyq2XaSPvQRLQ2m5IeRaz3G206sK+JbHrUDZg=
 github.com/instill-ai/operator v0.4.0-alpha.0.20231121174020-97ddefff5a9f/go.mod h1:5WgHLS+Ps2VDt1h91/GazZlwgncAWYdiaSPRkFaP0s4=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231121163720-206d6eff20a7 h1:vhMCJLPhVvhINR31VgOyq5ct8f7TZx2ZteQXpjGwaEc=

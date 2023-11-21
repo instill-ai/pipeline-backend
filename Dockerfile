@@ -19,9 +19,6 @@ RUN mkdir /etc/vdp
 RUN mkdir /vdp
 RUN mkdir /airbyte
 
-# Download vdp protocol YAML file
-ADD https://raw.githubusercontent.com/instill-ai/vdp/main/protocol/vdp_protocol.yaml /etc/vdp/vdp_protocol.yaml
-
 FROM alpine:3.16
 
 RUN apk add poppler-utils wv tidyhtml libc6-compat
@@ -47,7 +44,5 @@ COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-init ./
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME}-worker ./
 COPY --from=build --chown=nobody:nogroup /${SERVICE_NAME} ./
 
-COPY --from=build --chown=nonroot:nonroot /vdp /vdp
-COPY --from=build --chown=nonroot:nonroot /airbyte /airbyte
-
-COPY --from=build --chown=nonroot:nonroot /etc/vdp/vdp_protocol.yaml /etc/vdp/vdp_protocol.yaml
+COPY --from=build --chown=nobody:nogroup /vdp /vdp
+COPY --from=build --chown=nobody:nogroup /airbyte /airbyte

@@ -294,7 +294,6 @@ func GetConnectorOptions() connector.ConnectorOptions {
 			MountSourceAirbyte:    config.Config.Connector.Airbyte.MountSource.Airbyte,
 			MountTargetAirbyte:    config.Config.Connector.Airbyte.MountTarget.Airbyte,
 			ExcludeLocalConnector: config.Config.Connector.Airbyte.ExcludeLocalConnector,
-			VDPProtocolPath:       "/etc/vdp/vdp_protocol.yaml",
 		},
 	}
 
