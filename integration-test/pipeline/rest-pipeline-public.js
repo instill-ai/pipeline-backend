@@ -12,7 +12,7 @@ export function CheckCreate(header) {
 
     var reqBody = Object.assign(
       {
-        id: randomString(63),
+        id: randomString(32),
         description: randomString(50),
       },
       constant.simpleRecipe
@@ -155,7 +155,7 @@ export function CheckCreate(header) {
       }
     );
 
-    reqBody.id = randomString(64);
+    reqBody.id = randomString(40);
     check(
       http.request(
         "POST",
@@ -164,7 +164,7 @@ export function CheckCreate(header) {
         header
       ),
       {
-        "POST /v1alpha/${constant.namespace}/pipelines with > 63-character id response status is 400":
+        "POST /v1alpha/${constant.namespace}/pipelines with > 32-character id response status is 400":
           (r) => r.status === 400,
       }
     );

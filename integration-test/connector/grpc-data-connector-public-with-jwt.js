@@ -330,7 +330,7 @@ export function CheckRename(metadata) {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
         }, metadata)
 
-        let new_id = `some-id-not-${resCSVDst.message.connector.id}`
+        let new_id = `some_id_not_${resCSVDst.message.connector.id}`
 
         // Cannot rename destination connector of a non-exist user
         check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/RenameUserConnector', {
