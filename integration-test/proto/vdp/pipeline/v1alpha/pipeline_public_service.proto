@@ -5,6 +5,8 @@ package vdp.pipeline.v1alpha;
 // Google API
 import "google/api/annotations.proto";
 import "google/api/client.proto";
+import "../../../vdp/pipeline/v1alpha/connector.proto";
+import "../../../vdp/pipeline/v1alpha/connector_definition.proto";
 import "../../../vdp/pipeline/v1alpha/operator_definition.proto";
 import "../../../vdp/pipeline/v1alpha/pipeline.proto";
 
@@ -199,14 +201,14 @@ service PipelinePublicService {
   // SetDefaultUserPipelineRelease method receives a SetDefaultUserPipelineReleaseRequest message
   // and returns a SetDefaultUserPipelineReleaseResponse
   rpc SetDefaultUserPipelineRelease(SetDefaultUserPipelineReleaseRequest) returns (SetDefaultUserPipelineReleaseResponse) {
-    option (google.api.http) = {post: "/v1alpha/{name=users/*/pipelines/*/releases/*}/set_default"};
+    option (google.api.http) = {post: "/v1alpha/{name=users/*/pipelines/*/releases/*}/setDefault"};
     option (google.api.method_signature) = "name";
   }
 
   // WatchUserPipelineRelease method receives a WatchUserPipelineReleaseRequest message
   // and returns a WatchUserPipelineReleaseResponse
   rpc WatchUserPipelineRelease(WatchUserPipelineReleaseRequest) returns (WatchUserPipelineReleaseResponse) {
-    option (google.api.http) = {get: "/v1alpha/{name=users/*/pipelines/*/releases/default}/watch"};
+    option (google.api.http) = {get: "/v1alpha/{name=users/*/pipelines/*/releases/*}/watch"};
     option (google.api.method_signature) = "name";
   }
 
@@ -238,5 +240,147 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name,inputs";
+  }
+
+  // ListConnectorDefinitions method receives a
+  // ListConnectorDefinitionsRequest message and returns a
+  // ListConnectorDefinitionsResponse message.
+  rpc ListConnectorDefinitions(ListConnectorDefinitionsRequest) returns (ListConnectorDefinitionsResponse) {
+    option (google.api.http) = {get: "/v1alpha/connector-definitions"};
+  }
+
+  // GetConnectorDefinition method receives a
+  // GetConnectorDefinitionRequest message and returns a
+  // GetGetConnectorDefinitionResponse message.
+  rpc GetConnectorDefinition(GetConnectorDefinitionRequest) returns (GetConnectorDefinitionResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=connector-definitions/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  /////////////////////////////////
+  // Connector methods
+  /////////////////////////////////
+
+  // ListConnectors method receives a
+  // ListConnectorsRequest message and returns a
+  // ListConnectorsResponse message.
+  rpc ListConnectors(ListConnectorsRequest) returns (ListConnectorsResponse) {
+    option (google.api.http) = {get: "/v1alpha/connectors"};
+  }
+
+  // LookUpConnector method receives a
+  // LookUpConnectorRequest message and returns a
+  // LookUpConnectorResponse
+  rpc LookUpConnector(LookUpConnectorRequest) returns (LookUpConnectorResponse) {
+    option (google.api.http) = {get: "/v1alpha/{permalink=connectors/*}/lookUp"};
+    option (google.api.method_signature) = "permalink";
+  }
+
+  // CreateUserConnector method receives a
+  // CreateUserConnectorRequest message and returns a
+  // CreateUserConnectorResponse message.
+  rpc CreateUserConnector(CreateUserConnectorRequest) returns (CreateUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha/{parent=users/*}/connectors"
+      body: "connector"
+    };
+    option (google.api.method_signature) = "parent,connector";
+  }
+
+  // ListUserConnectors method receives a
+  // ListUserConnectorsRequest message and returns a
+  // ListUserConnectorsResponse message.
+  rpc ListUserConnectors(ListUserConnectorsRequest) returns (ListUserConnectorsResponse) {
+    option (google.api.http) = {get: "/v1alpha/{parent=users/*}/connectors"};
+    option (google.api.method_signature) = "parent";
+  }
+
+  // GetUserConnector method receives a GetUserConnectorRequest
+  // message and returns a GetUserConnectorResponse message.
+  rpc GetUserConnector(GetUserConnectorRequest) returns (GetUserConnectorResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=users/*/connectors/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // UpdateUserConnector method receives a
+  // UpdateUserConnectorRequest message and returns a
+  // UpdateUserConnectorResponse message.
+  rpc UpdateUserConnector(UpdateUserConnectorRequest) returns (UpdateUserConnectorResponse) {
+    option (google.api.http) = {
+      patch: "/v1alpha/{connector.name=users/*/connectors/*}"
+      body: "connector"
+    };
+    option (google.api.method_signature) = "connector,update_mask";
+  }
+
+  // DeleteUserConnector method receives a
+  // DeleteUserConnectorRequest message and returns a
+  // DeleteUserConnectorResponse message.
+  rpc DeleteUserConnector(DeleteUserConnectorRequest) returns (DeleteUserConnectorResponse) {
+    option (google.api.http) = {delete: "/v1alpha/{name=users/*/connectors/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Connect a connector.
+  // The "state" of the connector after connecting is "CONNECTED".
+  // ConnectUserConnector can be called on Connector in the
+  // state `DISCONNECTED`; Connector in a different state (including
+  // `CONNECTED`) returns an error.
+  rpc ConnectUserConnector(ConnectUserConnectorRequest) returns (ConnectUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha/{name=users/*/connectors/*}/connect"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // Disconnect a connector.
+  // The "state" of the connector after disconnecting is "DISCONNECTED".
+  // DisconnectUserConnector can be called on Connector in the
+  // state `CONNECTED`; Connector in a different state (including
+  // `DISCONNECTED`) returns an error.
+  rpc DisconnectUserConnector(DisconnectUserConnectorRequest) returns (DisconnectUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha/{name=users/*/connectors/*}/disconnect"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // RenameUserConnector method receives a
+  // RenameUserConnectorRequest message and returns a
+  // RenameUserConnectorResponse message.
+  rpc RenameUserConnector(RenameUserConnectorRequest) returns (RenameUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha/{name=users/*/connectors/*}/rename"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,new_connector_id";
+  }
+
+  // ExecuteUserConnector method receives a
+  // ExecuteUserConnectorRequest message and returns a
+  // ExecuteUserConnectorResponse message.
+  rpc ExecuteUserConnector(ExecuteUserConnectorRequest) returns (ExecuteUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha/{name=users/*/connectors/*}/execute"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // WatchUserConnector method receives a
+  // WatchUserConnectorRequest message and returns a
+  // WatchUserConnectorResponse
+  rpc WatchUserConnector(WatchUserConnectorRequest) returns (WatchUserConnectorResponse) {
+    option (google.api.http) = {get: "/v1alpha/{name=users/*/connectors/*}/watch"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // TestUserConnector method receives a TestUserConnectorRequest
+  // message and returns a TestUserConnectorResponse
+  rpc TestUserConnector(TestUserConnectorRequest) returns (TestUserConnectorResponse) {
+    option (google.api.http) = {post: "/v1alpha/{name=users/*/connectors/*}/testConnection"};
+    option (google.api.method_signature) = "name";
   }
 }

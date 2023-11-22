@@ -19,15 +19,15 @@ var Config AppConfig
 
 // AppConfig defines
 type AppConfig struct {
-	Server           ServerConfig           `koanf:"server"`
-	Database         DatabaseConfig         `koanf:"database"`
-	InfluxDB         InfluxDBConfig         `koanf:"influxdb"`
-	Temporal         TemporalConfig         `koanf:"temporal"`
-	Cache            CacheConfig            `koanf:"cache"`
-	Log              LogConfig              `koanf:"log"`
-	MgmtBackend      MgmtBackendConfig      `koanf:"mgmtbackend"`
-	ConnectorBackend ConnectorBackendConfig `koanf:"connectorbackend"`
-	Controller       ControllerConfig       `koanf:"controller"`
+	Server      ServerConfig      `koanf:"server"`
+	Connector   ConnectorConfig   `koanf:"connector"`
+	Database    DatabaseConfig    `koanf:"database"`
+	InfluxDB    InfluxDBConfig    `koanf:"influxdb"`
+	Temporal    TemporalConfig    `koanf:"temporal"`
+	Cache       CacheConfig       `koanf:"cache"`
+	Log         LogConfig         `koanf:"log"`
+	MgmtBackend MgmtBackendConfig `koanf:"mgmtbackend"`
+	Controller  ControllerConfig  `koanf:"controller"`
 }
 
 // ServerConfig defines HTTP server configurations
@@ -51,6 +51,21 @@ type ServerConfig struct {
 		MaxWorkflowTimeout int32 `koanf:"maxworkflowtimeout"`
 		MaxWorkflowRetry   int32 `koanf:"maxworkflowretry"`
 		MaxActivityRetry   int32 `koanf:"maxactivityretry"`
+	}
+}
+
+// ConnectorConfig defines the connector configurations
+type ConnectorConfig struct {
+	Airbyte struct {
+		MountSource struct {
+			VDP     string `koanf:"vdp"`
+			Airbyte string `koanf:"airbyte"`
+		}
+		MountTarget struct {
+			VDP     string `koanf:"vdp"`
+			Airbyte string `koanf:"airbyte"`
+		}
+		ExcludeLocalConnector bool `koanf:"excludelocalconnector"`
 	}
 }
 
@@ -106,17 +121,6 @@ type TemporalConfig struct {
 type CacheConfig struct {
 	Redis struct {
 		RedisOptions redis.Options `koanf:"redisoptions"`
-	}
-}
-
-// ConnectorBackendConfig related to connector-backend
-type ConnectorBackendConfig struct {
-	Host        string `koanf:"host"`
-	PrivatePort int    `koanf:"privateport"`
-	PublicPort  int    `koanf:"publicport"`
-	HTTPS       struct {
-		Cert string `koanf:"cert"`
-		Key  string `koanf:"key"`
 	}
 }
 

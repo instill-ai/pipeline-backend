@@ -56,26 +56,6 @@ func (mr *MockMgmtPrivateServiceClientMockRecorder) CreateUserAdmin(arg0, arg1 i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserAdmin", reflect.TypeOf((*MockMgmtPrivateServiceClient)(nil).CreateUserAdmin), varargs...)
 }
 
-// DeleteUserAdmin mocks base method.
-func (m *MockMgmtPrivateServiceClient) DeleteUserAdmin(arg0 context.Context, arg1 *mgmtv1alpha.DeleteUserAdminRequest, arg2 ...grpc.CallOption) (*mgmtv1alpha.DeleteUserAdminResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteUserAdmin", varargs...)
-	ret0, _ := ret[0].(*mgmtv1alpha.DeleteUserAdminResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DeleteUserAdmin indicates an expected call of DeleteUserAdmin.
-func (mr *MockMgmtPrivateServiceClientMockRecorder) DeleteUserAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserAdmin", reflect.TypeOf((*MockMgmtPrivateServiceClient)(nil).DeleteUserAdmin), varargs...)
-}
-
 // GetUserAdmin mocks base method.
 func (m *MockMgmtPrivateServiceClient) GetUserAdmin(arg0 context.Context, arg1 *mgmtv1alpha.GetUserAdminRequest, arg2 ...grpc.CallOption) (*mgmtv1alpha.GetUserAdminResponse, error) {
 	m.ctrl.T.Helper()
@@ -134,24 +114,4 @@ func (mr *MockMgmtPrivateServiceClientMockRecorder) LookUpUserAdmin(arg0, arg1 i
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookUpUserAdmin", reflect.TypeOf((*MockMgmtPrivateServiceClient)(nil).LookUpUserAdmin), varargs...)
-}
-
-// UpdateUserAdmin mocks base method.
-func (m *MockMgmtPrivateServiceClient) UpdateUserAdmin(arg0 context.Context, arg1 *mgmtv1alpha.UpdateUserAdminRequest, arg2 ...grpc.CallOption) (*mgmtv1alpha.UpdateUserAdminResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "UpdateUserAdmin", varargs...)
-	ret0, _ := ret[0].(*mgmtv1alpha.UpdateUserAdminResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateUserAdmin indicates an expected call of UpdateUserAdmin.
-func (mr *MockMgmtPrivateServiceClientMockRecorder) UpdateUserAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserAdmin", reflect.TypeOf((*MockMgmtPrivateServiceClient)(nil).UpdateUserAdmin), varargs...)
 }

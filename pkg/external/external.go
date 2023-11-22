@@ -15,64 +15,12 @@ import (
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1alpha"
 	usagePB "github.com/instill-ai/protogen-go/core/usage/v1alpha"
-	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 )
-
-// InitConnectorPublicServiceClient initialises a ConnectorPublicServiceClient instance
-func InitConnectorPublicServiceClient(ctx context.Context) (connectorPB.ConnectorPublicServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	if config.Config.ConnectorBackend.HTTPS.Cert != "" && config.Config.ConnectorBackend.HTTPS.Key != "" {
-		creds, err := credentials.NewServerTLSFromFile(config.Config.ConnectorBackend.HTTPS.Cert, config.Config.ConnectorBackend.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ConnectorBackend.Host, config.Config.ConnectorBackend.PublicPort),
-		clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return connectorPB.NewConnectorPublicServiceClient(clientConn), clientConn
-}
-
-// InitConnectorPrivateServiceClient initialises a ConnectorPrivateServiceClient instance
-func InitConnectorPrivateServiceClient(ctx context.Context) (connectorPB.ConnectorPrivateServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	if config.Config.ConnectorBackend.HTTPS.Cert != "" && config.Config.ConnectorBackend.HTTPS.Key != "" {
-		creds, err := credentials.NewServerTLSFromFile(config.Config.ConnectorBackend.HTTPS.Cert, config.Config.ConnectorBackend.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.ConnectorBackend.Host, config.Config.ConnectorBackend.PrivatePort),
-		clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
-	}
-
-	return connectorPB.NewConnectorPrivateServiceClient(clientConn), clientConn
-}
 
 // InitMgmtPrivateServiceClient initialises a MgmtPrivateServiceClient instance
 func InitMgmtPrivateServiceClient(ctx context.Context) (mgmtPB.MgmtPrivateServiceClient, *grpc.ClientConn) {

@@ -215,16 +215,6 @@ func main() {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
 
-	connectorPublicServiceClient, connectorPublicServiceClientConn := external.InitConnectorPublicServiceClient(ctx)
-	if connectorPublicServiceClientConn != nil {
-		defer connectorPublicServiceClientConn.Close()
-	}
-
-	connectorPrivateServiceClient, connectorPrivateServiceClientConn := external.InitConnectorPrivateServiceClient(ctx)
-	if connectorPrivateServiceClientConn != nil {
-		defer connectorPrivateServiceClientConn.Close()
-	}
-
 	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient(ctx)
 	if controllerServiceClientConn != nil {
 		defer controllerServiceClientConn.Close()
@@ -248,8 +238,6 @@ func main() {
 	service := service.NewService(
 		repository,
 		mgmtPrivateServiceClient,
-		connectorPublicServiceClient,
-		connectorPrivateServiceClient,
 		controllerServiceClient,
 		redisClient,
 		temporalClient,

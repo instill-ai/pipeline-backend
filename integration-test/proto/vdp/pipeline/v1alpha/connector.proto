@@ -1,0 +1,504 @@
+syntax = "proto3";
+
+package vdp.pipeline.v1alpha;
+
+import "google/api/field_behavior.proto";
+// Google API
+import "google/api/resource.proto";
+import "google/protobuf/field_mask.proto";
+// Protocol Buffers Well-Known Types
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "../../../vdp/pipeline/v1alpha/connector_definition.proto";
+
+// Connector represents a connector data model
+message Connector {
+  // State enumerates the connector state
+  enum State {
+    // State: UNSPECIFIED
+    STATE_UNSPECIFIED = 0;
+    // State: DISCONNECTED
+    STATE_DISCONNECTED = 1;
+    // State: CONNECTED
+    STATE_CONNECTED = 2;
+    // State: ERROR
+    STATE_ERROR = 3;
+  }
+
+  // Connector visibility including public or private
+  enum Visibility {
+    // Visibility: UNSPECIFIED, equivalent to PRIVATE.
+    VISIBILITY_UNSPECIFIED = 0;
+    // Visibility: PRIVATE
+    VISIBILITY_PRIVATE = 1;
+    // Visibility: PUBLIC
+    VISIBILITY_PUBLIC = 2;
+  }
+
+  option (google.api.resource) = {
+    type: "api.instill.tech/Connector"
+    pattern: "connectors/{connector}"
+  };
+
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Connector UUID
+  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // connector ID (the last segment of the resource name)
+  // used to construct the resource name. This conforms to RFC-1034, which
+  // restricts to letters, numbers, and hyphen, with the first character a
+  // letter, the last a letter or a number, and a 63 character maximum.
+  string id = 3 [(google.api.field_behavior) = IMMUTABLE];
+  // ConnectorDefinition resource
+  string connector_definition_name = 4 [
+    (google.api.field_behavior) = IMMUTABLE,
+    (google.api.resource_reference) = {type: "api.instill.tech/ConnectorDefinition"}
+  ];
+  // Connector Type
+  ConnectorType type = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Connector description
+  optional string description = 7 [(google.api.field_behavior) = OPTIONAL];
+  // Connector configuration in JSON format
+  google.protobuf.Struct configuration = 8 [(google.api.field_behavior) = REQUIRED];
+  // Connector state
+  State state = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Connector tombstone
+  bool tombstone = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Connector owner
+  oneof owner {
+    // The resource name with UUID of a user, e.g.,
+    // "users/bfb978f8-78d3-4338-aa2b-a6c699cb07c5".
+    string user = 11 [
+      (google.api.resource_reference).type = "api.instill.tech/User",
+      (google.api.field_behavior) = OUTPUT_ONLY
+    ];
+    // The resource name with UUID of an organization
+    string org = 12 [
+      (google.api.resource_reference).type = "api.instill.tech/Organization",
+      (google.api.field_behavior) = OUTPUT_ONLY
+    ];
+  }
+  // Connector creation time
+  google.protobuf.Timestamp create_time = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Connector update time
+  google.protobuf.Timestamp update_time = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Connector visibility including public or private
+  Visibility visibility = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Embed the content of the connector_definition
+  ConnectorDefinition connector_definition = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Connector delete time
+  google.protobuf.Timestamp delete_time = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+///////////////////////////////////////////////////////////////////////
+// RPC messages
+///////////////////////////////////////////////////////////////////////
+
+// ListConnectorsRequest represents a request to list
+// connectors
+message ListConnectorsRequest {
+  // View enumerates the definition views
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: CONFIGURATION
+    VIEW_CONFIGURATION = 3;
+  }
+  // The maximum number of connectors to return. The service may return fewer
+  // than this value. If unspecified, at most 10 connectors will be returned.
+  // The maximum value is 100; values above 100 will be coerced to 100.
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Connector view (default is VIEW_BASIC)
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter expression to list connectors
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Return soft_deleted connectors
+  optional bool show_deleted = 5 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListConnectorsResponse represents a response for a list of
+// connectors
+message ListConnectorsResponse {
+  // A list of connectors
+  repeated Connector connectors = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of connectors
+  int32 total_size = 3;
+}
+
+// LookUpConnectorRequest represents a request to query a
+// connector via permalink
+message LookUpConnectorRequest {
+  // View enumerates the definition views
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: CONFIGURATION
+    VIEW_CONFIGURATION = 3;
+  }
+
+  // Permalink of a connector. For example:
+  // "connectors/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+  // Connector view (default is VIEW_BASIC)
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LookUpConnectorResponse represents a response for a
+// connector
+message LookUpConnectorResponse {
+  // connector
+  Connector connector = 1;
+}
+
+// CreateUserConnectorRequest represents a request to create a
+// connector
+message CreateUserConnectorRequest {
+  // connector
+  Connector connector = 1 [(google.api.field_behavior) = REQUIRED];
+  // The parent resource where this connector will be created.
+  // Format: users/{users}
+  string parent = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Connector"}
+  ];
+}
+
+// CreateUserConnectorResponse represents a response for a
+// connector
+message CreateUserConnectorResponse {
+  // connector
+  Connector connector = 1;
+}
+
+// ListUserConnectorsRequest represents a request to list
+// connectors
+message ListUserConnectorsRequest {
+  // View enumerates the definition views
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: CONFIGURATION
+    VIEW_CONFIGURATION = 3;
+  }
+  // The maximum number of connectors to return. The service may return fewer
+  // than this value. If unspecified, at most 10 connectors will be returned.
+  // The maximum value is 100; values above 100 will be coerced to 100.
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Connector view (default is VIEW_BASIC)
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter expression to list connectors
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // The parent resource where this connector will be created.
+  // Format: users/{users}
+  string parent = 5 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Connector"}
+  ];
+  // Return soft_deleted connectors
+  optional bool show_deleted = 6 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListUserConnectorsResponse represents a response for a list of
+// connectors
+message ListUserConnectorsResponse {
+  // A list of connectors
+  repeated Connector connectors = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of connectors
+  int32 total_size = 3;
+}
+
+// GetUserConnectorRequest represents a request to query a
+// connector
+message GetUserConnectorRequest {
+  // View enumerates the definition views
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: CONFIGURATION
+    VIEW_CONFIGURATION = 3;
+  }
+
+  // Connectorconnector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "connector.name"}
+    }
+  ];
+  // Connector view (default is VIEW_BASIC)
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetUserConnectorResponse represents a response for a
+// connector
+message GetUserConnectorResponse {
+  // connector
+  Connector connector = 1;
+}
+
+// UpdateUserConnectorRequest represents a request to update a
+// connector
+message UpdateUserConnectorRequest {
+  // connector
+  Connector connector = 1 [(google.api.field_behavior) = REQUIRED];
+  // Update mask for a connector
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// UpdateUserConnectorResponse represents a response for a
+// connector
+message UpdateUserConnectorResponse {
+  // connector
+  Connector connector = 1;
+}
+
+// DeleteUserConnectorRequest represents a request to delete a
+// connector
+message DeleteUserConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "connector.name"}
+    }
+  ];
+}
+
+// DeleteUserConnectorResponse represents an empty response
+message DeleteUserConnectorResponse {}
+
+// ConnectUserConnectorRequest represents a request to connect a
+// connector
+message ConnectUserConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
+  ];
+}
+
+// ConnectUserConnectorResponse represents a connected
+// connector
+message ConnectUserConnectorResponse {
+  // A connector
+  Connector connector = 1;
+}
+
+// DisconnectUserConnectorRequest represents a request to disconnect a
+// connector
+message DisconnectUserConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
+  ];
+}
+
+// DisconnectUserConnectorResponse represents a disconnected
+// connector
+message DisconnectUserConnectorResponse {
+  // A connector
+  Connector connector = 1;
+}
+
+// RenameUserConnectorRequest represents a request to rename the
+// connector name
+message RenameUserConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
+  ];
+  // Connector new resource id to replace with the
+  // connector name to be
+  // "connectors/{new_connector_id}"
+  string new_connector_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// RenameUserConnectorResponse represents a renamed Connector
+// resource
+message RenameUserConnectorResponse {
+  // A connector
+  Connector connector = 1;
+}
+
+// ExecuteUserConnectorRequest represents a private request to execution
+// connector
+message ExecuteUserConnectorRequest {
+  // Name of a connector. For example:
+  // "connectors/{name}"
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // Inputs
+  repeated google.protobuf.Struct inputs = 2;
+  // Task
+  string task = 3;
+}
+
+// ExecuteUserConnectorResponse represents a response for execution
+// output
+message ExecuteUserConnectorResponse {
+  // Outputs
+  repeated google.protobuf.Struct outputs = 1;
+}
+
+// TestUserConnectorRequest represents a public request to trigger check
+// action on a connector
+message TestUserConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/Connector",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "connector.name"}
+    }
+  ];
+}
+
+// TestUserConnectorResponse represents a response containing a
+// connector's current state
+message TestUserConnectorResponse {
+  // Retrieved connector state
+  Connector.State state = 1;
+}
+
+// WatchUserConnectorRequest represents a public request to query
+// a connector's current state
+message WatchUserConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/Connector",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "connector.name"}
+    }
+  ];
+}
+
+// WatchUserConnectorResponse represents a response to fetch a
+// connector's current state
+message WatchUserConnectorResponse {
+  // Retrieved connector state
+  Connector.State state = 1;
+}
+
+// ========== Private endpoints
+
+// ListConnectorsAdminRequest represents a request to list
+// connectors from all users by admin
+message ListConnectorsAdminRequest {
+  // View enumerates the definition views
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: CONFIGURATION
+    VIEW_CONFIGURATION = 3;
+  }
+
+  // The maximum number of connectors to return. The service may return fewer
+  // than this value. If unspecified, at most 10 connectors will be returned.
+  // The maximum value is 100; values above 100 will be coerced to 100.
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Connector view (default is VIEW_BASIC)
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter expression to list connectors
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Return soft_deleted connectors
+  optional bool show_deleted = 5 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListConnectorsAdminResponse represents a response for a list of
+// connectors
+message ListConnectorsAdminResponse {
+  // A list of connectors
+  repeated Connector connectors = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of connectors
+  int32 total_size = 3;
+}
+
+// LookUpConnectorAdminRequest represents a request to query a
+// connector via permalink by admin
+message LookUpConnectorAdminRequest {
+  // View enumerates the definition views
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: CONFIGURATION
+    VIEW_CONFIGURATION = 3;
+  }
+
+  // Permalink of a connector. For example:
+  // "connectors/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+  // Connector view (default is VIEW_BASIC)
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LookUpConnectorAdminResponse represents a response for a
+// connector
+message LookUpConnectorAdminResponse {
+  // connector
+  Connector connector = 1;
+}
+
+// CheckConnectorRequest represents a private request to query
+// a connector's current state
+message CheckConnectorRequest {
+  // Permalink of a connector. For example:
+  // "connectors/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// CheckConnectorResponse represents a response to fetch a
+// connector's current state
+message CheckConnectorResponse {
+  // Retrieved connector state
+  Connector.State state = 1;
+}

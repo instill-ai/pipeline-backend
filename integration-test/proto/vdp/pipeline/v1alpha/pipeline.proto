@@ -12,9 +12,9 @@ import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
-import "../../../vdp/connector/v1alpha/connector.proto";
-import "../../../vdp/connector/v1alpha/connector_definition.proto";
 import "../../../vdp/pipeline/v1alpha/common.proto";
+import "../../../vdp/pipeline/v1alpha/connector.proto";
+import "../../../vdp/pipeline/v1alpha/connector_definition.proto";
 import "../../../vdp/pipeline/v1alpha/operator_definition.proto";
 
 // LivenessRequest represents a request to check a service liveness status
@@ -41,16 +41,6 @@ message ReadinessResponse {
   common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
 }
 
-// ConnectorResource visibility including public or private
-enum Visibility {
-  // Visibility: UNSPECIFIED, equivalent to PRIVATE.
-  VISIBILITY_UNSPECIFIED = 0;
-  // Visibility: PRIVATE
-  VISIBILITY_PRIVATE = 1;
-  // Visibility: PUBLIC
-  VISIBILITY_PUBLIC = 2;
-}
-
 // ComponentType
 enum ComponentType {
   // TYPE_UNSPECIFIED
@@ -72,7 +62,7 @@ message Component {
   // A pipeline component resource name
   string resource_name = 2 [(google.api.resource_reference).type = "*"];
   // A pipeline component resource detail
-  vdp.connector.v1alpha.ConnectorResource resource = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  Connector resource = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Configuration for the pipeline component
   google.protobuf.Struct configuration = 4;
   // Resource Type
@@ -87,7 +77,7 @@ message Component {
     // operator definition detail
     OperatorDefinition operator_definition = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
     // connector definition detail
-    vdp.connector.v1alpha.ConnectorDefinition connector_definition = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+    ConnectorDefinition connector_definition = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   }
 }
 
@@ -150,8 +140,14 @@ message Pipeline {
   google.protobuf.Timestamp create_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline update time
   google.protobuf.Timestamp update_time = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Visibility
-  Visibility visibility = 12;
+  // OpenAPI schema
+  google.protobuf.Struct openapi_schema = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Pipeline delete time
+  google.protobuf.Timestamp delete_time = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Pipeline permission
+  Permission permission = 15;
+  // Metadata: store Console-related data such as pipeline builder layout
+  google.protobuf.Struct metadata = 16;
 }
 
 // The metadata
@@ -196,22 +192,42 @@ message PipelineRelease {
   google.protobuf.Timestamp create_time = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline update time
   google.protobuf.Timestamp update_time = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Visibility
-  Visibility visibility = 8;
+  // OpenAPI schema
+  google.protobuf.Struct openapi_schema = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Pipeline delete time
+  google.protobuf.Timestamp delete_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Alias
+  string alias = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Metadata: store Console-related data such as pipeline builder layout
+  google.protobuf.Struct metadata = 12;
 }
 
 // ListPipelinesRequest represents a request to list pipelines
 message ListPipelinesRequest {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
+
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
   optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipelines
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Return soft_deleted pipelines
+  optional bool show_deleted = 5 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListPipelinesResponse represents a response for a list of pipelines
@@ -221,7 +237,7 @@ message ListPipelinesResponse {
   // Next page token
   string next_page_token = 2;
   // Total count of pipeline resources
-  int64 total_size = 3;
+  int32 total_size = 3;
 }
 
 // CreateUserPipelineRequest represents a request to create a pipeline
@@ -244,10 +260,21 @@ message CreateUserPipelineResponse {
 
 // ListUserPipelinesRequest represents a request to list pipelines
 message ListUserPipelinesRequest {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
@@ -260,6 +287,8 @@ message ListUserPipelinesRequest {
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference) = {child_type: "api.instill.tech/Pipeline"}
   ];
+  // Return soft_deleted pipeline releases
+  optional bool show_deleted = 6 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListUserPipelinesResponse represents a response for a list of pipelines
@@ -269,11 +298,23 @@ message ListUserPipelinesResponse {
   // Next page token
   string next_page_token = 2;
   // Total count of pipeline resources
-  int64 total_size = 3;
+  int32 total_size = 3;
 }
 
 // LookUpPipelineRequest represents a request to query a pipeline via permalink
 message LookUpPipelineRequest {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
+
   // Permalink of a pipeline. For example:
   // "pipelines/{uid}"
   string permalink = 1 [(google.api.field_behavior) = REQUIRED];
@@ -289,6 +330,18 @@ message LookUpPipelineResponse {
 
 // GetUserPipelineRequest represents a request to query a pipeline
 message GetUserPipelineRequest {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
+
   // Pipeline resource name. It must have the format of "users/*/pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
@@ -442,10 +495,22 @@ message CreateUserPipelineReleaseResponse {
 
 // ListUserPipelineReleasesRequest represents a request to list pipeline_releases
 message ListUserPipelineReleasesRequest {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
+
   // The maximum number of pipeline_releases to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipeline_release will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
@@ -458,6 +523,8 @@ message ListUserPipelineReleasesRequest {
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference) = {child_type: "api.instill.tech/PipelineRelease"}
   ];
+  // Return soft_deleted pipelines
+  optional bool show_deleted = 6 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListUserPipelineReleasesResponse represents a response for a list of pipeline_releases
@@ -467,11 +534,23 @@ message ListUserPipelineReleasesResponse {
   // Next page token
   string next_page_token = 2;
   // Total count of pipeline_release resources
-  int64 total_size = 3;
+  int32 total_size = 3;
 }
 
 // GetUserPipelineReleaseRequest represents a request to query a pipeline_release
 message GetUserPipelineReleaseRequest {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
+
   // PipelineRelease resource name. It must have the format of "users/*/pipelines/*/releases/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
@@ -631,16 +710,30 @@ message TriggerAsyncUserPipelineReleaseResponse {
 // ListPipelinesAdminRequest represents a request to list all pipelines from all
 // users by admin
 message ListPipelinesAdminRequest {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
+
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
   optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipelines
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Return soft_deleted pipelines
+  optional bool show_deleted = 5 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListPipelinesAdminResponse represents a response for a list of pipelines
@@ -652,22 +745,36 @@ message ListPipelinesAdminResponse {
   // Next page token
   string next_page_token = 2;
   // Total count of pipeline resources
-  int64 total_size = 3;
+  int32 total_size = 3;
 }
 
 // ListPipelinesReleaseAdminRequest represents a request to list all pipeline_releases from all
 // users by admin
 message ListPipelineReleasesAdminRequest {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
+
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
-  optional int64 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
   optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipelines
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Return soft_deleted pipelines
+  optional bool show_deleted = 5 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListPipelineReleasesAdminResponse represents a response for a list of pipeline_releases
@@ -679,12 +786,24 @@ message ListPipelineReleasesAdminResponse {
   // Next page token
   string next_page_token = 2;
   // Total count of pipeline resources
-  int64 total_size = 3;
+  int32 total_size = 3;
 }
 
 // LookUpPipelineAdminRequest represents a request to query a user's pipeline
 // via permalink by admin
 message LookUpPipelineAdminRequest {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
+
   // Permalink of a pipeline. For example:
   // "pipelines/{uid}"
   string permalink = 1 [(google.api.field_behavior) = REQUIRED];

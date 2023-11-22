@@ -1,11 +1,9 @@
 package service
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -13,8 +11,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
-
-	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 )
 
 type SourceCategory int64
@@ -27,8 +23,6 @@ const (
 )
 
 func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.Recipe) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
 
 	startCnt := 0
 	endCnt := 0
@@ -68,15 +62,15 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 		var compJsonSchema []byte
 		if utils.IsConnectorDefinition(recipePermalink.Components[idx].DefinitionName) {
 
-			resp, err := s.connectorPrivateServiceClient.LookUpConnectorDefinitionAdmin(ctx, &connectorPB.LookUpConnectorDefinitionAdminRequest{
-				Permalink: recipePermalink.Components[idx].DefinitionName,
-				View:      connectorPB.View_VIEW_FULL.Enum(),
-			})
+			uid, err := resource.GetRscPermalinkUID(recipePermalink.Components[idx].DefinitionName)
 			if err != nil {
-				return fmt.Errorf("connector definition for component %s is not found", recipePermalink.Components[idx].Id)
+				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
 			}
 
-			def := resp.ConnectorDefinition
+			def, err := s.connector.GetConnectorDefinitionByUID(uid)
+			if err != nil {
+				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
+			}
 
 			compJsonSchema, err = protojson.Marshal(def.Spec.ComponentSpecification)
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -18,14 +19,15 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	workflowpb "go.temporal.io/api/workflow/v1"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	rpcStatus "google.golang.org/genproto/googleapis/rpc/status"
 
 	"github.com/instill-ai/pipeline-backend/config"
@@ -36,11 +38,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
+	"github.com/instill-ai/x/paginate"
+	"github.com/instill-ai/x/sterr"
 
 	component "github.com/instill-ai/component/pkg/base"
+	connector "github.com/instill-ai/connector/pkg"
 	operator "github.com/instill-ai/operator/pkg"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1alpha"
-	connectorPB "github.com/instill-ai/protogen-go/vdp/connector/v1alpha"
 	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
@@ -52,11 +56,11 @@ type Service interface {
 	GetOperatorDefinitionById(ctx context.Context, defId string) (*pipelinePB.OperatorDefinition, error)
 	ListOperatorDefinitions(ctx context.Context) []*pipelinePB.OperatorDefinition
 
-	ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error)
-	GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.Pipeline, error)
+	ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error)
+	GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, view View) (*pipelinePB.Pipeline, error)
 	CreateUserPipeline(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error)
-	ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error)
-	GetUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, view pipelinePB.View) (*pipelinePB.Pipeline, error)
+	ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error)
+	GetUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, view View) (*pipelinePB.Pipeline, error)
 	UpdateUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, updatedPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error)
 	UpdateUserPipelineIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, newID string) (*pipelinePB.Pipeline, error)
 	DeleteUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error
@@ -64,25 +68,25 @@ type Service interface {
 	GetUserPipelineDefaultReleaseUid(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) (uuid.UUID, error)
 	GetUserPipelineLatestReleaseUid(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) (uuid.UUID, error)
 
-	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error)
-	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.Pipeline, error)
+	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error)
+	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.Pipeline, error)
 
 	CreateUserPipelineRelease(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error)
-	ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error)
-	GetUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
-	GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.PipelineRelease, error)
+	ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error)
+	GetUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, view View) (*pipelinePB.PipelineRelease, error)
+	GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, view View) (*pipelinePB.PipelineRelease, error)
 	UpdateUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, updatedPipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error)
 	DeleteUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error
 	RestoreUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error
 	SetDefaultUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error
 	UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error)
 
-	ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error)
+	ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error)
 
 	// Controller APIs
-	GetResourceState(uid uuid.UUID) (*pipelinePB.State, error)
-	UpdateResourceState(uid uuid.UUID, state pipelinePB.State, progress *int32) error
-	DeleteResourceState(uid uuid.UUID) error
+	GetPipelineState(uid uuid.UUID) (*pipelinePB.State, error)
+	UpdatePipelineState(uid uuid.UUID, state pipelinePB.State, progress *int32) error
+	DeletePipelineState(uid uuid.UUID) error
 
 	// Influx API
 
@@ -93,7 +97,7 @@ type Service interface {
 	TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, req []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error)
 	GetOperation(ctx context.Context, workflowId string) (*longrunningpb.Operation, error)
 
-	WriteNewDataPoint(ctx context.Context, data utils.UsageMetricData) error
+	WriteNewPipelineDataPoint(ctx context.Context, data utils.PipelineUsageMetricData) error
 
 	GetRscNamespaceAndNameID(path string) (resource.Namespace, string, error)
 	GetRscNamespaceAndPermalinkUID(path string) (resource.Namespace, uuid.UUID, error)
@@ -103,33 +107,67 @@ type Service interface {
 	ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineId string, releaseId string) (string, error)
 
 	PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error)
-	DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view pipelinePB.View) (*pipelinePB.Pipeline, error)
-	DBToPBPipelines(ctx context.Context, dbPipeline []*datamodel.Pipeline, view pipelinePB.View) ([]*pipelinePB.Pipeline, error)
+	DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view View) (*pipelinePB.Pipeline, error)
+	DBToPBPipelines(ctx context.Context, dbPipeline []*datamodel.Pipeline, view View) ([]*pipelinePB.Pipeline, error)
 
 	PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error)
-	DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.View, latestUUID uuid.UUID, defaultUUID uuid.UUID) (*pipelinePB.PipelineRelease, error)
-	DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.View, latestUUID uuid.UUID, defaultUUID uuid.UUID) ([]*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view View, latestUUID uuid.UUID, defaultUUID uuid.UUID) (*pipelinePB.PipelineRelease, error)
+	DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view View, latestUUID uuid.UUID, defaultUUID uuid.UUID) ([]*pipelinePB.PipelineRelease, error)
 
 	GetUser(ctx context.Context) (string, uuid.UUID, error)
+
+	ListConnectorDefinitions(ctx context.Context, pageSize int64, pageToken string, view View, filter filtering.Filter) ([]*pipelinePB.ConnectorDefinition, int64, string, error)
+	GetConnectorByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, view View, credentialMask bool) (*pipelinePB.Connector, error)
+	GetConnectorDefinitionByID(ctx context.Context, id string, view View) (*pipelinePB.ConnectorDefinition, error)
+	GetConnectorDefinitionByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.ConnectorDefinition, error)
+
+	// Connector common
+	ListConnectors(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int64, string, error)
+	CreateUserConnector(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, connectorResource *pipelinePB.Connector) (*pipelinePB.Connector, error)
+	ListUserConnectors(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int64, string, error)
+	GetUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, view View, credentialMask bool) (*pipelinePB.Connector, error)
+	UpdateUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, connectorResource *pipelinePB.Connector) (*pipelinePB.Connector, error)
+	UpdateUserConnectorIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, newID string) (*pipelinePB.Connector, error)
+	UpdateUserConnectorStateByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, state pipelinePB.Connector_State) (*pipelinePB.Connector, error)
+	DeleteUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error
+
+	ListConnectorsAdmin(ctx context.Context, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int64, string, error)
+	GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.Connector, error)
+
+	// Execute connector
+	Execute(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, task string, inputs []*structpb.Struct) ([]*structpb.Struct, error)
+
+	// Shared public/private method for checking connector's connection
+	CheckConnectorByUID(ctx context.Context, connUID uuid.UUID) (*pipelinePB.Connector_State, error)
+
+	// Controller custom service
+	GetConnectorState(uid uuid.UUID) (*pipelinePB.Connector_State, error)
+	UpdateConnectorState(uid uuid.UUID, state pipelinePB.Connector_State, progress *int32) error
+	DeleteConnectorState(uid uuid.UUID) error
+
+	// Influx API
+	WriteNewConnectorDataPoint(ctx context.Context, data utils.ConnectorUsageMetricData, pipelineMetadata *structpb.Value) error
+
+	// Helper functions
+	RemoveCredentialFieldsWithMaskString(dbConnDefID string, config *structpb.Struct)
+	KeepCredentialFieldsWithMaskString(dbConnDefID string, config *structpb.Struct)
 }
 
 type service struct {
-	repository                    repository.Repository
-	mgmtPrivateServiceClient      mgmtPB.MgmtPrivateServiceClient
-	connectorPublicServiceClient  connectorPB.ConnectorPublicServiceClient
-	connectorPrivateServiceClient connectorPB.ConnectorPrivateServiceClient
-	controllerClient              controllerPB.ControllerPrivateServiceClient
-	redisClient                   *redis.Client
-	temporalClient                client.Client
-	influxDBWriteClient           api.WriteAPI
-	operator                      component.IOperator
+	repository               repository.Repository
+	mgmtPrivateServiceClient mgmtPB.MgmtPrivateServiceClient
+	controllerClient         controllerPB.ControllerPrivateServiceClient
+	redisClient              *redis.Client
+	temporalClient           client.Client
+	influxDBWriteClient      api.WriteAPI
+	operator                 component.IOperator
+	connector                component.IConnector
 }
 
 // NewService initiates a service instance
-func NewService(r repository.Repository,
+func NewService(
+	r repository.Repository,
 	u mgmtPB.MgmtPrivateServiceClient,
-	c connectorPB.ConnectorPublicServiceClient,
-	cPrivate connectorPB.ConnectorPrivateServiceClient,
 	ct controllerPB.ControllerPrivateServiceClient,
 	rc *redis.Client,
 	t client.Client,
@@ -137,15 +175,14 @@ func NewService(r repository.Repository,
 ) Service {
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &service{
-		repository:                    r,
-		mgmtPrivateServiceClient:      u,
-		connectorPublicServiceClient:  c,
-		connectorPrivateServiceClient: cPrivate,
-		controllerClient:              ct,
-		redisClient:                   rc,
-		temporalClient:                t,
-		influxDBWriteClient:           i,
-		operator:                      operator.Init(logger),
+		repository:               r,
+		mgmtPrivateServiceClient: u,
+		controllerClient:         ct,
+		redisClient:              rc,
+		temporalClient:           t,
+		influxDBWriteClient:      i,
+		operator:                 operator.Init(logger),
+		connector:                connector.Init(logger, utils.GetConnectorOptions()),
 	}
 }
 
@@ -310,10 +347,10 @@ func (s *service) ListOperatorDefinitions(ctx context.Context) []*pipelinePB.Ope
 	return s.operator.ListOperatorDefinitions()
 }
 
-func (s *service) ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error) {
+func (s *service) ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error) {
 
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, userPermalink, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter, showDeleted)
+	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, userPermalink, pageSize, pageToken, view == VIEW_BASIC, filter, showDeleted)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -322,11 +359,11 @@ func (s *service) ListPipelines(ctx context.Context, userUid uuid.UUID, pageSize
 
 }
 
-func (s *service) GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.Pipeline, error) {
+func (s *service) GetPipelineByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, view View) (*pipelinePB.Pipeline, error) {
 
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, view == pipelinePB.View_VIEW_BASIC, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, view == VIEW_BASIC, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -358,14 +395,14 @@ func (s *service) CreateUserPipeline(ctx context.Context, ns resource.Namespace,
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbCreatedPipeline, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbCreatedPipeline, VIEW_FULL)
 }
 
-func (s *service) ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error) {
+func (s *service) ListUserPipelines(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipelines, ps, pt, err := s.repository.ListUserPipelines(ctx, ownerPermalink, userPermalink, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter, showDeleted)
+	dbPipelines, ps, pt, err := s.repository.ListUserPipelines(ctx, ownerPermalink, userPermalink, pageSize, pageToken, view == VIEW_BASIC, filter, showDeleted)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -374,9 +411,9 @@ func (s *service) ListUserPipelines(ctx context.Context, ns resource.Namespace, 
 	return pbPipelines, ps, pt, err
 }
 
-func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error) {
+func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int64, string, error) {
 
-	dbPipelines, ps, pt, err := s.repository.ListPipelinesAdmin(ctx, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter, showDeleted)
+	dbPipelines, ps, pt, err := s.repository.ListPipelinesAdmin(ctx, pageSize, pageToken, view == VIEW_BASIC, filter, showDeleted)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -386,12 +423,12 @@ func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageTo
 
 }
 
-func (s *service) GetUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, view pipelinePB.View) (*pipelinePB.Pipeline, error) {
+func (s *service) GetUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, view View) (*pipelinePB.Pipeline, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, view == pipelinePB.View_VIEW_BASIC, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetUserPipelineByID(ctx, ownerPermalink, userPermalink, id, view == VIEW_BASIC, s.getCode(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -430,9 +467,9 @@ func (s *service) GetUserPipelineLatestReleaseUid(ctx context.Context, ns resour
 	return dbPipelineRelease.UID, nil
 }
 
-func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.Pipeline, error) {
+func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.Pipeline, error) {
 
-	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, uid, view == pipelinePB.View_VIEW_BASIC)
+	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, uid, view == VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -473,7 +510,7 @@ func (s *service) UpdateUserPipelineByID(ctx context.Context, ns resource.Namesp
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbPipeline, VIEW_FULL)
 }
 
 func (s *service) DeleteUserPipelineByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error {
@@ -532,7 +569,7 @@ func (s *service) ValidateUserPipelineByID(ctx context.Context, ns resource.Name
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbPipeline, VIEW_FULL)
 
 }
 
@@ -561,7 +598,7 @@ func (s *service) UpdateUserPipelineIDByID(ctx context.Context, ns resource.Name
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, pipelinePB.View_VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbPipeline, VIEW_FULL)
 }
 
 func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
@@ -569,7 +606,8 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 	var metadata []byte
 	var err error
 	for _, comp := range recipe.Components {
-		if comp.DefinitionName == "operator-definitions/op-start" {
+		// op start
+		if comp.DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
 			schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 			schStruct.Fields["type"] = structpb.NewStringValue("object")
 			schStruct.Fields["properties"] = structpb.NewStructValue(comp.Configuration.Fields["metadata"].GetStructValue())
@@ -705,7 +743,7 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_FULL)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, VIEW_FULL)
 	if err != nil {
 		return nil, err
 	}
@@ -731,27 +769,27 @@ func (s *service) CreateUserPipelineRelease(ctx context.Context, ns resource.Nam
 		return nil, err
 	}
 	// Add resource entry to controller
-	if err := s.UpdateResourceState(dbCreatedPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
+	if err := s.UpdatePipelineState(dbCreatedPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
 		return nil, err
 	}
 
 	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
 	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
 
-	return s.DBToPBPipelineRelease(ctx, dbCreatedPipelineRelease, pipelinePB.View_VIEW_FULL, latestUUID, defaultUUID)
+	return s.DBToPBPipelineRelease(ctx, dbCreatedPipelineRelease, VIEW_FULL, latestUUID, defaultUUID)
 
 }
-func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error) {
+func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbPipelineReleases, ps, pt, err := s.repository.ListUserPipelineReleases(ctx, ownerPermalink, userPermalink, pipelineUid, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter, showDeleted)
+	dbPipelineReleases, ps, pt, err := s.repository.ListUserPipelineReleases(ctx, ownerPermalink, userPermalink, pipelineUid, pageSize, pageToken, view == VIEW_BASIC, filter, showDeleted)
 	if err != nil {
 		return nil, 0, "", err
 	}
 
-	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, VIEW_BASIC)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -762,9 +800,9 @@ func (s *service) ListUserPipelineReleases(ctx context.Context, ns resource.Name
 	return pbPipelineReleases, ps, pt, err
 }
 
-func (s *service) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, view pipelinePB.View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error) {
+func (s *service) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int64, string, error) {
 
-	dbPipelineReleases, ps, pt, err := s.repository.ListPipelineReleasesAdmin(ctx, pageSize, pageToken, view == pipelinePB.View_VIEW_BASIC, filter, showDeleted)
+	dbPipelineReleases, ps, pt, err := s.repository.ListPipelineReleasesAdmin(ctx, pageSize, pageToken, view == VIEW_BASIC, filter, showDeleted)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -773,16 +811,16 @@ func (s *service) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64,
 
 }
 
-func (s *service) GetUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, view pipelinePB.View) (*pipelinePB.PipelineRelease, error) {
+func (s *service) GetUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, view View) (*pipelinePB.PipelineRelease, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, view == pipelinePB.View_VIEW_BASIC)
+	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByID(ctx, ownerPermalink, userPermalink, pipelineUid, id, view == VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -792,16 +830,16 @@ func (s *service) GetUserPipelineReleaseByID(ctx context.Context, ns resource.Na
 	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, view, latestUUID, defaultUUID)
 
 }
-func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, view pipelinePB.View) (*pipelinePB.PipelineRelease, error) {
+func (s *service) GetUserPipelineReleaseByUID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, uid uuid.UUID, view View) (*pipelinePB.PipelineRelease, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
-	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByUID(ctx, ownerPermalink, userPermalink, pipelineUid, uid, view == pipelinePB.View_VIEW_BASIC)
+	dbPipelineRelease, err := s.repository.GetUserPipelineReleaseByUID(ctx, ownerPermalink, userPermalink, pipelineUid, uid, view == VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -818,7 +856,7 @@ func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 	// Validation: Pipeline existence
-	if existingPipeline, _ := s.GetUserPipelineReleaseByID(ctx, ns, userUid, pipelineUid, id, pipelinePB.View_VIEW_BASIC); existingPipeline == nil {
+	if existingPipeline, _ := s.GetUserPipelineReleaseByID(ctx, ns, userUid, pipelineUid, id, VIEW_BASIC); existingPipeline == nil {
 		return nil, status.Errorf(codes.NotFound, "Pipeline id %s is not found", id)
 	}
 	// TODO: use ACL
@@ -839,19 +877,19 @@ func (s *service) UpdateUserPipelineReleaseByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 	// Add resource entry to controller
-	if err := s.UpdateResourceState(dbPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
+	if err := s.UpdatePipelineState(dbPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
 		return nil, err
 	}
 
 	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
 	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, pipelinePB.View_VIEW_FULL, latestUUID, defaultUUID)
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, VIEW_FULL, latestUUID, defaultUUID)
 }
 
 func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error) {
@@ -877,18 +915,18 @@ func (s *service) UpdateUserPipelineReleaseIDByID(ctx context.Context, ns resour
 		return nil, err
 	}
 
-	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, pipelinePB.View_VIEW_BASIC)
+	pipeline, err := s.GetPipelineByUID(ctx, userUid, pipelineUid, VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 	// Add resource entry to controller
-	if err := s.UpdateResourceState(dbPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
+	if err := s.UpdatePipelineState(dbPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
 		return nil, err
 	}
 	latestUUID, _ := s.GetUserPipelineLatestReleaseUid(ctx, ns, userUid, pipeline.Id)
 	defaultUUID, _ := s.GetUserPipelineDefaultReleaseUid(ctx, ns, userUid, pipeline.Id)
 
-	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, pipelinePB.View_VIEW_FULL, latestUUID, defaultUUID)
+	return s.DBToPBPipelineRelease(ctx, dbPipelineRelease, VIEW_FULL, latestUUID, defaultUUID)
 }
 
 func (s *service) DeleteUserPipelineReleaseByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pipelineUid uuid.UUID, id string) error {
@@ -903,7 +941,7 @@ func (s *service) DeleteUserPipelineReleaseByID(ctx context.Context, ns resource
 		return status.Errorf(codes.PermissionDenied, "Permission Denied")
 	}
 
-	if err := s.DeleteResourceState(dbPipelineRelease.UID); err != nil {
+	if err := s.DeletePipelineState(dbPipelineRelease.UID); err != nil {
 		return err
 	}
 
@@ -978,11 +1016,7 @@ func (s *service) triggerPipeline(
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	recipe, err := s.dbRecipePermalinkToName(recipe)
-	if err != nil {
-		return nil, nil, err
-	}
-	err = s.preTriggerPipeline(recipe, pipelineInputs)
+	err := s.preTriggerPipeline(recipe, pipelineInputs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1044,7 +1078,8 @@ func (s *service) triggerPipeline(
 
 			compInputTemplate := comp.Configuration
 			// TODO: remove this hardcode injection
-			if comp.DefinitionName == "connector-definitions/blockchain-numbers" {
+			// blockchain-number
+			if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
 				recipeByte, err := json.Marshal(recipe)
 				if err != nil {
 					return nil, nil, err
@@ -1109,31 +1144,43 @@ func (s *service) triggerPipeline(
 		}
 
 		if utils.IsConnectorDefinition(comp.DefinitionName) && comp.ResourceName != "" {
+
+			con, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(comp.DefinitionName, "/")[1]))
+			if err != nil {
+				return nil, nil, err
+			}
+
+			dbConnector, err := s.repository.GetConnectorByUIDAdmin(ctx, uuid.FromStringOrNil(strings.Split(comp.ResourceName, "/")[1]), false)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			configuration := func() *structpb.Struct {
+				if dbConnector.Configuration != nil {
+					str := structpb.Struct{}
+					err := str.UnmarshalJSON(dbConnector.Configuration)
+					if err != nil {
+						logger.Fatal(err.Error())
+					}
+					return &str
+				}
+				return nil
+			}()
+
+			execution, err := s.connector.CreateExecution(uuid.FromStringOrNil(con.Uid), task, configuration, logger)
+			if err != nil {
+				return nil, nil, err
+			}
 			start := time.Now()
-			resp, err := s.connectorPublicServiceClient.ExecuteUserConnectorResource(
-				utils.InjectOwnerToContextWithOwnerPermalink(
-					metadata.AppendToOutgoingContext(ctx,
-						"id", pipelineId,
-						"uid", pipelineUid.String(),
-						"release_id", pipelineReleaseId,
-						"release_uid", pipelineReleaseUid.String(),
-						"owner", ownerPermalink,
-						"trigger_id", pipelineTriggerId,
-					),
-					ownerPermalink),
-				&connectorPB.ExecuteUserConnectorResourceRequest{
-					Name:   comp.ResourceName,
-					Task:   task,
-					Inputs: compInputs,
-				},
-			)
+			compOutputs, err := execution.ExecuteWithValidation(compInputs)
+
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 			if err != nil {
-				return nil, nil, fmt.Errorf("[Component %s Execution Data Error] %s", comp.Id, status.Convert(err).Message())
+				return nil, nil, err
 			}
-			for idx := range resp.Outputs {
+			for idx := range compOutputs {
 
-				outputJson, err := protojson.Marshal(resp.Outputs[idx])
+				outputJson, err := protojson.Marshal(compOutputs[idx])
 				if err != nil {
 					return nil, nil, err
 				}
@@ -1145,7 +1192,8 @@ func (s *service) triggerPipeline(
 				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
 			}
 
-		} else if comp.DefinitionName == "operator-definitions/op-end" {
+		} else if comp.DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
+			// op end
 			responseCompId = comp.Id
 			computeTime[comp.Id] = 0
 		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
@@ -1155,7 +1203,7 @@ func (s *service) triggerPipeline(
 				return nil, nil, err
 			}
 
-			execution, err := s.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), task, comp.Configuration, logger)
+			execution, err := s.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), task, nil, logger)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -1224,11 +1272,7 @@ func (s *service) triggerAsyncPipeline(
 	pipelineTriggerId string,
 	returnTraces bool) (*longrunningpb.Operation, error) {
 
-	recipe, err := s.dbRecipePermalinkToName(recipe)
-	if err != nil {
-		return nil, err
-	}
-	err = s.preTriggerPipeline(recipe, pipelineInputs)
+	err := s.preTriggerPipeline(recipe, pipelineInputs)
 	if err != nil {
 		return nil, err
 	}
@@ -1365,4 +1409,522 @@ func (s *service) TriggerAsyncUserPipelineReleaseByID(ctx context.Context, ns re
 	}
 
 	return s.triggerAsyncPipeline(ctx, ownerPermalink, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
+}
+
+func (s *service) RemoveCredentialFieldsWithMaskString(dbConnDefID string, config *structpb.Struct) {
+	utils.RemoveCredentialFieldsWithMaskString(s.connector, dbConnDefID, config)
+}
+
+func (s *service) KeepCredentialFieldsWithMaskString(dbConnDefID string, config *structpb.Struct) {
+	utils.KeepCredentialFieldsWithMaskString(s.connector, dbConnDefID, config)
+}
+
+func (s *service) ListConnectorDefinitions(ctx context.Context, pageSize int64, pageToken string, view View, filter filtering.Filter) ([]*pipelinePB.ConnectorDefinition, int64, string, error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	var err error
+	prevLastUid := ""
+
+	if pageToken != "" {
+		_, prevLastUid, err = paginate.DecodeToken(pageToken)
+		if err != nil {
+			st, err := sterr.CreateErrorBadRequest(
+				fmt.Sprintf("[db] list connector error: %s", err.Error()),
+				[]*errdetails.BadRequest_FieldViolation{
+					{
+						Field:       "page_token",
+						Description: fmt.Sprintf("Invalid page token: %s", err.Error()),
+					},
+				},
+			)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+			return nil, 0, "", st.Err()
+		}
+	}
+
+	if pageSize == 0 {
+		pageSize = repository.DefaultPageSize
+	} else if pageSize > repository.MaxPageSize {
+		pageSize = repository.MaxPageSize
+	}
+
+	unfilteredDefs := s.connector.ListConnectorDefinitions()
+
+	// don't return definition with tombstone = true
+	unfilteredDefsRemoveTombstone := []*pipelinePB.ConnectorDefinition{}
+	for idx := range unfilteredDefs {
+		if !unfilteredDefs[idx].Tombstone {
+			unfilteredDefsRemoveTombstone = append(unfilteredDefsRemoveTombstone, unfilteredDefs[idx])
+		}
+	}
+	unfilteredDefs = unfilteredDefsRemoveTombstone
+
+	var defs []*pipelinePB.ConnectorDefinition
+	if filter.CheckedExpr != nil {
+		trans := repository.NewTranspiler(filter)
+		expr, _ := trans.Transpile()
+		typeMap := map[string]bool{}
+		for idx := range expr.Vars {
+			if idx == 0 {
+				typeMap[string(expr.Vars[idx].(protoreflect.Name))] = true
+			} else {
+				typeMap[string(expr.Vars[idx].([]interface{})[0].(protoreflect.Name))] = true
+			}
+
+		}
+		for idx := range unfilteredDefs {
+			if _, ok := typeMap[unfilteredDefs[idx].Type.String()]; ok {
+				defs = append(defs, unfilteredDefs[idx])
+			}
+		}
+
+	} else {
+		defs = unfilteredDefs
+	}
+
+	startIdx := 0
+	lastUid := ""
+	for idx, def := range defs {
+		if def.Uid == prevLastUid {
+			startIdx = idx + 1
+			break
+		}
+	}
+
+	page := []*pipelinePB.ConnectorDefinition{}
+	for i := 0; i < int(pageSize) && startIdx+i < len(defs); i++ {
+		def := proto.Clone(defs[startIdx+i]).(*pipelinePB.ConnectorDefinition)
+		page = append(page, def)
+		lastUid = def.Uid
+	}
+
+	nextPageToken := ""
+
+	if startIdx+len(page) < len(defs) {
+		nextPageToken = paginate.EncodeToken(time.Time{}, lastUid)
+	}
+
+	pageDefs := []*pipelinePB.ConnectorDefinition{}
+
+	for _, def := range page {
+		def = proto.Clone(def).(*pipelinePB.ConnectorDefinition)
+		if view == VIEW_BASIC {
+			def.Spec = nil
+		}
+		def.VendorAttributes = nil
+		pageDefs = append(pageDefs, def)
+	}
+	return pageDefs, int64(len(defs)), nextPageToken, err
+
+}
+
+func (s *service) GetConnectorByUID(ctx context.Context, userUid uuid.UUID, uid uuid.UUID, view View, credentialMask bool) (*pipelinePB.Connector, error) {
+
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+	dbConnector, err := s.repository.GetConnectorByUID(ctx, userPermalink, uid, view == VIEW_BASIC)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.convertDatamodelToProto(ctx, dbConnector, view, credentialMask)
+}
+
+func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string, view View) (*pipelinePB.ConnectorDefinition, error) {
+
+	def, err := s.connector.GetConnectorDefinitionByID(id)
+	if err != nil {
+		return nil, err
+	}
+	def = proto.Clone(def).(*pipelinePB.ConnectorDefinition)
+	if view == VIEW_BASIC {
+		def.Spec = nil
+	}
+	def.VendorAttributes = nil
+
+	return def, nil
+}
+func (s *service) GetConnectorDefinitionByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.ConnectorDefinition, error) {
+
+	def, err := s.connector.GetConnectorDefinitionByUID(uid)
+	if err != nil {
+		return nil, err
+	}
+	def = proto.Clone(def).(*pipelinePB.ConnectorDefinition)
+	if view == VIEW_BASIC {
+		def.Spec = nil
+	}
+	def.VendorAttributes = nil
+
+	return def, nil
+}
+
+func (s *service) ListConnectors(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int64, string, error) {
+
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+
+	dbConnectors, totalSize, nextPageToken, err := s.repository.ListConnectors(ctx, userPermalink, pageSize, pageToken, view == VIEW_BASIC, filter, showDeleted)
+	if err != nil {
+		return nil, 0, "", err
+	}
+
+	pbConnectors, err := s.convertDatamodelArrayToProtoArray(ctx, dbConnectors, view, true)
+	return pbConnectors, totalSize, nextPageToken, err
+
+}
+
+func (s *service) CreateUserConnector(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, connectorResource *pipelinePB.Connector) (*pipelinePB.Connector, error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	ownerPermalink := ns.String()
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+
+	connDefResp, err := s.connector.GetConnectorDefinitionByID(strings.Split(connectorResource.ConnectorDefinitionName, "/")[1])
+	if err != nil {
+		return nil, err
+	}
+
+	connDefUID, err := uuid.FromString(connDefResp.GetUid())
+	if err != nil {
+		return nil, err
+	}
+
+	connConfig, err := connectorResource.GetConfiguration().MarshalJSON()
+	if err != nil {
+
+		return nil, err
+	}
+
+	connDesc := sql.NullString{
+		String: connectorResource.GetDescription(),
+		Valid:  len(connectorResource.GetDescription()) > 0,
+	}
+
+	dbConnectorToCreate := &datamodel.Connector{
+		ID:                     connectorResource.Id,
+		Owner:                  resource.UserUidToUserPermalink(userUid),
+		ConnectorDefinitionUID: connDefUID,
+		Tombstone:              false,
+		Configuration:          connConfig,
+		ConnectorType:          datamodel.ConnectorType(connDefResp.GetType()),
+		Description:            connDesc,
+		Visibility:             datamodel.ConnectorVisibility(connectorResource.Visibility),
+	}
+
+	if existingConnector, _ := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, dbConnectorToCreate.ID, true); existingConnector != nil {
+		st, err := sterr.CreateErrorResourceInfo(
+			codes.AlreadyExists,
+			"[service] create connector",
+			"connectors",
+			fmt.Sprintf("Connector id %s", dbConnectorToCreate.ID),
+			dbConnectorToCreate.Owner,
+			"Already exists",
+		)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		return nil, st.Err()
+	}
+
+	if err := s.repository.CreateUserConnector(ctx, ownerPermalink, userPermalink, dbConnectorToCreate); err != nil {
+		return nil, err
+	}
+
+	// User desire state = DISCONNECTED
+	if err := s.repository.UpdateUserConnectorStateByID(ctx, ownerPermalink, userPermalink, dbConnectorToCreate.ID, datamodel.ConnectorState(pipelinePB.Connector_STATE_DISCONNECTED)); err != nil {
+		return nil, err
+	}
+	if err := s.UpdateConnectorState(dbConnectorToCreate.UID, pipelinePB.Connector_STATE_DISCONNECTED, nil); err != nil {
+		return nil, err
+	}
+
+	dbConnector, err := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, dbConnectorToCreate.ID, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.convertDatamodelToProto(ctx, dbConnector, VIEW_FULL, true)
+
+}
+
+func (s *service) ListUserConnectors(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int64, string, error) {
+
+	ownerPermalink := ns.String()
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+	dbConnectors, totalSize, nextPageToken, err := s.repository.ListUserConnectors(ctx, ownerPermalink, userPermalink, pageSize, pageToken, view == VIEW_BASIC, filter, showDeleted)
+
+	if err != nil {
+		return nil, 0, "", err
+	}
+
+	pbConnectors, err := s.convertDatamodelArrayToProtoArray(ctx, dbConnectors, view, true)
+	return pbConnectors, totalSize, nextPageToken, err
+
+}
+
+func (s *service) ListConnectorsAdmin(ctx context.Context, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int64, string, error) {
+
+	dbConnectors, totalSize, nextPageToken, err := s.repository.ListConnectorsAdmin(ctx, pageSize, pageToken, view == VIEW_BASIC, filter, showDeleted)
+	if err != nil {
+		return nil, 0, "", err
+	}
+
+	pbConnectors, err := s.convertDatamodelArrayToProtoArray(ctx, dbConnectors, view, true)
+	return pbConnectors, totalSize, nextPageToken, err
+}
+
+func (s *service) GetUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, view View, credentialMask bool) (*pipelinePB.Connector, error) {
+
+	ownerPermalink := ns.String()
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+	dbConnector, err := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, id, view == VIEW_BASIC)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.convertDatamodelToProto(ctx, dbConnector, view, credentialMask)
+}
+
+func (s *service) GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.Connector, error) {
+
+	dbConnector, err := s.repository.GetConnectorByUIDAdmin(ctx, uid, view == VIEW_BASIC)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.convertDatamodelToProto(ctx, dbConnector, view, true)
+}
+
+func (s *service) UpdateUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, connectorResource *pipelinePB.Connector) (*pipelinePB.Connector, error) {
+
+	ownerPermalink := ns.String()
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+
+	dbConnectorToUpdate, err := s.convertProtoToDatamodel(ctx, connectorResource)
+	if err != nil {
+		return nil, err
+	}
+	dbConnectorToUpdate.Owner = ownerPermalink
+
+	if err := s.repository.UpdateUserConnectorByID(ctx, ownerPermalink, userPermalink, id, dbConnectorToUpdate); err != nil {
+		return nil, err
+	}
+
+	// Check connector state
+	if err := s.UpdateConnectorState(dbConnectorToUpdate.UID, pipelinePB.Connector_STATE_DISCONNECTED, nil); err != nil {
+		return nil, err
+	}
+
+	dbConnector, err := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, dbConnectorToUpdate.ID, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.convertDatamodelToProto(ctx, dbConnector, VIEW_FULL, true)
+
+}
+
+func (s *service) DeleteUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error {
+	// logger, _ := logger.GetZapLogger(ctx)
+
+	ownerPermalink := ns.String()
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+
+	dbConnector, err := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, id, false)
+	if err != nil {
+		return err
+	}
+
+	// TODO
+	// filter := fmt.Sprintf("recipe.components.resource_name:\"connector-resources/%s\"", dbConnector.UID)
+
+	// pipeResp, err := s.pipelinePublicServiceClient.ListPipelines(s.injectUserToContext(context.Background(), ownerPermalink), &pipelinePB.ListPipelinesRequest{
+	// 	Filter: &filter,
+	// })
+	// if err != nil {
+	// 	return err
+	// }
+
+	// if len(pipeResp.Pipelines) > 0 {
+	// 	var pipeIDs []string
+	// 	for _, pipe := range pipeResp.Pipelines {
+	// 		pipeIDs = append(pipeIDs, pipe.GetId())
+	// 	}
+	// 	st, err := sterr.CreateErrorPreconditionFailure(
+	// 		"[service] delete connector",
+	// 		[]*errdetails.PreconditionFailure_Violation{
+	// 			{
+	// 				Type:        "DELETE",
+	// 				Subject:     fmt.Sprintf("id %s", id),
+	// 				Description: fmt.Sprintf("The connector is still in use by pipeline: %s", strings.Join(pipeIDs, " ")),
+	// 			},
+	// 		})
+	// 	if err != nil {
+	// 		logger.Error(err.Error())
+	// 	}
+	// 	return st.Err()
+	// }
+
+	if err := s.DeleteConnectorState(dbConnector.UID); err != nil {
+		return err
+	}
+
+	return s.repository.DeleteUserConnectorByID(ctx, ownerPermalink, userPermalink, id)
+}
+
+func (s *service) UpdateUserConnectorStateByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, state pipelinePB.Connector_State) (*pipelinePB.Connector, error) {
+
+	ownerPermalink := ns.String()
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+
+	// Validation: trigger and response connector cannot be disconnected
+	conn, err := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, id, false)
+	if err != nil {
+		return nil, err
+	}
+
+	if conn.Tombstone {
+		st, _ := sterr.CreateErrorPreconditionFailure(
+			"[service] update connector state",
+			[]*errdetails.PreconditionFailure_Violation{
+				{
+					Type:        "STATE",
+					Subject:     fmt.Sprintf("id %s", id),
+					Description: "the connector definition is deprecated, you can not use anymore",
+				},
+			})
+		return nil, st.Err()
+	}
+
+	switch state {
+	case pipelinePB.Connector_STATE_CONNECTED:
+
+		// Set connector state to user desire state
+		if err := s.repository.UpdateUserConnectorStateByID(ctx, ownerPermalink, userPermalink, id, datamodel.ConnectorState(pipelinePB.Connector_STATE_CONNECTED)); err != nil {
+			return nil, err
+		}
+
+		if err := s.UpdateConnectorState(conn.UID, pipelinePB.Connector_STATE_CONNECTED, nil); err != nil {
+			return nil, err
+		}
+
+	case pipelinePB.Connector_STATE_DISCONNECTED:
+
+		if err := s.repository.UpdateUserConnectorStateByID(ctx, ownerPermalink, userPermalink, id, datamodel.ConnectorState(pipelinePB.Connector_STATE_DISCONNECTED)); err != nil {
+			return nil, err
+		}
+		if err := s.UpdateConnectorState(conn.UID, pipelinePB.Connector_State(state), nil); err != nil {
+			return nil, err
+		}
+	}
+
+	dbConnector, err := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, id, false)
+	if err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return s.convertDatamodelToProto(ctx, dbConnector, VIEW_FULL, true)
+}
+
+func (s *service) UpdateUserConnectorIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, newID string) (*pipelinePB.Connector, error) {
+
+	ownerPermalink := ns.String()
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+
+	if err := s.repository.UpdateUserConnectorIDByID(ctx, ownerPermalink, userPermalink, id, newID); err != nil {
+		return nil, err
+	}
+
+	dbConnector, err := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, newID, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.convertDatamodelToProto(ctx, dbConnector, VIEW_FULL, true)
+
+}
+
+func (s *service) Execute(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, task string, inputs []*structpb.Struct) ([]*structpb.Struct, error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
+	ownerPermalink := ns.String()
+	userPermalink := resource.UserUidToUserPermalink(userUid)
+
+	dbConnector, err := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, id, false)
+	if err != nil {
+		return nil, err
+	}
+
+	configuration := func() *structpb.Struct {
+		if dbConnector.Configuration != nil {
+			str := structpb.Struct{}
+			err := str.UnmarshalJSON(dbConnector.Configuration)
+			if err != nil {
+				logger.Fatal(err.Error())
+			}
+			return &str
+		}
+		return nil
+	}()
+
+	con, err := s.connector.CreateExecution(dbConnector.ConnectorDefinitionUID, task, configuration, logger)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return con.ExecuteWithValidation(inputs)
+}
+
+func (s *service) CheckConnectorByUID(ctx context.Context, connUID uuid.UUID) (*pipelinePB.Connector_State, error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	dbConnector, err := s.repository.GetConnectorByUIDAdmin(ctx, connUID, false)
+	if err != nil {
+		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
+	}
+
+	configuration := func() *structpb.Struct {
+		if dbConnector.Configuration != nil {
+			str := structpb.Struct{}
+			err := str.UnmarshalJSON(dbConnector.Configuration)
+			if err != nil {
+				logger.Fatal(err.Error())
+			}
+			return &str
+		}
+		return nil
+	}()
+
+	state, err := s.connector.Test(dbConnector.ConnectorDefinitionUID, configuration, logger)
+	if err != nil {
+		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
+	}
+
+	switch state {
+	case pipelinePB.Connector_STATE_CONNECTED:
+		if err := s.UpdateConnectorState(dbConnector.UID, pipelinePB.Connector_STATE_CONNECTED, nil); err != nil {
+			return pipelinePB.Connector_STATE_ERROR.Enum(), nil
+		}
+		return pipelinePB.Connector_STATE_CONNECTED.Enum(), nil
+	case pipelinePB.Connector_STATE_ERROR:
+		if err := s.UpdateConnectorState(dbConnector.UID, pipelinePB.Connector_STATE_ERROR, nil); err != nil {
+			return pipelinePB.Connector_STATE_ERROR.Enum(), nil
+		}
+		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
+	default:
+		if err := s.UpdateConnectorState(dbConnector.UID, pipelinePB.Connector_STATE_ERROR, nil); err != nil {
+			return pipelinePB.Connector_STATE_ERROR.Enum(), nil
+		}
+		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
+	}
+
 }

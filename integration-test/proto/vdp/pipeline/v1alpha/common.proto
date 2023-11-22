@@ -2,14 +2,38 @@ syntax = "proto3";
 
 package vdp.pipeline.v1alpha;
 
-// View represents a view of any resource. The resource view is implemented by
-// adding a parameter to the method request which allows the client to specify
-// which view of the resource it wants to receive in the response.
-enum View {
-  // View: UNSPECIFIED
-  VIEW_UNSPECIFIED = 0;
-  // View: BASIC
-  VIEW_BASIC = 1;
-  // View: FULL
-  VIEW_FULL = 2;
+// Role
+enum Role {
+  // ROLE: UNSPECIFIED
+  ROLE_UNSPECIFIED = 0;
+  // Role: Viewer
+  ROLE_VIEWER = 1;
+}
+
+// Permission
+message Permission {
+  // User
+  message User {
+    // enabled
+    bool enabled = 1;
+    // role
+    Role role = 4;
+  }
+  // Share Code
+  message ShareCode {
+    // user
+    string user = 1;
+    // user
+    string code = 2;
+    // enabled
+    bool enabled = 3;
+    // role
+    Role role = 4;
+  }
+
+  // users
+  map<string, User> users = 1;
+
+  // shared code
+  ShareCode share_code = 2;
 }
