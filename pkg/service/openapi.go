@@ -188,7 +188,7 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 	endComp := proto.Clone(endCompOrigin).(*pipelinePB.Component)
 	inputFields := endComp.Configuration.Fields["input"].GetStructValue().Fields
 	if endComp.Configuration.Fields["metadata"] == nil {
-		return nil, fmt.Errorf("metadata of op-end can not be empty")
+		return nil, fmt.Errorf("metadata of end operator can not be empty")
 	}
 	for k, v := range endComp.Configuration.Fields["metadata"].GetStructValue().Fields {
 		var m *structpb.Value
@@ -300,7 +300,7 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 							}
 							str = str[len(splits[1])+1:]
 
-						} else if comp.DefinitionName == "operator-definitions/op-start" {
+						} else if comp.DefinitionName == "operator-definitions/start" {
 
 							walk = structpb.NewStructValue(openApiInput)
 

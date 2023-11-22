@@ -85,7 +85,7 @@ export const simpleRecipe = {
     components: [
       {
         id: "start",
-        definition_name: "operator-definitions/op-start",
+        definition_name: "operator-definitions/start",
         configuration: {
           metadata: {
             input: {
@@ -98,7 +98,7 @@ export const simpleRecipe = {
       },
       {
         id: "end",
-        definition_name: "operator-definitions/op-end",
+        definition_name: "operator-definitions/end",
         configuration: {
           metadata: {
             answer: {
@@ -113,7 +113,7 @@ export const simpleRecipe = {
       {
         id: "d01",
         resource_name: `users/instill-ai/connectors/${dstCSVConnID1}`,
-        definition_name: "connector-definitions/airbyte-destination-csv",
+        definition_name: "connector-definitions/airbyte_destination_csv",
         configuration: {
           input: {
             data: {
@@ -125,7 +125,7 @@ export const simpleRecipe = {
       {
         id: "d02",
         resource_name: `users/instill-ai/connectors/${dstCSVConnID2}`,
-        definition_name: "connector-definitions/airbyte-destination-csv",
+        definition_name: "connector-definitions/airbyte_destination_csv",
         configuration: {
           input: {
             data: {
@@ -144,7 +144,7 @@ export const simpleRecipeWithoutCSV = {
     components: [
       {
         id: "start",
-        definition_name: "operator-definitions/op-start",
+        definition_name: "operator-definitions/start",
         configuration: {
           metadata: {
             input: {
@@ -157,7 +157,7 @@ export const simpleRecipeWithoutCSV = {
       },
       {
         id: "end",
-        definition_name: "operator-definitions/op-end",
+        definition_name: "operator-definitions/end",
         configuration: {
           metadata: {
             answer: {
@@ -179,7 +179,7 @@ export const simpleRecipeDupId = {
     components: [
       {
         id: "start",
-        definition_name: "operator-definitions/op-start",
+        definition_name: "operator-definitions/start",
         configuration: {
           metadata: {
             input: {
@@ -192,7 +192,7 @@ export const simpleRecipeDupId = {
       },
       {
         id: "end",
-        definition_name: "operator-definitions/op-end",
+        definition_name: "operator-definitions/end",
         configuration: {
           metadata: {
             answer: {
@@ -207,7 +207,7 @@ export const simpleRecipeDupId = {
       {
         id: "d01",
         resource_name: `users/instill-ai/connectors/${dstCSVConnID1}`,
-        definition_name: "connector-definitions/airbyte-destination-csv",
+        definition_name: "connector-definitions/airbyte_destination_csv",
         configuration: {
           input: {
             data: {
@@ -219,7 +219,7 @@ export const simpleRecipeDupId = {
       {
         id: "d01",
         resource_name: `users/instill-ai/connectors/${dstCSVConnID2}`,
-        definition_name: "connector-definitions/airbyte-destination-csv",
+        definition_name: "connector-definitions/airbyte_destination_csv",
         configuration: {
           input: {
             data: {

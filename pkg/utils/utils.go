@@ -152,12 +152,12 @@ func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{
 		inputs := []*structpb.Struct{}
 		outputs := []*structpb.Struct{}
 
-		// The traces data of op-start is different and we should skip it
-		if comps[compIdx].DefinitionName == "operator-definitions/op-start" {
+		// The traces data of start is different and we should skip it
+		if comps[compIdx].DefinitionName == "operator-definitions/start" {
 			continue
 		}
-		// we don't need to return traces data of op-end since the response already contain it
-		if comps[compIdx].DefinitionName == "operator-definitions/op-end" {
+		// we don't need to return traces data of end since the response already contain it
+		if comps[compIdx].DefinitionName == "operator-definitions/end" {
 			continue
 		}
 
