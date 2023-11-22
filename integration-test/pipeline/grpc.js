@@ -58,7 +58,7 @@ export function setup() {
             connector: {
               id: constant.dstCSVConnID1,
               connector_definition_name:
-                "connector-definitions/airbyte-destination-csv",
+                "connector-definitions/airbyte_destination_csv",
               configuration: {
                 destination_path: "/local/pipeline-backend-test-1",
               },
@@ -91,7 +91,7 @@ export function setup() {
             connector: {
               id: constant.dstCSVConnID2,
               connector_definition_name:
-                "connector-definitions/airbyte-destination-csv",
+                "connector-definitions/airbyte_destination_csv",
               configuration: {
                 destination_path: "/local/pipeline-backend-test-2",
               },

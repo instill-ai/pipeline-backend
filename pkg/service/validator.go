@@ -41,13 +41,13 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 		componentIdMap[recipePermalink.Components[idx].Id] = recipePermalink.Components[idx]
 	}
 
-	startOpDef, err := s.operator.GetOperatorDefinitionByID("op-start")
+	startOpDef, err := s.operator.GetOperatorDefinitionByID("start")
 	if err != nil {
-		return fmt.Errorf("operator-definitions/op-start not found")
+		return fmt.Errorf("operator-definitions/start not found")
 	}
-	endOpDef, err := s.operator.GetOperatorDefinitionByID("op-end")
+	endOpDef, err := s.operator.GetOperatorDefinitionByID("end")
 	if err != nil {
-		return fmt.Errorf("operator-definitions/op-end not found")
+		return fmt.Errorf("operator-definitions/end not found")
 	}
 
 	for idx := range recipePermalink.Components {
