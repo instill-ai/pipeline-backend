@@ -404,35 +404,40 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 					}
 
 				}
+				m.GetStructValue().Fields["instillUIOrder"] = structpb.NewNumberValue(v.GetStructValue().Fields["instillUIOrder"].GetNumberValue())
 
 			} else {
 				m, err = structpb.NewValue(map[string]interface{}{
-					"title":         v.GetStructValue().Fields["title"].GetStringValue(),
-					"description":   v.GetStructValue().Fields["description"].GetStringValue(),
-					"type":          "string",
-					"instillFormat": "text",
+					"title":          v.GetStructValue().Fields["title"].GetStringValue(),
+					"description":    v.GetStructValue().Fields["description"].GetStringValue(),
+					"instillUIOrder": v.GetStructValue().Fields["instillUIOrder"].GetNumberValue(),
+					"type":           "string",
+					"instillFormat":  "text",
 				})
 			}
 		case float64:
 			m, err = structpb.NewValue(map[string]interface{}{
-				"title":         v.GetStructValue().Fields["title"].GetStringValue(),
-				"description":   v.GetStructValue().Fields["description"].GetStringValue(),
-				"type":          "number",
-				"instillFormat": "number",
+				"title":          v.GetStructValue().Fields["title"].GetStringValue(),
+				"description":    v.GetStructValue().Fields["description"].GetStringValue(),
+				"instillUIOrder": v.GetStructValue().Fields["instillUIOrder"].GetNumberValue(),
+				"type":           "number",
+				"instillFormat":  "number",
 			})
 		case bool:
 			m, err = structpb.NewValue(map[string]interface{}{
-				"title":         v.GetStructValue().Fields["title"].GetStringValue(),
-				"description":   v.GetStructValue().Fields["description"].GetStringValue(),
-				"type":          "boolean",
-				"instillFormat": "boolean",
+				"title":          v.GetStructValue().Fields["title"].GetStringValue(),
+				"description":    v.GetStructValue().Fields["description"].GetStringValue(),
+				"instillUIOrder": v.GetStructValue().Fields["instillUIOrder"].GetNumberValue(),
+				"type":           "boolean",
+				"instillFormat":  "boolean",
 			})
 		case structpb.NullValue:
 			m, err = structpb.NewValue(map[string]interface{}{
-				"title":         v.GetStructValue().Fields["title"].GetStringValue(),
-				"description":   v.GetStructValue().Fields["description"].GetStringValue(),
-				"type":          "null",
-				"instillFormat": "null",
+				"title":          v.GetStructValue().Fields["title"].GetStringValue(),
+				"description":    v.GetStructValue().Fields["description"].GetStringValue(),
+				"instillUIOrder": v.GetStructValue().Fields["instillUIOrder"].GetNumberValue(),
+				"type":           "null",
+				"instillFormat":  "null",
 			})
 		}
 		if err != nil {
