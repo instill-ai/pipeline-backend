@@ -584,14 +584,14 @@ export function CheckRename(metadata) {
             connector: csvDstConnector
         }, metadata)
 
-        let new_id = `some-id-not-${resCSVDst.message.connector.id}`
+        let new_id = `some_id_not_${resCSVDst.message.connector.id}`
 
         check(client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/RenameUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`,
             new_connector_id: new_id
         }, metadata), {
             [`vdp.pipeline.v1alpha.PipelinePublicService/RenameUserConnector ${resCSVDst.message.connector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
-            [`vdp.pipeline.v1alpha.PipelinePublicService/RenameUserConnector ${resCSVDst.message.connector.id} response id is some-id-not-${resCSVDst.message.connector.id}`]: (r) => r.message.connector.id === `some-id-not-${resCSVDst.message.connector.id}`,
+            [`vdp.pipeline.v1alpha.PipelinePublicService/RenameUserConnector ${resCSVDst.message.connector.id} response id is some_id_not_${resCSVDst.message.connector.id}`]: (r) => r.message.connector.id === `some_id_not_${resCSVDst.message.connector.id}`,
         });
 
         check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserConnector`, {

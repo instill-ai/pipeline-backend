@@ -17,7 +17,7 @@ export function CheckCreate(metadata) {
 
     var reqBody = Object.assign(
       {
-        id: randomString(63),
+        id: randomString(32),
         description: randomString(50),
       },
       constant.simpleRecipe
@@ -163,7 +163,7 @@ export function CheckCreate(metadata) {
       }
     );
 
-    reqBody.id = randomString(64);
+    reqBody.id = randomString(40);
     check(
       client.invoke(
         "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
@@ -174,7 +174,7 @@ export function CheckCreate(metadata) {
         metadata
       ),
       {
-        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline with > 63-character id response StatusInvalidArgument":
+        "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline with > 32-character id response StatusInvalidArgument":
           (r) => r.status === grpc.StatusInvalidArgument,
       }
     );

@@ -12,7 +12,7 @@ export function CheckCreate(header) {
     () => {
       var reqBody = Object.assign(
         {
-          id: randomString(63),
+          id: randomString(32),
           description: randomString(50),
         },
         constant.simpleRecipe

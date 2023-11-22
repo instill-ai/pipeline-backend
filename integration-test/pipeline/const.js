@@ -76,8 +76,8 @@ export const paramsHTTPWithJwt = {
   },
 };
 
-export const dstCSVConnID1 = "some-cool-name-for-dst-csv-connector-1";
-export const dstCSVConnID2 = "some-cool-name-for-dst-csv-connector-2";
+export const dstCSVConnID1 = "some_cool_name_for_connector_1";
+export const dstCSVConnID2 = "some_cool_name_for_connector_2";
 
 export const simpleRecipe = {
   recipe: {

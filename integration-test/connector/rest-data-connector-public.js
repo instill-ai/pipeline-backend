@@ -410,14 +410,14 @@ export function CheckRename(header) {
 
         check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename`,
             JSON.stringify({
-                "new_connector_id": `some-id-not-${resCSVDst.json().connector.id}`
+                "new_connector_id": `some_id_not_${resCSVDst.json().connector.id}`
             }), header), {
             [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response status 200`]: (r) => r.status === 200,
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response id is some-id-not-${resCSVDst.json().connector.id}`]: (r) => r.json().connector.id === `some-id-not-${resCSVDst.json().connector.id}`,
+            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response id is some_id_not_${resCSVDst.json().connector.id}`]: (r) => r.json().connector.id === `some_id_not_${resCSVDst.json().connector.id}`,
         });
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/some-id-not-${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/some-id-not-${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/some_id_not_${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1alpha/${constant.namespace}/connectors/some_id_not_${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
     });
 }

@@ -184,7 +184,7 @@ export function CheckRename(header) {
         // Cannot rename destination connector of a non-exist user
         check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename`,
             JSON.stringify({
-                "new_connector_id": `some-id-not-${resCSVDst.json().connector.id}`
+                "new_connector_id": `some_id_not_${resCSVDst.json().connector.id}`
             }), constant.paramsHTTPWithJwt), {
             [`[with random "jwt-sub" header] POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response status 401`]: (r) => r.status === 401,
         });

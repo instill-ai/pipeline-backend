@@ -13,11 +13,11 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/component v0.7.0-alpha.0.20231122064543-8b9a044908e4
-	github.com/instill-ai/connector v0.6.0-alpha.0.20231122065424-1bfbf240b5f6
-	github.com/instill-ai/operator v0.4.0-alpha.0.20231122070046-053dc25676a8
+	github.com/instill-ai/connector v0.6.0-alpha.0.20231122090017-aaad4ff2b1cc
+	github.com/instill-ai/operator v0.4.0-alpha.0.20231122090012-e8e48b0064cb
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231121163720-206d6eff20a7
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061
-	github.com/instill-ai/x v0.3.0-alpha
+	github.com/instill-ai/x v0.3.0-alpha.0.20231122091715-6928dd639308
 	github.com/knadh/koanf v1.5.0
 	github.com/mennanov/fieldmask-utils v1.0.0
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
