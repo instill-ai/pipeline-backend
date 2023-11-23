@@ -12,6 +12,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -37,6 +38,7 @@ type TriggerAsyncPipelineWorkflowRequest struct {
 
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
 type ExecuteConnectorActivityRequest struct {
+	Id                 string
 	InputBlobRedisKeys []string
 	DefinitionName     string
 	ResourceName       string
@@ -50,6 +52,7 @@ type ExecuteConnectorActivityResponse struct {
 
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
 type ExecuteOperatorActivityRequest struct {
+	Id                 string
 	InputBlobRedisKeys []string
 	DefinitionName     string
 	PipelineMetadata   PipelineMetadataStruct
@@ -332,6 +335,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 
 			start := time.Now()
 			if err := workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
+				Id:                 comp.Id,
 				InputBlobRedisKeys: inputBlobRedisKeys,
 				DefinitionName:     comp.DefinitionName,
 				ResourceName:       comp.ResourceName,
@@ -398,6 +402,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 
 			start := time.Now()
 			if err := workflow.ExecuteActivity(ctx, w.OperatorActivity, &ExecuteOperatorActivityRequest{
+				Id:                 comp.Id,
 				InputBlobRedisKeys: inputBlobRedisKeys,
 				DefinitionName:     comp.DefinitionName,
 				PipelineMetadata: PipelineMetadataStruct{
@@ -548,7 +553,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	}
 	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[Component %s Execution Data Error] %s", param.Id, status.Convert(err).Message())
 	}
 
 	outputBlobRedisKeys, err := w.SetBlob(compOutputs)
@@ -581,7 +586,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 	}
 	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[Component %s Execution Data Error] %s", param.Id, status.Convert(err).Message())
 	}
 
 	outputBlobRedisKeys, err := w.SetBlob(compOutputs)

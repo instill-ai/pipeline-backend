@@ -91,7 +91,7 @@ export const simpleRecipe = {
             input: {
               title: "Input",
               type: "string",
-              instillAcceptFormats: ["string"]
+              instillFormat: "string"
             }
           }
         }
@@ -150,7 +150,7 @@ export const simpleRecipeWithoutCSV = {
             input: {
               title: "Input",
               type: "string",
-              instillAcceptFormats: ["string"]
+              instillFormat: "string"
             }
           }
         }
@@ -185,7 +185,7 @@ export const simpleRecipeDupId = {
             input: {
               title: "Input",
               type: "string",
-              instillAcceptFormats: ["string"]
+              instillFormat: "string"
             }
           }
         }

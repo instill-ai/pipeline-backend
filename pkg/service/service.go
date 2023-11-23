@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-redis/redis/v9"
 	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api"
@@ -123,10 +125,10 @@ type Service interface {
 
 	// Connector common
 	ListConnectors(ctx context.Context, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int64, string, error)
-	CreateUserConnector(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, connectorResource *pipelinePB.Connector) (*pipelinePB.Connector, error)
+	CreateUserConnector(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, connector *pipelinePB.Connector) (*pipelinePB.Connector, error)
 	ListUserConnectors(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, pageSize int64, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int64, string, error)
 	GetUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, view View, credentialMask bool) (*pipelinePB.Connector, error)
-	UpdateUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, connectorResource *pipelinePB.Connector) (*pipelinePB.Connector, error)
+	UpdateUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, connector *pipelinePB.Connector) (*pipelinePB.Connector, error)
 	UpdateUserConnectorIDByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, newID string) (*pipelinePB.Connector, error)
 	UpdateUserConnectorStateByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, state pipelinePB.Connector_State) (*pipelinePB.Connector, error)
 	DeleteUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string) error
@@ -605,12 +607,17 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 
 	var metadata []byte
 	var err error
+
+	instillFormatMap := map[string]string{}
 	for _, comp := range recipe.Components {
 		// op start
 		if comp.DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
 			schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 			schStruct.Fields["type"] = structpb.NewStringValue("object")
 			schStruct.Fields["properties"] = structpb.NewStructValue(comp.Configuration.Fields["metadata"].GetStructValue())
+			for k, v := range comp.Configuration.Fields["metadata"].GetStructValue().Fields {
+				instillFormatMap[k] = v.GetStructValue().Fields["instillFormat"].GetStringValue()
+			}
 			err = component.CompileInstillAcceptFormats(schStruct)
 			if err != nil {
 				return err
@@ -648,13 +655,48 @@ func (s *service) preTriggerPipeline(recipe *datamodel.Recipe, pipelineInputs []
 			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
 			continue
 		}
-		var v interface{}
-		if err := json.Unmarshal(b, &v); err != nil {
+		var i interface{}
+		if err := json.Unmarshal(b, &i); err != nil {
 			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
 			continue
 		}
 
-		if err = sch.Validate(v); err != nil {
+		m := i.(map[string]interface{})
+
+		for k := range m {
+			switch s := m[k].(type) {
+			case string:
+				if instillFormatMap[k] != "string" {
+					if !strings.HasPrefix(s, "data:") {
+						b, err := base64.StdEncoding.DecodeString(s)
+						if err != nil {
+							return fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
+						}
+						mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
+						pipelineInput.Fields[k] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s))
+					}
+				}
+			case []interface{}:
+				if instillFormatMap[k] != "array:string" {
+					for idx := range s {
+						switch item := s[idx].(type) {
+						case string:
+							if !strings.HasPrefix(item, "data:") {
+								b, err := base64.StdEncoding.DecodeString(item)
+								if err != nil {
+									return fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
+								}
+								mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
+								pipelineInput.Fields[k].GetListValue().GetValues()[idx] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, item))
+							}
+						}
+
+					}
+				}
+			}
+		}
+
+		if err = sch.Validate(m); err != nil {
 			e := err.(*jsonschema.ValidationError)
 
 			for _, valErr := range e.DetailedOutput().Errors {
@@ -1176,7 +1218,7 @@ func (s *service) triggerPipeline(
 
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, fmt.Errorf("[Component %s Execution Data Error] %s", comp.Id, status.Convert(err).Message())
 			}
 			for idx := range compOutputs {
 
@@ -1212,7 +1254,7 @@ func (s *service) triggerPipeline(
 
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, fmt.Errorf("[Component %s Execution Data Error] %s", comp.Id, status.Convert(err).Message())
 			}
 			for idx := range compOutputs {
 
@@ -1575,14 +1617,14 @@ func (s *service) ListConnectors(ctx context.Context, userUid uuid.UUID, pageSiz
 
 }
 
-func (s *service) CreateUserConnector(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, connectorResource *pipelinePB.Connector) (*pipelinePB.Connector, error) {
+func (s *service) CreateUserConnector(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, connector *pipelinePB.Connector) (*pipelinePB.Connector, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	connDefResp, err := s.connector.GetConnectorDefinitionByID(strings.Split(connectorResource.ConnectorDefinitionName, "/")[1])
+	connDefResp, err := s.connector.GetConnectorDefinitionByID(strings.Split(connector.ConnectorDefinitionName, "/")[1])
 	if err != nil {
 		return nil, err
 	}
@@ -1592,26 +1634,26 @@ func (s *service) CreateUserConnector(ctx context.Context, ns resource.Namespace
 		return nil, err
 	}
 
-	connConfig, err := connectorResource.GetConfiguration().MarshalJSON()
+	connConfig, err := connector.GetConfiguration().MarshalJSON()
 	if err != nil {
 
 		return nil, err
 	}
 
 	connDesc := sql.NullString{
-		String: connectorResource.GetDescription(),
-		Valid:  len(connectorResource.GetDescription()) > 0,
+		String: connector.GetDescription(),
+		Valid:  len(connector.GetDescription()) > 0,
 	}
 
 	dbConnectorToCreate := &datamodel.Connector{
-		ID:                     connectorResource.Id,
+		ID:                     connector.Id,
 		Owner:                  resource.UserUidToUserPermalink(userUid),
 		ConnectorDefinitionUID: connDefUID,
 		Tombstone:              false,
 		Configuration:          connConfig,
 		ConnectorType:          datamodel.ConnectorType(connDefResp.GetType()),
 		Description:            connDesc,
-		Visibility:             datamodel.ConnectorVisibility(connectorResource.Visibility),
+		Visibility:             datamodel.ConnectorVisibility(connector.Visibility),
 	}
 
 	if existingConnector, _ := s.repository.GetUserConnectorByID(ctx, ownerPermalink, userPermalink, dbConnectorToCreate.ID, true); existingConnector != nil {
@@ -1698,12 +1740,12 @@ func (s *service) GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, vie
 	return s.convertDatamodelToProto(ctx, dbConnector, view, true)
 }
 
-func (s *service) UpdateUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, connectorResource *pipelinePB.Connector) (*pipelinePB.Connector, error) {
+func (s *service) UpdateUserConnectorByID(ctx context.Context, ns resource.Namespace, userUid uuid.UUID, id string, connector *pipelinePB.Connector) (*pipelinePB.Connector, error) {
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(userUid)
 
-	dbConnectorToUpdate, err := s.convertProtoToDatamodel(ctx, connectorResource)
+	dbConnectorToUpdate, err := s.convertProtoToDatamodel(ctx, connector)
 	if err != nil {
 		return nil, err
 	}

@@ -217,10 +217,10 @@ func GenerateGlobalValue(pipelineUid uuid.UUID, recipe *datamodel.Recipe, ownerP
 }
 
 func IsConnector(resourceName string) bool {
-	return strings.HasPrefix(resourceName, "connector-resources/")
+	return strings.HasPrefix(resourceName, "connectors/")
 }
 func IsConnectorWithNamespace(resourceName string) bool {
-	return len(strings.Split(resourceName, "/")) > 3 && strings.Split(resourceName, "/")[2] == "connector-resources"
+	return len(strings.Split(resourceName, "/")) > 3 && strings.Split(resourceName, "/")[2] == "connectors"
 }
 
 func IsConnectorDefinition(resourceName string) bool {
