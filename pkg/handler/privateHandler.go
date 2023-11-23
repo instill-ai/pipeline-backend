@@ -195,12 +195,12 @@ func (h *PrivateHandler) ListConnectorsAdmin(ctx context.Context, req *pipelineP
 		return nil, err
 	}
 
-	connectorResources, totalSize, nextPageToken, err := h.service.ListConnectorsAdmin(ctx, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	connectors, totalSize, nextPageToken, err := h.service.ListConnectorsAdmin(ctx, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Connectors = connectorResources
+	resp.Connectors = connectors
 	resp.NextPageToken = nextPageToken
 	resp.TotalSize = int32(totalSize)
 
@@ -236,12 +236,12 @@ func (h *PrivateHandler) LookUpConnectorAdmin(ctx context.Context, req *pipeline
 		return nil, err
 	}
 
-	connectorResource, err := h.service.GetConnectorByUIDAdmin(ctx, connUID, parseView(int32(*req.GetView().Enum())))
+	connector, err := h.service.GetConnectorByUIDAdmin(ctx, connUID, parseView(int32(*req.GetView().Enum())))
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Connector = connectorResource
+	resp.Connector = connector
 
 	return resp, nil
 }
@@ -254,7 +254,7 @@ func (h *PrivateHandler) CheckConnector(ctx context.Context, req *pipelinePB.Che
 		return resp, err
 	}
 
-	connectorResource, err := h.service.GetConnectorByUIDAdmin(ctx, connUID, service.VIEW_BASIC)
+	connector, err := h.service.GetConnectorByUIDAdmin(ctx, connUID, service.VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -263,13 +263,13 @@ func (h *PrivateHandler) CheckConnector(ctx context.Context, req *pipelinePB.Che
 		return nil, err
 	}
 
-	if connectorResource.Tombstone {
+	if connector.Tombstone {
 		resp.State = pipelinePB.Connector_STATE_ERROR
 		return resp, nil
 	}
 
-	if connectorResource.State == pipelinePB.Connector_STATE_CONNECTED {
-		state, err := h.service.CheckConnectorByUID(ctx, uuid.FromStringOrNil(connectorResource.Uid))
+	if connector.State == pipelinePB.Connector_STATE_CONNECTED {
+		state, err := h.service.CheckConnectorByUID(ctx, uuid.FromStringOrNil(connector.Uid))
 		if err != nil {
 			return resp, err
 		}

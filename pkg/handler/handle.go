@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -132,7 +133,7 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 			if err != nil {
 				return nil, err
 			}
-			v := base64.StdEncoding.EncodeToString(byteContainer)
+			v := fmt.Sprintf("data:%s;base64,%s", v[0].Header.Get("Content-Type"), base64.StdEncoding.EncodeToString(byteContainer))
 			if isArray {
 				if _, ok := inputsMap[inputIdx][key]; !ok {
 					inputsMap[inputIdx][key] = map[int]interface{}{}

@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	cloud.google.com/go/longrunning v0.5.2
+	github.com/gabriel-vasile/mimetype v1.4.3
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.15.2
@@ -12,9 +13,9 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.7.0-alpha.0.20231123104044-e64526c9616b
-	github.com/instill-ai/connector v0.6.0-alpha.0.20231123072146-5fe788b6538c
-	github.com/instill-ai/operator v0.4.0-alpha.0.20231122101522-92ea69925fe9
+	github.com/instill-ai/component v0.7.0-alpha.0.20231123142642-cdd8e3280413
+	github.com/instill-ai/connector v0.6.0-alpha.0.20231123143403-d43e0a0bc6e2
+	github.com/instill-ai/operator v0.4.0-alpha.0.20231123143510-43a7138a4123
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231121163720-206d6eff20a7
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061
 	github.com/instill-ai/x v0.3.0-alpha.0.20231122091715-6928dd639308
@@ -61,7 +62,6 @@ require (
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/gogo/status v1.1.1 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
@@ -98,8 +98,8 @@ require (
 )
 
 require (
-	code.sajari.com/docconv v1.3.7 // indirect
-	github.com/JalfResi/justext v0.0.0-20170829062021-c0282dea7198 // indirect
+	code.sajari.com/docconv v1.3.8 // indirect
+	github.com/JalfResi/justext v0.0.0-20221106200834-be571e3e3052 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/PuerkitoBio/goquery v1.8.1 // indirect
 	github.com/advancedlogic/GoOse v0.0.0-20191112112754-e742535969c1 // indirect
