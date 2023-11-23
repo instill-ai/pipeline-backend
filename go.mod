@@ -15,7 +15,7 @@ require (
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/component v0.7.0-alpha.0.20231123142642-cdd8e3280413
 	github.com/instill-ai/connector v0.6.0-alpha.0.20231123143403-d43e0a0bc6e2
-	github.com/instill-ai/operator v0.4.0-alpha.0.20231123143510-43a7138a4123
+	github.com/instill-ai/operator v0.4.0-alpha.0.20231123172021-469b54ebdf6b
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231121163720-206d6eff20a7
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061
 	github.com/instill-ai/x v0.3.0-alpha.0.20231122091715-6928dd639308
