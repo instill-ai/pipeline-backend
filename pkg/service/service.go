@@ -1198,7 +1198,7 @@ func (s *service) triggerPipeline(
 			computeTime[comp.Id] = 0
 		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
 
-			op, err := s.operator.GetOperatorDefinitionByID(strings.Split(comp.DefinitionName, "/")[1])
+			op, err := s.operator.GetOperatorDefinitionByUID(uuid.FromStringOrNil(strings.Split(comp.DefinitionName, "/")[1]))
 			if err != nil {
 				return nil, nil, err
 			}

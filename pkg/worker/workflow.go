@@ -519,7 +519,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		return nil, err
 	}
 
-	con, err := w.connector.GetConnectorDefinitionByID(strings.Split(param.DefinitionName, "/")[1])
+	con, err := w.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(param.DefinitionName, "/")[1]))
 	if err != nil {
 		return nil, err
 	}
@@ -570,7 +570,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 		return nil, err
 	}
 
-	op, err := w.operator.GetOperatorDefinitionByID(strings.Split(param.DefinitionName, "/")[1])
+	op, err := w.operator.GetOperatorDefinitionByUID(uuid.FromStringOrNil(strings.Split(param.DefinitionName, "/")[1]))
 	if err != nil {
 		return nil, err
 	}
