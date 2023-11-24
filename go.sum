@@ -1193,8 +1193,8 @@ github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231121163720-206d6eff20a7 h1:
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231121163720-206d6eff20a7/go.mod h1:q/YL5TZXD9nvmJ7Rih4gY3/B2HT2+GiFdxeZp9D+yE4=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061 h1:lOp2fORCj76/gfPuLqB3TEN2cvFRJHUQOxwFSl4qxEw=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061/go.mod h1:dxsx9oHibg/+FrFLxAMurvbheeVUrMdFTbVHsfANTCU=
-github.com/instill-ai/x v0.3.0-alpha.0.20231122091715-6928dd639308 h1:bWCWPGb47yveP8gP9hObKMtqbU0WeSGEu3dXbwDi8No=
-github.com/instill-ai/x v0.3.0-alpha.0.20231122091715-6928dd639308/go.mod h1:YVYjkbqc5FKatJ+jZa1S/8e4xHkQ8j9V3RYboqBpoR0=
+github.com/instill-ai/x v0.3.0-alpha.0.20231124062833-3236165f5782 h1:ErsJ1IkjD6Rtif0YI898fv/qllW5x9vb2fdt69EYwug=
+github.com/instill-ai/x v0.3.0-alpha.0.20231124062833-3236165f5782/go.mod h1:YVYjkbqc5FKatJ+jZa1S/8e4xHkQ8j9V3RYboqBpoR0=
 github.com/intel/goresctrl v0.2.0/go.mod h1:+CZdzouYFn5EsxgqAQTEzMfwKwuc0fVdMrT9FCCAVRQ=
 github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56/go.mod h1:ymszkNOg6tORTn+6F6j+Jc8TOr5osrynvN6ivFWZ2GA=
 github.com/j-keck/arping v1.0.2/go.mod h1:aJbELhR92bSk7tp79AWM/ftfc90EfEi2bQJrbBFOsPw=

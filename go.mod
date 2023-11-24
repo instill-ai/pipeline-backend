@@ -18,7 +18,7 @@ require (
 	github.com/instill-ai/operator v0.4.0-alpha.0.20231124045608-dc648a3e123a
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231121163720-206d6eff20a7
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061
-	github.com/instill-ai/x v0.3.0-alpha.0.20231122091715-6928dd639308
+	github.com/instill-ai/x v0.3.0-alpha.0.20231124062833-3236165f5782
 	github.com/knadh/koanf v1.5.0
 	github.com/mennanov/fieldmask-utils v1.0.0
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
