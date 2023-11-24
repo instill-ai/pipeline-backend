@@ -68,7 +68,7 @@ export function setup() {
         ),
         {
           "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserConnector CSV response StatusOK":
-            (r) => r.status === grpc.StatusOK,
+            (r) => {console.log(r); return r.status === grpc.StatusOK},
         }
       );
       client.invoke(
