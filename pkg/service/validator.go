@@ -28,7 +28,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 	endCnt := 0
 
 	componentIdMap := make(map[string]*datamodel.Component)
-	exp := "^[a-z_][a-z_0-9]{0,31}$"
+	exp := "^[a-z_][-a-z_0-9]{0,31}$"
 	r, _ := regexp.Compile(exp)
 
 	for idx := range recipePermalink.Components {
