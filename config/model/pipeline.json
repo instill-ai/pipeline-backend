@@ -37,7 +37,7 @@
       "type": "string",
       "title": "Name",
       "description": "The pipeline name",
-      "pattern": "^[a-z_][a-z_0-9]{0,31}$",
+      "pattern": "^[a-z_][-a-z_0-9]{0,31}$",
       "minLength": 1,
       "maxLength": 63,
       "ui_order": 2,
