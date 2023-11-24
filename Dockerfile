@@ -1,5 +1,5 @@
 ARG GOLANG_VERSION
-FROM --platform=$BUILDPLATFORM golang:${GOLANG_VERSION} AS build
+FROM --platform=$TARGETPLATFORM golang:${GOLANG_VERSION} AS build
 
 RUN apt update && apt install libtesseract-dev -y
 
@@ -13,21 +13,8 @@ RUN go get github.com/otiai10/gosseract/v2
 
 ARG SERVICE_NAME TARGETOS TARGETARCH
 
-
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
-    if [ "$BUILDARCH" = "amd64" ] && [ "$TARGETARCH" = "arm64" ]; then \
-    GOOS=$TARGETOS GOARCH=$TARGETARCH CC=aarch64-linux-gnu-gcc CGO_ENABLED=1 go build -tags=ocr -o /${SERVICE_NAME} ./cmd/main; \
-    else \
-    GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags=ocr -o /${SERVICE_NAME} ./cmd/main; \
-    fi
-
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg \
-    if [ "$BUILDARCH" = "amd64" ] && [ "$TARGETARCH" = "arm64" ]; then \
-    GOOS=$TARGETOS GOARCH=$TARGETARCH CC=aarch64-linux-gnu-gcc CGO_ENABLED=1 go build -tags=ocr -o /${SERVICE_NAME}-worker ./cmd/worker; \
-    else \
-    GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags=ocr -o /${SERVICE_NAME}-worker ./cmd/worker; \
-    fi
-
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=1 go build -tags=ocr -o /${SERVICE_NAME} ./cmd/main
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=1 go build -tags=ocr -o /${SERVICE_NAME}-worker ./cmd/worker
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-migrate ./cmd/migration
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-init ./cmd/init
 
