@@ -64,3 +64,27 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.Readiness
 		},
 	}, nil
 }
+
+// PrivateHandler handles private API
+type PrivateHandler struct {
+	pipelinePB.UnimplementedPipelinePrivateServiceServer
+	service service.Service
+}
+
+// NewPrivateHandler initiates a handler instance
+func NewPrivateHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePrivateServiceServer {
+	datamodel.InitJSONSchema(ctx)
+	return &PrivateHandler{
+		service: s,
+	}
+}
+
+// GetService returns the service
+func (h *PrivateHandler) GetService() service.Service {
+	return h.service
+}
+
+// SetService sets the service
+func (h *PrivateHandler) SetService(s service.Service) {
+	h.service = s
+}
