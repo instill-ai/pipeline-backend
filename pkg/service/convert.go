@@ -116,7 +116,7 @@ func (s *service) connectorNameToPermalink(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dbConnector, err := s.repository.GetUserConnectorByID(context.Background(), ownerPermalink, strings.Split(name, "/")[3], true)
+	dbConnector, err := s.repository.GetNamespaceConnectorByID(context.Background(), ownerPermalink, strings.Split(name, "/")[3], true)
 	if err != nil {
 		return "", err
 	}

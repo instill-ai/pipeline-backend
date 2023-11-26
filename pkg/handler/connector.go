@@ -399,7 +399,7 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 		connector.Owner = &pipelinePB.Connector_Organization{Organization: parent}
 	}
 
-	connectorCreated, err := h.service.CreateUserConnector(ctx, ns, userUid, connector)
+	connectorCreated, err := h.service.CreateNamespaceConnector(ctx, ns, userUid, connector)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -466,7 +466,7 @@ func (h *PublicHandler) ListUserConnectors(ctx context.Context, req *pipelinePB.
 		return resp, err
 	}
 
-	connectors, totalSize, nextPageToken, err := h.service.ListUserConnectors(ctx, ns, userUid, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	connectors, totalSize, nextPageToken, err := h.service.ListNamespaceConnectors(ctx, ns, userUid, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -511,7 +511,7 @@ func (h *PublicHandler) GetUserConnector(ctx context.Context, req *pipelinePB.Ge
 		return resp, err
 	}
 
-	connector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, parseView(int32(*req.GetView().Enum())), true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, parseView(int32(*req.GetView().Enum())), true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -603,7 +603,7 @@ func (h *PublicHandler) UpdateUserConnector(ctx context.Context, req *pipelinePB
 		return resp, st.Err()
 	}
 
-	existedConnector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, false)
+	existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -646,7 +646,7 @@ func (h *PublicHandler) UpdateUserConnector(ctx context.Context, req *pipelinePB
 	}
 
 	if mask.IsEmpty() {
-		existedConnector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, true)
+		existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, true)
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			return resp, err
@@ -694,7 +694,7 @@ func (h *PublicHandler) UpdateUserConnector(ctx context.Context, req *pipelinePB
 	proto.Merge(configuration, req.Connector.Configuration)
 	pbConnectorToUpdate.Configuration = configuration
 
-	connector, err := h.service.UpdateUserConnectorByID(ctx, ns, userUid, connID, pbConnectorToUpdate)
+	connector, err := h.service.UpdateNamespaceConnectorByID(ctx, ns, userUid, connID, pbConnectorToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -741,13 +741,13 @@ func (h *PublicHandler) DeleteUserConnector(ctx context.Context, req *pipelinePB
 		return resp, err
 	}
 
-	dbConnector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	dbConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
 
-	if err := h.service.DeleteUserConnectorByID(ctx, ns, userUid, connID); err != nil {
+	if err := h.service.DeleteNamespaceConnectorByID(ctx, ns, userUid, connID); err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
@@ -811,7 +811,7 @@ func (h *PublicHandler) ConnectUserConnector(ctx context.Context, req *pipelineP
 		return resp, err
 	}
 
-	connector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -836,7 +836,7 @@ func (h *PublicHandler) ConnectUserConnector(ctx context.Context, req *pipelineP
 		return resp, st.Err()
 	}
 
-	connector, err = h.service.UpdateUserConnectorStateByID(ctx, ns, userUid, connID, *state)
+	connector, err = h.service.UpdateNamespaceConnectorStateByID(ctx, ns, userUid, connID, *state)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -900,7 +900,7 @@ func (h *PublicHandler) DisconnectUserConnector(ctx context.Context, req *pipeli
 		return resp, err
 	}
 
-	connector, err := h.service.UpdateUserConnectorStateByID(ctx, ns, userUid, connID, pipelinePB.Connector_STATE_DISCONNECTED)
+	connector, err := h.service.UpdateNamespaceConnectorStateByID(ctx, ns, userUid, connID, pipelinePB.Connector_STATE_DISCONNECTED)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -1000,7 +1000,7 @@ func (h *PublicHandler) RenameUserConnector(ctx context.Context, req *pipelinePB
 		return resp, st.Err()
 	}
 
-	connector, err := h.service.UpdateUserConnectorIDByID(ctx, ns, userUid, connID, connNewID)
+	connector, err := h.service.UpdateNamespaceConnectorIDByID(ctx, ns, userUid, connID, connNewID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -1044,7 +1044,7 @@ func (h *PublicHandler) WatchUserConnector(ctx context.Context, req *pipelinePB.
 		return resp, err
 	}
 
-	connector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
@@ -1103,7 +1103,7 @@ func (h *PublicHandler) TestUserConnector(ctx context.Context, req *pipelinePB.T
 		return resp, err
 	}
 
-	connector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -1154,7 +1154,7 @@ func (h *PublicHandler) ExecuteUserConnector(ctx context.Context, req *pipelineP
 		return resp, err
 	}
 
-	connector, err := h.service.GetUserConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, true)
 	if err != nil {
 		return resp, err
 	}
