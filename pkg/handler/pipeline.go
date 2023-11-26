@@ -148,7 +148,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
@@ -242,7 +242,7 @@ func (h *PublicHandler) CreateUserPipeline(ctx context.Context, req *pipelinePB.
 		return &pipelinePB.CreateUserPipelineResponse{}, err
 	}
 
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -303,7 +303,7 @@ func (h *PublicHandler) ListUserPipelines(ctx context.Context, req *pipelinePB.L
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListUserPipelinesResponse{}, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListUserPipelinesResponse{}, err
@@ -371,7 +371,7 @@ func (h *PublicHandler) GetUserPipeline(ctx context.Context, req *pipelinePB.Get
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -416,7 +416,7 @@ func (h *PublicHandler) UpdateUserPipeline(ctx context.Context, req *pipelinePB.
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -513,7 +513,7 @@ func (h *PublicHandler) DeleteUserPipeline(ctx context.Context, req *pipelinePB.
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -569,7 +569,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -613,7 +613,7 @@ func (h *PublicHandler) ValidateUserPipeline(ctx context.Context, req *pipelineP
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -663,7 +663,7 @@ func (h *PublicHandler) RenameUserPipeline(ctx context.Context, req *pipelinePB.
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -707,7 +707,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 	if err != nil {
 		return ns, uuid.Nil, id, nil, false, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return ns, uuid.Nil, id, nil, false, err
 	}
@@ -861,7 +861,7 @@ func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -923,7 +923,7 @@ func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pipel
 	if err != nil {
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -995,7 +995,7 @@ func (h *PublicHandler) GetUserPipelineRelease(ctx context.Context, req *pipelin
 	if err != nil {
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1047,7 +1047,7 @@ func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1151,7 +1151,7 @@ func (h *PublicHandler) RenameUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1210,7 +1210,7 @@ func (h *PublicHandler) DeleteUserPipelineRelease(ctx context.Context, req *pipe
 	if err != nil {
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1268,7 +1268,7 @@ func (h *PublicHandler) SetDefaultUserPipelineRelease(ctx context.Context, req *
 	if err != nil {
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1327,7 +1327,7 @@ func (h *PublicHandler) RestoreUserPipelineRelease(ctx context.Context, req *pip
 	if err != nil {
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1380,7 +1380,7 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 	if err != nil {
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return ns, uuid.Nil, "", nil, nil, false, err
 	}
@@ -1520,7 +1520,7 @@ func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipel
 	if err != nil {
 		return nil, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		return nil, err
 	}

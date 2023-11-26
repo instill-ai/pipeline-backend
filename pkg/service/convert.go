@@ -29,7 +29,7 @@ const (
 	VIEW_RECIPE      View = 3
 )
 
-func (s *service) recipeNameToPermalink(userUid uuid.UUID, recipeRscName *pipelinePB.Recipe) (*pipelinePB.Recipe, error) {
+func (s *service) recipeNameToPermalink(recipeRscName *pipelinePB.Recipe) (*pipelinePB.Recipe, error) {
 
 	recipePermalink := &pipelinePB.Recipe{Version: recipeRscName.Version}
 	for _, component := range recipeRscName.Components {
@@ -41,7 +41,7 @@ func (s *service) recipeNameToPermalink(userUid uuid.UUID, recipeRscName *pipeli
 		permalink := ""
 		var err error
 		if utils.IsConnectorWithNamespace(component.ResourceName) {
-			permalink, err = s.connectorNameToPermalink(userUid, component.ResourceName)
+			permalink, err = s.connectorNameToPermalink(component.ResourceName)
 			if err != nil {
 				// Allow not created resource
 				componentPermalink.ResourceName = ""
@@ -110,13 +110,13 @@ func (s *service) recipePermalinkToName(recipePermalink *pipelinePB.Recipe) (*pi
 	return recipe, nil
 }
 
-func (s *service) connectorNameToPermalink(userUid uuid.UUID, name string) (string, error) {
+func (s *service) connectorNameToPermalink(name string) (string, error) {
 
-	ownerPermalink, err := s.ConvertOwnerNameToPermalink(fmt.Sprintf("users/%s", strings.Split(name, "/")[1]))
+	ownerPermalink, err := s.ConvertOwnerNameToPermalink(fmt.Sprintf("%s/%s", strings.Split(name, "/")[0], strings.Split(name, "/")[1]))
 	if err != nil {
 		return "", err
 	}
-	dbConnector, err := s.repository.GetUserConnectorByID(context.Background(), ownerPermalink, fmt.Sprintf("users/%s", userUid), strings.Split(name, "/")[3], true)
+	dbConnector, err := s.repository.GetUserConnectorByID(context.Background(), ownerPermalink, strings.Split(name, "/")[3], true)
 	if err != nil {
 		return "", err
 	}
@@ -263,7 +263,7 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 }
 
 // PBToDBPipeline converts protobuf data model to db data model
-func (s *service) PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error) {
+func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
 	var owner string
@@ -275,14 +275,14 @@ func (s *service) PBToDBPipeline(ctx context.Context, userUid uuid.UUID, pbPipel
 		if err != nil {
 			return nil, err
 		}
-	case *pipelinePB.Pipeline_Org:
+	case *pipelinePB.Pipeline_Organization:
 
 		return nil, fmt.Errorf("org not supported")
 	}
 
 	recipe := &datamodel.Recipe{}
 	if pbPipeline.GetRecipe() != nil {
-		recipePermalink, err := s.recipeNameToPermalink(userUid, pbPipeline.Recipe)
+		recipePermalink, err := s.recipeNameToPermalink(pbPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -491,8 +491,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	if strings.HasPrefix(dbPipeline.Owner, "users/") {
 		pbPipeline.Owner = &pipelinePB.Pipeline_User{User: owner}
-	} else if strings.HasPrefix(dbPipeline.Owner, "orgs/") {
-		pbPipeline.Owner = &pipelinePB.Pipeline_Org{Org: owner}
+	} else if strings.HasPrefix(dbPipeline.Owner, "organizations/") {
+		pbPipeline.Owner = &pipelinePB.Pipeline_Organization{Organization: owner}
 	}
 
 	return &pbPipeline, nil
@@ -517,12 +517,12 @@ func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.
 }
 
 // PBToDBPipelineRelease converts protobuf data model to db data model
-func (s *service) PBToDBPipelineRelease(ctx context.Context, userUid uuid.UUID, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error) {
+func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
 	recipe := &datamodel.Recipe{}
 	if pbPipelineRelease.GetRecipe() != nil {
-		recipePermalink, err := s.recipeNameToPermalink(userUid, pbPipelineRelease.Recipe)
+		recipePermalink, err := s.recipeNameToPermalink(pbPipelineRelease.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -772,7 +772,7 @@ func (s *service) convertProtoToDatamodel(
 		if err != nil {
 			return nil, err
 		}
-	case *pipelinePB.Connector_Org:
+	case *pipelinePB.Connector_Organization:
 		return nil, fmt.Errorf("org not supported")
 	}
 
@@ -860,7 +860,7 @@ func (s *service) convertDatamodelToProto(
 	if strings.HasPrefix(owner, "users/") {
 		pbConnector.Owner = &pipelinePB.Connector_User{User: owner}
 	} else if strings.HasPrefix(owner, "organizations/") {
-		pbConnector.Owner = &pipelinePB.Connector_Org{Org: owner}
+		pbConnector.Owner = &pipelinePB.Connector_Organization{Organization: owner}
 	}
 	if view != VIEW_BASIC {
 		if credentialMask {

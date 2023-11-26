@@ -179,7 +179,7 @@ func (h *PublicHandler) ListConnectors(ctx context.Context, req *pipelinePB.List
 		return resp, err
 	}
 
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -225,7 +225,7 @@ func (h *PublicHandler) LookUpConnector(ctx context.Context, req *pipelinePB.Loo
 		return nil, err
 	}
 
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -267,10 +267,21 @@ func (h *PublicHandler) LookUpConnector(ctx context.Context, req *pipelinePB.Loo
 
 	return resp, nil
 }
-
 func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB.CreateUserConnectorRequest) (resp *pipelinePB.CreateUserConnectorResponse, err error) {
+	resp = &pipelinePB.CreateUserConnectorResponse{}
+	resp.Connector, err = h.createNamespaceConnector(ctx, req.Connector, req.Parent)
+	return resp, err
+}
 
-	eventName := "CreateUserConnector"
+func (h *PublicHandler) CreateOrganizationConnector(ctx context.Context, req *pipelinePB.CreateOrganizationConnectorRequest) (resp *pipelinePB.CreateOrganizationConnectorResponse, err error) {
+	resp = &pipelinePB.CreateOrganizationConnectorResponse{}
+	resp.Connector, err = h.createNamespaceConnector(ctx, req.Connector, req.Parent)
+	return resp, err
+}
+
+func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector *pipelinePB.Connector, parent string) (*pipelinePB.Connector, error) {
+
+	eventName := "createNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -282,21 +293,19 @@ func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB
 
 	var connID string
 
-	resp = &pipelinePB.CreateUserConnectorResponse{}
-
-	ns, _, err := h.service.GetRscNamespaceAndNameID(req.Parent)
+	ns, _, err := h.service.GetRscNamespaceAndNameID(parent)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, err
 	}
-	userId, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, err
 	}
 
 	// TODO: ACL
-	if ns.String() != resource.UserUidToUserPermalink(userUid) {
+	if ns.NsType == resource.User && ns.String() != resource.UserUidToUserPermalink(userUid) {
 		st, err := sterr.CreateErrorBadRequest(
 			"[handler] create connector error",
 			[]*errdetails.BadRequest_FieldViolation{
@@ -309,11 +318,11 @@ func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB
 			logger.Error(err.Error())
 		}
 		span.SetStatus(1, st.Err().Error())
-		return resp, st.Err()
+		return nil, st.Err()
 	}
 
 	// Set all OUTPUT_ONLY fields to zero value on the requested payload
-	if err := checkfield.CheckCreateOutputOnlyFields(req.GetConnector(), outputOnlyConnectorFields); err != nil {
+	if err := checkfield.CheckCreateOutputOnlyFields(connector, outputOnlyConnectorFields); err != nil {
 		st, err := sterr.CreateErrorBadRequest(
 			"[handler] create connector error",
 			[]*errdetails.BadRequest_FieldViolation{
@@ -327,11 +336,11 @@ func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB
 			logger.Error(err.Error())
 		}
 		span.SetStatus(1, st.Err().Error())
-		return resp, st.Err()
+		return nil, st.Err()
 	}
 
 	// Return error if REQUIRED fields are not provided in the requested payload
-	if err := checkfield.CheckRequiredFields(req.GetConnector(), append(createConnectorRequiredFields, immutableConnectorFields...)); err != nil {
+	if err := checkfield.CheckRequiredFields(connector, append(createConnectorRequiredFields, immutableConnectorFields...)); err != nil {
 		st, err := sterr.CreateErrorBadRequest(
 			"[handler] create connector error",
 			[]*errdetails.BadRequest_FieldViolation{
@@ -345,10 +354,10 @@ func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB
 			logger.Error(err.Error())
 		}
 		span.SetStatus(1, st.Err().Error())
-		return resp, st.Err()
+		return nil, st.Err()
 	}
 
-	connID = req.GetConnector().GetId()
+	connID = connector.GetId()
 	if len(connID) > 8 && connID[:8] == "instill-" {
 		st, err := sterr.CreateErrorBadRequest(
 			"[handler] create connector error",
@@ -363,7 +372,7 @@ func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB
 			logger.Error(err.Error())
 		}
 		span.SetStatus(1, st.Err().Error())
-		return resp, st.Err()
+		return nil, st.Err()
 	}
 
 	// Return error if resource ID does not follow RFC-1034
@@ -381,15 +390,20 @@ func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB
 			logger.Error(err.Error())
 		}
 		span.SetStatus(1, st.Err().Error())
-		return resp, st.Err()
+		return nil, st.Err()
 	}
 
-	req.Connector.Owner = &pipelinePB.Connector_User{User: fmt.Sprintf("users/%s", userId)}
+	if strings.HasPrefix(parent, "users") {
+		connector.Owner = &pipelinePB.Connector_User{User: parent}
+	} else {
+		connector.Owner = &pipelinePB.Connector_Organization{Organization: parent}
+	}
 
-	connector, err := h.service.CreateUserConnector(ctx, ns, userUid, req.Connector)
+	connectorCreated, err := h.service.CreateUserConnector(ctx, ns, userUid, connector)
+
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
@@ -400,17 +414,11 @@ func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB
 		custom_otel.SetEventResource(connector),
 	)))
 
-	resp.Connector = connector
-
-	if err != nil {
-		return resp, err
-	}
-
 	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusCreated))); err != nil {
-		return resp, err
+		return nil, err
 	}
 
-	return resp, nil
+	return connectorCreated, nil
 }
 
 func (h *PublicHandler) ListUserConnectors(ctx context.Context, req *pipelinePB.ListUserConnectorsRequest) (resp *pipelinePB.ListUserConnectorsResponse, err error) {
@@ -452,7 +460,7 @@ func (h *PublicHandler) ListUserConnectors(ctx context.Context, req *pipelinePB.
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -497,7 +505,7 @@ func (h *PublicHandler) GetUserConnector(ctx context.Context, req *pipelinePB.Ge
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -541,7 +549,7 @@ func (h *PublicHandler) UpdateUserConnector(ctx context.Context, req *pipelinePB
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -727,7 +735,7 @@ func (h *PublicHandler) DeleteUserConnector(ctx context.Context, req *pipelinePB
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -797,7 +805,7 @@ func (h *PublicHandler) ConnectUserConnector(ctx context.Context, req *pipelineP
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -886,7 +894,7 @@ func (h *PublicHandler) DisconnectUserConnector(ctx context.Context, req *pipeli
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -951,7 +959,7 @@ func (h *PublicHandler) RenameUserConnector(ctx context.Context, req *pipelinePB
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -1030,7 +1038,7 @@ func (h *PublicHandler) WatchUserConnector(ctx context.Context, req *pipelinePB.
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -1089,7 +1097,7 @@ func (h *PublicHandler) TestUserConnector(ctx context.Context, req *pipelinePB.T
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -1140,7 +1148,7 @@ func (h *PublicHandler) ExecuteUserConnector(ctx context.Context, req *pipelineP
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	_, userUid, err := h.service.GetUser(ctx)
+	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err

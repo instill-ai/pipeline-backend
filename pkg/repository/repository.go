@@ -38,22 +38,22 @@ type Repository interface {
 	ListPipelines(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool, code string) (*datamodel.Pipeline, error)
 
-	CreateUserPipeline(ctx context.Context, ownerPermalink string, userPermalink string, pipeline *datamodel.Pipeline) error
-	ListUserPipelines(ctx context.Context, ownerPermalink string, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
-	GetUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, isBasicView bool, code string) (*datamodel.Pipeline, error)
+	CreateUserPipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error
+	ListUserPipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
+	GetUserPipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, code string) (*datamodel.Pipeline, error)
 
-	UpdateUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, pipeline *datamodel.Pipeline) error
-	DeleteUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string) error
-	UpdateUserPipelineIDByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, newID string) error
+	UpdateUserPipelineByID(ctx context.Context, ownerPermalink string, id string, pipeline *datamodel.Pipeline) error
+	DeleteUserPipelineByID(ctx context.Context, ownerPermalink string, id string) error
+	UpdateUserPipelineIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error
 
-	CreateUserPipelineRelease(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error
-	ListUserPipelineReleases(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.PipelineRelease, int64, string, error)
-	GetUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string, isBasicView bool) (*datamodel.PipelineRelease, error)
-	GetUserPipelineReleaseByUID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
-	UpdateUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error
-	DeleteUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string) error
-	UpdateUserPipelineReleaseIDByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string, newID string) error
-	GetLatestUserPipelineRelease(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
+	CreateUserPipelineRelease(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error
+	ListUserPipelineReleases(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.PipelineRelease, int64, string, error)
+	GetUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, isBasicView bool) (*datamodel.PipelineRelease, error)
+	GetUserPipelineReleaseByUID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
+	UpdateUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error
+	DeleteUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string) error
+	UpdateUserPipelineReleaseIDByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, newID string) error
+	GetLatestUserPipelineRelease(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
 
 	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByIDAdmin(ctx context.Context, id string, isBasicView bool) (*datamodel.Pipeline, error)
@@ -63,13 +63,13 @@ type Repository interface {
 	ListConnectors(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
 	GetConnectorByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
 
-	CreateUserConnector(ctx context.Context, ownerPermalink string, userPermalink string, connector *datamodel.Connector) error
-	ListUserConnectors(ctx context.Context, ownerPermalink string, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
-	GetUserConnectorByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, isBasicView bool) (*datamodel.Connector, error)
-	UpdateUserConnectorByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, connector *datamodel.Connector) error
-	DeleteUserConnectorByID(ctx context.Context, ownerPermalink string, userPermalink string, id string) error
-	UpdateUserConnectorIDByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, newID string) error
-	UpdateUserConnectorStateByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, state datamodel.ConnectorState) error
+	CreateUserConnector(ctx context.Context, ownerPermalink string, connector *datamodel.Connector) error
+	ListUserConnectors(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
+	GetUserConnectorByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool) (*datamodel.Connector, error)
+	UpdateUserConnectorByID(ctx context.Context, ownerPermalink string, id string, connector *datamodel.Connector) error
+	DeleteUserConnectorByID(ctx context.Context, ownerPermalink string, id string) error
+	UpdateUserConnectorIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error
+	UpdateUserConnectorStateByID(ctx context.Context, ownerPermalink string, id string, state datamodel.ConnectorState) error
 
 	ListConnectorsAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
 	GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
@@ -86,7 +86,7 @@ func NewRepository(db *gorm.DB) Repository {
 	}
 }
 
-func (r *repository) CreateUserPipeline(ctx context.Context, ownerPermalink string, userPermalink string, pipeline *datamodel.Pipeline) error {
+func (r *repository) CreateUserPipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error {
 	if result := r.db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(result.Error, &pgErr) {
@@ -233,10 +233,10 @@ func (r *repository) ListPipelines(ctx context.Context, userPermalink string, pa
 		[]interface{}{userPermalink},
 		pageSize, pageToken, isBasicView, filter, showDeleted)
 }
-func (r *repository) ListUserPipelines(ctx context.Context, ownerPermalink string, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
+func (r *repository) ListUserPipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
-		"(owner = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}') OR ? = ?))",
-		[]interface{}{ownerPermalink, ownerPermalink, userPermalink},
+		"(owner = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}')))",
+		[]interface{}{ownerPermalink},
 		pageSize, pageToken, isBasicView, filter, showDeleted)
 }
 
@@ -272,10 +272,10 @@ func (r *repository) getUserPipeline(ctx context.Context, where string, whereArg
 	return &pipeline, nil
 }
 
-func (r *repository) GetUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, isBasicView bool, code string) (*datamodel.Pipeline, error) {
+func (r *repository) GetUserPipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, code string) (*datamodel.Pipeline, error) {
 	return r.getUserPipeline(ctx,
-		"(id = ? AND owner = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}') OR (permission @> '{\"share_code\":{\"user\":\"users/*\", \"role\": \"ROLE_VIEWER\", \"enabled\": true}}' AND share_code = ?) OR ? = ?))",
-		[]interface{}{id, ownerPermalink, code, ownerPermalink, userPermalink},
+		"(id = ? AND owner = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}') OR (permission @> '{\"share_code\":{\"user\":\"users/*\", \"role\": \"ROLE_VIEWER\", \"enabled\": true}}' AND share_code = ?)))",
+		[]interface{}{id, ownerPermalink, code},
 		isBasicView)
 }
 
@@ -301,9 +301,9 @@ func (r *repository) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, i
 		isBasicView)
 }
 
-func (r *repository) UpdateUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, pipeline *datamodel.Pipeline) error {
+func (r *repository) UpdateUserPipelineByID(ctx context.Context, ownerPermalink string, id string, pipeline *datamodel.Pipeline) error {
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("(id = ? AND owner = ? AND ? = ? )", id, ownerPermalink, ownerPermalink, userPermalink).
+		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Updates(pipeline); result.Error != nil {
 		return status.Error(codes.Internal, result.Error.Error())
 	} else if result.RowsAffected == 0 {
@@ -312,9 +312,9 @@ func (r *repository) UpdateUserPipelineByID(ctx context.Context, ownerPermalink 
 	return nil
 }
 
-func (r *repository) DeleteUserPipelineByID(ctx context.Context, ownerPermalink string, userPermalink string, id string) error {
+func (r *repository) DeleteUserPipelineByID(ctx context.Context, ownerPermalink string, id string) error {
 	result := r.db.Model(&datamodel.Pipeline{}).
-		Where("(id = ? AND owner = ? AND ? = ? )", id, ownerPermalink, ownerPermalink, userPermalink).
+		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Delete(&datamodel.Pipeline{})
 
 	if result.Error != nil {
@@ -328,9 +328,9 @@ func (r *repository) DeleteUserPipelineByID(ctx context.Context, ownerPermalink 
 	return nil
 }
 
-func (r *repository) UpdateUserPipelineIDByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, newID string) error {
+func (r *repository) UpdateUserPipelineIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error {
 	if result := r.db.Model(&datamodel.Pipeline{}).
-		Where("(id = ? AND owner = ? AND ? = ? )", id, ownerPermalink, ownerPermalink, userPermalink).
+		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Update("id", newID); result.Error != nil {
 		return status.Error(codes.Internal, result.Error.Error())
 	} else if result.RowsAffected == 0 {
@@ -346,7 +346,7 @@ func (r *repository) transpileFilter(filter filtering.Filter) (*clause.Expr, err
 	}).Transpile()
 }
 
-func (r *repository) CreateUserPipelineRelease(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error {
+func (r *repository) CreateUserPipelineRelease(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error {
 	if result := r.db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(result.Error, &pgErr) {
@@ -358,7 +358,7 @@ func (r *repository) CreateUserPipelineRelease(ctx context.Context, ownerPermali
 	return nil
 }
 
-func (r *repository) ListUserPipelineReleases(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (pipelineReleases []*datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
+func (r *repository) ListUserPipelineReleases(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (pipelineReleases []*datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
 
 	db := r.db
 	if showDeleted {
@@ -503,7 +503,7 @@ func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int
 	return pipelineReleases, totalSize, nextPageToken, nil
 }
 
-func (r *repository) GetUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string, isBasicView bool) (*datamodel.PipelineRelease, error) {
+func (r *repository) GetUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, isBasicView bool) (*datamodel.PipelineRelease, error) {
 	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("id = ? AND pipeline_uid = ?", id, pipelineUid)
 	if isBasicView {
 		queryBuilder.Omit("pipeline_release.recipe")
@@ -515,7 +515,7 @@ func (r *repository) GetUserPipelineReleaseByID(ctx context.Context, ownerPermal
 	return &pipelineRelease, nil
 }
 
-func (r *repository) GetUserPipelineReleaseByUID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+func (r *repository) GetUserPipelineReleaseByUID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
 	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("uid = ? AND pipeline_uid = ?", uid, pipelineUid)
 	if isBasicView {
 		queryBuilder.Omit("pipeline_release.recipe")
@@ -527,7 +527,7 @@ func (r *repository) GetUserPipelineReleaseByUID(ctx context.Context, ownerPerma
 	return &pipelineRelease, nil
 }
 
-func (r *repository) UpdateUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error {
+func (r *repository) UpdateUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error {
 	if result := r.db.Model(&datamodel.PipelineRelease{}).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
 		Updates(pipelineRelease); result.Error != nil {
@@ -538,7 +538,7 @@ func (r *repository) UpdateUserPipelineReleaseByID(ctx context.Context, ownerPer
 	return nil
 }
 
-func (r *repository) DeleteUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string) error {
+func (r *repository) DeleteUserPipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string) error {
 	result := r.db.Model(&datamodel.PipelineRelease{}).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
 		Delete(&datamodel.PipelineRelease{})
@@ -554,7 +554,7 @@ func (r *repository) DeleteUserPipelineReleaseByID(ctx context.Context, ownerPer
 	return nil
 }
 
-func (r *repository) UpdateUserPipelineReleaseIDByID(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, id string, newID string) error {
+func (r *repository) UpdateUserPipelineReleaseIDByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, newID string) error {
 	if result := r.db.Model(&datamodel.PipelineRelease{}).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
 		Update("id", newID); result.Error != nil {
@@ -565,7 +565,7 @@ func (r *repository) UpdateUserPipelineReleaseIDByID(ctx context.Context, ownerP
 	return nil
 }
 
-func (r *repository) GetLatestUserPipelineRelease(ctx context.Context, ownerPermalink string, userPermalink string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+func (r *repository) GetLatestUserPipelineRelease(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
 	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUid).Order("id DESC")
 	if isBasicView {
 		queryBuilder.Omit("pipeline_release.recipe")
@@ -713,22 +713,22 @@ func (r *repository) ListConnectorsAdmin(ctx context.Context, pageSize int64, pa
 func (r *repository) ListConnectors(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
 
 	return r.listConnectors(ctx,
-		"(owner = ? OR visibility = ?)",
-		[]interface{}{userPermalink, VisibilityPublic},
+		"(owner = ?)",
+		[]interface{}{userPermalink},
 		pageSize, pageToken, isBasicView, filter, showDeleted)
 
 }
 
-func (r *repository) ListUserConnectors(ctx context.Context, ownerPermalink string, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
+func (r *repository) ListUserConnectors(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
 
 	return r.listConnectors(ctx,
-		"(owner = ? AND (visibility = ? OR ? = ?))",
-		[]interface{}{ownerPermalink, VisibilityPublic, ownerPermalink, userPermalink},
+		"(owner = ? )",
+		[]interface{}{ownerPermalink},
 		pageSize, pageToken, isBasicView, filter, showDeleted)
 
 }
 
-func (r *repository) CreateUserConnector(ctx context.Context, ownerPermalink string, userPermalink string, connector *datamodel.Connector) error {
+func (r *repository) CreateUserConnector(ctx context.Context, ownerPermalink string, connector *datamodel.Connector) error {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -782,11 +782,11 @@ func (r *repository) getUserConnector(ctx context.Context, where string, whereAr
 	return &connector, nil
 }
 
-func (r *repository) GetUserConnectorByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, isBasicView bool) (*datamodel.Connector, error) {
+func (r *repository) GetUserConnectorByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool) (*datamodel.Connector, error) {
 
 	return r.getUserConnector(ctx,
-		"(id = ? AND (owner = ? AND (visibility = ? OR ? = ?)))",
-		[]interface{}{id, ownerPermalink, VisibilityPublic, ownerPermalink, userPermalink},
+		"(id = ? AND (owner = ?))",
+		[]interface{}{id, ownerPermalink},
 		isBasicView)
 }
 
@@ -794,8 +794,8 @@ func (r *repository) GetConnectorByUID(ctx context.Context, userPermalink string
 
 	// TODO: ACL
 	return r.getUserConnector(ctx,
-		"(uid = ? AND (visibility = ? OR owner = ?))",
-		[]interface{}{uid, VisibilityPublic, userPermalink},
+		"(uid = ? AND (owner = ?))",
+		[]interface{}{uid, userPermalink},
 		isBasicView)
 
 }
@@ -807,12 +807,12 @@ func (r *repository) GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, 
 		isBasicView)
 }
 
-func (r *repository) UpdateUserConnectorByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, connector *datamodel.Connector) error {
+func (r *repository) UpdateUserConnectorByID(ctx context.Context, ownerPermalink string, id string, connector *datamodel.Connector) error {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
 	if result := r.db.Model(&datamodel.Connector{}).
-		Where("(id = ? AND owner = ? AND ? = ? )", id, ownerPermalink, ownerPermalink, userPermalink).
+		Where("(id = ? AND owner = ? )", id, ownerPermalink).
 		Updates(connector); result.Error != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.Internal,
@@ -843,12 +843,12 @@ func (r *repository) UpdateUserConnectorByID(ctx context.Context, ownerPermalink
 	return nil
 }
 
-func (r *repository) DeleteUserConnectorByID(ctx context.Context, ownerPermalink string, userPermalink string, id string) error {
+func (r *repository) DeleteUserConnectorByID(ctx context.Context, ownerPermalink string, id string) error {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
 	result := r.db.Model(&datamodel.Connector{}).
-		Where("(id = ? AND owner = ? AND ? = ?)", id, ownerPermalink, ownerPermalink, userPermalink).
+		Where("(id = ? AND owner = ? )", id, ownerPermalink).
 		Delete(&datamodel.Connector{})
 
 	if result.Error != nil {
@@ -884,12 +884,12 @@ func (r *repository) DeleteUserConnectorByID(ctx context.Context, ownerPermalink
 	return nil
 }
 
-func (r *repository) UpdateUserConnectorIDByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, newID string) error {
+func (r *repository) UpdateUserConnectorIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
 	if result := r.db.Model(&datamodel.Connector{}).
-		Where("(id = ? AND owner = ? AND ? = ?)", id, ownerPermalink, ownerPermalink, userPermalink).
+		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Update("id", newID); result.Error != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.Internal,
@@ -920,12 +920,12 @@ func (r *repository) UpdateUserConnectorIDByID(ctx context.Context, ownerPermali
 	return nil
 }
 
-func (r *repository) UpdateUserConnectorStateByID(ctx context.Context, ownerPermalink string, userPermalink string, id string, state datamodel.ConnectorState) error {
+func (r *repository) UpdateUserConnectorStateByID(ctx context.Context, ownerPermalink string, id string, state datamodel.ConnectorState) error {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
 	if result := r.db.Model(&datamodel.Connector{}).
-		Where("(id = ? AND owner = ? AND ? = ?)", id, ownerPermalink, ownerPermalink, userPermalink).
+		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Update("state", state); result.Error != nil {
 		st, err := sterr.CreateErrorResourceInfo(
 			codes.Internal,
