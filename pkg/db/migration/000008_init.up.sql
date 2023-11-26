@@ -41,5 +41,6 @@ CREATE TABLE IF NOT EXISTS public.connector(
 CREATE INDEX connector_uid_create_time_pagination ON public.connector (uid, create_time);
 CREATE UNIQUE INDEX unique_owner_id_deleted_at ON public.connector (owner, id) WHERE delete_time IS NULL;
 
+UPDATE public.pipeline SET recipe = REPLACE(recipe::text,'connector-resources/','connectors/')::jsonb;
 
 COMMIT;
