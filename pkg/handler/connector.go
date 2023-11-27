@@ -36,11 +36,11 @@ import (
 
 func (h *PrivateHandler) ListConnectorsAdmin(ctx context.Context, req *pipelinePB.ListConnectorsAdminRequest) (resp *pipelinePB.ListConnectorsAdminResponse, err error) {
 
-	var pageSize int64
+	var pageSize int32
 	var pageToken string
 
 	resp = &pipelinePB.ListConnectorsAdminResponse{}
-	pageSize = int64(req.GetPageSize())
+	pageSize = req.GetPageSize()
 	pageToken = req.GetPageToken()
 
 	var connType pipelinePB.ConnectorType
@@ -157,11 +157,11 @@ func (h *PublicHandler) ListConnectors(ctx context.Context, req *pipelinePB.List
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	var pageSize int64
+	var pageSize int32
 	var pageToken string
 
 	resp = &pipelinePB.ListConnectorsResponse{}
-	pageSize = int64(req.GetPageSize())
+	pageSize = req.GetPageSize()
 	pageToken = req.GetPageToken()
 
 	var connType pipelinePB.ConnectorType
@@ -267,19 +267,24 @@ func (h *PublicHandler) LookUpConnector(ctx context.Context, req *pipelinePB.Loo
 
 	return resp, nil
 }
+
+type CreateOrganizationConnectorRequestInterface interface {
+	GetParent() string
+}
+
 func (h *PublicHandler) CreateUserConnector(ctx context.Context, req *pipelinePB.CreateUserConnectorRequest) (resp *pipelinePB.CreateUserConnectorResponse, err error) {
 	resp = &pipelinePB.CreateUserConnectorResponse{}
-	resp.Connector, err = h.createNamespaceConnector(ctx, req.Connector, req.Parent)
+	resp.Connector, err = h.createNamespaceConnector(ctx, req.Connector, req)
 	return resp, err
 }
 
 func (h *PublicHandler) CreateOrganizationConnector(ctx context.Context, req *pipelinePB.CreateOrganizationConnectorRequest) (resp *pipelinePB.CreateOrganizationConnectorResponse, err error) {
 	resp = &pipelinePB.CreateOrganizationConnectorResponse{}
-	resp.Connector, err = h.createNamespaceConnector(ctx, req.Connector, req.Parent)
+	resp.Connector, err = h.createNamespaceConnector(ctx, req.Connector, req)
 	return resp, err
 }
 
-func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector *pipelinePB.Connector, parent string) (*pipelinePB.Connector, error) {
+func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector *pipelinePB.Connector, req CreateOrganizationConnectorRequestInterface) (connectorCreated *pipelinePB.Connector, err error) {
 
 	eventName := "createNamespaceConnector"
 
@@ -293,7 +298,7 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 
 	var connID string
 
-	ns, _, err := h.service.GetRscNamespaceAndNameID(parent)
+	ns, _, err := h.service.GetRscNamespaceAndNameID(req.GetParent())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -393,13 +398,13 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 		return nil, st.Err()
 	}
 
-	if strings.HasPrefix(parent, "users") {
-		connector.Owner = &pipelinePB.Connector_User{User: parent}
+	if strings.HasPrefix(req.GetParent(), "users") {
+		connector.Owner = &pipelinePB.Connector_User{User: req.GetParent()}
 	} else {
-		connector.Owner = &pipelinePB.Connector_Organization{Organization: parent}
+		connector.Owner = &pipelinePB.Connector_Organization{Organization: req.GetParent()}
 	}
 
-	connectorCreated, err := h.service.CreateNamespaceConnector(ctx, ns, userUid, connector)
+	connectorCreated, err = h.service.CreateNamespaceConnector(ctx, ns, userUid, connector)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -421,24 +426,39 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 	return connectorCreated, nil
 }
 
-func (h *PublicHandler) ListUserConnectors(ctx context.Context, req *pipelinePB.ListUserConnectorsRequest) (resp *pipelinePB.ListUserConnectorsResponse, err error) {
+type ListNamespaceConnectorsRequestInterface interface {
+	GetPageSize() int32
+	GetPageToken() string
+	GetView() pipelinePB.Connector_View
+	GetFilter() string
+	GetParent() string
+	GetShowDeleted() bool
+}
 
-	eventName := "ListUserConnectors"
+func (h *PublicHandler) ListUserConnectors(ctx context.Context, req *pipelinePB.ListUserConnectorsRequest) (resp *pipelinePB.ListUserConnectorsResponse, err error) {
+	resp = &pipelinePB.ListUserConnectorsResponse{}
+	resp.Connectors, resp.NextPageToken, resp.TotalSize, err = h.listNamespaceConnectors(ctx, req)
+	return resp, err
+}
+
+func (h *PublicHandler) ListOrganizationConnectors(ctx context.Context, req *pipelinePB.ListOrganizationConnectorsRequest) (resp *pipelinePB.ListOrganizationConnectorsResponse, err error) {
+	resp = &pipelinePB.ListOrganizationConnectorsResponse{}
+	resp.Connectors, resp.NextPageToken, resp.TotalSize, err = h.listNamespaceConnectors(ctx, req)
+	return resp, err
+}
+
+func (h *PublicHandler) listNamespaceConnectors(ctx context.Context, req ListNamespaceConnectorsRequestInterface) (connectors []*pipelinePB.Connector, nextPageToken string, totalSize int32, err error) {
+
+	eventName := "listNamespaceConnectors"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	logUUID, _ := uuid.NewV4()
-
 	logger, _ := logger.GetZapLogger(ctx)
-
-	var pageSize int64
-	var pageToken string
-
-	resp = &pipelinePB.ListUserConnectorsResponse{}
-	pageSize = int64(req.GetPageSize())
-	pageToken = req.GetPageToken()
+	pageSize := req.GetPageSize()
+	pageToken := req.GetPageToken()
 
 	var connType pipelinePB.ConnectorType
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
@@ -447,29 +467,29 @@ func (h *PublicHandler) ListUserConnectors(ctx context.Context, req *pipelinePB.
 	}...)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, "", 0, err
 	}
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, "", 0, err
 	}
 
-	ns, _, err := h.service.GetRscNamespaceAndNameID(req.Parent)
+	ns, _, err := h.service.GetRscNamespaceAndNameID(req.GetParent())
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, "", 0, err
 	}
 	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, "", 0, err
 	}
 
-	connectors, totalSize, nextPageToken, err := h.service.ListNamespaceConnectors(ctx, ns, userUid, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	connectors, totalSize, nextPageToken, err = h.service.ListNamespaceConnectors(ctx, ns, userUid, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, "", 0, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
@@ -479,16 +499,29 @@ func (h *PublicHandler) ListUserConnectors(ctx context.Context, req *pipelinePB.
 		eventName,
 	)))
 
-	resp.Connectors = connectors
-	resp.NextPageToken = nextPageToken
-	resp.TotalSize = int32(totalSize)
-
-	return resp, nil
+	return connectors, nextPageToken, int32(totalSize), nil
 
 }
 
+type GetUserConnectorRequestInterface interface {
+	GetName() string
+	GetView() pipelinePB.Connector_View
+}
+
 func (h *PublicHandler) GetUserConnector(ctx context.Context, req *pipelinePB.GetUserConnectorRequest) (resp *pipelinePB.GetUserConnectorResponse, err error) {
-	eventName := "GetUserConnector"
+	resp = &pipelinePB.GetUserConnectorResponse{}
+	resp.Connector, err = h.getNamespaceConnector(ctx, req)
+	return resp, err
+}
+
+func (h *PublicHandler) GetOrganizationConnector(ctx context.Context, req *pipelinePB.GetOrganizationConnectorRequest) (resp *pipelinePB.GetOrganizationConnectorResponse, err error) {
+	resp = &pipelinePB.GetOrganizationConnectorResponse{}
+	resp.Connector, err = h.getNamespaceConnector(ctx, req)
+	return resp, err
+}
+
+func (h *PublicHandler) getNamespaceConnector(ctx context.Context, req GetUserConnectorRequestInterface) (connector *pipelinePB.Connector, err error) {
+	eventName := "getNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -498,26 +531,22 @@ func (h *PublicHandler) GetUserConnector(ctx context.Context, req *pipelinePB.Ge
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	resp = &pipelinePB.GetUserConnectorResponse{}
-
-	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.Name)
+	ns, connID, err := h.service.GetRscNamespaceAndNameID(req.GetName())
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, err
 	}
 	_, userUid, err := h.service.GetCtxUser(ctx)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, err
 	}
 
-	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, parseView(int32(*req.GetView().Enum())), true)
+	connector, err = h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, parseView(int32(*req.GetView().Enum())), true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return resp, err
+		return nil, err
 	}
-
-	resp.Connector = connector
 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
@@ -527,7 +556,7 @@ func (h *PublicHandler) GetUserConnector(ctx context.Context, req *pipelinePB.Ge
 		custom_otel.SetEventResource(connector),
 	)))
 
-	return resp, nil
+	return connector, nil
 }
 
 func (h *PublicHandler) UpdateUserConnector(ctx context.Context, req *pipelinePB.UpdateUserConnectorRequest) (resp *pipelinePB.UpdateUserConnectorResponse, err error) {

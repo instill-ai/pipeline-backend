@@ -56,7 +56,7 @@ func (h *PublicHandler) ListConnectorDefinitions(ctx context.Context, req *pipel
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	defs, totalSize, nextPageToken, err := h.service.ListConnectorDefinitions(ctx, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter)
+	defs, totalSize, nextPageToken, err := h.service.ListConnectorDefinitions(ctx, int32(pageSize), pageToken, parseView(int32(*req.GetView().Enum())), filter)
 
 	if err != nil {
 		return nil, err

@@ -57,7 +57,7 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipeli
 	resp = &pipelinePB.ListOperatorDefinitionsResponse{}
 	pageSize := req.GetPageSize()
 	pageToken := req.GetPageToken()
-	isBasicView := (req.GetView() == pipelinePB.ListOperatorDefinitionsRequest_VIEW_BASIC) || (req.GetView() == pipelinePB.ListOperatorDefinitionsRequest_VIEW_UNSPECIFIED)
+	isBasicView := (req.GetView() == pipelinePB.OperatorDefinition_VIEW_BASIC) || (req.GetView() == pipelinePB.OperatorDefinition_VIEW_UNSPECIFIED)
 
 	prevLastUid := ""
 
@@ -141,7 +141,7 @@ func (h *PublicHandler) GetOperatorDefinition(ctx context.Context, req *pipeline
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	isBasicView := (req.GetView() == pipelinePB.GetOperatorDefinitionRequest_VIEW_BASIC) || (req.GetView() == pipelinePB.GetOperatorDefinitionRequest_VIEW_UNSPECIFIED)
+	isBasicView := (req.GetView() == pipelinePB.OperatorDefinition_VIEW_BASIC) || (req.GetView() == pipelinePB.OperatorDefinition_VIEW_UNSPECIFIED)
 
 	dbDef, err := h.service.GetOperatorDefinitionById(ctx, connID)
 	if err != nil {
