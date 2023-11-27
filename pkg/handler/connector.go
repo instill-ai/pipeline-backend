@@ -287,7 +287,7 @@ func (h *PublicHandler) CreateOrganizationConnector(ctx context.Context, req *pi
 
 func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector *pipelinePB.Connector, req CreateNamespaceConnectorRequestInterface) (connectorCreated *pipelinePB.Connector, err error) {
 
-	eventName := "createNamespaceConnector"
+	eventName := "CreateNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -450,7 +450,7 @@ func (h *PublicHandler) ListOrganizationConnectors(ctx context.Context, req *pip
 
 func (h *PublicHandler) listNamespaceConnectors(ctx context.Context, req ListNamespaceConnectorsRequestInterface) (connectors []*pipelinePB.Connector, nextPageToken string, totalSize int32, err error) {
 
-	eventName := "listNamespaceConnectors"
+	eventName := "ListNamespaceConnectors"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -522,7 +522,7 @@ func (h *PublicHandler) GetOrganizationConnector(ctx context.Context, req *pipel
 }
 
 func (h *PublicHandler) getNamespaceConnector(ctx context.Context, req GetNamespaceConnectorRequestInterface) (connector *pipelinePB.Connector, err error) {
-	eventName := "getNamespaceConnector"
+	eventName := "GetNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -579,7 +579,7 @@ func (h *PublicHandler) UpdateOrganizationConnector(ctx context.Context, req *pi
 
 func (h *PublicHandler) updateNamespaceConnector(ctx context.Context, req UpdateNamespaceConnectorRequestInterface) (connector *pipelinePB.Connector, err error) {
 
-	eventName := "updateNamespaceConnector"
+	eventName := "UpdateNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -770,7 +770,7 @@ func (h *PublicHandler) DeleteOrganizationConnector(ctx context.Context, req *pi
 
 func (h *PublicHandler) deleteNamespaceConnector(ctx context.Context, req DeleteNamespaceConnectorRequestInterface) (err error) {
 
-	eventName := "deleteNamespaceConnector"
+	eventName := "DeleteNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -836,7 +836,7 @@ func (h *PublicHandler) ConnectOrganizationConnector(ctx context.Context, req *p
 
 func (h *PublicHandler) connectNamespaceConnector(ctx context.Context, req ConnectNamespaceConnectorRequest) (connector *pipelinePB.Connector, err error) {
 
-	eventName := "connectNamespaceConnector"
+	eventName := "ConnectNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -937,7 +937,7 @@ func (h *PublicHandler) DisconnectOrganizationConnector(ctx context.Context, req
 
 func (h *PublicHandler) disconnectNamespaceConnector(ctx context.Context, req DisconnectNamespaceConnectorRequestInterface) (connector *pipelinePB.Connector, err error) {
 
-	eventName := "DisconnectUserConnector"
+	eventName := "DisconnectNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1002,19 +1002,19 @@ type RenameNamespaceConnectorRequestInterface interface {
 
 func (h *PublicHandler) RenameUserConnector(ctx context.Context, req *pipelinePB.RenameUserConnectorRequest) (resp *pipelinePB.RenameUserConnectorResponse, err error) {
 	resp = &pipelinePB.RenameUserConnectorResponse{}
-	resp.Connector, err = h.renameUserConnector(ctx, req)
+	resp.Connector, err = h.renameNamespaceConnector(ctx, req)
 	return resp, err
 }
 
 func (h *PublicHandler) RenameOrganizationConnector(ctx context.Context, req *pipelinePB.RenameOrganizationConnectorRequest) (resp *pipelinePB.RenameOrganizationConnectorResponse, err error) {
 	resp = &pipelinePB.RenameOrganizationConnectorResponse{}
-	resp.Connector, err = h.renameUserConnector(ctx, req)
+	resp.Connector, err = h.renameNamespaceConnector(ctx, req)
 	return resp, err
 }
 
-func (h *PublicHandler) renameUserConnector(ctx context.Context, req RenameNamespaceConnectorRequestInterface) (connector *pipelinePB.Connector, err error) {
+func (h *PublicHandler) renameNamespaceConnector(ctx context.Context, req RenameNamespaceConnectorRequestInterface) (connector *pipelinePB.Connector, err error) {
 
-	eventName := "renameUserConnector"
+	eventName := "RenameNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1126,7 +1126,7 @@ func (h *PublicHandler) WatchOrganizationConnector(ctx context.Context, req *pip
 
 func (h *PublicHandler) watchNamespaceConnector(ctx context.Context, req WatchNamespaceConnectorRequestInterface) (state pipelinePB.Connector_State, err error) {
 
-	eventName := "watchUserConnector"
+	eventName := "WatchNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1198,7 +1198,7 @@ func (h *PublicHandler) TestOrganizationConnector(ctx context.Context, req *pipe
 
 func (h *PublicHandler) testNamespaceConnector(ctx context.Context, req TestNamespaceConnectorRequestInterface) (state pipelinePB.Connector_State, err error) {
 
-	eventName := "testNamespaceConnector"
+	eventName := "TestNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -1266,7 +1266,7 @@ func (h *PublicHandler) ExecuteOrganizationConnector(ctx context.Context, req *p
 func (h *PublicHandler) executeNamespaceConnector(ctx context.Context, req ExecuteNamespaceConnectorRequestInterface) (outputs []*structpb.Struct, err error) {
 
 	startTime := time.Now()
-	eventName := "ExecuteUserConnector"
+	eventName := "ExecuteNamespaceConnector"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
