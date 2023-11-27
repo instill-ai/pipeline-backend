@@ -229,13 +229,13 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 
 func (r *repository) ListPipelines(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
-		"(owner = ? OR (permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}'))",
+		"(owner = ?)",
 		[]interface{}{userPermalink},
 		pageSize, pageToken, isBasicView, filter, showDeleted)
 }
 func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
-		"(owner = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}')))",
+		"(owner = ?)",
 		[]interface{}{ownerPermalink},
 		pageSize, pageToken, isBasicView, filter, showDeleted)
 }
@@ -274,16 +274,16 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 
 func (r *repository) GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, code string) (*datamodel.Pipeline, error) {
 	return r.getNamespacePipeline(ctx,
-		"(id = ? AND owner = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}') OR (permission @> '{\"share_code\":{\"user\":\"users/*\", \"role\": \"ROLE_VIEWER\", \"enabled\": true}}' AND share_code = ?)))",
-		[]interface{}{id, ownerPermalink, code},
+		"(id = ? AND owner = ? )",
+		[]interface{}{id, ownerPermalink},
 		isBasicView)
 }
 
 func (r *repository) GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool, code string) (*datamodel.Pipeline, error) {
 	// TODO: ACL
 	return r.getNamespacePipeline(ctx,
-		"(uid = ? AND ((permission @> '{\"users\":{\"users/*\":{\"role\": \"ROLE_VIEWER\", \"enabled\": true}}}') OR (permission @> '{\"share_code\":{\"user\":\"users/*\", \"role\": \"ROLE_VIEWER\", \"enabled\": true}}' AND share_code = ?) OR owner = ?))",
-		[]interface{}{uid, code, userPermalink},
+		"(uid = ?)",
+		[]interface{}{uid},
 		isBasicView)
 }
 
