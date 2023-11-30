@@ -36,26 +36,6 @@ func (m *MockMgmtPrivateServiceClient) EXPECT() *MockMgmtPrivateServiceClientMoc
 	return m.recorder
 }
 
-// CreateUserAdmin mocks base method.
-func (m *MockMgmtPrivateServiceClient) CreateUserAdmin(arg0 context.Context, arg1 *mgmtv1alpha.CreateUserAdminRequest, arg2 ...grpc.CallOption) (*mgmtv1alpha.CreateUserAdminResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "CreateUserAdmin", varargs...)
-	ret0, _ := ret[0].(*mgmtv1alpha.CreateUserAdminResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateUserAdmin indicates an expected call of CreateUserAdmin.
-func (mr *MockMgmtPrivateServiceClientMockRecorder) CreateUserAdmin(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserAdmin", reflect.TypeOf((*MockMgmtPrivateServiceClient)(nil).CreateUserAdmin), varargs...)
-}
-
 // GetUserAdmin mocks base method.
 func (m *MockMgmtPrivateServiceClient) GetUserAdmin(arg0 context.Context, arg1 *mgmtv1alpha.GetUserAdminRequest, arg2 ...grpc.CallOption) (*mgmtv1alpha.GetUserAdminResponse, error) {
 	m.ctrl.T.Helper()

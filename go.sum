@@ -1189,8 +1189,8 @@ github.com/instill-ai/connector v0.7.0-alpha.0.20231129072816-73792d943bf2 h1:cG
 github.com/instill-ai/connector v0.7.0-alpha.0.20231129072816-73792d943bf2/go.mod h1:x4aaGR/lbmESJ241m0Ctv947HkoJD+lB+SDTIkjdrQM=
 github.com/instill-ai/operator v0.5.0-alpha.0.20231129072812-3235831ef5e3 h1:tfpFWDniHvJtfsoFsOcOvJDaADuiJHrV8xERv8p2flw=
 github.com/instill-ai/operator v0.5.0-alpha.0.20231129072812-3235831ef5e3/go.mod h1:5a9GkE3uPV6ttR9zykdNwnaiH0Jzedazul0Y63ZQ9D4=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231122080750-7a3598994bf3 h1:xr4Igd5mfdO+ks3mze4haoIW1QPpka69X38XvudukVQ=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231122080750-7a3598994bf3/go.mod h1:q/YL5TZXD9nvmJ7Rih4gY3/B2HT2+GiFdxeZp9D+yE4=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231129095217-f8d4e5951d35 h1:25AKxLuDZmVJOnh+gx4tqsfS5y/woQHzh8j1J5wN0ec=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231129095217-f8d4e5951d35/go.mod h1:q/YL5TZXD9nvmJ7Rih4gY3/B2HT2+GiFdxeZp9D+yE4=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061 h1:lOp2fORCj76/gfPuLqB3TEN2cvFRJHUQOxwFSl4qxEw=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061/go.mod h1:dxsx9oHibg/+FrFLxAMurvbheeVUrMdFTbVHsfANTCU=
 github.com/instill-ai/x v0.3.0-alpha.0.20231124062833-3236165f5782 h1:ErsJ1IkjD6Rtif0YI898fv/qllW5x9vb2fdt69EYwug=
