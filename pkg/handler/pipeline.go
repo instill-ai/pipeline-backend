@@ -801,7 +801,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 	if err != nil {
 		return ns, nil, id, nil, false, err
 	}
-	authUser, err := h.service.AuthenticateUser(ctx, false)
+	authUser, err := h.service.AuthenticateUser(ctx, true)
 	if err != nil {
 		return ns, nil, id, nil, false, err
 	}
@@ -810,10 +810,10 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 	if err != nil {
 		return ns, nil, id, nil, false, err
 	}
-	_, err = h.service.ValidateNamespacePipelineByID(ctx, ns, authUser, id)
-	if err != nil {
-		return ns, nil, id, nil, false, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
-	}
+	// _, err = h.service.ValidateNamespacePipelineByID(ctx, ns, authUser, id)
+	// if err != nil {
+	// 	return ns, nil, id, nil, false, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
+	// }
 	returnTraces := false
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		if len(md.Get(constant.ReturnTracesKey)) > 0 {
@@ -881,7 +881,7 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 		_ = h.service.WriteNewPipelineDataPoint(ctx, dataPoint)
-		return nil, nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
@@ -939,7 +939,7 @@ func (h *PublicHandler) triggerAsyncNamespacePipeline(ctx context.Context, req T
 	operation, err = h.service.TriggerAsyncNamespacePipelineByID(ctx, ns, authUser, id, req.GetInputs(), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, err
 	}
 
 	logger.Info(string(custom_otel.NewLogMessage(
@@ -1536,14 +1536,14 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
-		return resource.Namespace{}, nil, "", nil, nil, false, status.Error(codes.InvalidArgument, err.Error())
+		return resource.Namespace{}, nil, "", nil, nil, false, ErrCheckRequiredFields
 	}
 
 	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}
-	authUser, err := h.service.AuthenticateUser(ctx, false)
+	authUser, err := h.service.AuthenticateUser(ctx, true)
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}

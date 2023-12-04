@@ -59,6 +59,7 @@ func StreamAppendMetadataInterceptor(srv interface{}, stream grpc.ServerStream, 
 }
 
 func InjectErrCode(err error) error {
+
 	if err == nil {
 		return nil
 	}

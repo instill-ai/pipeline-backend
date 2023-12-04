@@ -29,11 +29,11 @@ const VisibilityPublic = datamodel.ConnectorVisibility(pipelinePB.Connector_VISI
 // Repository interface
 type Repository interface {
 	ListPipelines(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
-	GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool, code string) (*datamodel.Pipeline, error)
+	GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
 
 	CreateNamespacePipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error
 	ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
-	GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, code string) (*datamodel.Pipeline, error)
+	GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool) (*datamodel.Pipeline, error)
 
 	UpdateNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, pipeline *datamodel.Pipeline) error
 	DeleteNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string) error
@@ -200,14 +200,14 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 	return &pipeline, nil
 }
 
-func (r *repository) GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, code string) (*datamodel.Pipeline, error) {
+func (r *repository) GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool) (*datamodel.Pipeline, error) {
 	return r.getNamespacePipeline(ctx,
 		"(id = ? AND owner = ? )",
 		[]interface{}{id, ownerPermalink},
 		isBasicView)
 }
 
-func (r *repository) GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool, code string) (*datamodel.Pipeline, error) {
+func (r *repository) GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error) {
 	// TODO: ACL
 	return r.getNamespacePipeline(ctx,
 		"(uid = ?)",

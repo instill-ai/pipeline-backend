@@ -361,7 +361,7 @@ func (s *service) ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespa
 		if err != nil {
 			return "", err
 		}
-		dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineId, true, s.getCode(ctx))
+		dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineId, true)
 		if err != nil {
 			return "", err
 		}
@@ -375,7 +375,7 @@ func (s *service) ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespa
 		if err != nil {
 			return "", err
 		}
-		dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineId, true, s.getCode(ctx))
+		dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineId, true)
 		if err != nil {
 			return "", err
 		}
@@ -414,7 +414,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid 
 	// TODO: ACL for pipleine explore API
 	userPermalink := resource.UserUidToUserPermalink(authUser.UID)
 
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, view == VIEW_BASIC, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, view == VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -428,7 +428,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 
 	// TODO: optimize ACL model
 	if ns.NsType == "organizations" {
-		granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, "member")
+		granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "member")
 		if err != nil {
 			return nil, err
 		}
@@ -455,13 +455,18 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		return nil, err
 	}
 
-	dbCreatedPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, dbPipeline.ID, false, s.getCode(ctx))
+	dbCreatedPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, dbPipeline.ID, false)
 	if err != nil {
 		return nil, err
 	}
 	ownerType := string(ns.NsType)[0 : len(string(ns.NsType))-1]
 	ownerUID := ns.NsUid
 	err = s.aclClient.SetOwner("pipeline", dbCreatedPipeline.UID, ownerType, ownerUID)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: use OpenFGA as single source of truth
+	err = s.aclClient.SetPipelinePermissionMap(dbPipeline)
 	if err != nil {
 		return nil, err
 	}
@@ -475,7 +480,7 @@ func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namesp
 
 	// TODO: optimize ACL model
 	if ns.NsType == "organizations" {
-		granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, "member")
+		granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "member")
 		// TODO
 		if err != nil {
 			return nil, 0, "", err
@@ -514,21 +519,15 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 
 	ownerPermalink := ns.String()
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, view == VIEW_BASIC, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, view == VIEW_BASIC)
 	if err != nil {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
-	}
-
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
-		return nil, err
-	} else if !granted {
-		return nil, ErrNoPermission
 	}
 
 	return s.DBToPBPipeline(ctx, dbPipeline, view)
@@ -538,7 +537,7 @@ func (s *service) GetNamespacePipelineDefaultReleaseUid(ctx context.Context, ns 
 
 	ownerPermalink := ns.String()
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -550,7 +549,7 @@ func (s *service) GetNamespacePipelineLatestReleaseUid(ctx context.Context, ns r
 
 	ownerPermalink := ns.String()
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -577,19 +576,19 @@ func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view
 func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, toUpdPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
 
 	ownerPermalink := ns.String()
-	userPermalink := resource.UserUidToUserPermalink(authUser.UID)
+
 	dbPipelineToCreate, err := s.PBToDBPipeline(ctx, toUpdPipeline)
 	if err != nil {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipelineToCreate.UID, authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipelineToCreate.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipelineToCreate.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipelineToCreate.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -597,12 +596,8 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	var existingPipeline *datamodel.Pipeline
 	// Validation: Pipeline existence
-	if existingPipeline, _ = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true, s.getCode(ctx)); existingPipeline == nil {
+	if existingPipeline, _ = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true); existingPipeline == nil {
 		return nil, err
-	}
-	// TODO: use ACL
-	if ownerPermalink != userPermalink {
-		return nil, ErrNoPermission
 	}
 
 	if existingPipeline.ShareCode == "" {
@@ -613,7 +608,13 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 		return nil, err
 	}
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, toUpdPipeline.Id, false, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, toUpdPipeline.Id, false)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: use OpenFGA as single source of truth
+	err = s.aclClient.SetPipelinePermissionMap(dbPipeline)
 	if err != nil {
 		return nil, err
 	}
@@ -624,18 +625,18 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) error {
 	ownerPermalink := ns.String()
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
 		return ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return err
 	} else if !granted {
 		return ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return err
 	} else if !granted {
 		return ErrNoPermission
@@ -660,18 +661,18 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 
 	ownerPermalink := ns.String()
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "executor"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -690,7 +691,7 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 		return nil, recipeErr
 	}
 
-	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, s.getCode(ctx))
+	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
 		return nil, err
 	}
@@ -704,17 +705,17 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	ownerPermalink := ns.String()
 
 	// Validation: Pipeline existence
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true)
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -724,7 +725,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, newID, false, s.getCode(ctx))
+	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, newID, false)
 	if err != nil {
 		return nil, err
 	}
@@ -918,13 +919,13 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -965,16 +966,10 @@ func (s *service) ListNamespacePipelineReleases(ctx context.Context, ns resource
 	if err != nil {
 		return nil, 0, "", ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, 0, "", err
 	} else if !granted {
 		return nil, 0, "", ErrNotFound
-	}
-
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "admin"); err != nil {
-		return nil, 0, "", err
-	} else if !granted {
-		return nil, 0, "", ErrNoPermission
 	}
 
 	dbPipelineReleases, ps, pt, err := s.repository.ListNamespacePipelineReleases(ctx, ownerPermalink, pipelineUid, int64(pageSize), pageToken, view == VIEW_BASIC, filter, showDeleted)
@@ -1008,16 +1003,10 @@ func (s *service) GetNamespacePipelineReleaseByID(ctx context.Context, ns resour
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
-	}
-
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "admin"); err != nil {
-		return nil, err
-	} else if !granted {
-		return nil, ErrNoPermission
 	}
 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUid, id, view == VIEW_BASIC)
@@ -1039,16 +1028,10 @@ func (s *service) GetNamespacePipelineReleaseByUID(ctx context.Context, ns resou
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
-	}
-
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "admin"); err != nil {
-		return nil, err
-	} else if !granted {
-		return nil, ErrNoPermission
 	}
 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByUID(ctx, ownerPermalink, pipelineUid, uid, view == VIEW_BASIC)
@@ -1071,13 +1054,13 @@ func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns res
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -1119,13 +1102,13 @@ func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns r
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -1163,13 +1146,13 @@ func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns res
 	if err != nil {
 		return ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return err
 	} else if !granted {
 		return ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return err
 	} else if !granted {
 		return ErrNoPermission
@@ -1194,13 +1177,13 @@ func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns re
 	if err != nil {
 		return ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return err
 	} else if !granted {
 		return ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return err
 	} else if !granted {
 		return ErrNoPermission
@@ -1233,13 +1216,13 @@ func (s *service) SetDefaultNamespacePipelineReleaseByID(ctx context.Context, ns
 	if err != nil {
 		return ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return err
 	} else if !granted {
 		return ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", uuid.FromStringOrNil(pipeline.GetUid()), authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return err
 	} else if !granted {
 		return ErrNoPermission
@@ -1601,17 +1584,18 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 	ownerPermalink := ns.String()
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
 		return nil, nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, nil, err
 	} else if !granted {
 		return nil, nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "executor"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "executor"); err != nil {
 		return nil, nil, err
 	} else if !granted {
 		return nil, nil, ErrNoPermission
@@ -1624,17 +1608,17 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
 
 	ownerPermalink := ns.String()
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "executor"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "executor"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -1648,17 +1632,17 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(authUser.UID)
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false)
 	if err != nil {
 		return nil, nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, nil, err
 	} else if !granted {
 		return nil, nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "executor"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "executor"); err != nil {
 		return nil, nil, err
 	} else if !granted {
 		return nil, nil, ErrNoPermission
@@ -1676,17 +1660,17 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 
 	ownerPermalink := ns.String()
 	userPermalink := resource.UserUidToUserPermalink(authUser.UID)
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false, s.getCode(ctx))
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false)
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "executor"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "executor"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -1799,7 +1783,7 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, pageSize int32, 
 
 func (s *service) GetConnectorByUID(ctx context.Context, authUser *AuthUser, uid uuid.UUID, view View, credentialMask bool) (*pipelinePB.Connector, error) {
 
-	if granted, err := s.aclClient.CheckPermission("connector", uid, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("connector", uid, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
@@ -1864,7 +1848,7 @@ func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Name
 
 	// TODO: optimize ACL model
 	if ns.NsType == "organizations" {
-		if granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, "member"); err != nil {
+		if granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "member"); err != nil {
 			return nil, err
 		} else if !granted {
 			return nil, ErrNoPermission
@@ -1942,7 +1926,7 @@ func (s *service) ListNamespaceConnectors(ctx context.Context, ns resource.Names
 
 	// TODO: optimize ACL model
 	if ns.NsType == "organizations" {
-		if granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, "member"); err != nil {
+		if granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "member"); err != nil {
 			return nil, 0, "", err
 		} else if !granted {
 			// TODO: we might share connector in the future
@@ -1987,7 +1971,7 @@ func (s *service) GetNamespaceConnectorByID(ctx context.Context, ns resource.Nam
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("connector", dbConnector.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("connector", dbConnector.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
@@ -2014,7 +1998,7 @@ func (s *service) UpdateNamespaceConnectorByID(ctx context.Context, ns resource.
 	if err != nil {
 		return nil, err
 	}
-	if granted, err := s.aclClient.CheckPermission("connector", dbConnectorToUpdate.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("connector", dbConnectorToUpdate.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
@@ -2048,7 +2032,7 @@ func (s *service) DeleteNamespaceConnectorByID(ctx context.Context, ns resource.
 	if err != nil {
 		return ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("connector", dbConnector.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("connector", dbConnector.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return err
 	} else if !granted {
 		return ErrNotFound
@@ -2100,7 +2084,7 @@ func (s *service) UpdateNamespaceConnectorStateByID(ctx context.Context, ns reso
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("connector", conn.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("connector", conn.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
@@ -2161,7 +2145,7 @@ func (s *service) UpdateNamespaceConnectorIDByID(ctx context.Context, ns resourc
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("connector", dbConnector.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("connector", dbConnector.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
@@ -2189,7 +2173,7 @@ func (s *service) Execute(ctx context.Context, ns resource.Namespace, authUser *
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission("connector", dbConnector.UID, authUser.GetACLType(), authUser.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("connector", dbConnector.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
