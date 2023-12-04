@@ -30,8 +30,10 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	openfgaClient "github.com/openfga/go-sdk/client"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
@@ -189,6 +191,29 @@ func main() {
 		)),
 	}
 
+	fgaClient, err := openfgaClient.NewSdkClient(&openfgaClient.ClientConfiguration{
+		ApiScheme: "http",
+		ApiHost:   fmt.Sprintf("%s:%d", config.Config.OpenFGA.Host, config.Config.OpenFGA.Port),
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	var aclClient acl.ACLClient
+	if stores, err := fgaClient.ListStores(context.Background()).Execute(); err == nil {
+		fgaClient.SetStoreId(*(*stores.Stores)[0].Id)
+		if models, err := fgaClient.ReadAuthorizationModels(context.Background()).Execute(); err == nil {
+			aclClient = acl.NewACLClient(fgaClient, (*models.AuthorizationModels)[0].Id)
+		}
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		panic(err)
+	}
+
 	// Create tls based credential.
 	var creds credentials.TransportCredentials
 	var tlsConfig *tls.Config
@@ -242,6 +267,7 @@ func main() {
 		redisClient,
 		temporalClient,
 		influxDBWriteClient,
+		&aclClient,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)

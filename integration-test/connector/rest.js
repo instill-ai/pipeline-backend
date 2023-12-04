@@ -40,7 +40,7 @@ export function setup() {
 
   group("Connector API: Pre delete all connector", () => {
     for (const connector of http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`, null, header).json("connectors")) {
-      check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${connector.id}`), {
+      check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${connector.id}`, null, header), {
         [`DELETE /v1alpha/${constant.namespace}/connectors/${connector.id} response status is 204`]: (r) => r.status === 204,
       });
     }

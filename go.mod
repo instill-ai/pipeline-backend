@@ -1,6 +1,8 @@
 module github.com/instill-ai/pipeline-backend
 
-go 1.21
+go 1.21.1
+
+toolchain go1.21.3
 
 require (
 	cloud.google.com/go/longrunning v0.5.2
@@ -22,6 +24,7 @@ require (
 	github.com/knadh/koanf v1.5.0
 	github.com/mennanov/fieldmask-utils v1.0.0
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
+	github.com/openfga/go-sdk v0.2.3
 	github.com/osteele/liquid v1.3.0
 	go.einride.tech/aip v0.60.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.17.0
@@ -44,7 +47,7 @@ require (
 	google.golang.org/protobuf v1.31.0
 	gorm.io/datatypes v1.0.7
 	gorm.io/driver/postgres v1.4.5
-	gorm.io/gorm v1.24.2
+	gorm.io/gorm v1.24.7-0.20230306060331-85eaf9eeda11
 )
 
 require (
@@ -177,7 +180,7 @@ require (
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/crypto v0.15.0 // indirect
+	golang.org/x/crypto v0.15.0
 	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect

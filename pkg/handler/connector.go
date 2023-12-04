@@ -180,13 +180,13 @@ func (h *PublicHandler) ListConnectors(ctx context.Context, req *pipelinePB.List
 		return resp, err
 	}
 
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
 
-	connectors, totalSize, nextPageToken, err := h.service.ListConnectors(ctx, userUid, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	connectors, totalSize, nextPageToken, err := h.service.ListConnectors(ctx, authUser, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -195,7 +195,7 @@ func (h *PublicHandler) ListConnectors(ctx context.Context, req *pipelinePB.List
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 	)))
 
@@ -226,7 +226,7 @@ func (h *PublicHandler) LookUpConnector(ctx context.Context, req *pipelinePB.Loo
 		return nil, err
 	}
 
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -250,7 +250,7 @@ func (h *PublicHandler) LookUpConnector(ctx context.Context, req *pipelinePB.Loo
 		return resp, st.Err()
 	}
 
-	connector, err := h.service.GetConnectorByUID(ctx, userUid, connUID, parseView(int32(*req.GetView().Enum())), true)
+	connector, err := h.service.GetConnectorByUID(ctx, authUser, connUID, parseView(int32(*req.GetView().Enum())), true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
@@ -259,7 +259,7 @@ func (h *PublicHandler) LookUpConnector(ctx context.Context, req *pipelinePB.Loo
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 		custom_otel.SetEventResource(connector),
 	)))
@@ -304,14 +304,14 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
 	// TODO: ACL
-	if ns.NsType == resource.User && ns.String() != resource.UserUidToUserPermalink(userUid) {
+	if ns.NsType == resource.User && ns.String() != resource.UserUidToUserPermalink(authUser.UID) {
 		st, err := sterr.CreateErrorBadRequest(
 			"[handler] create connector error",
 			[]*errdetails.BadRequest_FieldViolation{
@@ -405,7 +405,7 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 		connector.Owner = &pipelinePB.Connector_Organization{Organization: req.GetParent()}
 	}
 
-	connectorCreated, err = h.service.CreateNamespaceConnector(ctx, ns, userUid, connector)
+	connectorCreated, err = h.service.CreateNamespaceConnector(ctx, ns, authUser, connector)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -415,7 +415,7 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 		custom_otel.SetEventResource(connector),
 	)))
@@ -481,13 +481,13 @@ func (h *PublicHandler) listNamespaceConnectors(ctx context.Context, req ListNam
 		span.SetStatus(1, err.Error())
 		return nil, "", 0, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, "", 0, err
 	}
 
-	connectors, totalSize, nextPageToken, err = h.service.ListNamespaceConnectors(ctx, ns, userUid, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	connectors, totalSize, nextPageToken, err = h.service.ListNamespaceConnectors(ctx, ns, authUser, pageSize, pageToken, parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, "", 0, err
@@ -496,7 +496,7 @@ func (h *PublicHandler) listNamespaceConnectors(ctx context.Context, req ListNam
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 	)))
 
@@ -537,13 +537,14 @@ func (h *PublicHandler) getNamespaceConnector(ctx context.Context, req GetNamesp
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	connector, err = h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, parseView(int32(*req.GetView().Enum())), true)
+	connector, err = h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, parseView(int32(*req.GetView().Enum())), true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -552,7 +553,7 @@ func (h *PublicHandler) getNamespaceConnector(ctx context.Context, req GetNamesp
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 		custom_otel.SetEventResource(connector),
 	)))
@@ -596,7 +597,7 @@ func (h *PublicHandler) updateNamespaceConnector(ctx context.Context, req Update
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -648,7 +649,7 @@ func (h *PublicHandler) updateNamespaceConnector(ctx context.Context, req Update
 		return nil, st.Err()
 	}
 
-	existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, false)
+	existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_FULL, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -691,7 +692,7 @@ func (h *PublicHandler) updateNamespaceConnector(ctx context.Context, req Update
 	}
 
 	if mask.IsEmpty() {
-		existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, true)
+		existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_FULL, true)
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			return nil, err
@@ -737,7 +738,7 @@ func (h *PublicHandler) updateNamespaceConnector(ctx context.Context, req Update
 	proto.Merge(configuration, req.GetConnector().Configuration)
 	pbConnectorToUpdate.Configuration = configuration
 
-	connector, err = h.service.UpdateNamespaceConnectorByID(ctx, ns, userUid, connID, pbConnectorToUpdate)
+	connector, err = h.service.UpdateNamespaceConnectorByID(ctx, ns, authUser, connID, pbConnectorToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -746,7 +747,7 @@ func (h *PublicHandler) updateNamespaceConnector(ctx context.Context, req Update
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 		custom_otel.SetEventResource(connector),
 	)))
@@ -787,19 +788,19 @@ func (h *PublicHandler) deleteNamespaceConnector(ctx context.Context, req Delete
 		span.SetStatus(1, err.Error())
 		return err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return err
 	}
 
-	dbConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	dbConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_BASIC, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return err
 	}
 
-	if err := h.service.DeleteNamespaceConnectorByID(ctx, ns, userUid, connID); err != nil {
+	if err := h.service.DeleteNamespaceConnectorByID(ctx, ns, authUser, connID); err != nil {
 		span.SetStatus(1, err.Error())
 		return err
 	}
@@ -807,7 +808,7 @@ func (h *PublicHandler) deleteNamespaceConnector(ctx context.Context, req Delete
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 		custom_otel.SetEventResource(dbConnector),
 	)))
@@ -871,13 +872,13 @@ func (h *PublicHandler) connectNamespaceConnector(ctx context.Context, req Conne
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	connector, err = h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	connector, err = h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_BASIC, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -902,7 +903,7 @@ func (h *PublicHandler) connectNamespaceConnector(ctx context.Context, req Conne
 		return nil, st.Err()
 	}
 
-	connector, err = h.service.UpdateNamespaceConnectorStateByID(ctx, ns, userUid, connID, *state)
+	connector, err = h.service.UpdateNamespaceConnectorStateByID(ctx, ns, authUser, connID, *state)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -911,7 +912,7 @@ func (h *PublicHandler) connectNamespaceConnector(ctx context.Context, req Conne
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 		custom_otel.SetEventResource(connector),
 	)))
@@ -972,13 +973,13 @@ func (h *PublicHandler) disconnectNamespaceConnector(ctx context.Context, req Di
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	connector, err = h.service.UpdateNamespaceConnectorStateByID(ctx, ns, userUid, connID, pipelinePB.Connector_STATE_DISCONNECTED)
+	connector, err = h.service.UpdateNamespaceConnectorStateByID(ctx, ns, authUser, connID, pipelinePB.Connector_STATE_DISCONNECTED)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -987,7 +988,7 @@ func (h *PublicHandler) disconnectNamespaceConnector(ctx context.Context, req Di
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 		custom_otel.SetEventResource(connector),
 	)))
@@ -1050,7 +1051,7 @@ func (h *PublicHandler) renameNamespaceConnector(ctx context.Context, req Rename
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1091,7 +1092,7 @@ func (h *PublicHandler) renameNamespaceConnector(ctx context.Context, req Rename
 		return nil, st.Err()
 	}
 
-	connector, err = h.service.UpdateNamespaceConnectorIDByID(ctx, ns, userUid, connID, connNewID)
+	connector, err = h.service.UpdateNamespaceConnectorIDByID(ctx, ns, authUser, connID, connNewID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1100,7 +1101,7 @@ func (h *PublicHandler) renameNamespaceConnector(ctx context.Context, req Rename
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 		custom_otel.SetEventResource(connector),
 	)))
@@ -1143,19 +1144,19 @@ func (h *PublicHandler) watchNamespaceConnector(ctx context.Context, req WatchNa
 		span.SetStatus(1, err.Error())
 		return pipelinePB.Connector_STATE_UNSPECIFIED, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return pipelinePB.Connector_STATE_UNSPECIFIED, err
 	}
 
-	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_BASIC, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
 			logUUID.String(),
-			userUid,
+			authUser.UID,
 			eventName,
 			custom_otel.SetErrorMessage(err.Error()),
 		)))
@@ -1169,7 +1170,7 @@ func (h *PublicHandler) watchNamespaceConnector(ctx context.Context, req WatchNa
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
 			logUUID.String(),
-			userUid,
+			authUser.UID,
 			eventName,
 			custom_otel.SetErrorMessage(err.Error()),
 			custom_otel.SetEventResource(connector),
@@ -1215,13 +1216,13 @@ func (h *PublicHandler) testNamespaceConnector(ctx context.Context, req TestName
 		span.SetStatus(1, err.Error())
 		return pipelinePB.Connector_STATE_UNSPECIFIED, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return pipelinePB.Connector_STATE_UNSPECIFIED, err
 	}
 
-	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_BASIC, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_BASIC, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return pipelinePB.Connector_STATE_UNSPECIFIED, err
@@ -1237,7 +1238,7 @@ func (h *PublicHandler) testNamespaceConnector(ctx context.Context, req TestName
 	logger.Info(string(custom_otel.NewLogMessage(
 		span,
 		logUUID.String(),
-		userUid,
+		authUser.UID,
 		eventName,
 		custom_otel.SetEventResource(connector),
 	)))
@@ -1281,13 +1282,13 @@ func (h *PublicHandler) executeNamespaceConnector(ctx context.Context, req Execu
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
-	_, userUid, err := h.service.GetCtxUser(ctx)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, userUid, connID, service.VIEW_FULL, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_FULL, true)
 	if err != nil {
 		return nil, err
 	}
@@ -1305,7 +1306,7 @@ func (h *PublicHandler) executeNamespaceConnector(ctx context.Context, req Execu
 	}
 
 	dataPoint := utils.ConnectorUsageMetricData{
-		OwnerUID:               userUid.String(),
+		OwnerUID:               authUser.UID.String(),
 		ConnectorID:            connector.Id,
 		ConnectorUID:           connector.Uid,
 		ConnectorExecuteUID:    logUUID.String(),
@@ -1332,7 +1333,7 @@ func (h *PublicHandler) executeNamespaceConnector(ctx context.Context, req Execu
 		})
 	}
 
-	if outputs, err = h.service.Execute(ctx, ns, userUid, connID, req.GetTask(), req.GetInputs()); err != nil {
+	if outputs, err = h.service.Execute(ctx, ns, authUser, connID, req.GetTask(), req.GetInputs()); err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
@@ -1343,7 +1344,7 @@ func (h *PublicHandler) executeNamespaceConnector(ctx context.Context, req Execu
 		logger.Info(string(custom_otel.NewLogMessage(
 			span,
 			logUUID.String(),
-			userUid,
+			authUser.UID,
 			eventName,
 		)))
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()

@@ -28,6 +28,13 @@ type AppConfig struct {
 	Log         LogConfig         `koanf:"log"`
 	MgmtBackend MgmtBackendConfig `koanf:"mgmtbackend"`
 	Controller  ControllerConfig  `koanf:"controller"`
+	OpenFGA     OpenFGAConfig     `koanf:"openfga"`
+}
+
+// OpenFGA config
+type OpenFGAConfig struct {
+	Host string `koanf:"host"`
+	Port int    `koanf:"port"`
 }
 
 // ServerConfig defines HTTP server configurations

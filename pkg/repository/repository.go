@@ -11,7 +11,6 @@ import (
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -88,12 +87,7 @@ func NewRepository(db *gorm.DB) Repository {
 
 func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error {
 	if result := r.db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(result.Error, &pgErr) {
-			if pgErr.Code == "23505" {
-				return status.Errorf(codes.AlreadyExists, pgErr.Message)
-			}
-		}
+		return result.Error
 	}
 	return nil
 }
@@ -107,7 +101,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 
 	var expr *clause.Expr
 	if expr, err = r.transpileFilter(filter); err != nil {
-		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+		return nil, 0, "", err
 	}
 	if expr != nil {
 		if len(whereArgs) == 0 {
@@ -305,9 +299,9 @@ func (r *repository) UpdateNamespacePipelineByID(ctx context.Context, ownerPerma
 	if result := r.db.Model(&datamodel.Pipeline{}).
 		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Updates(pipeline); result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
+		return result.Error
 	} else if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[UpdatePipeline] The pipeline id %s you specified is not found", id)
+		return ErrNoDataUpdated
 	}
 	return nil
 }
@@ -318,11 +312,11 @@ func (r *repository) DeleteNamespacePipelineByID(ctx context.Context, ownerPerma
 		Delete(&datamodel.Pipeline{})
 
 	if result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
+		return result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[DeletePipeline] The pipeline id %s you specified is not found", id)
+		return ErrNoDataDeleted
 	}
 
 	return nil
@@ -332,9 +326,9 @@ func (r *repository) UpdateNamespacePipelineIDByID(ctx context.Context, ownerPer
 	if result := r.db.Model(&datamodel.Pipeline{}).
 		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Update("id", newID); result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
+		return result.Error
 	} else if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[UpdatePipelineID] The pipeline id %s you specified is not found", id)
+		return ErrNoDataUpdated
 	}
 	return nil
 }
@@ -348,12 +342,7 @@ func (r *repository) transpileFilter(filter filtering.Filter) (*clause.Expr, err
 
 func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error {
 	if result := r.db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(result.Error, &pgErr) {
-			if pgErr.Code == "23505" {
-				return status.Errorf(codes.AlreadyExists, pgErr.Message)
-			}
-		}
+		return result.Error
 	}
 	return nil
 }
@@ -366,7 +355,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	}
 
 	if result := db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUid).Count(&totalSize); result.Error != nil {
-		return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
+		return nil, 0, "", result.Error
 	}
 
 	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Order("create_time DESC, uid DESC").Where("pipeline_uid = ?", pipelineUid)
@@ -382,7 +371,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	if pageToken != "" {
 		createTime, uid, err := paginate.DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", status.Errorf(codes.InvalidArgument, "Invalid page token: %s", err.Error())
+			return nil, 0, "", ErrPageTokenDecode
 		}
 		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
 	}
@@ -392,7 +381,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	}
 
 	if expr, err := r.transpileFilter(filter); err != nil {
-		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+		return nil, 0, "", err
 	} else if expr != nil {
 		queryBuilder.Where("(?)", expr)
 	}
@@ -400,13 +389,13 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	var createTime time.Time
 	rows, err := queryBuilder.Rows()
 	if err != nil {
-		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+		return nil, 0, "", err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var item *datamodel.PipelineRelease
 		if err = db.ScanRows(rows, &item); err != nil {
-			return nil, 0, "", status.Error(codes.Internal, err.Error())
+			return nil, 0, "", err
 		}
 		createTime = item.CreateTime
 		pipelineReleases = append(pipelineReleases, item)
@@ -419,7 +408,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 			Where("pipeline_uid = ?", pipelineUid).
 			Order("create_time ASC, uid ASC").
 			Limit(1).Find(lastItem); result.Error != nil {
-			return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
+			return nil, 0, "", err
 		}
 		if lastItem.UID.String() == lastUID.String() {
 			nextPageToken = ""
@@ -439,7 +428,7 @@ func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int
 	}
 
 	if result := db.Model(&datamodel.PipelineRelease{}).Count(&totalSize); result.Error != nil {
-		return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
+		return nil, 0, "", err
 	}
 
 	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Order("create_time DESC, uid DESC")
@@ -455,7 +444,7 @@ func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int
 	if pageToken != "" {
 		createTime, uid, err := paginate.DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", status.Errorf(codes.InvalidArgument, "Invalid page token: %s", err.Error())
+			return nil, 0, "", ErrPageTokenDecode
 		}
 		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
 	}
@@ -465,7 +454,7 @@ func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int
 	}
 
 	if expr, err := r.transpileFilter(filter); err != nil {
-		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+		return nil, 0, "", err
 	} else if expr != nil {
 		queryBuilder.Clauses(expr)
 	}
@@ -473,13 +462,13 @@ func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int
 	var createTime time.Time
 	rows, err := queryBuilder.Rows()
 	if err != nil {
-		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+		return nil, 0, "", err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var item *datamodel.PipelineRelease
 		if err = db.ScanRows(rows, &item); err != nil {
-			return nil, 0, "", status.Error(codes.Internal, err.Error())
+			return nil, 0, "", err
 		}
 		createTime = item.CreateTime
 		pipelineReleases = append(pipelineReleases, item)
@@ -491,7 +480,7 @@ func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int
 		if result := db.Model(&datamodel.PipelineRelease{}).
 			Order("create_time ASC, uid ASC").
 			Limit(1).Find(lastItem); result.Error != nil {
-			return nil, 0, "", status.Errorf(codes.Internal, result.Error.Error())
+			return nil, 0, "", err
 		}
 		if lastItem.UID.String() == lastUID.String() {
 			nextPageToken = ""
@@ -510,7 +499,7 @@ func (r *repository) GetNamespacePipelineReleaseByID(ctx context.Context, ownerP
 	}
 	var pipelineRelease datamodel.PipelineRelease
 	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "[GetPipelineReleaseByID] The pipeline_release id %s you specified is not found", id)
+		return nil, result.Error
 	}
 	return &pipelineRelease, nil
 }
@@ -522,7 +511,7 @@ func (r *repository) GetNamespacePipelineReleaseByUID(ctx context.Context, owner
 	}
 	var pipelineRelease datamodel.PipelineRelease
 	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "[GetPipelineReleaseByUID] The pipeline_release uid %s you specified is not found", uid.String())
+		return nil, result.Error
 	}
 	return &pipelineRelease, nil
 }
@@ -531,9 +520,9 @@ func (r *repository) UpdateNamespacePipelineReleaseByID(ctx context.Context, own
 	if result := r.db.Model(&datamodel.PipelineRelease{}).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
 		Updates(pipelineRelease); result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
+		return result.Error
 	} else if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[UpdatePipelineRelease] The pipeline_release id %s you specified is not found", id)
+		return ErrNoDataUpdated
 	}
 	return nil
 }
@@ -544,11 +533,11 @@ func (r *repository) DeleteNamespacePipelineReleaseByID(ctx context.Context, own
 		Delete(&datamodel.PipelineRelease{})
 
 	if result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
+		return result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[DeletePipelineRelease] The pipeline_release id %s you specified is not found", id)
+		return ErrNoDataDeleted
 	}
 
 	return nil
@@ -558,9 +547,9 @@ func (r *repository) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, o
 	if result := r.db.Model(&datamodel.PipelineRelease{}).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
 		Update("id", newID); result.Error != nil {
-		return status.Error(codes.Internal, result.Error.Error())
+		return result.Error
 	} else if result.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, "[UpdatePipelineReleaseID] The pipeline_release id %s you specified is not found", id)
+		return ErrNoDataUpdated
 	}
 	return nil
 }
@@ -572,7 +561,7 @@ func (r *repository) GetLatestNamespacePipelineRelease(ctx context.Context, owne
 	}
 	var pipelineRelease datamodel.PipelineRelease
 	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
-		return nil, status.Errorf(codes.NotFound, "[GetPipelineReleaseByUID] no release")
+		return nil, result.Error
 	}
 	return &pipelineRelease, nil
 }
@@ -586,7 +575,7 @@ func (r *repository) listConnectors(ctx context.Context, where string, whereArgs
 
 	var expr *clause.Expr
 	if expr, err = r.transpileFilter(filter); err != nil {
-		return nil, 0, "", status.Errorf(codes.Internal, err.Error())
+		return nil, 0, "", err
 	}
 	if expr != nil {
 		if len(whereArgs) == 0 {
