@@ -276,8 +276,10 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 			return nil, err
 		}
 	case *pipelinePB.Pipeline_Organization:
-
-		return nil, fmt.Errorf("org not supported")
+		owner, err = s.ConvertOwnerNameToPermalink(pbPipeline.GetOrganization())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	recipe := &datamodel.Recipe{}
@@ -773,7 +775,10 @@ func (s *service) convertProtoToDatamodel(
 			return nil, err
 		}
 	case *pipelinePB.Connector_Organization:
-		return nil, fmt.Errorf("org not supported")
+		owner, err = s.ConvertOwnerNameToPermalink(pbConnector.GetOrganization())
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &datamodel.Connector{

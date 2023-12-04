@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	_ "embed"
@@ -13,7 +15,10 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
+	openfgaClient "github.com/openfga/go-sdk/client"
+
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
@@ -100,11 +105,82 @@ func main() {
 	}
 
 	// Set tombstone based on definition
-	connectors := connector.Init(logger, utils.GetConnectorOptions())
-	definitions := connectors.ListConnectorDefinitions()
+	connector := connector.Init(logger, utils.GetConnectorOptions())
+	definitions := connector.ListConnectorDefinitions()
 	for idx := range definitions {
 		if definitions[idx].Tombstone {
 			db.Unscoped().Model(&datamodel.Connector{}).Where("connector_definition_uid = ?", definitions[idx].Uid).Update("tombstone", true)
+		}
+	}
+
+	fgaClient, err := openfgaClient.NewSdkClient(&openfgaClient.ClientConfiguration{
+		ApiScheme: "http",
+		ApiHost:   fmt.Sprintf("%s:%d", config.Config.OpenFGA.Host, config.Config.OpenFGA.Port),
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	var aclClient acl.ACLClient
+	if stores, err := fgaClient.ListStores(context.Background()).Execute(); err == nil {
+		fgaClient.SetStoreId(*(*stores.Stores)[0].Id)
+		if models, err := fgaClient.ReadAuthorizationModels(context.Background()).Execute(); err == nil {
+			aclClient = acl.NewACLClient(fgaClient, (*models.AuthorizationModels)[0].Id)
+		}
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		panic(err)
+	}
+
+	var pipelines []*datamodel.Pipeline
+	pageToken := ""
+	for {
+		pipelines, _, pageToken, err = repository.ListPipelinesAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false)
+		if err != nil {
+			panic(err)
+		}
+		for _, pipeline := range pipelines {
+			nsType := strings.Split(pipeline.Owner, "/")[0]
+			nsType = nsType[0 : len(nsType)-1]
+			userUID, err := uuid.FromString(strings.Split(pipeline.Owner, "/")[1])
+			if err != nil {
+				panic(err)
+			}
+			err = aclClient.SetOwner("pipeline", pipeline.UID, nsType, userUID)
+			if err != nil {
+				panic(err)
+			}
+		}
+		if pageToken == "" {
+			break
+		}
+	}
+
+	var connectors []*datamodel.Connector
+	pageToken = ""
+	for {
+		connectors, _, pageToken, err = repository.ListConnectorsAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false)
+		if err != nil {
+			panic(err)
+		}
+		for _, connector := range connectors {
+			nsType := strings.Split(connector.Owner, "/")[0]
+			nsType = nsType[0 : len(nsType)-1]
+			userUID, err := uuid.FromString(strings.Split(connector.Owner, "/")[1])
+			if err != nil {
+				panic(err)
+			}
+			err = aclClient.SetOwner("connector", connector.UID, nsType, userUID)
+			if err != nil {
+				panic(err)
+			}
+		}
+		if pageToken == "" {
+			break
 		}
 	}
 

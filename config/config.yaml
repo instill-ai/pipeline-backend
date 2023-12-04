@@ -74,3 +74,6 @@ controller:
   https:
     cert:
     key:
+openfga:
+  host: openfga
+  port: 8080
