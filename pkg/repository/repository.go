@@ -28,11 +28,11 @@ const VisibilityPublic = datamodel.ConnectorVisibility(pipelinePB.Connector_VISI
 
 // Repository interface
 type Repository interface {
-	ListPipelines(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
-	GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
+	ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
+	GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
 
 	CreateNamespacePipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error
-	ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
+	ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
 	GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool) (*datamodel.Pipeline, error)
 
 	UpdateNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, pipeline *datamodel.Pipeline) error
@@ -53,11 +53,11 @@ type Repository interface {
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
 	ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.PipelineRelease, int64, string, error)
 
-	ListConnectors(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
+	ListConnectors(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
 	GetConnectorByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
 
 	CreateNamespaceConnector(ctx context.Context, ownerPermalink string, connector *datamodel.Connector) error
-	ListNamespaceConnectors(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
+	ListNamespaceConnectors(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
 	GetNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool) (*datamodel.Connector, error)
 	UpdateNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string, connector *datamodel.Connector) error
 	DeleteNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string) error
@@ -86,7 +86,7 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 	return nil
 }
 
-func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
+func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
 
 	db := r.db
 	if showDeleted {
@@ -107,10 +107,17 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		}
 	}
 
-	db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Count(&totalSize)
+	if uidAllowList != nil {
+		db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Where("uid in ?", uidAllowList).Count(&totalSize)
+	} else {
+		db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Count(&totalSize)
+	}
 
 	queryBuilder := db.Model(&datamodel.Pipeline{}).Order("create_time DESC, uid DESC").Where(where, whereArgs...)
 
+	if uidAllowList != nil {
+		queryBuilder = queryBuilder.Where("uid in ?", uidAllowList)
+	}
 	if pageSize == 0 {
 		pageSize = DefaultPageSize
 	} else if pageSize > MaxPageSize {
@@ -151,10 +158,19 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		lastUID := (pipelines)[len(pipelines)-1].UID
 		lastItem := &datamodel.Pipeline{}
 
-		if result := db.Model(&datamodel.Pipeline{}).
-			Where(where, whereArgs...).
-			Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
-			return nil, 0, "", err
+		if uidAllowList != nil {
+			if result := db.Model(&datamodel.Pipeline{}).
+				Where(where, whereArgs...).
+				Where("uid in ?", uidAllowList).
+				Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
+				return nil, 0, "", err
+			}
+		} else {
+			if result := db.Model(&datamodel.Pipeline{}).
+				Where(where, whereArgs...).
+				Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
+				return nil, 0, "", err
+			}
 		}
 
 		if lastItem.UID.String() == lastUID.String() {
@@ -167,21 +183,21 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	return pipelines, totalSize, nextPageToken, nil
 }
 
-func (r *repository) ListPipelines(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
+func (r *repository) ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
-		"(owner = ?)",
-		[]interface{}{userPermalink},
-		pageSize, pageToken, isBasicView, filter, showDeleted)
+		"",
+		[]interface{}{},
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted)
 }
-func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
+func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
 		"(owner = ?)",
 		[]interface{}{ownerPermalink},
-		pageSize, pageToken, isBasicView, filter, showDeleted)
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted)
 }
 
 func (r *repository) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error) {
-	return r.listPipelines(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, showDeleted)
+	return r.listPipelines(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted)
 }
 
 func (r *repository) getNamespacePipeline(ctx context.Context, where string, whereArgs []interface{}, isBasicView bool) (*datamodel.Pipeline, error) {
@@ -207,7 +223,7 @@ func (r *repository) GetNamespacePipelineByID(ctx context.Context, ownerPermalin
 		isBasicView)
 }
 
-func (r *repository) GetPipelineByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error) {
+func (r *repository) GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error) {
 	// TODO: ACL
 	return r.getNamespacePipeline(ctx,
 		"(uid = ?)",
@@ -500,7 +516,7 @@ func (r *repository) GetLatestNamespacePipelineRelease(ctx context.Context, owne
 	return &pipelineRelease, nil
 }
 
-func (r *repository) listConnectors(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
+func (r *repository) listConnectors(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
 
 	db := r.db
 	if showDeleted {
@@ -521,9 +537,16 @@ func (r *repository) listConnectors(ctx context.Context, where string, whereArgs
 		}
 	}
 
-	db.Model(&datamodel.Connector{}).Where(where, whereArgs...).Count(&totalSize)
+	if uidAllowList != nil {
+		db.Model(&datamodel.Connector{}).Where(where, whereArgs...).Where("uid in ?", uidAllowList).Count(&totalSize)
+	} else {
+		db.Model(&datamodel.Connector{}).Where(where, whereArgs...).Count(&totalSize)
+	}
 
 	queryBuilder := db.Model(&datamodel.Connector{}).Order("create_time DESC, uid DESC").Where(where, whereArgs...)
+	if uidAllowList != nil {
+		queryBuilder = queryBuilder.Where("uid in ?", uidAllowList)
+	}
 
 	if pageSize == 0 {
 		pageSize = DefaultPageSize
@@ -565,10 +588,19 @@ func (r *repository) listConnectors(ctx context.Context, where string, whereArgs
 		lastUID := (connectors)[len(connectors)-1].UID
 		lastItem := &datamodel.Connector{}
 
-		if result := db.Model(&datamodel.Connector{}).
-			Where(where, whereArgs...).
-			Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
-			return nil, 0, "", result.Error
+		if uidAllowList != nil {
+			if result := db.Model(&datamodel.Connector{}).
+				Where(where, whereArgs...).
+				Where("uid in ?", uidAllowList).
+				Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
+				return nil, 0, "", err
+			}
+		} else {
+			if result := db.Model(&datamodel.Connector{}).
+				Where(where, whereArgs...).
+				Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
+				return nil, 0, "", err
+			}
 		}
 
 		if lastItem.UID.String() == lastUID.String() {
@@ -582,24 +614,24 @@ func (r *repository) listConnectors(ctx context.Context, where string, whereArgs
 }
 
 func (r *repository) ListConnectorsAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
-	return r.listConnectors(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, showDeleted)
+	return r.listConnectors(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted)
 }
 
-func (r *repository) ListConnectors(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
+func (r *repository) ListConnectors(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
 
 	return r.listConnectors(ctx,
 		"(owner = ?)",
 		[]interface{}{userPermalink},
-		pageSize, pageToken, isBasicView, filter, showDeleted)
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted)
 
 }
 
-func (r *repository) ListNamespaceConnectors(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
+func (r *repository) ListNamespaceConnectors(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
 
 	return r.listConnectors(ctx,
 		"(owner = ? )",
 		[]interface{}{ownerPermalink},
-		pageSize, pageToken, isBasicView, filter, showDeleted)
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted)
 
 }
 

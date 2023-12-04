@@ -399,8 +399,12 @@ func (s *service) ListOperatorDefinitions(ctx context.Context) []*pipelinePB.Ope
 
 func (s *service) ListPipelines(ctx context.Context, authUser *AuthUser, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error) {
 
-	userPermalink := resource.UserUidToUserPermalink(authUser.UID)
-	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, userPermalink, int64(pageSize), pageToken, view == VIEW_BASIC, filter, showDeleted)
+	uidAllowList, err := s.aclClient.ListPermissions("pipeline", authUser.GetACLType(), authUser.UID, "reader")
+	if err != nil {
+		return nil, 0, "", err
+	}
+
+	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view == VIEW_BASIC, filter, uidAllowList, showDeleted)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -411,10 +415,7 @@ func (s *service) ListPipelines(ctx context.Context, authUser *AuthUser, pageSiz
 
 func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid uuid.UUID, view View) (*pipelinePB.Pipeline, error) {
 
-	// TODO: ACL for pipleine explore API
-	userPermalink := resource.UserUidToUserPermalink(authUser.UID)
-
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, uid, view == VIEW_BASIC)
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, uid, view == VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -466,7 +467,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		return nil, err
 	}
 	// TODO: use OpenFGA as single source of truth
-	err = s.aclClient.SetPipelinePermissionMap(dbPipeline)
+	err = s.aclClient.SetPipelinePermissionMap(dbCreatedPipeline)
 	if err != nil {
 		return nil, err
 	}
@@ -478,23 +479,12 @@ func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namesp
 
 	ownerPermalink := ns.String()
 
-	// TODO: optimize ACL model
-	if ns.NsType == "organizations" {
-		granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "member")
-		// TODO
-		if err != nil {
-			return nil, 0, "", err
-		}
-		if !granted {
-			return []*pipelinePB.Pipeline{}, 0, "", nil
-		}
-	} else {
-		if ns.NsUid != authUser.UID {
-			return []*pipelinePB.Pipeline{}, 0, "", nil
-		}
+	uidAllowList, err := s.aclClient.ListPermissions("pipeline", authUser.GetACLType(), authUser.UID, "reader")
+	if err != nil {
+		return nil, 0, "", err
 	}
 
-	dbPipelines, ps, pt, err := s.repository.ListNamespacePipelines(ctx, ownerPermalink, int64(pageSize), pageToken, view == VIEW_BASIC, filter, showDeleted)
+	dbPipelines, ps, pt, err := s.repository.ListNamespacePipelines(ctx, ownerPermalink, int64(pageSize), pageToken, view == VIEW_BASIC, filter, uidAllowList, showDeleted)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -654,6 +644,10 @@ func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.N
 		}
 	}
 
+	err = s.aclClient.Purge("pipeline", dbPipeline.UID)
+	if err != nil {
+		return err
+	}
 	return s.repository.DeleteNamespacePipelineByID(ctx, ownerPermalink, id)
 }
 
@@ -1631,8 +1625,8 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUid uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
 
 	ownerPermalink := ns.String()
-	userPermalink := resource.UserUidToUserPermalink(authUser.UID)
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false)
+
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUid, false)
 	if err != nil {
 		return nil, nil, ErrNotFound
 	}
@@ -1659,8 +1653,8 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUid uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
 
 	ownerPermalink := ns.String()
-	userPermalink := resource.UserUidToUserPermalink(authUser.UID)
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, userPermalink, pipelineUid, false)
+
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUid, false)
 	if err != nil {
 		return nil, ErrNotFound
 	}
@@ -1829,10 +1823,14 @@ func (s *service) GetConnectorDefinitionByUIDAdmin(ctx context.Context, uid uuid
 
 func (s *service) ListConnectors(ctx context.Context, authUser *AuthUser, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int32, string, error) {
 
-	// TODO: ACL for connector explore API
 	userPermalink := resource.UserUidToUserPermalink(authUser.UID)
 
-	dbConnectors, totalSize, nextPageToken, err := s.repository.ListConnectors(ctx, userPermalink, int64(pageSize), pageToken, view == VIEW_BASIC, filter, showDeleted)
+	uidAllowList, err := s.aclClient.ListPermissions("connector", authUser.GetACLType(), authUser.UID, "reader")
+	if err != nil {
+		return nil, 0, "", err
+	}
+
+	dbConnectors, totalSize, nextPageToken, err := s.repository.ListConnectors(ctx, userPermalink, int64(pageSize), pageToken, view == VIEW_BASIC, filter, uidAllowList, showDeleted)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -1924,24 +1922,14 @@ func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Name
 
 func (s *service) ListNamespaceConnectors(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int32, string, error) {
 
-	// TODO: optimize ACL model
-	if ns.NsType == "organizations" {
-		if granted, err := s.aclClient.CheckPermission("organization", ns.NsUid, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "member"); err != nil {
-			return nil, 0, "", err
-		} else if !granted {
-			// TODO: we might share connector in the future
-			return []*pipelinePB.Connector{}, 0, "", nil
-		}
-	} else {
-		if ns.NsUid != authUser.UID {
-			// TODO: we might share connector in the future
-			return []*pipelinePB.Connector{}, 0, "", nil
-		}
+	uidAllowList, err := s.aclClient.ListPermissions("connector", authUser.GetACLType(), authUser.UID, "reader")
+	if err != nil {
+		return nil, 0, "", err
 	}
 
 	ownerPermalink := ns.String()
 
-	dbConnectors, totalSize, nextPageToken, err := s.repository.ListNamespaceConnectors(ctx, ownerPermalink, int64(pageSize), pageToken, view == VIEW_BASIC, filter, showDeleted)
+	dbConnectors, totalSize, nextPageToken, err := s.repository.ListNamespaceConnectors(ctx, ownerPermalink, int64(pageSize), pageToken, view == VIEW_BASIC, filter, uidAllowList, showDeleted)
 
 	if err != nil {
 		return nil, 0, "", err
@@ -2069,6 +2057,11 @@ func (s *service) DeleteNamespaceConnectorByID(ctx context.Context, ns resource.
 	// }
 
 	if err := s.DeleteConnectorState(dbConnector.UID); err != nil {
+		return err
+	}
+
+	err = s.aclClient.Purge("connector", dbConnector.UID)
+	if err != nil {
 		return err
 	}
 
