@@ -18,6 +18,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/jackc/pgconn"
 )
 
 // RecoveryInterceptorOpt - panic handler
@@ -61,7 +62,12 @@ func InjectErrCode(err error) error {
 	if err == nil {
 		return nil
 	}
-
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		if pgErr.Code == "23505" {
+			return status.Error(codes.AlreadyExists, err.Error())
+		}
+	}
 	switch {
 
 	case

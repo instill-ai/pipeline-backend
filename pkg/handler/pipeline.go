@@ -271,15 +271,14 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 
 	pipelineToCreate := req.GetPipeline()
 
-	name, err := h.service.ConvertOwnerPermalinkToName(fmt.Sprintf("users/%s", authUser.UID))
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, err
+	if strings.HasPrefix(req.GetParent(), "users") {
+		pipelineToCreate.Owner = &pipelinePB.Pipeline_User{User: req.GetParent()}
+	} else {
+		pipelineToCreate.Owner = &pipelinePB.Pipeline_Organization{Organization: req.GetParent()}
 	}
 
-	pipelineToCreate.Owner = &pipelinePB.Pipeline_User{User: name}
-
 	pipeline, err = h.service.CreateNamespacePipeline(ctx, ns, authUser, pipelineToCreate)
+
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err

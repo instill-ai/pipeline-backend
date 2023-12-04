@@ -2,22 +2,16 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgconn"
 	"go.einride.tech/aip/filtering"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
-	"google.golang.org/grpc/codes"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/paginate"
-	"github.com/instill-ai/x/sterr"
 
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
 )
@@ -113,8 +107,6 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		}
 	}
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Count(&totalSize)
 
 	queryBuilder := db.Model(&datamodel.Pipeline{}).Order("create_time DESC, uid DESC").Where(where, whereArgs...)
@@ -130,19 +122,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	if pageToken != "" {
 		createdAt, uid, err := paginate.DecodeToken(pageToken)
 		if err != nil {
-			st, err := sterr.CreateErrorBadRequest(
-				fmt.Sprintf("[db] list Pipeline error: %s", err.Error()),
-				[]*errdetails.BadRequest_FieldViolation{
-					{
-						Field:       "page_token",
-						Description: fmt.Sprintf("Invalid page token: %s", err.Error()),
-					},
-				},
-			)
-			if err != nil {
-				logger.Error(err.Error())
-			}
-			return nil, 0, "", st.Err()
+			return nil, 0, "", ErrPageTokenDecode
 		}
 
 		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createdAt, uid)
@@ -155,36 +135,13 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	var createTime time.Time // only using one for all loops, we only need the latest one in the end
 	rows, err := queryBuilder.Rows()
 	if err != nil {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.Internal,
-			fmt.Sprintf("[db] list Pipeline error: %s", err.Error()),
-			"pipeline",
-			"",
-			"",
-			err.Error(),
-		)
-
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return nil, 0, "", st.Err()
+		return nil, 0, "", err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var item datamodel.Pipeline
 		if err = db.ScanRows(rows, &item); err != nil {
-			st, err := sterr.CreateErrorResourceInfo(
-				codes.Internal,
-				fmt.Sprintf("[db] list Pipeline error: %s", err.Error()),
-				"pipeline",
-				"",
-				"",
-				err.Error(),
-			)
-			if err != nil {
-				logger.Error(err.Error())
-			}
-			return nil, 0, "", st.Err()
+			return nil, 0, "", err
 		}
 		createTime = item.CreateTime
 		pipelines = append(pipelines, &item)
@@ -197,18 +154,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		if result := db.Model(&datamodel.Pipeline{}).
 			Where(where, whereArgs...).
 			Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
-			st, err := sterr.CreateErrorResourceInfo(
-				codes.Internal,
-				fmt.Sprintf("[db] list Pipeline error: %s", err.Error()),
-				"pipeline",
-				"",
-				"",
-				result.Error.Error(),
-			)
-			if err != nil {
-				logger.Error(err.Error())
-			}
-			return nil, 0, "", st.Err()
+			return nil, 0, "", err
 		}
 
 		if lastItem.UID.String() == lastUID.String() {
@@ -239,7 +185,6 @@ func (r *repository) ListPipelinesAdmin(ctx context.Context, pageSize int64, pag
 }
 
 func (r *repository) getNamespacePipeline(ctx context.Context, where string, whereArgs []interface{}, isBasicView bool) (*datamodel.Pipeline, error) {
-	logger, _ := logger.GetZapLogger(ctx)
 
 	var pipeline datamodel.Pipeline
 
@@ -250,18 +195,7 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 	}
 
 	if result := queryBuilder.First(&pipeline); result.Error != nil {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.NotFound,
-			fmt.Sprintf("[db] getNamespacePipeline error: %s", result.Error.Error()),
-			"pipeline",
-			"",
-			"",
-			result.Error.Error(),
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return nil, st.Err()
+		return nil, result.Error
 	}
 	return &pipeline, nil
 }
@@ -587,8 +521,6 @@ func (r *repository) listConnectors(ctx context.Context, where string, whereArgs
 		}
 	}
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	db.Model(&datamodel.Connector{}).Where(where, whereArgs...).Count(&totalSize)
 
 	queryBuilder := db.Model(&datamodel.Connector{}).Order("create_time DESC, uid DESC").Where(where, whereArgs...)
@@ -604,19 +536,7 @@ func (r *repository) listConnectors(ctx context.Context, where string, whereArgs
 	if pageToken != "" {
 		createdAt, uid, err := paginate.DecodeToken(pageToken)
 		if err != nil {
-			st, err := sterr.CreateErrorBadRequest(
-				fmt.Sprintf("[db] list connector error: %s", err.Error()),
-				[]*errdetails.BadRequest_FieldViolation{
-					{
-						Field:       "page_token",
-						Description: fmt.Sprintf("Invalid page token: %s", err.Error()),
-					},
-				},
-			)
-			if err != nil {
-				logger.Error(err.Error())
-			}
-			return nil, 0, "", st.Err()
+			return nil, 0, "", ErrPageTokenDecode
 		}
 
 		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createdAt, uid)
@@ -629,36 +549,13 @@ func (r *repository) listConnectors(ctx context.Context, where string, whereArgs
 	var createTime time.Time // only using one for all loops, we only need the latest one in the end
 	rows, err := queryBuilder.Rows()
 	if err != nil {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.Internal,
-			fmt.Sprintf("[db] list connector error: %s", err.Error()),
-			"connector",
-			"",
-			"",
-			err.Error(),
-		)
-
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return nil, 0, "", st.Err()
+		return nil, 0, "", err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var item datamodel.Connector
 		if err = db.ScanRows(rows, &item); err != nil {
-			st, err := sterr.CreateErrorResourceInfo(
-				codes.Internal,
-				fmt.Sprintf("[db] list connector error: %s", err.Error()),
-				"connector",
-				"",
-				"",
-				err.Error(),
-			)
-			if err != nil {
-				logger.Error(err.Error())
-			}
-			return nil, 0, "", st.Err()
+			return nil, 0, "", err
 		}
 		createTime = item.CreateTime
 		connectors = append(connectors, &item)
@@ -671,18 +568,7 @@ func (r *repository) listConnectors(ctx context.Context, where string, whereArgs
 		if result := db.Model(&datamodel.Connector{}).
 			Where(where, whereArgs...).
 			Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
-			st, err := sterr.CreateErrorResourceInfo(
-				codes.Internal,
-				fmt.Sprintf("[db] listConnectors: %s", err.Error()),
-				"connector",
-				"",
-				"",
-				result.Error.Error(),
-			)
-			if err != nil {
-				logger.Error(err.Error())
-			}
-			return nil, 0, "", st.Err()
+			return nil, 0, "", result.Error
 		}
 
 		if lastItem.UID.String() == lastUID.String() {
@@ -719,32 +605,13 @@ func (r *repository) ListNamespaceConnectors(ctx context.Context, ownerPermalink
 
 func (r *repository) CreateNamespaceConnector(ctx context.Context, ownerPermalink string, connector *datamodel.Connector) error {
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	if result := r.db.Model(&datamodel.Connector{}).Create(connector); result.Error != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(result.Error, &pgErr) {
-			if pgErr.Code == "23505" {
-				st, err := sterr.CreateErrorResourceInfo(
-					codes.AlreadyExists,
-					fmt.Sprintf("[db] create connector error: %s", pgErr.Message),
-					"connector",
-					fmt.Sprintf("id %s", connector.ID),
-					connector.Owner,
-					pgErr.Message,
-				)
-				if err != nil {
-					logger.Error(err.Error())
-				}
-				return st.Err()
-			}
-		}
+		return result.Error
 	}
 	return nil
 }
 
 func (r *repository) getNamespaceConnector(ctx context.Context, where string, whereArgs []interface{}, isBasicView bool) (*datamodel.Connector, error) {
-	logger, _ := logger.GetZapLogger(ctx)
 
 	var connector datamodel.Connector
 
@@ -755,18 +622,7 @@ func (r *repository) getNamespaceConnector(ctx context.Context, where string, wh
 	}
 
 	if result := queryBuilder.First(&connector); result.Error != nil {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.NotFound,
-			fmt.Sprintf("[db] getNamespaceConnector error: %s", result.Error.Error()),
-			"connector",
-			"",
-			"",
-			result.Error.Error(),
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return nil, st.Err()
+		return nil, result.Error
 	}
 	return &connector, nil
 }
@@ -798,76 +654,28 @@ func (r *repository) GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, 
 
 func (r *repository) UpdateNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string, connector *datamodel.Connector) error {
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	if result := r.db.Model(&datamodel.Connector{}).
 		Where("(id = ? AND owner = ? )", id, ownerPermalink).
 		Updates(connector); result.Error != nil {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.Internal,
-			fmt.Sprintf("[db] update connector error: %s", result.Error.Error()),
-			"connector",
-			"",
-			"",
-			result.Error.Error(),
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return st.Err()
+		return result.Error
 	} else if result.RowsAffected == 0 {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.NotFound,
-			fmt.Sprintf("[db] update connector error: %s", "Not found"),
-			"connector",
-			"",
-			"",
-			"Not found",
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return st.Err()
+		return ErrNoDataUpdated
 	}
 	return nil
 }
 
 func (r *repository) DeleteNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string) error {
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	result := r.db.Model(&datamodel.Connector{}).
 		Where("(id = ? AND owner = ? )", id, ownerPermalink).
 		Delete(&datamodel.Connector{})
 
 	if result.Error != nil {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.Internal,
-			fmt.Sprintf("[db] delete connector error: %s", result.Error.Error()),
-			"connector",
-			"",
-			"",
-			result.Error.Error(),
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return st.Err()
+		return result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.NotFound,
-			fmt.Sprintf("[db] delete connector error: %s", "Not found"),
-			"connector",
-			"",
-			"",
-			"Not found",
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return st.Err()
+		return ErrNoDataDeleted
 	}
 
 	return nil
@@ -875,72 +683,24 @@ func (r *repository) DeleteNamespaceConnectorByID(ctx context.Context, ownerPerm
 
 func (r *repository) UpdateNamespaceConnectorIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error {
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	if result := r.db.Model(&datamodel.Connector{}).
 		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Update("id", newID); result.Error != nil {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.Internal,
-			fmt.Sprintf("[db] update connector id error: %s", result.Error.Error()),
-			"connector",
-			"",
-			"",
-			result.Error.Error(),
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return st.Err()
+		return result.Error
 	} else if result.RowsAffected == 0 {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.NotFound,
-			fmt.Sprintf("[db] update connector id error: %s", "Not found"),
-			"connector",
-			"",
-			"",
-			"Not found",
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return st.Err()
+		return ErrNoDataUpdated
 	}
 	return nil
 }
 
 func (r *repository) UpdateNamespaceConnectorStateByID(ctx context.Context, ownerPermalink string, id string, state datamodel.ConnectorState) error {
 
-	logger, _ := logger.GetZapLogger(ctx)
-
 	if result := r.db.Model(&datamodel.Connector{}).
 		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Update("state", state); result.Error != nil {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.Internal,
-			fmt.Sprintf("[db] update connector state by id error: %s", result.Error.Error()),
-			"connector",
-			"",
-			"",
-			result.Error.Error(),
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return st.Err()
+		return result.Error
 	} else if result.RowsAffected == 0 {
-		st, err := sterr.CreateErrorResourceInfo(
-			codes.NotFound,
-			fmt.Sprintf("[db] update connector state by id error: %s", "Not found"),
-			"connector",
-			"",
-			"",
-			"Not found",
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		return st.Err()
+		return ErrNoDataUpdated
 	}
 	return nil
 }

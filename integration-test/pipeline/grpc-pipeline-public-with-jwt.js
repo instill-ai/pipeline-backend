@@ -60,8 +60,8 @@ export function CheckList(metadata) {
         constant.paramsGRPCWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response StatusUnauthenticated`]:
-          (r) => r.status === grpc.StatusUnauthenticated,
+        [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines response StatusPermissionDenied`]:
+          (r) => r.status === grpc.StatusPermissionDenied,
       }
     );
 
@@ -109,8 +109,8 @@ export function CheckGet(metadata) {
         constant.paramsGRPCWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline response StatusUnauthenticated`]:
-          (r) => r.status === grpc.StatusUnauthenticated,
+        [`[with random "jwt-sub" header] vdp.pipeline.v1alpha.PipelinePublicService/GetUserPipeline response StatusPermissionDenied`]:
+          (r) => r.status === grpc.StatusPermissionDenied,
       }
     );
 

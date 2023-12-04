@@ -310,23 +310,6 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 		return nil, err
 	}
 
-	// TODO: ACL
-	if ns.NsType == resource.User && ns.String() != resource.UserUidToUserPermalink(authUser.UID) {
-		st, err := sterr.CreateErrorBadRequest(
-			"[handler] create connector error",
-			[]*errdetails.BadRequest_FieldViolation{
-				{
-					Description: "can not create in other user's namespace",
-				},
-			},
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		span.SetStatus(1, st.Err().Error())
-		return nil, st.Err()
-	}
-
 	// Set all OUTPUT_ONLY fields to zero value on the requested payload
 	if err := checkfield.CheckCreateOutputOnlyFields(connector, outputOnlyConnectorFields); err != nil {
 		st, err := sterr.CreateErrorBadRequest(

@@ -46,8 +46,8 @@ export function CheckList(header) {
         constant.paramsHTTPWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] GET /v1alpha/${constant.namespace}/pipelines response status is 401`]:
-          (r) => r.status === 401,
+        [`[with random "jwt-sub" header] GET /v1alpha/${constant.namespace}/pipelines response status is 403`]:
+          (r) => r.status === 403,
       }
     );
   });
@@ -86,8 +86,8 @@ export function CheckGet(header) {
         constant.paramsHTTPWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] GET /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status is 401`]:
-          (r) => r.status === 401,
+        [`[with random "jwt-sub" header] GET /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status is 403`]:
+          (r) => r.status === 403,
       }
     );
 
