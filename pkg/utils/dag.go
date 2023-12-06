@@ -12,6 +12,12 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+type ComponentStatus struct {
+	Started   bool
+	Completed bool
+	Skiped    bool
+}
+
 type unionFind struct {
 	roots []int
 }
