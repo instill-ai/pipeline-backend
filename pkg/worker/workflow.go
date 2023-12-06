@@ -33,6 +33,7 @@ type TriggerAsyncPipelineWorkflowRequest struct {
 	PipelineReleaseUid         uuid.UUID
 	PipelineRecipe             *datamodel.Recipe
 	OwnerPermalink             string
+	UserPermalink              string
 	ReturnTraces               bool
 }
 
@@ -127,8 +128,22 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerAsyncPipelineWorkflow started")
 
+	namespace := strings.Split(param.OwnerPermalink, "/")[0]
+	var ownerType mgmtPB.OwnerType
+	switch namespace {
+	case "orgs":
+		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
+	case "users":
+		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
+	default:
+		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
+	}
+
 	dataPoint := utils.PipelineUsageMetricData{
 		OwnerUID:           strings.Split(param.OwnerPermalink, "/")[1],
+		OwnerType:          ownerType,
+		UserUID:            strings.Split(param.UserPermalink, "/")[1],
+		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		TriggerMode:        mgmtPB.Mode_MODE_ASYNC,
 		PipelineID:         param.PipelineId,
 		PipelineUID:        param.PipelineUid.String(),

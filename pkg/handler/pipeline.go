@@ -860,8 +860,21 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 		return nil, nil, err
 	}
 
+	var ownerType mgmtPB.OwnerType
+	switch ns.NsType {
+	case resource.Organization:
+		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
+	case resource.User:
+		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
+	default:
+		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
+	}
+
 	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           authUser.UID.String(),
+		OwnerUID:           ns.NsUid.String(),
+		OwnerType:          ownerType,
+		UserUID:            authUser.UID.String(),
+		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
 		PipelineID:         pbPipeline.Id,
 		PipelineUID:        pbPipeline.Uid,
@@ -1607,8 +1620,21 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 		return nil, nil, err
 	}
 
+	var ownerType mgmtPB.OwnerType
+	switch ns.NsType {
+	case resource.Organization:
+		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
+	case resource.User:
+		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
+	default:
+		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
+	}
+
 	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           authUser.UID.String(),
+		OwnerUID:           ns.NsUid.String(),
+		OwnerType:          ownerType,
+		UserUID:            authUser.UID.String(),
+		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
 		PipelineID:         pbPipeline.Id,
 		PipelineUID:        pbPipeline.Uid,

@@ -1526,6 +1526,7 @@ func (s *service) triggerPipeline(
 func (s *service) triggerAsyncPipeline(
 	ctx context.Context,
 	ownerPermalink string,
+	userPermalink string,
 	recipe *datamodel.Recipe,
 	pipelineId string,
 	pipelineUid uuid.UUID,
@@ -1582,6 +1583,7 @@ func (s *service) triggerAsyncPipeline(
 			PipelineReleaseUid:         pipelineReleaseUid,
 			PipelineRecipe:             recipe,
 			OwnerPermalink:             ownerPermalink,
+			UserPermalink:              userPermalink,
 			ReturnTraces:               returnTraces,
 		})
 	if err != nil {
@@ -1626,6 +1628,8 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
 
 	ownerPermalink := ns.String()
+	userPermalink := fmt.Sprintf("users/%s", authUser.UID)
+
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
 		return nil, ErrNotFound
@@ -1642,7 +1646,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		return nil, ErrNoPermission
 	}
 
-	return s.triggerAsyncPipeline(ctx, ownerPermalink, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerAsyncPipeline(ctx, ownerPermalink, userPermalink, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1677,6 +1681,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUid uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
 
 	ownerPermalink := ns.String()
+	userPermalink := fmt.Sprintf("users/%s", authUser.UID)
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUid, false)
 	if err != nil {
@@ -1699,7 +1704,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, err
 	}
 
-	return s.triggerAsyncPipeline(ctx, ownerPermalink, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerAsyncPipeline(ctx, ownerPermalink, userPermalink, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
 }
 
 func (s *service) RemoveCredentialFieldsWithMaskString(dbConnDefID string, config *structpb.Struct) {

@@ -77,6 +77,9 @@ func IsBillableEvent(eventName string) bool {
 
 type PipelineUsageMetricData struct {
 	OwnerUID            string
+	OwnerType           mgmtPB.OwnerType
+	UserUID             string
+	UserType            mgmtPB.OwnerType
 	TriggerMode         mgmtPB.Mode
 	Status              mgmtPB.Status
 	PipelineID          string
@@ -97,6 +100,9 @@ func NewPipelineDataPoint(data PipelineUsageMetricData) *write.Point {
 		},
 		map[string]interface{}{
 			"owner_uid":             data.OwnerUID,
+			"owner_type":            data.OwnerType,
+			"user_uid":              data.UserUID,
+			"user_type":             data.UserType,
 			"pipeline_id":           data.PipelineID,
 			"pipeline_uid":          data.PipelineUID,
 			"pipeline_release_id":   data.PipelineReleaseID,
@@ -111,6 +117,9 @@ func NewPipelineDataPoint(data PipelineUsageMetricData) *write.Point {
 
 type ConnectorUsageMetricData struct {
 	OwnerUID               string
+	OwnerType              mgmtPB.OwnerType
+	UserUID                string
+	UserType               mgmtPB.OwnerType
 	Status                 mgmtPB.Status
 	ConnectorID            string
 	ConnectorUID           string
@@ -135,6 +144,9 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 			"pipeline_owner":           pipelineOwnerUUID,
 			"pipeline_trigger_id":      pipelineMetadata.GetStructValue().GetFields()["trigger_id"].GetStringValue(),
 			"connector_owner_uid":      data.OwnerUID,
+			"connector_owner_type":     data.OwnerType,
+			"connector_user_uid":       data.UserUID,
+			"connector_user_type":      data.UserType,
 			"connector_id":             data.ConnectorID,
 			"connector_uid":            data.ConnectorUID,
 			"connector_definition_uid": data.ConnectorDefinitionUid,
