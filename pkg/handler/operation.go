@@ -5,7 +5,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func (h *PublicHandler) GetOperation(ctx context.Context, req *pipelinePB.GetOperationRequest) (*pipelinePB.GetOperationResponse, error) {

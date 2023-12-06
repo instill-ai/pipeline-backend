@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 var forward_PipelinePublicService_TriggerUserPipeline_0 = runtime.ForwardResponseMessage
@@ -199,7 +199,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServic
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerUserPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=users/*/pipelines/*}/trigger"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/trigger"))
 	if err != nil {
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return
@@ -246,7 +246,7 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pipelinePB.PipelinePublicS
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncUserPipeline", runtime.WithHTTPPathPattern("/v1alpha/{name=users/*/pipelines/*}/triggerAsync"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*}/triggerAsync"))
 	if err != nil {
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return
@@ -414,7 +414,7 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pipelinePB.PipelinePubli
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerUserPipelineRelease", runtime.WithHTTPPathPattern("/v1alpha/{name=users/*/pipelines/*/releases/*}/trigger"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/trigger"))
 	if err != nil {
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return
@@ -461,7 +461,7 @@ func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pipelinePB.Pipeline
 	var resp protoreflect.ProtoMessage
 	var md runtime.ServerMetadata
 
-	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1alpha.PipelinePublicService/TriggerAsyncUserPipelineRelease", runtime.WithHTTPPathPattern("/v1alpha/{name=users/*/pipelines/*/releases/*}/triggerAsync"))
+	annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipelineRelease", runtime.WithHTTPPathPattern("/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync"))
 	if err != nil {
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 		return

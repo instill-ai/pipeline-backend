@@ -81,7 +81,7 @@ export const dstCSVConnID2 = "some_cool_name_for_connector_2";
 
 export const simpleRecipe = {
   recipe: {
-    version: "v1alpha",
+    version:  "v1beta",
     components: [
       {
         id: "start",
@@ -140,7 +140,7 @@ export const simpleRecipe = {
 
 export const simpleRecipeWithoutCSV = {
   recipe: {
-    version: "v1alpha",
+    version: "v1beta",
     components: [
       {
         id: "start",
@@ -175,7 +175,7 @@ export const simpleRecipeWithoutCSV = {
 
 export const simpleRecipeDupId = {
   recipe: {
-    version: "v1alpha",
+    version: "v1beta",
     components: [
       {
         id: "start",

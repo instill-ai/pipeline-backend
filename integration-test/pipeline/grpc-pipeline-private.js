@@ -9,11 +9,11 @@ import * as helper from "./helper.js";
 const clientPrivate = new grpc.Client();
 const clientPublic = new grpc.Client();
 clientPrivate.load(
-  ["../proto/vdp/pipeline/v1alpha"],
+  ["../proto/vdp/pipeline/v1beta"],
   "pipeline_private_service.proto"
 );
 clientPublic.load(
-  ["../proto/vdp/pipeline/v1alpha"],
+  ["../proto/vdp/pipeline/v1beta"],
   "pipeline_public_service.proto"
 );
 
@@ -29,16 +29,16 @@ export function CheckList(metadata) {
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {},
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response nextPageToken is empty`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response nextPageToken is empty`]:
           (r) => r.message.nextPageToken === "",
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response totalSize is 0`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response totalSize is 0`]:
           (r) => r.message.totalSize == 0,
       }
     );
@@ -59,7 +59,7 @@ export function CheckList(metadata) {
     for (const reqBody of reqBodies) {
       check(
         clientPublic.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
+          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
           {
             parent: `${constant.namespace}`,
             pipeline: reqBody,
@@ -67,7 +67,7 @@ export function CheckList(metadata) {
           metadata
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline x${reqBodies.length} response StatusOK`]:
+          [`vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline x${reqBodies.length} response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -75,91 +75,91 @@ export function CheckList(metadata) {
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {},
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 10`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 10`]:
           (r) => r.message.pipelines.length === 10,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response pipelines[0].recipe is null`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines[0].recipe is null`]:
           (r) => r.message.pipelines[0].recipe === null,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response totalSize == 200`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response totalSize == 200`]:
           (r) => r.message.totalSize == 200,
       }
     );
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           view: "VIEW_FULL",
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response pipelines[0].recipe is valid`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_FULL response pipelines[0].recipe is valid`]:
           (r) => helper.validateRecipeGRPC(r.message.pipelines[0].recipe, true),
       }
     );
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           view: "VIEW_BASIC",
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_BASIC response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_BASIC response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin view=VIEW_BASIC response pipelines[0].recipe is null`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin view=VIEW_BASIC response pipelines[0].recipe is null`]:
           (r) => r.message.pipelines[0].recipe === null,
       }
     );
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           pageSize: 3,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 3`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 3`]:
           (r) => r.message.pipelines.length === 3,
       }
     );
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           pageSize: 101,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 100`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin response pipelines.length == 100`]:
           (r) => r.message.pipelines.length === 100,
       }
     );
 
     var resFirst100 = clientPrivate.invoke(
-      "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+      "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
       {
         pageSize: 100,
       },
       {}
     );
     var resSecond100 = clientPrivate.invoke(
-      "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+      "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
       {
         pageSize: 100,
         pageToken: resFirst100.message.nextPageToken,
@@ -167,11 +167,11 @@ export function CheckList(metadata) {
       {}
     );
     check(resSecond100, {
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} response StatusOK`]:
+      [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} response 100 results`]:
+      [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} response 100 results`]:
         (r) => r.message.pipelines.length === 100,
-      [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} nextPageToken is empty`]:
+      [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin pageSize=100 pageToken=${resFirst100.message.nextPageToken} nextPageToken is empty`]:
         (r) => r.message.nextPageToken === "",
     });
 
@@ -179,7 +179,7 @@ export function CheckList(metadata) {
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           filter:
             'create_time>timestamp("2000-06-19T23:31:08.657Z")',
@@ -187,9 +187,9 @@ export function CheckList(metadata) {
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin filter: create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin filter: create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -198,16 +198,16 @@ export function CheckList(metadata) {
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin",
+        "vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin",
         {
           filter: `recipe.components.definition_name:"${srcConnPermalink}"`,
         },
         {}
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.definition_name:"${srcConnPermalink}" response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.definition_name:"${srcConnPermalink}" response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.definition_name:"${srcConnPermalink}" response pipelines.length`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/ListPipelinesAdmin filter: recipe.components.definition_name:"${srcConnPermalink}" response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -216,14 +216,14 @@ export function CheckList(metadata) {
     for (const reqBody of reqBodies) {
       check(
         clientPublic.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
+          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${reqBody.id}`,
           },
           metadata
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -253,7 +253,7 @@ export function CheckLookUp(metadata) {
 
     // Create a pipeline
     var res = clientPublic.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline",
+      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
       {
         parent: `${constant.namespace}`,
         pipeline: reqBody,
@@ -262,21 +262,21 @@ export function CheckLookUp(metadata) {
     );
 
     check(res, {
-      [`vdp.pipeline.v1alpha.PipelinePublicService/CreateUserPipeline response StatusOK`]:
+      [`vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusOK`]:
         (r) => r.status === grpc.StatusOK,
     });
 
     check(
       clientPrivate.invoke(
-        "vdp.pipeline.v1alpha.PipelinePrivateService/LookUpPipelineAdmin",
+        "vdp.pipeline.v1beta.PipelinePrivateService/LookUpPipelineAdmin",
         {
           permalink: `pipelines/${res.message.pipeline.uid}`,
         }
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/LookUpPipelineAdmin response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/LookUpPipelineAdmin response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1alpha.PipelinePrivateService/LookUpPipelineAdmin response pipeline new name`]:
+        [`vdp.pipeline.v1beta.PipelinePrivateService/LookUpPipelineAdmin response pipeline new name`]:
           (r) => r.message.pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       }
     );
@@ -284,14 +284,14 @@ export function CheckLookUp(metadata) {
     // Delete the pipeline
     check(
       clientPublic.invoke(
-        `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
+        `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
         {
           name: `${constant.namespace}/pipelines/${reqBody.id}`,
         },
         metadata
       ),
       {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );

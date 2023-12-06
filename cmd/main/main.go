@@ -47,7 +47,7 @@ import (
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 var propagator propagation.TextMapPropagator
@@ -165,11 +165,11 @@ func main() {
 		grpc_zap.WithDecider(func(fullMethodName string, err error) bool {
 			// will not log gRPC calls if it was a call to liveness or readiness and no error was raised
 			if err == nil {
-				if match, _ := regexp.MatchString("vdp.pipeline.v1alpha.PipelinePublicService/.*ness$", fullMethodName); match {
+				if match, _ := regexp.MatchString("vdp.pipeline.v1beta.PipelinePublicService/.*ness$", fullMethodName); match {
 					return false
 				}
 				// stop logging successful private function calls
-				if match, _ := regexp.MatchString("vdp.pipeline.v1alpha.PipelinePrivateService/.*Admin$", fullMethodName); match {
+				if match, _ := regexp.MatchString("vdp.pipeline.v1beta.PipelinePrivateService/.*Admin$", fullMethodName); match {
 					return false
 				}
 			}
@@ -356,16 +356,16 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=users/*/pipelines/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=users/*/pipelines/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=users/*/pipelines/*/releases/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerRelease)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*/releases/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerRelease)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1alpha/{name=users/*/pipelines/*/releases/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease)); err != nil {
 		logger.Fatal(err.Error())
 	}
 	privateHTTPServer := &http.Server{

@@ -22,12 +22,12 @@ export function CheckCreate(header) {
       check(
         http.request(
           "POST",
-          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
+          `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
           JSON.stringify(reqBody),
           constant.paramsHTTPWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] POST /v1alpha/${constant.namespace}/pipelines response status is 401`]:
+          [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/pipelines response status is 401`]:
             (r) => r.status === 401,
         }
       );
@@ -41,12 +41,12 @@ export function CheckList(header) {
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         null,
         constant.paramsHTTPWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] GET /v1alpha/${constant.namespace}/pipelines response status is 200`]:
+        [`[with random "jwt-sub" header] GET /v1beta/${constant.namespace}/pipelines response status is 200`]:
           (r) => r.status === 200,
       }
     );
@@ -67,12 +67,12 @@ export function CheckGet(header) {
     check(
       http.request(
         "POST",
-        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
         header
       ),
       {
-        "POST /v1alpha/${constant.namespace}/pipelines response status is 201": (r) =>
+        "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
           r.status === 201,
       }
     );
@@ -81,12 +81,12 @@ export function CheckGet(header) {
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
         constant.paramsHTTPWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] GET /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status is 404`]:
+        [`[with random "jwt-sub" header] GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status is 404`]:
           (r) => r.status === 404,
       }
     );
@@ -95,12 +95,12 @@ export function CheckGet(header) {
     check(
       http.request(
         "DELETE",
-        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
         header
       ),
       {
-        [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
+        [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
           r.status === 204,
       }
     );
@@ -121,13 +121,13 @@ export function CheckUpdate(header) {
       // Create a pipeline
       var resOrigin = http.request(
         "POST",
-        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
         header
       );
 
       check(resOrigin, {
-        "POST /v1alpha/${constant.namespace}/pipelines response status is 201": (r) =>
+        "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
           r.status === 201,
       });
 
@@ -141,12 +141,12 @@ export function CheckUpdate(header) {
       check(
         http.request(
           "PATCH",
-          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
+          `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
           JSON.stringify(reqBodyUpdate),
           constant.paramsHTTPWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] PATCH /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status is 401`]:
+          [`[with random "jwt-sub" header] PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status is 401`]:
             (r) => r.status === 401,
         }
       );
@@ -155,12 +155,12 @@ export function CheckUpdate(header) {
       check(
         http.request(
           "DELETE",
-          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
+          `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
           null,
           header
         ),
         {
-          [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (
+          [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (
             r
           ) => r.status === 204,
         }
@@ -184,15 +184,15 @@ export function CheckRename(header) {
       // Create a pipeline
       var res = http.request(
         "POST",
-        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
         header
       );
 
       check(res, {
-        "POST /v1alpha/${constant.namespace}/pipelines response status is 201": (r) =>
+        "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
           r.status === 201,
-        "POST /v1alpha/${constant.namespace}/pipelines response pipeline name": (r) =>
+        "POST /v1beta/${constant.namespace}/pipelines response pipeline name": (r) =>
           r.json().pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       });
 
@@ -202,13 +202,13 @@ export function CheckRename(header) {
       check(
         http.request(
           "POST",
-          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${res.json().pipeline.id
+          `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${res.json().pipeline.id
           }/rename`,
           JSON.stringify(reqBody),
           constant.paramsHTTPWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] POST /v1alpha/${constant.namespace}/pipelines/${res.json().pipeline.id
+          [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/pipelines/${res.json().pipeline.id
             }/rename response status is 401`]: (r) => r.status === 401,
         }
       );
@@ -217,12 +217,12 @@ export function CheckRename(header) {
       check(
         http.request(
           "DELETE",
-          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${id}`,
+          `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${id}`,
           null,
           header
         ),
         {
-          [`DELETE /v1alpha/${constant.namespace}/pipelines/${id} response status 204`]: (r) =>
+          [`DELETE /v1beta/${constant.namespace}/pipelines/${id} response status 204`]: (r) =>
             r.status === 204,
         }
       );
@@ -244,13 +244,13 @@ export function CheckLookUp(header) {
       // Create a pipeline
       var res = http.request(
         "POST",
-        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
         header
       );
 
       check(res, {
-        "POST /v1alpha/${constant.namespace}/pipelines response status is 201": (r) =>
+        "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
           r.status === 201,
       });
 
@@ -258,13 +258,13 @@ export function CheckLookUp(header) {
       check(
         http.request(
           "GET",
-          `${pipelinePublicHost}/v1alpha/pipelines/${res.json().pipeline.id
+          `${pipelinePublicHost}/v1beta/pipelines/${res.json().pipeline.id
           }/lookUp`,
           null,
           constant.paramsHTTPWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] POST /v1alpha/pipelines/${res.json().pipeline.id
+          [`[with random "jwt-sub" header] POST /v1beta/pipelines/${res.json().pipeline.id
             }/lookUp response status is 401`]: (r) => r.status === 401,
         }
       );
@@ -273,12 +273,12 @@ export function CheckLookUp(header) {
       check(
         http.request(
           "DELETE",
-          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
+          `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
           null,
           header
         ),
         {
-          [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (
+          [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (
             r
           ) => r.status === 204,
         }

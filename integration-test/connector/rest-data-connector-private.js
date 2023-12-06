@@ -20,11 +20,11 @@ export function CheckList(header) {
 
     group("Connector API: List destination connectors by admin", () => {
 
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`), {
-            [`GET /v1alpha/admin/connectors response status is 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/admin/connectors response connectors array is 0 length`]: (r) => r.json().connectors.length === 0,
-            [`GET /v1alpha/admin/connectors response next_page_token is empty`]: (r) => r.json().next_page_token === "",
-            [`GET /v1alpha/admin/connectors response total_size is 0`]: (r) => r.json().total_size == 0,
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`), {
+            [`GET /v1beta/admin/connectors response status is 200`]: (r) => r.status === 200,
+            [`GET /v1beta/admin/connectors response connectors array is 0 length`]: (r) => r.json().connectors.length === 0,
+            [`GET /v1beta/admin/connectors response next_page_token is empty`]: (r) => r.json().next_page_token === "",
+            [`GET /v1beta/admin/connectors response total_size is 0`]: (r) => r.json().total_size == 0,
         });
 
         const numConnectors = 10
@@ -40,64 +40,64 @@ export function CheckList(header) {
 
         // Create connectors
         for (const reqBody of reqBodies) {
-            var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+            var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
                 JSON.stringify(reqBody), header)
             check(resCSVDst, {
-                [`POST /v1alpha/${constant.namespace}/connectors x${reqBodies.length} response status 201`]: (r) => r.status === 201,
+                [`POST /v1beta/${constant.namespace}/connectors x${reqBodies.length} response status 201`]: (r) => r.status === 201,
             });
         }
 
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`), {
-            [`GET /v1alpha/admin/connectors response status is 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/admin/connectors response has connectors array`]: (r) => Array.isArray(r.json().connectors),
-            [`GET /v1alpha/admin/connectors response has total_size = ${numConnectors}`]: (r) => r.json().total_size == numConnectors,
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`), {
+            [`GET /v1beta/admin/connectors response status is 200`]: (r) => r.status === 200,
+            [`GET /v1beta/admin/connectors response has connectors array`]: (r) => Array.isArray(r.json().connectors),
+            [`GET /v1beta/admin/connectors response has total_size = ${numConnectors}`]: (r) => r.json().total_size == numConnectors,
         });
 
-        var limitedRecords = http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`)
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?page_size=0`, null, header), {
-            "GET /v1alpha/admin/connectors?page_size=0 response status is 200": (r) => r.status === 200,
-            "GET /v1alpha/admin/connectors?page_size=0 response all records": (r) => r.json().connectors.length === limitedRecords.json().connectors.length,
+        var limitedRecords = http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`)
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?page_size=0`, null, header), {
+            "GET /v1beta/admin/connectors?page_size=0 response status is 200": (r) => r.status === 200,
+            "GET /v1beta/admin/connectors?page_size=0 response all records": (r) => r.json().connectors.length === limitedRecords.json().connectors.length,
         });
 
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`), {
-            "GET /v1alpha/admin/connectors?page_size=1 response status is 200": (r) => r.status === 200,
-            "GET /v1alpha/admin/connectors?page_size=1 response connectors size 1": (r) => r.json().connectors.length === 1,
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`), {
+            "GET /v1beta/admin/connectors?page_size=1 response status is 200": (r) => r.status === 200,
+            "GET /v1beta/admin/connectors?page_size=1 response connectors size 1": (r) => r.json().connectors.length === 1,
         });
 
-        var pageRes = http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`)
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token}`, null, header), {
-            [`GET /v1alpha/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response status is 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response connectors size 1`]: (r) => r.json().connectors.length === 1,
+        var pageRes = http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`)
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token}`, null, header), {
+            [`GET /v1beta/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response status is 200`]: (r) => r.status === 200,
+            [`GET /v1beta/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response connectors size 1`]: (r) => r.json().connectors.length === 1,
         });
 
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_BASIC`), {
-            "GET /v1alpha/admin/connectors?page_size=1&view=VIEW_BASIC response status 200": (r) => r.status === 200,
-            "GET /v1alpha/admin/connectors?page_size=1&view=VIEW_BASIC response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
-            "GET /v1alpha/admin/connectors?page_size=1&view=VIEW_BASIC response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user ),
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_BASIC`), {
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_BASIC response status 200": (r) => r.status === 200,
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_BASIC response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_BASIC response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user ),
         });
 
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_FULL`), {
-            "GET /v1alpha/admin/connectors?page_size=1&view=VIEW_FULL response status 200": (r) => r.status === 200,
-            "GET /v1alpha/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].configuration is not null": (r) => r.json().connectors[0].configuration !== null,
-            "GET /v1alpha/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].connector_definition_detail is not null": (r) => r.json().connectors[0].connector_definition_detail !== null,
-            "GET /v1alpha/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user ),
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_FULL`), {
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response status 200": (r) => r.status === 200,
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].configuration is not null": (r) => r.json().connectors[0].configuration !== null,
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].connector_definition_detail is not null": (r) => r.json().connectors[0].connector_definition_detail !== null,
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user ),
         });
 
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`), {
-            "GET /v1alpha/admin/connectors?page_size=1 response status 200": (r) => r.status === 200,
-            "GET /v1alpha/admin/connectors?page_size=1 response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
-            "GET /v1alpha/admin/connectors?page_size=1 response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user ),
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`), {
+            "GET /v1beta/admin/connectors?page_size=1 response status 200": (r) => r.status === 200,
+            "GET /v1beta/admin/connectors?page_size=1 response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
+            "GET /v1beta/admin/connectors?page_size=1 response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user ),
         });
 
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=${limitedRecords.json().total_size}`), {
-            [`GET /v1alpha/admin/connectors?page_size=${limitedRecords.json().total_size} response status 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/admin/connectors?page_size=${limitedRecords.json().total_size} response next_page_token is empty`]: (r) => r.json().next_page_token === ""
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=${limitedRecords.json().total_size}`), {
+            [`GET /v1beta/admin/connectors?page_size=${limitedRecords.json().total_size} response status 200`]: (r) => r.status === 200,
+            [`GET /v1beta/admin/connectors?page_size=${limitedRecords.json().total_size} response next_page_token is empty`]: (r) => r.json().next_page_token === ""
         });
 
         // Delete the destination connectors
         for (const reqBody of reqBodies) {
-            check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${reqBody.id}`, null, header), {
-                [`DELETE /v1alpha/admin/connectors x${reqBodies.length} response status is 204`]: (r) => r.status === 204,
+            check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${reqBody.id}`, null, header), {
+                [`DELETE /v1beta/admin/connectors x${reqBodies.length} response status is 204`]: (r) => r.status === 204,
             });
         }
     });
@@ -114,18 +114,18 @@ export function CheckLookUp(header) {
             "configuration": constant.csvDstConfig
         }
 
-        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
-        check(http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/connectors/${resCSVDst.json().connector.uid}/lookUp`), {
-            [`GET /v1alpha/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response status 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector uid`]: (r) => r.json().connector.uid === resCSVDst.json().connector.uid,
-            [`GET /v1alpha/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector connector_definition_name`]: (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
-            [`GET /v1alpha/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector owner is UUID`]: (r) => helper.isValidOwner(r.json().connector.user),
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp`), {
+            [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response status 200`]: (r) => r.status === 200,
+            [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector uid`]: (r) => r.json().connector.uid === resCSVDst.json().connector.uid,
+            [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector connector_definition_name`]: (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
+            [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector owner is UUID`]: (r) => helper.isValidOwner(r.json().connector.user),
         });
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/admin/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/admin/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
 
     });

@@ -26,14 +26,14 @@ export let options = {
 
 export function setup() {
 
-  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1alpha/auth/login`, JSON.stringify({
+  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1beta/auth/login`, JSON.stringify({
     "username": constant.defaultUsername,
     "password": constant.defaultPassword,
   }))
 
 
   check(loginResp, {
-    [`POST ${constant.mgmtPublicHost}/v1alpha//auth/login response status is 200`]: (
+    [`POST ${constant.mgmtPublicHost}/v1beta//auth/login response status is 200`]: (
       r
     ) => r.status === 200,
   });
@@ -48,7 +48,7 @@ export function setup() {
 
   group("Connector Backend API: Create a CSV destination connector 1", function () {
 
-    var res = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+    var res = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
       JSON.stringify({
         "id": constant.dstCSVConnID1,
         "connector_definition_name": "connector-definitions/airbyte-destination-csv",
@@ -58,16 +58,16 @@ export function setup() {
       }), header)
 
     check(res, {
-      [`POST /v1alpha/${constant.namespace}/connectors response status for creating CSV destination connector 201`]: (r) => r.status === 201,
+      [`POST /v1beta/${constant.namespace}/connectors response status for creating CSV destination connector 201`]: (r) => r.status === 201,
     })
 
-    http.request("POST", `${pipelinePublicHost}/v1alpha/connectors/${constant.dstCSVConnID1}/connect`, {}, header)
+    http.request("POST", `${pipelinePublicHost}/v1beta/connectors/${constant.dstCSVConnID1}/connect`, {}, header)
 
   });
 
   group("Connector Backend API: Create a CSV destination connector 2", function () {
 
-    var res = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+    var res = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
       JSON.stringify({
         "id": constant.dstCSVConnID2,
         "connector_definition_name": "connector-definitions/airbyte-destination-csv",
@@ -77,10 +77,10 @@ export function setup() {
       }), header)
 
     check(res, {
-      [`POST /v1alpha/${constant.namespace}/connectors response status for creating CSV destination connector 201`]: (r) => r.status === 201,
+      [`POST /v1beta/${constant.namespace}/connectors response status for creating CSV destination connector 201`]: (r) => r.status === 201,
     })
 
-    http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${constant.dstCSVConnID2}/connect`, {}, header)
+    http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID2}/connect`, {}, header)
 
   });
 
@@ -96,7 +96,7 @@ export default function (header) {
   // Health check
   {
     group("Pipelines API: Health check", () => {
-      check(http.request("GET", `${pipelinePublicHost}/v1alpha/health/pipeline`), {
+      check(http.request("GET", `${pipelinePublicHost}/v1beta/health/pipeline`), {
         "GET /health/pipeline response status is 200": (r) => r.status === 200,
       });
     });
@@ -130,20 +130,20 @@ export default function (header) {
 export function teardown(header) {
 
   group("Connector API: Delete all pipelines created by this test", () => {
-    for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines?page_size=100`, null, header).json("pipelines")) {
-      check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${pipeline.id}`, null, header), {
-        [`DELETE /v1alpha/${constant.namespace}/pipelines response status is 204`]: (r) => r.status === 204,
+    for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100`, null, header).json("pipelines")) {
+      check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipeline.id}`, null, header), {
+        [`DELETE /v1beta/${constant.namespace}/pipelines response status is 204`]: (r) => r.status === 204,
       });
     }
   });
   group("Connector Backend API: Delete the csv destination connector", function () {
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${constant.dstCSVConnID1}`, null, header), {
-      [`DELETE /v1alpha/${constant.namespace}/connectors/${constant.dstCSVConnID1} response status 204`]: (r) => r.status === 204,
+    check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID1}`, null, header), {
+      [`DELETE /v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID1} response status 204`]: (r) => r.status === 204,
     });
   });
   group("Connector Backend API: Delete the csv destination connector", function () {
-    check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${constant.dstCSVConnID2}`, null, header), {
-      [`DELETE /v1alpha/${constant.namespace}/connectors/${constant.dstCSVConnID2} response status 204`]: (r) => r.status === 204,
+    check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID2}`, null, header), {
+      [`DELETE /v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID2} response status 204`]: (r) => r.status === 204,
     });
   });
 }

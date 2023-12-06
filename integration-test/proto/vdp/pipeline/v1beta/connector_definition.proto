@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vdp.pipeline.v1alpha;
+package vdp.pipeline.v1beta;
 
 import "google/api/field_behavior.proto";
 // Google API
@@ -42,6 +42,16 @@ enum ConnectorType {
 
 // ConnectorDefinition represents the connector definition data model
 message ConnectorDefinition {
+  // View enumerates the definition views
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+  }
+
   option (google.api.resource) = {
     type: "api.instill.tech/ConnectorDefinition"
     pattern:
@@ -95,16 +105,6 @@ message ConnectorDefinition {
 // ListConnectorDefinitionsRequest represents a request to list
 // ConnectorDefinitions
 message ListConnectorDefinitionsRequest {
-  // View enumerates the definition views
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-  }
-
   // The maximum number of ConnectorDefinitions to return. The
   // service may return fewer than this value. If unspecified, at most 10
   // ConnectorDefinitions will be returned. The maximum value is 100;
@@ -113,7 +113,7 @@ message ListConnectorDefinitionsRequest {
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // Definition view (default is DEFINITION_VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional ConnectorDefinition.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list connector definitions
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
 }
@@ -132,16 +132,6 @@ message ListConnectorDefinitionsResponse {
 // GetConnectorDefinitionRequest represents a request to query a
 // ConnectorDefinition resource
 message GetConnectorDefinitionRequest {
-  // View enumerates the definition views
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-  }
-
   // ConnectorDefinition resource name. It must have the format of
   // "connector-definitions/*"
   string name = 1 [
@@ -153,7 +143,7 @@ message GetConnectorDefinitionRequest {
   ];
   // ConnectorDefinition resource view (default is
   // DEFINITION_VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+  optional ConnectorDefinition.View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // GetConnectorDefinitionResponse represents a
@@ -166,26 +156,16 @@ message GetConnectorDefinitionResponse {
 // LookUpConnectorDefinitionAdminRequest represents a request to query a
 // connectorDefinition via permalink by admin
 message LookUpConnectorDefinitionAdminRequest {
-  // View enumerates the definition views
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-  }
-
   // Permalink of a connector. For example:
   // "connector-definitions/{uid}"
   string permalink = 1 [(google.api.field_behavior) = REQUIRED];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+  optional ConnectorDefinition.View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LookUpConnectorDefinitionAdminResponse represents a response for a
 // connector definition
 message LookUpConnectorDefinitionAdminResponse {
-  // Connector
+  // Connector resource
   ConnectorDefinition connector_definition = 1;
 }

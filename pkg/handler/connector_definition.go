@@ -9,7 +9,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func (h *PrivateHandler) LookUpConnectorDefinitionAdmin(ctx context.Context, req *pipelinePB.LookUpConnectorDefinitionAdminRequest) (resp *pipelinePB.LookUpConnectorDefinitionAdminResponse, err error) {

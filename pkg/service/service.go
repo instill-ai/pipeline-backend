@@ -45,9 +45,9 @@ import (
 	component "github.com/instill-ai/component/pkg/base"
 	connector "github.com/instill-ai/connector/pkg"
 	operator "github.com/instill-ai/operator/pkg"
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1alpha"
-	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1beta"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // TODO: in the service, we'd better use uid as our function params
@@ -872,7 +872,7 @@ func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb
 		if err != nil {
 			return nil, err
 		}
-		resp.TypeUrl = "buf.build/instill-ai/protobufs/vdp.pipeline.v1alpha.TriggerNamespacePipelineResponse"
+		resp.TypeUrl = "buf.build/instill-ai/protobufs/vdp.pipeline.v1beta.TriggerNamespacePipelineResponse"
 		operation = longrunningpb.Operation{
 			Done: true,
 			Result: &longrunningpb.Operation_Response{

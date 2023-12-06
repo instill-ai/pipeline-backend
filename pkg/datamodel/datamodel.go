@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 
 	taskPB "github.com/instill-ai/protogen-go/common/task/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // BaseStatic contains common columns for all tables with static UUID as primary key

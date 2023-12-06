@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vdp.pipeline.v1alpha;
+package vdp.pipeline.v1beta;
 
 import "google/api/field_behavior.proto";
 // Google API
@@ -10,10 +10,22 @@ import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
-import "../../../vdp/pipeline/v1alpha/connector_definition.proto";
+import "../../../vdp/pipeline/v1beta/connector_definition.proto";
 
 // Connector represents a connector data model
 message Connector {
+  // View enumerates the definition views
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: CONFIGURATION
+    VIEW_CONFIGURATION = 3;
+  }
+
   // State enumerates the connector state
   enum State {
     // State: UNSPECIFIED
@@ -75,7 +87,7 @@ message Connector {
       (google.api.field_behavior) = OUTPUT_ONLY
     ];
     // The resource name with UUID of an organization
-    string org = 12 [
+    string organization = 12 [
       (google.api.resource_reference).type = "api.instill.tech/Organization",
       (google.api.field_behavior) = OUTPUT_ONLY
     ];
@@ -99,17 +111,6 @@ message Connector {
 // ListConnectorsRequest represents a request to list
 // connectors
 message ListConnectorsRequest {
-  // View enumerates the definition views
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: CONFIGURATION
-    VIEW_CONFIGURATION = 3;
-  }
   // The maximum number of connectors to return. The service may return fewer
   // than this value. If unspecified, at most 10 connectors will be returned.
   // The maximum value is 100; values above 100 will be coerced to 100.
@@ -117,7 +118,7 @@ message ListConnectorsRequest {
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional Connector.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list connectors
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
   // Return soft_deleted connectors
@@ -138,23 +139,11 @@ message ListConnectorsResponse {
 // LookUpConnectorRequest represents a request to query a
 // connector via permalink
 message LookUpConnectorRequest {
-  // View enumerates the definition views
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: CONFIGURATION
-    VIEW_CONFIGURATION = 3;
-  }
-
   // Permalink of a connector. For example:
   // "connectors/{uid}"
   string permalink = 1 [(google.api.field_behavior) = REQUIRED];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+  optional Connector.View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LookUpConnectorResponse represents a response for a
@@ -187,17 +176,6 @@ message CreateUserConnectorResponse {
 // ListUserConnectorsRequest represents a request to list
 // connectors
 message ListUserConnectorsRequest {
-  // View enumerates the definition views
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: CONFIGURATION
-    VIEW_CONFIGURATION = 3;
-  }
   // The maximum number of connectors to return. The service may return fewer
   // than this value. If unspecified, at most 10 connectors will be returned.
   // The maximum value is 100; values above 100 will be coerced to 100.
@@ -205,7 +183,7 @@ message ListUserConnectorsRequest {
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional Connector.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list connectors
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
   // The parent resource where this connector will be created.
@@ -232,18 +210,6 @@ message ListUserConnectorsResponse {
 // GetUserConnectorRequest represents a request to query a
 // connector
 message GetUserConnectorRequest {
-  // View enumerates the definition views
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: CONFIGURATION
-    VIEW_CONFIGURATION = 3;
-  }
-
   // Connectorconnector name. It must have the format of
   // "connectors/*"
   string name = 1 [
@@ -254,7 +220,7 @@ message GetUserConnectorRequest {
     }
   ];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional Connector.View view = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // GetUserConnectorResponse represents a response for a
@@ -417,23 +383,29 @@ message WatchUserConnectorResponse {
   Connector.State state = 1;
 }
 
-// ========== Private endpoints
+// CreateOrganizationConnectorRequest represents a request to create a
+// connector
+message CreateOrganizationConnectorRequest {
+  // connector
+  Connector connector = 1 [(google.api.field_behavior) = REQUIRED];
+  // The parent resource where this connector will be created.
+  // Format: organizations/{organizations}
+  string parent = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Connector"}
+  ];
+}
 
-// ListConnectorsAdminRequest represents a request to list
-// connectors from all users by admin
-message ListConnectorsAdminRequest {
-  // View enumerates the definition views
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: CONFIGURATION
-    VIEW_CONFIGURATION = 3;
-  }
+// CreateOrganizationConnectorResponse represents a response for a
+// connector
+message CreateOrganizationConnectorResponse {
+  // connector
+  Connector connector = 1;
+}
 
+// ListOrganizationConnectorsRequest represents a request to list
+// connectors
+message ListOrganizationConnectorsRequest {
   // The maximum number of connectors to return. The service may return fewer
   // than this value. If unspecified, at most 10 connectors will be returned.
   // The maximum value is 100; values above 100 will be coerced to 100.
@@ -441,7 +413,219 @@ message ListConnectorsAdminRequest {
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional Connector.View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter expression to list connectors
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // The parent resource where this connector will be created.
+  // Format: organizations/{organizations}
+  string parent = 5 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Connector"}
+  ];
+  // Return soft_deleted connectors
+  optional bool show_deleted = 6 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListOrganizationConnectorsResponse represents a response for a list of
+// connectors
+message ListOrganizationConnectorsResponse {
+  // A list of connectors
+  repeated Connector connectors = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of connectors
+  int32 total_size = 3;
+}
+
+// GetOrganizationConnectorRequest represents a request to query a
+// connector
+message GetOrganizationConnectorRequest {
+  // Connectorconnector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "connector.name"}
+    }
+  ];
+  // Connector view (default is VIEW_BASIC)
+  optional Connector.View view = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetOrganizationConnectorResponse represents a response for a
+// connector
+message GetOrganizationConnectorResponse {
+  // connector
+  Connector connector = 1;
+}
+
+// UpdateOrganizationConnectorRequest represents a request to update a
+// connector
+message UpdateOrganizationConnectorRequest {
+  // connector
+  Connector connector = 1 [(google.api.field_behavior) = REQUIRED];
+  // Update mask for a connector
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// UpdateOrganizationConnectorResponse represents a response for a
+// connector
+message UpdateOrganizationConnectorResponse {
+  // connector
+  Connector connector = 1;
+}
+
+// DeleteOrganizationConnectorRequest represents a request to delete a
+// connector
+message DeleteOrganizationConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "connector.name"}
+    }
+  ];
+}
+
+// DeleteOrganizationConnectorResponse represents an empty response
+message DeleteOrganizationConnectorResponse {}
+
+// ConnectOrganizationConnectorRequest represents a request to connect a
+// connector
+message ConnectOrganizationConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
+  ];
+}
+
+// ConnectOrganizationConnectorResponse represents a connected
+// connector
+message ConnectOrganizationConnectorResponse {
+  // A connector
+  Connector connector = 1;
+}
+
+// DisconnectOrganizationConnectorRequest represents a request to disconnect a
+// connector
+message DisconnectOrganizationConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
+  ];
+}
+
+// DisconnectOrganizationConnectorResponse represents a disconnected
+// connector
+message DisconnectOrganizationConnectorResponse {
+  // A connector
+  Connector connector = 1;
+}
+
+// RenameOrganizationConnectorRequest represents a request to rename the
+// connector name
+message RenameOrganizationConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Connector"}
+  ];
+  // Connector new resource id to replace with the
+  // connector name to be
+  // "connectors/{new_connector_id}"
+  string new_connector_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// RenameOrganizationConnectorResponse represents a renamed Connector
+// resource
+message RenameOrganizationConnectorResponse {
+  // A connector
+  Connector connector = 1;
+}
+
+// ExecuteOrganizationConnectorRequest represents a private request to execution
+// connector
+message ExecuteOrganizationConnectorRequest {
+  // Name of a connector. For example:
+  // "connectors/{name}"
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // Inputs
+  repeated google.protobuf.Struct inputs = 2;
+  // Task
+  string task = 3;
+}
+
+// ExecuteOrganizationConnectorResponse represents a response for execution
+// output
+message ExecuteOrganizationConnectorResponse {
+  // Outputs
+  repeated google.protobuf.Struct outputs = 1;
+}
+
+// TestOrganizationConnectorRequest represents a public request to trigger check
+// action on a connector
+message TestOrganizationConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/Connector",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "connector.name"}
+    }
+  ];
+}
+
+// TestOrganizationConnectorResponse represents a response containing a
+// connector's current state
+message TestOrganizationConnectorResponse {
+  // Retrieved connector state
+  Connector.State state = 1;
+}
+
+// WatchOrganizationConnectorRequest represents a public request to query
+// a connector's current state
+message WatchOrganizationConnectorRequest {
+  // connector name. It must have the format of
+  // "connectors/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/Connector",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "connector.name"}
+    }
+  ];
+}
+
+// WatchOrganizationConnectorResponse represents a response to fetch a
+// connector's current state
+message WatchOrganizationConnectorResponse {
+  // Retrieved connector state
+  Connector.State state = 1;
+}
+
+// ========== Private endpoints
+
+// ListConnectorsAdminRequest represents a request to list
+// connectors from all users by admin
+message ListConnectorsAdminRequest {
+  // The maximum number of connectors to return. The service may return fewer
+  // than this value. If unspecified, at most 10 connectors will be returned.
+  // The maximum value is 100; values above 100 will be coerced to 100.
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Connector view (default is VIEW_BASIC)
+  optional Connector.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list connectors
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
   // Return soft_deleted connectors
@@ -462,23 +646,11 @@ message ListConnectorsAdminResponse {
 // LookUpConnectorAdminRequest represents a request to query a
 // connector via permalink by admin
 message LookUpConnectorAdminRequest {
-  // View enumerates the definition views
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: CONFIGURATION
-    VIEW_CONFIGURATION = 3;
-  }
-
   // Permalink of a connector. For example:
   // "connectors/{uid}"
   string permalink = 1 [(google.api.field_behavior) = REQUIRED];
   // Connector view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+  optional Connector.View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LookUpConnectorAdminResponse represents a response for a

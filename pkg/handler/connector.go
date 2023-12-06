@@ -31,8 +31,8 @@ import (
 	"github.com/instill-ai/x/sterr"
 
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func (h *PrivateHandler) ListConnectorsAdmin(ctx context.Context, req *pipelinePB.ListConnectorsAdminRequest) (resp *pipelinePB.ListConnectorsAdminResponse, err error) {

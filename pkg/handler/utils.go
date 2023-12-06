@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	// pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	// pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func parseView(view int32) service.View {

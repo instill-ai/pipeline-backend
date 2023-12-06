@@ -19,20 +19,20 @@ export function CheckTrigger(header) {
 
   group("Pipelines API: Trigger an async pipeline for single image and single model", () => {
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`, JSON.stringify(reqBody), header), {
-      "POST /v1alpha/${constant.namespace}/pipelines response status is 201": (r) => r.status === 201,
+    check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`, JSON.stringify(reqBody), header), {
+      "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) => r.status === 201,
     });
 
 
-    check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(constant.simplePayload), header), {
-      [`POST /v1alpha/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1alpha/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.json().operation.name.startsWith("operations/"),
+    check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(constant.simplePayload), header), {
+      [`POST /v1beta/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1beta/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.json().operation.name.startsWith("operations/"),
     });
 
   });
 
   // Delete the pipeline
-  check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`, null, header), {
-    [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
+  check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`, null, header), {
+    [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) => r.status === 204,
   });
 }

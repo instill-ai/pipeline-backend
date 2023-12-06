@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package vdp.pipeline.v1alpha;
+package vdp.pipeline.v1beta;
 
 // Role
 enum Role {
@@ -8,6 +8,8 @@ enum Role {
   ROLE_UNSPECIFIED = 0;
   // Role: Viewer
   ROLE_VIEWER = 1;
+  // Role: Executor
+  ROLE_EXECUTOR = 2;
 }
 
 // Permission
