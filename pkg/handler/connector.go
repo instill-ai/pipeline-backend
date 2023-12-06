@@ -382,11 +382,7 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 		return nil, st.Err()
 	}
 
-	if strings.HasPrefix(req.GetParent(), "users") {
-		connector.Owner = &pipelinePB.Connector_User{User: req.GetParent()}
-	} else {
-		connector.Owner = &pipelinePB.Connector_Organization{Organization: req.GetParent()}
-	}
+	connector.OwnerName = req.GetParent()
 
 	connectorCreated, err = h.service.CreateNamespaceConnector(ctx, ns, authUser, connector)
 
