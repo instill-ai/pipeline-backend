@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	"go/ast"
+	"go/parser"
+
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/oliveagle/jsonpath"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 type ComponentStatus struct {
@@ -208,6 +212,22 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 	}
 }
 
+func findConditionUpstream(expr ast.Expr, upstreams *[]string) {
+	switch e := (expr).(type) {
+	case *ast.BinaryExpr:
+		findConditionUpstream(e.X, upstreams)
+		findConditionUpstream(e.Y, upstreams)
+	case *ast.ParenExpr:
+		findConditionUpstream(e.X, upstreams)
+	case *ast.SelectorExpr:
+		findConditionUpstream(e.X, upstreams)
+	case *ast.IndexExpr:
+		findConditionUpstream(e.X, upstreams)
+	case *ast.Ident:
+		*upstreams = append(*upstreams, e.Name)
+	}
+}
+
 func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	componentIdMap := make(map[string]*datamodel.Component)
 
@@ -217,10 +237,29 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	graph := NewDAG(components)
 	for _, component := range components {
 		engine := liquid.NewEngine()
-		template, _ := protojson.Marshal(component.Configuration)
+		configuration := proto.Clone(component.Configuration)
+		template, _ := protojson.Marshal(configuration)
 		out, err := engine.ParseTemplate(template)
 		if err != nil {
 			return nil, err
+		}
+
+		condUpstreams := []string{}
+		if cond := component.Configuration.Fields["condition"].GetStringValue(); cond != "" {
+			expr, err := parser.ParseExpr(cond)
+			if err != nil {
+				return nil, err
+			}
+			findConditionUpstream(expr, &condUpstreams)
+		}
+
+		for idx := range condUpstreams {
+			if upstream, ok := componentIdMap[condUpstreams[idx]]; ok {
+				graph.AddEdge(upstream, component)
+			} else {
+				return nil, fmt.Errorf("no condition upstream component '%s'", condUpstreams[idx])
+			}
+
 		}
 
 		for _, node := range out.GetRoot().(*render.SeqNode).Children {
