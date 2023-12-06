@@ -95,12 +95,12 @@ func (u *usage) RetrievePipelineUsageData() interface{} {
 			PageToken: &userPageToken,
 		})
 		if err != nil {
-			logger.Error(fmt.Sprintf("[mgmt-backend: ListUser] %s", err))
+			logger.Error(fmt.Sprintf("[mgmt-backend: ListUsersAdmin] %s", err))
 			break
 		}
 
 		// Roll all pipeline resources on a user
-		for _, user := range userResp.Users {
+		for _, user := range userResp.GetUsers() {
 
 			triggerDataList := []*usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{}
 
@@ -128,6 +128,8 @@ func (u *usage) RetrievePipelineUsageData() interface{} {
 							TriggerTime:        timestamppb.New(triggerTime),
 							TriggerMode:        triggerData.TriggerMode,
 							Status:             triggerData.Status,
+							UserUid:            triggerData.UserUID,
+							UserType:           triggerData.UserType,
 						},
 					)
 				}
@@ -135,6 +137,7 @@ func (u *usage) RetrievePipelineUsageData() interface{} {
 
 			pbPipelineUsageData = append(pbPipelineUsageData, &usagePB.PipelineUsageData_UserUsageData{
 				OwnerUid:            user.GetUid(),
+				OwnerType:           mgmtPB.OwnerType_OWNER_TYPE_USER,
 				PipelineTriggerData: triggerDataList,
 			})
 
@@ -144,6 +147,70 @@ func (u *usage) RetrievePipelineUsageData() interface{} {
 			break
 		} else {
 			userPageToken = userResp.NextPageToken
+		}
+	}
+
+	// Roll over all orgs and update the metrics with the cached uuid
+	orgPageToken := ""
+	orgPageSizeMax := int32(repository.MaxPageSize)
+	for {
+		orgResp, err := u.mgmtPrivateServiceClient.ListOrganizationsAdmin(ctx, &mgmtPB.ListOrganizationsAdminRequest{
+			PageSize:  &orgPageSizeMax,
+			PageToken: &orgPageToken,
+		})
+		if err != nil {
+			logger.Error(fmt.Sprintf("[mgmt-backend: ListOrganizationsAdmin] %s", err))
+			break
+		}
+
+		// Roll all pipeline resources on a user
+		for _, org := range orgResp.GetOrganizations() {
+
+			triggerDataList := []*usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{}
+
+			triggerCount := u.redisClient.LLen(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", org.GetUid())).Val() // O(1)
+
+			if triggerCount != 0 {
+				for i := int64(0); i < triggerCount; i++ {
+
+					strData := u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:pipeline.trigger_data", org.GetUid())).Val()
+
+					triggerData := &utils.PipelineUsageMetricData{}
+					if err := json.Unmarshal([]byte(strData), triggerData); err != nil {
+						logger.Warn("Usage data might be corrupted")
+					}
+
+					triggerTime, _ := time.Parse(time.RFC3339Nano, triggerData.TriggerTime)
+
+					triggerDataList = append(
+						triggerDataList,
+						&usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{
+							PipelineUid:        triggerData.PipelineUID,
+							PipelineReleaseId:  triggerData.PipelineReleaseID,
+							PipelineReleaseUid: triggerData.PipelineReleaseUID,
+							TriggerUid:         triggerData.PipelineTriggerUID,
+							TriggerTime:        timestamppb.New(triggerTime),
+							TriggerMode:        triggerData.TriggerMode,
+							Status:             triggerData.Status,
+							UserUid:            triggerData.UserUID,
+							UserType:           triggerData.UserType,
+						},
+					)
+				}
+			}
+
+			pbPipelineUsageData = append(pbPipelineUsageData, &usagePB.PipelineUsageData_UserUsageData{
+				OwnerUid:            org.GetUid(),
+				OwnerType:           mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION,
+				PipelineTriggerData: triggerDataList,
+			})
+
+		}
+
+		if orgResp.NextPageToken == "" {
+			break
+		} else {
+			orgPageToken = orgResp.NextPageToken
 		}
 	}
 
@@ -206,6 +273,8 @@ func (u *usage) RetrieveConnectorUsageData() interface{} {
 							ConnectorUid:           executeData.ConnectorUID,
 							ConnectorDefinitionUid: executeData.ConnectorDefinitionUid,
 							Status:                 executeData.Status,
+							UserUid:                executeData.UserUID,
+							UserType:               executeData.UserType,
 						},
 					)
 				}
@@ -213,6 +282,7 @@ func (u *usage) RetrieveConnectorUsageData() interface{} {
 
 			pbConnectorUsageData = append(pbConnectorUsageData, &usagePB.ConnectorUsageData_UserUsageData{
 				OwnerUid:             user.GetUid(),
+				OwnerType:            mgmtPB.OwnerType_OWNER_TYPE_USER,
 				ConnectorExecuteData: executeDataList,
 			})
 
@@ -222,6 +292,69 @@ func (u *usage) RetrieveConnectorUsageData() interface{} {
 			break
 		} else {
 			userPageToken = userResp.NextPageToken
+		}
+	}
+
+	// orgs trigger usage data
+	orgPageToken := ""
+	orgPageSizeMax := int32(repository.MaxPageSize)
+
+	for {
+		orgResp, err := u.mgmtPrivateServiceClient.ListOrganizationsAdmin(ctx, &mgmtPB.ListOrganizationsAdminRequest{
+			PageSize:  &orgPageSizeMax,
+			PageToken: &orgPageToken,
+		})
+		if err != nil {
+			logger.Error(fmt.Sprintf("[mgmt-backend: ListUser] %s", err))
+			break
+		}
+
+		// Roll all pipeline resources on a user
+		for _, org := range orgResp.GetOrganizations() {
+
+			executeDataList := []*usagePB.ConnectorUsageData_UserUsageData_ConnectorExecuteData{}
+
+			executeCount := u.redisClient.LLen(ctx, fmt.Sprintf("user:%s:connector.execute_data", org.GetUid())).Val() // O(1)
+
+			if executeCount != 0 {
+				for i := int64(0); i < executeCount; i++ {
+					// LPop O(1)
+					strData := u.redisClient.LPop(ctx, fmt.Sprintf("user:%s:connector.execute_data", org.GetUid())).Val()
+
+					executeData := &utils.ConnectorUsageMetricData{}
+					if err := json.Unmarshal([]byte(strData), executeData); err != nil {
+						logger.Warn("Usage data might be corrupted")
+					}
+
+					executeTime, _ := time.Parse(time.RFC3339Nano, executeData.ExecuteTime)
+
+					executeDataList = append(
+						executeDataList,
+						&usagePB.ConnectorUsageData_UserUsageData_ConnectorExecuteData{
+							ExecuteUid:             executeData.ConnectorExecuteUID,
+							ExecuteTime:            timestamppb.New(executeTime),
+							ConnectorUid:           executeData.ConnectorUID,
+							ConnectorDefinitionUid: executeData.ConnectorDefinitionUid,
+							Status:                 executeData.Status,
+							UserUid:                executeData.UserUID,
+							UserType:               executeData.UserType,
+						},
+					)
+				}
+			}
+
+			pbConnectorUsageData = append(pbConnectorUsageData, &usagePB.ConnectorUsageData_UserUsageData{
+				OwnerUid:             org.GetUid(),
+				OwnerType:            mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION,
+				ConnectorExecuteData: executeDataList,
+			})
+
+		}
+
+		if orgResp.NextPageToken == "" {
+			break
+		} else {
+			orgPageToken = orgResp.NextPageToken
 		}
 	}
 
