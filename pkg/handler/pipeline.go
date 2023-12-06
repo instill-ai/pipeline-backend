@@ -801,7 +801,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 	if err != nil {
 		return ns, nil, id, nil, false, err
 	}
-	authUser, err := h.service.AuthenticateUser(ctx, true)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		return ns, nil, id, nil, false, err
 	}
@@ -1542,7 +1542,7 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}
-	authUser, err := h.service.AuthenticateUser(ctx, true)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}
