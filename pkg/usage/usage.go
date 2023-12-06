@@ -134,7 +134,7 @@ func (u *usage) RetrievePipelineUsageData() interface{} {
 			}
 
 			pbPipelineUsageData = append(pbPipelineUsageData, &usagePB.PipelineUsageData_UserUsageData{
-				UserUid:             user.GetUid(),
+				OwnerUid:            user.GetUid(),
 				PipelineTriggerData: triggerDataList,
 			})
 
@@ -212,7 +212,7 @@ func (u *usage) RetrieveConnectorUsageData() interface{} {
 			}
 
 			pbConnectorUsageData = append(pbConnectorUsageData, &usagePB.ConnectorUsageData_UserUsageData{
-				UserUid:              user.GetUid(),
+				OwnerUid:             user.GetUid(),
 				ConnectorExecuteData: executeDataList,
 			})
 

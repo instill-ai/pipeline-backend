@@ -279,6 +279,30 @@ func (s *service) ConvertOwnerPermalinkToName(permalink string) (string, error) 
 	}
 }
 
+func (s *service) FetchOwnerWithPermalink(permalink string) (*structpb.Struct, error) {
+	if strings.HasPrefix(permalink, "users") {
+		resp, err := s.mgmtPrivateServiceClient.LookUpUserAdmin(context.Background(), &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
+		if err != nil {
+			return nil, fmt.Errorf("FetchOwnerWithPermalink error")
+		}
+		owner := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+		owner.Fields["profile_avatar"] = structpb.NewStringValue(resp.GetUser().GetProfileAvatar())
+		owner.Fields["profile_data"] = structpb.NewStructValue(resp.GetUser().GetProfileData())
+
+		return owner, nil
+	} else {
+		resp, err := s.mgmtPrivateServiceClient.LookUpOrganizationAdmin(context.Background(), &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
+		if err != nil {
+			return nil, fmt.Errorf("FetchOwnerWithPermalink error")
+		}
+		owner := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+		owner.Fields["profile_avatar"] = structpb.NewStringValue(resp.GetOrganization().GetProfileAvatar())
+		owner.Fields["profile_data"] = structpb.NewStructValue(resp.GetOrganization().GetProfileData())
+
+		return owner, nil
+	}
+}
+
 func (s *service) ConvertOwnerNameToPermalink(name string) (string, error) {
 	if strings.HasPrefix(name, "users") {
 		userResp, err := s.mgmtPrivateServiceClient.GetUserAdmin(context.Background(), &mgmtPB.GetUserAdminRequest{Name: name})

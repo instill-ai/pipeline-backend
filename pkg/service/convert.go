@@ -269,17 +269,9 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 	var owner string
 	var err error
 
-	switch pbPipeline.Owner.(type) {
-	case *pipelinePB.Pipeline_User:
-		owner, err = s.ConvertOwnerNameToPermalink(pbPipeline.GetUser())
-		if err != nil {
-			return nil, err
-		}
-	case *pipelinePB.Pipeline_Organization:
-		owner, err = s.ConvertOwnerNameToPermalink(pbPipeline.GetOrganization())
-		if err != nil {
-			return nil, err
-		}
+	owner, err = s.ConvertOwnerNameToPermalink(pbPipeline.GetOwnerName())
+	if err != nil {
+		return nil, err
 	}
 
 	recipe := &datamodel.Recipe{}
@@ -372,7 +364,11 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := s.ConvertOwnerPermalinkToName(dbPipeline.Owner)
+	ownerName, err := s.ConvertOwnerPermalinkToName(dbPipeline.Owner)
+	if err != nil {
+		return nil, err
+	}
+	owner, err := s.FetchOwnerWithPermalink(dbPipeline.Owner)
 	if err != nil {
 		return nil, err
 	}
@@ -456,7 +452,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	}
 
 	pbPipeline := pipelinePB.Pipeline{
-		Name:       fmt.Sprintf("%s/pipelines/%s", owner, dbPipeline.ID),
+		Name:       fmt.Sprintf("%s/pipelines/%s", ownerName, dbPipeline.ID),
 		Uid:        dbPipeline.BaseDynamic.UID.String(),
 		Id:         dbPipeline.ID,
 		CreateTime: timestamppb.New(dbPipeline.CreateTime),
@@ -471,6 +467,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		Description: &dbPipeline.Description.String,
 		Recipe:      pbRecipe,
 		Permission:  pbPermission,
+		OwnerName:   ownerName,
+		Owner:       owner,
 	}
 
 	if view != VIEW_BASIC {
@@ -489,12 +487,6 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		if err == nil {
 			pbPipeline.OpenapiSchema = spec
 		}
-	}
-
-	if strings.HasPrefix(dbPipeline.Owner, "users/") {
-		pbPipeline.Owner = &pipelinePB.Pipeline_User{User: owner}
-	} else if strings.HasPrefix(dbPipeline.Owner, "organizations/") {
-		pbPipeline.Owner = &pipelinePB.Pipeline_Organization{Organization: owner}
 	}
 
 	return &pbPipeline, nil
@@ -768,17 +760,9 @@ func (s *service) convertProtoToDatamodel(
 
 	var owner string
 
-	switch pbConnector.Owner.(type) {
-	case *pipelinePB.Connector_User:
-		owner, err = s.ConvertOwnerNameToPermalink(pbConnector.GetUser())
-		if err != nil {
-			return nil, err
-		}
-	case *pipelinePB.Connector_Organization:
-		owner, err = s.ConvertOwnerNameToPermalink(pbConnector.GetOrganization())
-		if err != nil {
-			return nil, err
-		}
+	owner, err = s.ConvertOwnerNameToPermalink(pbConnector.GetOwnerName())
+	if err != nil {
+		return nil, err
 	}
 
 	return &datamodel.Connector{
@@ -820,7 +804,11 @@ func (s *service) convertDatamodelToProto(
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := s.ConvertOwnerPermalinkToName(dbConnector.Owner)
+	ownerName, err := s.ConvertOwnerPermalinkToName(dbConnector.Owner)
+	if err != nil {
+		return nil, err
+	}
+	owner, err := s.FetchOwnerWithPermalink(dbConnector.Owner)
 	if err != nil {
 		return nil, err
 	}
@@ -831,7 +819,7 @@ func (s *service) convertDatamodelToProto(
 
 	pbConnector := &pipelinePB.Connector{
 		Uid:                     dbConnector.UID.String(),
-		Name:                    fmt.Sprintf("%s/connectors/%s", owner, dbConnector.ID),
+		Name:                    fmt.Sprintf("%s/connectors/%s", ownerName, dbConnector.ID),
 		Id:                      dbConnector.ID,
 		ConnectorDefinitionName: dbConnDef.GetName(),
 		Type:                    pipelinePB.ConnectorType(dbConnector.ConnectorType),
@@ -860,13 +848,10 @@ func (s *service) convertDatamodelToProto(
 			}
 			return nil
 		}(),
+		OwnerName: ownerName,
+		Owner:     owner,
 	}
 
-	if strings.HasPrefix(owner, "users/") {
-		pbConnector.Owner = &pipelinePB.Connector_User{User: owner}
-	} else if strings.HasPrefix(owner, "organizations/") {
-		pbConnector.Owner = &pipelinePB.Connector_Organization{Organization: owner}
-	}
 	if view != VIEW_BASIC {
 		if credentialMask {
 			utils.MaskCredentialFields(s.connector, dbConnDef.Id, pbConnector.Configuration)
