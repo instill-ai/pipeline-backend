@@ -1308,6 +1308,7 @@ func (s *service) triggerPipeline(
 	}
 
 	memory := make([]map[string]interface{}, batchSize)
+	status := map[string]*utils.ComponentStatus{}
 	computeTime := map[string]float32{}
 
 	for idx := range inputs {
@@ -1327,8 +1328,12 @@ func (s *service) triggerPipeline(
 		}
 	}
 
+	status[orderedComp[0].Id].Started = true
+	status[orderedComp[0].Id].Completed = true
+
 	responseCompId := ""
 	for _, comp := range orderedComp[1:] {
+		status[comp.Id].Started = true
 
 		var compInputs []*structpb.Struct
 
@@ -1492,6 +1497,7 @@ func (s *service) triggerPipeline(
 			}
 
 		}
+		status[comp.Id].Completed = true
 
 	}
 
