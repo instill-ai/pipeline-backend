@@ -66,28 +66,35 @@ func (c *ACLClient) SetOwner(objectType string, objectUID uuid.UUID, ownerType s
 
 func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error {
 	// TODO: use OpenFGA as single source of truth
+	// TODO: support fine-grained permission settings
+
 	for user, perm := range pipeline.Permission.Users {
-		userType := strings.Split(user, "/")[0]
-		userType = userType[0 : len(userType)-1]
-		userID := strings.Split(user, "/")[1]
-		if userID != "*" {
-			return fmt.Errorf("only support users/* and visitors/*")
+		if user != "*/*" {
+			return fmt.Errorf("only support users: `*/*`")
 		}
 
 		if perm.Role == "ROLE_VIEWER" {
-			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("%s:%s", userType, userID), "reader", perm.Enabled)
-			if err != nil {
-				return err
+			for _, t := range []string{"user", "visitor"} {
+				err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("%s:*", t), "reader", perm.Enabled)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		if perm.Role == "ROLE_EXECUTOR" {
-			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("%s:%s", userType, userID), "executor", perm.Enabled)
-			if err != nil {
-				return err
+			for _, t := range []string{"user"} {
+				err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("%s:*", t), "executor", perm.Enabled)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
+
 	if pipeline.Permission.ShareCode != nil {
+		if pipeline.Permission.ShareCode.User != "*/*" {
+			return fmt.Errorf("only support users: `*/*`")
+		}
 		if pipeline.Permission.ShareCode.Role == "ROLE_VIEWER" {
 			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "reader", pipeline.Permission.ShareCode.Enabled)
 			if err != nil {

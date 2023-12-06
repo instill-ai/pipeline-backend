@@ -801,7 +801,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 	if err != nil {
 		return ns, nil, id, nil, false, err
 	}
-	authUser, err := h.service.AuthenticateUser(ctx, true)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		return ns, nil, id, nil, false, err
 	}
@@ -995,8 +995,7 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 
 	// Return error if resource ID does not a semantic version
 	if !semver.IsValid(req.GetRelease().GetId()) {
-		err := fmt.Errorf("not a sematic version")
-		span.SetStatus(1, err.Error())
+		span.SetStatus(1, ErrSematicVersion.Error())
 		return nil, ErrSematicVersion
 	}
 
@@ -1543,7 +1542,7 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}
-	authUser, err := h.service.AuthenticateUser(ctx, true)
+	authUser, err := h.service.AuthenticateUser(ctx, false)
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}
