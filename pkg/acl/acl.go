@@ -91,11 +91,10 @@ func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error
 		}
 	}
 
-	if pipeline.Permission.ShareCode.User != "*/*" {
-		return fmt.Errorf("only support users: `*/*`")
-	}
-
 	if pipeline.Permission.ShareCode != nil {
+		if pipeline.Permission.ShareCode.User != "*/*" {
+			return fmt.Errorf("only support users: `*/*`")
+		}
 		if pipeline.Permission.ShareCode.Role == "ROLE_VIEWER" {
 			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "reader", pipeline.Permission.ShareCode.Enabled)
 			if err != nil {
