@@ -13,6 +13,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+	"go.einride.tech/aip/filtering"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -488,6 +489,20 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			pbPipeline.OpenapiSchema = spec
 		}
 	}
+	releases := []*pipelinePB.PipelineRelease{}
+	pageToken := ""
+	for {
+		var page []*pipelinePB.PipelineRelease
+		page, _, pageToken, err = s.ListPipelineReleasesAdmin(ctx, 100, pageToken, view, filtering.Filter{}, false)
+		if err != nil {
+			return nil, err
+		}
+		releases = append(releases, page...)
+		if pageToken == "" {
+			break
+		}
+	}
+	pbPipeline.Releases = releases
 
 	return &pbPipeline, nil
 }
