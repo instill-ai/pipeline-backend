@@ -17,9 +17,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1alpha"
-	usagePB "github.com/instill-ai/protogen-go/core/usage/v1alpha"
-	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	usagePB "github.com/instill-ai/protogen-go/core/usage/v1beta"
+	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1beta"
 )
 
 // InitMgmtPrivateServiceClient initialises a MgmtPrivateServiceClient instance

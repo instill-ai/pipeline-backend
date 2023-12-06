@@ -13,14 +13,14 @@ import * as helper from "./helper.js";
 export function CheckList(header) {
   group("Pipelines API: List pipelines by admin", () => {
     check(
-      http.request("GET", `${pipelinePrivateHost}/v1alpha/admin/pipelines`, null, header),
+      http.request("GET", `${pipelinePrivateHost}/v1beta/admin/pipelines`, null, header),
       {
-        [`GET /v1alpha/admin/pipelines response status is 200`]: (r) =>
+        [`GET /v1beta/admin/pipelines response status is 200`]: (r) =>
           r.status === 200,
-        [`GET /v1alpha/admin/pipelines response next_page_token is empty`]: (
+        [`GET /v1beta/admin/pipelines response next_page_token is empty`]: (
           r
         ) => r.json().next_page_token === "",
-        [`GET /v1alpha/admin/pipelines response total_size is 0`]: (r) =>
+        [`GET /v1beta/admin/pipelines response total_size is 0`]: (r) =>
           r.json().total_size == 0,
       }
     );
@@ -42,12 +42,12 @@ export function CheckList(header) {
       check(
         http.request(
           "POST",
-          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
+          `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
           JSON.stringify(reqBody),
           header
         ),
         {
-          [`POST /v1alpha/${constant.namespace}/pipelines x${reqBodies.length} response status is 201`]:
+          [`POST /v1beta/${constant.namespace}/pipelines x${reqBodies.length} response status is 201`]:
             (r) => r.status === 201,
         }
       );
@@ -56,19 +56,19 @@ export function CheckList(header) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines response status is 200`]: (r) =>
+        [`GET /v1beta/admin/pipelines response status is 200`]: (r) =>
           r.status === 200,
-        [`GET /v1alpha/admin/pipelines response pipelines.length == 10`]: (r) =>
+        [`GET /v1beta/admin/pipelines response pipelines.length == 10`]: (r) =>
           r.json().pipelines.length == 10,
-        [`GET /v1alpha/admin/pipelines response pipelines[0].recipe is null`]: (
+        [`GET /v1beta/admin/pipelines response pipelines[0].recipe is null`]: (
           r
         ) => r.json().pipelines[0].recipe === null,
-        [`GET /v1alpha/admin/pipelines response total_size == 200`]: (r) =>
+        [`GET /v1beta/admin/pipelines response total_size == 200`]: (r) =>
           r.json().total_size == 200,
       }
     );
@@ -76,14 +76,14 @@ export function CheckList(header) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines?view=VIEW_FULL`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines?view=VIEW_FULL`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines?view=VIEW_FULL response pipelines[0] has recipe`]:
+        [`GET /v1beta/admin/pipelines?view=VIEW_FULL response pipelines[0] has recipe`]:
           (r) => r.json().pipelines[0].recipe !== null,
-        [`GET /v1alpha/admin/pipelines?view=VIEW_FULL response pipelines[0] recipe is valid`]:
+        [`GET /v1beta/admin/pipelines?view=VIEW_FULL response pipelines[0] recipe is valid`]:
           (r) => helper.validateRecipe(r.json().pipelines[0].recipe, true),
       }
     );
@@ -91,12 +91,12 @@ export function CheckList(header) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines?view=VIEW_BASIC`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines?view=VIEW_BASIC`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines?view=VIEW_BASIC response pipelines[0].recipe is null`]:
+        [`GET /v1beta/admin/pipelines?view=VIEW_BASIC response pipelines[0].recipe is null`]:
           (r) => r.json().pipelines[0].recipe === null,
       }
     );
@@ -104,12 +104,12 @@ export function CheckList(header) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines?page_size=3`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=3`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines?page_size=3 response pipelines.length == 3`]:
+        [`GET /v1beta/admin/pipelines?page_size=3 response pipelines.length == 3`]:
           (r) => r.json().pipelines.length == 3,
       }
     );
@@ -117,31 +117,31 @@ export function CheckList(header) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines?page_size=101`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=101`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines?page_size=101 response pipelines.length == 100`]:
+        [`GET /v1beta/admin/pipelines?page_size=101 response pipelines.length == 100`]:
           (r) => r.json().pipelines.length == 100,
       }
     );
 
     var resFirst100 = http.request(
       "GET",
-      `${pipelinePrivateHost}/v1alpha/admin/pipelines?page_size=100`
+      `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=100`
     );
     var resSecond100 = http.request(
       "GET",
-      `${pipelinePrivateHost}/v1alpha/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
       }`
     );
     check(resSecond100, {
-      [`GET /v1alpha/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
         } response status 200`]: (r) => r.status == 200,
-      [`GET /v1alpha/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
         } response return 100 results`]: (r) => r.json().pipelines.length == 100,
-      [`GET /v1alpha/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
         } response next_page_token is empty`]: (r) =>
           r.json().next_page_token === "",
     });
@@ -150,13 +150,13 @@ export function CheckList(header) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines response 200`]: (r) => r.status == 200,
-        [`GET /v1alpha/admin/pipelines response pipelines.length > 0`]: (r) =>
+        [`GET /v1beta/admin/pipelines response 200`]: (r) => r.status == 200,
+        [`GET /v1beta/admin/pipelines response pipelines.length > 0`]: (r) =>
           r.json().pipelines.length > 0,
       }
     );
@@ -164,34 +164,34 @@ export function CheckList(header) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines?filter=create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
+        [`GET /v1beta/admin/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
           (r) => r.status == 200,
-        [`GET /v1alpha/admin/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
+        [`GET /v1beta/admin/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
           (r) => r.json().pipelines.length > 0,
       }
     );
 
     var srcConnPermalink = "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3"
 
-    // var modelUid = http.get(`${modelPublicHost}/v1alpha/models/${constant.model_id}`, {}, constant.params).json().model.uid
+    // var modelUid = http.get(`${modelPublicHost}/v1beta/models/${constant.model_id}`, {}, constant.params).json().model.uid
     // var modelPermalink = `models/${modelUid}`
 
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22`,
         null,
         constant.params
       ),
       {
-        [`GET /v1alpha/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response 200`]:
+        [`GET /v1beta/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response 200`]:
           (r) => r.status == 200,
-        [`GET /v1alpha/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]:
+        [`GET /v1beta/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]:
           (r) => r.json().pipelines.length > 0,
       }
     );
@@ -201,12 +201,12 @@ export function CheckList(header) {
       check(
         http.request(
           "DELETE",
-          `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
+          `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
           JSON.stringify(reqBody),
           header
         ),
         {
-          [`DELETE /v1alpha/${constant.namespace}/pipelines x${reqBodies.length} response status is 204`]:
+          [`DELETE /v1beta/${constant.namespace}/pipelines x${reqBodies.length} response status is 204`]:
             (r) => r.status === 204,
         }
       );
@@ -226,25 +226,25 @@ export function CheckLookUp(header) {
     // Create a pipeline
     var res = http.request(
       "POST",
-      `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines`,
+      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
       JSON.stringify(reqBody),
       header
     );
 
     check(res, {
-      "POST /v1alpha/${constant.namespace}/pipelines response status is 201": (r) => r.status === 201,
+      "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) => r.status === 201,
     });
 
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1alpha/admin/pipelines/${res.json().pipeline.uid
+        `${pipelinePrivateHost}/v1beta/admin/pipelines/${res.json().pipeline.uid
         }/lookUp`
       ),
       {
-        [`GET /v1alpha/admin/pipelines/${res.json().pipeline.uid
+        [`GET /v1beta/admin/pipelines/${res.json().pipeline.uid
           }/lookUp response status is 200"`]: (r) => r.status === 200,
-        [`GET /v1alpha/admin/pipelines/${res.json().pipeline.uid
+        [`GET /v1beta/admin/pipelines/${res.json().pipeline.uid
           }/lookUp response pipeline new name"`]: (r) =>
             r.json().pipeline.name === `${constant.namespace}/pipelines/${reqBody.id}`,
       }
@@ -254,12 +254,12 @@ export function CheckLookUp(header) {
     check(
       http.request(
         "DELETE",
-        `${pipelinePublicHost}/v1alpha/${constant.namespace}/pipelines/${reqBody.id}`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
         header
       ),
       {
-        [`DELETE /v1alpha/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
+        [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
           r.status === 204,
       }
     );

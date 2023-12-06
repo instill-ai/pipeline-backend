@@ -19,26 +19,26 @@ export function CheckCreate(header) {
             "configuration": constant.csvDstConfig
         }
 
-        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
         check(resCSVDst, {
-            "POST /v1alpha/${constant.namespace}/connectors response status 201": (r) => r.status === 201,
+            "POST /v1beta/${constant.namespace}/connectors response status 201": (r) => r.status === 201,
         });
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response STATE_CONNECTED`]: (r) => r.json().connector.state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response STATE_CONNECTED`]: (r) => r.json().connector.state === "STATE_CONNECTED",
         });
 
         // Delete test records
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
 
     });
@@ -49,11 +49,11 @@ export function CheckList(header) {
 
     group("Connector API: List destination connectors", () => {
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors response status is 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/${constant.namespace}/connectors response connectors array is 0 length`]: (r) => r.json().connectors.length === 0,
-            [`GET /v1alpha/${constant.namespace}/connectors response next_page_token is empty`]: (r) => r.json().next_page_token === "",
-            [`GET /v1alpha/${constant.namespace}/connectors response total_size is 0`]: (r) => r.json().total_size == 0,
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors response status is 200`]: (r) => r.status === 200,
+            [`GET /v1beta/${constant.namespace}/connectors response connectors array is 0 length`]: (r) => r.json().connectors.length === 0,
+            [`GET /v1beta/${constant.namespace}/connectors response next_page_token is empty`]: (r) => r.json().next_page_token === "",
+            [`GET /v1beta/${constant.namespace}/connectors response total_size is 0`]: (r) => r.json().total_size == 0,
         });
 
         const numConnectors = 10
@@ -69,64 +69,64 @@ export function CheckList(header) {
 
         // Create connectors
         for (const reqBody of reqBodies) {
-            var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+            var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
                 JSON.stringify(reqBody), header)
             check(resCSVDst, {
-                [`POST /v1alpha/${constant.namespace}/connectors x${reqBodies.length} response status 201`]: (r) => r.status === 201,
+                [`POST /v1beta/${constant.namespace}/connectors x${reqBodies.length} response status 201`]: (r) => r.status === 201,
             });
         }
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors response status is 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/${constant.namespace}/connectors response has connectors array`]: (r) => Array.isArray(r.json().connectors),
-            [`GET /v1alpha/${constant.namespace}/connectors response has total_size = ${numConnectors}`]: (r) => r.json().total_size == numConnectors,
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors response status is 200`]: (r) => r.status === 200,
+            [`GET /v1beta/${constant.namespace}/connectors response has connectors array`]: (r) => Array.isArray(r.json().connectors),
+            [`GET /v1beta/${constant.namespace}/connectors response has total_size = ${numConnectors}`]: (r) => r.json().total_size == numConnectors,
         });
 
-        var limitedRecords = http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`, null, header)
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=0`, null, header), {
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=0 response status is 200": (r) => r.status === 200,
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=0 response all records": (r) => r.json().connectors.length === limitedRecords.json().connectors.length,
+        var limitedRecords = http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`, null, header)
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=0`, null, header), {
+            "GET /v1beta/${constant.namespace}/connectors?page_size=0 response status is 200": (r) => r.status === 200,
+            "GET /v1beta/${constant.namespace}/connectors?page_size=0 response all records": (r) => r.json().connectors.length === limitedRecords.json().connectors.length,
         });
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`, null, header), {
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1 response status is 200": (r) => r.status === 200,
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1 response connectors size 1": (r) => r.json().connectors.length === 1,
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`, null, header), {
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1 response status is 200": (r) => r.status === 200,
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1 response connectors size 1": (r) => r.json().connectors.length === 1,
         });
 
-        var pageRes = http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`, null, header)
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?page_size=1&page_token=${pageRes.json().next_page_token}`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response status is 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/${constant.namespace}/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response connectors size 1`]: (r) => r.json().connectors.length === 1,
+        var pageRes = http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`, null, header)
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?page_size=1&page_token=${pageRes.json().next_page_token}`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response status is 200`]: (r) => r.status === 200,
+            [`GET /v1beta/${constant.namespace}/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response connectors size 1`]: (r) => r.json().connectors.length === 1,
         });
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_BASIC`, null, header), {
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1&view=VIEW_BASIC response status 200": (r) => r.status === 200,
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1&view=VIEW_BASIC response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1&view=VIEW_BASIC response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user),
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_BASIC`, null, header), {
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1&view=VIEW_BASIC response status 200": (r) => r.status === 200,
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1&view=VIEW_BASIC response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1&view=VIEW_BASIC response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user),
         });
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_FULL`, null, header), {
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1&view=VIEW_FULL response status 200": (r) => r.status === 200,
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1&view=VIEW_FULL response connectors[0].configuration is not null": (r) => r.json().connectors[0].configuration !== null,
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1&view=VIEW_FULL response connectors[0].connector_definition_detail is not null": (r) => r.json().connectors[0].connector_definition_detail !== null,
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1&view=VIEW_FULL response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user),
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_FULL`, null, header), {
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1&view=VIEW_FULL response status 200": (r) => r.status === 200,
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1&view=VIEW_FULL response connectors[0].configuration is not null": (r) => r.json().connectors[0].configuration !== null,
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1&view=VIEW_FULL response connectors[0].connector_definition_detail is not null": (r) => r.json().connectors[0].connector_definition_detail !== null,
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1&view=VIEW_FULL response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user),
         });
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`, null, header), {
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1 response status 200": (r) => r.status === 200,
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1 response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
-            "GET /v1alpha/${constant.namespace}/connectors?page_size=1 response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user),
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`, null, header), {
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1 response status 200": (r) => r.status === 200,
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1 response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
+            "GET /v1beta/${constant.namespace}/connectors?page_size=1 response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user),
         });
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=${limitedRecords.json().total_size}`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors?page_size=${limitedRecords.json().total_size} response status 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/${constant.namespace}/connectors?page_size=${limitedRecords.json().total_size} response next_page_token is empty`]: (r) => r.json().next_page_token === ""
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=${limitedRecords.json().total_size}`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors?page_size=${limitedRecords.json().total_size} response status 200`]: (r) => r.status === 200,
+            [`GET /v1beta/${constant.namespace}/connectors?page_size=${limitedRecords.json().total_size} response next_page_token is empty`]: (r) => r.json().next_page_token === ""
         });
 
         // Delete the destination connectors
         for (const reqBody of reqBodies) {
-            check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${reqBody.id}`, null, header), {
-                [`DELETE /v1alpha/${constant.namespace}/connectors x${reqBodies.length} response status is 204`]: (r) => r.status === 204,
+            check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${reqBody.id}`, null, header), {
+                [`DELETE /v1beta/${constant.namespace}/connectors x${reqBodies.length} response status is 204`]: (r) => r.status === 204,
             });
         }
     });
@@ -144,25 +144,25 @@ export function CheckGet(header) {
 
         }
 
-        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector id`]: (r) => r.json().connector.id === csvDstConnector.id,
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector connector_definition_name permalink`]: (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector owner is UUID`]: (r) => helper.isValidOwner(r.json().connector.user),
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 200`]: (r) => r.status === 200,
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector id`]: (r) => r.json().connector.id === csvDstConnector.id,
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector connector_definition_name permalink`]: (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector owner is UUID`]: (r) => helper.isValidOwner(r.json().connector.user),
         });
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
     });
 }
@@ -179,7 +179,7 @@ export function CheckUpdate(header) {
 
         }
 
-        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
         var csvDstConnectorUpdate = {
@@ -192,17 +192,17 @@ export function CheckUpdate(header) {
             }
         }
 
-        var resCSVDstUpdate = http.request("PATCH", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`,
+        var resCSVDstUpdate = http.request("PATCH", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`,
             JSON.stringify(csvDstConnectorUpdate), header)
 
         check(resCSVDstUpdate, {
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 200`]: (r) => r.status === 200,
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector id`]: (r) => r.json().connector.id === csvDstConnectorUpdate.id,
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector connector_definition_name`]: (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector description`]: (r) => r.json().connector.description === csvDstConnectorUpdate.description,
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector tombstone`]: (r) => r.json().connector.tombstone === false,
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector configuration`]: (r) => r.json().connector.configuration.destination_path === csvDstConnectorUpdate.configuration.destination_path,
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector owner is UUID`]: (r) => helper.isValidOwner(r.json().connector.user),
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 200`]: (r) => r.status === 200,
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector id`]: (r) => r.json().connector.id === csvDstConnectorUpdate.id,
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector connector_definition_name`]: (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector description`]: (r) => r.json().connector.description === csvDstConnectorUpdate.description,
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector tombstone`]: (r) => r.json().connector.tombstone === false,
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector configuration`]: (r) => r.json().connector.configuration.destination_path === csvDstConnectorUpdate.configuration.destination_path,
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response connector owner is UUID`]: (r) => helper.isValidOwner(r.json().connector.user),
         });
 
         // Try to update with empty description
@@ -212,12 +212,12 @@ export function CheckUpdate(header) {
 
         }
 
-        resCSVDstUpdate = http.request("PATCH", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`,
+        resCSVDstUpdate = http.request("PATCH", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`,
             JSON.stringify(csvDstConnectorUpdate), header)
 
         check(resCSVDstUpdate, {
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} with empty description response status 200`]: (r) => r.status === 200,
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} with empty description response empty description`]: (r) => r.json().connector.description === csvDstConnectorUpdate.description,
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} with empty description response status 200`]: (r) => r.status === 200,
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} with empty description response empty description`]: (r) => r.json().connector.description === csvDstConnectorUpdate.description,
         })
 
         // Try to update with a non-existing name field (which should be ignored because name field is OUTPUT_ONLY)
@@ -227,15 +227,15 @@ export function CheckUpdate(header) {
 
         }
 
-        resCSVDstUpdate = http.request("PATCH", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`,
+        resCSVDstUpdate = http.request("PATCH", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`,
             JSON.stringify(csvDstConnectorUpdate), header)
 
         check(resCSVDstUpdate, {
-            [`PATCH /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} with non-existing name field response status 200`]: (r) => r.status === 200,
+            [`PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} with non-existing name field response status 200`]: (r) => r.status === 200,
         })
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${csvDstConnector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${csvDstConnector.id} response status 204`]: (r) => r.status === 204,
         });
     });
 }
@@ -251,18 +251,18 @@ export function CheckLookUp(header) {
             "configuration": constant.csvDstConfig
         }
 
-        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/connectors/${resCSVDst.json().connector.uid}/lookUp`, null, header), {
-            [`GET /v1alpha/connectors/${resCSVDst.json().connector.uid}/lookUp response status 200`]: (r) => r.status === 200,
-            [`GET /v1alpha/connectors/${resCSVDst.json().connector.uid}/lookUp response connector uid`]: (r) => r.json().connector.uid === resCSVDst.json().connector.uid,
-            [`GET /v1alpha/connectors/${resCSVDst.json().connector.uid}/lookUp response connector connector_definition_name`]: (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
-            [`GET /v1alpha/connectors/${resCSVDst.json().connector.uid}/lookUp response connector owner is UUID`]: (r) => helper.isValidOwner(r.json().connector.user),
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/connectors/${resCSVDst.json().connector.uid}/lookUp`, null, header), {
+            [`GET /v1beta/connectors/${resCSVDst.json().connector.uid}/lookUp response status 200`]: (r) => r.status === 200,
+            [`GET /v1beta/connectors/${resCSVDst.json().connector.uid}/lookUp response connector uid`]: (r) => r.json().connector.uid === resCSVDst.json().connector.uid,
+            [`GET /v1beta/connectors/${resCSVDst.json().connector.uid}/lookUp response connector connector_definition_name`]: (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
+            [`GET /v1beta/connectors/${resCSVDst.json().connector.uid}/lookUp response connector owner is UUID`]: (r) => helper.isValidOwner(r.json().connector.user),
         });
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
 
     });
@@ -282,27 +282,27 @@ export function CheckConnect(header) {
         // Cannot connect with unfinished config
         var resDstCsv = http.request(
             "POST",
-            `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+            `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
         check(resDstCsv, {
-            "POST /v1alpha/${constant.namespace}/connectors response status for creating MySQL destination connector 201": (r) => r.status === 201,
-            "POST /v1alpha/${constant.namespace}/connectors response connector name": (r) => r.json().connector.name == `${constant.namespace}/connectors/${csvDstConnector.id}`,
-            "POST /v1alpha/${constant.namespace}/connectors response connector uid": (r) => helper.isUUID(r.json().connector.uid),
-            "POST /v1alpha/${constant.namespace}/connectors response connector connector_definition_name": (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
-            "POST /v1alpha/${constant.namespace}/connectors response connector owner is UUID": (r) => helper.isValidOwner(r.json().connector.user),
+            "POST /v1beta/${constant.namespace}/connectors response status for creating MySQL destination connector 201": (r) => r.status === 201,
+            "POST /v1beta/${constant.namespace}/connectors response connector name": (r) => r.json().connector.name == `${constant.namespace}/connectors/${csvDstConnector.id}`,
+            "POST /v1beta/${constant.namespace}/connectors response connector uid": (r) => helper.isUUID(r.json().connector.uid),
+            "POST /v1beta/${constant.namespace}/connectors response connector connector_definition_name": (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
+            "POST /v1beta/${constant.namespace}/connectors response connector owner is UUID": (r) => helper.isValidOwner(r.json().connector.user),
         });
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/connect`, null, header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/connect response status 400`]: (r) => r.status === 400,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/connect`, null, header), {
+            [`POST /v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/connect response status 400`]: (r) => r.status === 400,
         });
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/disconnect`, null, header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/disconnect response status 200`]: (r) => r.status === 200,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/disconnect`, null, header), {
+            [`POST /v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/disconnect response status 200`]: (r) => r.status === 200,
         });
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
 
         var csvDstConnector = {
@@ -315,27 +315,27 @@ export function CheckConnect(header) {
         // Cannot connect with unfinished config
         var resDstCsv = http.request(
             "POST",
-            `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+            `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
         check(resDstCsv, {
-            "POST /v1alpha/${constant.namespace}/connectors response status for creating MySQL destination connector 201": (r) => r.status === 201,
-            "POST /v1alpha/${constant.namespace}/connectors response connector name": (r) => r.json().connector.name == `${constant.namespace}/connectors/${csvDstConnector.id}`,
-            "POST /v1alpha/${constant.namespace}/connectors response connector uid": (r) => helper.isUUID(r.json().connector.uid),
-            "POST /v1alpha/${constant.namespace}/connectors response connector connector_definition_name": (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
-            "POST /v1alpha/${constant.namespace}/connectors response connector owner is UUID": (r) => helper.isValidOwner(r.json().connector.user),
+            "POST /v1beta/${constant.namespace}/connectors response status for creating MySQL destination connector 201": (r) => r.status === 201,
+            "POST /v1beta/${constant.namespace}/connectors response connector name": (r) => r.json().connector.name == `${constant.namespace}/connectors/${csvDstConnector.id}`,
+            "POST /v1beta/${constant.namespace}/connectors response connector uid": (r) => helper.isUUID(r.json().connector.uid),
+            "POST /v1beta/${constant.namespace}/connectors response connector connector_definition_name": (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
+            "POST /v1beta/${constant.namespace}/connectors response connector owner is UUID": (r) => helper.isValidOwner(r.json().connector.user),
         });
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/connect`, null, header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/connect response status 200`]: (r) => r.status === 200,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/connect`, null, header), {
+            [`POST /v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/connect response status 200`]: (r) => r.status === 200,
         });
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/disconnect`, null, header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/disconnect response status 200`]: (r) => r.status === 200,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/disconnect`, null, header), {
+            [`POST /v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}/disconnect response status 200`]: (r) => r.status === 200,
         });
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resDstCsv.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resDstCsv.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
 
 
@@ -356,37 +356,37 @@ export function CheckState(header) {
 
         }
 
-        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect`, null, header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect response status 200 (with STATE_CONNECTED)`]: (r) => r.status === 200,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect`, null, header), {
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect response status 200 (with STATE_CONNECTED)`]: (r) => r.status === 200,
         });
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect`, null, header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect response status 200 (with STATE_CONNECTED)`]: (r) => r.status === 200,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect`, null, header), {
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect response status 200 (with STATE_CONNECTED)`]: (r) => r.status === 200,
         });
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect`, null, header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect response status 200 (with STATE_DISCONNECTED)`]: (r) => r.status === 200,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect`, null, header), {
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect response status 200 (with STATE_DISCONNECTED)`]: (r) => r.status === 200,
         });
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect`, null, header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect response status 200 (with STATE_DISCONNECTED)`]: (r) => r.status === 200,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect`, null, header), {
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect response status 200 (with STATE_DISCONNECTED)`]: (r) => r.status === 200,
         });
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
 
     });
@@ -405,19 +405,19 @@ export function CheckRename(header) {
 
         }
 
-        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename`,
             JSON.stringify({
                 "new_connector_id": `some_id_not_${resCSVDst.json().connector.id}`
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response status 200`]: (r) => r.status === 200,
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response id is some_id_not_${resCSVDst.json().connector.id}`]: (r) => r.json().connector.id === `some_id_not_${resCSVDst.json().connector.id}`,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response status 200`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response id is some_id_not_${resCSVDst.json().connector.id}`]: (r) => r.json().connector.id === `some_id_not_${resCSVDst.json().connector.id}`,
         });
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/some_id_not_${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/some_id_not_${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/some_id_not_${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/some_id_not_${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
     });
 }
@@ -438,28 +438,28 @@ export function CheckExecute(header) {
             },
         }
 
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
             JSON.stringify({
                 "inputs": constant.clsModelOutputs
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (classification)`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (classification)`]: (r) => r.status === 200,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
         sleep(1)
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (classification)`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (classification)`]: (r) => r.status === 204,
         });
 
         // Write detection output (empty bounding_boxes)
@@ -473,27 +473,27 @@ export function CheckExecute(header) {
 
         }
 
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
             JSON.stringify({
                 "inputs": constant.detectionEmptyModelOutputs
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (detection)`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (detection)`]: (r) => r.status === 200,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
         sleep(1)
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (detection)`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (detection)`]: (r) => r.status === 204,
         });
 
         // Write detection output (multiple models)
@@ -507,27 +507,27 @@ export function CheckExecute(header) {
 
         }
 
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
             JSON.stringify({
                 "inputs": constant.detectionModelOutputs
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (detection)`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (detection)`]: (r) => r.status === 200,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
         sleep(1)
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (detection)`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (detection)`]: (r) => r.status === 204,
         });
 
         // Write keypoint output
@@ -540,26 +540,26 @@ export function CheckExecute(header) {
             },
         }
 
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
             JSON.stringify({
                 "inputs": constant.keypointModelOutputs
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (keypoint)`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (keypoint)`]: (r) => r.status === 200,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
         sleep(1)
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (keypoint)`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (keypoint)`]: (r) => r.status === 204,
         });
 
         // Write ocr output
@@ -572,27 +572,27 @@ export function CheckExecute(header) {
             },
         }
 
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
             JSON.stringify({
                 "inputs": constant.ocrModelOutputs
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (ocr)`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (ocr)`]: (r) => r.status === 200,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
         sleep(1)
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (ocr)`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (ocr)`]: (r) => r.status === 204,
         });
 
         // Write semantic segmentation output
@@ -605,28 +605,28 @@ export function CheckExecute(header) {
             }
         }
 
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
             JSON.stringify({
                 "inputs": constant.semanticSegModelOutputs
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (semantic-segmentation)`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (semantic-segmentation)`]: (r) => r.status === 200,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
         sleep(1)
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (semantic-segmentation)`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (semantic-segmentation)`]: (r) => r.status === 204,
         });
 
         // Write instance segmentation output
@@ -640,27 +640,27 @@ export function CheckExecute(header) {
 
         }
 
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
             JSON.stringify({
                 "inputs": constant.instSegModelOutputs
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (instance-segmentation)`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (instance-segmentation)`]: (r) => r.status === 200,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
         sleep(1)
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (instance-segmentation)`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (instance-segmentation)`]: (r) => r.status === 204,
         });
 
         // Write text-to-image output
@@ -673,60 +673,27 @@ export function CheckExecute(header) {
             }
         }
 
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
             JSON.stringify({
                 "inputs": constant.textToImageModelOutputs
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (text-to-image)`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (text-to-image)`]: (r) => r.status === 200,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
         sleep(1)
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (text-to-image)`]: (r) => r.status === 204,
-        });
-
-        // Write text-generation output
-        csvDstConnector = {
-            "id": randomString(10),
-            "connector_definition_name": constant.csvDstDefRscName,
-            "description": randomString(50),
-            "configuration": {
-                "destination_path": "/local/test-text-generation"
-            },
-        }
-
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
-            JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
-            {}, header)
-
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
-        })
-
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
-            JSON.stringify({
-                "inputs": constant.textGenerationModelOutputs
-            }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (text-generation)`]: (r) => r.status === 200,
-        });
-
-        // Wait for 1 sec for the connector writing to the destination-csv before deleting it
-        sleep(1)
-
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (text-generation)`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (text-to-image)`]: (r) => r.status === 204,
         });
 
         // Write unspecified output
@@ -739,27 +706,27 @@ export function CheckExecute(header) {
             }
         }
 
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
+            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
             JSON.stringify({
                 "inputs": constant.unspecifiedModelOutputs
             }), header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (unspecified)`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (unspecified)`]: (r) => r.status === 200,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
         sleep(1)
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (unspecified)`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (unspecified)`]: (r) => r.status === 204,
         });
     });
 }
@@ -775,19 +742,19 @@ export function CheckTest(header) {
             "configuration": constant.csvDstConfig
         }
 
-        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`,
+        var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(csvDstConnector), header)
 
-        http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
+        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
             {}, header)
 
-        check(http.request("POST", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/testConnection`, null, header), {
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/testConnection response status 200`]: (r) => r.status === 200,
-            [`POST /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/testConnection response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/testConnection`, null, header), {
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/testConnection response status 200`]: (r) => r.status === 200,
+            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/testConnection response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         });
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1alpha/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
     });
 }

@@ -1,0 +1,652 @@
+syntax = "proto3";
+
+package vdp.pipeline.v1beta;
+
+// Google API
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "../../../vdp/pipeline/v1beta/connector.proto";
+import "../../../vdp/pipeline/v1beta/connector_definition.proto";
+import "../../../vdp/pipeline/v1beta/operator_definition.proto";
+import "../../../vdp/pipeline/v1beta/pipeline.proto";
+
+// Pipeline service responds to external access
+service PipelinePublicService {
+  option (google.api.default_host) = "api.instill.tech";
+
+  // Liveness method receives a LivenessRequest message and returns a
+  // LivenessResponse message.
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+  rpc Liveness(LivenessRequest) returns (LivenessResponse) {
+    option (google.api.http) = {
+      get: "/v1beta/__liveness"
+      additional_bindings: [
+        {get: "/v1beta/health/pipeline"}]
+    };
+  }
+
+  // Readiness method receives a ReadinessRequest message and returns a
+  // ReadinessResponse message.
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+  rpc Readiness(ReadinessRequest) returns (v1beta.ReadinessResponse) {
+    option (google.api.http) = {get: "/v1beta/__readiness"};
+  }
+
+  // ListPipelines method receives a ListPipelinesRequest message and returns a
+  // ListPipelinesResponse message.
+  rpc ListPipelines(ListPipelinesRequest) returns (ListPipelinesResponse) {
+    option (google.api.http) = {get: "/v1beta/pipelines"};
+  }
+
+  // LookUpPipeline method receives a LookUpPipelineRequest message and returns
+  // a LookUpPipelineResponse
+  rpc LookUpPipeline(LookUpPipelineRequest) returns (LookUpPipelineResponse) {
+    option (google.api.http) = {get: "/v1beta/{permalink=pipelines/*}/lookUp"};
+    option (google.api.method_signature) = "permalink";
+  }
+
+  // CreateUserPipeline method receives a CreateUserPipelineRequest message and returns
+  // a CreateUserPipelineResponse message.
+  rpc CreateUserPipeline(CreateUserPipelineRequest) returns (CreateUserPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{parent=users/*}/pipelines"
+      body: "pipeline"
+    };
+    option (google.api.method_signature) = "parent,pipeline";
+  }
+
+  // ListUserPipelines method receives a ListUserPipelinesRequest message and returns a
+  // ListUserPipelinesResponse message.
+  rpc ListUserPipelines(ListUserPipelinesRequest) returns (ListUserPipelinesResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=users/*}/pipelines"};
+    option (google.api.method_signature) = "parent";
+  }
+
+  // GetUserPipeline method receives a GetUserPipelineRequest message and returns a
+  // GetUserPipelineResponse message.
+  rpc GetUserPipeline(GetUserPipelineRequest) returns (GetUserPipelineResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=users/*/pipelines/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // UpdateUserPipeline method receives a UpdateUserPipelineRequest message and returns
+  // a UpdateUserPipelineResponse message.
+  rpc UpdateUserPipeline(UpdateUserPipelineRequest) returns (UpdateUserPipelineResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{pipeline.name=users/*/pipelines/*}"
+      body: "pipeline"
+    };
+    option (google.api.method_signature) = "pipeline,update_mask";
+  }
+
+  // DeleteUserPipeline method receives a DeleteUserPipelineRequest message and returns
+  // a DeleteUserPipelineResponse message.
+  rpc DeleteUserPipeline(DeleteUserPipelineRequest) returns (DeleteUserPipelineResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=users/*/pipelines/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Validate a pipeline.
+  rpc ValidateUserPipeline(ValidateUserPipelineRequest) returns (ValidateUserPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/pipelines/*}/validate"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // RenameUserPipeline method receives a RenameUserPipelineRequest message and returns
+  // a RenameUserPipelineResponse message.
+  rpc RenameUserPipeline(RenameUserPipelineRequest) returns (RenameUserPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/pipelines/*}/rename"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,new_pipeline_id";
+  }
+
+  // TriggerUserPipeline method receives a TriggerUserPipelineRequest message
+  // and returns a TriggerUserPipelineResponse.
+  rpc TriggerUserPipeline(TriggerUserPipelineRequest) returns (TriggerUserPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/pipelines/*}/trigger"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // TriggerAsyncUserPipeline method receives a TriggerAsyncUserPipelineRequest message and
+  // returns a TriggerAsyncUserPipelineResponse.
+  rpc TriggerAsyncUserPipeline(TriggerAsyncUserPipelineRequest) returns (TriggerAsyncUserPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/pipelines/*}/triggerAsync"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // CreateUserPipelineRelease method receives a CreateUserPipelineReleaseRequest message and returns
+  // a CreateUserPipelineReleaseResponse message.
+  rpc CreateUserPipelineRelease(CreateUserPipelineReleaseRequest) returns (CreateUserPipelineReleaseResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{parent=users/*/pipelines/*}/releases"
+      body: "release"
+    };
+    option (google.api.method_signature) = "parent,release";
+  }
+
+  // ListUserPipelineReleases method receives a ListUserPipelineReleasesRequest message and returns a
+  // ListUserPipelineReleasesResponse message.
+  rpc ListUserPipelineReleases(ListUserPipelineReleasesRequest) returns (ListUserPipelineReleasesResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=users/*/pipelines/*}/releases"};
+    option (google.api.method_signature) = "pipelines";
+  }
+
+  // GetUserPipelineRelease method receives a GetUserPipelineReleaseRequest message and returns a
+  // GetUserPipelineReleaseResponse message.
+  rpc GetUserPipelineRelease(GetUserPipelineReleaseRequest) returns (GetUserPipelineReleaseResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=users/*/pipelines/*/releases/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // UpdateUserPipelineRelease method receives a UpdateUserPipelineReleaseRequest message and returns
+  // a UpdateUserPipelineReleaseResponse message.
+  rpc UpdateUserPipelineRelease(UpdateUserPipelineReleaseRequest) returns (UpdateUserPipelineReleaseResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{release.name=usersr/*/pipelines/*/releases/*}"
+      body: "release"
+    };
+    option (google.api.method_signature) = "release,update_mask";
+  }
+
+  // DeleteUserPipelineRelease method receives a DeleteUserPipelineReleaseRequest message and returns
+  // a DeleteUserPipelineReleaseResponse message.
+  rpc DeleteUserPipelineRelease(DeleteUserPipelineReleaseRequest) returns (DeleteUserPipelineReleaseResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=users/*/pipelines/*/releases/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // RestoreUserPipelineRelease method receives a RestoreUserPipelineReleaseRequest message
+  // and returns a RestoreUserPipelineReleaseResponse
+  rpc RestoreUserPipelineRelease(RestoreUserPipelineReleaseRequest) returns (RestoreUserPipelineReleaseResponse) {
+    option (google.api.http) = {post: "/v1beta/{name=users/*/pipelines/*/releases/*}/restore"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // WatchUserPipelineRelease method receives a WatchUserPipelineReleaseRequest message
+  // and returns a WatchUserPipelineReleaseResponse
+  rpc WatchUserPipelineRelease(WatchUserPipelineReleaseRequest) returns (WatchUserPipelineReleaseResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=users/*/pipelines/*/releases/*}/watch"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // RenameUserPipelineRelease method receives a RenameUserPipelineReleaseRequest message and returns
+  // a RenameUserPipelineReleaseResponse message.
+  rpc RenameUserPipelineRelease(RenameUserPipelineReleaseRequest) returns (RenameUserPipelineReleaseResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/pipelines/*/releases/*}/rename"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,new_pipeline_release_id";
+  }
+
+  // TriggerUserPipelineRelease method receives a TriggeUserPipelineReleaseRequest message
+  // and returns a TriggerPipelineReleasePipelineResponse.
+  rpc TriggerUserPipelineRelease(TriggerUserPipelineReleaseRequest) returns (TriggerUserPipelineReleaseResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/pipelines/*/releases/*}/trigger"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // TriggerAsyncUserPipelineRelease method receives a TriggerAsyncUserPipelineReleaseRequest message and
+  // returns a TriggerAsyncUserPipelineReleaseResponse.
+  rpc TriggerAsyncUserPipelineRelease(TriggerAsyncUserPipelineReleaseRequest) returns (TriggerAsyncUserPipelineReleaseResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // CreateOrganizationPipeline method receives a CreateOrganizationPipelineRequest message and returns
+  // a CreateOrganizationPipelineResponse message.
+  rpc CreateOrganizationPipeline(CreateOrganizationPipelineRequest) returns (CreateOrganizationPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{parent=organizations/*}/pipelines"
+      body: "pipeline"
+    };
+    option (google.api.method_signature) = "parent,pipeline";
+  }
+
+  // ListOrganizationPipelines method receives a ListOrganizationPipelinesRequest message and returns a
+  // ListOrganizationPipelinesResponse message.
+  rpc ListOrganizationPipelines(ListOrganizationPipelinesRequest) returns (ListOrganizationPipelinesResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/pipelines"};
+    option (google.api.method_signature) = "parent";
+  }
+
+  // GetOrganizationPipeline method receives a GetOrganizationPipelineRequest message and returns a
+  // GetOrganizationPipelineResponse message.
+  rpc GetOrganizationPipeline(GetOrganizationPipelineRequest) returns (GetOrganizationPipelineResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=organizations/*/pipelines/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // UpdateOrganizationPipeline method receives a UpdateOrganizationPipelineRequest message and returns
+  // a UpdateOrganizationPipelineResponse message.
+  rpc UpdateOrganizationPipeline(UpdateOrganizationPipelineRequest) returns (UpdateOrganizationPipelineResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{pipeline.name=organizations/*/pipelines/*}"
+      body: "pipeline"
+    };
+    option (google.api.method_signature) = "pipeline,update_mask";
+  }
+
+  // DeleteOrganizationPipeline method receives a DeleteOrganizationPipelineRequest message and returns
+  // a DeleteOrganizationPipelineResponse message.
+  rpc DeleteOrganizationPipeline(DeleteOrganizationPipelineRequest) returns (DeleteOrganizationPipelineResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=organizations/*/pipelines/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Validate a pipeline.
+  rpc ValidateOrganizationPipeline(ValidateOrganizationPipelineRequest) returns (ValidateOrganizationPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/pipelines/*}/validate"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // RenameOrganizationPipeline method receives a RenameOrganizationPipelineRequest message and returns
+  // a RenameOrganizationPipelineResponse message.
+  rpc RenameOrganizationPipeline(RenameOrganizationPipelineRequest) returns (RenameOrganizationPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/pipelines/*}/rename"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,new_pipeline_id";
+  }
+
+  // TriggerOrganizationPipeline method receives a TriggerOrganizationPipelineRequest message
+  // and returns a TriggerOrganizationPipelineResponse.
+  rpc TriggerOrganizationPipeline(TriggerOrganizationPipelineRequest) returns (TriggerOrganizationPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/pipelines/*}/trigger"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // TriggerAsyncOrganizationPipeline method receives a TriggerAsyncOrganizationPipelineRequest message and
+  // returns a TriggerAsyncOrganizationPipelineResponse.
+  rpc TriggerAsyncOrganizationPipeline(TriggerAsyncOrganizationPipelineRequest) returns (TriggerAsyncOrganizationPipelineResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/pipelines/*}/triggerAsync"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // CreateOrganizationPipelineRelease method receives a CreateOrganizationPipelineReleaseRequest message and returns
+  // a CreateOrganizationPipelineReleaseResponse message.
+  rpc CreateOrganizationPipelineRelease(CreateOrganizationPipelineReleaseRequest) returns (CreateOrganizationPipelineReleaseResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{parent=organizations/*/pipelines/*}/releases"
+      body: "release"
+    };
+    option (google.api.method_signature) = "parent,release";
+  }
+
+  // ListOrganizationPipelineReleases method receives a ListOrganizationPipelineReleasesRequest message and returns a
+  // ListOrganizationPipelineReleasesResponse message.
+  rpc ListOrganizationPipelineReleases(ListOrganizationPipelineReleasesRequest) returns (ListOrganizationPipelineReleasesResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=organizations/*/pipelines/*}/releases"};
+    option (google.api.method_signature) = "pipelines";
+  }
+
+  // GetOrganizationPipelineRelease method receives a GetOrganizationPipelineReleaseRequest message and returns a
+  // GetOrganizationPipelineReleaseResponse message.
+  rpc GetOrganizationPipelineRelease(GetOrganizationPipelineReleaseRequest) returns (GetOrganizationPipelineReleaseResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=organizations/*/pipelines/*/releases/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // UpdateOrganizationPipelineRelease method receives a UpdateOrganizationPipelineReleaseRequest message and returns
+  // a UpdateOrganizationPipelineReleaseResponse message.
+  rpc UpdateOrganizationPipelineRelease(UpdateOrganizationPipelineReleaseRequest) returns (UpdateOrganizationPipelineReleaseResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{release.name=organizationsr/*/pipelines/*/releases/*}"
+      body: "release"
+    };
+    option (google.api.method_signature) = "release,update_mask";
+  }
+
+  // DeleteOrganizationPipelineRelease method receives a DeleteOrganizationPipelineReleaseRequest message and returns
+  // a DeleteOrganizationPipelineReleaseResponse message.
+  rpc DeleteOrganizationPipelineRelease(DeleteOrganizationPipelineReleaseRequest) returns (DeleteOrganizationPipelineReleaseResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=organizations/*/pipelines/*/releases/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // RestoreOrganizationPipelineRelease method receives a RestoreOrganizationPipelineReleaseRequest message
+  // and returns a RestoreOrganizationPipelineReleaseResponse
+  rpc RestoreOrganizationPipelineRelease(RestoreOrganizationPipelineReleaseRequest) returns (RestoreOrganizationPipelineReleaseResponse) {
+    option (google.api.http) = {post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/restore"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // WatchOrganizationPipelineRelease method receives a WatchOrganizationPipelineReleaseRequest message
+  // and returns a WatchOrganizationPipelineReleaseResponse
+  rpc WatchOrganizationPipelineRelease(WatchOrganizationPipelineReleaseRequest) returns (WatchOrganizationPipelineReleaseResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/watch"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // RenameOrganizationPipelineRelease method receives a RenameOrganizationPipelineReleaseRequest message and returns
+  // a RenameOrganizationPipelineReleaseResponse message.
+  rpc RenameOrganizationPipelineRelease(RenameOrganizationPipelineReleaseRequest) returns (RenameOrganizationPipelineReleaseResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/rename"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,new_pipeline_release_id";
+  }
+
+  // TriggerOrganizationPipelineRelease method receives a TriggeOrganizationPipelineReleaseRequest message
+  // and returns a TriggerPipelineReleasePipelineResponse.
+  rpc TriggerOrganizationPipelineRelease(TriggerOrganizationPipelineReleaseRequest) returns (TriggerOrganizationPipelineReleaseResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/trigger"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // TriggerAsyncOrganizationPipelineRelease method receives a TriggerAsyncOrganizationPipelineReleaseRequest message and
+  // returns a TriggerAsyncOrganizationPipelineReleaseResponse.
+  rpc TriggerAsyncOrganizationPipelineRelease(TriggerAsyncOrganizationPipelineReleaseRequest) returns (TriggerAsyncOrganizationPipelineReleaseResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/triggerAsync"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,inputs";
+  }
+
+  // *Longrunning operation methods
+
+  // GetOperation method receives a
+  // GetOperationRequest message and returns a
+  // GetOperationResponse message.
+  rpc GetOperation(GetOperationRequest) returns (GetOperationResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=operations/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // ListConnectorDefinitions method receives a
+  // ListConnectorDefinitionsRequest message and returns a
+  // ListConnectorDefinitionsResponse message.
+  rpc ListConnectorDefinitions(ListConnectorDefinitionsRequest) returns (ListConnectorDefinitionsResponse) {
+    option (google.api.http) = {get: "/v1beta/connector-definitions"};
+  }
+
+  // GetConnectorDefinition method receives a
+  // GetConnectorDefinitionRequest message and returns a
+  // GetGetConnectorDefinitionResponse message.
+  rpc GetConnectorDefinition(GetConnectorDefinitionRequest) returns (GetConnectorDefinitionResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=connector-definitions/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // ListOperatorDefinitions method receives a
+  // ListOperatorDefinitionsRequest message and returns a
+  // ListOperatorDefinitionsResponse message.
+  rpc ListOperatorDefinitions(ListOperatorDefinitionsRequest) returns (ListOperatorDefinitionsResponse) {
+    option (google.api.http) = {get: "/v1beta/operator-definitions"};
+  }
+
+  // GetOperatorDefinition method receives a
+  // GetOperatorDefinitionRequest message and returns a
+  // GetGetOperatorDefinitionResponse message.
+  rpc GetOperatorDefinition(GetOperatorDefinitionRequest) returns (GetOperatorDefinitionResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=operator-definitions/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  /////////////////////////////////
+  // Connector methods
+  /////////////////////////////////
+
+  // ListConnectors method receives a
+  // ListConnectorsRequest message and returns a
+  // ListConnectorsResponse message.
+  rpc ListConnectors(ListConnectorsRequest) returns (ListConnectorsResponse) {
+    option (google.api.http) = {get: "/v1beta/connectors"};
+  }
+
+  // LookUpConnector method receives a
+  // LookUpConnectorRequest message and returns a
+  // LookUpConnectorResponse
+  rpc LookUpConnector(LookUpConnectorRequest) returns (LookUpConnectorResponse) {
+    option (google.api.http) = {get: "/v1beta/{permalink=connectors/*}/lookUp"};
+    option (google.api.method_signature) = "permalink";
+  }
+
+  // CreateUserConnector method receives a
+  // CreateUserConnectorRequest message and returns a
+  // CreateUserConnectorResponse message.
+  rpc CreateUserConnector(CreateUserConnectorRequest) returns (CreateUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{parent=users/*}/connectors"
+      body: "connector"
+    };
+    option (google.api.method_signature) = "parent,connector";
+  }
+
+  // ListUserConnectors method receives a
+  // ListUserConnectorsRequest message and returns a
+  // ListUserConnectorsResponse message.
+  rpc ListUserConnectors(ListUserConnectorsRequest) returns (ListUserConnectorsResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=users/*}/connectors"};
+    option (google.api.method_signature) = "parent";
+  }
+
+  // GetUserConnector method receives a GetUserConnectorRequest
+  // message and returns a GetUserConnectorResponse message.
+  rpc GetUserConnector(GetUserConnectorRequest) returns (GetUserConnectorResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=users/*/connectors/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // UpdateUserConnector method receives a
+  // UpdateUserConnectorRequest message and returns a
+  // UpdateUserConnectorResponse message.
+  rpc UpdateUserConnector(UpdateUserConnectorRequest) returns (UpdateUserConnectorResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{connector.name=users/*/connectors/*}"
+      body: "connector"
+    };
+    option (google.api.method_signature) = "connector,update_mask";
+  }
+
+  // DeleteUserConnector method receives a
+  // DeleteUserConnectorRequest message and returns a
+  // DeleteUserConnectorResponse message.
+  rpc DeleteUserConnector(DeleteUserConnectorRequest) returns (DeleteUserConnectorResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=users/*/connectors/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Connect a connector.
+  // The "state" of the connector after connecting is "CONNECTED".
+  // ConnectUserConnector can be called on Connector in the
+  // state `DISCONNECTED`; Connector in a different state (including
+  // `CONNECTED`) returns an error.
+  rpc ConnectUserConnector(ConnectUserConnectorRequest) returns (ConnectUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/connectors/*}/connect"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // Disconnect a connector.
+  // The "state" of the connector after disconnecting is "DISCONNECTED".
+  // DisconnectUserConnector can be called on Connector in the
+  // state `CONNECTED`; Connector in a different state (including
+  // `DISCONNECTED`) returns an error.
+  rpc DisconnectUserConnector(DisconnectUserConnectorRequest) returns (DisconnectUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/connectors/*}/disconnect"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // RenameUserConnector method receives a
+  // RenameUserConnectorRequest message and returns a
+  // RenameUserConnectorResponse message.
+  rpc RenameUserConnector(RenameUserConnectorRequest) returns (RenameUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/connectors/*}/rename"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,new_connector_id";
+  }
+
+  // ExecuteUserConnector method receives a
+  // ExecuteUserConnectorRequest message and returns a
+  // ExecuteUserConnectorResponse message.
+  rpc ExecuteUserConnector(ExecuteUserConnectorRequest) returns (ExecuteUserConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/connectors/*}/execute"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // WatchUserConnector method receives a
+  // WatchUserConnectorRequest message and returns a
+  // WatchUserConnectorResponse
+  rpc WatchUserConnector(WatchUserConnectorRequest) returns (WatchUserConnectorResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=users/*/connectors/*}/watch"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // TestUserConnector method receives a TestUserConnectorRequest
+  // message and returns a TestUserConnectorResponse
+  rpc TestUserConnector(TestUserConnectorRequest) returns (TestUserConnectorResponse) {
+    option (google.api.http) = {post: "/v1beta/{name=users/*/connectors/*}/testConnection"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // CreateOrganizationConnector method receives a
+  // CreateOrganizationConnectorRequest message and returns a
+  // CreateOrganizationConnectorResponse message.
+  rpc CreateOrganizationConnector(CreateOrganizationConnectorRequest) returns (CreateOrganizationConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{parent=organizations/*}/connectors"
+      body: "connector"
+    };
+    option (google.api.method_signature) = "parent,connector";
+  }
+
+  // ListOrganizationConnectors method receives a
+  // ListOrganizationConnectorsRequest message and returns a
+  // ListOrganizationConnectorsResponse message.
+  rpc ListOrganizationConnectors(ListOrganizationConnectorsRequest) returns (ListOrganizationConnectorsResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/connectors"};
+    option (google.api.method_signature) = "parent";
+  }
+
+  // GetOrganizationConnector method receives a GetOrganizationConnectorRequest
+  // message and returns a GetOrganizationConnectorResponse message.
+  rpc GetOrganizationConnector(GetOrganizationConnectorRequest) returns (GetOrganizationConnectorResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=organizations/*/connectors/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // UpdateOrganizationConnector method receives a
+  // UpdateOrganizationConnectorRequest message and returns a
+  // UpdateOrganizationConnectorResponse message.
+  rpc UpdateOrganizationConnector(UpdateOrganizationConnectorRequest) returns (UpdateOrganizationConnectorResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{connector.name=organizations/*/connectors/*}"
+      body: "connector"
+    };
+    option (google.api.method_signature) = "connector,update_mask";
+  }
+
+  // DeleteOrganizationConnector method receives a
+  // DeleteOrganizationConnectorRequest message and returns a
+  // DeleteOrganizationConnectorResponse message.
+  rpc DeleteOrganizationConnector(DeleteOrganizationConnectorRequest) returns (DeleteOrganizationConnectorResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=organizations/*/connectors/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Connect a connector.
+  // The "state" of the connector after connecting is "CONNECTED".
+  // ConnectOrganizationConnector can be called on Connector in the
+  // state `DISCONNECTED`; Connector in a different state (including
+  // `CONNECTED`) returns an error.
+  rpc ConnectOrganizationConnector(ConnectOrganizationConnectorRequest) returns (ConnectOrganizationConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/connectors/*}/connect"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // Disconnect a connector.
+  // The "state" of the connector after disconnecting is "DISCONNECTED".
+  // DisconnectOrganizationConnector can be called on Connector in the
+  // state `CONNECTED`; Connector in a different state (including
+  // `DISCONNECTED`) returns an error.
+  rpc DisconnectOrganizationConnector(DisconnectOrganizationConnectorRequest) returns (DisconnectOrganizationConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/connectors/*}/disconnect"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // RenameOrganizationConnector method receives a
+  // RenameOrganizationConnectorRequest message and returns a
+  // RenameOrganizationConnectorResponse message.
+  rpc RenameOrganizationConnector(RenameOrganizationConnectorRequest) returns (RenameOrganizationConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/connectors/*}/rename"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,new_connector_id";
+  }
+
+  // ExecuteOrganizationConnector method receives a
+  // ExecuteOrganizationConnectorRequest message and returns a
+  // ExecuteOrganizationConnectorResponse message.
+  rpc ExecuteOrganizationConnector(ExecuteOrganizationConnectorRequest) returns (ExecuteOrganizationConnectorResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/connectors/*}/execute"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // WatchOrganizationConnector method receives a
+  // WatchOrganizationConnectorRequest message and returns a
+  // WatchOrganizationConnectorResponse
+  rpc WatchOrganizationConnector(WatchOrganizationConnectorRequest) returns (WatchOrganizationConnectorResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=organizations/*/connectors/*}/watch"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // TestOrganizationConnector method receives a TestOrganizationConnectorRequest
+  // message and returns a TestOrganizationConnectorResponse
+  rpc TestOrganizationConnector(TestOrganizationConnectorRequest) returns (TestOrganizationConnectorResponse) {
+    option (google.api.http) = {post: "/v1beta/{name=organizations/*/connectors/*}/testConnection"};
+    option (google.api.method_signature) = "name";
+  }
+}

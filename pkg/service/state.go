@@ -13,7 +13,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
-	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
+	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1beta"
 )
 
 func (s *service) checkState(recipePermalink *datamodel.Recipe) error {

@@ -11,7 +11,7 @@ import * as triggerAsync from "./grpc-trigger-async.js";
 
 const client = new grpc.Client();
 
-client.load(["../proto/vdp/pipeline/v1alpha"], "pipeline_public_service.proto");
+client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
 
 import * as constant from "./const.js";
 
@@ -29,13 +29,13 @@ export function setup() {
     timeout: "10s",
   });
 
-  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1alpha/auth/login`, JSON.stringify({
+  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1beta/auth/login`, JSON.stringify({
     "username": constant.defaultUsername,
     "password": constant.defaultPassword,
   }))
 
   check(loginResp, {
-    [`POST ${constant.mgmtPublicHost}/v1alpha/auth/login response status is 200`]: (
+    [`POST ${constant.mgmtPublicHost}/v1beta/auth/login response status is 200`]: (
       r
     ) => r.status === 200,
   });
@@ -52,7 +52,7 @@ export function setup() {
     function () {
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserConnector",
+          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector",
           {
             parent: `${constant.namespace}`,
             connector: {
@@ -67,12 +67,12 @@ export function setup() {
           metadata
         ),
         {
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserConnector CSV response StatusOK":
+          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ConnectUserConnector",
+        "vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector",
         {
           name: `${constant.namespace}/connectors/${constant.dstCSVConnID1}`,
         },
@@ -85,7 +85,7 @@ export function setup() {
     function () {
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserConnector",
+          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector",
           {
             parent: `${constant.namespace}`,
             connector: {
@@ -100,12 +100,12 @@ export function setup() {
           metadata
         ),
         {
-          "vdp.pipeline.v1alpha.PipelinePublicService/CreateUserConnector CSV response StatusOK":
+          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV response StatusOK":
             (r) => r.status === grpc.StatusOK,
         }
       );
       client.invoke(
-        "vdp.pipeline.v1alpha.PipelinePublicService/ConnectUserConnector",
+        "vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector",
         {
           name: `${constant.namespace}/connectors/${constant.dstCSVConnID2}`,
         },
@@ -131,7 +131,7 @@ export default function (metadata) {
       });
       check(
         client.invoke(
-          "vdp.pipeline.v1alpha.PipelinePublicService/Liveness",
+          "vdp.pipeline.v1beta.PipelinePublicService/Liveness",
           {}
         ),
         {
@@ -173,7 +173,7 @@ export function teardown(metadata) {
     });
 
     for (const pipeline of client.invoke(
-      "vdp.pipeline.v1alpha.PipelinePublicService/ListUserPipelines",
+      "vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines",
       {
         parent: `${constant.namespace}`,
         pageSize: 1000,
@@ -182,14 +182,14 @@ export function teardown(metadata) {
     ).message.pipelines) {
       check(
         client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`,
+          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
           {
             name: `${constant.namespace}/pipelines/${pipeline.id}`,
           },
           metadata
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -207,14 +207,14 @@ export function teardown(metadata) {
     function () {
       check(
         client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserConnector`,
+          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`,
           {
             name: `${constant.namespace}/connectors/${constant.dstCSVConnID1}`,
           },
           metadata
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserConnector response StatusOK`]:
+          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );
@@ -225,14 +225,14 @@ export function teardown(metadata) {
     function () {
       check(
         client.invoke(
-          `vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserConnector`,
+          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`,
           {
             name: `${constant.namespace}/connectors/${constant.dstCSVConnID2}`,
           },
           metadata
         ),
         {
-          [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserConnector response StatusOK`]:
+          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package vdp.controller.v1beta;
+
+// Google API
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "../../../vdp/controller/v1beta/controller.proto";
+
+// Controller service responds to incoming controller requests
+service ControllerPrivateService {
+  // Liveness method receives a LivenessRequest message and returns a
+  // LivenessResponse message.
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+  rpc Liveness(LivenessRequest) returns (LivenessResponse) {
+    option (google.api.http) = {
+      get: "/v1beta/__liveness"
+      additional_bindings: [
+        {get: "/v1beta/health/controller"}]
+    };
+  }
+
+  // Readiness method receives a ReadinessRequest message and returns a
+  // ReadinessResponse message.
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+  rpc Readiness(ReadinessRequest) returns (ReadinessResponse) {
+    option (google.api.http) = {get: "/v1beta/__readiness"};
+  }
+
+  // GetResource method receives a GetResourceRequest message
+  // and returns a GetResourceResponse
+  rpc GetResource(GetResourceRequest) returns (GetResourceResponse) {
+    option (google.api.http) = {get: "/v1beta/{resource_permalink=resources/*/types/*}"};
+    option (google.api.method_signature) = "resource_permalink";
+  }
+
+  // UpdateResource method receives a UpdateResourceRequest message
+  // and returns a UpdateResourceResponse
+  rpc UpdateResource(UpdateResourceRequest) returns (UpdateResourceResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{resource.resource_permalink=resources/*/types/*}"
+      body: "resource"
+    };
+  }
+
+  // DeleteResource method receives a DeleteResourceRequest message
+  // and returns a DeleteResourceResponse
+  rpc DeleteResource(DeleteResourceRequest) returns (DeleteResourceResponse) {
+    option (google.api.http) = {delete: "/v1beta/{resource_permalink=resources/*/types/*}"};
+    option (google.api.method_signature) = "resource_permalink";
+  }
+}

@@ -22,8 +22,8 @@ import (
 	componentBase "github.com/instill-ai/component/pkg/base"
 	connector "github.com/instill-ai/connector/pkg"
 	connectorAirbyte "github.com/instill-ai/connector/pkg/airbyte"
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func GenOwnerPermalink(owner *mgmtPB.User) string {

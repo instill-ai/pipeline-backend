@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
-	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1beta"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func (s *service) GetPipelineState(pipelineUID uuid.UUID) (*pipelinePB.State, error) {

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package vdp.pipeline.v1alpha;
+package vdp.pipeline.v1beta;
 
-import "../../../common/healthcheck/v1alpha/healthcheck.proto";
+import "../../../common/healthcheck/v1beta/healthcheck.proto";
 import "google/api/field_behavior.proto";
 // Google API
 import "google/api/resource.proto";
@@ -12,33 +12,33 @@ import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
-import "../../../vdp/pipeline/v1alpha/common.proto";
-import "../../../vdp/pipeline/v1alpha/connector.proto";
-import "../../../vdp/pipeline/v1alpha/connector_definition.proto";
-import "../../../vdp/pipeline/v1alpha/operator_definition.proto";
+import "../../../vdp/pipeline/v1beta/common.proto";
+import "../../../vdp/pipeline/v1beta/connector.proto";
+import "../../../vdp/pipeline/v1beta/connector_definition.proto";
+import "../../../vdp/pipeline/v1beta/operator_definition.proto";
 
 // LivenessRequest represents a request to check a service liveness status
 message LivenessRequest {
   // HealthCheckRequest message
-  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
+  optional common.healthcheck.v1beta.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LivenessResponse represents a response for a service liveness status
 message LivenessResponse {
   // HealthCheckResponse message
-  common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
+  common.healthcheck.v1beta.HealthCheckResponse health_check_response = 1;
 }
 
 // ReadinessRequest represents a request to check a service readiness status
 message ReadinessRequest {
   // HealthCheckRequest message
-  optional common.healthcheck.v1alpha.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
+  optional common.healthcheck.v1beta.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ReadinessResponse represents a response for a service readiness status
 message ReadinessResponse {
   // HealthCheckResponse message
-  common.healthcheck.v1alpha.HealthCheckResponse health_check_response = 1;
+  common.healthcheck.v1beta.HealthCheckResponse health_check_response = 1;
 }
 
 // ComponentType
@@ -103,6 +103,18 @@ enum State {
 
 // Pipeline represents the content of a pipeline
 message Pipeline {
+  // Pipeline View
+  enum View {
+    // View: UNSPECIFIED
+    VIEW_UNSPECIFIED = 0;
+    // View: BASIC
+    VIEW_BASIC = 1;
+    // View: FULL
+    VIEW_FULL = 2;
+    // View: RECIPE: will return recipe
+    VIEW_RECIPE = 3;
+  }
+
   option (google.api.resource) = {
     type: "api.instill.tech/Pipeline"
     pattern: "users/{user}/pipelines/{pipeline}"
@@ -131,7 +143,7 @@ message Pipeline {
       (google.api.field_behavior) = OUTPUT_ONLY
     ];
     // The resource name with UUID of an organization
-    string org = 9 [
+    string organization = 9 [
       (google.api.resource_reference).type = "api.instill.tech/Organization",
       (google.api.field_behavior) = OUTPUT_ONLY
     ];
@@ -204,18 +216,6 @@ message PipelineRelease {
 
 // ListPipelinesRequest represents a request to list pipelines
 message ListPipelinesRequest {
-  // Pipeline View
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: RECIPE: will return recipe
-    VIEW_RECIPE = 3;
-  }
-
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
@@ -223,7 +223,7 @@ message ListPipelinesRequest {
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional Pipeline.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipelines
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
   // Return soft_deleted pipelines
@@ -238,6 +238,21 @@ message ListPipelinesResponse {
   string next_page_token = 2;
   // Total count of pipeline resources
   int32 total_size = 3;
+}
+
+// LookUpPipelineRequest represents a request to query a pipeline via permalink
+message LookUpPipelineRequest {
+  // Permalink of a pipeline. For example:
+  // "pipelines/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+  // View view (default is VIEW_BASIC)
+  optional Pipeline.View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LookUpPipelineResponse represents a response for a pipeline resource
+message LookUpPipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
 }
 
 // CreateUserPipelineRequest represents a request to create a pipeline
@@ -260,17 +275,6 @@ message CreateUserPipelineResponse {
 
 // ListUserPipelinesRequest represents a request to list pipelines
 message ListUserPipelinesRequest {
-  // Pipeline View
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: RECIPE: will return recipe
-    VIEW_RECIPE = 3;
-  }
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
@@ -278,7 +282,7 @@ message ListUserPipelinesRequest {
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional Pipeline.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipelines
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
   // The parent resource where this connector resource will be created.
@@ -301,47 +305,8 @@ message ListUserPipelinesResponse {
   int32 total_size = 3;
 }
 
-// LookUpPipelineRequest represents a request to query a pipeline via permalink
-message LookUpPipelineRequest {
-  // Pipeline View
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: RECIPE: will return recipe
-    VIEW_RECIPE = 3;
-  }
-
-  // Permalink of a pipeline. For example:
-  // "pipelines/{uid}"
-  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
-  // View view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// LookUpPipelineResponse represents a response for a pipeline resource
-message LookUpPipelineResponse {
-  // A pipeline resource
-  Pipeline pipeline = 1;
-}
-
 // GetUserPipelineRequest represents a request to query a pipeline
 message GetUserPipelineRequest {
-  // Pipeline View
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: RECIPE: will return recipe
-    VIEW_RECIPE = 3;
-  }
-
   // Pipeline resource name. It must have the format of "users/*/pipelines/*"
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
@@ -351,7 +316,7 @@ message GetUserPipelineRequest {
     }
   ];
   // Pipeline resource view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+  optional Pipeline.View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // GetUserPipelineResponse represents a response for a pipeline resource
@@ -461,20 +426,6 @@ message TriggerAsyncUserPipelineResponse {
   google.longrunning.Operation operation = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// GetOperationRequest represents a request to query a longrunning
-// operation
-message GetOperationRequest {
-  // The name of the operation resource.
-  string name = 1 [(google.api.field_behavior) = REQUIRED];
-}
-
-// GetOperationResponse represents a response for a longrunning
-// operation
-message GetOperationResponse {
-  // The retrieved longrunning operation
-  google.longrunning.Operation operation = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-}
-
 // CreateUserPipelineReleaseRequest represents a request to create a pipeline_release
 message CreateUserPipelineReleaseRequest {
   // A pipeline_release resource to create
@@ -495,18 +446,6 @@ message CreateUserPipelineReleaseResponse {
 
 // ListUserPipelineReleasesRequest represents a request to list pipeline_releases
 message ListUserPipelineReleasesRequest {
-  // Pipeline View
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: RECIPE: will return recipe
-    VIEW_RECIPE = 3;
-  }
-
   // The maximum number of pipeline_releases to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipeline_release will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
@@ -514,7 +453,7 @@ message ListUserPipelineReleasesRequest {
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional Pipeline.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipeline_releases
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
   // The parent resource where this pipeline_release will be created.
@@ -540,16 +479,6 @@ message ListUserPipelineReleasesResponse {
 // GetUserPipelineReleaseRequest represents a request to query a pipeline_release
 message GetUserPipelineReleaseRequest {
   // Pipeline View
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: RECIPE: will return recipe
-    VIEW_RECIPE = 3;
-  }
 
   // PipelineRelease resource name. It must have the format of "users/*/pipelines/*/releases/*"
   string name = 1 [
@@ -560,7 +489,7 @@ message GetUserPipelineReleaseRequest {
     }
   ];
   // PipelineRelease resource view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+  optional Pipeline.View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // GetUserPipelineReleaseResponse represents a response for a pipeline_release resource
@@ -597,21 +526,6 @@ message DeleteUserPipelineReleaseRequest {
 
 // DeleteUserPipelineReleaseResponse represents an empty response
 message DeleteUserPipelineReleaseResponse {}
-
-// SetDefaultUserPipelineReleaseRequest
-message SetDefaultUserPipelineReleaseRequest {
-  // Pipeline resource name. It must have the format of "users/*/pipelines/*/releases/*"
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
-  ];
-}
-
-// SetDefaultUserPipelineReleaseResponse
-message SetDefaultUserPipelineReleaseResponse {
-  // A pipeline resource
-  PipelineRelease release = 1;
-}
 
 // RestoreUserPipelineReleaseRequest
 message RestoreUserPipelineReleaseRequest {
@@ -705,23 +619,26 @@ message TriggerAsyncUserPipelineReleaseResponse {
   google.longrunning.Operation operation = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// ========== Private endpoints
+// CreateOrganizationPipelineRequest represents a request to create a pipeline
+message CreateOrganizationPipelineRequest {
+  // A pipeline resource to create
+  Pipeline pipeline = 1 [(google.api.field_behavior) = REQUIRED];
+  // The parent resource where this connector resource will be created.
+  // Format: organizations/{organizations}
+  string parent = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Pipeline"}
+  ];
+}
 
-// ListPipelinesAdminRequest represents a request to list all pipelines from all
-// users by admin
-message ListPipelinesAdminRequest {
-  // Pipeline View
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: RECIPE: will return recipe
-    VIEW_RECIPE = 3;
-  }
+// CreateOrganizationPipelineResponse represents a response for a pipeline resource
+message CreateOrganizationPipelineResponse {
+  // The created pipeline resource
+  Pipeline pipeline = 1;
+}
 
+// ListOrganizationPipelinesRequest represents a request to list pipelines
+message ListOrganizationPipelinesRequest {
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
@@ -729,7 +646,383 @@ message ListPipelinesAdminRequest {
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional Pipeline.View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter expression to list pipelines
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // The parent resource where this connector resource will be created.
+  // Format: organizations/{organizations}
+  string parent = 5 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Pipeline"}
+  ];
+  // Return soft_deleted pipeline releases
+  optional bool show_deleted = 6 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListOrganizationPipelinesResponse represents a response for a list of pipelines
+message ListOrganizationPipelinesResponse {
+  // A list of pipeline resources
+  repeated Pipeline pipelines = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of pipeline resources
+  int32 total_size = 3;
+}
+
+// GetOrganizationPipelineRequest represents a request to query a pipeline
+message GetOrganizationPipelineRequest {
+  // Pipeline resource name. It must have the format of "organizations/*/pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "pipeline.name"}
+    }
+  ];
+  // Pipeline resource view (default is VIEW_BASIC)
+  optional Pipeline.View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetOrganizationPipelineResponse represents a response for a pipeline resource
+message GetOrganizationPipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// UpdateOrganizationPipelineRequest represents a request to update a pipeline
+message UpdateOrganizationPipelineRequest {
+  // A pipeline resource to update
+  Pipeline pipeline = 1 [(google.api.field_behavior) = REQUIRED];
+  // Update mask for a pipeline resource
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// UpdateOrganizationPipelineResponse represents a response for a pipeline resource
+message UpdateOrganizationPipelineResponse {
+  // An updated pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// DeleteOrganizationPipelineRequest represents a request to delete a pipeline resource
+message DeleteOrganizationPipelineRequest {
+  // Pipeline resource name. It must have the format of "organizations/*/pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "pipeline.name"}
+    }
+  ];
+}
+
+// DeleteOrganizationPipelineResponse represents an empty response
+message DeleteOrganizationPipelineResponse {}
+
+// ValidatePOrganizationipelineRequest represents a request to validate a pipeline
+message ValidateOrganizationPipelineRequest {
+  // Pipeline resource name. It must have the format of "organizations/*/pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
+  ];
+}
+
+// ValidateOrganizationPipelineResponse represents an response of validated pipeline
+message ValidateOrganizationPipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// RenameOrganizationPipelineRequest represents a request to rename the pipeline resource
+// name
+message RenameOrganizationPipelineRequest {
+  // Pipeline resource name. It must have the format of "organizations/*/pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
+  ];
+  // Pipeline new resource id to replace with the pipeline resource name to be
+  // "organizations/*/pipelines/{new_pipeline_id}"
+  string new_pipeline_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// RenameOrganizationPipelineResponse represents a renamed pipeline resource
+message RenameOrganizationPipelineResponse {
+  // A pipeline resource
+  Pipeline pipeline = 1;
+}
+
+// TriggerOrganizationPipelineRequest represents a request to trigger a pipeline
+message TriggerOrganizationPipelineRequest {
+  // Pipeline resource name. It must have the format of "organizations/*/pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
+  ];
+  // Input to the pipeline
+  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// TriggerOrganizationPipelineResponse represents a response for the output
+// of a pipeline, i.e., the multiple model inference outputs
+message TriggerOrganizationPipelineResponse {
+  // The multiple model inference outputs
+  repeated google.protobuf.Struct outputs = 1;
+  // The traces of the pipeline inference, {component_id: Trace}
+  TriggerMetadata metadata = 2;
+}
+
+// TriggerAsyncOrganizationPipelineRequest represents a request to trigger a async pipeline
+message TriggerAsyncOrganizationPipelineRequest {
+  // Pipeline resource name. It must have the format of "organizations/*/pipelines/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
+  ];
+  // Input to the pipeline
+  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// TriggerAsyncOrganizationPipelineResponse represents a response for the longrunning
+// operation of a pipeline
+message TriggerAsyncOrganizationPipelineResponse {
+  // Trigger async pipeline operation message
+  google.longrunning.Operation operation = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// CreateOrganizationPipelineReleaseRequest represents a request to create a pipeline_release
+message CreateOrganizationPipelineReleaseRequest {
+  // A pipeline_release resource to create
+  PipelineRelease release = 1 [(google.api.field_behavior) = REQUIRED];
+  // The parent resource where this pipeline_release will be created.
+  // Format: organizations/{organization}/pipelines/{pipeline}
+  string parent = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/PipelineRelease"}
+  ];
+}
+
+// CreateOrganizationPipelineReleaseResponse represents a response for a pipeline_release resource
+message CreateOrganizationPipelineReleaseResponse {
+  // The created pipeline_release resource
+  PipelineRelease release = 1;
+}
+
+// ListOrganizationPipelineReleasesRequest represents a request to list pipeline_releases
+message ListOrganizationPipelineReleasesRequest {
+  // The maximum number of pipeline_releases to return. The service may return fewer
+  // than this value. If unspecified, at most 10 pipeline_release will be returned. The
+  // maximum value is 100; values above 100 will be coerced to 100.
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // View view (default is VIEW_BASIC)
+  optional Pipeline.View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter expression to list pipeline_releases
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // The parent resource where this pipeline_release will be created.
+  // Format: organizations/{organization}/pipelines/{pipeline}
+  string parent = 5 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/PipelineRelease"}
+  ];
+  // Return soft_deleted pipelines
+  optional bool show_deleted = 6 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListOrganizationPipelineReleasesResponse represents a response for a list of pipeline_releases
+message ListOrganizationPipelineReleasesResponse {
+  // A list of pipeline_release resources
+  repeated PipelineRelease releases = 1;
+  // Next page token
+  string next_page_token = 2;
+  // Total count of pipeline_release resources
+  int32 total_size = 3;
+}
+
+// GetOrganizationPipelineReleaseRequest represents a request to query a pipeline_release
+message GetOrganizationPipelineReleaseRequest {
+  // PipelineRelease resource name. It must have the format of "organizations/*/pipelines/*/releases/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "pipeline_release.name"}
+    }
+  ];
+  // PipelineRelease resource view (default is VIEW_BASIC)
+  optional Pipeline.View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetOrganizationPipelineReleaseResponse represents a response for a pipeline_release resource
+message GetOrganizationPipelineReleaseResponse {
+  // A pipeline_release resource
+  PipelineRelease release = 1;
+}
+
+// UpdateOrganizationPipelineReleaseRequest represents a request to update a pipeline release
+message UpdateOrganizationPipelineReleaseRequest {
+  // A pipeline release resource to update
+  PipelineRelease release = 1 [(google.api.field_behavior) = REQUIRED];
+  // Update mask for a pipeline resource
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// UpdateOrganizationPipelineReleaseResponse represents a response for a pipeline resource
+message UpdateOrganizationPipelineReleaseResponse {
+  // An updated pipeline resource
+  PipelineRelease release = 1;
+}
+
+// DeleteOrganizationPipelineReleaseRequest represents a request to delete a pipeline_release resource
+message DeleteOrganizationPipelineReleaseRequest {
+  // PipelineRelease resource name. It must have the format of "organizations/*/pipelines/*/releases/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "pipeline_release.name"}
+    }
+  ];
+}
+
+// DeleteOrganizationPipelineReleaseResponse represents an empty response
+message DeleteOrganizationPipelineReleaseResponse {}
+
+// SetDefaultOrganizationPipelineReleaseRequest
+message SetDefaultOrganizationPipelineReleaseRequest {
+  // Pipeline resource name. It must have the format of "organizations/*/pipelines/*/releases/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
+  ];
+}
+
+// SetDefaultOrganizationPipelineReleaseResponse
+message SetDefaultOrganizationPipelineReleaseResponse {
+  // A pipeline resource
+  PipelineRelease release = 1;
+}
+
+// RestoreOrganizationPipelineReleaseRequest
+message RestoreOrganizationPipelineReleaseRequest {
+  // Pipeline resource name. It must have the format of "organizations/*/pipelines/*/releases/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"}
+  ];
+}
+
+// RestoreOrganizationPipelineReleaseResponse
+message RestoreOrganizationPipelineReleaseResponse {
+  // A pipeline resource
+  PipelineRelease release = 1;
+}
+
+// RenameOrganizationPipelineReleaseRequest represents a request to rename the pipeline release resource
+// name
+message RenameOrganizationPipelineReleaseRequest {
+  // Pipeline release resource name. It must have the format of "organizations/*/pipelines/*/releases/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"}
+  ];
+  // Pipeline new resource id to replace with the pipeline resource name to be
+  // "organizations/*/pipelines/*/releases/{new_pipeline_id}"
+  string new_pipeline_release_id = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// RenameOrganizationPipelineReleaseResponse represents a renamed pipeline release resource
+message RenameOrganizationPipelineReleaseResponse {
+  // A pipeline resource
+  PipelineRelease release = 1;
+}
+
+// WatchOrganizationPipelineReleaseRequest represents a public request to query
+// a pipeline's current state
+message WatchOrganizationPipelineReleaseRequest {
+  // Pipeline resource name. It must have the format of "organizations/*/pipelines/*/releases/*"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "pipeline.name/watch"}
+    }
+  ];
+}
+
+// WatchOrganizationPipelineReleaseResponse represents a response to fetch a pipeline's
+// current state
+message WatchOrganizationPipelineReleaseResponse {
+  // Retrieved pipeline state
+  State state = 1;
+}
+
+// TriggerOrganizationPipelineReleaseRequest represents a request to trigger a pipeline_released pipeline
+message TriggerOrganizationPipelineReleaseRequest {
+  // Resource name.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"}
+  ];
+  // Input to the pipeline
+  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// TriggerOrganizationPipelineReleaseResponse represents a response for the output
+// of a pipeline, i.e., the multiple model inference outputs
+message TriggerOrganizationPipelineReleaseResponse {
+  // The multiple model inference outputs
+  repeated google.protobuf.Struct outputs = 1;
+  // The traces of the pipeline inference, {component_id: Trace}
+  TriggerMetadata metadata = 2;
+}
+
+// TriggerAsyncOrganizationPipelineReleaseRequest represents a request to trigger a pipeline_released pipeline
+message TriggerAsyncOrganizationPipelineReleaseRequest {
+  // Resource name.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/PipelineRelease"}
+  ];
+  // Input to the pipeline
+  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// TriggerAsyncOrganizationPipelineReleaseResponse represents a response for the longrunning
+// operation of a pipeline
+message TriggerAsyncOrganizationPipelineReleaseResponse {
+  // Trigger async pipeline operation message
+  google.longrunning.Operation operation = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// GetOperationRequest represents a request to query a longrunning
+// operation
+message GetOperationRequest {
+  // The name of the operation resource.
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// GetOperationResponse represents a response for a longrunning
+// operation
+message GetOperationResponse {
+  // The retrieved longrunning operation
+  google.longrunning.Operation operation = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ========== Private endpoints
+
+// ListPipelinesAdminRequest represents a request to list all pipelines from all
+// users by admin
+message ListPipelinesAdminRequest {
+  // The maximum number of pipelines to return. The service may return fewer
+  // than this value. If unspecified, at most 10 pipelines will be returned. The
+  // maximum value is 100; values above 100 will be coerced to 100.
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // View view (default is VIEW_BASIC)
+  optional Pipeline.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipelines
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
   // Return soft_deleted pipelines
@@ -751,18 +1044,6 @@ message ListPipelinesAdminResponse {
 // ListPipelinesReleaseAdminRequest represents a request to list all pipeline_releases from all
 // users by admin
 message ListPipelineReleasesAdminRequest {
-  // Pipeline View
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: RECIPE: will return recipe
-    VIEW_RECIPE = 3;
-  }
-
   // The maximum number of pipelines to return. The service may return fewer
   // than this value. If unspecified, at most 10 pipelines will be returned. The
   // maximum value is 100; values above 100 will be coerced to 100.
@@ -770,7 +1051,7 @@ message ListPipelineReleasesAdminRequest {
   // Page token
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
   // View view (default is VIEW_BASIC)
-  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  optional Pipeline.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter expression to list pipelines
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
   // Return soft_deleted pipelines
@@ -792,23 +1073,11 @@ message ListPipelineReleasesAdminResponse {
 // LookUpPipelineAdminRequest represents a request to query a user's pipeline
 // via permalink by admin
 message LookUpPipelineAdminRequest {
-  // Pipeline View
-  enum View {
-    // View: UNSPECIFIED
-    VIEW_UNSPECIFIED = 0;
-    // View: BASIC
-    VIEW_BASIC = 1;
-    // View: FULL
-    VIEW_FULL = 2;
-    // View: RECIPE: will return recipe
-    VIEW_RECIPE = 3;
-  }
-
   // Permalink of a pipeline. For example:
   // "pipelines/{uid}"
   string permalink = 1 [(google.api.field_behavior) = REQUIRED];
   // View view (default is VIEW_BASIC)
-  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+  optional Pipeline.View view = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // LookUpPipelineAdminResponse represents a response for a pipeline resource

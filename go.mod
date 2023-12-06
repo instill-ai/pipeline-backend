@@ -15,11 +15,11 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.7.0-alpha.0.20231123142642-cdd8e3280413
-	github.com/instill-ai/connector v0.7.0-alpha.0.20231204170746-98d2b2392853
-	github.com/instill-ai/operator v0.5.0-alpha.0.20231129072812-3235831ef5e3
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231204163044-92ce7cc80023
-	github.com/instill-ai/usage-client v0.2.4-alpha.0.20231019203021-70410a0a8061
+	github.com/instill-ai/component v0.7.1-alpha.0.20231206035822-12eee341c80e
+	github.com/instill-ai/connector v0.7.0-alpha.0.20231206040111-5a57a09f2adc
+	github.com/instill-ai/operator v0.5.0-alpha.0.20231206040107-22ee0cae199a
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231205045546-99b6fc00f67e
+	github.com/instill-ai/usage-client v0.2.4-alpha.0.20231206035716-4c05f872df97
 	github.com/instill-ai/x v0.3.0-alpha.0.20231124062833-3236165f5782
 	github.com/knadh/koanf v1.5.0
 	github.com/mennanov/fieldmask-utils v1.0.0

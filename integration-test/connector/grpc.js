@@ -12,7 +12,7 @@ import * as dataConnectorPublicWithJwt from './grpc-data-connector-public-with-j
 import * as dataConnectorPrivate from './grpc-data-connector-private.js';
 
 const client = new grpc.Client();
-client.load(['../proto/vdp/pipeline/v1alpha'], 'pipeline_public_service.proto');
+client.load(['../proto/vdp/pipeline/v1beta'], 'pipeline_public_service.proto');
 
 export let options = {
   setupTimeout: '10s',
@@ -27,13 +27,13 @@ export function setup() {
     plaintext: true
   });
 
-  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1alpha/auth/login`, JSON.stringify({
+  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1beta/auth/login`, JSON.stringify({
     "username": constant.defaultUsername,
     "password": constant.defaultPassword,
   }))
 
   check(loginResp, {
-    [`POST ${constant.mgmtPublicHost}/v1alpha/auth/login response status is 200`]: (
+    [`POST ${constant.mgmtPublicHost}/v1beta/auth/login response status is 200`]: (
       r
     ) => r.status === 200,
   });
@@ -47,11 +47,11 @@ export function setup() {
 
 
   group("Connector API: Pre delete all connector", () => {
-    for (const connector of client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListUserConnectors', {}, {}).message.connectors) {
-      check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserConnector`, {
+    for (const connector of client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors', {}, {}).message.connectors) {
+      check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
         name: `${constant.namespace}/connectors/${connector.id}`
       }, metadata), {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserConnector ${connector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
+        [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${connector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
       });
     }
   });
@@ -71,7 +71,7 @@ export default function (metadata) {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true
     });
-    const response = client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/Liveness', {});
+    const response = client.invoke('vdp.pipeline.v1beta.PipelinePublicService/Liveness', {});
     check(response, {
       'Status is OK': (r) => r && r.status === grpc.StatusOK,
       'Response status is SERVING_STATUS_SERVING': (r) => r && r.message.healthCheckResponse.status === "SERVING_STATUS_SERVING",
@@ -124,13 +124,13 @@ export function teardown(metadata) {
       plaintext: true
     });
 
-    for (const pipeline of client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListPipelines', {
+    for (const pipeline of client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ListPipelines', {
       pageSize: 1000
     }, metadata).message.pipelines) {
-      check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline`, {
+      check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`, {
         name: `${constant.namespace}/pipelines/${pipeline.id}`
       }, metadata), {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserPipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
+        [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
       });
     }
 
@@ -141,11 +141,11 @@ export function teardown(metadata) {
     plaintext: true
   });
   group("Connector API: Delete all connector created by this test", () => {
-    for (const connector of client.invoke('vdp.pipeline.v1alpha.PipelinePublicService/ListUserConnectors', {}, metadata).message.connectors) {
-      check(client.invoke(`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserConnector`, {
+    for (const connector of client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors', {}, metadata).message.connectors) {
+      check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
         name: `${constant.namespace}/connectors/${connector.id}`
       }, metadata), {
-        [`vdp.pipeline.v1alpha.PipelinePublicService/DeleteUserConnector ${connector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
+        [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${connector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
       });
     }
   });

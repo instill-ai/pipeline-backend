@@ -9,8 +9,8 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
-	healthcheckPB "github.com/instill-ai/protogen-go/common/healthcheck/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1alpha"
+	healthcheckPB "github.com/instill-ai/protogen-go/common/healthcheck/v1beta"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // TODO: in the public_handler, we should convert all id to uuid when calling service

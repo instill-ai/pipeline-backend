@@ -19,13 +19,13 @@ export let options = {
 
 export function setup() {
 
-  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1alpha/auth/login`, JSON.stringify({
+  var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1beta/auth/login`, JSON.stringify({
     "username": constant.defaultUsername,
     "password": constant.defaultPassword,
   }))
 
   check(loginResp, {
-    [`POST ${constant.mgmtPublicHost}/v1alpha//auth/login response status is 200`]: (
+    [`POST ${constant.mgmtPublicHost}/v1beta//auth/login response status is 200`]: (
       r
     ) => r.status === 200,
   });
@@ -39,9 +39,9 @@ export function setup() {
 
 
   group("Connector API: Pre delete all connector", () => {
-    for (const connector of http.request("GET", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors`, null, header).json("connectors")) {
-      check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/${constant.namespace}/connectors/${connector.id}`, null, header), {
-        [`DELETE /v1alpha/${constant.namespace}/connectors/${connector.id} response status is 204`]: (r) => r.status === 204,
+    for (const connector of http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`, null, header).json("connectors")) {
+      check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${connector.id}`, null, header), {
+        [`DELETE /v1beta/${constant.namespace}/connectors/${connector.id} response status is 204`]: (r) => r.status === 204,
       });
     }
   });
@@ -57,7 +57,7 @@ export default function (header) {
 
   // Health check
   group("Connector API: Health check", () => {
-    check(http.request("GET", `${pipelinePublicHost}/v1alpha/health/pipeline`), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/health/pipeline`), {
       "GET /health/pipeline response status is 200": (r) => r.status === 200,
     });
   });
@@ -107,9 +107,9 @@ export default function (header) {
 
 export function teardown(header) {
   group("Connector API: Delete all pipelines created by this test", () => {
-    for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1alpha/pipelines?page_size=100`, null, header).json("pipelines")) {
-      check(http.request("DELETE", `${pipelinePublicHost}/v1alpha/pipelines/${pipeline.id}`), {
-        [`DELETE /v1alpha/pipelines response status is 204`]: (r) => r.status === 204,
+    for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1beta/pipelines?page_size=100`, null, header).json("pipelines")) {
+      check(http.request("DELETE", `${pipelinePublicHost}/v1beta/pipelines/${pipeline.id}`), {
+        [`DELETE /v1beta/pipelines response status is 204`]: (r) => r.status === 204,
       });
     }
   });
