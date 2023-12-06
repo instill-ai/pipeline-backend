@@ -995,8 +995,7 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 
 	// Return error if resource ID does not a semantic version
 	if !semver.IsValid(req.GetRelease().GetId()) {
-		err := fmt.Errorf("not a sematic version")
-		span.SetStatus(1, err.Error())
+		span.SetStatus(1, ErrSematicVersion.Error())
 		return nil, ErrSematicVersion
 	}
 
