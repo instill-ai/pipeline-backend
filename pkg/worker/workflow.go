@@ -231,14 +231,12 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 
 	}
 
-	status[orderedComp[0].Id] = &utils.ComponentStatus{}
 	status[orderedComp[0].Id].Started = true
 	status[orderedComp[0].Id].Completed = true
 
 	responseCompId := ""
 
 	for _, comp := range orderedComp[1:] {
-		status[comp.Id] = &utils.ComponentStatus{}
 		status[comp.Id].Started = true
 		var compInputs []*structpb.Struct
 		for idx := 0; idx < batchSize; idx++ {
