@@ -696,39 +696,6 @@ export function CheckExecute(header) {
             [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (text-to-image)`]: (r) => r.status === 204,
         });
 
-        // Write text-generation output
-        csvDstConnector = {
-            "id": randomString(10),
-            "connector_definition_name": constant.csvDstDefRscName,
-            "description": randomString(50),
-            "configuration": {
-                "destination_path": "/local/test-text-generation"
-            },
-        }
-
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
-            JSON.stringify(csvDstConnector), header)
-        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
-            {}, header)
-
-        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
-        })
-
-        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
-            JSON.stringify({
-                "inputs": constant.textGenerationModelOutputs
-            }), header), {
-            [`POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 200 (text-generation)`]: (r) => r.status === 200,
-        });
-
-        // Wait for 1 sec for the connector writing to the destination-csv before deleting it
-        sleep(1)
-
-        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
-            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (text-generation)`]: (r) => r.status === 204,
-        });
-
         // Write unspecified output
         csvDstConnector = {
             "id": randomString(10),

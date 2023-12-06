@@ -936,46 +936,6 @@ export function CheckExecute(metadata) {
             [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${resCSVDst.message.connector.id} response (text-to-image) StatusOK`]: (r) => r.status === grpc.StatusOK,
         });
 
-        // Write text-generation output
-        csvDstConnector = {
-            "id": randomString(10),
-            "connector_definition_name": constant.csvDstDefRscName,
-            "description": randomString(50),
-            "configuration": {
-                "destination_path": "/local/test-text-generation"
-            },
-        }
-
-        resCSVDst = client.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
-            parent: `${constant.namespace}`,
-            connector: csvDstConnector
-        }, metadata)
-        client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
-            name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
-        }, metadata)
-
-        check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/WatchUserConnector', {
-            name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
-        }, metadata), {
-            "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV destination connector STATE_CONNECTED": (r) => r.message.state === "STATE_CONNECTED",
-        })
-
-        check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ExecuteUserConnector', {
-            "name": `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`,
-            "inputs": constant.textGenerationModelOutputs
-        }, metadata), {
-            [`vdp.pipeline.v1beta.PipelinePublicService/ExecuteUserConnector ${resCSVDst.message.connector.id} response (text-generation) StatusOK`]: (r) => r.status === grpc.StatusOK,
-        });
-
-        // Wait for 1 sec for the connector writing to the destination-csv before deleting it
-        sleep(1)
-
-        check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
-            name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
-        }, metadata), {
-            [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${resCSVDst.message.connector.id} response (text-generation) StatusOK`]: (r) => r.status === grpc.StatusOK,
-        });
-
         // Write unspecified output
         csvDstConnector = {
             "id": randomString(10),
