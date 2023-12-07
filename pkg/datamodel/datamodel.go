@@ -54,6 +54,7 @@ type Pipeline struct {
 	Permission        *Permission `gorm:"type:jsonb"`
 	ShareCode         string
 	Metadata          datatypes.JSON `gorm:"type:jsonb"`
+	Readme            string
 }
 
 // PipelineRelease is the data model of the pipeline release table
@@ -64,6 +65,7 @@ type PipelineRelease struct {
 	Description sql.NullString
 	Recipe      *Recipe        `gorm:"type:jsonb"`
 	Metadata    datatypes.JSON `gorm:"type:jsonb"`
+	Readme      string
 }
 
 // Recipe is the data model of the pipeline recipe

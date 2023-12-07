@@ -344,7 +344,7 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 			String: pbPipeline.GetDescription(),
 			Valid:  true,
 		},
-
+		Readme:     pbPipeline.Readme,
 		Recipe:     recipe,
 		Permission: dbPermission,
 		Metadata: func() []byte {
@@ -466,6 +466,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			}
 		}(),
 		Description: &dbPipeline.Description.String,
+		Readme:      dbPipeline.Readme,
 		Recipe:      pbRecipe,
 		Permission:  pbPermission,
 		OwnerName:   ownerName,
@@ -579,7 +580,7 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUid uuid.UU
 			String: pbPipelineRelease.GetDescription(),
 			Valid:  true,
 		},
-
+		Readme:      pbPipelineRelease.Readme,
 		Recipe:      recipe,
 		PipelineUID: pipelineUid,
 
@@ -683,6 +684,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 			}
 		}(),
 		Description: &dbPipelineRelease.Description.String,
+		Readme:      dbPipelineRelease.Readme,
 		Recipe:      pbRecipe,
 	}
 
