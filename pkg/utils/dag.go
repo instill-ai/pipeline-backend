@@ -3,19 +3,27 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strconv"
 	"strings"
+
+	"go/ast"
+	"go/parser"
+	"go/token"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/oliveagle/jsonpath"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 type ComponentStatus struct {
 	Started   bool
 	Completed bool
-	Skiped    bool
+	Skipped   bool
+	Error     bool
 }
 
 type unionFind struct {
@@ -61,6 +69,7 @@ type dag struct {
 	compsIdx         map[string]int
 	prerequisitesMap map[*datamodel.Component][]*datamodel.Component
 	uf               *unionFind
+	ancestorsMap     map[string][]string
 }
 
 func NewDAG(comps []*datamodel.Component) *dag {
@@ -76,12 +85,22 @@ func NewDAG(comps []*datamodel.Component) *dag {
 		compsIdx:         compsIdx,
 		uf:               uf,
 		prerequisitesMap: prerequisitesMap,
+		ancestorsMap:     map[string][]string{},
 	}
 }
 
 func (d *dag) AddEdge(from *datamodel.Component, to *datamodel.Component) {
 	d.prerequisitesMap[from] = append(d.prerequisitesMap[from], to)
 	d.uf.Union(d.compsIdx[from.Id], d.compsIdx[to.Id])
+	if d.ancestorsMap[to.Id] == nil {
+		d.ancestorsMap[to.Id] = []string{}
+	}
+	d.ancestorsMap[to.Id] = append(d.ancestorsMap[to.Id], from.Id)
+	d.ancestorsMap[to.Id] = append(d.ancestorsMap[to.Id], d.ancestorsMap[from.Id]...)
+}
+
+func (d *dag) GetAncestorIDs(id string) []string {
+	return d.ancestorsMap[id]
 }
 
 func (d *dag) TopologicalSort() ([]*datamodel.Component, error) {
@@ -208,6 +227,243 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 	}
 }
 
+func FindConditionUpstream(expr ast.Expr, upstreams *[]string) {
+	switch e := (expr).(type) {
+	case *ast.BinaryExpr:
+		FindConditionUpstream(e.X, upstreams)
+		FindConditionUpstream(e.Y, upstreams)
+	case *ast.ParenExpr:
+		FindConditionUpstream(e.X, upstreams)
+	case *ast.SelectorExpr:
+		FindConditionUpstream(e.X, upstreams)
+	case *ast.IndexExpr:
+		FindConditionUpstream(e.X, upstreams)
+	case *ast.Ident:
+		if e.Name == "true" {
+			return
+		}
+		if e.Name == "false" {
+			return
+		}
+		*upstreams = append(*upstreams, e.Name)
+	}
+}
+
+func EvalCondition(expr ast.Expr, value map[string]interface{}) (interface{}, error) {
+	switch e := (expr).(type) {
+	case *ast.UnaryExpr:
+		xRes, err := EvalCondition(e.X, value)
+		if err != nil {
+			return nil, err
+		}
+
+		switch e.Op {
+		case token.NOT: // !
+			switch xVal := xRes.(type) {
+			case bool:
+				return !xVal, nil
+			}
+		case token.SUB: // -
+			switch xVal := xRes.(type) {
+			case int64:
+				return -xVal, nil
+			case float64:
+				return -xVal, nil
+			}
+		}
+	case *ast.BinaryExpr:
+
+		xRes, err := EvalCondition(e.X, value)
+		if err != nil {
+			return nil, err
+		}
+		yRes, err := EvalCondition(e.Y, value)
+		if err != nil {
+			return nil, err
+		}
+
+		switch e.Op {
+		case token.LAND: // &&
+
+			xBool := false
+			yBool := false
+			switch xVal := xRes.(type) {
+			case int64, float64:
+				xBool = (xVal != 0)
+			case string:
+				xBool = (xVal != "")
+			case bool:
+				xBool = xVal
+			}
+			switch yVal := yRes.(type) {
+			case int64, float64:
+				yBool = (yVal != 0)
+			case string:
+				yBool = (yVal != "")
+			case bool:
+				yBool = yVal
+			}
+			return xBool && yBool, nil
+		case token.LOR: // ||
+
+			xBool := false
+			yBool := false
+			switch xVal := xRes.(type) {
+			case int64, float64:
+				xBool = (xVal != 0)
+			case string:
+				xBool = (xVal != "")
+			case bool:
+				xBool = xVal
+			}
+			switch yVal := yRes.(type) {
+			case int64, float64:
+				yBool = (yVal != 0)
+			case string:
+				yBool = (yVal != "")
+			case bool:
+				yBool = yVal
+			}
+			return xBool || yBool, nil
+
+		case token.EQL: // ==
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal == yVal, nil
+				case float64:
+					return float64(xVal) == yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal == float64(yVal), nil
+				case float64:
+					return xVal == yVal, nil
+				}
+			}
+			return reflect.DeepEqual(xRes, yRes), nil
+		case token.NEQ: // !=
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal != yVal, nil
+				case float64:
+					return float64(xVal) != yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal != float64(yVal), nil
+				case float64:
+					return xVal != yVal, nil
+				}
+			}
+			return !reflect.DeepEqual(xRes, yRes), nil
+
+		case token.LSS: // <
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal < yVal, nil
+				case float64:
+					return float64(xVal) < yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal < float64(yVal), nil
+				case float64:
+					return xVal < yVal, nil
+				}
+			}
+		case token.GTR: // >
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal > yVal, nil
+				case float64:
+					return float64(xVal) > yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal > float64(yVal), nil
+				case float64:
+					return xVal > yVal, nil
+				}
+			}
+
+		case token.LEQ: // <=
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal <= yVal, nil
+				case float64:
+					return float64(xVal) <= yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal <= float64(yVal), nil
+				case float64:
+					return xVal <= yVal, nil
+				}
+			}
+		case token.GEQ: // >=
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal >= yVal, nil
+				case float64:
+					return float64(xVal) >= yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal >= float64(yVal), nil
+				case float64:
+					return xVal >= yVal, nil
+				}
+			}
+
+		}
+
+	case *ast.ParenExpr:
+		return EvalCondition(e.X, value)
+	case *ast.SelectorExpr:
+		return EvalCondition(e.Sel, value[e.X.(*ast.Ident).String()].(map[string]interface{}))
+	case *ast.BasicLit:
+		if e.Kind == token.INT {
+			return strconv.ParseInt(e.Value, 10, 64)
+		}
+		if e.Kind == token.FLOAT {
+			return strconv.ParseFloat(e.Value, 64)
+		}
+		if e.Kind == token.STRING {
+			return e.Value[1 : len(e.Value)-1], nil
+		}
+		return e.Value, nil
+	case *ast.Ident:
+		if e.Name == "true" {
+			return true, nil
+		}
+		if e.Name == "false" {
+			return false, nil
+		}
+
+		return value[e.Name], nil
+
+	}
+	return false, fmt.Errorf("condition error")
+}
+
 func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	componentIdMap := make(map[string]*datamodel.Component)
 
@@ -217,10 +473,29 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	graph := NewDAG(components)
 	for _, component := range components {
 		engine := liquid.NewEngine()
-		template, _ := protojson.Marshal(component.Configuration)
+		configuration := proto.Clone(component.Configuration)
+		template, _ := protojson.Marshal(configuration)
 		out, err := engine.ParseTemplate(template)
 		if err != nil {
 			return nil, err
+		}
+
+		condUpstreams := []string{}
+		if cond := component.Configuration.Fields["condition"].GetStringValue(); cond != "" {
+			expr, err := parser.ParseExpr(cond)
+			if err != nil {
+				return nil, err
+			}
+			FindConditionUpstream(expr, &condUpstreams)
+		}
+
+		for idx := range condUpstreams {
+			if upstream, ok := componentIdMap[condUpstreams[idx]]; ok {
+				graph.AddEdge(upstream, component)
+			} else {
+				return nil, fmt.Errorf("no condition upstream component '%s'", condUpstreams[idx])
+			}
+
 		}
 
 		for _, node := range out.GetRoot().(*render.SeqNode).Children {

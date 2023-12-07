@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"go/parser"
 	"math/rand"
 	"strings"
 	"time"
@@ -896,7 +897,7 @@ func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb
 		if err != nil {
 			return nil, err
 		}
-		resp.TypeUrl = "buf.build/instill-ai/protobufs/vdp.pipeline.v1beta.TriggerNamespacePipelineResponse"
+		resp.TypeUrl = "buf.build/instill-ai/protobufs/vdp.pipeline.v1beta.TriggerUserPipelineResponse"
 		operation = longrunningpb.Operation{
 			Done: true,
 			Result: &longrunningpb.Operation_Response{
@@ -1265,6 +1266,7 @@ func (s *service) SetDefaultNamespacePipelineReleaseByID(ctx context.Context, ns
 	return nil
 }
 
+// TODO: share the code with worker/workflow.go
 func (s *service) triggerPipeline(
 	ctx context.Context,
 	ownerPermalink string,
@@ -1306,9 +1308,15 @@ func (s *service) triggerPipeline(
 	if err != nil {
 		return nil, nil, err
 	}
+	var startCompId string
+	for _, c := range orderedComp {
+		if c.DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
+			startCompId = c.Id
+		}
+	}
 
 	memory := make([]map[string]interface{}, batchSize)
-	status := map[string]*utils.ComponentStatus{}
+	statuses := make([]map[string]*utils.ComponentStatus, batchSize)
 	computeTime := map[string]float32{}
 
 	for idx := range inputs {
@@ -1319,93 +1327,130 @@ func (s *service) triggerPipeline(
 			return nil, nil, err
 		}
 
-		memory[idx][orderedComp[0].Id] = inputStruct
-		computeTime[orderedComp[0].Id] = 0
+		memory[idx][startCompId] = inputStruct
+		computeTime[startCompId] = 0
 
 		memory[idx]["global"], err = utils.GenerateGlobalValue(pipelineUid, recipe, ownerPermalink)
 		if err != nil {
 			return nil, nil, err
 		}
+		statuses[idx] = map[string]*utils.ComponentStatus{}
+		statuses[idx][startCompId] = &utils.ComponentStatus{}
+		statuses[idx][startCompId].Started = true
+		statuses[idx][startCompId].Completed = true
 	}
 
-	status[orderedComp[0].Id] = &utils.ComponentStatus{}
-	status[orderedComp[0].Id].Started = true
-	status[orderedComp[0].Id].Completed = true
-
 	responseCompId := ""
-	for _, comp := range orderedComp[1:] {
-		status[comp.Id] = &utils.ComponentStatus{}
-		status[comp.Id].Started = true
+	for _, comp := range orderedComp {
+		if comp.Id == startCompId {
+			continue
+		}
+
+		for idx := 0; idx < batchSize; idx++ {
+			statuses[idx][comp.Id] = &utils.ComponentStatus{}
+		}
 
 		var compInputs []*structpb.Struct
 
+		idxMap := map[int]int{}
 		for idx := 0; idx < batchSize; idx++ {
+
+			for _, ancestorID := range dag.GetAncestorIDs(comp.Id) {
+				if statuses[idx][ancestorID].Skipped {
+					statuses[idx][comp.Id].Skipped = true
+					break
+				}
+			}
+
+			if !statuses[idx][comp.Id].Skipped {
+				if comp.Configuration.Fields["condition"].GetStringValue() != "" {
+					expr, err := parser.ParseExpr(comp.Configuration.Fields["condition"].GetStringValue())
+					if err != nil {
+						return nil, nil, err
+					}
+					cond, err := utils.EvalCondition(expr, memory[idx])
+					if err != nil {
+						return nil, nil, err
+					}
+					if cond == false {
+						statuses[idx][comp.Id].Skipped = true
+					} else {
+						statuses[idx][comp.Id].Started = true
+					}
+				} else {
+					statuses[idx][comp.Id].Started = true
+				}
+			}
 
 			memory[idx][comp.Id] = map[string]interface{}{
 				"input":  map[string]interface{}{},
 				"output": map[string]interface{}{},
 			}
 
-			compInputTemplate := comp.Configuration
-			// TODO: remove this hardcode injection
-			// blockchain-number
-			if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
-				recipeByte, err := json.Marshal(recipe)
+			if statuses[idx][comp.Id].Started {
+				compInputTemplate := comp.Configuration
+				// TODO: remove this hardcode injection
+				// blockchain-number
+				if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
+					recipeByte, err := json.Marshal(recipe)
+					if err != nil {
+						return nil, nil, err
+					}
+					recipePb := &structpb.Struct{}
+					err = protojson.Unmarshal(recipeByte, recipePb)
+					if err != nil {
+						return nil, nil, err
+					}
+
+					metadata, err := structpb.NewValue(map[string]interface{}{
+						"pipeline": map[string]interface{}{
+							"uid":    "{global.pipeline.uid}",
+							"recipe": "{global.pipeline.recipe}",
+						},
+						"owner": map[string]interface{}{
+							"uid": "{global.owner.uid}",
+						},
+					})
+					if err != nil {
+						return nil, nil, err
+					}
+					if compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue() == nil {
+						compInputTemplate.Fields["input"].GetStructValue().Fields["custom"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
+					}
+					compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue().Fields["metadata"] = metadata
+				}
+
+				compInputTemplateJson, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
 				if err != nil {
 					return nil, nil, err
 				}
-				recipePb := &structpb.Struct{}
-				err = protojson.Unmarshal(recipeByte, recipePb)
+
+				var compInputTemplateStruct interface{}
+				err = json.Unmarshal(compInputTemplateJson, &compInputTemplateStruct)
 				if err != nil {
 					return nil, nil, err
 				}
 
-				metadata, err := structpb.NewValue(map[string]interface{}{
-					"pipeline": map[string]interface{}{
-						"uid":    "{global.pipeline.uid}",
-						"recipe": "{global.pipeline.recipe}",
-					},
-					"owner": map[string]interface{}{
-						"uid": "{global.owner.uid}",
-					},
-				})
+				compInputStruct, err := utils.RenderInput(compInputTemplateStruct, memory[idx])
 				if err != nil {
 					return nil, nil, err
 				}
-				if compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue() == nil {
-					compInputTemplate.Fields["input"].GetStructValue().Fields["custom"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
+				compInputJson, err := json.Marshal(compInputStruct)
+				if err != nil {
+					return nil, nil, err
 				}
-				compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue().Fields["metadata"] = metadata
+
+				compInput := &structpb.Struct{}
+				err = protojson.Unmarshal([]byte(compInputJson), compInput)
+				if err != nil {
+					return nil, nil, err
+				}
+
+				memory[idx][comp.Id].(map[string]interface{})["input"] = compInputStruct
+				idxMap[len(compInputs)] = idx
+				compInputs = append(compInputs, compInput)
 			}
 
-			compInputTemplateJson, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
-			if err != nil {
-				return nil, nil, err
-			}
-
-			var compInputTemplateStruct interface{}
-			err = json.Unmarshal(compInputTemplateJson, &compInputTemplateStruct)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			compInputStruct, err := utils.RenderInput(compInputTemplateStruct, memory[idx])
-			if err != nil {
-				return nil, nil, err
-			}
-			compInputJson, err := json.Marshal(compInputStruct)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			compInput := &structpb.Struct{}
-			err = protojson.Unmarshal([]byte(compInputJson), compInput)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			memory[idx][comp.Id].(map[string]interface{})["input"] = compInputStruct
-			compInputs = append(compInputs, compInput)
 		}
 
 		task := ""
@@ -1448,9 +1493,9 @@ func (s *service) triggerPipeline(
 			if err != nil {
 				return nil, nil, fmt.Errorf("[Component %s Execution Data Error] %w", comp.Id, err)
 			}
-			for idx := range compOutputs {
+			for compBatchIdx := range compOutputs {
 
-				outputJson, err := protojson.Marshal(compOutputs[idx])
+				outputJson, err := protojson.Marshal(compOutputs[compBatchIdx])
 				if err != nil {
 					return nil, nil, err
 				}
@@ -1459,12 +1504,16 @@ func (s *service) triggerPipeline(
 				if err != nil {
 					return nil, nil, err
 				}
-				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
+				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
+				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
 			}
 
 		} else if comp.DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
 			// op end
 			responseCompId = comp.Id
+			for compBatchIdx := range compInputs {
+				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
+			}
 			computeTime[comp.Id] = 0
 		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
 
@@ -1484,9 +1533,9 @@ func (s *service) triggerPipeline(
 			if err != nil {
 				return nil, nil, fmt.Errorf("[Component %s Execution Data Error] %w", comp.Id, err)
 			}
-			for idx := range compOutputs {
+			for compBatchIdx := range compOutputs {
 
-				outputJson, err := protojson.Marshal(compOutputs[idx])
+				outputJson, err := protojson.Marshal(compOutputs[compBatchIdx])
 				if err != nil {
 					return nil, nil, err
 				}
@@ -1495,11 +1544,11 @@ func (s *service) triggerPipeline(
 				if err != nil {
 					return nil, nil, err
 				}
-				memory[idx][comp.Id].(map[string]interface{})["output"] = outputStruct
+				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
+				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
 			}
 
 		}
-		status[comp.Id].Completed = true
 
 	}
 
@@ -1519,7 +1568,7 @@ func (s *service) triggerPipeline(
 	}
 	var traces map[string]*pipelinePB.Trace
 	if returnTraces {
-		traces, err = utils.GenerateTraces(orderedComp, memory, computeTime, batchSize)
+		traces, err = utils.GenerateTraces(orderedComp, memory, statuses, computeTime, batchSize)
 		if err != nil {
 			return nil, nil, err
 		}

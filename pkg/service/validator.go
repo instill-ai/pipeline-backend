@@ -99,7 +99,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 
 		configJson, err := protojson.Marshal(recipePermalink.Components[idx].Configuration)
 		if err != nil {
-			return fmt.Errorf("configuration for component %s is wrong", recipePermalink.Components[idx].Id)
+			return fmt.Errorf("configuration for component %s is wrong %w", recipePermalink.Components[idx].Id, err)
 		}
 
 		sch, err := jsonschema.CompileString("schema.json", string(compJsonSchema))
@@ -113,7 +113,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 		}
 
 		if err = sch.Validate(v); err != nil {
-			return fmt.Errorf("configuration for component %s is wrong", recipePermalink.Components[idx].Id)
+			return fmt.Errorf("configuration for component %s is wrong %w", recipePermalink.Components[idx].Id, err)
 		}
 
 	}
