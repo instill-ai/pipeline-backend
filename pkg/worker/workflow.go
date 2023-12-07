@@ -38,6 +38,10 @@ type TriggerAsyncPipelineWorkflowRequest struct {
 	ReturnTraces               bool
 }
 
+type TriggerAsyncPipelineWorkflowResponse struct {
+	OutputBlobRedisKey string
+}
+
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
 type ExecuteConnectorActivityRequest struct {
 	Id                 string
@@ -117,7 +121,7 @@ func (w *worker) SetBlob(inputs []*structpb.Struct) ([]string, error) {
 }
 
 // TriggerAsyncPipelineWorkflow is a pipeline trigger workflow definition.
-func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowRequest) error {
+func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowRequest) (*TriggerAsyncPipelineWorkflowResponse, error) {
 
 	startTime := time.Now()
 	eventName := "TriggerAsyncPipelineWorkflow"
@@ -168,7 +172,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 		_ = w.writeNewDataPoint(sCtx, dataPoint)
-		return err
+		return nil, err
 	}
 
 	orderedComp, err := dag.TopologicalSort()
@@ -177,7 +181,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 		_ = w.writeNewDataPoint(sCtx, dataPoint)
-		return err
+		return nil, err
 	}
 	var startCompId string
 	for _, c := range orderedComp {
@@ -196,7 +200,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 		_ = w.writeNewDataPoint(sCtx, dataPoint)
-		return err
+		return nil, err
 	}
 	batchSize := len(pipelineInputs)
 	for idx := range pipelineInputs {
@@ -208,7 +212,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 			_ = w.writeNewDataPoint(sCtx, dataPoint)
-			return err
+			return nil, err
 		}
 		inputs = append(inputs, input)
 	}
@@ -226,14 +230,14 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 			_ = w.writeNewDataPoint(sCtx, dataPoint)
-			return err
+			return nil, err
 		}
 		memory[idx][startCompId] = inputStruct
 		computeTime[startCompId] = 0
 
 		memory[idx]["global"], err = utils.GenerateGlobalValue(param.PipelineUid, param.PipelineRecipe, param.OwnerPermalink)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		statuses[idx] = map[string]*utils.ComponentStatus{}
 		statuses[idx][startCompId] = &utils.ComponentStatus{}
@@ -269,11 +273,11 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				if comp.Configuration.Fields["condition"].GetStringValue() != "" {
 					expr, err := parser.ParseExpr(comp.Configuration.Fields["condition"].GetStringValue())
 					if err != nil {
-						return err
+						return nil, err
 					}
 					cond, err := utils.EvalCondition(expr, memory[idx])
 					if err != nil {
-						return err
+						return nil, err
 					}
 					if cond == false {
 						statuses[idx][comp.Id].Skipped = true
@@ -298,12 +302,12 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
 					recipeByte, err := json.Marshal(param.PipelineRecipe)
 					if err != nil {
-						return err
+						return nil, err
 					}
 					recipePb := &structpb.Struct{}
 					err = protojson.Unmarshal(recipeByte, recipePb)
 					if err != nil {
-						return err
+						return nil, err
 					}
 
 					// TODO: remove this hardcode injection
@@ -318,7 +322,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 							},
 						})
 						if err != nil {
-							return err
+							return nil, err
 						}
 						if compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue() == nil {
 							compInputTemplate.Fields["input"].GetStructValue().Fields["custom"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
@@ -333,7 +337,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return err
+					return nil, err
 				}
 
 				var compInputTemplateStruct interface{}
@@ -343,7 +347,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return err
+					return nil, err
 				}
 
 				compInputStruct, err := utils.RenderInput(compInputTemplateStruct, memory[idx])
@@ -352,7 +356,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return err
+					return nil, err
 				}
 				compInputJson, err := json.Marshal(compInputStruct)
 				if err != nil {
@@ -360,7 +364,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return err
+					return nil, err
 				}
 
 				compInput := &structpb.Struct{}
@@ -370,7 +374,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return err
+					return nil, err
 				}
 
 				memory[idx][comp.Id].(map[string]interface{})["input"] = compInputStruct
@@ -392,7 +396,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return err
+				return nil, err
 			}
 			for idx := range result.OutputBlobRedisKeys {
 				defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
@@ -420,7 +424,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return err
+				return nil, err
 			}
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
@@ -432,18 +436,18 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return err
+				return nil, err
 			}
 			for compBatchIdx := range outputs {
 
 				outputJson, err := protojson.Marshal(outputs[compBatchIdx])
 				if err != nil {
-					return err
+					return nil, err
 				}
 				var outputStruct map[string]interface{}
 				err = json.Unmarshal(outputJson, &outputStruct)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
 				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
@@ -463,7 +467,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return err
+				return nil, err
 			}
 			for idx := range result.OutputBlobRedisKeys {
 				defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
@@ -490,7 +494,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return err
+				return nil, err
 			}
 			computeTime[comp.Id] = float32(time.Since(start).Seconds())
 			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
@@ -502,18 +506,18 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return err
+				return nil, err
 			}
 			for compBatchIdx := range outputs {
 
 				outputJson, err := protojson.Marshal(outputs[compBatchIdx])
 				if err != nil {
-					return err
+					return nil, err
 				}
 				var outputStruct map[string]interface{}
 				err = json.Unmarshal(outputJson, &outputStruct)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
 				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
@@ -534,7 +538,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			for key, value := range memory[idx][responseCompId].(map[string]interface{})["input"].(map[string]interface{}) {
 				structVal, err := structpb.NewValue(value)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				pipelineOutput.Fields[key] = structVal
 
@@ -553,7 +557,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 			_ = w.writeNewDataPoint(sCtx, dataPoint)
-			return err
+			return nil, err
 		}
 	}
 
@@ -569,7 +573,7 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
 		_ = w.writeNewDataPoint(sCtx, dataPoint)
-		return err
+		return nil, err
 	}
 	blobRedisKey := fmt.Sprintf("async_pipeline_response:%s", workflow.GetInfo(ctx).WorkflowExecution.ID)
 	w.redisClient.Set(
@@ -585,7 +589,9 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 		logger.Warn(err.Error())
 	}
 	logger.Info("TriggerAsyncPipelineWorkflow completed")
-	return nil
+	return &TriggerAsyncPipelineWorkflowResponse{
+		OutputBlobRedisKey: blobRedisKey,
+	}, nil
 }
 
 func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorActivityRequest) (*ExecuteConnectorActivityResponse, error) {
