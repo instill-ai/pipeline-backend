@@ -26,7 +26,7 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-type TriggerAsyncPipelineWorkflowRequest struct {
+type TriggerPipelineWorkflowRequest struct {
 	PipelineInputBlobRedisKeys []string
 	PipelineId                 string
 	PipelineUid                uuid.UUID
@@ -38,7 +38,7 @@ type TriggerAsyncPipelineWorkflowRequest struct {
 	ReturnTraces               bool
 }
 
-type TriggerAsyncPipelineWorkflowResponse struct {
+type TriggerPipelineWorkflowResponse struct {
 	OutputBlobRedisKey string
 }
 
@@ -120,18 +120,18 @@ func (w *worker) SetBlob(inputs []*structpb.Struct) ([]string, error) {
 	return blobRedisKeys, nil
 }
 
-// TriggerAsyncPipelineWorkflow is a pipeline trigger workflow definition.
-func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *TriggerAsyncPipelineWorkflowRequest) (*TriggerAsyncPipelineWorkflowResponse, error) {
+// TriggerPipelineWorkflow is a pipeline trigger workflow definition.
+func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowRequest) (*TriggerPipelineWorkflowResponse, error) {
 
 	startTime := time.Now()
-	eventName := "TriggerAsyncPipelineWorkflow"
+	eventName := "TriggerPipelineWorkflow"
 
 	sCtx, span := tracer.Start(context.Background(), eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	logger, _ := logger.GetZapLogger(sCtx)
-	logger.Info("TriggerAsyncPipelineWorkflow started")
+	logger.Info("TriggerPipelineWorkflow started")
 
 	namespace := strings.Split(param.OwnerPermalink, "/")[0]
 	var ownerType mgmtPB.OwnerType
@@ -588,8 +588,8 @@ func (w *worker) TriggerAsyncPipelineWorkflow(ctx workflow.Context, param *Trigg
 	if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
 		logger.Warn(err.Error())
 	}
-	logger.Info("TriggerAsyncPipelineWorkflow completed")
-	return &TriggerAsyncPipelineWorkflowResponse{
+	logger.Info("TriggerPipelineWorkflow completed")
+	return &TriggerPipelineWorkflowResponse{
 		OutputBlobRedisKey: blobRedisKey,
 	}, nil
 }

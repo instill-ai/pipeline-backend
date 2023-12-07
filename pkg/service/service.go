@@ -1318,8 +1318,8 @@ func (s *service) triggerPipeline(
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
-		"TriggerAsyncPipelineWorkflow",
-		&worker.TriggerAsyncPipelineWorkflowRequest{
+		"TriggerPipelineWorkflow",
+		&worker.TriggerPipelineWorkflowRequest{
 			PipelineInputBlobRedisKeys: inputBlobRedisKeys,
 			PipelineId:                 pipelineId,
 			PipelineUid:                pipelineUid,
@@ -1335,7 +1335,7 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
-	var result *worker.TriggerAsyncPipelineWorkflowResponse
+	var result *worker.TriggerPipelineWorkflowResponse
 	err = we.Get(context.Background(), &result)
 	if err != nil {
 		return nil, nil, err
@@ -1406,8 +1406,8 @@ func (s *service) triggerAsyncPipeline(
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
-		"TriggerAsyncPipelineWorkflow",
-		&worker.TriggerAsyncPipelineWorkflowRequest{
+		"TriggerPipelineWorkflow",
+		&worker.TriggerPipelineWorkflowRequest{
 			PipelineInputBlobRedisKeys: inputBlobRedisKeys,
 			PipelineId:                 pipelineId,
 			PipelineUid:                pipelineUid,

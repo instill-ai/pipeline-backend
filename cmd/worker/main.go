@@ -105,7 +105,7 @@ func main() {
 		MaxConcurrentActivityExecutionSize: 2,
 	})
 
-	w.RegisterWorkflow(cw.TriggerAsyncPipelineWorkflow)
+	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
 	w.RegisterActivity(cw.ConnectorActivity)
 	w.RegisterActivity(cw.OperatorActivity)
 
