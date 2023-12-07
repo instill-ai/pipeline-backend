@@ -3,10 +3,13 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"go/ast"
 	"go/parser"
+	"go/token"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/oliveagle/jsonpath"
@@ -14,6 +17,7 @@ import (
 	"github.com/osteele/liquid/render"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type ComponentStatus struct {
@@ -224,8 +228,229 @@ func findConditionUpstream(expr ast.Expr, upstreams *[]string) {
 	case *ast.IndexExpr:
 		findConditionUpstream(e.X, upstreams)
 	case *ast.Ident:
+		if e.Name == "true" {
+			return
+		}
+		if e.Name == "false" {
+			return
+		}
 		*upstreams = append(*upstreams, e.Name)
 	}
+}
+
+func EvalCondition(expr ast.Expr, value *structpb.Struct) (interface{}, error) {
+	switch e := (expr).(type) {
+	case *ast.UnaryExpr:
+		xRes, err := EvalCondition(e.X, value)
+		if err != nil {
+			return nil, err
+		}
+
+		switch e.Op {
+		case token.NOT: // !
+			switch xVal := xRes.(type) {
+			case bool:
+				return !xVal, nil
+			}
+		case token.SUB: // -
+			switch xVal := xRes.(type) {
+			case int64:
+				return -xVal, nil
+			case float64:
+				return -xVal, nil
+			}
+		}
+	case *ast.BinaryExpr:
+
+		xRes, err := EvalCondition(e.X, value)
+		if err != nil {
+			return nil, err
+		}
+		yRes, err := EvalCondition(e.Y, value)
+		if err != nil {
+			return nil, err
+		}
+
+		switch e.Op {
+		case token.LAND: // &&
+
+			xBool := false
+			yBool := false
+			switch xVal := xRes.(type) {
+			case int64, float64:
+				xBool = (xVal != 0)
+			case string:
+				xBool = (xVal != "")
+			case bool:
+				xBool = xVal
+			}
+			switch yVal := yRes.(type) {
+			case int64, float64:
+				yBool = (yVal != 0)
+			case string:
+				yBool = (yVal != "")
+			case bool:
+				yBool = yVal
+			}
+			return xBool && yBool, nil
+		case token.LOR: // ||
+
+			xBool := false
+			yBool := false
+			switch xVal := xRes.(type) {
+			case int64, float64:
+				xBool = (xVal != 0)
+			case string:
+				xBool = (xVal != "")
+			case bool:
+				xBool = xVal
+			}
+			switch yVal := yRes.(type) {
+			case int64, float64:
+				yBool = (yVal != 0)
+			case string:
+				yBool = (yVal != "")
+			case bool:
+				yBool = yVal
+			}
+			return xBool || yBool, nil
+
+		case token.EQL: // ==
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal == yVal, nil
+				case float64:
+					return float64(xVal) == yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal == float64(yVal), nil
+				case float64:
+					return xVal == yVal, nil
+				}
+			}
+			return reflect.DeepEqual(xRes, yRes), nil
+		case token.NEQ: // !=
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal != yVal, nil
+				case float64:
+					return float64(xVal) != yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal != float64(yVal), nil
+				case float64:
+					return xVal != yVal, nil
+				}
+			}
+			return !reflect.DeepEqual(xRes, yRes), nil
+
+		case token.LSS: // <
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal < yVal, nil
+				case float64:
+					return float64(xVal) < yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal < float64(yVal), nil
+				case float64:
+					return xVal < yVal, nil
+				}
+			}
+		case token.GTR: // >
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal > yVal, nil
+				case float64:
+					return float64(xVal) > yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal > float64(yVal), nil
+				case float64:
+					return xVal > yVal, nil
+				}
+			}
+
+		case token.LEQ: // <=
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal <= yVal, nil
+				case float64:
+					return float64(xVal) <= yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal <= float64(yVal), nil
+				case float64:
+					return xVal <= yVal, nil
+				}
+			}
+		case token.GEQ: // >=
+			switch xVal := xRes.(type) {
+			case int64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal >= yVal, nil
+				case float64:
+					return float64(xVal) >= yVal, nil
+				}
+			case float64:
+				switch yVal := yRes.(type) {
+				case int64:
+					return xVal >= float64(yVal), nil
+				case float64:
+					return xVal >= yVal, nil
+				}
+			}
+
+		}
+
+	case *ast.ParenExpr:
+		return EvalCondition(e.X, value)
+	case *ast.SelectorExpr:
+		return EvalCondition(e.Sel, value.Fields[e.X.(*ast.Ident).String()].GetStructValue())
+	case *ast.BasicLit:
+		if e.Kind == token.INT {
+			return strconv.ParseInt(e.Value, 10, 64)
+		}
+		if e.Kind == token.FLOAT {
+			return strconv.ParseFloat(e.Value, 64)
+		}
+		if e.Kind == token.STRING {
+			return e.Value[1 : len(e.Value)-1], nil
+		}
+		return e.Value, nil
+	case *ast.Ident:
+		if e.Name == "true" {
+			return true, nil
+		}
+		if e.Name == "false" {
+			return false, nil
+		}
+
+		return value.Fields[e.Name].AsInterface(), nil
+
+	}
+	return false, fmt.Errorf("condition error")
 }
 
 func GenerateDAG(components []*datamodel.Component) (*dag, error) {
