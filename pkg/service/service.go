@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"go/parser"
 	"math/rand"
 	"strings"
 	"time"
@@ -1270,6 +1269,7 @@ func (s *service) SetDefaultNamespacePipelineReleaseByID(ctx context.Context, ns
 func (s *service) triggerPipeline(
 	ctx context.Context,
 	ownerPermalink string,
+	userPermalink string,
 	recipe *datamodel.Recipe,
 	pipelineId string,
 	pipelineUid uuid.UUID,
@@ -1286,298 +1286,73 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
-	var inputs [][]byte
-
-	batchSize := len(pipelineInputs)
-
-	for idx := range pipelineInputs {
-		inputStruct := structpb.NewStructValue(pipelineInputs[idx])
-		input, err := protojson.Marshal(inputStruct)
+	inputBlobRedisKeys := []string{}
+	for idx, input := range pipelineInputs {
+		inputJson, err := protojson.Marshal(input)
 		if err != nil {
 			return nil, nil, err
 		}
-		inputs = append(inputs, input)
+
+		inputBlobRedisKey := fmt.Sprintf("async_pipeline_request:%s:%d", pipelineTriggerId, idx)
+		s.redisClient.Set(
+			context.Background(),
+			inputBlobRedisKey,
+			inputJson,
+			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
+		)
+		inputBlobRedisKeys = append(inputBlobRedisKeys, inputBlobRedisKey)
+	}
+	memo := map[string]interface{}{}
+	memo["number_of_data"] = len(inputBlobRedisKeys)
+
+	workflowOptions := client.StartWorkflowOptions{
+		ID:                       pipelineTriggerId,
+		TaskQueue:                worker.TaskQueue,
+		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
+		},
+		Memo: memo,
 	}
 
-	dag, err := utils.GenerateDAG(recipe.Components)
+	we, err := s.temporalClient.ExecuteWorkflow(
+		ctx,
+		workflowOptions,
+		"TriggerPipelineWorkflow",
+		&worker.TriggerPipelineWorkflowRequest{
+			PipelineInputBlobRedisKeys: inputBlobRedisKeys,
+			PipelineId:                 pipelineId,
+			PipelineUid:                pipelineUid,
+			PipelineReleaseId:          pipelineReleaseId,
+			PipelineReleaseUid:         pipelineReleaseUid,
+			PipelineRecipe:             recipe,
+			OwnerPermalink:             ownerPermalink,
+			UserPermalink:              userPermalink,
+			ReturnTraces:               returnTraces,
+		})
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+		return nil, nil, err
+	}
+
+	var result *worker.TriggerPipelineWorkflowResponse
+	err = we.Get(context.Background(), &result)
+	if err != nil {
+		return nil, nil, err
+	}
+	pipelineResp := &pipelinePB.TriggerUserPipelineResponse{}
+
+	blob, err := s.redisClient.Get(context.Background(), result.OutputBlobRedisKey).Bytes()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	orderedComp, err := dag.TopologicalSort()
+	err = protojson.Unmarshal(blob, pipelineResp)
 	if err != nil {
 		return nil, nil, err
 	}
-	var startCompId string
-	for _, c := range orderedComp {
-		if c.DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
-			startCompId = c.Id
-		}
-	}
 
-	memory := make([]map[string]interface{}, batchSize)
-	statuses := make([]map[string]*utils.ComponentStatus, batchSize)
-	computeTime := map[string]float32{}
-
-	for idx := range inputs {
-		memory[idx] = map[string]interface{}{}
-		var inputStruct map[string]interface{}
-		err := json.Unmarshal(inputs[idx], &inputStruct)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		memory[idx][startCompId] = inputStruct
-		computeTime[startCompId] = 0
-
-		memory[idx]["global"], err = utils.GenerateGlobalValue(pipelineUid, recipe, ownerPermalink)
-		if err != nil {
-			return nil, nil, err
-		}
-		statuses[idx] = map[string]*utils.ComponentStatus{}
-		statuses[idx][startCompId] = &utils.ComponentStatus{}
-		statuses[idx][startCompId].Started = true
-		statuses[idx][startCompId].Completed = true
-	}
-
-	responseCompId := ""
-	for _, comp := range orderedComp {
-		if comp.Id == startCompId {
-			continue
-		}
-
-		for idx := 0; idx < batchSize; idx++ {
-			statuses[idx][comp.Id] = &utils.ComponentStatus{}
-		}
-
-		var compInputs []*structpb.Struct
-
-		idxMap := map[int]int{}
-		for idx := 0; idx < batchSize; idx++ {
-
-			for _, ancestorID := range dag.GetAncestorIDs(comp.Id) {
-				if statuses[idx][ancestorID].Skipped {
-					statuses[idx][comp.Id].Skipped = true
-					break
-				}
-			}
-
-			if !statuses[idx][comp.Id].Skipped {
-				if comp.Configuration.Fields["condition"].GetStringValue() != "" {
-					expr, err := parser.ParseExpr(comp.Configuration.Fields["condition"].GetStringValue())
-					if err != nil {
-						return nil, nil, err
-					}
-					cond, err := utils.EvalCondition(expr, memory[idx])
-					if err != nil {
-						return nil, nil, err
-					}
-					if cond == false {
-						statuses[idx][comp.Id].Skipped = true
-					} else {
-						statuses[idx][comp.Id].Started = true
-					}
-				} else {
-					statuses[idx][comp.Id].Started = true
-				}
-			}
-
-			memory[idx][comp.Id] = map[string]interface{}{
-				"input":  map[string]interface{}{},
-				"output": map[string]interface{}{},
-			}
-
-			if statuses[idx][comp.Id].Started {
-				compInputTemplate := comp.Configuration
-				// TODO: remove this hardcode injection
-				// blockchain-number
-				if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
-					recipeByte, err := json.Marshal(recipe)
-					if err != nil {
-						return nil, nil, err
-					}
-					recipePb := &structpb.Struct{}
-					err = protojson.Unmarshal(recipeByte, recipePb)
-					if err != nil {
-						return nil, nil, err
-					}
-
-					metadata, err := structpb.NewValue(map[string]interface{}{
-						"pipeline": map[string]interface{}{
-							"uid":    "{global.pipeline.uid}",
-							"recipe": "{global.pipeline.recipe}",
-						},
-						"owner": map[string]interface{}{
-							"uid": "{global.owner.uid}",
-						},
-					})
-					if err != nil {
-						return nil, nil, err
-					}
-					if compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue() == nil {
-						compInputTemplate.Fields["input"].GetStructValue().Fields["custom"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
-					}
-					compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue().Fields["metadata"] = metadata
-				}
-
-				compInputTemplateJson, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
-				if err != nil {
-					return nil, nil, err
-				}
-
-				var compInputTemplateStruct interface{}
-				err = json.Unmarshal(compInputTemplateJson, &compInputTemplateStruct)
-				if err != nil {
-					return nil, nil, err
-				}
-
-				compInputStruct, err := utils.RenderInput(compInputTemplateStruct, memory[idx])
-				if err != nil {
-					return nil, nil, err
-				}
-				compInputJson, err := json.Marshal(compInputStruct)
-				if err != nil {
-					return nil, nil, err
-				}
-
-				compInput := &structpb.Struct{}
-				err = protojson.Unmarshal([]byte(compInputJson), compInput)
-				if err != nil {
-					return nil, nil, err
-				}
-
-				memory[idx][comp.Id].(map[string]interface{})["input"] = compInputStruct
-				idxMap[len(compInputs)] = idx
-				compInputs = append(compInputs, compInput)
-			}
-
-		}
-
-		task := ""
-		if comp.Configuration.Fields["task"] != nil {
-			task = comp.Configuration.Fields["task"].GetStringValue()
-		}
-
-		if utils.IsConnectorDefinition(comp.DefinitionName) && comp.ResourceName != "" {
-
-			con, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(comp.DefinitionName, "/")[1]))
-			if err != nil {
-				return nil, nil, err
-			}
-
-			dbConnector, err := s.repository.GetConnectorByUIDAdmin(ctx, uuid.FromStringOrNil(strings.Split(comp.ResourceName, "/")[1]), false)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			configuration := func() *structpb.Struct {
-				if dbConnector.Configuration != nil {
-					str := structpb.Struct{}
-					err := str.UnmarshalJSON(dbConnector.Configuration)
-					if err != nil {
-						logger.Fatal(err.Error())
-					}
-					return &str
-				}
-				return nil
-			}()
-
-			execution, err := s.connector.CreateExecution(uuid.FromStringOrNil(con.Uid), task, configuration, logger)
-			if err != nil {
-				return nil, nil, err
-			}
-			start := time.Now()
-			compOutputs, err := execution.ExecuteWithValidation(compInputs)
-
-			computeTime[comp.Id] = float32(time.Since(start).Seconds())
-			if err != nil {
-				return nil, nil, fmt.Errorf("[Component %s Execution Data Error] %w", comp.Id, err)
-			}
-			for compBatchIdx := range compOutputs {
-
-				outputJson, err := protojson.Marshal(compOutputs[compBatchIdx])
-				if err != nil {
-					return nil, nil, err
-				}
-				var outputStruct map[string]interface{}
-				err = json.Unmarshal(outputJson, &outputStruct)
-				if err != nil {
-					return nil, nil, err
-				}
-				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
-				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
-			}
-
-		} else if comp.DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
-			// op end
-			responseCompId = comp.Id
-			for compBatchIdx := range compInputs {
-				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
-			}
-			computeTime[comp.Id] = 0
-		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
-
-			op, err := s.operator.GetOperatorDefinitionByUID(uuid.FromStringOrNil(strings.Split(comp.DefinitionName, "/")[1]))
-			if err != nil {
-				return nil, nil, err
-			}
-
-			execution, err := s.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), task, nil, logger)
-			if err != nil {
-				return nil, nil, err
-			}
-			start := time.Now()
-			compOutputs, err := execution.ExecuteWithValidation(compInputs)
-
-			computeTime[comp.Id] = float32(time.Since(start).Seconds())
-			if err != nil {
-				return nil, nil, fmt.Errorf("[Component %s Execution Data Error] %w", comp.Id, err)
-			}
-			for compBatchIdx := range compOutputs {
-
-				outputJson, err := protojson.Marshal(compOutputs[compBatchIdx])
-				if err != nil {
-					return nil, nil, err
-				}
-				var outputStruct map[string]interface{}
-				err = json.Unmarshal(outputJson, &outputStruct)
-				if err != nil {
-					return nil, nil, err
-				}
-				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
-				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
-			}
-
-		}
-
-	}
-
-	pipelineOutputs := []*structpb.Struct{}
-	for idx := 0; idx < batchSize; idx++ {
-		pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-		for key, value := range memory[idx][responseCompId].(map[string]interface{})["input"].(map[string]interface{}) {
-			structVal, err := structpb.NewValue(value)
-			if err != nil {
-				return nil, nil, err
-			}
-			pipelineOutput.Fields[key] = structVal
-
-		}
-		pipelineOutputs = append(pipelineOutputs, pipelineOutput)
-
-	}
-	var traces map[string]*pipelinePB.Trace
-	if returnTraces {
-		traces, err = utils.GenerateTraces(orderedComp, memory, statuses, computeTime, batchSize)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-	metadata := &pipelinePB.TriggerMetadata{
-		Traces: traces,
-	}
-
-	return pipelineOutputs, metadata, nil
+	return pipelineResp.Outputs, pipelineResp.Metadata, nil
 }
 
 func (s *service) triggerAsyncPipeline(
@@ -1631,8 +1406,8 @@ func (s *service) triggerAsyncPipeline(
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
-		"TriggerAsyncPipelineWorkflow",
-		&worker.TriggerAsyncPipelineWorkflowRequest{
+		"TriggerPipelineWorkflow",
+		&worker.TriggerPipelineWorkflowRequest{
 			PipelineInputBlobRedisKeys: inputBlobRedisKeys,
 			PipelineId:                 pipelineId,
 			PipelineUid:                pipelineUid,
@@ -1660,6 +1435,7 @@ func (s *service) triggerAsyncPipeline(
 func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
 
 	ownerPermalink := ns.String()
+	userPermalink := fmt.Sprintf("users/%s", authUser.UID)
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
@@ -1678,7 +1454,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		return nil, nil, ErrNoPermission
 	}
 
-	return s.triggerPipeline(ctx, ownerPermalink, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerPipeline(ctx, ownerPermalink, userPermalink, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1710,6 +1486,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUid uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
 
 	ownerPermalink := ns.String()
+	userPermalink := fmt.Sprintf("users/%s", authUser.UID)
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUid, false)
 	if err != nil {
@@ -1732,7 +1509,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, err
 	}
 
-	return s.triggerPipeline(ctx, ownerPermalink, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerPipeline(ctx, ownerPermalink, userPermalink, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
 }
 
 func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUid uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
