@@ -17,13 +17,13 @@ import (
 	"github.com/osteele/liquid/render"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type ComponentStatus struct {
 	Started   bool
 	Completed bool
-	Skiped    bool
+	Skipped   bool
+	Error     bool
 }
 
 type unionFind struct {
@@ -69,6 +69,7 @@ type dag struct {
 	compsIdx         map[string]int
 	prerequisitesMap map[*datamodel.Component][]*datamodel.Component
 	uf               *unionFind
+	ancestorsMap     map[string][]string
 }
 
 func NewDAG(comps []*datamodel.Component) *dag {
@@ -84,12 +85,22 @@ func NewDAG(comps []*datamodel.Component) *dag {
 		compsIdx:         compsIdx,
 		uf:               uf,
 		prerequisitesMap: prerequisitesMap,
+		ancestorsMap:     map[string][]string{},
 	}
 }
 
 func (d *dag) AddEdge(from *datamodel.Component, to *datamodel.Component) {
 	d.prerequisitesMap[from] = append(d.prerequisitesMap[from], to)
 	d.uf.Union(d.compsIdx[from.Id], d.compsIdx[to.Id])
+	if d.ancestorsMap[to.Id] == nil {
+		d.ancestorsMap[to.Id] = []string{}
+	}
+	d.ancestorsMap[to.Id] = append(d.ancestorsMap[to.Id], from.Id)
+	d.ancestorsMap[to.Id] = append(d.ancestorsMap[to.Id], d.ancestorsMap[from.Id]...)
+}
+
+func (d *dag) GetAncestorIDs(id string) []string {
+	return d.ancestorsMap[id]
 }
 
 func (d *dag) TopologicalSort() ([]*datamodel.Component, error) {
@@ -216,17 +227,17 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 	}
 }
 
-func findConditionUpstream(expr ast.Expr, upstreams *[]string) {
+func FindConditionUpstream(expr ast.Expr, upstreams *[]string) {
 	switch e := (expr).(type) {
 	case *ast.BinaryExpr:
-		findConditionUpstream(e.X, upstreams)
-		findConditionUpstream(e.Y, upstreams)
+		FindConditionUpstream(e.X, upstreams)
+		FindConditionUpstream(e.Y, upstreams)
 	case *ast.ParenExpr:
-		findConditionUpstream(e.X, upstreams)
+		FindConditionUpstream(e.X, upstreams)
 	case *ast.SelectorExpr:
-		findConditionUpstream(e.X, upstreams)
+		FindConditionUpstream(e.X, upstreams)
 	case *ast.IndexExpr:
-		findConditionUpstream(e.X, upstreams)
+		FindConditionUpstream(e.X, upstreams)
 	case *ast.Ident:
 		if e.Name == "true" {
 			return
@@ -238,7 +249,7 @@ func findConditionUpstream(expr ast.Expr, upstreams *[]string) {
 	}
 }
 
-func EvalCondition(expr ast.Expr, value *structpb.Struct) (interface{}, error) {
+func EvalCondition(expr ast.Expr, value map[string]interface{}) (interface{}, error) {
 	switch e := (expr).(type) {
 	case *ast.UnaryExpr:
 		xRes, err := EvalCondition(e.X, value)
@@ -427,7 +438,7 @@ func EvalCondition(expr ast.Expr, value *structpb.Struct) (interface{}, error) {
 	case *ast.ParenExpr:
 		return EvalCondition(e.X, value)
 	case *ast.SelectorExpr:
-		return EvalCondition(e.Sel, value.Fields[e.X.(*ast.Ident).String()].GetStructValue())
+		return EvalCondition(e.Sel, value[e.X.(*ast.Ident).String()].(map[string]interface{}))
 	case *ast.BasicLit:
 		if e.Kind == token.INT {
 			return strconv.ParseInt(e.Value, 10, 64)
@@ -447,7 +458,7 @@ func EvalCondition(expr ast.Expr, value *structpb.Struct) (interface{}, error) {
 			return false, nil
 		}
 
-		return value.Fields[e.Name].AsInterface(), nil
+		return value[e.Name], nil
 
 	}
 	return false, fmt.Errorf("condition error")
@@ -475,7 +486,7 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 			if err != nil {
 				return nil, err
 			}
-			findConditionUpstream(expr, &condUpstreams)
+			FindConditionUpstream(expr, &condUpstreams)
 		}
 
 		for idx := range condUpstreams {
