@@ -101,6 +101,10 @@ func InjectErrCode(err error) error {
 		return status.Error(codes.Unauthenticated, err.Error())
 
 	case
+		errors.Is(err, service.ErrRateLimiting):
+		return status.Error(codes.ResourceExhausted, err.Error())
+
+	case
 		errors.Is(err, acl.ErrMembershipNotFound):
 		return status.Error(codes.NotFound, err.Error())
 
