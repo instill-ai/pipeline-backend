@@ -224,6 +224,28 @@ func (c *ACLClient) CheckPermission(objectType string, objectUID uuid.UUID, user
 	return *data.Allowed, nil
 }
 
+// TODO refactor
+func (c *ACLClient) CheckPublicExecutable(objectType string, objectUID uuid.UUID) (bool, error) {
+
+	options := openfgaClient.ClientCheckOptions{
+		AuthorizationModelId: c.authorizationModelId,
+	}
+	body := openfgaClient.ClientCheckRequest{
+		User:     "user:*",
+		Relation: "executor",
+		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
+	}
+	data, err := c.client.Check(context.Background()).Body(body).Options(options).Execute()
+	if err != nil {
+		return false, err
+	}
+	if *data.Allowed {
+		return *data.Allowed, nil
+	}
+
+	return *data.Allowed, nil
+}
+
 func (c *ACLClient) ListPermissions(objectType string, userType string, userUID uuid.UUID, role string) ([]uuid.UUID, error) {
 
 	options := openfgaClient.ClientListObjectsOptions{

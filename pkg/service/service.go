@@ -761,17 +761,35 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	return s.DBToPBPipeline(ctx, dbPipeline, VIEW_FULL)
 }
 
-func (s *service) preTriggerPipeline(authUser *AuthUser, recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
+func (s *service) preTriggerPipeline(isPublic bool, ns resource.Namespace, authUser *AuthUser, recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
 
-	value, err := s.redisClient.Get(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID)).Result()
-
-	// TODO: use a more robust way to check key exist
-	if !errors.Is(err, redis.Nil) {
-		requestLeft, _ := strconv.ParseInt(value, 10, 64)
-		if requestLeft <= 0 {
-			return ErrRateLimiting
+	if isPublic {
+		value, err := s.redisClient.Get(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID)).Result()
+		// TODO: use a more robust way to check key exist
+		if !errors.Is(err, redis.Nil) {
+			requestLeft, _ := strconv.ParseInt(value, 10, 64)
+			if requestLeft <= 0 {
+				return ErrRateLimiting
+			} else {
+				_ = s.redisClient.Decr(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID))
+			}
+		}
+	} else {
+		var n string
+		if ns.NsType == resource.Organization {
+			n = "organization"
 		} else {
-			_ = s.redisClient.Decr(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID))
+			n = "user"
+		}
+		value, err := s.redisClient.Get(context.Background(), fmt.Sprintf("namespace_quota_limit:%s:%s", n, ns.NsUid)).Result()
+		// TODO: use a more robust way to check key exist
+		if !errors.Is(err, redis.Nil) {
+			requestLeft, _ := strconv.ParseInt(value, 10, 64)
+			if requestLeft <= 0 {
+				return ErrNamespaceQuotaExceed
+			} else {
+				_ = s.redisClient.Decr(context.Background(), fmt.Sprintf("namespace_quota_limit:%s:%s", n, ns.NsUid))
+			}
 		}
 	}
 
@@ -787,7 +805,7 @@ func (s *service) preTriggerPipeline(authUser *AuthUser, recipe *datamodel.Recip
 			for k, v := range comp.Configuration.Fields["metadata"].GetStructValue().Fields {
 				instillFormatMap[k] = v.GetStructValue().Fields["instillFormat"].GetStringValue()
 			}
-			err = component.CompileInstillAcceptFormats(schStruct)
+			err := component.CompileInstillAcceptFormats(schStruct)
 			if err != nil {
 				return err
 			}
@@ -1289,9 +1307,10 @@ func (s *service) SetDefaultNamespacePipelineReleaseByID(ctx context.Context, ns
 // TODO: share the code with worker/workflow.go
 func (s *service) triggerPipeline(
 	ctx context.Context,
-	ownerPermalink string,
+	ns resource.Namespace,
 	authUser *AuthUser,
 	recipe *datamodel.Recipe,
+	isPublic bool,
 	pipelineId string,
 	pipelineUid uuid.UUID,
 	pipelineReleaseId string,
@@ -1302,7 +1321,7 @@ func (s *service) triggerPipeline(
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	err := s.preTriggerPipeline(authUser, recipe, pipelineInputs)
+	err := s.preTriggerPipeline(isPublic, ns, authUser, recipe, pipelineInputs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1348,7 +1367,7 @@ func (s *service) triggerPipeline(
 			PipelineReleaseId:          pipelineReleaseId,
 			PipelineReleaseUid:         pipelineReleaseUid,
 			PipelineRecipe:             recipe,
-			OwnerPermalink:             ownerPermalink,
+			OwnerPermalink:             ns.String(),
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
 		})
@@ -1380,9 +1399,10 @@ func (s *service) triggerPipeline(
 
 func (s *service) triggerAsyncPipeline(
 	ctx context.Context,
-	ownerPermalink string,
+	ns resource.Namespace,
 	authUser *AuthUser,
 	recipe *datamodel.Recipe,
+	isPublic bool,
 	pipelineId string,
 	pipelineUid uuid.UUID,
 	pipelineReleaseId string,
@@ -1391,7 +1411,7 @@ func (s *service) triggerAsyncPipeline(
 	pipelineTriggerId string,
 	returnTraces bool) (*longrunningpb.Operation, error) {
 
-	err := s.preTriggerPipeline(authUser, recipe, pipelineInputs)
+	err := s.preTriggerPipeline(isPublic, ns, authUser, recipe, pipelineInputs)
 	if err != nil {
 		return nil, err
 	}
@@ -1437,7 +1457,7 @@ func (s *service) triggerAsyncPipeline(
 			PipelineReleaseId:          pipelineReleaseId,
 			PipelineReleaseUid:         pipelineReleaseUid,
 			PipelineRecipe:             recipe,
-			OwnerPermalink:             ownerPermalink,
+			OwnerPermalink:             ns.String(),
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
 		})
@@ -1476,7 +1496,12 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		return nil, nil, ErrNoPermission
 	}
 
-	return s.triggerPipeline(ctx, ownerPermalink, authUser, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
+	isPublic := false
+	if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", dbPipeline.UID); err != nil {
+		return nil, nil, err
+	}
+
+	return s.triggerPipeline(ctx, ns, authUser, dbPipeline.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1500,7 +1525,12 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		return nil, ErrNoPermission
 	}
 
-	return s.triggerAsyncPipeline(ctx, ownerPermalink, authUser, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
+	isPublic := false
+	if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", dbPipeline.UID); err != nil {
+		return nil, err
+	}
+
+	return s.triggerAsyncPipeline(ctx, ns, authUser, dbPipeline.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1529,7 +1559,12 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, err
 	}
 
-	return s.triggerPipeline(ctx, ownerPermalink, authUser, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
+	isPublic := false
+	if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", dbPipeline.UID); err != nil {
+		return nil, nil, err
+	}
+
+	return s.triggerPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
 }
 
 func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUid uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
@@ -1557,7 +1592,12 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, err
 	}
 
-	return s.triggerAsyncPipeline(ctx, ownerPermalink, authUser, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
+	isPublic := false
+	if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", dbPipeline.UID); err != nil {
+		return nil, err
+	}
+
+	return s.triggerAsyncPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
 }
 
 func (s *service) RemoveCredentialFieldsWithMaskString(dbConnDefID string, config *structpb.Struct) {
