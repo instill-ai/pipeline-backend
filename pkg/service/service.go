@@ -512,19 +512,36 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	}
 
 	quota := -1
-	resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
-		&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-	)
-	if err != nil {
-		s, ok := status.FromError(err)
-		if !ok {
-			return nil, err
-		}
-		if s.Code() != codes.Unimplemented {
-			return nil, err
+	if ns.NsType == resource.Organization {
+		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
+			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
 		}
 	} else {
-		quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
+		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(ctx,
+			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
+		}
 	}
 
 	if quota > -1 {
@@ -681,19 +698,36 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	}
 
 	quota := -1
-	resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
-		&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-	)
-	if err != nil {
-		s, ok := status.FromError(err)
-		if !ok {
-			return nil, err
-		}
-		if s.Code() != codes.Unimplemented {
-			return nil, err
+	if ns.NsType == resource.Organization {
+		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
+			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
 		}
 	} else {
-		quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
+		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(ctx,
+			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
+		}
 	}
 
 	if quota > -1 {
@@ -1639,6 +1673,47 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, err
 	}
 
+	plan := ""
+	if ns.NsType == resource.Organization {
+		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
+			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, nil, err
+			}
+		} else {
+			plan = resp.Subscription.Plan
+		}
+	} else {
+		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(ctx,
+			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, nil, err
+			}
+		} else {
+			plan = resp.Subscription.Plan
+		}
+	}
+
+	latestReleaseUID, err := s.GetNamespacePipelineLatestReleaseUid(ctx, ns, authUser, dbPipeline.ID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if plan == "freemium" && dbPipelineRelease.UID != latestReleaseUID {
+		return nil, nil, ErrCanNotTriggerNonLatestPipelineRelease
+	}
+
 	return s.triggerPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
 }
 
@@ -1670,6 +1745,47 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 	isPublic := false
 	if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", dbPipeline.UID); err != nil {
 		return nil, err
+	}
+
+	plan := ""
+	if ns.NsType == resource.Organization {
+		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
+			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			plan = resp.Subscription.Plan
+		}
+	} else {
+		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(ctx,
+			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			plan = resp.Subscription.Plan
+		}
+	}
+
+	latestReleaseUID, err := s.GetNamespacePipelineLatestReleaseUid(ctx, ns, authUser, dbPipeline.ID)
+	if err != nil {
+		return nil, err
+	}
+	if plan == "freemium" && dbPipelineRelease.UID != latestReleaseUID {
+		return nil, ErrCanNotTriggerNonLatestPipelineRelease
 	}
 
 	return s.triggerAsyncPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
