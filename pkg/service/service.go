@@ -22,6 +22,8 @@ import (
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -317,13 +319,13 @@ func (s *service) ConvertOwnerNameToPermalink(name string) (string, error) {
 	if strings.HasPrefix(name, "users") {
 		userResp, err := s.mgmtPrivateServiceClient.GetUserAdmin(context.Background(), &mgmtPB.GetUserAdminRequest{Name: name})
 		if err != nil {
-			return "", fmt.Errorf("ConvertOwnerNameToPermalink error")
+			return "", fmt.Errorf("ConvertOwnerNameToPermalink error %w", err)
 		}
 		return fmt.Sprintf("users/%s", *userResp.User.Uid), nil
 	} else {
 		orgResp, err := s.mgmtPrivateServiceClient.GetOrganizationAdmin(context.Background(), &mgmtPB.GetOrganizationAdminRequest{Name: name})
 		if err != nil {
-			return "", fmt.Errorf("ConvertOwnerNameToPermalink error")
+			return "", fmt.Errorf("ConvertOwnerNameToPermalink error %w", err)
 		}
 		return fmt.Sprintf("organizations/%s", orgResp.Organization.Uid), nil
 	}
@@ -331,6 +333,7 @@ func (s *service) ConvertOwnerNameToPermalink(name string) (string, error) {
 
 func (s *service) GetRscNamespaceAndNameID(path string) (resource.Namespace, string, error) {
 
+	fmt.Println(path)
 	splits := strings.Split(path, "/")
 	if len(splits) < 2 {
 		return resource.Namespace{}, "", fmt.Errorf("namespace error")
@@ -338,16 +341,18 @@ func (s *service) GetRscNamespaceAndNameID(path string) (resource.Namespace, str
 	uidStr, err := s.ConvertOwnerNameToPermalink(fmt.Sprintf("%s/%s", splits[0], splits[1]))
 
 	if err != nil {
-		return resource.Namespace{}, "", fmt.Errorf("namespace error")
+		return resource.Namespace{}, "", fmt.Errorf("namespace error %w", err)
 	}
 	if len(splits) < 4 {
 		return resource.Namespace{
 			NsType: resource.NamespaceType(splits[0]),
+			NsID:   splits[1],
 			NsUid:  uuid.FromStringOrNil(strings.Split(uidStr, "/")[1]),
 		}, "", nil
 	}
 	return resource.Namespace{
 		NsType: resource.NamespaceType(splits[0]),
+		NsID:   splits[1],
 		NsUid:  uuid.FromStringOrNil(strings.Split(uidStr, "/")[1]),
 	}, splits[3], nil
 }
@@ -364,11 +369,13 @@ func (s *service) GetRscNamespaceAndPermalinkUID(path string) (resource.Namespac
 	if len(splits) < 4 {
 		return resource.Namespace{
 			NsType: resource.NamespaceType(splits[0]),
+			NsID:   splits[1],
 			NsUid:  uuid.FromStringOrNil(strings.Split(uidStr, "/")[1]),
 		}, uuid.Nil, nil
 	}
 	return resource.Namespace{
 		NsType: resource.NamespaceType(splits[0]),
+		NsID:   splits[1],
 		NsUid:  uuid.FromStringOrNil(strings.Split(uidStr, "/")[1]),
 	}, uuid.FromStringOrNil(splits[3]), nil
 }
@@ -457,6 +464,29 @@ func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid 
 	return s.DBToPBPipeline(ctx, dbPipeline, view)
 }
 
+func (s *service) checkPrivatePipelineQuota(ctx context.Context, ns resource.Namespace, dbPipeline *datamodel.Pipeline, quota int) error {
+
+	if dbPipeline.Permission.Users["*/*"].Enabled {
+		return nil
+	}
+	privateCount := 0
+	// TODO: optimize this
+	pipelines, _, _, err := s.repository.ListPipelinesAdmin(ctx, 100, "", true, filtering.Filter{}, false)
+	if err != nil {
+		return err
+	}
+	for _, pipeline := range pipelines {
+		if !pipeline.Permission.Users["*/*"].Enabled {
+			privateCount += 1
+		}
+	}
+	if privateCount >= quota {
+		return ErrNamespacePrivatePipelineQuotaExceed
+	}
+
+	return nil
+}
+
 func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pbPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
 
 	ownerPermalink := ns.String()
@@ -477,9 +507,31 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	}
 
 	dbPipeline, err := s.PBToDBPipeline(ctx, pbPipeline)
-
 	if err != nil {
 		return nil, err
+	}
+
+	quota := -1
+	resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
+		&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+	)
+	if err != nil {
+		s, ok := status.FromError(err)
+		if !ok {
+			return nil, err
+		}
+		if s.Code() != codes.Unimplemented {
+			return nil, err
+		}
+	} else {
+		quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
+	}
+
+	if quota > -1 {
+		err = s.checkPrivatePipelineQuota(ctx, ns, dbPipeline, quota)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if dbPipeline.ShareCode == "" {
@@ -601,18 +653,18 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	ownerPermalink := ns.String()
 
-	dbPipelineToCreate, err := s.PBToDBPipeline(ctx, toUpdPipeline)
+	dbPipelineToUpdate, err := s.PBToDBPipeline(ctx, toUpdPipeline)
 	if err != nil {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipelineToCreate.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipelineToUpdate.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipelineToCreate.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission("pipeline", dbPipelineToUpdate.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -625,10 +677,33 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	}
 
 	if existingPipeline.ShareCode == "" {
-		dbPipelineToCreate.ShareCode = GenerateShareCode()
+		dbPipelineToUpdate.ShareCode = GenerateShareCode()
 	}
 
-	if err := s.repository.UpdateNamespacePipelineByID(ctx, ownerPermalink, id, dbPipelineToCreate); err != nil {
+	quota := -1
+	resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
+		&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+	)
+	if err != nil {
+		s, ok := status.FromError(err)
+		if !ok {
+			return nil, err
+		}
+		if s.Code() != codes.Unimplemented {
+			return nil, err
+		}
+	} else {
+		quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
+	}
+
+	if quota > -1 {
+		err = s.checkPrivatePipelineQuota(ctx, ns, dbPipelineToUpdate, quota)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err := s.repository.UpdateNamespacePipelineByID(ctx, ownerPermalink, id, dbPipelineToUpdate); err != nil {
 		return nil, err
 	}
 
@@ -786,7 +861,7 @@ func (s *service) preTriggerPipeline(isPublic bool, ns resource.Namespace, authU
 		if !errors.Is(err, redis.Nil) {
 			requestLeft, _ := strconv.ParseInt(value, 10, 64)
 			if requestLeft <= 0 {
-				return ErrNamespaceQuotaExceed
+				return ErrNamespaceTriggerQuotaExceed
 			} else {
 				_ = s.redisClient.Decr(context.Background(), fmt.Sprintf("namespace_quota_limit:%s:%s", n, ns.NsUid))
 			}

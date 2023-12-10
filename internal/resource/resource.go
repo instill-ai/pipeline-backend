@@ -58,6 +58,7 @@ const (
 
 type Namespace struct {
 	NsType NamespaceType
+	NsID   string
 	NsUid  uuid.UUID
 }
 
