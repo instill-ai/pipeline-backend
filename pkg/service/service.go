@@ -23,6 +23,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -161,6 +162,7 @@ type Service interface {
 type service struct {
 	repository               repository.Repository
 	mgmtPrivateServiceClient mgmtPB.MgmtPrivateServiceClient
+	mgmtPublicServiceClient  mgmtPB.MgmtPublicServiceClient
 	controllerClient         controllerPB.ControllerPrivateServiceClient
 	redisClient              *redis.Client
 	temporalClient           client.Client
@@ -174,6 +176,7 @@ type service struct {
 func NewService(
 	r repository.Repository,
 	u mgmtPB.MgmtPrivateServiceClient,
+	m mgmtPB.MgmtPublicServiceClient,
 	ct controllerPB.ControllerPrivateServiceClient,
 	rc *redis.Client,
 	t client.Client,
@@ -184,6 +187,7 @@ func NewService(
 	return &service{
 		repository:               r,
 		mgmtPrivateServiceClient: u,
+		mgmtPublicServiceClient:  m,
 		controllerClient:         ct,
 		redisClient:              rc,
 		temporalClient:           t,
@@ -512,9 +516,11 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	}
 
 	quota := -1
+
 	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
-			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
 			s, ok := status.FromError(err)
@@ -528,8 +534,9 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
 		}
 	} else {
-		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(ctx,
-			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
 			s, ok := status.FromError(err)
@@ -699,8 +706,9 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	quota := -1
 	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
-			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
 			s, ok := status.FromError(err)
@@ -714,8 +722,9 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
 		}
 	} else {
-		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(ctx,
-			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
 			s, ok := status.FromError(err)
@@ -1675,8 +1684,9 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 
 	plan := ""
 	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
-			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
 			s, ok := status.FromError(err)
@@ -1690,8 +1700,9 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 			plan = resp.Subscription.Plan
 		}
 	} else {
-		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(ctx,
-			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
 			s, ok := status.FromError(err)
@@ -1749,8 +1760,9 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 
 	plan := ""
 	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(ctx,
-			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
 			s, ok := status.FromError(err)
@@ -1764,8 +1776,9 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 			plan = resp.Subscription.Plan
 		}
 	} else {
-		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(ctx,
-			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
 			s, ok := status.FromError(err)

@@ -64,6 +64,7 @@ temporal:
   servername:
 mgmtbackend:
   host: mgmt-backend
+  publicport: 8084
   privateport: 3084
   https:
     cert:

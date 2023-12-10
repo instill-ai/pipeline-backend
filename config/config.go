@@ -134,6 +134,7 @@ type CacheConfig struct {
 // MgmtBackendConfig related to mgmt-backend
 type MgmtBackendConfig struct {
 	Host        string `koanf:"host"`
+	PublicPort  int    `koanf:"publicport"`
 	PrivatePort int    `koanf:"privateport"`
 	HTTPS       struct {
 		Cert string `koanf:"cert"`
