@@ -102,7 +102,8 @@ func InjectErrCode(err error) error {
 
 	case
 		errors.Is(err, service.ErrRateLimiting),
-		errors.Is(err, service.ErrNamespaceQuotaExceed):
+		errors.Is(err, service.ErrNamespacePrivatePipelineQuotaExceed),
+		errors.Is(err, service.ErrNamespaceTriggerQuotaExceed):
 		return status.Error(codes.ResourceExhausted, err.Error())
 
 	case
