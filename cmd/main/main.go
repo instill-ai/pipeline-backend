@@ -239,6 +239,10 @@ func main() {
 	if mgmtPrivateServiceClientConn != nil {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
+	mgmtPublicServiceClient, mgmtPublicServiceClientConn := external.InitMgmtPublicServiceClient(ctx)
+	if mgmtPublicServiceClientConn != nil {
+		defer mgmtPublicServiceClientConn.Close()
+	}
 
 	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient(ctx)
 	if controllerServiceClientConn != nil {
@@ -263,6 +267,7 @@ func main() {
 	service := service.NewService(
 		repository,
 		mgmtPrivateServiceClient,
+		mgmtPublicServiceClient,
 		controllerServiceClient,
 		redisClient,
 		temporalClient,
