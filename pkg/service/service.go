@@ -337,7 +337,6 @@ func (s *service) ConvertOwnerNameToPermalink(name string) (string, error) {
 
 func (s *service) GetRscNamespaceAndNameID(path string) (resource.Namespace, string, error) {
 
-	fmt.Println(path)
 	splits := strings.Split(path, "/")
 	if len(splits) < 2 {
 		return resource.Namespace{}, "", fmt.Errorf("namespace error")
@@ -460,6 +459,12 @@ func (s *service) ListPipelines(ctx context.Context, authUser *AuthUser, pageSiz
 
 func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid uuid.UUID, view View) (*pipelinePB.Pipeline, error) {
 
+	if granted, err := s.aclClient.CheckPermission("pipeline", uid, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "reader"); err != nil {
+		return nil, err
+	} else if !granted {
+		return nil, ErrNotFound
+	}
+
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, uid, view == VIEW_BASIC)
 	if err != nil {
 		return nil, err
@@ -470,20 +475,35 @@ func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid 
 
 func (s *service) checkPrivatePipelineQuota(ctx context.Context, ns resource.Namespace, dbPipeline *datamodel.Pipeline, quota int) error {
 
-	if dbPipeline.Permission.Users["*/*"].Enabled {
+	if val, ok := dbPipeline.Permission.Users["*/*"]; ok && val.Enabled {
 		return nil
 	}
 	privateCount := 0
 	// TODO: optimize this
-	pipelines, _, _, err := s.repository.ListPipelinesAdmin(ctx, 100, "", true, filtering.Filter{}, false)
-	if err != nil {
-		return err
-	}
-	for _, pipeline := range pipelines {
-		if !pipeline.Permission.Users["*/*"].Enabled {
-			privateCount += 1
+	pageToken := ""
+	var err error
+	var pipelines []*datamodel.Pipeline
+	for {
+		pipelines, _, pageToken, err = s.repository.ListNamespacePipelines(ctx, ns.String(), int64(100), pageToken, true, filtering.Filter{}, nil, false)
+		if err != nil {
+			return err
+		}
+		for _, pipeline := range pipelines {
+
+			if _, ok := pipeline.Permission.Users["*/*"]; ok {
+				if !pipeline.Permission.Users["*/*"].Enabled {
+					privateCount += 1
+				}
+			} else {
+				privateCount += 1
+			}
+
+		}
+		if pageToken == "" {
+			break
 		}
 	}
+
 	if privateCount >= quota {
 		return ErrNamespacePrivatePipelineQuotaExceed
 	}
@@ -492,6 +512,25 @@ func (s *service) checkPrivatePipelineQuota(ctx context.Context, ns resource.Nam
 }
 
 func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pbPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
+
+	if ns.NsType == resource.Organization {
+		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("organizations/%s", ns.NsID)})
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			if resp.Subscription.Plan == "inactive" {
+				return nil, status.Errorf(codes.FailedPrecondition, "the organization subscription is not active")
+			}
+		}
+	}
 
 	ownerPermalink := ns.String()
 
@@ -879,7 +918,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	return s.DBToPBPipeline(ctx, dbPipeline, VIEW_FULL)
 }
 
-func (s *service) preTriggerPipeline(isPublic bool, ns resource.Namespace, authUser *AuthUser, recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
+func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns resource.Namespace, authUser *AuthUser, recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
 
 	if isPublic {
 		value, err := s.redisClient.Get(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID)).Result()
@@ -893,20 +932,42 @@ func (s *service) preTriggerPipeline(isPublic bool, ns resource.Namespace, authU
 			}
 		}
 	} else {
-		var n string
 		if ns.NsType == resource.Organization {
-			n = "organization"
-		} else {
-			n = "user"
-		}
-		value, err := s.redisClient.Get(context.Background(), fmt.Sprintf("namespace_quota_limit:%s:%s", n, ns.NsUid)).Result()
-		// TODO: use a more robust way to check key exist
-		if !errors.Is(err, redis.Nil) {
-			requestLeft, _ := strconv.ParseInt(value, 10, 64)
-			if requestLeft <= 0 {
-				return ErrNamespaceTriggerQuotaExceed
+			resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
+				metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+				&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+			)
+			if err != nil {
+				s, ok := status.FromError(err)
+				if !ok {
+					return err
+				}
+				if s.Code() != codes.Unimplemented {
+					return err
+				}
 			} else {
-				_ = s.redisClient.Decr(context.Background(), fmt.Sprintf("namespace_quota_limit:%s:%s", n, ns.NsUid))
+				if resp.Subscription.Quota.PrivatePipelineTrigger.Remain == 0 {
+					return ErrNamespaceTriggerQuotaExceed
+				}
+			}
+
+		} else {
+			resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
+				metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+				&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+			)
+			if err != nil {
+				s, ok := status.FromError(err)
+				if !ok {
+					return err
+				}
+				if s.Code() != codes.Unimplemented {
+					return err
+				}
+			} else {
+				if resp.Subscription.Quota.PrivatePipelineTrigger.Remain == 0 {
+					return ErrNamespaceTriggerQuotaExceed
+				}
 			}
 		}
 	}
@@ -1439,7 +1500,7 @@ func (s *service) triggerPipeline(
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	err := s.preTriggerPipeline(isPublic, ns, authUser, recipe, pipelineInputs)
+	err := s.preTriggerPipeline(ctx, isPublic, ns, authUser, recipe, pipelineInputs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1488,6 +1549,7 @@ func (s *service) triggerPipeline(
 			OwnerPermalink:             ns.String(),
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
+			Mode:                       mgmtPB.Mode_MODE_SYNC,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1529,7 +1591,7 @@ func (s *service) triggerAsyncPipeline(
 	pipelineTriggerId string,
 	returnTraces bool) (*longrunningpb.Operation, error) {
 
-	err := s.preTriggerPipeline(isPublic, ns, authUser, recipe, pipelineInputs)
+	err := s.preTriggerPipeline(ctx, isPublic, ns, authUser, recipe, pipelineInputs)
 	if err != nil {
 		return nil, err
 	}
@@ -1578,6 +1640,7 @@ func (s *service) triggerAsyncPipeline(
 			OwnerPermalink:             ns.String(),
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
+			Mode:                       mgmtPB.Mode_MODE_ASYNC,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1967,6 +2030,26 @@ func (s *service) ListConnectors(ctx context.Context, authUser *AuthUser, pageSi
 }
 
 func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Namespace, authUser *AuthUser, connector *pipelinePB.Connector) (*pipelinePB.Connector, error) {
+
+	if ns.NsType == resource.Organization {
+		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
+			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("organizations/%s", ns.NsID)})
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			if resp.Subscription.Plan == "inactive" {
+				return nil, status.Errorf(codes.FailedPrecondition, "the organization subscription is not active")
+			}
+		}
+
+	}
 
 	ownerPermalink := ns.String()
 
