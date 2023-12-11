@@ -4,21 +4,21 @@ import (
 	"context"
 	"errors"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	"github.com/jackc/pgconn"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-
 	"gorm.io/gorm"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	"github.com/jackc/pgconn"
+	"github.com/instill-ai/x/errmsg"
 )
 
 // RecoveryInterceptorOpt - panic handler
@@ -39,7 +39,7 @@ func UnaryAppendMetadataInterceptor(ctx context.Context, req interface{}, info *
 	newCtx := metadata.NewIncomingContext(ctx, md)
 	h, err := handler(newCtx, req)
 
-	return h, InjectErrCode(err)
+	return h, AsGRPCError(err)
 }
 
 // StreamAppendMetadataInterceptor - append metadatas for stream
@@ -58,64 +58,33 @@ func StreamAppendMetadataInterceptor(srv interface{}, stream grpc.ServerStream, 
 	return err
 }
 
-func InjectErrCode(err error) error {
-
+// AsGRPCError sets the gRPC status and error message according to the error
+// type and metadata.
+func AsGRPCError(err error) error {
 	if err == nil {
 		return nil
 	}
+
 	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
-		if pgErr.Code == "23505" {
-			return status.Error(codes.AlreadyExists, err.Error())
-		}
-	}
+	var code codes.Code
 	switch {
-
 	case
+		errors.As(err, &pgErr) && pgErr.Code == "23505",
 		errors.Is(err, gorm.ErrDuplicatedKey):
-		return status.Error(codes.AlreadyExists, err.Error())
-	case
-		errors.Is(err, gorm.ErrRecordNotFound):
-		return status.Error(codes.NotFound, err.Error())
 
+		code = codes.AlreadyExists
 	case
+		errors.Is(err, gorm.ErrRecordNotFound),
 		errors.Is(err, repository.ErrNoDataDeleted),
-		errors.Is(err, repository.ErrNoDataUpdated):
-		return status.Error(codes.NotFound, err.Error())
+		errors.Is(err, repository.ErrNoDataUpdated),
+		errors.Is(err, service.ErrNotFound),
+		errors.Is(err, acl.ErrMembershipNotFound):
 
+		code = codes.NotFound
 	case
 		errors.Is(err, repository.ErrOwnerTypeNotMatch),
-		errors.Is(err, repository.ErrPageTokenDecode):
-		return status.Error(codes.InvalidArgument, err.Error())
-
-	case
-		errors.Is(err, service.ErrNoPermission),
-		errors.Is(err, service.ErrCanNotTriggerNonLatestPipelineRelease):
-		return status.Error(codes.PermissionDenied, err.Error())
-
-	case
-		errors.Is(err, service.ErrNotFound):
-		return status.Error(codes.NotFound, err.Error())
-
-	case
-		errors.Is(err, service.ErrUnauthenticated):
-		return status.Error(codes.Unauthenticated, err.Error())
-
-	case
-		errors.Is(err, service.ErrRateLimiting),
-		errors.Is(err, service.ErrNamespacePrivatePipelineQuotaExceed),
-		errors.Is(err, service.ErrNamespaceTriggerQuotaExceed):
-		return status.Error(codes.ResourceExhausted, err.Error())
-
-	case
-		errors.Is(err, acl.ErrMembershipNotFound):
-		return status.Error(codes.NotFound, err.Error())
-
-	case
-		errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
-		return status.Error(codes.InvalidArgument, err.Error())
-
-	case
+		errors.Is(err, repository.ErrPageTokenDecode),
+		errors.Is(err, bcrypt.ErrMismatchedHashAndPassword),
 		errors.Is(err, handler.ErrCheckUpdateImmutableFields),
 		errors.Is(err, handler.ErrCheckOutputOnlyFields),
 		errors.Is(err, handler.ErrCheckRequiredFields),
@@ -123,9 +92,27 @@ func InjectErrCode(err error) error {
 		errors.Is(err, handler.ErrResourceID),
 		errors.Is(err, handler.ErrSematicVersion),
 		errors.Is(err, handler.ErrUpdateMask):
-		return status.Error(codes.InvalidArgument, err.Error())
 
+		code = codes.InvalidArgument
+	case
+		errors.Is(err, service.ErrNoPermission),
+		errors.Is(err, service.ErrCanNotTriggerNonLatestPipelineRelease):
+
+		code = codes.PermissionDenied
+	case
+		errors.Is(err, service.ErrUnauthenticated):
+
+		code = codes.Unauthenticated
+
+	case
+		errors.Is(err, service.ErrRateLimiting),
+		errors.Is(err, service.ErrNamespacePrivatePipelineQuotaExceed),
+		errors.Is(err, service.ErrNamespaceTriggerQuotaExceed):
+
+		code = codes.ResourceExhausted
 	default:
-		return err
+		code = codes.Unknown
 	}
+
+	return status.Error(code, errmsg.MessageOrErr(err))
 }
