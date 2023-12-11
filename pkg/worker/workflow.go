@@ -36,6 +36,7 @@ type TriggerPipelineWorkflowRequest struct {
 	OwnerPermalink             string
 	UserPermalink              string
 	ReturnTraces               bool
+	Mode                       mgmtPB.Mode
 }
 
 type TriggerPipelineWorkflowResponse struct {
@@ -149,7 +150,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		OwnerType:          ownerType,
 		UserUID:            strings.Split(param.UserPermalink, "/")[1],
 		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
-		TriggerMode:        mgmtPB.Mode_MODE_ASYNC,
+		TriggerMode:        param.Mode,
 		PipelineID:         param.PipelineId,
 		PipelineUID:        param.PipelineUid.String(),
 		PipelineReleaseID:  param.PipelineReleaseId,

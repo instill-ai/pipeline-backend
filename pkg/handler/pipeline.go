@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"strconv"
-	"time"
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"github.com/gofrs/uuid"
@@ -29,11 +28,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/checkfield"
 
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -843,7 +840,6 @@ func (h *PublicHandler) TriggerOrganizationPipeline(ctx context.Context, req *pi
 
 func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req TriggerNamespacePipelineRequestInterface) (outputs []*structpb.Struct, metadata *pipelinePB.TriggerMetadata, err error) {
 
-	startTime := time.Now()
 	eventName := "TriggerNamespacePipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
@@ -860,36 +856,9 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 		return nil, nil, err
 	}
 
-	var ownerType mgmtPB.OwnerType
-	switch ns.NsType {
-	case resource.Organization:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
-	case resource.User:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
-	default:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
-	}
-
-	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           ns.NsUid.String(),
-		OwnerType:          ownerType,
-		UserUID:            authUser.UID.String(),
-		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
-		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
-		PipelineID:         pbPipeline.Id,
-		PipelineUID:        pbPipeline.Uid,
-		PipelineReleaseID:  "",
-		PipelineReleaseUID: uuid.Nil.String(),
-		PipelineTriggerUID: logUUID.String(),
-		TriggerTime:        startTime.Format(time.RFC3339Nano),
-	}
-
 	outputs, metadata, err = h.service.TriggerNamespacePipelineByID(ctx, ns, authUser, id, req.GetInputs(), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		_ = h.service.WriteNewPipelineDataPoint(ctx, dataPoint)
 		return nil, nil, err
 	}
 
@@ -900,12 +869,6 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 		eventName,
 		custom_otel.SetEventResource(pbPipeline),
 	)))
-
-	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
-	if err := h.service.WriteNewPipelineDataPoint(ctx, dataPoint); err != nil {
-		logger.Warn(err.Error())
-	}
 
 	return outputs, metadata, nil
 }
@@ -1603,7 +1566,6 @@ func (h *PublicHandler) TriggerOrganizationPipelineRelease(ctx context.Context, 
 
 func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req TriggerNamespacePipelineReleaseRequestInterface) (outputs []*structpb.Struct, metadata *pipelinePB.TriggerMetadata, err error) {
 
-	startTime := time.Now()
 	eventName := "TriggerNamespacePipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
@@ -1620,36 +1582,9 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 		return nil, nil, err
 	}
 
-	var ownerType mgmtPB.OwnerType
-	switch ns.NsType {
-	case resource.Organization:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
-	case resource.User:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
-	default:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
-	}
-
-	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           ns.NsUid.String(),
-		OwnerType:          ownerType,
-		UserUID:            authUser.UID.String(),
-		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
-		TriggerMode:        mgmtPB.Mode_MODE_SYNC,
-		PipelineID:         pbPipeline.Id,
-		PipelineUID:        pbPipeline.Uid,
-		PipelineReleaseID:  pbPipelineRelease.Id,
-		PipelineReleaseUID: pbPipelineRelease.Uid,
-		PipelineTriggerUID: logUUID.String(),
-		TriggerTime:        startTime.Format(time.RFC3339Nano),
-	}
-
 	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pbPipeline.Uid), releaseId, req.GetInputs(), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		_ = h.service.WriteNewPipelineDataPoint(ctx, dataPoint)
 		return nil, nil, err
 	}
 
@@ -1660,12 +1595,6 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 		eventName,
 		custom_otel.SetEventResource(pbPipelineRelease),
 	)))
-
-	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
-	if err := h.service.WriteNewPipelineDataPoint(ctx, dataPoint); err != nil {
-		logger.Warn(err.Error())
-	}
 
 	return outputs, metadata, nil
 }
