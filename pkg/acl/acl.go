@@ -73,7 +73,7 @@ func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error
 			return fmt.Errorf("only support users: `*/*`")
 		}
 
-		if perm.Role == "ROLE_VIEWER" {
+		if perm.Role == "ROLE_VIEWER" || perm.Role == "ROLE_EXECUTOR" {
 			for _, t := range []string{"user", "visitor"} {
 				err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("%s:*", t), "reader", perm.Enabled)
 				if err != nil {
