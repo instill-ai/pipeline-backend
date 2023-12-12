@@ -490,11 +490,11 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			pbPipeline.OpenapiSchema = spec
 		}
 	}
-	releases := []*pipelinePB.PipelineRelease{}
+	releases := []*datamodel.PipelineRelease{}
 	pageToken := ""
 	for {
-		var page []*pipelinePB.PipelineRelease
-		page, _, pageToken, err = s.ListPipelineReleasesAdmin(ctx, 100, pageToken, view, filtering.Filter{}, false)
+		var page []*datamodel.PipelineRelease
+		page, _, pageToken, err = s.repository.ListNamespacePipelineReleases(ctx, dbPipeline.Owner, dbPipeline.UID, 100, pageToken, false, filtering.Filter{}, false)
 		if err != nil {
 			return nil, err
 		}
@@ -503,7 +503,23 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			break
 		}
 	}
-	pbPipeline.Releases = releases
+
+	latestReleaseUID := uuid.Nil
+	defaultReleaseUID := uuid.Nil
+	latestRelease, err := s.repository.GetLatestNamespacePipelineRelease(ctx, dbPipeline.Owner, dbPipeline.UID, true)
+	if err == nil {
+		latestReleaseUID = latestRelease.UID
+	}
+	defaultRelease, err := s.repository.GetNamespacePipelineByID(ctx, dbPipeline.Owner, pbPipeline.Id, true)
+	if err == nil {
+		defaultReleaseUID = defaultRelease.UID
+	}
+
+	pbReleases, err := s.DBToPBPipelineReleases(ctx, releases, VIEW_FULL, latestReleaseUID, defaultReleaseUID)
+	if err != nil {
+		return nil, err
+	}
+	pbPipeline.Releases = pbReleases
 
 	return &pbPipeline, nil
 }
