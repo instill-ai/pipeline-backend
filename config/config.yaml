@@ -69,6 +69,12 @@ mgmtbackend:
   https:
     cert:
     key:
+modelbackend:
+  host: model-backend
+  publicport: 8083
+  https:
+    cert:
+    key:
 controller:
   host: controller-vdp
   privateport: 3085
