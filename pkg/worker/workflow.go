@@ -77,6 +77,7 @@ type PipelineMetadataStruct struct {
 	ReleaseUid string
 	Owner      string
 	TriggerId  string
+	UserUid    string
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -418,6 +419,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					ReleaseUid: param.PipelineReleaseUid.String(),
 					Owner:      param.OwnerPermalink,
 					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
+					UserUid:    strings.Split(param.UserPermalink, "/")[1],
 				},
 				Task: task,
 			}).Get(ctx, &result); err != nil {
@@ -488,6 +490,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					ReleaseUid: param.PipelineReleaseUid.String(),
 					Owner:      param.OwnerPermalink,
 					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
+					UserUid:    strings.Split(param.UserPermalink, "/")[1],
 				},
 				Task: task,
 			}).Get(ctx, &result); err != nil {
@@ -621,8 +624,15 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 			if err != nil {
 				logger.Fatal(err.Error())
 			}
+			// TODO: optimize this
+			str.Fields["instill_jwt_sub"] = structpb.NewStringValue(param.PipelineMetadata.UserUid)
+			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 			return &str
 		}
+		str := structpb.Struct{Fields: make(map[string]*structpb.Value)}
+		// TODO: optimize this
+		str.Fields["instill_model_backend"] = structpb.NewStringValue(param.PipelineMetadata.UserUid)
+		str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 		return nil
 	}()
 

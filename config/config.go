@@ -19,16 +19,17 @@ var Config AppConfig
 
 // AppConfig defines
 type AppConfig struct {
-	Server      ServerConfig      `koanf:"server"`
-	Connector   ConnectorConfig   `koanf:"connector"`
-	Database    DatabaseConfig    `koanf:"database"`
-	InfluxDB    InfluxDBConfig    `koanf:"influxdb"`
-	Temporal    TemporalConfig    `koanf:"temporal"`
-	Cache       CacheConfig       `koanf:"cache"`
-	Log         LogConfig         `koanf:"log"`
-	MgmtBackend MgmtBackendConfig `koanf:"mgmtbackend"`
-	Controller  ControllerConfig  `koanf:"controller"`
-	OpenFGA     OpenFGAConfig     `koanf:"openfga"`
+	Server       ServerConfig       `koanf:"server"`
+	Connector    ConnectorConfig    `koanf:"connector"`
+	Database     DatabaseConfig     `koanf:"database"`
+	InfluxDB     InfluxDBConfig     `koanf:"influxdb"`
+	Temporal     TemporalConfig     `koanf:"temporal"`
+	Cache        CacheConfig        `koanf:"cache"`
+	Log          LogConfig          `koanf:"log"`
+	MgmtBackend  MgmtBackendConfig  `koanf:"mgmtbackend"`
+	ModelBackend ModelBackendConfig `koanf:"modelbackend"`
+	Controller   ControllerConfig   `koanf:"controller"`
+	OpenFGA      OpenFGAConfig      `koanf:"openfga"`
 }
 
 // OpenFGA config
@@ -137,6 +138,16 @@ type MgmtBackendConfig struct {
 	PublicPort  int    `koanf:"publicport"`
 	PrivatePort int    `koanf:"privateport"`
 	HTTPS       struct {
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
+	}
+}
+
+// ModelBackendConfig related to mgmt-backend
+type ModelBackendConfig struct {
+	Host       string `koanf:"host"`
+	PublicPort int    `koanf:"publicport"`
+	HTTPS      struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
