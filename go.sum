@@ -1185,12 +1185,12 @@ github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 h1:W9WBk7
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839/go.mod h1:xaLFMmpvUxqXtVkUJfg9QmT88cDaCJ3ZKgdZ78oO8Qo=
 github.com/instill-ai/component v0.7.1-alpha.0.20231208045032-bafec3495571 h1:LdlHF/NN65GrM9kTnDMp3Ycxls3nU08/65UmHhIXjag=
 github.com/instill-ai/component v0.7.1-alpha.0.20231208045032-bafec3495571/go.mod h1:fWyVPJVJ4WyFSQMgWCc7KvcS7m9QpdS3VXCL2CZE8OY=
-github.com/instill-ai/connector v0.7.0-alpha.0.20231212074419-94a7b3cd13d7 h1:EQAXC2a+KXpzbRBzeYG3e032m5hLYW/WRsfMEjETsXs=
-github.com/instill-ai/connector v0.7.0-alpha.0.20231212074419-94a7b3cd13d7/go.mod h1:d4/IGbcK8YM7IqrvRRN3oMQVOk4jtFRzZGnflKY1IzI=
+github.com/instill-ai/connector v0.7.0-alpha.0.20231212141211-c0a3725a8bfc h1:7t1avg7bN2FNY53KJ8Vg7iTSIUd6jtwMSr80dlU1oK4=
+github.com/instill-ai/connector v0.7.0-alpha.0.20231212141211-c0a3725a8bfc/go.mod h1:lRIATE2Jjlo+imJ3+EzWLldE53S76ncoHO2fCMEpVWE=
 github.com/instill-ai/operator v0.5.0-alpha.0.20231206181023-581e551939b9 h1:Fx6UwbFek49Kgo6cbMlnxycmrvC3TPfs8Zkd1jjF99w=
 github.com/instill-ai/operator v0.5.0-alpha.0.20231206181023-581e551939b9/go.mod h1:oUG3J+ndGK0Ebxz664FaM7Csn+qPbR0gxitlFaRXTaI=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231210131526-67e990838339 h1:Q48Mm+0i6gL4ZYMiHPddMfBQaslk83y3jmPg9T1T7IQ=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231210131526-67e990838339/go.mod h1:q/YL5TZXD9nvmJ7Rih4gY3/B2HT2+GiFdxeZp9D+yE4=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231212091117-ca798a0535d1 h1:3UyjuBjas7U7aTtuEWdSB/xp8E2ec2FHH2WNwzD/chE=
+github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231212091117-ca798a0535d1/go.mod h1:q/YL5TZXD9nvmJ7Rih4gY3/B2HT2+GiFdxeZp9D+yE4=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20231206162018-6ccbff13136b h1:YwXracXgTWxaPfIsbC3uaZFjGO0E2y1e3hK9ZUq7ipE=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20231206162018-6ccbff13136b/go.mod h1:4uTzVtcC+UVKhRaNvJc2+LFLcr/fv3vsYE5QCWu6TQ0=
 github.com/instill-ai/x v0.3.0-alpha.0.20231124062833-3236165f5782 h1:ErsJ1IkjD6Rtif0YI898fv/qllW5x9vb2fdt69EYwug=
