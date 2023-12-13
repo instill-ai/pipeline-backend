@@ -779,9 +779,20 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	}
 
 	if quota > -1 {
-		err = s.checkPrivatePipelineQuota(ctx, ns, dbPipelineToUpdate, quota)
+		isPublic := false
+		oriPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, toUpdPipeline.Id, false)
 		if err != nil {
 			return nil, err
+		}
+		if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", oriPipeline.UID); err != nil {
+			return nil, err
+		}
+
+		if isPublic {
+			err = s.checkPrivatePipelineQuota(ctx, ns, dbPipelineToUpdate, quota)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
