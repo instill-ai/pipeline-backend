@@ -89,6 +89,7 @@ type PipelineUsageMetricData struct {
 	PipelineTriggerUID  string
 	TriggerTime         string
 	ComputeTimeDuration float64
+	IsPublic            bool
 }
 
 func NewPipelineDataPoint(data PipelineUsageMetricData) *write.Point {
@@ -110,6 +111,7 @@ func NewPipelineDataPoint(data PipelineUsageMetricData) *write.Point {
 			"pipeline_trigger_id":   data.PipelineTriggerUID,
 			"trigger_time":          data.TriggerTime,
 			"compute_time_duration": data.ComputeTimeDuration,
+			"is_public":             data.IsPublic,
 		},
 		time.Now(),
 	)
