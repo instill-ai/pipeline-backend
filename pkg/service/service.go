@@ -1550,6 +1550,7 @@ func (s *service) triggerPipeline(
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
 			Mode:                       mgmtPB.Mode_MODE_SYNC,
+			IsPublic:                   isPublic,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1641,6 +1642,7 @@ func (s *service) triggerAsyncPipeline(
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
 			Mode:                       mgmtPB.Mode_MODE_ASYNC,
+			IsPublic:                   isPublic,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
