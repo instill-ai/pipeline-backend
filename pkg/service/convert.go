@@ -361,7 +361,7 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view View) (*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, authUser *AuthUser, view View) (*pipelinePB.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -472,6 +472,25 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		OwnerName:   ownerName,
 		Owner:       owner,
 	}
+	if authUser != nil {
+		canEdit, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "", "executor")
+		if err != nil {
+			return nil, err
+		}
+		canTrigger, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "", "writer")
+		if err != nil {
+			return nil, err
+		}
+		pbPipeline.Permission = &pipelinePB.Permission{
+			CanEdit:    canEdit,
+			CanTrigger: canTrigger,
+		}
+	} else {
+		pbPipeline.Permission = &pipelinePB.Permission{
+			CanEdit:    true,
+			CanTrigger: true,
+		}
+	}
 
 	if view != VIEW_BASIC {
 		if dbPipeline.Metadata != nil {
@@ -525,13 +544,14 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, view View) ([]*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, authUser *AuthUser, view View) ([]*pipelinePB.Pipeline, error) {
 	var err error
 	pbPipelines := make([]*pipelinePB.Pipeline, len(dbPipelines))
 	for idx := range dbPipelines {
 		pbPipelines[idx], err = s.DBToPBPipeline(
 			ctx,
 			dbPipelines[idx],
+			authUser,
 			view,
 		)
 		if err != nil {
