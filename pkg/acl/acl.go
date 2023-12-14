@@ -68,7 +68,7 @@ func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error
 	// TODO: use OpenFGA as single source of truth
 	// TODO: support fine-grained permission settings
 
-	for user, perm := range pipeline.Permission.Users {
+	for user, perm := range pipeline.Sharing.Users {
 		if user != "*/*" {
 			return fmt.Errorf("only support users: `*/*`")
 		}
@@ -91,18 +91,18 @@ func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error
 		}
 	}
 
-	if pipeline.Permission.ShareCode != nil {
-		if pipeline.Permission.ShareCode.User != "*/*" {
+	if pipeline.Sharing.ShareCode != nil {
+		if pipeline.Sharing.ShareCode.User != "*/*" {
 			return fmt.Errorf("only support users: `*/*`")
 		}
-		if pipeline.Permission.ShareCode.Role == "ROLE_VIEWER" {
-			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "reader", pipeline.Permission.ShareCode.Enabled)
+		if pipeline.Sharing.ShareCode.Role == "ROLE_VIEWER" {
+			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "reader", pipeline.Sharing.ShareCode.Enabled)
 			if err != nil {
 				return err
 			}
 		}
-		if pipeline.Permission.ShareCode.Role == "ROLE_EXECUTOR" {
-			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "executor", pipeline.Permission.ShareCode.Enabled)
+		if pipeline.Sharing.ShareCode.Role == "ROLE_EXECUTOR" {
+			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "executor", pipeline.Sharing.ShareCode.Enabled)
 			if err != nil {
 				return err
 			}

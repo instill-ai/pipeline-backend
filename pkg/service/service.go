@@ -113,8 +113,8 @@ type Service interface {
 	ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineId string, releaseId string) (string, error)
 
 	PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error)
-	DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view View) (*pipelinePB.Pipeline, error)
-	DBToPBPipelines(ctx context.Context, dbPipeline []*datamodel.Pipeline, view View) ([]*pipelinePB.Pipeline, error)
+	DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, authUser *AuthUser, view View) (*pipelinePB.Pipeline, error)
+	DBToPBPipelines(ctx context.Context, dbPipeline []*datamodel.Pipeline, authUser *AuthUser, view View) ([]*pipelinePB.Pipeline, error)
 
 	PBToDBPipelineRelease(ctx context.Context, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error)
 	DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view View, latestUUID uuid.UUID, defaultUUID uuid.UUID) (*pipelinePB.PipelineRelease, error)
@@ -452,7 +452,7 @@ func (s *service) ListPipelines(ctx context.Context, authUser *AuthUser, pageSiz
 	if err != nil {
 		return nil, 0, "", err
 	}
-	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, view)
+	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, authUser, view)
 	return pbPipelines, int32(totalSize), nextPageToken, err
 
 }
@@ -470,12 +470,12 @@ func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid 
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, view)
+	return s.DBToPBPipeline(ctx, dbPipeline, authUser, view)
 }
 
 func (s *service) checkPrivatePipelineQuota(ctx context.Context, ns resource.Namespace, dbPipeline *datamodel.Pipeline, quota int) error {
 
-	if val, ok := dbPipeline.Permission.Users["*/*"]; ok && val.Enabled {
+	if val, ok := dbPipeline.Sharing.Users["*/*"]; ok && val.Enabled {
 		return nil
 	}
 	privateCount := 0
@@ -490,8 +490,8 @@ func (s *service) checkPrivatePipelineQuota(ctx context.Context, ns resource.Nam
 		}
 		for _, pipeline := range pipelines {
 
-			if _, ok := pipeline.Permission.Users["*/*"]; ok {
-				if !pipeline.Permission.Users["*/*"].Enabled {
+			if _, ok := pipeline.Sharing.Users["*/*"]; ok {
+				if !pipeline.Sharing.Users["*/*"].Enabled {
 					privateCount += 1
 				}
 			} else {
@@ -621,7 +621,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbCreatedPipeline, VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbCreatedPipeline, authUser, VIEW_FULL)
 }
 
 func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error) {
@@ -638,7 +638,7 @@ func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namesp
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, view)
+	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, authUser, view)
 	return pbPipelines, int32(ps), pt, err
 }
 
@@ -649,7 +649,7 @@ func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int32, pageTo
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, view)
+	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, nil, view)
 	return pbPipelines, int32(ps), pt, err
 
 }
@@ -669,7 +669,7 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 		return nil, ErrNotFound
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, view)
+	return s.DBToPBPipeline(ctx, dbPipeline, authUser, view)
 }
 
 func (s *service) GetNamespacePipelineDefaultReleaseUid(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) (uuid.UUID, error) {
@@ -708,7 +708,7 @@ func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, view)
+	return s.DBToPBPipeline(ctx, dbPipeline, nil, view)
 
 }
 
@@ -811,7 +811,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbPipeline, authUser, VIEW_FULL)
 }
 
 func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) error {
@@ -892,7 +892,7 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbPipeline, authUser, VIEW_FULL)
 
 }
 
@@ -926,7 +926,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, VIEW_FULL)
+	return s.DBToPBPipeline(ctx, dbPipeline, authUser, VIEW_FULL)
 }
 
 func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns resource.Namespace, authUser *AuthUser, recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {

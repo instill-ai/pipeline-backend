@@ -292,18 +292,18 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 
 	}
 
-	dbPermission := &datamodel.Permission{}
-	if pbPipeline.GetPermission() != nil {
+	dbSharing := &datamodel.Sharing{}
+	if pbPipeline.GetSharing() != nil {
 
 		if err != nil {
 			return nil, err
 		}
 
-		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetPermission())
+		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetSharing())
 		if err != nil {
 			return nil, err
 		}
-		if err := json.Unmarshal(b, &dbPermission); err != nil {
+		if err := json.Unmarshal(b, &dbSharing); err != nil {
 			return nil, err
 		}
 
@@ -344,9 +344,9 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 			String: pbPipeline.GetDescription(),
 			Valid:  true,
 		},
-		Readme:     pbPipeline.Readme,
-		Recipe:     recipe,
-		Permission: dbPermission,
+		Readme:  pbPipeline.Readme,
+		Recipe:  recipe,
+		Sharing: dbSharing,
 		Metadata: func() []byte {
 			if pbPipeline.GetMetadata() != nil {
 				b, err := pbPipeline.GetMetadata().MarshalJSON()
@@ -361,7 +361,7 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view View) (*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, authUser *AuthUser, view View) (*pipelinePB.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -437,19 +437,19 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 
-	pbPermission := &pipelinePB.Permission{}
+	pbSharing := &pipelinePB.Sharing{}
 
-	b, err := json.Marshal(dbPipeline.Permission)
+	b, err := json.Marshal(dbPipeline.Sharing)
 	if err != nil {
 		return nil, err
 	}
 
-	err = protojson.Unmarshal(b, pbPermission)
+	err = protojson.Unmarshal(b, pbSharing)
 	if err != nil {
 		return nil, err
 	}
-	if pbPermission != nil && pbPermission.ShareCode != nil {
-		pbPermission.ShareCode.Code = dbPipeline.ShareCode
+	if pbSharing != nil && pbSharing.ShareCode != nil {
+		pbSharing.ShareCode.Code = dbPipeline.ShareCode
 	}
 
 	pbPipeline := pipelinePB.Pipeline{
@@ -468,9 +468,28 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		Description: &dbPipeline.Description.String,
 		Readme:      dbPipeline.Readme,
 		Recipe:      pbRecipe,
-		Permission:  pbPermission,
+		Sharing:     pbSharing,
 		OwnerName:   ownerName,
 		Owner:       owner,
+	}
+	if authUser != nil {
+		canEdit, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "", "executor")
+		if err != nil {
+			return nil, err
+		}
+		canTrigger, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "", "writer")
+		if err != nil {
+			return nil, err
+		}
+		pbPipeline.Permission = &pipelinePB.Permission{
+			CanEdit:    canEdit,
+			CanTrigger: canTrigger,
+		}
+	} else {
+		pbPipeline.Permission = &pipelinePB.Permission{
+			CanEdit:    true,
+			CanTrigger: true,
+		}
 	}
 
 	if view != VIEW_BASIC {
@@ -525,13 +544,14 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, view View) ([]*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, authUser *AuthUser, view View) ([]*pipelinePB.Pipeline, error) {
 	var err error
 	pbPipelines := make([]*pipelinePB.Pipeline, len(dbPipelines))
 	for idx := range dbPipelines {
 		pbPipelines[idx], err = s.DBToPBPipeline(
 			ctx,
 			dbPipelines[idx],
+			authUser,
 			view,
 		)
 		if err != nil {
