@@ -265,9 +265,19 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		idxMap := map[int]int{}
 
 		for idx := 0; idx < batchSize; idx++ {
+			memory[idx][comp.Id] = map[string]interface{}{
+				"input":  map[string]interface{}{},
+				"output": map[string]interface{}{},
+				"status": map[string]interface{}{
+					"started":   false,
+					"completed": false,
+					"skipped":   false,
+				},
+			}
 
 			for _, ancestorID := range dag.GetAncestorIDs(comp.Id) {
 				if statuses[idx][ancestorID].Skipped {
+					memory[idx][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["skipped"] = true
 					statuses[idx][comp.Id].Skipped = true
 					break
 				}
@@ -284,18 +294,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						return nil, err
 					}
 					if cond == false {
+						memory[idx][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["skipped"] = true
 						statuses[idx][comp.Id].Skipped = true
 					} else {
+						memory[idx][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["started"] = true
 						statuses[idx][comp.Id].Started = true
 					}
 				} else {
+					memory[idx][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["started"] = true
 					statuses[idx][comp.Id].Started = true
 				}
-			}
-
-			memory[idx][comp.Id] = map[string]interface{}{
-				"input":  map[string]interface{}{},
-				"output": map[string]interface{}{},
 			}
 
 			if statuses[idx][comp.Id].Started {
@@ -455,12 +463,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					return nil, err
 				}
 				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
+				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
 				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
 			}
 
 		} else if comp.DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
 			responseCompId = comp.Id
 			for compBatchIdx := range compInputs {
+				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
 				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
 			}
 			computeTime[comp.Id] = 0
@@ -526,6 +536,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					return nil, err
 				}
 				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
+				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
 				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
 			}
 

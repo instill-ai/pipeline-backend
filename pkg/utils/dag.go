@@ -438,7 +438,11 @@ func EvalCondition(expr ast.Expr, value map[string]interface{}) (interface{}, er
 	case *ast.ParenExpr:
 		return EvalCondition(e.X, value)
 	case *ast.SelectorExpr:
-		return EvalCondition(e.Sel, value[e.X.(*ast.Ident).String()].(map[string]interface{}))
+		v, err := EvalCondition(e.X, value)
+		if err != nil {
+			return nil, err
+		}
+		return v.(map[string]interface{})[e.Sel.String()], nil
 	case *ast.BasicLit:
 		if e.Kind == token.INT {
 			return strconv.ParseInt(e.Value, 10, 64)
