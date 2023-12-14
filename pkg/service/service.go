@@ -475,7 +475,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid 
 
 func (s *service) checkPrivatePipelineQuota(ctx context.Context, ns resource.Namespace, dbPipeline *datamodel.Pipeline, quota int) error {
 
-	if val, ok := dbPipeline.Permission.Users["*/*"]; ok && val.Enabled {
+	if val, ok := dbPipeline.Sharing.Users["*/*"]; ok && val.Enabled {
 		return nil
 	}
 	privateCount := 0
@@ -490,8 +490,8 @@ func (s *service) checkPrivatePipelineQuota(ctx context.Context, ns resource.Nam
 		}
 		for _, pipeline := range pipelines {
 
-			if _, ok := pipeline.Permission.Users["*/*"]; ok {
-				if !pipeline.Permission.Users["*/*"].Enabled {
+			if _, ok := pipeline.Sharing.Users["*/*"]; ok {
+				if !pipeline.Sharing.Users["*/*"].Enabled {
 					privateCount += 1
 				}
 			} else {

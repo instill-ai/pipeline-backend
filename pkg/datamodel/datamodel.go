@@ -51,7 +51,7 @@ type Pipeline struct {
 	Description       sql.NullString
 	Recipe            *Recipe `gorm:"type:jsonb"`
 	DefaultReleaseUID uuid.UUID
-	Permission        *Permission `gorm:"type:jsonb"`
+	Sharing           *Sharing `gorm:"type:jsonb"`
 	ShareCode         string
 	Metadata          datatypes.JSON `gorm:"type:jsonb"`
 	Readme            string
@@ -81,18 +81,18 @@ type Component struct {
 	Configuration  *structpb.Struct `json:"configuration"`
 }
 
-type Permission struct {
-	Users     map[string]*PermissionUser `json:"users,omitempty"`
-	ShareCode *PermissionCode            `json:"share_code,omitempty"`
+type Sharing struct {
+	Users     map[string]*SharingUser `json:"users,omitempty"`
+	ShareCode *SharingCode            `json:"share_code,omitempty"`
 }
 
-// Permission
-type PermissionUser struct {
+// Sharing
+type SharingUser struct {
 	Enabled bool   `json:"enabled,omitempty"`
 	Role    string `json:"role,omitempty"`
 }
 
-type PermissionCode struct {
+type SharingCode struct {
 	User    string `json:"user"`
 	Code    string `json:"code"`
 	Enabled bool   `json:"enabled,omitempty"`
@@ -123,7 +123,7 @@ func (r *Recipe) Value() (driver.Value, error) {
 }
 
 // Scan function for custom GORM type Recipe
-func (p *Permission) Scan(value interface{}) error {
+func (p *Sharing) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal value:", value))
@@ -137,13 +137,13 @@ func (p *Permission) Scan(value interface{}) error {
 }
 
 // Value function for custom GORM type Recipe
-func (p *Permission) Value() (driver.Value, error) {
+func (p *Sharing) Value() (driver.Value, error) {
 	valueString, err := json.Marshal(p)
 	return string(valueString), err
 }
 
 // Scan function for custom GORM type Recipe
-func (p *PermissionUser) Scan(value interface{}) error {
+func (p *SharingUser) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal value:", value))
@@ -157,13 +157,13 @@ func (p *PermissionUser) Scan(value interface{}) error {
 }
 
 // Value function for custom GORM type Recipe
-func (p *PermissionUser) Value() (driver.Value, error) {
+func (p *SharingUser) Value() (driver.Value, error) {
 	valueString, err := json.Marshal(p)
 	return string(valueString), err
 }
 
 // Scan function for custom GORM type Recipe
-func (p *PermissionCode) Scan(value interface{}) error {
+func (p *SharingCode) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New(fmt.Sprint("Failed to unmarshal value:", value))
@@ -177,7 +177,7 @@ func (p *PermissionCode) Scan(value interface{}) error {
 }
 
 // Value function for custom GORM type Recipe
-func (p *PermissionCode) Value() (driver.Value, error) {
+func (p *SharingCode) Value() (driver.Value, error) {
 	valueString, err := json.Marshal(p)
 	return string(valueString), err
 }
