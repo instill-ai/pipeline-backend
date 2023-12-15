@@ -382,29 +382,40 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 								"description": v.GetStructValue().Fields["description"].GetStringValue(),
 								"type":        "array",
 							})
-							m.GetStructValue().Fields["items"] = structpb.NewStructValue(walk.GetStructValue())
+
+							if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+								m.GetStructValue().Fields["items"] = structpb.NewStructValue(walk.GetStructValue())
+							}
 
 						} else {
 							m = structpb.NewStructValue(walk.GetStructValue())
-
 							if _, ok := v.GetStructValue().Fields["title"]; ok {
-								m.GetStructValue().Fields["title"] = v.GetStructValue().Fields["title"]
+								if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+									m.GetStructValue().Fields["title"] = v.GetStructValue().Fields["title"]
+								}
 							} else {
-								m.GetStructValue().Fields["title"] = structpb.NewStringValue("")
+								if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+									m.GetStructValue().Fields["title"] = structpb.NewStringValue("")
+								}
 							}
 							if _, ok := v.GetStructValue().Fields["description"]; ok {
-								m.GetStructValue().Fields["description"] = v.GetStructValue().Fields["description"]
+								if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+									m.GetStructValue().Fields["description"] = v.GetStructValue().Fields["description"]
+								}
 							} else {
-								m.GetStructValue().Fields["description"] = structpb.NewStringValue("")
+								if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+									m.GetStructValue().Fields["description"] = structpb.NewStringValue("")
+								}
 							}
 						}
-
 					} else {
 						return nil, fmt.Errorf("generate OpenAPI spec error")
 					}
 
 				}
-				m.GetStructValue().Fields["instillUIOrder"] = structpb.NewNumberValue(v.GetStructValue().Fields["instillUIOrder"].GetNumberValue())
+				if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+					m.GetStructValue().Fields["instillUIOrder"] = structpb.NewNumberValue(v.GetStructValue().Fields["instillUIOrder"].GetNumberValue())
+				}
 
 			} else {
 				m, err = structpb.NewValue(map[string]interface{}{
