@@ -487,7 +487,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			for idx := range result.OutputBlobRedisKeys {
 				defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
 			}
-			result := ExecuteConnectorActivityResponse{}
+			result := ExecuteOperatorActivityResponse{}
 			ctx = workflow.WithActivityOptions(ctx, ao)
 
 			start := time.Now()
