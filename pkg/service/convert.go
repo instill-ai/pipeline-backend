@@ -473,11 +473,11 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		Owner:       owner,
 	}
 	if authUser != nil {
-		canEdit, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "", "executor")
+		canEdit, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "", "writer")
 		if err != nil {
 			return nil, err
 		}
-		canTrigger, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "", "writer")
+		canTrigger, err := s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, "", "executor")
 		if err != nil {
 			return nil, err
 		}
