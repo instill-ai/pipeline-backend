@@ -139,7 +139,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	namespace := strings.Split(param.OwnerPermalink, "/")[0]
 	var ownerType mgmtPB.OwnerType
 	switch namespace {
-	case "orgs":
+	case "organizations":
 		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
 	case "users":
 		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
