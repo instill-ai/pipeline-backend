@@ -44,6 +44,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
+	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/paginate"
 	"github.com/instill-ai/x/sterr"
 
@@ -1571,6 +1572,14 @@ func (s *service) triggerPipeline(
 	var result *worker.TriggerPipelineWorkflowResponse
 	err = we.Get(context.Background(), &result)
 	if err != nil {
+		var applicationErr *temporal.ApplicationError
+		if errors.As(err, &applicationErr) {
+			var details worker.EndUserErrorDetails
+			if dErr := applicationErr.Details(&details); dErr == nil && details.Message != "" {
+				err = errmsg.AddMessage(err, details.Message)
+			}
+		}
+
 		return nil, nil, err
 	}
 	pipelineResp := &pipelinePB.TriggerUserPipelineResponse{}
