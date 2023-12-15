@@ -57,12 +57,26 @@ func TestAsGRPCError(t *testing.T) {
 			wantCode:    codes.AlreadyExists,
 			wantMessage: "Resource already exists.",
 		},
+		{
+			name:        "already a gRPC status",
+			in:          status.Error(codes.FailedPrecondition, "pipeline recipe error"),
+			wantCode:    codes.FailedPrecondition,
+			wantMessage: "pipeline recipe error",
+		},
+		{
+			name: "gRPC status with end-user message",
+			in: errmsg.AddMessage(
+				status.Error(codes.FailedPrecondition, "pipeline recipe error"),
+				"Invalid recipe in pipeline",
+			),
+			wantCode:    codes.FailedPrecondition,
+			wantMessage: "Invalid recipe in pipeline",
+		},
 	}
 
 	for _, tc := range testcases {
 		c.Run(tc.name, func(c *qt.C) {
-			err := fmt.Errorf("new err: %w", tc.in)
-			got := AsGRPCError(err)
+			got := AsGRPCError(tc.in)
 			c.Assert(got, qt.IsNotNil)
 
 			st, ok := status.FromError(got)

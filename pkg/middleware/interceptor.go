@@ -65,6 +65,20 @@ func AsGRPCError(err error) error {
 		return nil
 	}
 
+	// If it's already a status, respect the code.
+	// If, additionally, an end-user message has been set for the error, it has
+	// has priority over the status message.
+	if st, ok := status.FromError(err); ok {
+		if msg := errmsg.Message(err); msg != "" {
+			// This conversion is used to preserve the status details.
+			p := st.Proto()
+			p.Message = msg
+			st = status.FromProto(p)
+		}
+
+		return st.Err()
+	}
+
 	var pgErr *pgconn.PgError
 	var code codes.Code
 	switch {
