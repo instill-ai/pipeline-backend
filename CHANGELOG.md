@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.18.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.17.0-alpha...v0.18.0-beta) (2023-12-16)
+
+
+### Features
+
+* **fga:** adopt OpenFGA and implement pipeline and connector FGA ([#310](https://github.com/instill-ai/pipeline-backend/issues/310)) ([416dc75](https://github.com/instill-ai/pipeline-backend/commit/416dc7514e5d0f3e2a67e02e7205f4e3d31bf728))
+* **organization:** add organization API endpoints ([#308](https://github.com/instill-ai/pipeline-backend/issues/308)) ([0deeca7](https://github.com/instill-ai/pipeline-backend/commit/0deeca7d68c7fb64ecdf146d007f6fd3b5907af3))
+* **pipeline:** implement component status ([#317](https://github.com/instill-ai/pipeline-backend/issues/317)) ([42d8277](https://github.com/instill-ai/pipeline-backend/commit/42d8277740771b8ee974d145d84dc0cb0eb9ce4d))
+* **service:** implement conditional component ([#318](https://github.com/instill-ai/pipeline-backend/issues/318)) ([15312d3](https://github.com/instill-ai/pipeline-backend/commit/15312d3177ab1f7b1f5749ee7eef79c13b2c2791))
+* **service:** implement trigger quota-limit ([#322](https://github.com/instill-ai/pipeline-backend/issues/322)) ([043ee04](https://github.com/instill-ai/pipeline-backend/commit/043ee04fec6af24c95aa7fe9c57228eb193ed580))
+* **service:** implement trigger rate-limit ([#321](https://github.com/instill-ai/pipeline-backend/issues/321)) ([91a9706](https://github.com/instill-ai/pipeline-backend/commit/91a970632f562a40440184abfe08965403a409ef))
+* **service:** user can not trigger non-latest pipeline release under freemium plan ([#324](https://github.com/instill-ai/pipeline-backend/issues/324)) ([f2e82c9](https://github.com/instill-ai/pipeline-backend/commit/f2e82c9065322126de69c4221a70a9c9020ed191))
+
+
+### Bug Fixes
+
+* **service:** fix permission field bug ([1304969](https://github.com/instill-ai/pipeline-backend/commit/130496916356b8cb31df95d8ec3b0826ca475356))
+
+
+### Miscellaneous Chores
+
+* release v0.18.0-beta ([23028b4](https://github.com/instill-ai/pipeline-backend/commit/23028b429470fb30d8ec15cb13f35a34d35f45d0))
+
 ## [0.17.0-alpha](https://github.com/instill-ai/pipeline-backend/compare/v0.16.2-alpha...v0.17.0-alpha) (2023-11-28)
 
 
