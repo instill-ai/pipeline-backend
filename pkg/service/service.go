@@ -932,6 +932,10 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 
 func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns resource.Namespace, authUser *AuthUser, recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
 
+	batchSize := len(pipelineInputs)
+	if batchSize > constant.MaxBatchSize {
+		return ErrExceedMaxBatchSize
+	}
 	if isPublic {
 		value, err := s.redisClient.Get(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID)).Result()
 		// TODO: use a more robust way to check key exist
@@ -958,7 +962,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns reso
 					return err
 				}
 			} else {
-				if resp.Subscription.Quota.PrivatePipelineTrigger.Remain == 0 {
+				if resp.Subscription.Quota.PrivatePipelineTrigger.Remain-int32(batchSize) < 0 {
 					return ErrNamespaceTriggerQuotaExceed
 				}
 			}
@@ -977,7 +981,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns reso
 					return err
 				}
 			} else {
-				if resp.Subscription.Quota.PrivatePipelineTrigger.Remain == 0 {
+				if resp.Subscription.Quota.PrivatePipelineTrigger.Remain-int32(batchSize) < 0 {
 					return ErrNamespaceTriggerQuotaExceed
 				}
 			}

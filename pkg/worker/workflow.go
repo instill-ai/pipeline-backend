@@ -604,9 +604,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
 
 	if !param.IsPublic {
-		w.redisClient.Incr(
+		w.redisClient.IncrBy(
 			context.Background(),
 			fmt.Sprintf("private_trigger_count:%s", param.OwnerPermalink),
+			int64(batchSize),
 		)
 	}
 
