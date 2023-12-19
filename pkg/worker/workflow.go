@@ -13,7 +13,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -21,6 +20,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+	"github.com/instill-ai/x/errmsg"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -487,7 +487,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			for idx := range result.OutputBlobRedisKeys {
 				defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
 			}
-			result := ExecuteConnectorActivityResponse{}
+			result := ExecuteOperatorActivityResponse{}
 			ctx = workflow.WithActivityOptions(ctx, ao)
 
 			start := time.Now()
@@ -664,7 +664,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	}
 	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
-		return nil, fmt.Errorf("[Component %s Execution Data Error] %s", param.Id, status.Convert(err).Message())
+		return nil, w.toApplicationError(err, param.Id, ConnectorActivityError)
 	}
 
 	outputBlobRedisKeys, err := w.SetBlob(compOutputs)
@@ -697,7 +697,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 	}
 	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
-		return nil, fmt.Errorf("[Component %s Execution Data Error] %s", param.Id, status.Convert(err).Message())
+		return nil, w.toApplicationError(err, param.Id, OperatorActivityError)
 	}
 
 	outputBlobRedisKeys, err := w.SetBlob(compOutputs)
@@ -707,4 +707,34 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 
 	logger.Info("OperatorActivity completed")
 	return &ExecuteOperatorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
+}
+
+// toApplicationError wraps a temporal task error in a temporal.Application
+// error, adding end-user information that can be extracted by the temporal
+// client.
+func (w *worker) toApplicationError(err error, componentID, errType string) error {
+	details := EndUserErrorDetails{
+		// If no end-user message is present in the error, MessageOrErr will
+		// return the string version of the error. For an end user, this extra
+		// information is more actionable than no information at all.
+		Message: fmt.Sprintf("Component %s failed to execute. %s", componentID, errmsg.MessageOrErr(err)),
+	}
+	// return fault.Wrap(err, fmsg.WithDesc("component failed to execute", issue))
+	return temporal.NewApplicationErrorWithCause("component failed to execute", errType, err, details)
+}
+
+// The following constants help temporal clients to trace the origin of an
+// execution error. They can be leveraged to e.g. define retry policy rules.
+// This may evolve in the future to values that have more to do with the
+// business domain (e.g. VendorError (non billable), InputDataError (billable),
+// etc.).
+const (
+	ConnectorActivityError = "ConnectorActivityError"
+	OperatorActivityError  = "OperatorActivityError"
+)
+
+// EndUserErrorDetails provides a structured way to add an end-user error
+// message to a temporal.ApplicationError.
+type EndUserErrorDetails struct {
+	Message string
 }
