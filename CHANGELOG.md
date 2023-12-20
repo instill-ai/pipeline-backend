@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.18.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.18.0-beta...v0.18.1-beta) (2023-12-20)
+
+
+### Features
+
+* Improve error messages in connector execution ([#311](https://github.com/instill-ai/pipeline-backend/issues/311)) ([6e282eb](https://github.com/instill-ai/pipeline-backend/commit/6e282eba2dce24d20598a3f2de4e275869532eae))
+
+
+### Bug Fixes
+
+* calculate the trigger_count with batch_size ([#338](https://github.com/instill-ai/pipeline-backend/issues/338)) ([423e6c9](https://github.com/instill-ai/pipeline-backend/commit/423e6c97093470288ff1bce72540609d538de1d9))
+
+
+### Miscellaneous Chores
+
+* release v0.18.1-beta ([e5d5603](https://github.com/instill-ai/pipeline-backend/commit/e5d5603f82eb87cf015c3f40225b8128dbd0ad9f))
+
 ## [0.18.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.17.0-alpha...v0.18.0-beta) (2023-12-16)
 
 
