@@ -962,7 +962,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns reso
 					return err
 				}
 			} else {
-				if resp.Subscription.Quota.PrivatePipelineTrigger.Remain-int32(batchSize) < 0 {
+				if resp.Subscription.Quota.PrivatePipelineTrigger.Quota != -1 && resp.Subscription.Quota.PrivatePipelineTrigger.Remain-int32(batchSize) < 0 {
 					return ErrNamespaceTriggerQuotaExceed
 				}
 			}
@@ -981,7 +981,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns reso
 					return err
 				}
 			} else {
-				if resp.Subscription.Quota.PrivatePipelineTrigger.Remain-int32(batchSize) < 0 {
+				if resp.Subscription.Quota.PrivatePipelineTrigger.Quota != -1 && resp.Subscription.Quota.PrivatePipelineTrigger.Remain-int32(batchSize) < 0 {
 					return ErrNamespaceTriggerQuotaExceed
 				}
 			}
