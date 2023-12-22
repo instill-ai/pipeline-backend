@@ -120,9 +120,7 @@ func AsGRPCError(err error) error {
 		code = codes.Unauthenticated
 
 	case
-		errors.Is(err, service.ErrRateLimiting),
-		errors.Is(err, service.ErrNamespacePrivatePipelineQuotaExceed),
-		errors.Is(err, service.ErrNamespaceTriggerQuotaExceed):
+		errors.Is(err, service.ErrRateLimiting):
 
 		code = codes.ResourceExhausted
 	default:
