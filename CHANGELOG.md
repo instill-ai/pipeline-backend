@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.18.1-beta...v0.18.2-beta) (2023-12-25)
+
+
+### Miscellaneous Chores
+
+* release v0.18.2-beta ([aa342ce](https://github.com/instill-ai/pipeline-backend/commit/aa342cef388e0d3c3a433ce13ff818b5d69dd088))
+
 ## [0.18.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.18.0-beta...v0.18.1-beta) (2023-12-22)
 
 
