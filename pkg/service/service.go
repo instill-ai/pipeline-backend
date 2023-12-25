@@ -474,44 +474,6 @@ func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid 
 	return s.DBToPBPipeline(ctx, dbPipeline, authUser, view)
 }
 
-func (s *service) checkPrivatePipelineQuota(ctx context.Context, ns resource.Namespace, dbPipeline *datamodel.Pipeline, quota int) error {
-
-	if val, ok := dbPipeline.Sharing.Users["*/*"]; ok && val.Enabled {
-		return nil
-	}
-	privateCount := 0
-	// TODO: optimize this
-	pageToken := ""
-	var err error
-	var pipelines []*datamodel.Pipeline
-	for {
-		pipelines, _, pageToken, err = s.repository.ListNamespacePipelines(ctx, ns.String(), int64(100), pageToken, true, filtering.Filter{}, nil, false)
-		if err != nil {
-			return err
-		}
-		for _, pipeline := range pipelines {
-
-			if _, ok := pipeline.Sharing.Users["*/*"]; ok {
-				if !pipeline.Sharing.Users["*/*"].Enabled {
-					privateCount += 1
-				}
-			} else {
-				privateCount += 1
-			}
-
-		}
-		if pageToken == "" {
-			break
-		}
-	}
-
-	if privateCount >= quota {
-		return ErrNamespacePrivatePipelineQuotaExceed
-	}
-
-	return nil
-}
-
 func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pbPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
 
 	if ns.NsType == resource.Organization {
@@ -553,49 +515,6 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	dbPipeline, err := s.PBToDBPipeline(ctx, pbPipeline)
 	if err != nil {
 		return nil, err
-	}
-
-	quota := -1
-
-	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
-			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
-		}
-	} else {
-		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
-			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
-		}
-	}
-
-	if quota > -1 {
-		err = s.checkPrivatePipelineQuota(ctx, ns, dbPipeline, quota)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	if dbPipeline.ShareCode == "" {
@@ -744,59 +663,6 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 		dbPipelineToUpdate.ShareCode = GenerateShareCode()
 	}
 
-	quota := -1
-	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
-			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
-		}
-	} else {
-		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
-			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			quota = int(resp.Subscription.Quota.PrivatePipeline.Quota)
-		}
-	}
-
-	if quota > -1 {
-		isPublic := false
-		oriPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, toUpdPipeline.Id, false)
-		if err != nil {
-			return nil, err
-		}
-		if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", oriPipeline.UID); err != nil {
-			return nil, err
-		}
-
-		if isPublic {
-			err = s.checkPrivatePipelineQuota(ctx, ns, dbPipelineToUpdate, quota)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
 	if err := s.repository.UpdateNamespacePipelineByID(ctx, ownerPermalink, id, dbPipelineToUpdate); err != nil {
 		return nil, err
 	}
@@ -930,24 +796,16 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	return s.DBToPBPipeline(ctx, dbPipeline, authUser, VIEW_FULL)
 }
 
-func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns resource.Namespace, authUser *AuthUser, recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
+func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resource.Namespace, authUser *AuthUser, recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
 
 	batchSize := len(pipelineInputs)
 	if batchSize > constant.MaxBatchSize {
 		return ErrExceedMaxBatchSize
 	}
-	if isPublic {
-		value, err := s.redisClient.Get(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID)).Result()
-		// TODO: use a more robust way to check key exist
-		if !errors.Is(err, redis.Nil) {
-			requestLeft, _ := strconv.ParseInt(value, 10, 64)
-			if requestLeft <= 0 {
-				return ErrRateLimiting
-			} else {
-				_ = s.redisClient.Decr(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID))
-			}
-		}
-	} else {
+
+	checkRateLimited := !isAdmin
+
+	if !checkRateLimited {
 		if ns.NsType == resource.Organization {
 			resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
 				metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
@@ -962,8 +820,8 @@ func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns reso
 					return err
 				}
 			} else {
-				if resp.Subscription.Quota.PrivatePipelineTrigger.Quota != -1 && resp.Subscription.Quota.PrivatePipelineTrigger.Remain-int32(batchSize) < 0 {
-					return ErrNamespaceTriggerQuotaExceed
+				if resp.Subscription.Plan == "freemium" {
+					checkRateLimited = true
 				}
 			}
 
@@ -981,9 +839,22 @@ func (s *service) preTriggerPipeline(ctx context.Context, isPublic bool, ns reso
 					return err
 				}
 			} else {
-				if resp.Subscription.Quota.PrivatePipelineTrigger.Quota != -1 && resp.Subscription.Quota.PrivatePipelineTrigger.Remain-int32(batchSize) < 0 {
-					return ErrNamespaceTriggerQuotaExceed
+				if resp.Subscription.Plan == "freemium" {
+					checkRateLimited = true
 				}
+			}
+		}
+	}
+
+	if checkRateLimited {
+		value, err := s.redisClient.Get(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID)).Result()
+		// TODO: use a more robust way to check key exist
+		if !errors.Is(err, redis.Nil) {
+			requestLeft, _ := strconv.ParseInt(value, 10, 64)
+			if requestLeft <= 0 {
+				return ErrRateLimiting
+			} else {
+				_ = s.redisClient.Decr(context.Background(), fmt.Sprintf("user_rate_limit:user:%s", authUser.UID))
 			}
 		}
 	}
@@ -1505,7 +1376,7 @@ func (s *service) triggerPipeline(
 	ns resource.Namespace,
 	authUser *AuthUser,
 	recipe *datamodel.Recipe,
-	isPublic bool,
+	isAdmin bool,
 	pipelineId string,
 	pipelineUid uuid.UUID,
 	pipelineReleaseId string,
@@ -1516,7 +1387,7 @@ func (s *service) triggerPipeline(
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	err := s.preTriggerPipeline(ctx, isPublic, ns, authUser, recipe, pipelineInputs)
+	err := s.preTriggerPipeline(ctx, isAdmin, ns, authUser, recipe, pipelineInputs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1566,7 +1437,6 @@ func (s *service) triggerPipeline(
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
 			Mode:                       mgmtPB.Mode_MODE_SYNC,
-			IsPublic:                   isPublic,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1607,7 +1477,7 @@ func (s *service) triggerAsyncPipeline(
 	ns resource.Namespace,
 	authUser *AuthUser,
 	recipe *datamodel.Recipe,
-	isPublic bool,
+	isAdmin bool,
 	pipelineId string,
 	pipelineUid uuid.UUID,
 	pipelineReleaseId string,
@@ -1616,7 +1486,7 @@ func (s *service) triggerAsyncPipeline(
 	pipelineTriggerId string,
 	returnTraces bool) (*longrunningpb.Operation, error) {
 
-	err := s.preTriggerPipeline(ctx, isPublic, ns, authUser, recipe, pipelineInputs)
+	err := s.preTriggerPipeline(ctx, isAdmin, ns, authUser, recipe, pipelineInputs)
 	if err != nil {
 		return nil, err
 	}
@@ -1666,7 +1536,6 @@ func (s *service) triggerAsyncPipeline(
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
 			Mode:                       mgmtPB.Mode_MODE_ASYNC,
-			IsPublic:                   isPublic,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1703,12 +1572,12 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		return nil, nil, ErrNoPermission
 	}
 
-	isPublic := false
-	if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", dbPipeline.UID); err != nil {
+	isAdmin := false
+	if isAdmin, err = s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, nil, err
 	}
 
-	return s.triggerPipeline(ctx, ns, authUser, dbPipeline.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerPipeline(ctx, ns, authUser, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1732,12 +1601,12 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		return nil, ErrNoPermission
 	}
 
-	isPublic := false
-	if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", dbPipeline.UID); err != nil {
+	isAdmin := false
+	if isAdmin, err = s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	}
 
-	return s.triggerAsyncPipeline(ctx, ns, authUser, dbPipeline.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerAsyncPipeline(ctx, ns, authUser, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, pipelineTriggerId, returnTraces)
 
 }
 
@@ -1766,8 +1635,8 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, err
 	}
 
-	isPublic := false
-	if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", dbPipeline.UID); err != nil {
+	isAdmin := false
+	if isAdmin, err = s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, nil, err
 	}
 
@@ -1814,7 +1683,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, ErrCanNotTriggerNonLatestPipelineRelease
 	}
 
-	return s.triggerPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
 }
 
 func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUid uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerId string, returnTraces bool) (*longrunningpb.Operation, error) {
@@ -1842,8 +1711,8 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, err
 	}
 
-	isPublic := false
-	if isPublic, err = s.aclClient.CheckPublicExecutable("pipeline", dbPipeline.UID); err != nil {
+	isAdmin := false
+	if isAdmin, err = s.aclClient.CheckPermission("pipeline", dbPipeline.UID, authUser.GetACLType(), authUser.UID, s.getCode(ctx), "admin"); err != nil {
 		return nil, err
 	}
 
@@ -1890,7 +1759,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, ErrCanNotTriggerNonLatestPipelineRelease
 	}
 
-	return s.triggerAsyncPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isPublic, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
+	return s.triggerAsyncPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerId, returnTraces)
 }
 
 func (s *service) RemoveCredentialFieldsWithMaskString(dbConnDefID string, config *structpb.Struct) {
