@@ -37,7 +37,6 @@ type TriggerPipelineWorkflowRequest struct {
 	UserPermalink              string
 	ReturnTraces               bool
 	Mode                       mgmtPB.Mode
-	IsPublic                   bool
 }
 
 type TriggerPipelineWorkflowResponse struct {
@@ -159,7 +158,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		PipelineReleaseUID: param.PipelineReleaseUid.String(),
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
-		IsPublic:           param.IsPublic,
 	}
 
 	ao := workflow.ActivityOptions{
@@ -602,14 +600,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
-
-	if !param.IsPublic {
-		w.redisClient.IncrBy(
-			context.Background(),
-			fmt.Sprintf("private_trigger_count:%s", param.OwnerPermalink),
-			int64(batchSize),
-		)
-	}
 
 	if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
 		logger.Warn(err.Error())
