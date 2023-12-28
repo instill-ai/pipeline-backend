@@ -8,7 +8,7 @@ import * as constant from "./const.js";
 
 export function CheckCreate(header) {
   group(
-    `Pipelines API: Create a pipeline [with random "jwt-sub" header]`,
+    `Pipelines API: Create a pipeline [with random "Instill-User-Uid" header]`,
     () => {
       var reqBody = Object.assign(
         {
@@ -27,7 +27,7 @@ export function CheckCreate(header) {
           constant.paramsHTTPWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/pipelines response status is 401`]:
+          [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/pipelines response status is 401`]:
             (r) => r.status === 401,
         }
       );
@@ -36,7 +36,7 @@ export function CheckCreate(header) {
 }
 
 export function CheckList(header) {
-  group(`Pipelines API: List pipelines [with random "jwt-sub" header]`, () => {
+  group(`Pipelines API: List pipelines [with random "Instill-User-Uid" header]`, () => {
     // Cannot list pipelines of a non-exist user
     check(
       http.request(
@@ -46,7 +46,7 @@ export function CheckList(header) {
         constant.paramsHTTPWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] GET /v1beta/${constant.namespace}/pipelines response status is 200`]:
+        [`[with random "Instill-User-Uid" header] GET /v1beta/${constant.namespace}/pipelines response status is 200`]:
           (r) => r.status === 200,
       }
     );
@@ -54,7 +54,7 @@ export function CheckList(header) {
 }
 
 export function CheckGet(header) {
-  group(`Pipelines API: Get a pipeline [with random "jwt-sub" header]`, () => {
+  group(`Pipelines API: Get a pipeline [with random "Instill-User-Uid" header]`, () => {
     var reqBody = Object.assign(
       {
         id: randomString(10),
@@ -86,7 +86,7 @@ export function CheckGet(header) {
         constant.paramsHTTPWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status is 404`]:
+        [`[with random "Instill-User-Uid" header] GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status is 404`]:
           (r) => r.status === 404,
       }
     );
@@ -109,7 +109,7 @@ export function CheckGet(header) {
 
 export function CheckUpdate(header) {
   group(
-    `Pipelines API: Update a pipeline [with random "jwt-sub" header]`,
+    `Pipelines API: Update a pipeline [with random "Instill-User-Uid" header]`,
     () => {
       var reqBody = Object.assign(
         {
@@ -146,7 +146,7 @@ export function CheckUpdate(header) {
           constant.paramsHTTPWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status is 401`]:
+          [`[with random "Instill-User-Uid" header] PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status is 401`]:
             (r) => r.status === 401,
         }
       );
@@ -171,7 +171,7 @@ export function CheckUpdate(header) {
 
 export function CheckRename(header) {
   group(
-    `Pipelines API: Rename a pipeline [with random "jwt-sub" header]`,
+    `Pipelines API: Rename a pipeline [with random "Instill-User-Uid" header]`,
     () => {
       var id = randomString(10);
       var reqBody = Object.assign(
@@ -208,7 +208,7 @@ export function CheckRename(header) {
           constant.paramsHTTPWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/pipelines/${res.json().pipeline.id
+          [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/pipelines/${res.json().pipeline.id
             }/rename response status is 401`]: (r) => r.status === 401,
         }
       );
@@ -232,7 +232,7 @@ export function CheckRename(header) {
 
 export function CheckLookUp(header) {
   group(
-    `Pipelines API: Look up a pipeline by uid [with random "jwt-sub" header]`,
+    `Pipelines API: Look up a pipeline by uid [with random "Instill-User-Uid" header]`,
     () => {
       var reqBody = Object.assign(
         {
@@ -264,7 +264,7 @@ export function CheckLookUp(header) {
           constant.paramsHTTPWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] POST /v1beta/pipelines/${res.json().pipeline.id
+          [`[with random "Instill-User-Uid" header] POST /v1beta/pipelines/${res.json().pipeline.id
             }/lookUp response status is 401`]: (r) => r.status === 401,
         }
       );

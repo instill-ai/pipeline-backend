@@ -65,14 +65,14 @@ const randomUUID = uuidv4();
 export const paramsGRPCWithJwt = {
   metadata: {
     "Content-Type": "application/json",
-    "Jwt-Sub": randomUUID,
+    "Instill-User-Uid": randomUUID,
   },
 };
 
 export const paramsHTTPWithJwt = {
   headers: {
     "Content-Type": "application/json",
-    "Jwt-Sub": randomUUID,
+    "Instill-User-Uid": randomUUID,
   },
 };
 

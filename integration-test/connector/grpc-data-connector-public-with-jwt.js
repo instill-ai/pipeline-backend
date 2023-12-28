@@ -16,7 +16,7 @@ client.load(['../proto/vdp/pipeline/v1beta'], 'pipeline_public_service.proto');
 
 export function CheckCreate(metadata) {
 
-    group(`Connector API: Create destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Create destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         client.connect(constant.pipelineGRPCPublicHost, {
             plaintext: true
@@ -35,7 +35,7 @@ export function CheckCreate(metadata) {
             parent: `${constant.namespace}`,
             connector: csvDstConnector
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         // destination-mysql (will end up with STATE_ERROR)
@@ -55,7 +55,7 @@ export function CheckCreate(metadata) {
             parent: `${constant.namespace}`,
             connector: mySQLDstConnector
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector MySQL response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector MySQL response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         client.close();
@@ -65,7 +65,7 @@ export function CheckCreate(metadata) {
 
 export function CheckList(metadata) {
 
-    group(`Connector API: List destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: List destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         client.connect(constant.pipelineGRPCPublicHost, {
             plaintext: true
@@ -76,7 +76,7 @@ export function CheckList(metadata) {
             parent: `${constant.namespace}`,
             filter: "connector_type=CONNECTOR_TYPE_DATA",
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         client.close();
@@ -85,7 +85,7 @@ export function CheckList(metadata) {
 
 export function CheckGet(metadata) {
 
-    group(`Connector API: Get destination connectors by ID [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Get destination connectors by ID [with random "Instill-User-Uid" header]`, () => {
 
         client.connect(constant.pipelineGRPCPublicHost, {
             plaintext: true
@@ -117,7 +117,7 @@ export function CheckGet(metadata) {
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/GetUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/GetUserConnector CSV ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/GetUserConnector CSV ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
@@ -132,7 +132,7 @@ export function CheckGet(metadata) {
 
 export function CheckUpdate(metadata) {
 
-    group(`Connector API: Update destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Update destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         client.connect(constant.pipelineGRPCPublicHost, {
             plaintext: true
@@ -170,7 +170,7 @@ export function CheckUpdate(metadata) {
             connector: csvDstConnectorUpdate,
             update_mask: "description,configuration",
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${csvDstConnectorUpdate.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${csvDstConnectorUpdate.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
@@ -185,7 +185,7 @@ export function CheckUpdate(metadata) {
 
 export function CheckLookUp(metadata) {
 
-    group(`Connector API: Look up destination connectors by UID [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Look up destination connectors by UID [with random "Instill-User-Uid" header]`, () => {
 
         client.connect(constant.pipelineGRPCPublicHost, {
             plaintext: true
@@ -211,7 +211,7 @@ export function CheckLookUp(metadata) {
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/LookUpConnector', {
             permalink: `connectors/${resCSVDst.message.connector.uid}`
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/LookUpConnector CSV ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/LookUpConnector CSV ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
@@ -226,7 +226,7 @@ export function CheckLookUp(metadata) {
 
 export function CheckState(metadata) {
 
-    group(`Connector API: Change state destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Change state destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         client.connect(constant.pipelineGRPCPublicHost, {
             plaintext: true
@@ -252,14 +252,14 @@ export function CheckState(metadata) {
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         // Cannot disconnect destination connector of a non-exist user
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/DisconnectUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/DisconnectUserConnector ${resCSVDst.message.connector.id} response at UNSPECIFIED StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/DisconnectUserConnector ${resCSVDst.message.connector.id} response at UNSPECIFIED StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/WatchUserConnector', {
@@ -272,28 +272,28 @@ export function CheckState(metadata) {
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector ${resCSVDst.message.connector.id} response at STATE_CONNECTED state StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector ${resCSVDst.message.connector.id} response at STATE_CONNECTED state StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         // Cannot disconnect destination connector of a non-exist user
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/DisconnectUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/DisconnectUserConnector ${resCSVDst.message.connector.id} response at STATE_CONNECTED state StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/DisconnectUserConnector ${resCSVDst.message.connector.id} response at STATE_CONNECTED state StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         // Cannot connect destination connector of a non-exist user
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector ${resCSVDst.message.connector.id} response at STATE_DISCONNECTED state StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector ${resCSVDst.message.connector.id} response at STATE_DISCONNECTED state StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         // Cannot disconnect destination connector of a non-exist user
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/DisconnectUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/DisconnectUserConnector ${resCSVDst.message.connector.id} response at STATE_DISCONNECTED state StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/DisconnectUserConnector ${resCSVDst.message.connector.id} response at STATE_DISCONNECTED state StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
@@ -308,7 +308,7 @@ export function CheckState(metadata) {
 
 export function CheckRename(metadata) {
 
-    group(`Connector API: Rename destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Rename destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         client.connect(constant.pipelineGRPCPublicHost, {
             plaintext: true
@@ -337,7 +337,7 @@ export function CheckRename(metadata) {
             name: `${constant.namespace}/connectors/resCSVDst.message.connector.id`,
             new_connector_id: new_id
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/RenameUserConnector ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/RenameUserConnector ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
@@ -352,7 +352,7 @@ export function CheckRename(metadata) {
 
 export function CheckExecute(metadata) {
 
-    group(`Connector API: Write destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Write destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         client.connect(constant.pipelineGRPCPublicHost, {
             plaintext: true
@@ -390,7 +390,7 @@ export function CheckExecute(metadata) {
             "name": `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`,
             "inputs": constant.clsModelOutputs
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/ExecuteUserConnector ${resCSVDst.message.connector.id} response (classification) StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/ExecuteUserConnector ${resCSVDst.message.connector.id} response (classification) StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
@@ -408,7 +408,7 @@ export function CheckExecute(metadata) {
 
 export function CheckTest(metadata) {
 
-    group(`Connector API: Test destination connectors' connection [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Test destination connectors' connection [with random "Instill-User-Uid" header]`, () => {
 
         client.connect(constant.pipelineGRPCPublicHost, {
             plaintext: true
@@ -434,7 +434,7 @@ export function CheckTest(metadata) {
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/TestUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
         }, constant.paramsGRPCWithJwt), {
-            [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/TestUserConnector CSV ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
+            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/TestUserConnector CSV ${resCSVDst.message.connector.id} response StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
         })
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {

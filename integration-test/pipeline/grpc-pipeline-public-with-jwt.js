@@ -9,7 +9,7 @@ client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
 
 export function CheckCreate(metadata) {
   group(
-    `Pipelines API: Create a pipeline [with random "jwt-sub" header]`,
+    `Pipelines API: Create a pipeline [with random "Instill-User-Uid" header]`,
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
@@ -34,7 +34,7 @@ export function CheckCreate(metadata) {
           constant.paramsGRPCWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusUnauthenticated`]:
+          [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
@@ -45,7 +45,7 @@ export function CheckCreate(metadata) {
 }
 
 export function CheckList(metadata) {
-  group(`Pipelines API: List pipelines [with random "jwt-sub" header]`, () => {
+  group(`Pipelines API: List pipelines [with random "Instill-User-Uid" header]`, () => {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true,
     });
@@ -60,7 +60,7 @@ export function CheckList(metadata) {
         constant.paramsGRPCWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines response StatusOK`]:
+        [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
       }
     );
@@ -70,7 +70,7 @@ export function CheckList(metadata) {
 }
 
 export function CheckGet(metadata) {
-  group(`Pipelines API: Get a pipeline [with random "jwt-sub" header]`, () => {
+  group(`Pipelines API: Get a pipeline [with random "Instill-User-Uid" header]`, () => {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true,
     });
@@ -109,7 +109,7 @@ export function CheckGet(metadata) {
         constant.paramsGRPCWithJwt
       ),
       {
-        [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline response StatusNotFound`]:
+        [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline response StatusNotFound`]:
           (r) => r.status === grpc.StatusNotFound,
       }
     );
@@ -135,7 +135,7 @@ export function CheckGet(metadata) {
 
 export function CheckUpdate(metadata) {
   group(
-    `Pipelines API: Update a pipeline [with random "jwt-sub" header]`,
+    `Pipelines API: Update a pipeline [with random "Instill-User-Uid" header]`,
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
@@ -182,7 +182,7 @@ export function CheckUpdate(metadata) {
           constant.paramsGRPCWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/UpdateUserPipeline response StatusUnauthenticated`]:
+          [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/UpdateUserPipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
@@ -209,7 +209,7 @@ export function CheckUpdate(metadata) {
 
 export function CheckRename(metadata) {
   group(
-    `Pipelines API: Rename a pipeline [with random "jwt-sub" header]`,
+    `Pipelines API: Rename a pipeline [with random "Instill-User-Uid" header]`,
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
@@ -253,7 +253,7 @@ export function CheckRename(metadata) {
           constant.paramsGRPCWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/RenameUserPipeline response StatusUnauthenticated`]:
+          [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/RenameUserPipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );
@@ -280,7 +280,7 @@ export function CheckRename(metadata) {
 
 export function CheckLookUp(metadata) {
   group(
-    `Pipelines API: Look up a pipeline by uid [with random "jwt-sub" header]`,
+    `Pipelines API: Look up a pipeline by uid [with random "Instill-User-Uid" header]`,
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
@@ -319,7 +319,7 @@ export function CheckLookUp(metadata) {
           constant.paramsGRPCWithJwt
         ),
         {
-          [`[with random "jwt-sub" header] vdp.pipeline.v1beta.PipelinePublicService/LookUpPipeline response StatusUnauthenticated`]:
+          [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/LookUpPipeline response StatusUnauthenticated`]:
             (r) => r.status === grpc.StatusUnauthenticated,
         }
       );

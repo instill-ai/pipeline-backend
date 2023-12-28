@@ -9,7 +9,7 @@ import * as helper from "./helper.js"
 
 export function CheckCreate(header) {
 
-    group(`Connector API: Create destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Create destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         // end
         var httpDstConnector = {
@@ -24,7 +24,7 @@ export function CheckCreate(header) {
         check(http.request("POST",
             `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
             JSON.stringify(httpDstConnector), constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/connectors response for creating HTTP destination status is 401`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/connectors response for creating HTTP destination status is 401`]: (r) => r.status === 401,
         });
 
     });
@@ -33,18 +33,18 @@ export function CheckCreate(header) {
 
 export function CheckList(header) {
 
-    group(`Connector API: List destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: List destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         // Cannot list destination connector of a non-exist user
         check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`, null, constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] GET /v1beta/${constant.namespace}/connectors response status is 401`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] GET /v1beta/${constant.namespace}/connectors response status is 401`]: (r) => r.status === 401,
         });
     });
 }
 
 export function CheckGet(header) {
 
-    group(`Connector API: Get destination connectors by ID [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Get destination connectors by ID [with random "Instill-User-Uid" header]`, () => {
 
         var csvDstConnector = {
             "id": randomString(10),
@@ -65,7 +65,7 @@ export function CheckGet(header) {
 
         // Cannot get a destination connector of a non-exist user
         check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status is 401`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status is 401`]: (r) => r.status === 401,
         });
 
         check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
@@ -76,7 +76,7 @@ export function CheckGet(header) {
 
 export function CheckUpdate(header) {
 
-    group(`Connector API: Update destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Update destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         var csvDstConnector = {
             "id": randomString(10),
@@ -103,7 +103,7 @@ export function CheckUpdate(header) {
             "PATCH",
             `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`,
             JSON.stringify(csvDstConnectorUpdate), constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 401`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] PATCH /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 401`]: (r) => r.status === 401,
         });
 
         check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}`, null, header), {
@@ -114,7 +114,7 @@ export function CheckUpdate(header) {
 
 export function CheckLookUp(header) {
 
-    group(`Connector API: Look up destination connectors by UID [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Look up destination connectors by UID [with random "Instill-User-Uid" header]`, () => {
 
         var csvDstConnector = {
             "id": randomString(10),
@@ -128,7 +128,7 @@ export function CheckLookUp(header) {
 
         // Cannot look up a destination connector of a non-exist user
         check(http.request("GET", `${pipelinePublicHost}/v1beta/connectors/${resCSVDst.json().connector.uid}/lookUp`, null, constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] GET /v1beta/connectors/${resCSVDst.json().connector.uid}/lookUp response status 401`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] GET /v1beta/connectors/${resCSVDst.json().connector.uid}/lookUp response status 401`]: (r) => r.status === 401,
         });
 
         check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
@@ -140,7 +140,7 @@ export function CheckLookUp(header) {
 
 export function CheckState(header) {
 
-    group(`Connector API: Change state destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Change state destination connectors [with random "Instill-User-Uid" header]`, () => {
         var csvDstConnector = {
             "id": randomString(10),
             "connector_definition_name": constant.csvDstDefRscName,
@@ -152,11 +152,11 @@ export function CheckState(header) {
             JSON.stringify(csvDstConnector), header)
 
         check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect`, null, constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect response at UNSPECIFIED state status 401`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/disconnect response at UNSPECIFIED state status 401`]: (r) => r.status === 401,
         });
 
         check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect`, null, constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect response at UNSPECIFIED state status 401`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/connect response at UNSPECIFIED state status 401`]: (r) => r.status === 401,
         });
 
         check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
@@ -169,7 +169,7 @@ export function CheckState(header) {
 
 export function CheckRename(header) {
 
-    group(`Connector API: Rename destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Rename destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         var csvDstConnector = {
             "id": randomString(10),
@@ -186,7 +186,7 @@ export function CheckRename(header) {
             JSON.stringify({
                 "new_connector_id": `some_id_not_${resCSVDst.json().connector.id}`
             }), constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response status 401`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/rename response status 401`]: (r) => r.status === 401,
         });
 
         check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}`, null, header), {
@@ -197,7 +197,7 @@ export function CheckRename(header) {
 
 export function CheckExecute(header) {
 
-    group(`Connector API: Write destination connectors [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Write destination connectors [with random "Instill-User-Uid" header]`, () => {
 
         var csvDstConnector, resCSVDst, currentTime, timeoutTime
 
@@ -218,7 +218,7 @@ export function CheckExecute(header) {
             {}, header)
 
         check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, header), {
-            [`[with random "jwt-sub" header] GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
+            [`[with random "Instill-User-Uid" header] GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
         })
 
         // Cannot write to destination connector of a non-exist user
@@ -226,7 +226,7 @@ export function CheckExecute(header) {
             JSON.stringify({
                 "inputs": constant.clsModelOutputs
             }), constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 401 (classification)`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 401 (classification)`]: (r) => r.status === 401,
         });
 
         // Wait for 1 sec for the connector writing to the destination-csv before deleting it
@@ -240,7 +240,7 @@ export function CheckExecute(header) {
 
 export function CheckTest(header) {
 
-    group(`Connector API: Test destination connectors by ID [with random "jwt-sub" header]`, () => {
+    group(`Connector API: Test destination connectors by ID [with random "Instill-User-Uid" header]`, () => {
 
         var csvDstConnector = {
             "id": randomString(10),
@@ -261,7 +261,7 @@ export function CheckTest(header) {
 
         // Cannot test destination connector of a non-exist user
         check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/testConnection`, null, constant.paramsHTTPWithJwt), {
-            [`[with random "jwt-sub" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/testConnection response status is 401`]: (r) => r.status === 401,
+            [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/testConnection response status is 401`]: (r) => r.status === 401,
         });
 
         check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {

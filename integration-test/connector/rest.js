@@ -72,7 +72,7 @@ export default function (header) {
 
   } else {
 
-    // data public with jwt-sub
+    // data public with Instill-User-Uid
     dataConnectorPublicWithJwt.CheckCreate(header)
     dataConnectorPublicWithJwt.CheckList(header)
     dataConnectorPublicWithJwt.CheckGet(header)
