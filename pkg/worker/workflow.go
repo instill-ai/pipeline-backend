@@ -637,7 +637,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 				logger.Fatal(err.Error())
 			}
 			// TODO: optimize this
-			str.Fields["instill_jwt_sub"] = structpb.NewStringValue(param.PipelineMetadata.UserUid)
+			str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUid)
 			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 			return &str
 		}
