@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -25,24 +23,6 @@ import (
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
-
-func GenOwnerPermalink(owner *mgmtPB.User) string {
-	return "users/" + owner.GetUid()
-}
-
-func InjectOwnerToContext(ctx context.Context, owner *mgmtPB.User) context.Context {
-	ctx = metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", owner.GetUid())
-	return ctx
-}
-func InjectOwnerToContextWithOwnerPermalink(ctx context.Context, permalink string) context.Context {
-	uid, _ := resource.GetRscPermalinkUID(permalink)
-	ctx = metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", uid.String())
-	return ctx
-}
-func InjectOwnerToContextWithUserUid(ctx context.Context, userUid uuid.UUID) context.Context {
-	ctx = metadata.AppendToOutgoingContext(ctx, "Jwt-Sub", userUid.String())
-	return ctx
-}
 
 const (
 	CreateEvent          string = "Create"
