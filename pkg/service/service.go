@@ -219,7 +219,6 @@ func GenerateShareCode() string {
 type AuthUser struct {
 	IsVisitor bool
 	UID       uuid.UUID
-	ID        string
 }
 
 func (a AuthUser) GetACLType() string {
@@ -240,37 +239,30 @@ func (a AuthUser) Permalink() string {
 
 func (s *service) AuthenticateUser(ctx context.Context, allowVisitor bool) (authUser *AuthUser, err error) {
 	// Verify if "jwt-sub" is in the header
-	headerCtxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
-
-	if headerCtxUserUID != "" {
-		if allowVisitor && strings.HasPrefix(headerCtxUserUID, "visitor:") {
-			_, err := uuid.FromString(strings.Split(headerCtxUserUID, ":")[1])
-			if err != nil {
-				return nil, ErrUnauthenticated
-			}
-			return &AuthUser{
-				UID:       uuid.FromStringOrNil(strings.Split(headerCtxUserUID, ":")[1]),
-				IsVisitor: true,
-			}, nil
-		} else {
-			_, err := uuid.FromString(headerCtxUserUID)
-			if err != nil {
-				return nil, ErrUnauthenticated
-			}
-			resp, err := s.mgmtPrivateServiceClient.LookUpUserAdmin(context.Background(), &mgmtPB.LookUpUserAdminRequest{Permalink: "users/" + headerCtxUserUID})
-			if err != nil {
-				return nil, ErrUnauthenticated
-			}
-			return &AuthUser{
-				ID:        resp.User.Id,
-				UID:       uuid.FromStringOrNil(headerCtxUserUID),
-				IsVisitor: false,
-			}, nil
+	authType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
+	if authType == "user" {
+		headerCtxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+		if headerCtxUserUID == "" {
+			return nil, ErrUnauthenticated
+		}
+		return &AuthUser{
+			UID:       uuid.FromStringOrNil(headerCtxUserUID),
+			IsVisitor: false,
+		}, nil
+	} else {
+		if !allowVisitor {
+			return nil, ErrUnauthenticated
+		}
+		headerCtxVisitorUID := resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey)
+		if headerCtxVisitorUID == "" {
+			return nil, ErrUnauthenticated
 		}
 
+		return &AuthUser{
+			UID:       uuid.FromStringOrNil(headerCtxVisitorUID),
+			IsVisitor: true,
+		}, nil
 	}
-
-	return nil, ErrUnauthenticated
 
 }
 
