@@ -87,7 +87,7 @@ export default function (metadata) {
 
   } else {
 
-    // data public with jwt-sub
+    // data public with Instill-User-Uid
     dataConnectorPublicWithJwt.CheckCreate(metadata)
     dataConnectorPublicWithJwt.CheckList(metadata)
     dataConnectorPublicWithJwt.CheckGet(metadata)
