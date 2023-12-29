@@ -14,8 +14,8 @@ server:
   maxdatasize: 12 # MB in unit
   workflow:
     maxworkflowtimeout: 3600 # in seconds
-    maxworkflowretry: 3
-    maxactivityretry: 1
+    maxworkflowretry: 1
+    maxactivityretry: 3
 connector:
   airbyte:
     mountsource:
