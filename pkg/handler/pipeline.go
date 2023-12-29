@@ -1682,70 +1682,7 @@ func (h *PublicHandler) WatchOrganizationPipelineRelease(ctx context.Context, re
 }
 
 func (h *PublicHandler) watchNamespacePipelineRelease(ctx context.Context, req WatchNamespacePipelineReleaseRequestInterface) (pipelinePB.State, error) {
+	// TODO
+	return pipelinePB.State_STATE_ACTIVE, nil
 
-	eventName := "WatchNamespacePipelineRelease"
-
-	ctx, span := tracer.Start(ctx, eventName,
-		trace.WithSpanKind(trace.SpanKindServer))
-	defer span.End()
-
-	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
-
-	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
-	if err != nil {
-		return pipelinePB.State_STATE_UNSPECIFIED, err
-	}
-	authUser, err := h.service.AuthenticateUser(ctx, true)
-	if err != nil {
-		return pipelinePB.State_STATE_UNSPECIFIED, err
-	}
-	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, authUser, pipelineId, releaseId)
-	if err != nil {
-		return pipelinePB.State_STATE_UNSPECIFIED, err
-	}
-
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineId, service.VIEW_BASIC)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		logger.Info(string(custom_otel.NewLogMessage(
-			span,
-			logUUID.String(),
-			authUser.UID,
-			eventName,
-			custom_otel.SetErrorMessage(err.Error()),
-			custom_otel.SetEventResource(req.GetName()),
-		)))
-		return pipelinePB.State_STATE_UNSPECIFIED, err
-	}
-
-	dbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseId, service.VIEW_BASIC)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		logger.Info(string(custom_otel.NewLogMessage(
-			span,
-			logUUID.String(),
-			authUser.UID,
-			eventName,
-			custom_otel.SetErrorMessage(err.Error()),
-			custom_otel.SetEventResource(req.GetName()),
-		)))
-		return pipelinePB.State_STATE_UNSPECIFIED, err
-	}
-	state, err := h.service.GetPipelineState(uuid.FromStringOrNil(dbPipelineRelease.Uid))
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		logger.Info(string(custom_otel.NewLogMessage(
-			span,
-			logUUID.String(),
-			authUser.UID,
-			eventName,
-			custom_otel.SetErrorMessage(err.Error()),
-			custom_otel.SetEventResource(req.GetName()),
-		)))
-		return pipelinePB.State_STATE_UNSPECIFIED, err
-	}
-
-	return *state, nil
 }

@@ -20,7 +20,6 @@ import (
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	usagePB "github.com/instill-ai/protogen-go/core/usage/v1beta"
-	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1beta"
 )
 
 // InitMgmtPrivateServiceClient initialises a MgmtPrivateServiceClient instance
@@ -90,31 +89,6 @@ func InitUsageServiceClient(ctx context.Context) (usagePB.UsageServiceClient, *g
 	}
 
 	return usagePB.NewUsageServiceClient(clientConn), clientConn
-}
-
-// InitControllerPrivateServiceClient initialises a ControllerPrivateServiceClient instance
-func InitControllerPrivateServiceClient(ctx context.Context) (controllerPB.ControllerPrivateServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var clientDialOpts grpc.DialOption
-	var creds credentials.TransportCredentials
-	var err error
-	if config.Config.Controller.HTTPS.Cert != "" && config.Config.Controller.HTTPS.Key != "" {
-		creds, err = credentials.NewServerTLSFromFile(config.Config.Controller.HTTPS.Cert, config.Config.Controller.HTTPS.Key)
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-		clientDialOpts = grpc.WithTransportCredentials(creds)
-	} else {
-		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
-	}
-
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", config.Config.Controller.Host, config.Config.Controller.PrivatePort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
-
-	return controllerPB.NewControllerPrivateServiceClient(clientConn), clientConn
 }
 
 // InitInfluxDBServiceClient initialises a InfluxDBServiceClient instance

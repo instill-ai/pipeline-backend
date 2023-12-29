@@ -183,12 +183,6 @@ func (s *service) operatorDefinitionPermalinkToName(permalink string) (string, e
 	return fmt.Sprintf("operator-definitions/%s", def.Id), nil
 }
 
-func ConvertResourceUIDToControllerResourcePermalink(resourceUID uuid.UUID, resourceType string) string {
-	resourcePermalink := fmt.Sprintf("resources/%s/types/%s", resourceUID.String(), resourceType)
-
-	return resourcePermalink
-}
-
 func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
