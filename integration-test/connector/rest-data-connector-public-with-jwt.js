@@ -207,6 +207,7 @@ export function CheckExecute(header) {
             "connector_definition_name": constant.csvDstDefRscName,
             "description": randomString(50),
             "configuration": {
+                "destination": "airbyte-destination-csv",
                 "destination_path": "/local/test-classification"
             },
         }

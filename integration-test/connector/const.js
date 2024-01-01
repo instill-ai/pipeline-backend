@@ -30,11 +30,11 @@ export const mgmtPublicHost = apiGatewayMode ? `${proto}://${__ENV.API_GATEWAY_U
 export const pipelineGRPCPrivateHost = `pipeline-backend:3081`;
 export const pipelineGRPCPublicHost = apiGatewayMode ? `${__ENV.API_GATEWAY_URL}` : `api-gateway:8080`
 
-export const csvDstDefRscName = "connector-definitions/airbyte-destination-csv"
-export const csvDstDefRscPermalink = "connector-definitions/8be1cf83-fde1-477f-a4ad-318d23c9f3c6"
+export const csvDstDefRscName = "connector-definitions/airbyte-destination"
+export const csvDstDefRscPermalink = "connector-definitions/975678a2-5117-48a4-a135-019619dee18e"
 
-export const mySQLDstDefRscName = "connector-definitions/airbyte-destination-mysql"
-export const mySQLDstDefRscPermalink = "connector-definitions/ca81ee7c-3163-4246-af40-094cc31e5e42"
+export const mySQLDstDefRscName = "connector-definitions/airbyte-destination"
+export const mySQLDstDefRscPermalink = "connector-definitions/975678a2-5117-48a4-a135-019619dee18e"
 
 export const namespace = "users/admin"
 export const defaultUsername = "admin"
@@ -42,6 +42,7 @@ export const defaultPassword = "password"
 
 
 export const csvDstConfig = {
+  "destination": "airbyte-destination-csv",
   "destination_path": "/local/test"
 };
 
