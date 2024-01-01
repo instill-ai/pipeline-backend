@@ -43,6 +43,7 @@ export function CheckCreate(metadata) {
             "id": randomString(10),
             "connector_definition_name": constant.mySQLDstDefRscName,
             "configuration": {
+                "destination": "airbyte-destiniation-mysql",
                 "host": randomString(10),
                 "port": 3306,
                 "username": randomString(10),
@@ -366,6 +367,7 @@ export function CheckExecute(metadata) {
             "connector_definition_name": constant.csvDstDefRscName,
             "description": randomString(50),
             "configuration": {
+                "destination": "airbyte-destination-csv",
                 "destination_path": "/local/test-classification"
             },
         }

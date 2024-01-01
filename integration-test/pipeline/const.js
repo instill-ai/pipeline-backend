@@ -113,7 +113,7 @@ export const simpleRecipe = {
       {
         id: "d01",
         resource_name: `users/instill-ai/connectors/${dstCSVConnID1}`,
-        definition_name: "connector-definitions/airbyte-destination-csv",
+        definition_name: "connector-definitions/airbyte-destination",
         configuration: {
           input: {
             data: {
@@ -125,7 +125,7 @@ export const simpleRecipe = {
       {
         id: "d02",
         resource_name: `users/instill-ai/connectors/${dstCSVConnID2}`,
-        definition_name: "connector-definitions/airbyte-destination-csv",
+        definition_name: "connector-definitions/airbyte-destination",
         configuration: {
           input: {
             data: {
@@ -207,7 +207,7 @@ export const simpleRecipeDupId = {
       {
         id: "d01",
         resource_name: `users/instill-ai/connectors/${dstCSVConnID1}`,
-        definition_name: "connector-definitions/airbyte-destination-csv",
+        definition_name: "connector-definitions/airbyte-destination",
         configuration: {
           input: {
             data: {
@@ -219,7 +219,7 @@ export const simpleRecipeDupId = {
       {
         id: "d01",
         resource_name: `users/instill-ai/connectors/${dstCSVConnID2}`,
-        definition_name: "connector-definitions/airbyte-destination-csv",
+        definition_name: "connector-definitions/airbyte-destination",
         configuration: {
           input: {
             data: {

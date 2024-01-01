@@ -25,7 +25,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	connector "github.com/instill-ai/connector/pkg"
-	connectorAirbyte "github.com/instill-ai/connector/pkg/airbyte"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 )
 
@@ -79,30 +78,6 @@ func main() {
 	defer database.Close(db)
 
 	repository := repository.NewRepository(db)
-
-	airbyte := connectorAirbyte.Init(logger, utils.GetConnectorOptions().Airbyte)
-
-	// TODO: use pagination
-	conns, _, _, err := repository.ListConnectorsAdmin(ctx, 1000, "", false, filtering.Filter{}, false)
-	if err != nil {
-		panic(err)
-	}
-
-	airbyteConnector := airbyte.(*connectorAirbyte.Connector)
-	var uids []uuid.UUID
-	for idx := range conns {
-		uid := conns[idx].ConnectorDefinitionUID
-		if _, err = airbyteConnector.GetConnectorDefinitionByUID(uid); err == nil {
-			uids = append(uids, uid)
-
-		}
-	}
-
-	err = airbyteConnector.PreDownloadImage(logger, uids)
-
-	if err != nil {
-		panic(err)
-	}
 
 	// Set tombstone based on definition
 	connector := connector.Init(logger, utils.GetConnectorOptions())
