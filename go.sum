@@ -1187,8 +1187,8 @@ github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 h1:W9WBk7
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839/go.mod h1:xaLFMmpvUxqXtVkUJfg9QmT88cDaCJ3ZKgdZ78oO8Qo=
 github.com/instill-ai/component v0.8.0-beta h1:xXePzuaKhh9RjSnmo6mZE4QD8OkaAuWVxxero6b4Kyo=
 github.com/instill-ai/component v0.8.0-beta/go.mod h1:fWyVPJVJ4WyFSQMgWCc7KvcS7m9QpdS3VXCL2CZE8OY=
-github.com/instill-ai/connector v0.8.1-beta.0.20240101145810-52e840952243 h1:UQBN4nMmsdBeaVkRdxG2NyhRy8TFwDUtUED77xo7NOc=
-github.com/instill-ai/connector v0.8.1-beta.0.20240101145810-52e840952243/go.mod h1:QgaSVMIVkqZS4y5TGMrfk01h6dDVTGAZxVCRncA2grs=
+github.com/instill-ai/connector v0.9.0-beta h1:mv3Jm2io/Lutm1HyO81gTWIlP4Mxcb10MS3qZmkQj2k=
+github.com/instill-ai/connector v0.9.0-beta/go.mod h1:QgaSVMIVkqZS4y5TGMrfk01h6dDVTGAZxVCRncA2grs=
 github.com/instill-ai/operator v0.6.0-beta h1:G3imamqb9tDmOKYwzKqbvnKRaseX+PcNXpUJKu03lv8=
 github.com/instill-ai/operator v0.6.0-beta/go.mod h1:exFYtKdZFyzAczduFxQlD4X7+/B4OLYJ3ihA7j8Kcsg=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20231214110613-21be2ae5d3e9 h1:Yv0wikxsdNbvyQSk1gsiUXTRlWDmh7+Qqb3mGy2qw80=
