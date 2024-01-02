@@ -269,6 +269,13 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 	pipelineToCreate := req.GetPipeline()
 
 	pipelineToCreate.OwnerName = req.GetParent()
+	if pipelineToCreate.Recipe != nil {
+		for _, comp := range pipelineToCreate.Recipe.Components {
+			if comp.ResourceName != "" && !strings.HasPrefix(comp.ResourceName, pipelineToCreate.OwnerName+"/") {
+				return nil, ErrConnectorNamespace
+			}
+		}
+	}
 
 	pipeline, err = h.service.CreateNamespacePipeline(ctx, ns, authUser, pipelineToCreate)
 
@@ -524,6 +531,13 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
+	}
+	if pbPipelineReq.Recipe != nil {
+		for _, comp := range pbPipelineReq.Recipe.Components {
+			if comp.ResourceName != "" && !strings.HasPrefix(comp.ResourceName, pbPipelineToUpdate.OwnerName+"/") {
+				return nil, ErrConnectorNamespace
+			}
+		}
 	}
 
 	pbPipeline, err := h.service.UpdateNamespacePipelineByID(ctx, ns, authUser, id, pbPipelineToUpdate)
