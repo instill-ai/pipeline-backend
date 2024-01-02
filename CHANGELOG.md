@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.19.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.18.1-beta...v0.19.0-beta) (2024-01-02)
+
+
+### Bug Fixes
+
+* fix the wrong Temporal workflow retry setting ([#351](https://github.com/instill-ai/pipeline-backend/issues/351)) ([c3b71fc](https://github.com/instill-ai/pipeline-backend/commit/c3b71fc87da43802943e2341d54b709d60271c02))
+* force the connector and pipeline belong to same namespace ([#353](https://github.com/instill-ai/pipeline-backend/issues/353)) ([7bbed56](https://github.com/instill-ai/pipeline-backend/commit/7bbed5667b0d7c3494ad2fc510e18261e520a3c6))
+* remove unnecessary mgmt-backend request ([#349](https://github.com/instill-ai/pipeline-backend/issues/349)) ([9bfe43c](https://github.com/instill-ai/pipeline-backend/commit/9bfe43ca1fa96d6683db9404275e87718da99c30))
+
+
+### Miscellaneous Chores
+
+* release v0.19.0-beta ([6ffa11c](https://github.com/instill-ai/pipeline-backend/commit/6ffa11ca1cdc3f89f7ac81aa3d4eb858f2b4624d))
+
 ## [0.18.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.18.0-beta...v0.18.1-beta) (2023-12-25)
 
 
