@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -272,18 +273,19 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 							if parsedTask, ok := comp.GetConfiguration().Fields["task"]; ok {
 								task = parsedTask.GetStringValue()
 							}
+							compOpenAPISpec := s.connector.GetOpenapiSpecificationsByUID(uuid.FromStringOrNil(comp.GetConnectorDefinition().Uid), comp.GetConfiguration())
 							if task == "" {
-								keys := make([]string, 0, len(comp.GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()))
+								keys := make([]string, 0, len(compOpenAPISpec.GetFields()))
 								if len(keys) != 1 {
 									return nil, fmt.Errorf("must specify a task")
 								}
 								task = keys[0]
 							}
 
-							if _, ok := comp.GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()[task]; !ok {
+							if _, ok := compOpenAPISpec.GetFields()[task]; !ok {
 								return nil, fmt.Errorf("generate OpenAPI spec error")
 							}
-							walk = comp.GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()[task]
+							walk = compOpenAPISpec.GetFields()[task]
 
 							splits := strings.Split(str, ".")
 

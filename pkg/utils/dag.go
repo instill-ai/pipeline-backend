@@ -172,7 +172,7 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 		if strings.HasPrefix(input, "{") && strings.HasSuffix(input, "}") && !strings.HasPrefix(input, "{{") && !strings.HasSuffix(input, "}}") {
 			input = input[1:]
 			input = input[:len(input)-1]
-			input = strings.ReplaceAll(input, " ", "")
+			input = strings.TrimSpace(input)
 			if input[0] == '[' && input[len(input)-1] == ']' {
 				outs := []interface{}{}
 				subInputs := strings.Split(input[1:len(input)-1], ",")
@@ -185,6 +185,8 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 				}
 				return outs, nil
 
+			} else if input[0] == '"' || input[0] == '\'' {
+				return input, nil
 			} else {
 				out, err := traverseBinding(bindings, input)
 				if err != nil {
@@ -544,7 +546,7 @@ func FindReferenceParent(input string) []string {
 
 			parsed = parsed[1:]
 			parsed = parsed[:len(parsed)-1]
-			parsed = strings.ReplaceAll(parsed, " ", "")
+			parsed = strings.TrimSpace(parsed)
 			if parsed[0] == '[' && parsed[len(parsed)-1] == ']' {
 				parents := []string{}
 				subStrs := strings.Split(parsed[1:len(parsed)-1], ",")
@@ -560,6 +562,7 @@ func FindReferenceParent(input string) []string {
 				}
 				return parents
 
+			} else if parsed[0] == '"' || parsed[0] == '\'' {
 			} else {
 				var b interface{}
 				err := json.Unmarshal([]byte(parsed), &b)
