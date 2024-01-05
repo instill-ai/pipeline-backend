@@ -347,22 +347,6 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 	}
 
 	connID = connector.GetId()
-	if len(connID) > 8 && connID[:8] == "instill-" {
-		st, err := sterr.CreateErrorBadRequest(
-			"[handler] create connector error",
-			[]*errdetails.BadRequest_FieldViolation{
-				{
-					Field:       "connector",
-					Description: "the id can not start with instill-",
-				},
-			},
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		span.SetStatus(1, st.Err().Error())
-		return nil, st.Err()
-	}
 
 	// Return error if resource ID does not follow RFC-1034
 	if err := checkfield.CheckResourceID(connID); err != nil {
@@ -1036,22 +1020,6 @@ func (h *PublicHandler) renameNamespaceConnector(ctx context.Context, req Rename
 		return nil, err
 	}
 	connNewID = req.GetNewConnectorId()
-	if len(connNewID) > 8 && connNewID[:8] == "instill-" {
-		st, err := sterr.CreateErrorBadRequest(
-			"[handler] create connector error",
-			[]*errdetails.BadRequest_FieldViolation{
-				{
-					Field:       "connector",
-					Description: "the id can not start with instill-",
-				},
-			},
-		)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-		span.SetStatus(1, st.Err().Error())
-		return nil, st.Err()
-	}
 
 	// Return error if resource ID does not follow RFC-1034
 	if err := checkfield.CheckResourceID(connNewID); err != nil {
