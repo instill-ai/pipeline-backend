@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -62,7 +63,7 @@ type Service interface {
 	GetOperatorDefinitionById(ctx context.Context, defId string) (*pipelinePB.OperatorDefinition, error)
 	ListOperatorDefinitions(ctx context.Context) []*pipelinePB.OperatorDefinition
 
-	ListPipelines(ctx context.Context, authUser *AuthUser, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error)
+	ListPipelines(ctx context.Context, authUser *AuthUser, pageSize int32, pageToken string, view View, visibility *pipelinePB.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error)
 	GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid uuid.UUID, view View) (*pipelinePB.Pipeline, error)
 	CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error)
 	ListNamespacePipelines(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error)
@@ -420,11 +421,36 @@ func (s *service) ListOperatorDefinitions(ctx context.Context) []*pipelinePB.Ope
 	return s.operator.ListOperatorDefinitions()
 }
 
-func (s *service) ListPipelines(ctx context.Context, authUser *AuthUser, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error) {
+func (s *service) ListPipelines(ctx context.Context, authUser *AuthUser, pageSize int32, pageToken string, view View, visibility *pipelinePB.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error) {
 
-	uidAllowList, err := s.aclClient.ListPermissions("pipeline", authUser.GetACLType(), authUser.UID, "reader")
-	if err != nil {
-		return nil, 0, "", err
+	var uidAllowList []uuid.UUID
+	var err error
+
+	// TODO: optimize the logic
+	if visibility != nil && *visibility == pipelinePB.Pipeline_VISIBILITY_PUBLIC {
+		uidAllowList, err = s.aclClient.ListPermissions("pipeline", authUser.GetACLType(), uuid.Nil, "reader")
+		if err != nil {
+			return nil, 0, "", err
+		}
+	} else if visibility != nil && *visibility == pipelinePB.Pipeline_VISIBILITY_PRIVATE {
+		allUidAllowList, err := s.aclClient.ListPermissions("pipeline", authUser.GetACLType(), authUser.UID, "reader")
+		if err != nil {
+			return nil, 0, "", err
+		}
+		publicUidAllowList, err := s.aclClient.ListPermissions("pipeline", authUser.GetACLType(), uuid.Nil, "reader")
+		if err != nil {
+			return nil, 0, "", err
+		}
+		for _, uid := range allUidAllowList {
+			if !slices.Contains(publicUidAllowList, uid) {
+				uidAllowList = append(uidAllowList, uid)
+			}
+		}
+	} else {
+		uidAllowList, err = s.aclClient.ListPermissions("pipeline", authUser.GetACLType(), authUser.UID, "reader")
+		if err != nil {
+			return nil, 0, "", err
+		}
 	}
 
 	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view == VIEW_BASIC, filter, uidAllowList, showDeleted)

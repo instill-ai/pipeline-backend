@@ -251,8 +251,13 @@ func (c *ACLClient) ListPermissions(objectType string, userType string, userUID 
 	options := openfgaClient.ClientListObjectsOptions{
 		AuthorizationModelId: c.authorizationModelId,
 	}
+	userUIDStr := "*"
+	if userUID != uuid.Nil {
+		userUIDStr = userUID.String()
+	}
+
 	body := openfgaClient.ClientListObjectsRequest{
-		User:     fmt.Sprintf("%s:%s", userType, userUID.String()),
+		User:     fmt.Sprintf("%s:%s", userType, userUIDStr),
 		Relation: role,
 		Type:     objectType,
 	}
