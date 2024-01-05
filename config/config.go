@@ -28,7 +28,6 @@ type AppConfig struct {
 	Log          LogConfig          `koanf:"log"`
 	MgmtBackend  MgmtBackendConfig  `koanf:"mgmtbackend"`
 	ModelBackend ModelBackendConfig `koanf:"modelbackend"`
-	Controller   ControllerConfig   `koanf:"controller"`
 	OpenFGA      OpenFGAConfig      `koanf:"openfga"`
 }
 
@@ -148,16 +147,6 @@ type ModelBackendConfig struct {
 	Host       string `koanf:"host"`
 	PublicPort int    `koanf:"publicport"`
 	HTTPS      struct {
-		Cert string `koanf:"cert"`
-		Key  string `koanf:"key"`
-	}
-}
-
-// ControllerConfig related to controller
-type ControllerConfig struct {
-	Host        string `koanf:"host"`
-	PrivatePort int    `koanf:"privateport"`
-	HTTPS       struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}

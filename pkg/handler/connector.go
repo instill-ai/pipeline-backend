@@ -1141,23 +1141,7 @@ func (h *PublicHandler) watchNamespaceConnector(ctx context.Context, req WatchNa
 		)))
 		return pipelinePB.Connector_STATE_UNSPECIFIED, err
 	}
-
-	statePtr, err := h.service.GetConnectorState(uuid.FromStringOrNil(connector.Uid))
-
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		logger.Info(string(custom_otel.NewLogMessage(
-			span,
-			logUUID.String(),
-			authUser.UID,
-			eventName,
-			custom_otel.SetErrorMessage(err.Error()),
-			custom_otel.SetEventResource(connector),
-		)))
-		return pipelinePB.Connector_STATE_ERROR, nil
-	}
-
-	return *statePtr, nil
+	return connector.State, nil
 }
 
 type TestNamespaceConnectorRequestInterface interface {

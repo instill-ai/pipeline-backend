@@ -75,12 +75,6 @@ modelbackend:
   https:
     cert:
     key:
-controller:
-  host: controller-vdp
-  privateport: 3085
-  https:
-    cert:
-    key:
 openfga:
   host: openfga
   port: 8080

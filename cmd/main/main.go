@@ -244,11 +244,6 @@ func main() {
 		defer mgmtPublicServiceClientConn.Close()
 	}
 
-	controllerServiceClient, controllerServiceClientConn := external.InitControllerPrivateServiceClient(ctx)
-	if controllerServiceClientConn != nil {
-		defer controllerServiceClientConn.Close()
-	}
-
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
@@ -268,7 +263,6 @@ func main() {
 		repository,
 		mgmtPrivateServiceClient,
 		mgmtPublicServiceClient,
-		controllerServiceClient,
 		redisClient,
 		temporalClient,
 		influxDBWriteClient,

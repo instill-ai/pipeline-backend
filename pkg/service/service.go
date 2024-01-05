@@ -52,7 +52,6 @@ import (
 	connector "github.com/instill-ai/connector/pkg"
 	operator "github.com/instill-ai/operator/pkg"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	controllerPB "github.com/instill-ai/protogen-go/vdp/controller/v1beta"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -89,11 +88,6 @@ type Service interface {
 	UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUid uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error)
 
 	ListPipelineReleasesAdmin(ctx context.Context, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int32, string, error)
-
-	// Controller APIs
-	GetPipelineState(uid uuid.UUID) (*pipelinePB.State, error)
-	UpdatePipelineState(uid uuid.UUID, state pipelinePB.State, progress *int32) error
-	DeletePipelineState(uid uuid.UUID) error
 
 	// Influx API
 
@@ -147,11 +141,6 @@ type Service interface {
 	// Shared public/private method for checking connector's connection
 	CheckConnectorByUID(ctx context.Context, connUID uuid.UUID) (*pipelinePB.Connector_State, error)
 
-	// Controller custom service
-	GetConnectorState(uid uuid.UUID) (*pipelinePB.Connector_State, error)
-	UpdateConnectorState(uid uuid.UUID, state pipelinePB.Connector_State, progress *int32) error
-	DeleteConnectorState(uid uuid.UUID) error
-
 	// Influx API
 	WriteNewConnectorDataPoint(ctx context.Context, data utils.ConnectorUsageMetricData, pipelineMetadata *structpb.Value) error
 
@@ -164,7 +153,6 @@ type service struct {
 	repository               repository.Repository
 	mgmtPrivateServiceClient mgmtPB.MgmtPrivateServiceClient
 	mgmtPublicServiceClient  mgmtPB.MgmtPublicServiceClient
-	controllerClient         controllerPB.ControllerPrivateServiceClient
 	redisClient              *redis.Client
 	temporalClient           client.Client
 	influxDBWriteClient      api.WriteAPI
@@ -178,7 +166,6 @@ func NewService(
 	r repository.Repository,
 	u mgmtPB.MgmtPrivateServiceClient,
 	m mgmtPB.MgmtPublicServiceClient,
-	ct controllerPB.ControllerPrivateServiceClient,
 	rc *redis.Client,
 	t client.Client,
 	i api.WriteAPI,
@@ -189,7 +176,6 @@ func NewService(
 		repository:               r,
 		mgmtPrivateServiceClient: u,
 		mgmtPublicServiceClient:  m,
-		controllerClient:         ct,
 		redisClient:              rc,
 		temporalClient:           t,
 		influxDBWriteClient:      i,
@@ -733,13 +719,6 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 		return nil, ErrNoPermission
 	}
 
-	// user desires to be active or inactive, state stay the same
-	// but update etcd storage with checkState
-	err = s.checkState(dbPipeline.Recipe)
-	if err != nil {
-		return nil, err
-	}
-
 	recipeErr := s.checkRecipe(ownerPermalink, dbPipeline.Recipe)
 
 	if recipeErr != nil {
@@ -1062,10 +1041,6 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 	if err != nil {
 		return nil, err
 	}
-	// Add resource entry to controller
-	if err := s.UpdatePipelineState(dbCreatedPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
-		return nil, err
-	}
 
 	latestUUID, _ := s.GetNamespacePipelineLatestReleaseUid(ctx, ns, authUser, pipeline.Id)
 	defaultUUID, _ := s.GetNamespacePipelineDefaultReleaseUid(ctx, ns, authUser, pipeline.Id)
@@ -1198,11 +1173,6 @@ func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns res
 		return nil, err
 	}
 
-	// Add resource entry to controller
-	if err := s.UpdatePipelineState(dbPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
-		return nil, err
-	}
-
 	latestUUID, _ := s.GetNamespacePipelineLatestReleaseUid(ctx, ns, authUser, pipeline.Id)
 	defaultUUID, _ := s.GetNamespacePipelineDefaultReleaseUid(ctx, ns, authUser, pipeline.Id)
 
@@ -1244,10 +1214,6 @@ func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns r
 		return nil, err
 	}
 
-	// Add resource entry to controller
-	if err := s.UpdatePipelineState(dbPipelineRelease.UID, pipelinePB.State_STATE_ACTIVE, nil); err != nil {
-		return nil, err
-	}
 	latestUUID, _ := s.GetNamespacePipelineLatestReleaseUid(ctx, ns, authUser, pipeline.Id)
 	defaultUUID, _ := s.GetNamespacePipelineDefaultReleaseUid(ctx, ns, authUser, pipeline.Id)
 
@@ -1271,15 +1237,6 @@ func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns res
 		return err
 	} else if !granted {
 		return ErrNoPermission
-	}
-
-	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUid, id, false)
-	if err != nil {
-		return err
-	}
-
-	if err := s.DeletePipelineState(dbPipelineRelease.UID); err != nil {
-		return err
 	}
 
 	return s.repository.DeleteNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUid, id)
@@ -1997,9 +1954,6 @@ func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Name
 	if err := s.repository.UpdateNamespaceConnectorStateByID(ctx, ownerPermalink, dbConnectorToCreate.ID, datamodel.ConnectorState(pipelinePB.Connector_STATE_DISCONNECTED)); err != nil {
 		return nil, err
 	}
-	if err := s.UpdateConnectorState(dbConnectorToCreate.UID, pipelinePB.Connector_STATE_DISCONNECTED, nil); err != nil {
-		return nil, err
-	}
 
 	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, dbConnectorToCreate.ID, false)
 	if err != nil {
@@ -2093,11 +2047,6 @@ func (s *service) UpdateNamespaceConnectorByID(ctx context.Context, ns resource.
 		return nil, err
 	}
 
-	// Check connector state
-	if err := s.UpdateConnectorState(dbConnectorToUpdate.UID, pipelinePB.Connector_STATE_DISCONNECTED, nil); err != nil {
-		return nil, err
-	}
-
 	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, dbConnectorToUpdate.ID, false)
 	if err != nil {
 		return nil, err
@@ -2152,10 +2101,6 @@ func (s *service) DeleteNamespaceConnectorByID(ctx context.Context, ns resource.
 	// 	return st.Err()
 	// }
 
-	if err := s.DeleteConnectorState(dbConnector.UID); err != nil {
-		return err
-	}
-
 	err = s.aclClient.Purge("connector", dbConnector.UID)
 	if err != nil {
 		return err
@@ -2200,18 +2145,12 @@ func (s *service) UpdateNamespaceConnectorStateByID(ctx context.Context, ns reso
 			return nil, err
 		}
 
-		if err := s.UpdateConnectorState(conn.UID, pipelinePB.Connector_STATE_CONNECTED, nil); err != nil {
-			return nil, err
-		}
-
 	case pipelinePB.Connector_STATE_DISCONNECTED:
 
 		if err := s.repository.UpdateNamespaceConnectorStateByID(ctx, ownerPermalink, id, datamodel.ConnectorState(pipelinePB.Connector_STATE_DISCONNECTED)); err != nil {
 			return nil, err
 		}
-		if err := s.UpdateConnectorState(conn.UID, pipelinePB.Connector_State(state), nil); err != nil {
-			return nil, err
-		}
+
 	}
 
 	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, false)
@@ -2317,19 +2256,10 @@ func (s *service) CheckConnectorByUID(ctx context.Context, connUID uuid.UUID) (*
 
 	switch state {
 	case pipelinePB.Connector_STATE_CONNECTED:
-		if err := s.UpdateConnectorState(dbConnector.UID, pipelinePB.Connector_STATE_CONNECTED, nil); err != nil {
-			return pipelinePB.Connector_STATE_ERROR.Enum(), nil
-		}
 		return pipelinePB.Connector_STATE_CONNECTED.Enum(), nil
 	case pipelinePB.Connector_STATE_ERROR:
-		if err := s.UpdateConnectorState(dbConnector.UID, pipelinePB.Connector_STATE_ERROR, nil); err != nil {
-			return pipelinePB.Connector_STATE_ERROR.Enum(), nil
-		}
 		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
 	default:
-		if err := s.UpdateConnectorState(dbConnector.UID, pipelinePB.Connector_STATE_ERROR, nil); err != nil {
-			return pipelinePB.Connector_STATE_ERROR.Enum(), nil
-		}
 		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
 	}
 
