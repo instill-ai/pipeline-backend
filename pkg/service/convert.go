@@ -533,6 +533,12 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		return nil, err
 	}
 	pbPipeline.Releases = pbReleases
+	pbPipeline.Visibility = pipelinePB.Pipeline_VISIBILITY_PRIVATE
+	if u, ok := pbPipeline.Sharing.Users["*/*"]; ok {
+		if u.Enabled {
+			pbPipeline.Visibility = pipelinePB.Pipeline_VISIBILITY_PUBLIC
+		}
+	}
 
 	return &pbPipeline, nil
 }
