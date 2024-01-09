@@ -198,9 +198,9 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 		switch inputFields[k].AsInterface().(type) {
 		case string:
 			str := inputFields[k].GetStringValue()
-			if strings.HasPrefix(str, "{") && strings.HasSuffix(str, "}") && !strings.HasPrefix(str, "{{") && !strings.HasSuffix(str, "}}") {
+			if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
 				// TODO
-				str = str[1:]
+				str = str[2:]
 				str = str[:len(str)-1]
 				str = strings.ReplaceAll(str, " ", "")
 				isArrayReference := false
