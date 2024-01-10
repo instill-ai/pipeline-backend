@@ -486,6 +486,8 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 
 		condUpstreams := []string{}
 		if cond := component.Configuration.Fields["condition"].GetStringValue(); cond != "" {
+			cond = strings.ReplaceAll(cond, "${", "")
+			cond = strings.ReplaceAll(cond, "}", "")
 			expr, err := parser.ParseExpr(cond)
 			if err != nil {
 				return nil, err
