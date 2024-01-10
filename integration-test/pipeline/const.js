@@ -106,7 +106,7 @@ export const simpleRecipe = {
             }
           },
           input: {
-            answer: "{ start.input }"
+            answer: "${start.input}"
           }
         }
       },
@@ -117,7 +117,7 @@ export const simpleRecipe = {
         configuration: {
           input: {
             data: {
-              text: "{ start.input }"
+              text: "${start.input}"
             }
           }
         }
@@ -129,7 +129,7 @@ export const simpleRecipe = {
         configuration: {
           input: {
             data: {
-              text: "{ start.input }"
+              text: "${start.input}"
             }
           }
         }
@@ -165,7 +165,7 @@ export const simpleRecipeWithoutCSV = {
             }
           },
           input: {
-            answer: "{ start.input }"
+            answer: "${start.input}"
           }
         }
       },
@@ -200,7 +200,7 @@ export const simpleRecipeDupId = {
             }
           },
           input: {
-            answer: "{ start.input }"
+            answer: "${start.input}"
           }
         }
       },
@@ -211,7 +211,7 @@ export const simpleRecipeDupId = {
         configuration: {
           input: {
             data: {
-              text: "{ start.input }"
+              text: "${start.input}"
             }
           }
         }
@@ -223,7 +223,7 @@ export const simpleRecipeDupId = {
         configuration: {
           input: {
             data: {
-              text: "{ start.input }"
+              text: "${start.input}"
             }
           }
         }

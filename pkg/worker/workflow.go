@@ -283,7 +283,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 			if !statuses[idx][comp.Id].Skipped {
 				if comp.Configuration.Fields["condition"].GetStringValue() != "" {
-					expr, err := parser.ParseExpr(comp.Configuration.Fields["condition"].GetStringValue())
+					condStr := comp.Configuration.Fields["condition"].GetStringValue()
+					condStr = strings.ReplaceAll(condStr, "${", "")
+					condStr = strings.ReplaceAll(condStr, "}", "")
+					expr, err := parser.ParseExpr(condStr)
 					if err != nil {
 						return nil, err
 					}

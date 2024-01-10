@@ -169,8 +169,8 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 
 	switch input := input.(type) {
 	case string:
-		if strings.HasPrefix(input, "{") && strings.HasSuffix(input, "}") && !strings.HasPrefix(input, "{{") && !strings.HasSuffix(input, "}}") {
-			input = input[1:]
+		if strings.HasPrefix(input, "${") && strings.HasSuffix(input, "}") && strings.Count(input, "${") == 1 {
+			input = input[2:]
 			input = input[:len(input)-1]
 			input = strings.ReplaceAll(input, " ", "")
 			if input[0] == '[' && input[len(input)-1] == ']' {
@@ -194,7 +194,8 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 			}
 		}
 
-		engine := liquid.NewEngine()
+		// TODO: we should retire Liquid instead of changing the delimiters
+		engine := liquid.NewEngine().Delims("${", "}", "{%", "%}")
 		out, err := engine.ParseAndRenderString(input, bindings)
 		if err != nil {
 			return nil, err
@@ -476,7 +477,9 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	}
 	graph := NewDAG(components)
 	for _, component := range components {
-		engine := liquid.NewEngine()
+
+		// TODO: we should retire Liquid instead of changing the delimiters
+		engine := liquid.NewEngine().Delims("${", "}", "{%", "%}")
 		configuration := proto.Clone(component.Configuration)
 		template, _ := protojson.Marshal(configuration)
 		out, err := engine.ParseTemplate(template)
@@ -486,6 +489,8 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 
 		condUpstreams := []string{}
 		if cond := component.Configuration.Fields["condition"].GetStringValue(); cond != "" {
+			cond = strings.ReplaceAll(cond, "${", "")
+			cond = strings.ReplaceAll(cond, "}", "")
 			expr, err := parser.ParseExpr(cond)
 			if err != nil {
 				return nil, err
@@ -540,9 +545,9 @@ func FindReferenceParent(input string) []string {
 	switch parsed := parsed.(type) {
 	case string:
 
-		if strings.HasPrefix(parsed, "{") && strings.HasSuffix(parsed, "}") && !strings.HasPrefix(parsed, "{{") && !strings.HasSuffix(parsed, "}}") {
+		if strings.HasPrefix(parsed, "${") && strings.HasSuffix(parsed, "}") && strings.Count(parsed, "${") == 1 {
 
-			parsed = parsed[1:]
+			parsed = parsed[2:]
 			parsed = parsed[:len(parsed)-1]
 			parsed = strings.ReplaceAll(parsed, " ", "")
 			if parsed[0] == '[' && parsed[len(parsed)-1] == ']' {
