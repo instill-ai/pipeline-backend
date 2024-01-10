@@ -194,6 +194,7 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 			}
 		}
 
+		// TODO: we should retire Liquid instead of changing the delimiters
 		engine := liquid.NewEngine().Delims("${", "}", "{%", "%}")
 		out, err := engine.ParseAndRenderString(input, bindings)
 		if err != nil {
@@ -476,6 +477,8 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	}
 	graph := NewDAG(components)
 	for _, component := range components {
+
+		// TODO: we should retire Liquid instead of changing the delimiters
 		engine := liquid.NewEngine().Delims("${", "}", "{%", "%}")
 		configuration := proto.Clone(component.Configuration)
 		template, _ := protojson.Marshal(configuration)
