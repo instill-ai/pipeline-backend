@@ -414,7 +414,7 @@ func (s *service) ConvertReleaseIdAlias(ctx context.Context, ns resource.Namespa
 }
 
 func (s *service) GetOperatorDefinitionById(ctx context.Context, defId string) (*pipelinePB.OperatorDefinition, error) {
-	return s.operator.GetOperatorDefinitionByID(defId)
+	return s.operator.GetOperatorDefinitionByID(defId, nil)
 }
 
 func (s *service) ListOperatorDefinitions(ctx context.Context) []*pipelinePB.OperatorDefinition {
@@ -1853,7 +1853,7 @@ func (s *service) GetConnectorByUID(ctx context.Context, authUser *AuthUser, uid
 
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string, view View) (*pipelinePB.ConnectorDefinition, error) {
 
-	def, err := s.connector.GetConnectorDefinitionByID(id)
+	def, err := s.connector.GetConnectorDefinitionByID(id, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1867,7 +1867,7 @@ func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string, vie
 }
 func (s *service) GetConnectorDefinitionByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.ConnectorDefinition, error) {
 
-	def, err := s.connector.GetConnectorDefinitionByUID(uid)
+	def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1936,7 +1936,7 @@ func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Name
 		}
 	}
 
-	connDefResp, err := s.connector.GetConnectorDefinitionByID(strings.Split(connector.ConnectorDefinitionName, "/")[1])
+	connDefResp, err := s.connector.GetConnectorDefinitionByID(strings.Split(connector.ConnectorDefinitionName, "/")[1], nil, nil)
 	if err != nil {
 		return nil, err
 	}

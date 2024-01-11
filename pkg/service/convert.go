@@ -142,7 +142,7 @@ func (s *service) connectorPermalinkToName(permalink string) (string, error) {
 
 func (s *service) connectorDefinitionNameToPermalink(name string) (string, error) {
 
-	def, err := s.connector.GetConnectorDefinitionByID(strings.Split(name, "/")[1])
+	def, err := s.connector.GetConnectorDefinitionByID(strings.Split(name, "/")[1], nil, nil)
 	if err != nil {
 		return "", err
 	}
@@ -150,7 +150,7 @@ func (s *service) connectorDefinitionNameToPermalink(name string) (string, error
 }
 
 func (s *service) connectorDefinitionPermalinkToName(permalink string) (string, error) {
-	def, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(permalink, "/")[1]))
+	def, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(permalink, "/")[1]), nil, nil)
 	if err != nil {
 		return "", err
 	}
@@ -162,7 +162,7 @@ func (s *service) operatorDefinitionNameToPermalink(name string) (string, error)
 	if err != nil {
 		return "", err
 	}
-	def, err := s.operator.GetOperatorDefinitionByID(id)
+	def, err := s.operator.GetOperatorDefinitionByID(id, nil)
 	if err != nil {
 		return "", err
 	}
@@ -175,7 +175,7 @@ func (s *service) operatorDefinitionPermalinkToName(permalink string) (string, e
 	if err != nil {
 		return "", err
 	}
-	def, err := s.operator.GetOperatorDefinitionByUID(uid)
+	def, err := s.operator.GetOperatorDefinitionByUID(uid, nil)
 	if err != nil {
 		return "", err
 	}
@@ -202,16 +202,20 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 					recipe.Components[idx].Resource = nil
 				} else {
 					recipe.Components[idx].Resource = pbConnector
+					d, err := s.connector.GetConnectorDefinitionByID(pbConnector.ConnectorDefinition.Id, pbConnector.Configuration, recipe.Components[idx].Configuration)
+					if err != nil {
+						return err
+					}
+					recipe.Components[idx].Definition = &pipelinePB.Component_ConnectorDefinition{ConnectorDefinition: d}
 				}
 			}
 
-		}
-		if utils.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
+		} else if utils.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
 			uid, err := resource.GetRscPermalinkUID(recipe.Components[idx].DefinitionName)
 			if err != nil {
 				return err
 			}
-			def, err := s.connector.GetConnectorDefinitionByUID(uid)
+			def, err := s.connector.GetConnectorDefinitionByUID(uid, recipe.Components[idx].Resource.Configuration, recipe.Components[idx].Configuration)
 			if err != nil {
 				return err
 			}
@@ -234,7 +238,7 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 			if err != nil {
 				return err
 			}
-			def, err := s.operator.GetOperatorDefinitionByUID(uid)
+			def, err := s.operator.GetOperatorDefinitionByUID(uid, recipe.Components[idx].Configuration)
 			if err != nil {
 				return err
 			}
@@ -391,7 +395,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	if view == VIEW_RECIPE || view == VIEW_FULL {
 		for i := range pbRecipe.Components {
 			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions") {
-				con, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(pbRecipe.Components[i].DefinitionName, "/")[1]))
+				con, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(pbRecipe.Components[i].DefinitionName, "/")[1]), nil, nil)
 				if err != nil {
 					return nil, err
 				}
@@ -664,7 +668,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 	if view == VIEW_RECIPE || view == VIEW_FULL {
 		for i := range pbRecipe.Components {
 			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions") {
-				con, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(pbRecipe.Components[i].DefinitionName, "/")[1]))
+				con, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(pbRecipe.Components[i].DefinitionName, "/")[1]), nil, nil)
 				if err != nil {
 					return nil, err
 				}
@@ -796,7 +800,7 @@ func (s *service) convertProtoToDatamodel(
 	createTime = pbConnector.GetCreateTime().AsTime()
 	updateTime = pbConnector.GetUpdateTime().AsTime()
 
-	connectorDefinition, err := s.connector.GetConnectorDefinitionByID(strings.Split(pbConnector.ConnectorDefinitionName, "/")[1])
+	connectorDefinition, err := s.connector.GetConnectorDefinitionByID(strings.Split(pbConnector.ConnectorDefinitionName, "/")[1], nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -865,7 +869,7 @@ func (s *service) convertDatamodelToProto(
 	if err != nil {
 		return nil, err
 	}
-	dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID)
+	dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -906,11 +910,15 @@ func (s *service) convertDatamodelToProto(
 	}
 
 	if view != VIEW_BASIC {
+		if view == VIEW_FULL {
+			dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, pbConnector.Configuration, nil)
+			if err != nil {
+				return nil, err
+			}
+			pbConnector.ConnectorDefinition = dbConnDef
+		}
 		if credentialMask {
 			utils.MaskCredentialFields(s.connector, dbConnDef.Id, pbConnector.Configuration)
-		}
-		if view == VIEW_FULL {
-			pbConnector.ConnectorDefinition = dbConnDef
 		}
 	}
 
