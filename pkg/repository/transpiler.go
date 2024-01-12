@@ -179,8 +179,13 @@ func (t *Transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (
 	var vars []interface{}
 	switch op.(type) {
 	case clause.Eq:
-		sql = fmt.Sprintf("%s = ?", ident.SQL)
-		vars = append(vars, con.Vars...)
+		if ident.SQL == "q" {
+			sql = fmt.Sprintf("%s LIKE ?", "id")
+			vars = append(vars, fmt.Sprintf("%%%s%%", con.Vars[0]))
+		} else {
+			sql = fmt.Sprintf("%s = ?", ident.SQL)
+			vars = append(vars, con.Vars...)
+		}
 	case clause.Neq:
 		sql = fmt.Sprintf("%s <> ?", ident.SQL)
 		vars = append(vars, con.Vars...)
