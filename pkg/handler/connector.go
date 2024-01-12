@@ -116,7 +116,7 @@ func (h *PrivateHandler) CheckConnector(ctx context.Context, req *pipelinePB.Che
 		return resp, err
 	}
 
-	connector, err := h.service.GetConnectorByUIDAdmin(ctx, connUID, service.VIEW_BASIC)
+	connector, err := h.service.GetConnectorByUIDAdmin(ctx, connUID, service.ViewBasic)
 	if err != nil {
 		return nil, err
 	}
@@ -612,7 +612,7 @@ func (h *PublicHandler) updateNamespaceConnector(ctx context.Context, req Update
 		return nil, st.Err()
 	}
 
-	existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_FULL, false)
+	existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.ViewFull, false)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -655,7 +655,7 @@ func (h *PublicHandler) updateNamespaceConnector(ctx context.Context, req Update
 	}
 
 	if mask.IsEmpty() {
-		existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_FULL, true)
+		existedConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.ViewFull, true)
 		if err != nil {
 			span.SetStatus(1, err.Error())
 			return nil, err
@@ -757,7 +757,7 @@ func (h *PublicHandler) deleteNamespaceConnector(ctx context.Context, req Delete
 		return err
 	}
 
-	dbConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_BASIC, true)
+	dbConnector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.ViewBasic, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return err
@@ -841,7 +841,7 @@ func (h *PublicHandler) connectNamespaceConnector(ctx context.Context, req Conne
 		return nil, err
 	}
 
-	connector, err = h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_BASIC, true)
+	connector, err = h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.ViewBasic, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1097,7 +1097,7 @@ func (h *PublicHandler) watchNamespaceConnector(ctx context.Context, req WatchNa
 		return pipelinePB.Connector_STATE_UNSPECIFIED, err
 	}
 
-	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_BASIC, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.ViewBasic, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		logger.Info(string(custom_otel.NewLogMessage(
@@ -1153,7 +1153,7 @@ func (h *PublicHandler) testNamespaceConnector(ctx context.Context, req TestName
 		return pipelinePB.Connector_STATE_UNSPECIFIED, err
 	}
 
-	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_BASIC, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.ViewBasic, true)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return pipelinePB.Connector_STATE_UNSPECIFIED, err
@@ -1219,7 +1219,7 @@ func (h *PublicHandler) executeNamespaceConnector(ctx context.Context, req Execu
 		return nil, err
 	}
 
-	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.VIEW_FULL, true)
+	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, connID, service.ViewFull, true)
 	if err != nil {
 		return nil, err
 	}
@@ -1247,14 +1247,14 @@ func (h *PublicHandler) executeNamespaceConnector(ctx context.Context, req Execu
 	}
 
 	dataPoint := utils.ConnectorUsageMetricData{
-		OwnerUID:               ns.NsUid.String(),
+		OwnerUID:               ns.NsUID.String(),
 		OwnerType:              ownerType,
 		UserUID:                authUser.UID.String(),
 		UserType:               mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		ConnectorID:            connector.Id,
 		ConnectorUID:           connector.Uid,
 		ConnectorExecuteUID:    logUUID.String(),
-		ConnectorDefinitionUid: connector.ConnectorDefinition.Uid,
+		ConnectorDefinitionUID: connector.ConnectorDefinition.Uid,
 		ExecuteTime:            startTime.Format(time.RFC3339Nano),
 	}
 

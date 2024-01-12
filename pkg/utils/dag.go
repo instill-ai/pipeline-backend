@@ -77,7 +77,7 @@ func NewDAG(comps []*datamodel.Component) *dag {
 	compsIdx := map[string]int{}
 	uf := NewUnionFind(len(comps))
 	for idx := range comps {
-		compsIdx[comps[idx].Id] = idx
+		compsIdx[comps[idx].ID] = idx
 	}
 
 	return &dag{
@@ -91,12 +91,12 @@ func NewDAG(comps []*datamodel.Component) *dag {
 
 func (d *dag) AddEdge(from *datamodel.Component, to *datamodel.Component) {
 	d.prerequisitesMap[from] = append(d.prerequisitesMap[from], to)
-	d.uf.Union(d.compsIdx[from.Id], d.compsIdx[to.Id])
-	if d.ancestorsMap[to.Id] == nil {
-		d.ancestorsMap[to.Id] = []string{}
+	d.uf.Union(d.compsIdx[from.ID], d.compsIdx[to.ID])
+	if d.ancestorsMap[to.ID] == nil {
+		d.ancestorsMap[to.ID] = []string{}
 	}
-	d.ancestorsMap[to.Id] = append(d.ancestorsMap[to.Id], from.Id)
-	d.ancestorsMap[to.Id] = append(d.ancestorsMap[to.Id], d.ancestorsMap[from.Id]...)
+	d.ancestorsMap[to.ID] = append(d.ancestorsMap[to.ID], from.ID)
+	d.ancestorsMap[to.ID] = append(d.ancestorsMap[to.ID], d.ancestorsMap[from.ID]...)
 }
 
 func (d *dag) GetAncestorIDs(id string) []string {
@@ -470,10 +470,10 @@ func EvalCondition(expr ast.Expr, value map[string]interface{}) (interface{}, er
 }
 
 func GenerateDAG(components []*datamodel.Component) (*dag, error) {
-	componentIdMap := make(map[string]*datamodel.Component)
+	componentIDMap := make(map[string]*datamodel.Component)
 
 	for idx := range components {
-		componentIdMap[components[idx].Id] = components[idx]
+		componentIDMap[components[idx].ID] = components[idx]
 	}
 	graph := NewDAG(components)
 	for _, component := range components {
@@ -499,7 +499,7 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 		}
 
 		for idx := range condUpstreams {
-			if upstream, ok := componentIdMap[condUpstreams[idx]]; ok {
+			if upstream, ok := componentIDMap[condUpstreams[idx]]; ok {
 				graph.AddEdge(upstream, component)
 			} else {
 				return nil, fmt.Errorf("no condition upstream component '%s'", condUpstreams[idx])
@@ -515,14 +515,14 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 				parents = append(parents, upstream)
 			}
 			for idx := range parents {
-				if _, ok := componentIdMap[parents[idx]]; ok {
-					graph.AddEdge(componentIdMap[parents[idx]], component)
+				if _, ok := componentIDMap[parents[idx]]; ok {
+					graph.AddEdge(componentIDMap[parents[idx]], component)
 				}
 			}
 		}
 		parents := FindReferenceParent(string(template))
 		for idx := range parents {
-			if upstream, ok := componentIdMap[parents[idx]]; ok {
+			if upstream, ok := componentIDMap[parents[idx]]; ok {
 				graph.AddEdge(upstream, component)
 			} else {
 				return nil, fmt.Errorf("no upstream component '%s'", parents[idx])

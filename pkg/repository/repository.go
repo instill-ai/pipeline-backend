@@ -39,14 +39,14 @@ type Repository interface {
 	DeleteNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string) error
 	UpdateNamespacePipelineIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error
 
-	CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error
-	ListNamespacePipelineReleases(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.PipelineRelease, int64, string, error)
-	GetNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, isBasicView bool) (*datamodel.PipelineRelease, error)
-	GetNamespacePipelineReleaseByUID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
-	UpdateNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error
-	DeleteNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string) error
-	UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, newID string) error
-	GetLatestNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
+	CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error
+	ListNamespacePipelineReleases(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.PipelineRelease, int64, string, error)
+	GetNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) (*datamodel.PipelineRelease, error)
+	GetNamespacePipelineReleaseByUID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
+	UpdateNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error
+	DeleteNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) error
+	UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) error
+	GetLatestNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
 
 	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByIDAdmin(ctx context.Context, id string, isBasicView bool) (*datamodel.Pipeline, error)
@@ -290,25 +290,25 @@ func (r *repository) transpileFilter(filter filtering.Filter) (*clause.Expr, err
 	}).Transpile()
 }
 
-func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error {
+func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error {
 	if result := r.db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (pipelineReleases []*datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
+func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (pipelineReleases []*datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
 
 	db := r.db
 	if showDeleted {
 		db = db.Unscoped()
 	}
 
-	if result := db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUid).Count(&totalSize); result.Error != nil {
+	if result := db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUID).Count(&totalSize); result.Error != nil {
 		return nil, 0, "", result.Error
 	}
 
-	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Order("create_time DESC, uid DESC").Where("pipeline_uid = ?", pipelineUid)
+	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Order("create_time DESC, uid DESC").Where("pipeline_uid = ?", pipelineUID)
 
 	if pageSize == 0 {
 		pageSize = DefaultPageSize
@@ -355,7 +355,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 		lastUID := (pipelineReleases)[len(pipelineReleases)-1].UID
 		lastItem := &datamodel.PipelineRelease{}
 		if result := db.Model(&datamodel.PipelineRelease{}).
-			Where("pipeline_uid = ?", pipelineUid).
+			Where("pipeline_uid = ?", pipelineUID).
 			Order("create_time ASC, uid ASC").
 			Limit(1).Find(lastItem); result.Error != nil {
 			return nil, 0, "", err
@@ -442,8 +442,8 @@ func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int
 	return pipelineReleases, totalSize, nextPageToken, nil
 }
 
-func (r *repository) GetNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, isBasicView bool) (*datamodel.PipelineRelease, error) {
-	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("id = ? AND pipeline_uid = ?", id, pipelineUid)
+func (r *repository) GetNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) (*datamodel.PipelineRelease, error) {
+	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("id = ? AND pipeline_uid = ?", id, pipelineUID)
 	if isBasicView {
 		queryBuilder.Omit("pipeline_release.recipe")
 	}
@@ -454,8 +454,8 @@ func (r *repository) GetNamespacePipelineReleaseByID(ctx context.Context, ownerP
 	return &pipelineRelease, nil
 }
 
-func (r *repository) GetNamespacePipelineReleaseByUID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
-	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("uid = ? AND pipeline_uid = ?", uid, pipelineUid)
+func (r *repository) GetNamespacePipelineReleaseByUID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("uid = ? AND pipeline_uid = ?", uid, pipelineUID)
 	if isBasicView {
 		queryBuilder.Omit("pipeline_release.recipe")
 	}
@@ -466,9 +466,9 @@ func (r *repository) GetNamespacePipelineReleaseByUID(ctx context.Context, owner
 	return &pipelineRelease, nil
 }
 
-func (r *repository) UpdateNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error {
+func (r *repository) UpdateNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error {
 	if result := r.db.Model(&datamodel.PipelineRelease{}).
-		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
+		Where("id = ? AND pipeline_uid = ?", id, pipelineUID).
 		Updates(pipelineRelease); result.Error != nil {
 		return result.Error
 	} else if result.RowsAffected == 0 {
@@ -477,9 +477,9 @@ func (r *repository) UpdateNamespacePipelineReleaseByID(ctx context.Context, own
 	return nil
 }
 
-func (r *repository) DeleteNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string) error {
+func (r *repository) DeleteNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) error {
 	result := r.db.Model(&datamodel.PipelineRelease{}).
-		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
+		Where("id = ? AND pipeline_uid = ?", id, pipelineUID).
 		Delete(&datamodel.PipelineRelease{})
 
 	if result.Error != nil {
@@ -493,9 +493,9 @@ func (r *repository) DeleteNamespacePipelineReleaseByID(ctx context.Context, own
 	return nil
 }
 
-func (r *repository) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, id string, newID string) error {
+func (r *repository) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) error {
 	if result := r.db.Model(&datamodel.PipelineRelease{}).
-		Where("id = ? AND pipeline_uid = ?", id, pipelineUid).
+		Where("id = ? AND pipeline_uid = ?", id, pipelineUID).
 		Update("id", newID); result.Error != nil {
 		return result.Error
 	} else if result.RowsAffected == 0 {
@@ -504,8 +504,8 @@ func (r *repository) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, o
 	return nil
 }
 
-func (r *repository) GetLatestNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
-	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUid).Order("id DESC")
+func (r *repository) GetLatestNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUID).Order("id DESC")
 	if isBasicView {
 		queryBuilder.Omit("pipeline_release.recipe")
 	}

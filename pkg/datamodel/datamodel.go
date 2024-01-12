@@ -75,7 +75,7 @@ type Recipe struct {
 }
 
 type Component struct {
-	Id             string           `json:"id"`
+	ID             string           `json:"id"`
 	DefinitionName string           `json:"definition_name"`
 	ResourceName   string           `json:"resource_name"`
 	Configuration  *structpb.Struct `json:"configuration"`

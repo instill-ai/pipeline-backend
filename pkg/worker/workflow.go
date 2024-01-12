@@ -28,10 +28,10 @@ import (
 
 type TriggerPipelineWorkflowRequest struct {
 	PipelineInputBlobRedisKeys []string
-	PipelineId                 string
-	PipelineUid                uuid.UUID
-	PipelineReleaseId          string
-	PipelineReleaseUid         uuid.UUID
+	PipelineID                 string
+	PipelineUID                uuid.UUID
+	PipelineReleaseID          string
+	PipelineReleaseUID         uuid.UUID
 	PipelineRecipe             *datamodel.Recipe
 	OwnerPermalink             string
 	UserPermalink              string
@@ -45,7 +45,7 @@ type TriggerPipelineWorkflowResponse struct {
 
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
 type ExecuteConnectorActivityRequest struct {
-	Id                 string
+	ID                 string
 	InputBlobRedisKeys []string
 	DefinitionName     string
 	ResourceName       string
@@ -59,7 +59,7 @@ type ExecuteConnectorActivityResponse struct {
 
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
 type ExecuteOperatorActivityRequest struct {
-	Id                 string
+	ID                 string
 	InputBlobRedisKeys []string
 	DefinitionName     string
 	PipelineMetadata   PipelineMetadataStruct
@@ -71,13 +71,13 @@ type ExecuteOperatorActivityResponse struct {
 }
 
 type PipelineMetadataStruct struct {
-	Id         string
-	Uid        string
-	ReleaseId  string
-	ReleaseUid string
+	ID         string
+	UID        string
+	ReleaseID  string
+	ReleaseUID string
 	Owner      string
-	TriggerId  string
-	UserUid    string
+	TriggerID  string
+	UserUID    string
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -105,7 +105,7 @@ func (w *worker) SetBlob(inputs []*structpb.Struct) ([]string, error) {
 	id, _ := uuid.NewV4()
 	blobRedisKeys := []string{}
 	for idx, input := range inputs {
-		inputJson, err := protojson.Marshal(input)
+		inputJSON, err := protojson.Marshal(input)
 		if err != nil {
 			return nil, err
 		}
@@ -114,7 +114,7 @@ func (w *worker) SetBlob(inputs []*structpb.Struct) ([]string, error) {
 		w.redisClient.Set(
 			context.Background(),
 			blobRedisKey,
-			inputJson,
+			inputJSON,
 			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
 		)
 		blobRedisKeys = append(blobRedisKeys, blobRedisKey)
@@ -152,10 +152,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		UserUID:            strings.Split(param.UserPermalink, "/")[1],
 		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		TriggerMode:        param.Mode,
-		PipelineID:         param.PipelineId,
-		PipelineUID:        param.PipelineUid.String(),
-		PipelineReleaseID:  param.PipelineReleaseId,
-		PipelineReleaseUID: param.PipelineReleaseUid.String(),
+		PipelineID:         param.PipelineID,
+		PipelineUID:        param.PipelineUID.String(),
+		PipelineReleaseID:  param.PipelineReleaseID,
+		PipelineReleaseUID: param.PipelineReleaseUID.String(),
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
@@ -185,10 +185,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		_ = w.writeNewDataPoint(sCtx, dataPoint)
 		return nil, err
 	}
-	var startCompId string
+	var startCompID string
 	for _, c := range orderedComp {
 		if c.DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
-			startCompId = c.Id
+			startCompID = c.ID
 		}
 	}
 
@@ -234,28 +234,28 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			_ = w.writeNewDataPoint(sCtx, dataPoint)
 			return nil, err
 		}
-		memory[idx][startCompId] = inputStruct
-		computeTime[startCompId] = 0
+		memory[idx][startCompID] = inputStruct
+		computeTime[startCompID] = 0
 
-		memory[idx]["global"], err = utils.GenerateGlobalValue(param.PipelineUid, param.PipelineRecipe, param.OwnerPermalink)
+		memory[idx]["global"], err = utils.GenerateGlobalValue(param.PipelineUID, param.PipelineRecipe, param.OwnerPermalink)
 		if err != nil {
 			return nil, err
 		}
 		statuses[idx] = map[string]*utils.ComponentStatus{}
-		statuses[idx][startCompId] = &utils.ComponentStatus{}
-		statuses[idx][startCompId].Started = true
-		statuses[idx][startCompId].Completed = true
+		statuses[idx][startCompID] = &utils.ComponentStatus{}
+		statuses[idx][startCompID].Started = true
+		statuses[idx][startCompID].Completed = true
 
 	}
 
-	responseCompId := ""
+	responseCompID := ""
 	for _, comp := range orderedComp {
-		if comp.Id == startCompId {
+		if comp.ID == startCompID {
 			continue
 		}
 
 		for idx := 0; idx < batchSize; idx++ {
-			statuses[idx][comp.Id] = &utils.ComponentStatus{}
+			statuses[idx][comp.ID] = &utils.ComponentStatus{}
 		}
 
 		var compInputs []*structpb.Struct
@@ -263,7 +263,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		idxMap := map[int]int{}
 
 		for idx := 0; idx < batchSize; idx++ {
-			memory[idx][comp.Id] = map[string]interface{}{
+			memory[idx][comp.ID] = map[string]interface{}{
 				"input":  map[string]interface{}{},
 				"output": map[string]interface{}{},
 				"status": map[string]interface{}{
@@ -273,15 +273,15 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				},
 			}
 
-			for _, ancestorID := range dag.GetAncestorIDs(comp.Id) {
+			for _, ancestorID := range dag.GetAncestorIDs(comp.ID) {
 				if statuses[idx][ancestorID].Skipped {
-					memory[idx][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["skipped"] = true
-					statuses[idx][comp.Id].Skipped = true
+					memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["skipped"] = true
+					statuses[idx][comp.ID].Skipped = true
 					break
 				}
 			}
 
-			if !statuses[idx][comp.Id].Skipped {
+			if !statuses[idx][comp.ID].Skipped {
 				if comp.Configuration.Fields["condition"].GetStringValue() != "" {
 					condStr := comp.Configuration.Fields["condition"].GetStringValue()
 					condStr = strings.ReplaceAll(condStr, "${", "")
@@ -295,19 +295,19 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						return nil, err
 					}
 					if cond == false {
-						memory[idx][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["skipped"] = true
-						statuses[idx][comp.Id].Skipped = true
+						memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["skipped"] = true
+						statuses[idx][comp.ID].Skipped = true
 					} else {
-						memory[idx][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["started"] = true
-						statuses[idx][comp.Id].Started = true
+						memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["started"] = true
+						statuses[idx][comp.ID].Started = true
 					}
 				} else {
-					memory[idx][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["started"] = true
-					statuses[idx][comp.Id].Started = true
+					memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["started"] = true
+					statuses[idx][comp.ID].Started = true
 				}
 			}
 
-			if statuses[idx][comp.Id].Started {
+			if statuses[idx][comp.ID].Started {
 				compInputTemplate := comp.Configuration
 
 				// TODO: remove this hardcode injection
@@ -344,7 +344,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					}
 				}
 
-				compInputTemplateJson, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
+				compInputTemplateJSON, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
 				if err != nil {
 					span.SetStatus(1, err.Error())
 					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -354,7 +354,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}
 
 				var compInputTemplateStruct interface{}
-				err = json.Unmarshal(compInputTemplateJson, &compInputTemplateStruct)
+				err = json.Unmarshal(compInputTemplateJSON, &compInputTemplateStruct)
 				if err != nil {
 					span.SetStatus(1, err.Error())
 					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -371,7 +371,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					_ = w.writeNewDataPoint(sCtx, dataPoint)
 					return nil, err
 				}
-				compInputJson, err := json.Marshal(compInputStruct)
+				compInputJSON, err := json.Marshal(compInputStruct)
 				if err != nil {
 					span.SetStatus(1, err.Error())
 					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -381,7 +381,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}
 
 				compInput := &structpb.Struct{}
-				err = protojson.Unmarshal([]byte(compInputJson), compInput)
+				err = protojson.Unmarshal([]byte(compInputJSON), compInput)
 				if err != nil {
 					span.SetStatus(1, err.Error())
 					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -390,7 +390,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					return nil, err
 				}
 
-				memory[idx][comp.Id].(map[string]interface{})["input"] = compInputStruct
+				memory[idx][comp.ID].(map[string]interface{})["input"] = compInputStruct
 				idxMap[len(compInputs)] = idx
 				compInputs = append(compInputs, compInput)
 			}
@@ -419,18 +419,18 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 			start := time.Now()
 			if err := workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
-				Id:                 comp.Id,
+				ID:                 comp.ID,
 				InputBlobRedisKeys: inputBlobRedisKeys,
 				DefinitionName:     comp.DefinitionName,
 				ResourceName:       comp.ResourceName,
 				PipelineMetadata: PipelineMetadataStruct{
-					Id:         param.PipelineId,
-					Uid:        param.PipelineUid.String(),
-					ReleaseId:  param.PipelineReleaseId,
-					ReleaseUid: param.PipelineReleaseUid.String(),
+					ID:         param.PipelineID,
+					UID:        param.PipelineUID.String(),
+					ReleaseID:  param.PipelineReleaseID,
+					ReleaseUID: param.PipelineReleaseUID.String(),
 					Owner:      param.OwnerPermalink,
-					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
-					UserUid:    strings.Split(param.UserPermalink, "/")[1],
+					TriggerID:  workflow.GetInfo(ctx).WorkflowExecution.ID,
+					UserUID:    strings.Split(param.UserPermalink, "/")[1],
 				},
 				Task: task,
 			}).Get(ctx, &result); err != nil {
@@ -440,7 +440,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				_ = w.writeNewDataPoint(sCtx, dataPoint)
 				return nil, err
 			}
-			computeTime[comp.Id] = float32(time.Since(start).Seconds())
+			computeTime[comp.ID] = float32(time.Since(start).Seconds())
 			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
 			for idx := range result.OutputBlobRedisKeys {
 				defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
@@ -454,27 +454,27 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			}
 			for compBatchIdx := range outputs {
 
-				outputJson, err := protojson.Marshal(outputs[compBatchIdx])
+				outputJSON, err := protojson.Marshal(outputs[compBatchIdx])
 				if err != nil {
 					return nil, err
 				}
 				var outputStruct map[string]interface{}
-				err = json.Unmarshal(outputJson, &outputStruct)
+				err = json.Unmarshal(outputJSON, &outputStruct)
 				if err != nil {
 					return nil, err
 				}
-				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
-				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
-				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
+				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["output"] = outputStruct
+				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
+				statuses[idxMap[compBatchIdx]][comp.ID].Completed = true
 			}
 
 		} else if comp.DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
-			responseCompId = comp.Id
+			responseCompID = comp.ID
 			for compBatchIdx := range compInputs {
-				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
-				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
+				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
+				statuses[idxMap[compBatchIdx]][comp.ID].Completed = true
 			}
-			computeTime[comp.Id] = 0
+			computeTime[comp.ID] = 0
 		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
 
 			inputBlobRedisKeys, err := w.SetBlob(compInputs)
@@ -493,17 +493,17 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 			start := time.Now()
 			if err := workflow.ExecuteActivity(ctx, w.OperatorActivity, &ExecuteOperatorActivityRequest{
-				Id:                 comp.Id,
+				ID:                 comp.ID,
 				InputBlobRedisKeys: inputBlobRedisKeys,
 				DefinitionName:     comp.DefinitionName,
 				PipelineMetadata: PipelineMetadataStruct{
-					Id:         param.PipelineId,
-					Uid:        param.PipelineUid.String(),
-					ReleaseId:  param.PipelineReleaseId,
-					ReleaseUid: param.PipelineReleaseUid.String(),
+					ID:         param.PipelineID,
+					UID:        param.PipelineUID.String(),
+					ReleaseID:  param.PipelineReleaseID,
+					ReleaseUID: param.PipelineReleaseUID.String(),
 					Owner:      param.OwnerPermalink,
-					TriggerId:  workflow.GetInfo(ctx).WorkflowExecution.ID,
-					UserUid:    strings.Split(param.UserPermalink, "/")[1],
+					TriggerID:  workflow.GetInfo(ctx).WorkflowExecution.ID,
+					UserUID:    strings.Split(param.UserPermalink, "/")[1],
 				},
 				Task: task,
 			}).Get(ctx, &result); err != nil {
@@ -513,7 +513,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				_ = w.writeNewDataPoint(sCtx, dataPoint)
 				return nil, err
 			}
-			computeTime[comp.Id] = float32(time.Since(start).Seconds())
+			computeTime[comp.ID] = float32(time.Since(start).Seconds())
 			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
 			for idx := range result.OutputBlobRedisKeys {
 				defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
@@ -527,18 +527,18 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			}
 			for compBatchIdx := range outputs {
 
-				outputJson, err := protojson.Marshal(outputs[compBatchIdx])
+				outputJSON, err := protojson.Marshal(outputs[compBatchIdx])
 				if err != nil {
 					return nil, err
 				}
 				var outputStruct map[string]interface{}
-				err = json.Unmarshal(outputJson, &outputStruct)
+				err = json.Unmarshal(outputJSON, &outputStruct)
 				if err != nil {
 					return nil, err
 				}
-				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["output"] = outputStruct
-				memory[idxMap[compBatchIdx]][comp.Id].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
-				statuses[idxMap[compBatchIdx]][comp.Id].Completed = true
+				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["output"] = outputStruct
+				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
+				statuses[idxMap[compBatchIdx]][comp.ID].Completed = true
 			}
 
 		}
@@ -546,14 +546,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	pipelineOutputs := []*structpb.Struct{}
-	if responseCompId == "" {
+	if responseCompID == "" {
 		for idx := 0; idx < batchSize; idx++ {
 			pipelineOutputs = append(pipelineOutputs, &structpb.Struct{})
 		}
 	} else {
 		for idx := 0; idx < batchSize; idx++ {
 			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-			for key, value := range memory[idx][responseCompId].(map[string]interface{})["input"].(map[string]interface{}) {
+			for key, value := range memory[idx][responseCompID].(map[string]interface{})["input"].(map[string]interface{}) {
 				structVal, err := structpb.NewValue(value)
 				if err != nil {
 					return nil, err
@@ -585,7 +585,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			Traces: traces,
 		},
 	}
-	outputJson, err := protojson.Marshal(pipelineResp)
+	outputJSON, err := protojson.Marshal(pipelineResp)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -597,7 +597,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	w.redisClient.Set(
 		context.Background(),
 		blobRedisKey,
-		outputJson,
+		outputJSON,
 		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
 	)
 
@@ -640,13 +640,13 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 				logger.Fatal(err.Error())
 			}
 			// TODO: optimize this
-			str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUid)
+			str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
 			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 			return &str
 		}
 		str := structpb.Struct{Fields: make(map[string]*structpb.Value)}
 		// TODO: optimize this
-		str.Fields["instill_model_backend"] = structpb.NewStringValue(param.PipelineMetadata.UserUid)
+		str.Fields["instill_model_backend"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
 		str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 		return nil
 	}()
@@ -658,7 +658,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	}
 	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.Id, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	outputBlobRedisKeys, err := w.SetBlob(compOutputs)
@@ -691,7 +691,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 	}
 	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.Id, OperatorActivityError)
+		return nil, w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
 	outputBlobRedisKeys, err := w.SetBlob(compOutputs)

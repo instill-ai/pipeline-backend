@@ -33,12 +33,12 @@ func (h *PrivateHandler) LookUpOperatorDefinitionAdmin(ctx context.Context, req 
 		return resp, err
 	}
 
-	dbDef, err := h.service.GetOperatorDefinitionById(ctx, connID)
+	dbDef, err := h.service.GetOperatorDefinitionByID(ctx, connID)
 	if err != nil {
 		return resp, err
 	}
 	resp.OperatorDefinition = proto.Clone(dbDef).(*pipelinePB.OperatorDefinition)
-	if parseView(int32(*req.GetView().Enum())) == service.VIEW_BASIC {
+	if parseView(int32(*req.GetView().Enum())) == service.ViewBasic {
 		resp.OperatorDefinition.Spec = nil
 	}
 	resp.OperatorDefinition.Name = fmt.Sprintf("operator-definitions/%s", resp.OperatorDefinition.GetId())
@@ -59,10 +59,10 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipeli
 	pageToken := req.GetPageToken()
 	isBasicView := (req.GetView() == pipelinePB.OperatorDefinition_VIEW_BASIC) || (req.GetView() == pipelinePB.OperatorDefinition_VIEW_UNSPECIFIED)
 
-	prevLastUid := ""
+	prevLastUID := ""
 
 	if pageToken != "" {
-		_, prevLastUid, err = paginate.DecodeToken(pageToken)
+		_, prevLastUID, err = paginate.DecodeToken(pageToken)
 		if err != nil {
 			st, err := sterr.CreateErrorBadRequest(
 				fmt.Sprintf("[db] list operator error: %s", err.Error()),
@@ -89,9 +89,9 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipeli
 	defs := h.service.ListOperatorDefinitions(ctx)
 
 	startIdx := 0
-	lastUid := ""
+	lastUID := ""
 	for idx, def := range defs {
-		if def.Uid == prevLastUid {
+		if def.Uid == prevLastUID {
 			startIdx = idx + 1
 			break
 		}
@@ -101,13 +101,13 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipeli
 	for i := 0; i < int(pageSize) && startIdx+i < len(defs); i++ {
 		def := proto.Clone(defs[startIdx+i]).(*pipelinePB.OperatorDefinition)
 		page = append(page, def)
-		lastUid = def.Uid
+		lastUID = def.Uid
 	}
 
 	nextPageToken := ""
 
 	if startIdx+len(page) < len(defs) {
-		nextPageToken = paginate.EncodeToken(time.Time{}, lastUid)
+		nextPageToken = paginate.EncodeToken(time.Time{}, lastUID)
 	}
 	for _, def := range page {
 		def.Name = fmt.Sprintf("operator-definitions/%s", def.Id)
@@ -143,7 +143,7 @@ func (h *PublicHandler) GetOperatorDefinition(ctx context.Context, req *pipeline
 	}
 	isBasicView := (req.GetView() == pipelinePB.OperatorDefinition_VIEW_BASIC) || (req.GetView() == pipelinePB.OperatorDefinition_VIEW_UNSPECIFIED)
 
-	dbDef, err := h.service.GetOperatorDefinitionById(ctx, connID)
+	dbDef, err := h.service.GetOperatorDefinitionByID(ctx, connID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err

@@ -59,15 +59,15 @@ const (
 type Namespace struct {
 	NsType NamespaceType
 	NsID   string
-	NsUid  uuid.UUID
+	NsUID  uuid.UUID
 }
 
 func (ns Namespace) String() string {
-	return fmt.Sprintf("%s/%s", ns.NsType, ns.NsUid.String())
+	return fmt.Sprintf("%s/%s", ns.NsType, ns.NsUID.String())
 }
 
-func UserUidToUserPermalink(userUid uuid.UUID) string {
-	return fmt.Sprintf("users/%s", userUid.String())
+func UserUIDToUserPermalink(userUID uuid.UUID) string {
+	return fmt.Sprintf("users/%s", userUID.String())
 }
 
 func ConvertConnectorToResourceName(connectorName string) string {

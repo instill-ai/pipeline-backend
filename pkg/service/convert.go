@@ -24,10 +24,10 @@ import (
 type View int32
 
 const (
-	VIEW_UNSPECIFIED View = 0
-	VIEW_BASIC       View = 1
-	VIEW_FULL        View = 2
-	VIEW_RECIPE      View = 3
+	ViewUnspecified View = 0
+	ViewBasic       View = 1
+	ViewFull        View = 2
+	ViewRecipe      View = 3
 )
 
 func (s *service) recipeNameToPermalink(recipeRscName *pipelinePB.Recipe) (*pipelinePB.Recipe, error) {
@@ -196,7 +196,7 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 				// Allow resource not created
 				recipe.Components[idx].Resource = nil
 			} else {
-				pbConnector, err := s.convertDatamodelToProto(ctx, conn, VIEW_FULL, true)
+				pbConnector, err := s.convertDatamodelToProto(ctx, conn, ViewFull, true)
 				if err != nil {
 					// Allow resource not created
 					recipe.Components[idx].Resource = nil
@@ -377,7 +377,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	var startComp *pipelinePB.Component
 	var endComp *pipelinePB.Component
 
-	if dbPipeline.Recipe != nil && view != VIEW_BASIC {
+	if dbPipeline.Recipe != nil && view != ViewBasic {
 		pbRecipe = &pipelinePB.Recipe{}
 
 		b, err := json.Marshal(dbPipeline.Recipe)
@@ -392,7 +392,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	}
 
-	if view == VIEW_RECIPE || view == VIEW_FULL {
+	if view == ViewRecipe || view == ViewFull {
 		for i := range pbRecipe.Components {
 			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions") {
 				con, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(pbRecipe.Components[i].DefinitionName, "/")[1]), nil, nil)
@@ -414,7 +414,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			}
 		}
 	}
-	if view == VIEW_FULL {
+	if view == ViewFull {
 		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
 			return nil, err
 		}
@@ -490,7 +490,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 
-	if view != VIEW_BASIC {
+	if view != ViewBasic {
 		if dbPipeline.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipeline.Metadata)
@@ -501,8 +501,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 
-	if pbRecipe != nil && view == VIEW_FULL && startComp != nil && endComp != nil {
-		spec, err := s.GenerateOpenApiSpec(startComp, endComp, pbRecipe.Components)
+	if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
+		spec, err := s.GenerateOpenAPISpec(startComp, endComp, pbRecipe.Components)
 		if err == nil {
 			pbPipeline.OpenapiSchema = spec
 		}
@@ -532,7 +532,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		defaultReleaseUID = defaultRelease.UID
 	}
 
-	pbReleases, err := s.DBToPBPipelineReleases(ctx, releases, VIEW_FULL, latestReleaseUID, defaultReleaseUID)
+	pbReleases, err := s.DBToPBPipelineReleases(ctx, releases, ViewFull, latestReleaseUID, defaultReleaseUID)
 	if err != nil {
 		return nil, err
 	}
@@ -567,7 +567,7 @@ func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.
 }
 
 // PBToDBPipelineRelease converts protobuf data model to db data model
-func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUid uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error) {
+func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
 	recipe := &datamodel.Recipe{}
@@ -622,7 +622,7 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUid uuid.UU
 		},
 		Readme:      pbPipelineRelease.Readme,
 		Recipe:      recipe,
-		PipelineUID: pipelineUid,
+		PipelineUID: pipelineUID,
 
 		Metadata: func() []byte {
 			if pbPipelineRelease.GetMetadata() != nil {
@@ -651,7 +651,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 		return nil, err
 	}
 	var pbRecipe *pipelinePB.Recipe
-	if dbPipelineRelease.Recipe != nil && view != VIEW_BASIC {
+	if dbPipelineRelease.Recipe != nil && view != ViewBasic {
 		pbRecipe = &pipelinePB.Recipe{}
 
 		b, err := json.Marshal(dbPipelineRelease.Recipe)
@@ -665,7 +665,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 		}
 	}
 
-	if view == VIEW_RECIPE || view == VIEW_FULL {
+	if view == ViewRecipe || view == ViewFull {
 		for i := range pbRecipe.Components {
 			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions") {
 				con, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(pbRecipe.Components[i].DefinitionName, "/")[1]), nil, nil)
@@ -690,7 +690,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 	var startComp *pipelinePB.Component
 	var endComp *pipelinePB.Component
 
-	if view == VIEW_FULL {
+	if view == ViewFull {
 		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
 			return nil, err
 		}
@@ -728,7 +728,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 		Recipe:      pbRecipe,
 	}
 
-	if view != VIEW_BASIC {
+	if view != ViewBasic {
 		if dbPipelineRelease.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipelineRelease.Metadata)
@@ -739,8 +739,8 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 		}
 	}
 
-	if pbRecipe != nil && view == VIEW_FULL && startComp != nil && endComp != nil {
-		spec, err := s.GenerateOpenApiSpec(startComp, endComp, pbRecipe.Components)
+	if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
+		spec, err := s.GenerateOpenAPISpec(startComp, endComp, pbRecipe.Components)
 		if err == nil {
 			pbPipelineRelease.OpenapiSchema = spec
 		}
@@ -909,8 +909,8 @@ func (s *service) convertDatamodelToProto(
 		Owner:     owner,
 	}
 
-	if view != VIEW_BASIC {
-		if view == VIEW_FULL {
+	if view != ViewBasic {
+		if view == ViewFull {
 			dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, pbConnector.Configuration, nil)
 			if err != nil {
 				return nil, err

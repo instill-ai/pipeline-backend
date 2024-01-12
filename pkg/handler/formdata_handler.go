@@ -1,3 +1,4 @@
+//nolint:stylecheck
 package handler
 
 import (
