@@ -818,7 +818,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 		return ns, nil, id, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, id, service.VIEW_FULL)
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, id, service.ViewFull)
 	if err != nil {
 		return ns, nil, id, nil, false, err
 	}
@@ -990,7 +990,7 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 		return nil, ErrSematicVersion
 	}
 
-	ns, pipelineId, err := h.service.GetRscNamespaceAndNameID(req.GetParent())
+	ns, pipelineID, err := h.service.GetRscNamespaceAndNameID(req.GetParent())
 	if err != nil {
 		return nil, err
 	}
@@ -999,7 +999,7 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineId, service.VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineID, service.ViewBasic)
 	if err != nil {
 		return nil, err
 	}
@@ -1069,7 +1069,7 @@ func (h *PublicHandler) listNamespacePipelineReleases(ctx context.Context, req L
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineId, err := h.service.GetRscNamespaceAndNameID(req.GetParent())
+	ns, pipelineID, err := h.service.GetRscNamespaceAndNameID(req.GetParent())
 	if err != nil {
 		return nil, "", 0, err
 	}
@@ -1102,7 +1102,7 @@ func (h *PublicHandler) listNamespacePipelineReleases(ctx context.Context, req L
 		return nil, "", 0, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineId, service.VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineID, service.ViewBasic)
 	if err != nil {
 		return nil, "", 0, err
 	}
@@ -1153,7 +1153,7 @@ func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req Get
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
+	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -1161,17 +1161,17 @@ func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req Get
 	if err != nil {
 		return nil, err
 	}
-	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, authUser, pipelineId, releaseId)
+	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, authUser, pipelineID, releaseID)
 	if err != nil {
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineId, service.VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineID, service.ViewBasic)
 	if err != nil {
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseId, parseView(int32(*req.GetView().Enum())))
+	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseID, parseView(int32(*req.GetView().Enum())))
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1218,7 +1218,7 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetRelease().GetName())
+	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetRelease().GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -1226,7 +1226,7 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 	if err != nil {
 		return nil, err
 	}
-	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, authUser, pipelineId, releaseId)
+	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, authUser, pipelineID, releaseID)
 	if err != nil {
 		return nil, err
 	}
@@ -1239,7 +1239,7 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, ErrUpdateMask
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineId, service.VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineID, service.ViewBasic)
 	if err != nil {
 		return nil, err
 	}
@@ -1281,7 +1281,7 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.UpdateNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseId, pbPipelineReleaseToUpdate)
+	pbPipelineRelease, err := h.service.UpdateNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseID, pbPipelineReleaseToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1333,7 +1333,7 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 		return nil, ErrCheckRequiredFields
 	}
 
-	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
+	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -1341,12 +1341,12 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 	if err != nil {
 		return nil, err
 	}
-	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, authUser, pipelineId, releaseId)
+	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, authUser, pipelineID, releaseID)
 	if err != nil {
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineId, service.VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineID, service.ViewBasic)
 	if err != nil {
 		return nil, err
 	}
@@ -1359,7 +1359,7 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 		return nil, ErrSematicVersion
 	}
 
-	pbPipelineRelease, err := h.service.UpdateNamespacePipelineReleaseIDByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseId, newID)
+	pbPipelineRelease, err := h.service.UpdateNamespacePipelineReleaseIDByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseID, newID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1403,7 +1403,7 @@ func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req 
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
+	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
 		return err
 	}
@@ -1411,7 +1411,7 @@ func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req 
 	if err != nil {
 		return err
 	}
-	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, authUser, pipelineId, releaseId)
+	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, authUser, pipelineID, releaseID)
 	if err != nil {
 		return err
 	}
@@ -1422,12 +1422,12 @@ func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req 
 		return err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineId, service.VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineID, service.ViewBasic)
 	if err != nil {
 		return err
 	}
 
-	if err := h.service.DeleteNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseId); err != nil {
+	if err := h.service.DeleteNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseID); err != nil {
 		span.SetStatus(1, err.Error())
 		return err
 	}
@@ -1477,7 +1477,7 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
+	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
 		return nil, err
 	}
@@ -1485,7 +1485,7 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 	if err != nil {
 		return nil, err
 	}
-	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, authUser, pipelineId, releaseId)
+	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, authUser, pipelineID, releaseID)
 	if err != nil {
 		return nil, err
 	}
@@ -1496,17 +1496,17 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineId, service.VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineID, service.ViewBasic)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := h.service.RestoreNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseId); err != nil {
+	if err := h.service.RestoreNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseID); err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseId, service.VIEW_FULL)
+	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pipeline.Uid), releaseID, service.ViewFull)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1530,7 +1530,7 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return resource.Namespace{}, nil, "", nil, nil, false, ErrCheckRequiredFields
 	}
 
-	ns, pipelineId, releaseId, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
+	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(req.GetName())
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}
@@ -1539,17 +1539,17 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return ns, nil, "", nil, nil, false, err
 	}
 
-	releaseId, err = h.service.ConvertReleaseIdAlias(ctx, ns, authUser, pipelineId, releaseId)
+	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, authUser, pipelineID, releaseID)
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineId, service.VIEW_FULL)
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, pipelineID, service.ViewFull)
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}
 
-	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pbPipeline.Uid), releaseId, service.VIEW_FULL)
+	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, service.ViewFull)
 	if err != nil {
 		return ns, nil, "", nil, nil, false, err
 	}
@@ -1563,7 +1563,7 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		}
 	}
 
-	return ns, authUser, releaseId, pbPipeline, pbPipelineRelease, returnTraces, nil
+	return ns, authUser, releaseID, pbPipeline, pbPipelineRelease, returnTraces, nil
 
 }
 
@@ -1596,13 +1596,13 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, authUser, releaseId, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerUserPipelineRelease(ctx, req)
+	ns, authUser, releaseID, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerUserPipelineRelease(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, nil, err
 	}
 
-	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pbPipeline.Uid), releaseId, req.GetInputs(), logUUID.String(), returnTraces)
+	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetInputs(), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, nil, err
@@ -1648,13 +1648,13 @@ func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, authUser, releaseId, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerUserPipelineRelease(ctx, req)
+	ns, authUser, releaseID, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerUserPipelineRelease(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	operation, err = h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pbPipeline.Uid), releaseId, req.GetInputs(), logUUID.String(), returnTraces)
+	operation, err = h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, authUser, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetInputs(), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err

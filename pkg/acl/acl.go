@@ -13,7 +13,7 @@ import (
 
 type ACLClient struct {
 	client               *openfgaClient.OpenFgaClient
-	authorizationModelId *string
+	authorizationModelID *string
 }
 
 type Relation struct {
@@ -24,7 +24,7 @@ type Relation struct {
 func NewACLClient(c *openfgaClient.OpenFgaClient, a *string) ACLClient {
 	return ACLClient{
 		client:               c,
-		authorizationModelId: a,
+		authorizationModelID: a,
 	}
 }
 
@@ -32,7 +32,7 @@ func (c *ACLClient) SetOwner(objectType string, objectUID uuid.UUID, ownerType s
 	var err error
 	readOptions := openfgaClient.ClientReadOptions{}
 	writeOptions := openfgaClient.ClientWriteOptions{
-		AuthorizationModelId: c.authorizationModelId,
+		AuthorizationModelId: c.authorizationModelID,
 	}
 
 	readBody := openfgaClient.ClientReadRequest{
@@ -114,7 +114,7 @@ func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error
 func (c *ACLClient) SetPipelinePermission(pipelineUID uuid.UUID, user string, role string, enable bool) error {
 	var err error
 	options := openfgaClient.ClientWriteOptions{
-		AuthorizationModelId: c.authorizationModelId,
+		AuthorizationModelId: c.authorizationModelID,
 	}
 
 	_ = c.DeletePipelinePermission(pipelineUID, user)
@@ -141,7 +141,7 @@ func (c *ACLClient) SetPipelinePermission(pipelineUID uuid.UUID, user string, ro
 func (c *ACLClient) DeletePipelinePermission(pipelineUID uuid.UUID, user string) error {
 	// var err error
 	options := openfgaClient.ClientWriteOptions{
-		AuthorizationModelId: c.authorizationModelId,
+		AuthorizationModelId: c.authorizationModelID,
 	}
 
 	for _, role := range []string{"admin", "writer", "executor", "reader"} {
@@ -162,7 +162,7 @@ func (c *ACLClient) DeletePipelinePermission(pipelineUID uuid.UUID, user string)
 func (c *ACLClient) Purge(objectType string, objectUID uuid.UUID) error {
 	readOptions := openfgaClient.ClientReadOptions{}
 	writeOptions := openfgaClient.ClientWriteOptions{
-		AuthorizationModelId: c.authorizationModelId,
+		AuthorizationModelId: c.authorizationModelID,
 	}
 
 	readBody := openfgaClient.ClientReadRequest{
@@ -193,7 +193,7 @@ func (c *ACLClient) Purge(objectType string, objectUID uuid.UUID) error {
 func (c *ACLClient) CheckPermission(objectType string, objectUID uuid.UUID, userType string, userUID uuid.UUID, code string, role string) (bool, error) {
 
 	options := openfgaClient.ClientCheckOptions{
-		AuthorizationModelId: c.authorizationModelId,
+		AuthorizationModelId: c.authorizationModelID,
 	}
 	body := openfgaClient.ClientCheckRequest{
 		User:     fmt.Sprintf("%s:%s", userType, userUID.String()),
@@ -228,7 +228,7 @@ func (c *ACLClient) CheckPermission(objectType string, objectUID uuid.UUID, user
 func (c *ACLClient) CheckPublicExecutable(objectType string, objectUID uuid.UUID) (bool, error) {
 
 	options := openfgaClient.ClientCheckOptions{
-		AuthorizationModelId: c.authorizationModelId,
+		AuthorizationModelId: c.authorizationModelID,
 	}
 	body := openfgaClient.ClientCheckRequest{
 		User:     "user:*",
@@ -249,7 +249,7 @@ func (c *ACLClient) CheckPublicExecutable(objectType string, objectUID uuid.UUID
 func (c *ACLClient) ListPermissions(objectType string, userType string, userUID uuid.UUID, role string) ([]uuid.UUID, error) {
 
 	options := openfgaClient.ClientListObjectsOptions{
-		AuthorizationModelId: c.authorizationModelId,
+		AuthorizationModelId: c.authorizationModelID,
 	}
 	userUIDStr := "*"
 	if userUID != uuid.Nil {

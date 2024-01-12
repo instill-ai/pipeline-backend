@@ -17,7 +17,7 @@ type SourceCategory int64
 
 const (
 	Unspecified SourceCategory = 0
-	Http        SourceCategory = 1
+	HTTP        SourceCategory = 1
 	Grpc        SourceCategory = 2
 	Pull        SourceCategory = 3
 )
@@ -27,18 +27,18 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 	startCnt := 0
 	endCnt := 0
 
-	componentIdMap := make(map[string]*datamodel.Component)
+	componentIDMap := make(map[string]*datamodel.Component)
 	exp := "^[a-z_][-a-z_0-9]{0,31}$"
 	r, _ := regexp.Compile(exp)
 
 	for idx := range recipePermalink.Components {
-		if match := r.MatchString(recipePermalink.Components[idx].Id); !match {
+		if match := r.MatchString(recipePermalink.Components[idx].ID); !match {
 			return fmt.Errorf("component `id` needs to be started with a letter (uppercase or lowercase) or an underscore, followed by zero or more alphanumeric characters or underscores")
 		}
-		if _, ok := componentIdMap[recipePermalink.Components[idx].Id]; ok {
+		if _, ok := componentIDMap[recipePermalink.Components[idx].ID]; ok {
 			return fmt.Errorf("component `id` can not be duplicated")
 		}
-		componentIdMap[recipePermalink.Components[idx].Id] = recipePermalink.Components[idx]
+		componentIDMap[recipePermalink.Components[idx].ID] = recipePermalink.Components[idx]
 	}
 
 	startOpDef, err := s.operator.GetOperatorDefinitionByID("start", nil)
@@ -59,23 +59,23 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 			endCnt += 1
 		}
 
-		var compJsonSchema []byte
+		var compJSONSchema []byte
 		if utils.IsConnectorDefinition(recipePermalink.Components[idx].DefinitionName) {
 
 			uid, err := resource.GetRscPermalinkUID(recipePermalink.Components[idx].DefinitionName)
 			if err != nil {
-				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
+				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].ID)
 			}
 
 			def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, nil)
 			if err != nil {
-				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
+				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].ID)
 			}
 
-			compJsonSchema, err = protojson.Marshal(def.Spec.ComponentSpecification)
+			compJSONSchema, err = protojson.Marshal(def.Spec.ComponentSpecification)
 
 			if err != nil {
-				return fmt.Errorf("connector definition for component %s is wrong", recipePermalink.Components[idx].Id)
+				return fmt.Errorf("connector definition for component %s is wrong", recipePermalink.Components[idx].ID)
 			}
 
 		}
@@ -83,37 +83,37 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 
 			uid, err := resource.GetRscPermalinkUID(recipePermalink.Components[idx].DefinitionName)
 			if err != nil {
-				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
+				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].ID)
 			}
 
 			def, err := s.operator.GetOperatorDefinitionByUID(uid, nil)
 			if err != nil {
-				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
+				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].ID)
 			}
 
-			compJsonSchema, err = protojson.Marshal(def.Spec.ComponentSpecification)
+			compJSONSchema, err = protojson.Marshal(def.Spec.ComponentSpecification)
 			if err != nil {
-				return fmt.Errorf("operator definition for component %s is wrong", recipePermalink.Components[idx].Id)
+				return fmt.Errorf("operator definition for component %s is wrong", recipePermalink.Components[idx].ID)
 			}
 		}
 
-		configJson, err := protojson.Marshal(recipePermalink.Components[idx].Configuration)
+		configJSON, err := protojson.Marshal(recipePermalink.Components[idx].Configuration)
 		if err != nil {
-			return fmt.Errorf("configuration for component %s is wrong %w", recipePermalink.Components[idx].Id, err)
+			return fmt.Errorf("configuration for component %s is wrong %w", recipePermalink.Components[idx].ID, err)
 		}
 
-		sch, err := jsonschema.CompileString("schema.json", string(compJsonSchema))
+		sch, err := jsonschema.CompileString("schema.json", string(compJSONSchema))
 		if err != nil {
 			return err
 		}
 
 		var v interface{}
-		if err := json.Unmarshal(configJson, &v); err != nil {
+		if err := json.Unmarshal(configJSON, &v); err != nil {
 			return err
 		}
 
 		if err = sch.Validate(v); err != nil {
-			return fmt.Errorf("configuration for component %s is wrong %w", recipePermalink.Components[idx].Id, err)
+			return fmt.Errorf("configuration for component %s is wrong %w", recipePermalink.Components[idx].ID, err)
 		}
 
 	}

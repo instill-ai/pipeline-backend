@@ -29,10 +29,10 @@ import (
 )
 
 type PrebuiltConnector struct {
-	Id                     string      `json:"id"`
-	Uid                    string      `json:"uid"`
+	ID                     string      `json:"id"`
+	UID                    string      `json:"uid"`
 	Owner                  string      `json:"owner"`
-	ConnectorDefinitionUid string      `json:"connector_definition_uid"`
+	ConnectorDefinitionUID string      `json:"connector_definition_uid"`
 	Configuration          interface{} `json:"configuration"`
 	Task                   string      `json:"task"`
 }

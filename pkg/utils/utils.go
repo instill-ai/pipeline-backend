@@ -104,7 +104,7 @@ type ConnectorUsageMetricData struct {
 	ConnectorID            string
 	ConnectorUID           string
 	ConnectorExecuteUID    string
-	ConnectorDefinitionUid string
+	ConnectorDefinitionUID string
 	ExecuteTime            string
 	ComputeTimeDuration    float64
 }
@@ -129,7 +129,7 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 			"connector_user_type":      data.UserType,
 			"connector_id":             data.ConnectorID,
 			"connector_uid":            data.ConnectorUID,
-			"connector_definition_uid": data.ConnectorDefinitionUid,
+			"connector_definition_uid": data.ConnectorDefinitionUID,
 			"connector_execute_id":     data.ConnectorExecuteUID,
 			"execute_time":             data.ExecuteTime,
 			"compute_time_duration":    data.ComputeTimeDuration,
@@ -145,11 +145,11 @@ func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{
 		outputs := []*structpb.Struct{}
 		var traceStatuses []pipelinePB.Trace_Status
 		for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-			if status[dataIdx][comps[compIdx].Id].Completed {
+			if status[dataIdx][comps[compIdx].ID].Completed {
 				traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_COMPLETED)
-			} else if status[dataIdx][comps[compIdx].Id].Skipped {
+			} else if status[dataIdx][comps[compIdx].ID].Skipped {
 				traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_SKIPPED)
-			} else if status[dataIdx][comps[compIdx].Id].Error {
+			} else if status[dataIdx][comps[compIdx].ID].Error {
 				traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_ERROR)
 			} else {
 				traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_UNSPECIFIED)
@@ -160,8 +160,8 @@ func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{
 		if comps[compIdx].DefinitionName != "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" &&
 			comps[compIdx].DefinitionName != "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
 			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if _, ok := memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["input"]; ok {
-					data, err := json.Marshal(memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["input"])
+				if _, ok := memory[dataIdx][comps[compIdx].ID].(map[string]interface{})["input"]; ok {
+					data, err := json.Marshal(memory[dataIdx][comps[compIdx].ID].(map[string]interface{})["input"])
 					if err != nil {
 						return nil, err
 					}
@@ -175,8 +175,8 @@ func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{
 
 			}
 			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if _, ok := memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["output"]; ok {
-					data, err := json.Marshal(memory[dataIdx][comps[compIdx].Id].(map[string]interface{})["output"])
+				if _, ok := memory[dataIdx][comps[compIdx].ID].(map[string]interface{})["output"]; ok {
+					data, err := json.Marshal(memory[dataIdx][comps[compIdx].ID].(map[string]interface{})["output"])
 					if err != nil {
 						return nil, err
 					}
@@ -191,21 +191,21 @@ func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{
 			}
 		}
 
-		trace[comps[compIdx].Id] = &pipelinePB.Trace{
+		trace[comps[compIdx].ID] = &pipelinePB.Trace{
 			Statuses:             traceStatuses,
 			Inputs:               inputs,
 			Outputs:              outputs,
-			ComputeTimeInSeconds: computeTime[comps[compIdx].Id],
+			ComputeTimeInSeconds: computeTime[comps[compIdx].ID],
 		}
 	}
 	return trace, nil
 }
 
-func GenerateGlobalValue(pipelineUid uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]interface{}, error) {
+func GenerateGlobalValue(pipelineUID uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]interface{}, error) {
 	global := map[string]interface{}{}
 
 	global["pipeline"] = map[string]interface{}{
-		"uid":    pipelineUid.String(),
+		"uid":    pipelineUID.String(),
 		"recipe": recipe,
 	}
 	global["owner"] = map[string]interface{}{
@@ -230,56 +230,56 @@ func IsOperatorDefinition(resourceName string) bool {
 	return strings.HasPrefix(resourceName, "operator-definitions/")
 }
 
-func MaskCredentialFields(connector componentBase.IConnector, defId string, config *structpb.Struct) {
-	maskCredentialFields(connector, defId, config, "")
+func MaskCredentialFields(connector componentBase.IConnector, defID string, config *structpb.Struct) {
+	maskCredentialFields(connector, defID, config, "")
 }
 
-func maskCredentialFields(connector componentBase.IConnector, defId string, config *structpb.Struct, prefix string) {
+func maskCredentialFields(connector componentBase.IConnector, defID string, config *structpb.Struct, prefix string) {
 
 	for k, v := range config.GetFields() {
 		key := prefix + k
-		if connector.IsCredentialField(defId, key) {
+		if connector.IsCredentialField(defID, key) {
 			config.GetFields()[k] = structpb.NewStringValue(credentialMaskString)
 		}
 		if v.GetStructValue() != nil {
-			maskCredentialFields(connector, defId, v.GetStructValue(), fmt.Sprintf("%s.", key))
+			maskCredentialFields(connector, defID, v.GetStructValue(), fmt.Sprintf("%s.", key))
 		}
 
 	}
 }
 
-func RemoveCredentialFieldsWithMaskString(connector componentBase.IConnector, defId string, config *structpb.Struct) {
-	removeCredentialFieldsWithMaskString(connector, defId, config, "")
+func RemoveCredentialFieldsWithMaskString(connector componentBase.IConnector, defID string, config *structpb.Struct) {
+	removeCredentialFieldsWithMaskString(connector, defID, config, "")
 }
 
-func KeepCredentialFieldsWithMaskString(connector componentBase.IConnector, defId string, config *structpb.Struct) {
-	keepCredentialFieldsWithMaskString(connector, defId, config, "")
+func KeepCredentialFieldsWithMaskString(connector componentBase.IConnector, defID string, config *structpb.Struct) {
+	keepCredentialFieldsWithMaskString(connector, defID, config, "")
 }
 
-func removeCredentialFieldsWithMaskString(connector componentBase.IConnector, defId string, config *structpb.Struct, prefix string) {
+func removeCredentialFieldsWithMaskString(connector componentBase.IConnector, defID string, config *structpb.Struct, prefix string) {
 
 	for k, v := range config.GetFields() {
 		key := prefix + k
-		if connector.IsCredentialField(defId, key) {
+		if connector.IsCredentialField(defID, key) {
 			if v.GetStringValue() == credentialMaskString {
 				delete(config.GetFields(), k)
 			}
 		}
 		if v.GetStructValue() != nil {
-			removeCredentialFieldsWithMaskString(connector, defId, v.GetStructValue(), fmt.Sprintf("%s.", key))
+			removeCredentialFieldsWithMaskString(connector, defID, v.GetStructValue(), fmt.Sprintf("%s.", key))
 		}
 
 	}
 }
-func keepCredentialFieldsWithMaskString(connector componentBase.IConnector, defId string, config *structpb.Struct, prefix string) {
+func keepCredentialFieldsWithMaskString(connector componentBase.IConnector, defID string, config *structpb.Struct, prefix string) {
 
 	for k, v := range config.GetFields() {
 		key := prefix + k
-		if !connector.IsCredentialField(defId, key) {
+		if !connector.IsCredentialField(defID, key) {
 			delete(config.GetFields(), k)
 		}
 		if v.GetStructValue() != nil {
-			keepCredentialFieldsWithMaskString(connector, defId, v.GetStructValue(), fmt.Sprintf("%s.", key))
+			keepCredentialFieldsWithMaskString(connector, defID, v.GetStructValue(), fmt.Sprintf("%s.", key))
 		}
 
 	}

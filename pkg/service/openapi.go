@@ -13,7 +13,7 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-const openApiSchemaTemplate = `{
+const openAPISchemaTemplate = `{
 	"openapi": "3.0.0",
 	"info": {
 	  "version": "dev",
@@ -149,41 +149,41 @@ const openApiSchemaTemplate = `{
   }`
 
 // TODO: refactor these messy code
-func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, endCompOrigin *pipelinePB.Component, compsOrigin []*pipelinePB.Component) (*structpb.Struct, error) {
+func (s *service) GenerateOpenAPISpec(startCompOrigin *pipelinePB.Component, endCompOrigin *pipelinePB.Component, compsOrigin []*pipelinePB.Component) (*structpb.Struct, error) {
 	success := true
 	template := &structpb.Struct{}
-	err := protojson.Unmarshal([]byte(openApiSchemaTemplate), template)
+	err := protojson.Unmarshal([]byte(openAPISchemaTemplate), template)
 	if err != nil {
 		return nil, err
 	}
 
 	var templateWalk *structpb.Value
 
-	openApiInput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
-	openApiInput.Fields["type"] = structpb.NewStringValue("object")
-	openApiInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
+	openAPIInput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+	openAPIInput.Fields["type"] = structpb.NewStringValue("object")
+	openAPIInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
 	startComp := proto.Clone(startCompOrigin).(*pipelinePB.Component)
 	for k, v := range startComp.Configuration.Fields["metadata"].GetStructValue().Fields {
-		openApiInput.Fields["properties"].GetStructValue().Fields[k] = v
+		openAPIInput.Fields["properties"].GetStructValue().Fields[k] = v
 	}
 
 	templateWalk = template.GetFields()["paths"]
 	for _, key := range []string{"/trigger", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
 		templateWalk = templateWalk.GetStructValue().Fields[key]
 	}
-	*templateWalk = *structpb.NewStructValue(openApiInput)
+	*templateWalk = *structpb.NewStructValue(openAPIInput)
 	templateWalk = template.GetFields()["paths"]
 	for _, key := range []string{"/triggerAsync", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
 		templateWalk = templateWalk.GetStructValue().Fields[key]
 	}
-	*templateWalk = *structpb.NewStructValue(openApiInput)
+	*templateWalk = *structpb.NewStructValue(openAPIInput)
 
 	// output
 
-	openApiOutput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
-	openApiOutput.Fields["type"] = structpb.NewStringValue("object")
-	openApiOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
+	openAPIOutput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+	openAPIOutput.Fields["type"] = structpb.NewStringValue("object")
+	openAPIOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
 	endComp := proto.Clone(endCompOrigin).(*pipelinePB.Component)
 	inputFields := endComp.Configuration.Fields["input"].GetStructValue().Fields
@@ -254,11 +254,11 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 					}
 
 				} else {
-					compId := strings.Split(str, ".")[0]
+					compID := strings.Split(str, ".")[0]
 					str = str[len(strings.Split(str, ".")[0]):]
 					upstreamCompIdx := -1
 					for compIdx := range compsOrigin {
-						if compsOrigin[compIdx].Id == compId {
+						if compsOrigin[compIdx].Id == compID {
 							upstreamCompIdx = compIdx
 						}
 					}
@@ -302,7 +302,7 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 
 						} else if comp.DefinitionName == "operator-definitions/start" {
 
-							walk = structpb.NewStructValue(openApiInput)
+							walk = structpb.NewStructValue(openAPIInput)
 
 						} else if utils.IsOperatorDefinition(comp.DefinitionName) {
 
@@ -454,7 +454,7 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 		if err != nil {
 			success = false
 		} else {
-			openApiOutput.Fields["properties"].GetStructValue().Fields[k] = m
+			openAPIOutput.Fields["properties"].GetStructValue().Fields[k] = m
 		}
 
 	}
@@ -463,7 +463,7 @@ func (s *service) GenerateOpenApiSpec(startCompOrigin *pipelinePB.Component, end
 	for _, key := range []string{"/trigger", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
 		templateWalk = templateWalk.GetStructValue().Fields[key]
 	}
-	*templateWalk = *structpb.NewStructValue(openApiOutput)
+	*templateWalk = *structpb.NewStructValue(openAPIOutput)
 
 	if success {
 		return template, nil

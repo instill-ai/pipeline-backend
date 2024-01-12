@@ -11,7 +11,7 @@ func parseView(view int32) service.View {
 	// 	return service.View(view.(pipelinePB.ListPipelinesRequest_View))
 	// default:
 	if view == 0 {
-		return service.VIEW_BASIC
+		return service.ViewBasic
 	}
 	return service.View(view)
 	// }
