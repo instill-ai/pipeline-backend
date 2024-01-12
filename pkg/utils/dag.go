@@ -172,7 +172,7 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 		if strings.HasPrefix(input, "${") && strings.HasSuffix(input, "}") && strings.Count(input, "${") == 1 {
 			input = input[2:]
 			input = input[:len(input)-1]
-			input = strings.ReplaceAll(input, " ", "")
+			input = strings.TrimSpace(input)
 			if input[0] == '[' && input[len(input)-1] == ']' {
 				outs := []interface{}{}
 				subInputs := strings.Split(input[1:len(input)-1], ",")
@@ -549,7 +549,7 @@ func FindReferenceParent(input string) []string {
 
 			parsed = parsed[2:]
 			parsed = parsed[:len(parsed)-1]
-			parsed = strings.ReplaceAll(parsed, " ", "")
+			parsed = strings.TrimSpace(parsed)
 			if parsed[0] == '[' && parsed[len(parsed)-1] == ']' {
 				parents := []string{}
 				subStrs := strings.Split(parsed[1:len(parsed)-1], ",")

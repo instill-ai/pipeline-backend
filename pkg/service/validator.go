@@ -41,11 +41,11 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 		componentIdMap[recipePermalink.Components[idx].Id] = recipePermalink.Components[idx]
 	}
 
-	startOpDef, err := s.operator.GetOperatorDefinitionByID("start")
+	startOpDef, err := s.operator.GetOperatorDefinitionByID("start", nil)
 	if err != nil {
 		return fmt.Errorf("operator-definitions/start not found")
 	}
-	endOpDef, err := s.operator.GetOperatorDefinitionByID("end")
+	endOpDef, err := s.operator.GetOperatorDefinitionByID("end", nil)
 	if err != nil {
 		return fmt.Errorf("operator-definitions/end not found")
 	}
@@ -67,7 +67,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
 			}
 
-			def, err := s.connector.GetConnectorDefinitionByUID(uid)
+			def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, nil)
 			if err != nil {
 				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
 			}
@@ -86,7 +86,7 @@ func (s *service) checkRecipe(ownerPermalink string, recipePermalink *datamodel.
 				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
 			}
 
-			def, err := s.operator.GetOperatorDefinitionByUID(uid)
+			def, err := s.operator.GetOperatorDefinitionByUID(uid, nil)
 			if err != nil {
 				return fmt.Errorf("operator definition for component %s is not found", recipePermalink.Components[idx].Id)
 			}
