@@ -9,12 +9,14 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -183,7 +185,7 @@ func (s *service) operatorDefinitionPermalinkToName(permalink string) (string, e
 	return fmt.Sprintf("operator-definitions/%s", def.Id), nil
 }
 
-func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
+func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe, userUID uuid.UUID) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -204,6 +206,10 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe) error {
 					recipe.Components[idx].Resource = pbConnector
 					str := structpb.Struct{}
 					_ = str.UnmarshalJSON(conn.Configuration)
+					// TODO: optimize this
+					str.Fields["instill_user_uid"] = structpb.NewStringValue(userUID.String())
+					str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
+					str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
 					d, err := s.connector.GetConnectorDefinitionByID(pbConnector.ConnectorDefinition.Id, &str, recipe.Components[idx].Configuration)
 					if err != nil {
 						return err
@@ -417,7 +423,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 	if view == ViewFull {
-		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
+		if err := s.includeDetailInRecipe(pbRecipe, authUser.UID); err != nil {
 			return nil, err
 		}
 		for i := range pbRecipe.Components {
@@ -693,7 +699,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 	var endComp *pipelinePB.Component
 
 	if view == ViewFull {
-		if err := s.includeDetailInRecipe(pbRecipe); err != nil {
+		if err := s.includeDetailInRecipe(pbRecipe, uuid.FromStringOrNil(strings.Split(dbPipeline.Owner, "/")[1])); err != nil {
 			return nil, err
 		}
 		for i := range pbRecipe.Components {
@@ -913,7 +919,16 @@ func (s *service) convertDatamodelToProto(
 
 	if view != ViewBasic {
 		if view == ViewFull {
-			dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, pbConnector.Configuration, nil)
+
+			str := proto.Clone(pbConnector.Configuration).(*structpb.Struct)
+			// TODO: optimize this
+			if str.Fields != nil {
+				str.Fields["instill_user_uid"] = structpb.NewStringValue(uuid.FromStringOrNil(strings.Split(dbConnector.Owner, "/")[1]).String())
+				str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
+				str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
+			}
+
+			dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, str, nil)
 			if err != nil {
 				return nil, err
 			}

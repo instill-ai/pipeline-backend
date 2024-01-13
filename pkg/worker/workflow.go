@@ -642,12 +642,14 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 			// TODO: optimize this
 			str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
 			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
+			str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
 			return &str
 		}
 		str := structpb.Struct{Fields: make(map[string]*structpb.Value)}
 		// TODO: optimize this
-		str.Fields["instill_model_backend"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
+		str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
 		str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
+		str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
 		return nil
 	}()
 
