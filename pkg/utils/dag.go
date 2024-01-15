@@ -469,6 +469,39 @@ func EvalCondition(expr ast.Expr, value map[string]interface{}) (interface{}, er
 	return false, fmt.Errorf("condition error")
 }
 
+func SanitizeCondition(cond string) (string, map[string]string, map[string]string) {
+	varMapping := map[string]string{}
+	revVarMapping := map[string]string{}
+	varNameIdx := 0
+	for {
+		leftIdx := strings.Index(cond, "${")
+		if leftIdx == -1 {
+			break
+		}
+		rightIdx := strings.Index(cond, "}")
+
+		left := cond[:leftIdx]
+		v := cond[leftIdx+2 : rightIdx]
+		right := cond[rightIdx+1:]
+
+		srcName := strings.Split(strings.TrimSpace(v), ".")[0]
+		if varName, ok := revVarMapping[srcName]; ok {
+			varMapping[varName] = srcName
+			revVarMapping[srcName] = varName
+			cond = left + strings.ReplaceAll(v, srcName, varName) + right
+		} else {
+			varName := fmt.Sprintf("var%d", varNameIdx)
+			varMapping[varName] = srcName
+			revVarMapping[srcName] = varName
+			varNameIdx++
+			cond = left + strings.ReplaceAll(v, srcName, varName) + right
+		}
+
+	}
+
+	return cond, varMapping, revVarMapping
+}
+
 func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	componentIDMap := make(map[string]*datamodel.Component)
 
@@ -489,22 +522,23 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 
 		condUpstreams := []string{}
 		if cond := component.Configuration.Fields["condition"].GetStringValue(); cond != "" {
-			cond = strings.ReplaceAll(cond, "${", "")
-			cond = strings.ReplaceAll(cond, "}", "")
+			var varMapping map[string]string
+			cond, varMapping, _ = SanitizeCondition(cond)
 			expr, err := parser.ParseExpr(cond)
 			if err != nil {
 				return nil, err
 			}
 			FindConditionUpstream(expr, &condUpstreams)
-		}
 
-		for idx := range condUpstreams {
-			if upstream, ok := componentIDMap[condUpstreams[idx]]; ok {
-				graph.AddEdge(upstream, component)
-			} else {
-				return nil, fmt.Errorf("no condition upstream component '%s'", condUpstreams[idx])
+			for idx := range condUpstreams {
+
+				if upstream, ok := componentIDMap[varMapping[condUpstreams[idx]]]; ok {
+					graph.AddEdge(upstream, component)
+				} else {
+					return nil, fmt.Errorf("no condition upstream component '%s'", condUpstreams[idx])
+				}
+
 			}
-
 		}
 
 		for _, node := range out.GetRoot().(*render.SeqNode).Children {
