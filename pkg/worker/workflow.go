@@ -332,11 +332,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
 						metadata, err := structpb.NewValue(map[string]interface{}{
 							"pipeline": map[string]interface{}{
-								"uid":    "{global.pipeline.uid}",
-								"recipe": "{global.pipeline.recipe}",
+								"uid":    "${global.pipeline.uid}",
+								"recipe": "${global.pipeline.recipe}",
 							},
 							"owner": map[string]interface{}{
-								"uid": "{global.owner.uid}",
+								"uid": "${global.owner.uid}",
 							},
 						})
 						if err != nil {
