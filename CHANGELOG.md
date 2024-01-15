@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.20.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.19.0-beta...v0.20.0-beta) (2024-01-15)
+
+
+### Features
+
+* inject mgmt_backend address into connector configuration ([ca2586c](https://github.com/instill-ai/pipeline-backend/commit/ca2586c15a736e39e5528757e63c1f5b4c91188b))
+* **recipe:** use `${}` as reference syntax ([#358](https://github.com/instill-ai/pipeline-backend/issues/358)) ([f86fae1](https://github.com/instill-ai/pipeline-backend/commit/f86fae150644464c9801e72f897704e48340ab05))
+* remove controller-vdp ([#354](https://github.com/instill-ai/pipeline-backend/issues/354)) ([afc3d21](https://github.com/instill-ai/pipeline-backend/commit/afc3d2136a14e5a6474814ab688bb3d1cdb4d4bb))
+* support `q` filter for fuzzy search on `id` ([#360](https://github.com/instill-ai/pipeline-backend/issues/360)) ([ec3b439](https://github.com/instill-ai/pipeline-backend/commit/ec3b439253afdebf0f2d8f6aea9e28fb40d8567f))
+* support dynamic connector and operator definition ([#359](https://github.com/instill-ai/pipeline-backend/issues/359)) ([1485877](https://github.com/instill-ai/pipeline-backend/commit/1485877a84015023aae84d3fa7dc51ec9160dc8a))
+* support filter pipelines with visibility ([#357](https://github.com/instill-ai/pipeline-backend/issues/357)) ([499b112](https://github.com/instill-ai/pipeline-backend/commit/499b11227509886f66ce310659ca58ef2faf901b))
+
+
+### Bug Fixes
+
+* fix condition field not working when component name has `-` ([#362](https://github.com/instill-ai/pipeline-backend/issues/362)) ([92682ce](https://github.com/instill-ai/pipeline-backend/commit/92682ce81735a9293227896fd2b6ef8e251ea2e7))
+* fix includeDetailInRecipe() ([7d7749b](https://github.com/instill-ai/pipeline-backend/commit/7d7749b63a301752751bd8fbfd35a78a3b03c170))
+* fix wrong global reference for Numbers connector ([#363](https://github.com/instill-ai/pipeline-backend/issues/363)) ([5c5eda8](https://github.com/instill-ai/pipeline-backend/commit/5c5eda8438dfe60e3670397af18e004902dd763a))
+
+
+### Miscellaneous Chores
+
+* release v0.20.0-beta ([150c83b](https://github.com/instill-ai/pipeline-backend/commit/150c83bfe28c068cdd5093dcb836e91dd5da5c46))
+
 ## [0.19.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.18.1-beta...v0.19.0-beta) (2024-01-02)
 
 
