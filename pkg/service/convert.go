@@ -218,7 +218,8 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe, userUID uuid.
 				}
 			}
 
-		} else if utils.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
+		}
+		if recipe.Components[idx].Definition == nil && utils.IsConnectorDefinition(recipe.Components[idx].DefinitionName) {
 			uid, err := resource.GetRscPermalinkUID(recipe.Components[idx].DefinitionName)
 			if err != nil {
 				return err
