@@ -138,64 +138,66 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 	)
 }
 
-func GenerateTraces(comps []*datamodel.Component, memory []map[string]interface{}, status []map[string]*ComponentStatus, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
+func GenerateTraces(comps [][]*datamodel.Component, memory []map[string]interface{}, status []map[string]*ComponentStatus, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
 	trace := map[string]*pipelinePB.Trace{}
-	for compIdx := range comps {
-		inputs := []*structpb.Struct{}
-		outputs := []*structpb.Struct{}
-		var traceStatuses []pipelinePB.Trace_Status
-		for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-			if status[dataIdx][comps[compIdx].ID].Completed {
-				traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_COMPLETED)
-			} else if status[dataIdx][comps[compIdx].ID].Skipped {
-				traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_SKIPPED)
-			} else if status[dataIdx][comps[compIdx].ID].Error {
-				traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_ERROR)
-			} else {
-				traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_UNSPECIFIED)
-			}
-
-		}
-
-		if comps[compIdx].DefinitionName != "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" &&
-			comps[compIdx].DefinitionName != "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
+	for groupIdx := range comps {
+		for compIdx := range comps[groupIdx] {
+			inputs := []*structpb.Struct{}
+			outputs := []*structpb.Struct{}
+			var traceStatuses []pipelinePB.Trace_Status
 			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if _, ok := memory[dataIdx][comps[compIdx].ID].(map[string]interface{})["input"]; ok {
-					data, err := json.Marshal(memory[dataIdx][comps[compIdx].ID].(map[string]interface{})["input"])
-					if err != nil {
-						return nil, err
-					}
-					inputStruct := &structpb.Struct{}
-					err = protojson.Unmarshal(data, inputStruct)
-					if err != nil {
-						return nil, err
-					}
-					inputs = append(inputs, inputStruct)
+				if status[dataIdx][comps[groupIdx][compIdx].ID].Completed {
+					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_COMPLETED)
+				} else if status[dataIdx][comps[groupIdx][compIdx].ID].Skipped {
+					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_SKIPPED)
+				} else if status[dataIdx][comps[groupIdx][compIdx].ID].Error {
+					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_ERROR)
+				} else {
+					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_UNSPECIFIED)
 				}
 
 			}
-			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if _, ok := memory[dataIdx][comps[compIdx].ID].(map[string]interface{})["output"]; ok {
-					data, err := json.Marshal(memory[dataIdx][comps[compIdx].ID].(map[string]interface{})["output"])
-					if err != nil {
-						return nil, err
+
+			if comps[groupIdx][compIdx].DefinitionName != "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" &&
+				comps[groupIdx][compIdx].DefinitionName != "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
+				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
+					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID].(map[string]interface{})["input"]; ok {
+						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID].(map[string]interface{})["input"])
+						if err != nil {
+							return nil, err
+						}
+						inputStruct := &structpb.Struct{}
+						err = protojson.Unmarshal(data, inputStruct)
+						if err != nil {
+							return nil, err
+						}
+						inputs = append(inputs, inputStruct)
 					}
-					outputStruct := &structpb.Struct{}
-					err = protojson.Unmarshal(data, outputStruct)
-					if err != nil {
-						return nil, err
-					}
-					outputs = append(outputs, outputStruct)
+
 				}
+				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
+					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID].(map[string]interface{})["output"]; ok {
+						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID].(map[string]interface{})["output"])
+						if err != nil {
+							return nil, err
+						}
+						outputStruct := &structpb.Struct{}
+						err = protojson.Unmarshal(data, outputStruct)
+						if err != nil {
+							return nil, err
+						}
+						outputs = append(outputs, outputStruct)
+					}
 
+				}
 			}
-		}
 
-		trace[comps[compIdx].ID] = &pipelinePB.Trace{
-			Statuses:             traceStatuses,
-			Inputs:               inputs,
-			Outputs:              outputs,
-			ComputeTimeInSeconds: computeTime[comps[compIdx].ID],
+			trace[comps[groupIdx][compIdx].ID] = &pipelinePB.Trace{
+				Statuses:             traceStatuses,
+				Inputs:               inputs,
+				Outputs:              outputs,
+				ComputeTimeInSeconds: computeTime[comps[groupIdx][compIdx].ID],
+			}
 		}
 	}
 	return trace, nil
