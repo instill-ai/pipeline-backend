@@ -53,10 +53,6 @@ type ExecuteConnectorActivityRequest struct {
 	Task               string
 }
 
-type ExecuteConnectorActivityResponse struct {
-	OutputBlobRedisKeys []string
-}
-
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
 type ExecuteOperatorActivityRequest struct {
 	ID                 string
@@ -66,7 +62,7 @@ type ExecuteOperatorActivityRequest struct {
 	Task               string
 }
 
-type ExecuteOperatorActivityResponse struct {
+type ExecuteActivityResponse struct {
 	OutputBlobRedisKeys []string
 }
 
@@ -78,6 +74,13 @@ type PipelineMetadataStruct struct {
 	Owner      string
 	TriggerID  string
 	UserUID    string
+}
+
+type groupCacheStruct struct {
+	comp      *datamodel.Component
+	future    workflow.Future
+	idxMap    map[int]int
+	startTime time.Time
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -167,41 +170,30 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		},
 	}
 
-	// TODO: parallel
 	dag, err := utils.GenerateDAG(param.PipelineRecipe.Components)
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		_ = w.writeNewDataPoint(sCtx, dataPoint)
+		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 		return nil, err
 	}
 
 	orderedComp, err := dag.TopologicalSort()
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		_ = w.writeNewDataPoint(sCtx, dataPoint)
+		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 		return nil, err
 	}
 	var startCompID string
-	for _, c := range orderedComp {
+	for _, c := range orderedComp[0] {
 		if c.DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
 			startCompID = c.ID
 		}
 	}
 
-	result := ExecuteConnectorActivityResponse{}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	var inputs [][]byte
 	pipelineInputs, err := w.GetBlob(param.PipelineInputBlobRedisKeys)
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		_ = w.writeNewDataPoint(sCtx, dataPoint)
+		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 		return nil, err
 	}
 	batchSize := len(pipelineInputs)
@@ -210,10 +202,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 		input, err := protojson.Marshal(inputStruct)
 		if err != nil {
-			span.SetStatus(1, err.Error())
-			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-			_ = w.writeNewDataPoint(sCtx, dataPoint)
+			w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 			return nil, err
 		}
 		inputs = append(inputs, input)
@@ -228,15 +217,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		var inputStruct map[string]interface{}
 		err := json.Unmarshal(inputs[idx], &inputStruct)
 		if err != nil {
-			span.SetStatus(1, err.Error())
-			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-			_ = w.writeNewDataPoint(sCtx, dataPoint)
+			w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 			return nil, err
 		}
 		memory[idx][startCompID] = inputStruct
 		computeTime[startCompID] = 0
 
+		// TODO: we should prevent user name a component call `global`
 		memory[idx]["global"], err = utils.GenerateGlobalValue(param.PipelineUID, param.PipelineRecipe, param.OwnerPermalink)
 		if err != nil {
 			return nil, err
@@ -249,212 +236,244 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	responseCompID := ""
-	for _, comp := range orderedComp {
-		if comp.ID == startCompID {
-			continue
-		}
+	for group := range orderedComp {
 
-		for idx := 0; idx < batchSize; idx++ {
-			statuses[idx][comp.ID] = &utils.ComponentStatus{}
-		}
+		var groupCache = make([]*groupCacheStruct, len(orderedComp[group]))
 
-		var compInputs []*structpb.Struct
-
-		idxMap := map[int]int{}
-
-		for idx := 0; idx < batchSize; idx++ {
-			memory[idx][comp.ID] = map[string]interface{}{
-				"input":  map[string]interface{}{},
-				"output": map[string]interface{}{},
-				"status": map[string]interface{}{
-					"started":   false,
-					"completed": false,
-					"skipped":   false,
-				},
+		for compIdx, comp := range orderedComp[group] {
+			groupCache[compIdx] = &groupCacheStruct{
+				comp:   comp,
+				idxMap: map[int]int{},
 			}
 
-			for _, ancestorID := range dag.GetAncestorIDs(comp.ID) {
-				if statuses[idx][ancestorID].Skipped {
-					memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["skipped"] = true
-					statuses[idx][comp.ID].Skipped = true
-					break
+			if comp.ID == startCompID {
+				continue
+			}
+
+			for idx := 0; idx < batchSize; idx++ {
+				statuses[idx][comp.ID] = &utils.ComponentStatus{}
+			}
+
+			var compInputs []*structpb.Struct
+
+			for idx := 0; idx < batchSize; idx++ {
+				memory[idx][comp.ID] = map[string]interface{}{
+					"input":  map[string]interface{}{},
+					"output": map[string]interface{}{},
+					"status": map[string]interface{}{
+						"started":   false,
+						"completed": false,
+						"skipped":   false,
+					},
 				}
-			}
 
-			if !statuses[idx][comp.ID].Skipped {
-				if comp.Configuration.Fields["condition"].GetStringValue() != "" {
-					condStr := comp.Configuration.Fields["condition"].GetStringValue()
-					var varMapping map[string]string
-					condStr, _, varMapping = utils.SanitizeCondition(condStr)
-					expr, err := parser.ParseExpr(condStr)
-					if err != nil {
-						return nil, err
-					}
-
-					condMemory := map[string]interface{}{}
-					for k, v := range memory[idx] {
-						condMemory[varMapping[k]] = v
-					}
-					cond, err := utils.EvalCondition(expr, condMemory)
-					if err != nil {
-						return nil, err
-					}
-					if cond == false {
+				for _, ancestorID := range dag.GetAncestorIDs(comp.ID) {
+					if statuses[idx][ancestorID].Skipped {
 						memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["skipped"] = true
 						statuses[idx][comp.ID].Skipped = true
+						break
+					}
+				}
+
+				if !statuses[idx][comp.ID].Skipped {
+					if comp.Configuration.Fields["condition"].GetStringValue() != "" {
+						condStr := comp.Configuration.Fields["condition"].GetStringValue()
+						var varMapping map[string]string
+						condStr, _, varMapping = utils.SanitizeCondition(condStr)
+						expr, err := parser.ParseExpr(condStr)
+						if err != nil {
+							return nil, err
+						}
+
+						condMemory := map[string]interface{}{}
+						for k, v := range memory[idx] {
+							condMemory[varMapping[k]] = v
+						}
+						cond, err := utils.EvalCondition(expr, condMemory)
+						if err != nil {
+							return nil, err
+						}
+						if cond == false {
+							memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["skipped"] = true
+							statuses[idx][comp.ID].Skipped = true
+						} else {
+							memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["started"] = true
+							statuses[idx][comp.ID].Started = true
+						}
 					} else {
 						memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["started"] = true
 						statuses[idx][comp.ID].Started = true
 					}
-				} else {
-					memory[idx][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["started"] = true
-					statuses[idx][comp.ID].Started = true
 				}
-			}
 
-			if statuses[idx][comp.ID].Started {
-				compInputTemplate := comp.Configuration
-
-				// TODO: remove this hardcode injection
-				// blockchain-numbers
-				if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
-					recipeByte, err := json.Marshal(param.PipelineRecipe)
-					if err != nil {
-						return nil, err
-					}
-					recipePb := &structpb.Struct{}
-					err = protojson.Unmarshal(recipeByte, recipePb)
-					if err != nil {
-						return nil, err
-					}
+				if statuses[idx][comp.ID].Started {
+					compInputTemplate := comp.Configuration
 
 					// TODO: remove this hardcode injection
+					// blockchain-numbers
 					if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
-						metadata, err := structpb.NewValue(map[string]interface{}{
-							"pipeline": map[string]interface{}{
-								"uid":    "${global.pipeline.uid}",
-								"recipe": "${global.pipeline.recipe}",
-							},
-							"owner": map[string]interface{}{
-								"uid": "${global.owner.uid}",
-							},
-						})
+						recipeByte, err := json.Marshal(param.PipelineRecipe)
 						if err != nil {
 							return nil, err
 						}
-						if compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue() == nil {
-							compInputTemplate.Fields["input"].GetStructValue().Fields["custom"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
+						recipePb := &structpb.Struct{}
+						err = protojson.Unmarshal(recipeByte, recipePb)
+						if err != nil {
+							return nil, err
 						}
-						compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue().Fields["metadata"] = metadata
+
+						// TODO: remove this hardcode injection
+						if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
+							metadata, err := structpb.NewValue(map[string]interface{}{
+								"pipeline": map[string]interface{}{
+									"uid":    "${global.pipeline.uid}",
+									"recipe": "${global.pipeline.recipe}",
+								},
+								"owner": map[string]interface{}{
+									"uid": "${global.owner.uid}",
+								},
+							})
+							if err != nil {
+								return nil, err
+							}
+							if compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue() == nil {
+								compInputTemplate.Fields["input"].GetStructValue().Fields["custom"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
+							}
+							compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue().Fields["metadata"] = metadata
+						}
 					}
-				}
+					compInputTemplateJSON, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
+					if err != nil {
+						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						return nil, err
+					}
 
-				compInputTemplateJSON, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
-				if err != nil {
-					span.SetStatus(1, err.Error())
-					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return nil, err
-				}
+					var compInputTemplateStruct interface{}
+					err = json.Unmarshal(compInputTemplateJSON, &compInputTemplateStruct)
+					if err != nil {
+						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						return nil, err
+					}
 
-				var compInputTemplateStruct interface{}
-				err = json.Unmarshal(compInputTemplateJSON, &compInputTemplateStruct)
-				if err != nil {
-					span.SetStatus(1, err.Error())
-					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return nil, err
-				}
+					compInputStruct, err := utils.RenderInput(compInputTemplateStruct, memory[idx])
+					if err != nil {
+						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						return nil, err
+					}
+					compInputJSON, err := json.Marshal(compInputStruct)
+					if err != nil {
+						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						return nil, err
+					}
 
-				compInputStruct, err := utils.RenderInput(compInputTemplateStruct, memory[idx])
-				if err != nil {
-					span.SetStatus(1, err.Error())
-					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return nil, err
-				}
-				compInputJSON, err := json.Marshal(compInputStruct)
-				if err != nil {
-					span.SetStatus(1, err.Error())
-					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return nil, err
-				}
+					compInput := &structpb.Struct{}
+					err = protojson.Unmarshal([]byte(compInputJSON), compInput)
+					if err != nil {
+						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						return nil, err
+					}
 
-				compInput := &structpb.Struct{}
-				err = protojson.Unmarshal([]byte(compInputJSON), compInput)
-				if err != nil {
-					span.SetStatus(1, err.Error())
-					dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-					dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-					_ = w.writeNewDataPoint(sCtx, dataPoint)
-					return nil, err
+					memory[idx][comp.ID].(map[string]interface{})["input"] = compInputStruct
+					groupCache[compIdx].idxMap[len(compInputs)] = idx
+					compInputs = append(compInputs, compInput)
 				}
-
-				memory[idx][comp.ID].(map[string]interface{})["input"] = compInputStruct
-				idxMap[len(compInputs)] = idx
-				compInputs = append(compInputs, compInput)
 			}
-		}
 
-		task := ""
-		if comp.Configuration.Fields["task"] != nil {
-			task = comp.Configuration.Fields["task"].GetStringValue()
-		}
+			task := ""
+			if comp.Configuration.Fields["task"] != nil {
+				task = comp.Configuration.Fields["task"].GetStringValue()
+			}
 
-		// TODO: refactor
-		if utils.IsConnectorDefinition(comp.DefinitionName) && comp.ResourceName != "" {
-			inputBlobRedisKeys, err := w.SetBlob(compInputs)
-			if err != nil {
-				span.SetStatus(1, err.Error())
-				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-				_ = w.writeNewDataPoint(sCtx, dataPoint)
+			if utils.IsConnectorDefinition(comp.DefinitionName) && comp.ResourceName != "" {
+				inputBlobRedisKeys, err := w.SetBlob(compInputs)
+				if err != nil {
+					w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+					return nil, err
+				}
+				for idx := range inputBlobRedisKeys {
+					defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
+				}
+
+				ctx = workflow.WithActivityOptions(ctx, ao)
+
+				groupCache[compIdx].startTime = time.Now()
+				groupCache[compIdx].future = workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
+					ID:                 comp.ID,
+					InputBlobRedisKeys: inputBlobRedisKeys,
+					DefinitionName:     comp.DefinitionName,
+					ResourceName:       comp.ResourceName,
+					PipelineMetadata: PipelineMetadataStruct{
+						ID:         param.PipelineID,
+						UID:        param.PipelineUID.String(),
+						ReleaseID:  param.PipelineReleaseID,
+						ReleaseUID: param.PipelineReleaseUID.String(),
+						Owner:      param.OwnerPermalink,
+						TriggerID:  workflow.GetInfo(ctx).WorkflowExecution.ID,
+						UserUID:    strings.Split(param.UserPermalink, "/")[1],
+					},
+					Task: task,
+				})
+
+			} else if comp.DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
+				responseCompID = comp.ID
+				for compBatchIdx := range compInputs {
+					memory[groupCache[compIdx].idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
+					statuses[groupCache[compIdx].idxMap[compBatchIdx]][comp.ID].Completed = true
+				}
+				computeTime[comp.ID] = 0
+			} else if utils.IsOperatorDefinition(comp.DefinitionName) {
+
+				inputBlobRedisKeys, err := w.SetBlob(compInputs)
+				if err != nil {
+					w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+					return nil, err
+				}
+				for idx := range inputBlobRedisKeys {
+					defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
+				}
+
+				ctx = workflow.WithActivityOptions(ctx, ao)
+				groupCache[compIdx].startTime = time.Now()
+				groupCache[compIdx].future = workflow.ExecuteActivity(ctx, w.OperatorActivity, &ExecuteOperatorActivityRequest{
+					ID:                 comp.ID,
+					InputBlobRedisKeys: inputBlobRedisKeys,
+					DefinitionName:     comp.DefinitionName,
+					PipelineMetadata: PipelineMetadataStruct{
+						ID:         param.PipelineID,
+						UID:        param.PipelineUID.String(),
+						ReleaseID:  param.PipelineReleaseID,
+						ReleaseUID: param.PipelineReleaseUID.String(),
+						Owner:      param.OwnerPermalink,
+						TriggerID:  workflow.GetInfo(ctx).WorkflowExecution.ID,
+						UserUID:    strings.Split(param.UserPermalink, "/")[1],
+					},
+					Task: task,
+				})
+
+			}
+
+		}
+		for idx := range groupCache {
+			if groupCache[idx].comp.ID == startCompID {
+				continue
+			}
+			if groupCache[idx].comp.ID == responseCompID {
+				continue
+			}
+
+			var result ExecuteActivityResponse
+			if err := groupCache[idx].future.Get(ctx, &result); err != nil {
+				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 				return nil, err
 			}
-			for idx := range result.OutputBlobRedisKeys {
-				defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
-			}
-			result := ExecuteConnectorActivityResponse{}
-			ctx = workflow.WithActivityOptions(ctx, ao)
+			computeTime[groupCache[idx].comp.ID] = float32(time.Since(groupCache[idx].startTime).Seconds())
 
-			start := time.Now()
-			if err := workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
-				ID:                 comp.ID,
-				InputBlobRedisKeys: inputBlobRedisKeys,
-				DefinitionName:     comp.DefinitionName,
-				ResourceName:       comp.ResourceName,
-				PipelineMetadata: PipelineMetadataStruct{
-					ID:         param.PipelineID,
-					UID:        param.PipelineUID.String(),
-					ReleaseID:  param.PipelineReleaseID,
-					ReleaseUID: param.PipelineReleaseUID.String(),
-					Owner:      param.OwnerPermalink,
-					TriggerID:  workflow.GetInfo(ctx).WorkflowExecution.ID,
-					UserUID:    strings.Split(param.UserPermalink, "/")[1],
-				},
-				Task: task,
-			}).Get(ctx, &result); err != nil {
-				span.SetStatus(1, err.Error())
-				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return nil, err
-			}
-			computeTime[comp.ID] = float32(time.Since(start).Seconds())
 			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
 			for idx := range result.OutputBlobRedisKeys {
 				defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
 			}
 			if err != nil {
-				span.SetStatus(1, err.Error())
-				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-				_ = w.writeNewDataPoint(sCtx, dataPoint)
+				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 				return nil, err
 			}
 			for compBatchIdx := range outputs {
@@ -468,86 +487,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				if err != nil {
 					return nil, err
 				}
-				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["output"] = outputStruct
-				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
-				statuses[idxMap[compBatchIdx]][comp.ID].Completed = true
+				memory[groupCache[idx].idxMap[compBatchIdx]][groupCache[idx].comp.ID].(map[string]interface{})["output"] = outputStruct
+				memory[groupCache[idx].idxMap[compBatchIdx]][groupCache[idx].comp.ID].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
+				statuses[groupCache[idx].idxMap[compBatchIdx]][groupCache[idx].comp.ID].Completed = true
 			}
-
-		} else if comp.DefinitionName == "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
-			responseCompID = comp.ID
-			for compBatchIdx := range compInputs {
-				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
-				statuses[idxMap[compBatchIdx]][comp.ID].Completed = true
-			}
-			computeTime[comp.ID] = 0
-		} else if utils.IsOperatorDefinition(comp.DefinitionName) {
-
-			inputBlobRedisKeys, err := w.SetBlob(compInputs)
-			if err != nil {
-				span.SetStatus(1, err.Error())
-				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return nil, err
-			}
-			for idx := range result.OutputBlobRedisKeys {
-				defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
-			}
-			result := ExecuteOperatorActivityResponse{}
-			ctx = workflow.WithActivityOptions(ctx, ao)
-
-			start := time.Now()
-			if err := workflow.ExecuteActivity(ctx, w.OperatorActivity, &ExecuteOperatorActivityRequest{
-				ID:                 comp.ID,
-				InputBlobRedisKeys: inputBlobRedisKeys,
-				DefinitionName:     comp.DefinitionName,
-				PipelineMetadata: PipelineMetadataStruct{
-					ID:         param.PipelineID,
-					UID:        param.PipelineUID.String(),
-					ReleaseID:  param.PipelineReleaseID,
-					ReleaseUID: param.PipelineReleaseUID.String(),
-					Owner:      param.OwnerPermalink,
-					TriggerID:  workflow.GetInfo(ctx).WorkflowExecution.ID,
-					UserUID:    strings.Split(param.UserPermalink, "/")[1],
-				},
-				Task: task,
-			}).Get(ctx, &result); err != nil {
-				span.SetStatus(1, err.Error())
-				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return nil, err
-			}
-			computeTime[comp.ID] = float32(time.Since(start).Seconds())
-			outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
-			for idx := range result.OutputBlobRedisKeys {
-				defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
-			}
-			if err != nil {
-				span.SetStatus(1, err.Error())
-				dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-				dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-				_ = w.writeNewDataPoint(sCtx, dataPoint)
-				return nil, err
-			}
-			for compBatchIdx := range outputs {
-
-				outputJSON, err := protojson.Marshal(outputs[compBatchIdx])
-				if err != nil {
-					return nil, err
-				}
-				var outputStruct map[string]interface{}
-				err = json.Unmarshal(outputJSON, &outputStruct)
-				if err != nil {
-					return nil, err
-				}
-				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["output"] = outputStruct
-				memory[idxMap[compBatchIdx]][comp.ID].(map[string]interface{})["status"].(map[string]interface{})["completed"] = true
-				statuses[idxMap[compBatchIdx]][comp.ID].Completed = true
-			}
-
 		}
-
 	}
 
 	pipelineOutputs := []*structpb.Struct{}
@@ -576,10 +520,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		traces, err = utils.GenerateTraces(orderedComp, memory, statuses, computeTime, batchSize)
 
 		if err != nil {
-			span.SetStatus(1, err.Error())
-			dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-			dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-			_ = w.writeNewDataPoint(sCtx, dataPoint)
+			w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 			return nil, err
 		}
 	}
@@ -592,10 +533,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 	outputJSON, err := protojson.Marshal(pipelineResp)
 	if err != nil {
-		span.SetStatus(1, err.Error())
-		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		_ = w.writeNewDataPoint(sCtx, dataPoint)
+		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 		return nil, err
 	}
 	blobRedisKey := fmt.Sprintf("async_pipeline_response:%s", workflow.GetInfo(ctx).WorkflowExecution.ID)
@@ -618,7 +556,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}, nil
 }
 
-func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorActivityRequest) (*ExecuteConnectorActivityResponse, error) {
+func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorActivityRequest) (*ExecuteActivityResponse, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ConnectorActivity started")
 
@@ -658,7 +596,6 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		return nil
 	}()
 
-	// TODO
 	execution, err := w.connector.CreateExecution(uuid.FromStringOrNil(con.Uid), param.Task, configuration, logger)
 	if err != nil {
 		return nil, err
@@ -674,10 +611,10 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	}
 
 	logger.Info("ConnectorActivity completed")
-	return &ExecuteConnectorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
+	return &ExecuteActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
 }
 
-func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorActivityRequest) (*ExecuteOperatorActivityResponse, error) {
+func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorActivityRequest) (*ExecuteActivityResponse, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("OperatorActivity started")
@@ -705,9 +642,16 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 	if err != nil {
 		return nil, err
 	}
+	return &ExecuteActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
+}
 
-	logger.Info("OperatorActivity completed")
-	return &ExecuteOperatorActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
+// writeErrorDataPoint is a helper function that writes the error data point to
+// the usage metrics table.
+func (w *worker) writeErrorDataPoint(ctx context.Context, err error, span trace.Span, startTime time.Time, dataPoint *utils.PipelineUsageMetricData) {
+	span.SetStatus(1, err.Error())
+	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+	dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
+	_ = w.writeNewDataPoint(ctx, *dataPoint)
 }
 
 // toApplicationError wraps a temporal task error in a temporal.Application

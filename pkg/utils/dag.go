@@ -103,7 +103,16 @@ func (d *dag) GetAncestorIDs(id string) []string {
 	return d.ancestorsMap[id]
 }
 
-func (d *dag) TopologicalSort() ([]*datamodel.Component, error) {
+type topologicalSortNode struct {
+	comp  *datamodel.Component
+	group int // the group order
+}
+
+// TopologicalSort returns the topological sorted components
+// the result is a list of list of components
+// each list is a group of components that can be executed in parallel
+func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
+
 	if len(d.comps) == 0 {
 		return nil, fmt.Errorf("no components")
 	}
@@ -115,29 +124,43 @@ func (d *dag) TopologicalSort() ([]*datamodel.Component, error) {
 		}
 
 	}
-	q := []*datamodel.Component{}
+	q := []*topologicalSortNode{}
 	for _, comp := range d.comps {
 		if indegreesMap[comp] == 0 {
-			q = append(q, comp)
+			q = append(q, &topologicalSortNode{
+				comp:  comp,
+				group: 0,
+			})
 		}
 	}
 
-	ans := []*datamodel.Component{}
+	ans := [][]*datamodel.Component{}
+
+	count := 0
 	taken := make(map[*datamodel.Component]bool)
 	for len(q) > 0 {
 		from := q[0]
 		q = q[1:]
-		ans = append(ans, from)
-		taken[from] = true
-		for _, to := range d.prerequisitesMap[from] {
+		if len(ans) <= from.group {
+			ans = append(ans, []*datamodel.Component{})
+		}
+		ans[from.group] = append(ans[from.group], from.comp)
+		count += 1
+		taken[from.comp] = true
+
+		for _, to := range d.prerequisitesMap[from.comp] {
 			indegreesMap[to]--
 			if indegreesMap[to] == 0 {
-				q = append(q, to)
+				q = append(q, &topologicalSortNode{
+					comp:  to,
+					group: from.group + 1,
+				})
 			}
 		}
+
 	}
 
-	if len(ans) < len(d.comps) {
+	if count < len(d.comps) {
 		return nil, fmt.Errorf("not a valid dag")
 	}
 
