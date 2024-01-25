@@ -598,7 +598,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 
 	execution, err := w.connector.CreateExecution(uuid.FromStringOrNil(con.Uid), param.Task, configuration, logger)
 	if err != nil {
-		return nil, err
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
