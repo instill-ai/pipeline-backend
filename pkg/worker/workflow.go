@@ -336,10 +336,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							if err != nil {
 								return nil, err
 							}
-							if compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue() == nil {
-								compInputTemplate.Fields["input"].GetStructValue().Fields["custom"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
+							if compInputTemplate.Fields["input"].GetStructValue() == nil {
+								compInputTemplate.Fields["input"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
 							}
-							compInputTemplate.Fields["input"].GetStructValue().Fields["custom"].GetStructValue().Fields["metadata"] = metadata
+							compInputTemplate.Fields["input"].GetStructValue().Fields["metadata"] = metadata
 						}
 					}
 					compInputTemplateJSON, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
