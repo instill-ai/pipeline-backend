@@ -19,7 +19,7 @@ require (
 	github.com/instill-ai/component v0.9.0-beta
 	github.com/instill-ai/connector v0.10.0-beta.0.20240126175624-9b6fdb7f9fee
 	github.com/instill-ai/operator v0.6.1-beta
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240122214718-7d090df83765
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240127014437-0fdddfd0f329
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.3.0-alpha.0.20231219052200-6230a89e386c
 	github.com/knadh/koanf v1.5.0
