@@ -309,6 +309,7 @@ type ListNamespacePipelinesRequestInterface interface {
 	GetPageSize() int32
 	GetPageToken() string
 	GetView() pipelinePB.Pipeline_View
+	GetVisibility() pipelinePB.Pipeline_Visibility
 	GetFilter() string
 	GetParent() string
 	GetShowDeleted() bool
@@ -372,8 +373,9 @@ func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListName
 		span.SetStatus(1, err.Error())
 		return nil, "", 0, err
 	}
+	visibility := req.GetVisibility()
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListNamespacePipelines(ctx, ns, authUser, req.GetPageSize(), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListNamespacePipelines(ctx, ns, authUser, req.GetPageSize(), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), &visibility, filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, "", 0, err
