@@ -1337,12 +1337,12 @@ func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns re
 
 	var existingPipeline *datamodel.Pipeline
 	// Validation: Pipeline existence
-	if _, err = s.repository.GetPipelineByUIDAdmin(ctx, pipelineUID, false); err != nil {
+	if existingPipeline, err = s.repository.GetPipelineByUIDAdmin(ctx, pipelineUID, false); err != nil {
 		return err
 	}
 	existingPipeline.Recipe = dbPipelineRelease.Recipe
 
-	if err := s.repository.UpdateNamespacePipelineByID(ctx, ownerPermalink, id, existingPipeline); err != nil {
+	if err := s.repository.UpdateNamespacePipelineByID(ctx, ownerPermalink, existingPipeline.ID, existingPipeline); err != nil {
 		return err
 	}
 
