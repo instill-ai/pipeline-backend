@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"errors"
+	"strings"
 
 	"go.opentelemetry.io/otel"
 
@@ -87,4 +89,41 @@ func (h *PrivateHandler) GetService() service.Service {
 // SetService sets the service
 func (h *PrivateHandler) SetService(s service.Service) {
 	h.service = s
+}
+
+func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinePB.CheckNameRequest) (resp *pipelinePB.CheckNameResponse, err error) {
+	name := req.GetName()
+
+	ns, id, err := h.service.GetRscNamespaceAndNameID(name)
+	if err != nil {
+		return nil, err
+	}
+	authUser, err := h.service.AuthenticateUser(ctx, false)
+	if err != nil {
+		return nil, err
+	}
+	rscType := strings.Split(name, "/")[2]
+
+	if rscType == "pipelines" {
+		_, err := h.service.GetNamespacePipelineByID(ctx, ns, authUser, id, service.ViewBasic)
+		if err != nil && errors.Is(err, service.ErrNotFound) {
+			return &pipelinePB.CheckNameResponse{
+				Availability: pipelinePB.CheckNameResponse_NAME_AVAILABLE,
+			}, nil
+		}
+	} else if rscType == "connectors" {
+		_, err := h.service.GetNamespaceConnectorByID(ctx, ns, authUser, id, service.ViewBasic, true)
+		if err != nil && errors.Is(err, service.ErrNotFound) {
+			return &pipelinePB.CheckNameResponse{
+				Availability: pipelinePB.CheckNameResponse_NAME_AVAILABLE,
+			}, nil
+		}
+	} else {
+		return &pipelinePB.CheckNameResponse{
+			Availability: pipelinePB.CheckNameResponse_NAME_UNAVAILABLE,
+		}, nil
+	}
+	return &pipelinePB.CheckNameResponse{
+		Availability: pipelinePB.CheckNameResponse_NAME_UNAVAILABLE,
+	}, nil
 }
