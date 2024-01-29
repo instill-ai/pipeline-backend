@@ -804,6 +804,70 @@ func (h *PublicHandler) renameNamespacePipeline(ctx context.Context, req RenameN
 	return pbPipeline, nil
 }
 
+type CloneNamespacePipelineRequestInterface interface {
+	GetName() string
+	GetTarget() string
+}
+
+func (h *PublicHandler) CloneUserPipeline(ctx context.Context, req *pipelinePB.CloneUserPipelineRequest) (resp *pipelinePB.CloneUserPipelineResponse, err error) {
+	resp = &pipelinePB.CloneUserPipelineResponse{}
+	resp.Pipeline, err = h.cloneNamespacePipeline(ctx, req)
+	return resp, err
+}
+
+func (h *PublicHandler) CloneOrganizationPipeline(ctx context.Context, req *pipelinePB.CloneOrganizationPipelineRequest) (resp *pipelinePB.CloneOrganizationPipelineResponse, err error) {
+	resp = &pipelinePB.CloneOrganizationPipelineResponse{}
+	resp.Pipeline, err = h.cloneNamespacePipeline(ctx, req)
+	return resp, err
+}
+
+func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNamespacePipelineRequestInterface) (*pipelinePB.Pipeline, error) {
+
+	eventName := "CloneNamespacePipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	fmt.Println(req.GetName(), req.GetTarget())
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	ns, id, err := h.service.GetRscNamespaceAndNameID(req.GetName())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+	authUser, err := h.service.AuthenticateUser(ctx, false)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	targetNS, targetID, err := h.service.GetRscNamespaceAndNameID(req.GetTarget())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	pbPipeline, err := h.service.CloneNamespacePipeline(ctx, ns, authUser, id, targetNS, targetID)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	logger.Info(string(custom_otel.NewLogMessage(
+		span,
+		logUUID.String(),
+		authUser.UID,
+		eventName,
+		custom_otel.SetEventResource(pbPipeline),
+	)))
+	return pbPipeline, nil
+}
+
 func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (resource.Namespace, *service.AuthUser, string, *pipelinePB.Pipeline, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource

@@ -74,6 +74,7 @@ type Service interface {
 	ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) (*pipelinePB.Pipeline, error)
 	GetNamespacePipelineDefaultReleaseUID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) (uuid.UUID, error)
 	GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) (uuid.UUID, error)
+	CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, targetNS resource.Namespace, targetID string) (*pipelinePB.Pipeline, error)
 
 	ListPipelinesAdmin(ctx context.Context, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error)
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.Pipeline, error)
@@ -747,6 +748,23 @@ func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.N
 		return err
 	}
 	return s.repository.DeleteNamespacePipelineByID(ctx, ownerPermalink, id)
+}
+
+func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, targetNS resource.Namespace, targetID string) (*pipelinePB.Pipeline, error) {
+	sourcePipeline, err := s.GetNamespacePipelineByID(ctx, ns, authUser, id, ViewRecipe)
+	if err != nil {
+		return nil, err
+	}
+	for idx := range sourcePipeline.Recipe.Components {
+		sourcePipeline.Recipe.Components[idx].ResourceName = ""
+	}
+	sourcePipeline.Id = targetID
+	sourcePipeline.OwnerName = targetNS.String()
+	targetPipeline, err := s.CreateNamespacePipeline(ctx, targetNS, authUser, sourcePipeline)
+	if err != nil {
+		return nil, err
+	}
+	return targetPipeline, nil
 }
 
 func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) (*pipelinePB.Pipeline, error) {
