@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.21.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.20.0-beta...v0.21.0-beta) (2024-01-30)
+
+
+### Features
+
+* add `CheckName` endpoint ([#375](https://github.com/instill-ai/pipeline-backend/issues/375)) ([7e248ed](https://github.com/instill-ai/pipeline-backend/commit/7e248ed605b693d39f3e7bd881f09088b3c6bbf9))
+* add `CloneUserPipeline` and `CloneOrganizationPipeline` endpoints ([#374](https://github.com/instill-ai/pipeline-backend/issues/374)) ([abf8514](https://github.com/instill-ai/pipeline-backend/commit/abf85141ec5b08c2dc32a8afe65f89e05a3f4168))
+* add end-user errors on CreateExecution error ([#369](https://github.com/instill-ai/pipeline-backend/issues/369)) ([b72ac08](https://github.com/instill-ai/pipeline-backend/commit/b72ac08f1a5b6fa3d6ee8ea0808efd5350bdac56))
+* execute component in parallel ([#366](https://github.com/instill-ai/pipeline-backend/issues/366)) ([1a18d62](https://github.com/instill-ai/pipeline-backend/commit/1a18d62ca3cad984c94d90130066dbd99c2eadc5))
+* support `visibility` param in list namespace pipelines endpoints ([#372](https://github.com/instill-ai/pipeline-backend/issues/372)) ([e0b2c48](https://github.com/instill-ai/pipeline-backend/commit/e0b2c481f341307ce9a53c7b908a03abefa78364))
+
+
+### Bug Fixes
+
+* fix can not restore pipeline recipe from releases ([#376](https://github.com/instill-ai/pipeline-backend/issues/376)) ([5163aec](https://github.com/instill-ai/pipeline-backend/commit/5163aecafdbbd8bdc888ce74adb0ccf0dcef066a))
+
 ## [0.20.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.19.0-beta...v0.20.0-beta) (2024-01-15)
 
 
