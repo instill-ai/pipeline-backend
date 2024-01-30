@@ -51,14 +51,14 @@ export const params = {
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: "10s",
+  timeout: "300s",
 };
 
 export const paramsGrpc = {
   metadata: {
     "Content-Type": "application/json",
   },
-  timeout: "10s",
+  timeout: "300s",
 };
 
 const randomUUID = uuidv4();

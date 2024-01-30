@@ -26,7 +26,7 @@ export let options = {
 export function setup() {
   client.connect(constant.pipelineGRPCPublicHost, {
     plaintext: true,
-    timeout: "10s",
+    timeout: "300s",
   });
 
   var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1beta/auth/login`, JSON.stringify({
