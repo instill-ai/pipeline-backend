@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.21.0-beta...v0.21.1-beta) (2024-02-06)
+
+
+### Miscellaneous Chores
+
+* release v0.21.1-beta ([e38033d](https://github.com/instill-ai/pipeline-backend/commit/e38033dbaf73843941ae74881086c36867b68c5b))
+
 ## [0.21.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.20.0-beta...v0.21.0-beta) (2024-01-30)
 
 
