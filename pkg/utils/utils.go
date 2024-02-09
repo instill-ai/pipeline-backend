@@ -19,7 +19,7 @@ import (
 
 	componentBase "github.com/instill-ai/component/pkg/base"
 	connector "github.com/instill-ai/connector/pkg"
-	connectorAirbyte "github.com/instill-ai/connector/pkg/airbyte"
+	connectorAirbyte "github.com/instill-ai/connector/pkg/airbyte/v0"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )

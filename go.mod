@@ -16,10 +16,10 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.10.0-beta.0.20240205022655-5cbfb4402c3c
-	github.com/instill-ai/connector v0.11.0-beta
-	github.com/instill-ai/operator v0.7.0-beta
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240129095403-f1a432594183
+	github.com/instill-ai/component v0.10.0-beta.0.20240206082535-b067f9cbaa98
+	github.com/instill-ai/connector v0.11.0-beta.0.20240209084724-81af1d594231
+	github.com/instill-ai/operator v0.7.0-beta.0.20240209084731-80df32e4d0e4
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240206062817-a862071d8ece
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.3.0-alpha.0.20231219052200-6230a89e386c
 	github.com/knadh/koanf v1.5.0
