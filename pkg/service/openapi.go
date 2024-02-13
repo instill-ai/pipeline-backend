@@ -203,15 +203,6 @@ func (s *service) GenerateOpenAPISpec(startCompOrigin *pipelinePB.Component, end
 				str = str[2:]
 				str = str[:len(str)-1]
 				str = strings.ReplaceAll(str, " ", "")
-				isArrayReference := false
-				if str[0] == '[' && str[len(str)-1] == ']' {
-					subStrs := strings.Split(str[1:len(str)-1], ",")
-					if len(subStrs) == 0 {
-						return nil, fmt.Errorf("empty array")
-					}
-					str = subStrs[0]
-					isArrayReference = true
-				}
 
 				var b interface{}
 				unmarshalErr := json.Unmarshal([]byte(str), &b)
@@ -234,24 +225,12 @@ func (s *service) GenerateOpenAPISpec(startCompOrigin *pipelinePB.Component, end
 						attrType = "null"
 						instillFormat = "null"
 					}
-					if isArrayReference {
-						m, err = structpb.NewValue(map[string]interface{}{
-							"title":       v.GetStructValue().Fields["title"].GetStringValue(),
-							"description": v.GetStructValue().Fields["description"].GetStringValue(),
-							"type":        "array",
-							"items": map[string]interface{}{
-								"type":          attrType,
-								"instillFormat": instillFormat,
-							},
-						})
-					} else {
-						m, err = structpb.NewValue(map[string]interface{}{
-							"title":         v.GetStructValue().Fields["title"].GetStringValue(),
-							"description":   v.GetStructValue().Fields["description"].GetStringValue(),
-							"type":          attrType,
-							"instillFormat": instillFormat,
-						})
-					}
+					m, err = structpb.NewValue(map[string]interface{}{
+						"title":         v.GetStructValue().Fields["title"].GetStringValue(),
+						"description":   v.GetStructValue().Fields["description"].GetStringValue(),
+						"type":          attrType,
+						"instillFormat": instillFormat,
+					})
 
 				} else {
 					compID := strings.Split(str, ".")[0]
@@ -375,39 +354,26 @@ func (s *service) GenerateOpenAPISpec(startCompOrigin *pipelinePB.Component, end
 
 							str = str[len(curr)+1:]
 						}
-
-						if isArrayReference {
-							m, err = structpb.NewValue(map[string]interface{}{
-								"title":       v.GetStructValue().Fields["title"].GetStringValue(),
-								"description": v.GetStructValue().Fields["description"].GetStringValue(),
-								"type":        "array",
-							})
-
+						m = structpb.NewStructValue(walk.GetStructValue())
+						if _, ok := v.GetStructValue().Fields["title"]; ok {
 							if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-								m.GetStructValue().Fields["items"] = structpb.NewStructValue(walk.GetStructValue())
+								m.GetStructValue().Fields["title"] = v.GetStructValue().Fields["title"]
 							}
-
 						} else {
-							m = structpb.NewStructValue(walk.GetStructValue())
-							if _, ok := v.GetStructValue().Fields["title"]; ok {
-								if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-									m.GetStructValue().Fields["title"] = v.GetStructValue().Fields["title"]
-								}
-							} else {
-								if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-									m.GetStructValue().Fields["title"] = structpb.NewStringValue("")
-								}
-							}
-							if _, ok := v.GetStructValue().Fields["description"]; ok {
-								if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-									m.GetStructValue().Fields["description"] = v.GetStructValue().Fields["description"]
-								}
-							} else {
-								if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-									m.GetStructValue().Fields["description"] = structpb.NewStringValue("")
-								}
+							if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+								m.GetStructValue().Fields["title"] = structpb.NewStringValue("")
 							}
 						}
+						if _, ok := v.GetStructValue().Fields["description"]; ok {
+							if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+								m.GetStructValue().Fields["description"] = v.GetStructValue().Fields["description"]
+							}
+						} else {
+							if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+								m.GetStructValue().Fields["description"] = structpb.NewStringValue("")
+							}
+						}
+
 					} else {
 						return nil, fmt.Errorf("generate OpenAPI spec error")
 					}

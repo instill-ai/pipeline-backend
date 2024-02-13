@@ -196,25 +196,12 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 			input = input[2:]
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
-			if input[0] == '[' && input[len(input)-1] == ']' {
-				outs := []interface{}{}
-				subInputs := strings.Split(input[1:len(input)-1], ",")
-				for _, subInput := range subInputs {
-					out, err := traverseBinding(bindings, subInput)
-					if err != nil {
-						return nil, err
-					}
-					outs = append(outs, out)
-				}
-				return outs, nil
-
-			} else {
-				out, err := traverseBinding(bindings, input)
-				if err != nil {
-					return nil, err
-				}
-				return out, nil
+			out, err := traverseBinding(bindings, input)
+			if err != nil {
+				return nil, err
 			}
+			return out, nil
+
 		}
 
 		// TODO: we should retire Liquid instead of changing the delimiters
@@ -607,31 +594,15 @@ func FindReferenceParent(input string) []string {
 			parsed = parsed[2:]
 			parsed = parsed[:len(parsed)-1]
 			parsed = strings.TrimSpace(parsed)
-			if parsed[0] == '[' && parsed[len(parsed)-1] == ']' {
-				parents := []string{}
-				subStrs := strings.Split(parsed[1:len(parsed)-1], ",")
-				for _, subStr := range subStrs {
-					var b interface{}
-					err := json.Unmarshal([]byte(subStr), &b)
+			var b interface{}
+			err := json.Unmarshal([]byte(parsed), &b)
 
-					// if the json is Unmarshalable, means that it is not a reference
-					if err == nil {
-						continue
-					}
-					parents = append(parents, strings.Split(subStr, ".")[0])
-				}
-				return parents
-
-			} else {
-				var b interface{}
-				err := json.Unmarshal([]byte(parsed), &b)
-
-				// if the json is Unmarshalable, means that it is not a reference
-				if err == nil {
-					return []string{}
-				}
-				return []string{strings.Split(parsed, ".")[0]}
+			// if the json is Unmarshalable, means that it is not a reference
+			if err == nil {
+				return []string{}
 			}
+			return []string{strings.Split(parsed, ".")[0]}
+
 		}
 		return []string{}
 
