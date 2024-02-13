@@ -631,7 +631,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 
 	execution, err := w.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), param.Task, nil, logger)
 	if err != nil {
-		return nil, err
+		return nil, w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
