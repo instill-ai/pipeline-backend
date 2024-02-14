@@ -16,12 +16,12 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.10.0-beta.0.20240206082535-b067f9cbaa98
-	github.com/instill-ai/connector v0.11.0-beta.0.20240209084724-81af1d594231
-	github.com/instill-ai/operator v0.7.0-beta.0.20240209084731-80df32e4d0e4
+	github.com/instill-ai/component v0.10.0-beta.0.20240214094419-66fea88f30d8
+	github.com/instill-ai/connector v0.11.0-beta.0.20240213122041-53606c1d02aa
+	github.com/instill-ai/operator v0.7.0-beta.0.20240214111337-f38cd90ce30c
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240206062817-a862071d8ece
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
-	github.com/instill-ai/x v0.3.0-alpha.0.20231219052200-6230a89e386c
+	github.com/instill-ai/x v0.4.0-alpha
 	github.com/knadh/koanf v1.5.0
 	github.com/mennanov/fieldmask-utils v1.0.0
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
@@ -82,6 +82,8 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
+	github.com/itchyny/gojq v0.12.14 // indirect
+	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/klauspost/asmfmt v1.3.2 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
@@ -99,6 +101,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
 	github.com/redis/go-redis/v9 v9.3.0 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/temoto/robotstxt v1.1.1 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
@@ -157,7 +160,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/levigross/exp-html v0.0.0-20120902181939-8df60c69a8f5 // indirect
 	github.com/lib/pq v1.10.7 // indirect
-	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
