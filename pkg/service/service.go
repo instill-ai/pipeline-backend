@@ -948,13 +948,13 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
 			continue
 		}
-		var i interface{}
+		var i any
 		if err := json.Unmarshal(b, &i); err != nil {
 			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
 			continue
 		}
 
-		m := i.(map[string]interface{})
+		m := i.(map[string]any)
 
 		for k := range m {
 			switch s := m[k].(type) {
@@ -969,19 +969,16 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 						pipelineInput.Fields[k] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s))
 					}
 				}
-			case []interface{}:
+			case []string:
 				if instillFormatMap[k] != "array:string" {
 					for idx := range s {
-						switch item := s[idx].(type) {
-						case string:
-							if !strings.HasPrefix(item, "data:") {
-								b, err := base64.StdEncoding.DecodeString(item)
-								if err != nil {
-									return fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
-								}
-								mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
-								pipelineInput.Fields[k].GetListValue().GetValues()[idx] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, item))
+						if !strings.HasPrefix(s[idx], "data:") {
+							b, err := base64.StdEncoding.DecodeString(s[idx])
+							if err != nil {
+								return fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
 							}
+							mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
+							pipelineInput.Fields[k].GetListValue().GetValues()[idx] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s[idx]))
 						}
 
 					}
@@ -1427,7 +1424,7 @@ func (s *service) triggerPipeline(
 		inputBlobRedisKeys = append(inputBlobRedisKeys, inputBlobRedisKey)
 		defer s.redisClient.Del(context.Background(), inputBlobRedisKey)
 	}
-	memo := map[string]interface{}{}
+	memo := map[string]any{}
 	memo["number_of_data"] = len(inputBlobRedisKeys)
 
 	workflowOptions := client.StartWorkflowOptions{
@@ -1526,7 +1523,7 @@ func (s *service) triggerAsyncPipeline(
 		)
 		inputBlobRedisKeys = append(inputBlobRedisKeys, inputBlobRedisKey)
 	}
-	memo := map[string]interface{}{}
+	memo := map[string]any{}
 	memo["number_of_data"] = len(inputBlobRedisKeys)
 
 	workflowOptions := client.StartWorkflowOptions{
@@ -1827,7 +1824,7 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, pageSize int32, 
 			if idx == 0 {
 				typeMap[string(expr.Vars[idx].(protoreflect.Name))] = true
 			} else {
-				typeMap[string(expr.Vars[idx].([]interface{})[0].(protoreflect.Name))] = true
+				typeMap[string(expr.Vars[idx].([]any)[0].(protoreflect.Name))] = true
 			}
 
 		}
