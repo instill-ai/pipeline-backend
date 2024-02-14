@@ -13,8 +13,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/oliveagle/jsonpath"
-	"github.com/osteele/liquid"
-	"github.com/osteele/liquid/render"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -171,12 +169,12 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 	return ans, nil
 }
 
-func traverseBinding(bindings interface{}, path string) (interface{}, error) {
+func traverseBinding(bindings any, path string) (any, error) {
 
 	res, err := jsonpath.JsonPathLookup(bindings, "$."+path)
 	if err != nil {
 		// check primitive value
-		var ret interface{}
+		var ret any
 		err := json.Unmarshal([]byte(path), &ret)
 		if err != nil {
 			return nil, fmt.Errorf("reference not correct: '%s'", path)
@@ -188,7 +186,7 @@ func traverseBinding(bindings interface{}, path string) (interface{}, error) {
 		return res, nil
 	}
 }
-func RenderInput(input interface{}, bindings map[string]interface{}) (interface{}, error) {
+func RenderInput(input any, bindings map[string]any) (any, error) {
 
 	switch input := input.(type) {
 	case string:
@@ -196,43 +194,63 @@ func RenderInput(input interface{}, bindings map[string]interface{}) (interface{
 			input = input[2:]
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
-			out, err := traverseBinding(bindings, input)
+			val, err := traverseBinding(bindings, input)
 			if err != nil {
 				return nil, err
 			}
-			return out, nil
-
+			return val, nil
 		}
 
-		// TODO: we should retire Liquid instead of changing the delimiters
-		engine := liquid.NewEngine().Delims("${", "}", "{%", "%}")
-		out, err := engine.ParseAndRenderString(input, bindings)
-		if err != nil {
-			return nil, err
-		}
-		return out, err
+		val := ""
+		for {
+			startIdx := strings.Index(input, "${")
+			endIdx := strings.Index(input, "}")
+			if startIdx == -1 || endIdx == -1 {
+				val += input
+				break
+			}
 
-	case map[string]interface{}:
-		ret := map[string]interface{}{}
+			ref := strings.TrimSpace(input[startIdx+2 : endIdx])
+			v, err := traverseBinding(bindings, ref)
+			if err != nil {
+				return nil, err
+			}
+
+			switch v := v.(type) {
+			case string:
+				val += input[:startIdx] + v
+			default:
+				b, err := json.Marshal(v)
+				if err != nil {
+					return nil, err
+				}
+				val += input[:startIdx] + string(b)
+			}
+			input = input[endIdx+1:]
+		}
+		return val, nil
+
+	case map[string]any:
+		val := map[string]any{}
 		for k, v := range input {
 			converted, err := RenderInput(v, bindings)
 			if err != nil {
 				return "", err
 			}
-			ret[k] = converted
+			val[k] = converted
 
 		}
-		return ret, nil
-	case []interface{}:
-		ret := []interface{}{}
+		return val, nil
+	case []any:
+		val := []any{}
 		for _, v := range input {
 			converted, err := RenderInput(v, bindings)
 			if err != nil {
 				return "", err
 			}
-			ret = append(ret, converted)
+			val = append(val, converted)
 		}
-		return ret, nil
+		return val, nil
 	default:
 		return input, nil
 	}
@@ -260,7 +278,7 @@ func FindConditionUpstream(expr ast.Expr, upstreams *[]string) {
 	}
 }
 
-func EvalCondition(expr ast.Expr, value map[string]interface{}) (interface{}, error) {
+func EvalCondition(expr ast.Expr, value map[string]any) (any, error) {
 	switch e := (expr).(type) {
 	case *ast.UnaryExpr:
 		xRes, err := EvalCondition(e.X, value)
@@ -453,7 +471,7 @@ func EvalCondition(expr ast.Expr, value map[string]interface{}) (interface{}, er
 		if err != nil {
 			return nil, err
 		}
-		return v.(map[string]interface{})[e.Sel.String()], nil
+		return v.(map[string]any)[e.Sel.String()], nil
 	case *ast.BasicLit:
 		if e.Kind == token.INT {
 			return strconv.ParseInt(e.Value, 10, 64)
@@ -521,14 +539,8 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	graph := NewDAG(components)
 	for _, component := range components {
 
-		// TODO: we should retire Liquid instead of changing the delimiters
-		engine := liquid.NewEngine().Delims("${", "}", "{%", "%}")
 		configuration := proto.Clone(component.Configuration)
 		template, _ := protojson.Marshal(configuration)
-		out, err := engine.ParseTemplate(template)
-		if err != nil {
-			return nil, err
-		}
 
 		condUpstreams := []string{}
 		if cond := component.Configuration.Fields["condition"].GetStringValue(); cond != "" {
@@ -551,19 +563,6 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 			}
 		}
 
-		for _, node := range out.GetRoot().(*render.SeqNode).Children {
-			parents := []string{}
-			switch node := node.(type) {
-			case *render.ObjectNode:
-				upstream := strings.Split(node.Args, ".")[0]
-				parents = append(parents, upstream)
-			}
-			for idx := range parents {
-				if _, ok := componentIDMap[parents[idx]]; ok {
-					graph.AddEdge(componentIDMap[parents[idx]], component)
-				}
-			}
-		}
 		parents := FindReferenceParent(string(template))
 		for idx := range parents {
 			if upstream, ok := componentIDMap[parents[idx]]; ok {
@@ -580,7 +579,7 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 
 // TODO: simplify this
 func FindReferenceParent(input string) []string {
-	var parsed interface{}
+	var parsed any
 	err := json.Unmarshal([]byte(input), &parsed)
 	if err != nil {
 		return []string{}
@@ -589,24 +588,21 @@ func FindReferenceParent(input string) []string {
 	switch parsed := parsed.(type) {
 	case string:
 
-		if strings.HasPrefix(parsed, "${") && strings.HasSuffix(parsed, "}") && strings.Count(parsed, "${") == 1 {
-
-			parsed = parsed[2:]
-			parsed = parsed[:len(parsed)-1]
-			parsed = strings.TrimSpace(parsed)
-			var b interface{}
-			err := json.Unmarshal([]byte(parsed), &b)
-
-			// if the json is Unmarshalable, means that it is not a reference
-			if err == nil {
-				return []string{}
+		upstreams := []string{}
+		for {
+			startIdx := strings.Index(input, "${")
+			endIdx := strings.Index(input, "}")
+			if startIdx == -1 || endIdx == -1 {
+				break
 			}
-			return []string{strings.Split(parsed, ".")[0]}
-
+			ref := strings.TrimSpace(input[startIdx+2 : endIdx])
+			upstreams = append(upstreams, strings.Split(ref, ".")[0])
+			input = input[endIdx+1:]
 		}
-		return []string{}
 
-	case map[string]interface{}:
+		return upstreams
+
+	case map[string]any:
 		parents := []string{}
 		for _, v := range parsed {
 			encoded, err := json.Marshal(v)
@@ -617,7 +613,7 @@ func FindReferenceParent(input string) []string {
 
 		}
 		return parents
-	case []interface{}:
+	case []any:
 		parents := []string{}
 		for _, v := range parsed {
 			encoded, err := json.Marshal(v)

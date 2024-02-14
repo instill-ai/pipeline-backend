@@ -829,8 +829,6 @@ func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNam
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	fmt.Println(req.GetName(), req.GetTarget())
-
 	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
