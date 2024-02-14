@@ -200,6 +200,12 @@ func randomStrWithCharset(length int, charset string) string {
 	return string(b)
 }
 
+func injectAuthUserToContext(ctx context.Context, authUser *AuthUser) context.Context {
+	ctx = metadata.AppendToOutgoingContext(ctx, "Instill-Auth-Type", authUser.GetACLType())
+	ctx = metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", authUser.UID.String())
+	return ctx
+}
+
 func GenerateShareCode() string {
 	return randomStrWithCharset(32, charset)
 }
@@ -483,7 +489,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 
 	if ns.NsType == resource.Organization {
 		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			injectAuthUserToContext(ctx, authUser),
 			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("organizations/%s", ns.NsID)})
 		if err != nil {
 			s, ok := status.FromError(err)
@@ -848,7 +854,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	if !checkRateLimited {
 		if ns.NsType == resource.Organization {
 			resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-				metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+				injectAuthUserToContext(ctx, authUser),
 				&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 			)
 			if err != nil {
@@ -867,7 +873,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 		} else {
 			resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
-				metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+				injectAuthUserToContext(ctx, authUser),
 				&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 			)
 			if err != nil {
@@ -1658,7 +1664,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 	plan := ""
 	if ns.NsType == resource.Organization {
 		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			injectAuthUserToContext(ctx, authUser),
 			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
@@ -1674,7 +1680,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		}
 	} else {
 		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			injectAuthUserToContext(ctx, authUser),
 			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
@@ -1734,7 +1740,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 	plan := ""
 	if ns.NsType == resource.Organization {
 		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			injectAuthUserToContext(ctx, authUser),
 			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
@@ -1750,7 +1756,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		}
 	} else {
 		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			injectAuthUserToContext(ctx, authUser),
 			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 		)
 		if err != nil {
@@ -1943,7 +1949,7 @@ func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Name
 
 	if ns.NsType == resource.Organization {
 		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+			injectAuthUserToContext(ctx, authUser),
 			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("organizations/%s", ns.NsID)})
 		if err != nil {
 			s, ok := status.FromError(err)
