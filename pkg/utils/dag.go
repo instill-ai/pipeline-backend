@@ -204,13 +204,19 @@ func RenderInput(input any, bindings map[string]any) (any, error) {
 		val := ""
 		for {
 			startIdx := strings.Index(input, "${")
+			if startIdx == -1 {
+				val += input
+				break
+			}
+			val += input[:startIdx]
+			input = input[startIdx:]
 			endIdx := strings.Index(input, "}")
-			if startIdx == -1 || endIdx == -1 {
+			if endIdx == -1 {
 				val += input
 				break
 			}
 
-			ref := strings.TrimSpace(input[startIdx+2 : endIdx])
+			ref := strings.TrimSpace(input[2:endIdx])
 			v, err := traverseBinding(bindings, ref)
 			if err != nil {
 				return nil, err
@@ -218,13 +224,13 @@ func RenderInput(input any, bindings map[string]any) (any, error) {
 
 			switch v := v.(type) {
 			case string:
-				val += input[:startIdx] + v
+				val += v
 			default:
 				b, err := json.Marshal(v)
 				if err != nil {
 					return nil, err
 				}
-				val += input[:startIdx] + string(b)
+				val += string(b)
 			}
 			input = input[endIdx+1:]
 		}
@@ -591,11 +597,15 @@ func FindReferenceParent(input string) []string {
 		upstreams := []string{}
 		for {
 			startIdx := strings.Index(input, "${")
-			endIdx := strings.Index(input, "}")
-			if startIdx == -1 || endIdx == -1 {
+			if startIdx == -1 {
 				break
 			}
-			ref := strings.TrimSpace(input[startIdx+2 : endIdx])
+			input = input[startIdx:]
+			endIdx := strings.Index(input, "}")
+			if endIdx == -1 {
+				break
+			}
+			ref := strings.TrimSpace(input[2:endIdx])
 			upstreams = append(upstreams, strings.Split(ref, ".")[0])
 			input = input[endIdx+1:]
 		}
