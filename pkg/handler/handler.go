@@ -8,7 +8,6 @@ import (
 	"go.opentelemetry.io/otel"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	healthcheckPB "github.com/instill-ai/protogen-go/common/healthcheck/v1beta"
