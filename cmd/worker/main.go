@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
+	"time"
 
 	"go.opentelemetry.io/otel"
+	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
@@ -17,11 +21,54 @@ import (
 	"github.com/instill-ai/x/temporal"
 	"github.com/instill-ai/x/zapadapter"
 
-	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
+	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineWorker "github.com/instill-ai/pipeline-backend/pkg/worker"
 )
+
+const namespace = "pipeline-backend"
+
+func initTemporalNamespace(ctx context.Context, client client.Client) {
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp, err := client.WorkflowService().ListNamespaces(ctx, &workflowservice.ListNamespacesRequest{})
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("Unable to list namespaces: %s", err))
+	}
+
+	found := false
+	for _, n := range resp.GetNamespaces() {
+		if n.NamespaceInfo.Name == namespace {
+			found = true
+		}
+	}
+
+	if !found {
+		if _, err := client.WorkflowService().RegisterNamespace(ctx,
+			&workflowservice.RegisterNamespaceRequest{
+				Namespace: namespace,
+				WorkflowExecutionRetentionPeriod: func() *time.Duration {
+					// Check if the string ends with "d" for day.
+					s := config.Config.Temporal.Retention
+					if strings.HasSuffix(s, "d") {
+						// Parse the number of days.
+						days, err := strconv.Atoi(s[:len(s)-1])
+						if err != nil {
+							logger.Fatal(fmt.Sprintf("Unable to parse retention period in day: %s", err))
+						}
+						// Convert days to hours and then to a duration.
+						t := time.Hour * 24 * time.Duration(days)
+						return &t
+					}
+					logger.Fatal(fmt.Sprintf("Unable to parse retention period in day: %s", err))
+					return nil
+				}(),
+			},
+		); err != nil {
+			logger.Fatal(fmt.Sprintf("Unable to register namespace: %s", err))
+		}
+	}
+}
 
 func main() {
 
@@ -85,6 +132,8 @@ func main() {
 		logger.Fatal(fmt.Sprintf("Unable to create client: %s", err))
 	}
 	defer temporalClient.Close()
+
+	initTemporalNamespace(ctx, temporalClient)
 
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()

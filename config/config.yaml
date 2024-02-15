@@ -58,6 +58,7 @@ log:
 temporal:
   hostport: temporal:7233
   namespace: pipeline-backend
+  retention: 1d
   ca:
   cert:
   key:
