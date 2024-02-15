@@ -24,7 +24,6 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -200,12 +199,6 @@ func randomStrWithCharset(length int, charset string) string {
 	return string(b)
 }
 
-func injectAuthUserToContext(ctx context.Context, authUser *AuthUser) context.Context {
-	ctx = metadata.AppendToOutgoingContext(ctx, "Instill-Auth-Type", authUser.GetACLType())
-	ctx = metadata.AppendToOutgoingContext(ctx, "Instill-User-Uid", authUser.UID.String())
-	return ctx
-}
-
 func GenerateShareCode() string {
 	return randomStrWithCharset(32, charset)
 }
@@ -289,8 +282,7 @@ func (s *service) FetchOwnerWithPermalink(permalink string) (*structpb.Struct, e
 			return nil, fmt.Errorf("FetchOwnerWithPermalink error")
 		}
 		owner := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-		owner.Fields["profile_avatar"] = structpb.NewStringValue(resp.GetUser().GetProfileAvatar())
-		owner.Fields["profile_data"] = structpb.NewStructValue(resp.GetUser().GetProfileData())
+		owner.Fields["profile_avatar"] = structpb.NewStringValue(resp.GetUser().GetProfile().GetAvatar())
 
 		return owner, nil
 	} else {
@@ -299,8 +291,7 @@ func (s *service) FetchOwnerWithPermalink(permalink string) (*structpb.Struct, e
 			return nil, fmt.Errorf("FetchOwnerWithPermalink error")
 		}
 		owner := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-		owner.Fields["profile_avatar"] = structpb.NewStringValue(resp.GetOrganization().GetProfileAvatar())
-		owner.Fields["profile_data"] = structpb.NewStructValue(resp.GetOrganization().GetProfileData())
+		owner.Fields["profile_avatar"] = structpb.NewStringValue(resp.GetOrganization().GetProfile().GetAvatar())
 
 		return owner, nil
 	}
@@ -486,25 +477,6 @@ func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid 
 }
 
 func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pbPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
-
-	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			injectAuthUserToContext(ctx, authUser),
-			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("organizations/%s", ns.NsID)})
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			if resp.Subscription.Plan == "inactive" {
-				return nil, status.Errorf(codes.FailedPrecondition, "the organization subscription is not active")
-			}
-		}
-	}
 
 	ownerPermalink := ns.String()
 
@@ -853,9 +825,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 	if !checkRateLimited {
 		if ns.NsType == resource.Organization {
-			resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-				injectAuthUserToContext(ctx, authUser),
-				&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+			resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(
+				ctx,
+				&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 			)
 			if err != nil {
 				s, ok := status.FromError(err)
@@ -866,15 +838,15 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 					return err
 				}
 			} else {
-				if resp.Subscription.Plan == "freemium" {
+				if resp.Subscription.Plan == mgmtPB.OrganizationSubscription_PLAN_FREEMIUM {
 					checkRateLimited = true
 				}
 			}
 
 		} else {
-			resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
-				injectAuthUserToContext(ctx, authUser),
-				&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+			resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(
+				ctx,
+				&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
 			)
 			if err != nil {
 				s, ok := status.FromError(err)
@@ -885,7 +857,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 					return err
 				}
 			} else {
-				if resp.Subscription.Plan == "freemium" {
+				if resp.Subscription.Plan == mgmtPB.UserSubscription_PLAN_FREEMIUM {
 					checkRateLimited = true
 				}
 			}
@@ -1661,47 +1633,47 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, err
 	}
 
-	plan := ""
-	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			injectAuthUserToContext(ctx, authUser),
-			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, nil, err
-			}
-		} else {
-			plan = resp.Subscription.Plan
-		}
-	} else {
-		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
-			injectAuthUserToContext(ctx, authUser),
-			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, nil, err
-			}
-		} else {
-			plan = resp.Subscription.Plan
-		}
-	}
-
 	latestReleaseUID, err := s.GetNamespacePipelineLatestReleaseUID(ctx, ns, authUser, dbPipeline.ID)
 	if err != nil {
 		return nil, nil, err
 	}
-	if plan == "freemium" && dbPipelineRelease.UID != latestReleaseUID {
-		return nil, nil, ErrCanNotTriggerNonLatestPipelineRelease
+
+	if ns.NsType == resource.Organization {
+		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(
+			ctx,
+			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, nil, err
+			}
+		} else {
+			if resp.Subscription.Plan == mgmtPB.OrganizationSubscription_PLAN_FREEMIUM && dbPipelineRelease.UID != latestReleaseUID {
+				return nil, nil, ErrCanNotTriggerNonLatestPipelineRelease
+			}
+		}
+	} else {
+		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(
+			ctx,
+			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, nil, err
+			}
+		} else {
+			if resp.Subscription.Plan == mgmtPB.UserSubscription_PLAN_FREEMIUM && dbPipelineRelease.UID != latestReleaseUID {
+				return nil, nil, ErrCanNotTriggerNonLatestPipelineRelease
+			}
+		}
 	}
 
 	return s.triggerPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerID, returnTraces)
@@ -1737,47 +1709,47 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, err
 	}
 
-	plan := ""
-	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			injectAuthUserToContext(ctx, authUser),
-			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			plan = resp.Subscription.Plan
-		}
-	} else {
-		resp, err := s.mgmtPublicServiceClient.GetUserSubscription(
-			injectAuthUserToContext(ctx, authUser),
-			&mgmtPB.GetUserSubscriptionRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			plan = resp.Subscription.Plan
-		}
-	}
-
 	latestReleaseUID, err := s.GetNamespacePipelineLatestReleaseUID(ctx, ns, authUser, dbPipeline.ID)
 	if err != nil {
 		return nil, err
 	}
-	if plan == "freemium" && dbPipelineRelease.UID != latestReleaseUID {
-		return nil, ErrCanNotTriggerNonLatestPipelineRelease
+
+	if ns.NsType == resource.Organization {
+		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(
+			ctx,
+			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			if resp.Subscription.Plan == mgmtPB.OrganizationSubscription_PLAN_FREEMIUM && dbPipelineRelease.UID != latestReleaseUID {
+				return nil, ErrCanNotTriggerNonLatestPipelineRelease
+			}
+		}
+	} else {
+		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(
+			ctx,
+			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
+		)
+		if err != nil {
+			s, ok := status.FromError(err)
+			if !ok {
+				return nil, err
+			}
+			if s.Code() != codes.Unimplemented {
+				return nil, err
+			}
+		} else {
+			if resp.Subscription.Plan == mgmtPB.UserSubscription_PLAN_FREEMIUM && dbPipelineRelease.UID != latestReleaseUID {
+				return nil, ErrCanNotTriggerNonLatestPipelineRelease
+			}
+		}
 	}
 
 	return s.triggerAsyncPipeline(ctx, ns, authUser, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, pipelineTriggerID, returnTraces)
@@ -1946,26 +1918,6 @@ func (s *service) ListConnectors(ctx context.Context, authUser *AuthUser, pageSi
 }
 
 func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Namespace, authUser *AuthUser, connector *pipelinePB.Connector) (*pipelinePB.Connector, error) {
-
-	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPublicServiceClient.GetOrganizationSubscription(
-			injectAuthUserToContext(ctx, authUser),
-			&mgmtPB.GetOrganizationSubscriptionRequest{Parent: fmt.Sprintf("organizations/%s", ns.NsID)})
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			if resp.Subscription.Plan == "inactive" {
-				return nil, status.Errorf(codes.FailedPrecondition, "the organization subscription is not active")
-			}
-		}
-
-	}
 
 	ownerPermalink := ns.String()
 
