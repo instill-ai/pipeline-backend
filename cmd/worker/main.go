@@ -133,7 +133,10 @@ func main() {
 	}
 	defer temporalClient.Close()
 
-	initTemporalNamespace(ctx, temporalClient)
+	// for only local temporal cluster
+	if config.Config.Temporal.Ca == "" && config.Config.Temporal.Cert == "" && config.Config.Temporal.Key == "" {
+		initTemporalNamespace(ctx, temporalClient)
+	}
 
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
