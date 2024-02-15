@@ -24,7 +24,7 @@ RUN mkdir /airbyte
 
 FROM alpine:3.16
 
-RUN apk add poppler-utils wv tidyhtml libc6-compat tesseract-ocr
+RUN apk add curl poppler-utils wv tidyhtml libc6-compat tesseract-ocr
 
 ARG TARGETARCH
 ARG BUILDARCH
