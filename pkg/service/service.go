@@ -23,6 +23,7 @@ import (
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -32,7 +33,6 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	workflowpb "go.temporal.io/api/workflow/v1"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	rpcStatus "google.golang.org/genproto/googleapis/rpc/status"
 
 	"github.com/instill-ai/pipeline-backend/config"
