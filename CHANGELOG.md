@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.22.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.21.1-beta...v0.22.0-beta) (2024-02-16)
+
+
+### Features
+
+* add end-user errors on CreateExecution error ([#380](https://github.com/instill-ai/pipeline-backend/issues/380)) ([093c11c](https://github.com/instill-ai/pipeline-backend/commit/093c11c13188632229a5e42b55445ef5e3680096))
+* allow the string data to reference all data types that can be stringified ([#381](https://github.com/instill-ai/pipeline-backend/issues/381)) ([9342d23](https://github.com/instill-ai/pipeline-backend/commit/9342d233ccaa71d34107f0e7635cc081c13049bc))
+* remove `${[ ]}` operator in component reference syntax ([#383](https://github.com/instill-ai/pipeline-backend/issues/383)) ([c121da8](https://github.com/instill-ai/pipeline-backend/commit/c121da86867ff1f3f938a97f434862c9f811b0a8))
+
+
+### Bug Fixes
+
+* fix reference bug ([#388](https://github.com/instill-ai/pipeline-backend/issues/388)) ([968c0ec](https://github.com/instill-ai/pipeline-backend/commit/968c0ec9aa513eabb9a3e301f69477cf8afd9368))
+* **worker:** fix temporal cloud namespace init ([#387](https://github.com/instill-ai/pipeline-backend/issues/387)) ([e42cf13](https://github.com/instill-ai/pipeline-backend/commit/e42cf134d2d6fdbd817126292f7621de381368a0))
+
 ## [0.21.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.21.0-beta...v0.21.1-beta) (2024-02-06)
 
 
