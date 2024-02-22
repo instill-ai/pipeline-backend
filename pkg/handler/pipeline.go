@@ -272,10 +272,9 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 
 	pipelineToCreate := req.GetPipeline()
 
-	pipelineToCreate.OwnerName = req.GetParent()
 	if pipelineToCreate.Recipe != nil {
 		for _, comp := range pipelineToCreate.Recipe.Components {
-			if comp.ResourceName != "" && !strings.HasPrefix(comp.ResourceName, pipelineToCreate.OwnerName+"/") {
+			if comp.ResourceName != "" && !strings.HasPrefix(comp.ResourceName, ns.Name()+"/") {
 				return nil, ErrConnectorNamespace
 			}
 		}
@@ -541,7 +540,7 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 	}
 	if pbPipelineReq.Recipe != nil {
 		for _, comp := range pbPipelineReq.Recipe.Components {
-			if comp.ResourceName != "" && !strings.HasPrefix(comp.ResourceName, pbPipelineToUpdate.OwnerName+"/") {
+			if comp.ResourceName != "" && !strings.HasPrefix(comp.ResourceName, ns.Name()+"/") {
 				return nil, ErrConnectorNamespace
 			}
 		}

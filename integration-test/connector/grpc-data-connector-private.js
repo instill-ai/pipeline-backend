@@ -100,7 +100,7 @@ export function CheckList(metadata) {
         }, {}), {
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_BASIC response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_BASIC response connectors[0].configuration is null`]: (r) => r.message.connectors[0].configuration === null,
-            [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_BASIC response connectors[0].owner is UUID`]: (r) => helper.isValidOwner(r.message.connectors[0].user),
+            [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_BASIC response connectors[0].owner is invalid`]: (r) => r.message.connectors[0].owner === undefined,
         });
 
         check(clientPrivate.invoke('vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin', {
@@ -110,7 +110,7 @@ export function CheckList(metadata) {
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response connectors[0].configuration is not null`]: (r) => r.message.connectors[0].configuration !== null,
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response connectors[0].connectorDefinitionDetail is not null`]: (r) => r.message.connectors[0].connectorDefinitionDetail !== null,
-            [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response connectors[0].owner is UUID`]: (r) => helper.isValidOwner(r.message.connectors[0].user),
+            [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response connectors[0].owner is valid`]: (r) => helper.isValidOwnerGRPC(r.message.connectors[0].owner),
         });
 
 
@@ -119,7 +119,7 @@ export function CheckList(metadata) {
         }, {}), {
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 response connectors[0].configuration is null`]: (r) => r.message.connectors[0].configuration === null,
-            [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 response connectors[0].owner is UUID`]: (r) => helper.isValidOwner(r.message.connectors[0].user),
+            [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 response connectors[0].owner is invalid`]: (r) => r.message.connectors[0].owner === undefined,
         });
 
         check(clientPrivate.invoke('vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin', {
@@ -177,7 +177,7 @@ export function CheckLookUp(metadata) {
             [`vdp.pipeline.v1beta.PipelinePrivateService/LookUpConnectorAdmin CSV ${resCSVDst.message.connector.uid} response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePrivateService/LookUpConnectorAdmin CSV ${resCSVDst.message.connector.uid} response connector id`]: (r) => r.message.connector.uid === resCSVDst.message.connector.uid,
             [`vdp.pipeline.v1beta.PipelinePrivateService/LookUpConnectorAdmin CSV ${resCSVDst.message.connector.uid} response connector connectorDefinition permalink`]: (r) => r.message.connector.connectorDefinitionName === constant.csvDstDefRscName,
-            [`vdp.pipeline.v1beta.PipelinePrivateService/LookUpConnectorAdmin CSV ${resCSVDst.message.connector.uid} response connector owner is UUID`]: (r) => helper.isValidOwner(r.message.connector.user),
+            [`vdp.pipeline.v1beta.PipelinePrivateService/LookUpConnectorAdmin CSV ${resCSVDst.message.connector.uid} response connector owner is invalid`]: (r) => r.message.connector.owner === undefined,
         });
 
         check(clientPublic.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {

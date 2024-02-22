@@ -37,8 +37,8 @@ export function CheckCreate(header) {
         r.json().pipeline.description === reqBody.description,
       "POST /v1beta/${constant.namespace}/pipelines response pipeline recipe is valid": (r) =>
         helper.validateRecipe(r.json().pipeline.recipe, false),
-      "POST /v1beta/${constant.namespace}/pipelines response pipeline user is UUID": (r) =>
-        helper.isValidOwner(r.json().pipeline.user),
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline owner isinvalid": (r) =>
+        helper.isValidOwnerHTTP(r.json().pipeline.owner),
       "POST /v1beta/${constant.namespace}/pipelines response pipeline create_time": (r) =>
         new Date(r.json().pipeline.create_time).getTime() >
         new Date().setTime(0),
@@ -447,8 +447,8 @@ export function CheckGet(header) {
           (r) => r.json().pipeline.description === reqBody.description,
         [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline recipe is null`]:
           (r) => r.json().pipeline.recipe === null,
-        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline user is UUID`]:
-          (r) => helper.isValidOwner(r.json().pipeline.user),
+        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner is invalid`]:
+          (r) => r.json().pipeline.owner === undefined,
       }
     );
 
@@ -464,8 +464,8 @@ export function CheckGet(header) {
           r.status === 200,
         [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline recipe is not null`]:
           (r) => r.json().pipeline.recipe !== null,
-        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline user is UUID`]:
-          (r) => helper.isValidOwner(r.json().pipeline.user),
+        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner isvalid`]:
+          (r) => helper.isValidOwnerHTTP(r.json().pipeline.owner),
       }
     );
 
@@ -548,8 +548,8 @@ export function CheckUpdate(header) {
           (r) => r.json().pipeline.state === resOrigin.json().pipeline.state,
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline description (OPTIONAL)`]:
           (r) => r.json().pipeline.description === reqBodyUpdate.description,
-        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline user is UUID`]:
-          (r) => helper.isValidOwner(r.json().pipeline.user),
+        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner isvalid`]:
+          (r) => helper.isValidOwnerHTTP(r.json().pipeline.owner),
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline create_time (OUTPUT_ONLY)`]:
           (r) =>
             new Date(r.json().pipeline.create_time).getTime() >

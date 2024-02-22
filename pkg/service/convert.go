@@ -20,6 +20,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -271,16 +272,10 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe, userUID uuid.
 }
 
 // PBToDBPipeline converts protobuf data model to db data model
-func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error) {
+func (s *service) PBToDBPipeline(ctx context.Context, ns resource.Namespace, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
-	var owner string
 	var err error
-
-	owner, err = s.ConvertOwnerNameToPermalink(pbPipeline.GetOwnerName())
-	if err != nil {
-		return nil, err
-	}
 
 	recipe := &datamodel.Recipe{}
 	if pbPipeline.GetRecipe() != nil {
@@ -317,7 +312,7 @@ func (s *service) PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pip
 	}
 
 	return &datamodel.Pipeline{
-		Owner: owner,
+		Owner: ns.Permalink(),
 		ID:    pbPipeline.GetId(),
 
 		BaseDynamic: datamodel.BaseDynamic{
@@ -376,9 +371,12 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	if err != nil {
 		return nil, err
 	}
-	owner, err := s.FetchOwnerWithPermalink(dbPipeline.Owner)
-	if err != nil {
-		return nil, err
+	var owner *mgmtPB.Owner
+	if view != ViewBasic {
+		owner, err = s.FetchOwnerWithPermalink(dbPipeline.Owner)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var pbRecipe *pipelinePB.Recipe
@@ -787,6 +785,7 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease 
 // convertProtoToDatamodel converts protobuf data model to db data model
 func (s *service) convertProtoToDatamodel(
 	ctx context.Context,
+	ns resource.Namespace,
 	pbConnector *pipelinePB.Connector,
 ) (*datamodel.Connector, error) {
 
@@ -824,15 +823,8 @@ func (s *service) convertProtoToDatamodel(
 		Valid:  true,
 	}
 
-	var owner string
-
-	owner, err = s.ConvertOwnerNameToPermalink(pbConnector.GetOwnerName())
-	if err != nil {
-		return nil, err
-	}
-
 	return &datamodel.Connector{
-		Owner:                  owner,
+		Owner:                  ns.Permalink(),
 		ID:                     id,
 		ConnectorType:          datamodel.ConnectorType(connectorDefinition.Type),
 		Description:            description,
@@ -874,10 +866,14 @@ func (s *service) convertDatamodelToProto(
 	if err != nil {
 		return nil, err
 	}
-	owner, err := s.FetchOwnerWithPermalink(dbConnector.Owner)
-	if err != nil {
-		return nil, err
+	var owner *mgmtPB.Owner
+	if view != ViewBasic {
+		owner, err = s.FetchOwnerWithPermalink(dbConnector.Owner)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, nil, nil)
 	if err != nil {
 		return nil, err
