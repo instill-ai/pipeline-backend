@@ -11,8 +11,35 @@ export function isUUID(uuid) {
     return regexExp.test(uuid)
 }
 
-export function isValidOwner(user) {
-    return true
+
+export function isValidOwnerHTTP(owner) {
+    const expectedProfile = {
+        "display_name": "Instill",
+        "bio": "",
+        "avatar": "",
+        "public_email": "",
+        "company_name": "Instill AI",
+        "social_profile_links": {}
+    }
+    if (owner === null || owner === undefined) return false;
+    if (owner.user === null || owner.user === undefined) return false;
+    if (owner.user.id !== "admin") return false;
+    return deepEqual(owner.user.profile, expectedProfile)
+  }
+
+export function isValidOwnerGRPC(owner) {
+    const expectedProfile = {
+        "displayName": "Instill",
+        "bio": "",
+        "avatar": "",
+        "publicEmail": "",
+        "companyName": "Instill AI",
+        "socialProfileLinks": {}
+    }
+    if (owner === null || owner === undefined) return false;
+    if (owner.user === null || owner.user === undefined) return false;
+    if (owner.user.id !== "admin") return false;
+    return deepEqual(owner.user.profile, expectedProfile)
 }
 
 export function genHeader(contentType) {

@@ -82,7 +82,7 @@ export function CheckCreate(metadata) {
             "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector MySQL response destinationConnector name": (r) => r.message.connector.name == `${constant.namespace}/connectors/${mySQLDstConnector.id}`,
             "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector MySQL response destinationConnector uid": (r) => helper.isUUID(r.message.connector.uid),
             "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector MySQL response destinationConnector connectorDefinition": (r) => r.message.connector.connectorDefinitionName === constant.mySQLDstDefRscName,
-            "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector MySQL response destinationConnector owner is UUID": (r) => helper.isValidOwner(r.message.connector.user),
+            "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector MySQL response destinationConnector owner is valid": (r) => helper.isValidOwnerGRPC(r.message.connector.owner),
         });
 
         // TODO: check jsonschema when connect
@@ -244,7 +244,7 @@ export function CheckList(metadata) {
         }, metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 view=VIEW_BASIC response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 view=VIEW_BASIC response connectors[0].configuration is null`]: (r) => r.message.connectors[0].configuration === null,
-            [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 view=VIEW_BASIC response connectors[0].owner is UUID`]: (r) => helper.isValidOwner(r.message.connectors[0].user),
+            [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 view=VIEW_BASIC response connectors[0].owner is invalid`]: (r) => r.message.connectors[0].owner === undefined,
         });
 
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors', {
@@ -256,7 +256,7 @@ export function CheckList(metadata) {
             [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 view=VIEW_FULL response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 view=VIEW_FULL response connectors[0].configuration is not null`]: (r) => r.message.connectors[0].configuration !== null,
             [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 view=VIEW_FULL response connectors[0].connectorDefinitionDetail is not null`]: (r) => r.message.connectors[0].connectorDefinitionDetail !== null,
-            [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 view=VIEW_FULL response connectors[0].owner is UUID`]: (r) => helper.isValidOwner(r.message.connectors[0].user),
+            [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 view=VIEW_FULL response connectors[0].owner is valid`]: (r) => helper.isValidOwnerGRPC(r.message.connectors[0].owner),
         });
 
 
@@ -267,7 +267,7 @@ export function CheckList(metadata) {
         }, metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 response connectors[0].configuration is null`]: (r) => r.message.connectors[0].configuration === null,
-            [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 response connectors[0].owner is UUID`]: (r) => helper.isValidOwner(r.message.connectors[0].user),
+            [`vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors pageSize=1 response connectors[0].owner is invalid`]: (r) => r.message.connectors[0].owner === undefined,
         });
 
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors', {
@@ -328,7 +328,7 @@ export function CheckGet(metadata) {
             [`vdp.pipeline.v1beta.PipelinePublicService/GetUserConnector CSV ${resCSVDst.message.connector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePublicService/GetUserConnector CSV ${resCSVDst.message.connector.id} response connector id`]: (r) => r.message.connector.id === csvDstConnector.id,
             [`vdp.pipeline.v1beta.PipelinePublicService/GetUserConnector CSV ${resCSVDst.message.connector.id} response connector connectorDefinition permalink`]: (r) => r.message.connector.connectorDefinitionName === constant.csvDstDefRscName,
-            [`vdp.pipeline.v1beta.PipelinePublicService/GetUserConnector CSV ${resCSVDst.message.connector.id} response connector owner is UUID`]: (r) => helper.isValidOwner(r.message.connector.user),
+            [`vdp.pipeline.v1beta.PipelinePublicService/GetUserConnector CSV ${resCSVDst.message.connector.id} response connector owner is invalid`]: (r) => r.message.connector.owner === undefined,
         });
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
@@ -383,7 +383,7 @@ export function CheckUpdate(metadata) {
             [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${resCSVDstUpdate.message.connector.id} response connector description`]: (r) => r.message.connector.description === csvDstConnectorUpdate.description,
             [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${resCSVDstUpdate.message.connector.id} response connector tombstone`]: (r) => r.message.connector.tombstone === false,
             [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${resCSVDstUpdate.message.connector.id} response connector configuration`]: (r) => r.message.connector.configuration.destination_path === csvDstConnectorUpdate.configuration.destination_path,
-            [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${resCSVDstUpdate.message.connector.id} response connector owner is UUID`]: (r) => helper.isValidOwner(r.message.connector.user),
+            [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${resCSVDstUpdate.message.connector.id} response connector owner is valid`]: (r) => helper.isValidOwnerGRPC(r.message.connector.owner),
         });
 
         // Try to update with empty description
@@ -400,7 +400,7 @@ export function CheckUpdate(metadata) {
         check(resCSVDstUpdate, {
             [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${resCSVDstUpdate.message.connector.id} with empty description response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${resCSVDstUpdate.message.connector.id} with empty description response connector description`]: (r) => r.message.connector.description === csvDstConnectorUpdate.description,
-            [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${resCSVDstUpdate.message.connector.id} with empty description response connector owner is UUID`]: (r) => helper.isValidOwner(r.message.connector.user),
+            [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserConnector ${resCSVDstUpdate.message.connector.id} with empty description response connector owner is valid`]: (r) => helper.isValidOwnerGRPC(r.message.connector.owner),
         });
 
         // Try to update with a non-existing name field (which should be ignored because name field is OUTPUT_ONLY)
@@ -453,7 +453,7 @@ export function CheckLookUp(metadata) {
             [`vdp.pipeline.v1beta.PipelinePublicService/LookUpConnector CSV ${resCSVDst.message.connector.uid} response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePublicService/LookUpConnector CSV ${resCSVDst.message.connector.uid} response connector id`]: (r) => r.message.connector.uid === resCSVDst.message.connector.uid,
             [`vdp.pipeline.v1beta.PipelinePublicService/LookUpConnector CSV ${resCSVDst.message.connector.uid} response connector connectorDefinition permalink`]: (r) => r.message.connector.connectorDefinitionName === constant.csvDstDefRscName,
-            [`vdp.pipeline.v1beta.PipelinePublicService/LookUpConnector CSV ${resCSVDst.message.connector.uid} response connector owner is UUID`]: (r) => helper.isValidOwner(r.message.connector.user),
+            [`vdp.pipeline.v1beta.PipelinePublicService/LookUpConnector CSV ${resCSVDst.message.connector.uid} response connector owner is invalid`]: (r) => r.message.connector.owner === undefined,
         });
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {

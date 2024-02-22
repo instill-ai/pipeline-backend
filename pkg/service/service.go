@@ -108,7 +108,7 @@ type Service interface {
 	ConvertOwnerNameToPermalink(name string) (string, error)
 	ConvertReleaseIDAlias(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineID string, releaseID string) (string, error)
 
-	PBToDBPipeline(ctx context.Context, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error)
+	PBToDBPipeline(ctx context.Context, ns resource.Namespace, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error)
 	DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, authUser *AuthUser, view View) (*pipelinePB.Pipeline, error)
 	DBToPBPipelines(ctx context.Context, dbPipeline []*datamodel.Pipeline, authUser *AuthUser, view View) ([]*pipelinePB.Pipeline, error)
 
@@ -275,25 +275,21 @@ func (s *service) ConvertOwnerPermalinkToName(permalink string) (string, error) 
 	}
 }
 
-func (s *service) FetchOwnerWithPermalink(permalink string) (*structpb.Struct, error) {
+func (s *service) FetchOwnerWithPermalink(permalink string) (*mgmtPB.Owner, error) {
 	if strings.HasPrefix(permalink, "users") {
 		resp, err := s.mgmtPrivateServiceClient.LookUpUserAdmin(context.Background(), &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
 		if err != nil {
 			return nil, fmt.Errorf("FetchOwnerWithPermalink error")
 		}
-		owner := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-		owner.Fields["profile_avatar"] = structpb.NewStringValue(resp.GetUser().GetProfile().GetAvatar())
 
-		return owner, nil
+		return &mgmtPB.Owner{Owner: &mgmtPB.Owner_User{User: resp.User}}, nil
 	} else {
 		resp, err := s.mgmtPrivateServiceClient.LookUpOrganizationAdmin(context.Background(), &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
 		if err != nil {
 			return nil, fmt.Errorf("FetchOwnerWithPermalink error")
 		}
-		owner := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-		owner.Fields["profile_avatar"] = structpb.NewStringValue(resp.GetOrganization().GetProfile().GetAvatar())
+		return &mgmtPB.Owner{Owner: &mgmtPB.Owner_Organization{Organization: resp.Organization}}, nil
 
-		return owner, nil
 	}
 }
 
@@ -375,7 +371,7 @@ func (s *service) GetRscNamespaceAndNameIDAndReleaseID(path string) (resource.Na
 }
 
 func (s *service) ConvertReleaseIDAlias(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineID string, releaseID string) (string, error) {
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	// TODO: simplify these
 	if releaseID == "default" {
@@ -478,7 +474,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid 
 
 func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pbPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	// TODO: optimize ACL model
 	if ns.NsType == "organizations" {
@@ -495,7 +491,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		}
 	}
 
-	dbPipeline, err := s.PBToDBPipeline(ctx, pbPipeline)
+	dbPipeline, err := s.PBToDBPipeline(ctx, ns, pbPipeline)
 	if err != nil {
 		return nil, err
 	}
@@ -529,7 +525,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 
 func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pageSize int32, pageToken string, view View, visibility *pipelinePB.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	var uidAllowList []uuid.UUID
 	var err error
@@ -584,7 +580,7 @@ func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int32, pageTo
 
 func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, view View) (*pipelinePB.Pipeline, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, view == ViewBasic)
 	if err != nil {
@@ -602,7 +598,7 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 
 func (s *service) GetNamespacePipelineDefaultReleaseUID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) (uuid.UUID, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true)
 	if err != nil {
@@ -614,7 +610,7 @@ func (s *service) GetNamespacePipelineDefaultReleaseUID(ctx context.Context, ns 
 
 func (s *service) GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) (uuid.UUID, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true)
 	if err != nil {
@@ -642,9 +638,9 @@ func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view
 
 func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, toUpdPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
-	dbPipelineToUpdate, err := s.PBToDBPipeline(ctx, toUpdPipeline)
+	dbPipelineToUpdate, err := s.PBToDBPipeline(ctx, ns, toUpdPipeline)
 	if err != nil {
 		return nil, ErrNotFound
 	}
@@ -690,7 +686,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 }
 
 func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) error {
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
@@ -737,7 +733,6 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 		sourcePipeline.Recipe.Components[idx].ResourceName = ""
 	}
 	sourcePipeline.Id = targetID
-	sourcePipeline.OwnerName = targetNS.String()
 	targetPipeline, err := s.CreateNamespacePipeline(ctx, targetNS, authUser, sourcePipeline)
 	if err != nil {
 		return nil, err
@@ -747,7 +742,7 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 
 func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) (*pipelinePB.Pipeline, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
@@ -783,7 +778,7 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 
 func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, newID string) (*pipelinePB.Pipeline, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	// Validation: Pipeline existence
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true)
@@ -1050,7 +1045,7 @@ func (s *service) getOperationFromWorkflowInfo(workflowExecutionInfo *workflowpb
 
 func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, pipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	pipeline, err := s.GetPipelineByUID(ctx, authUser, pipelineUID, ViewFull)
 	if err != nil {
@@ -1094,7 +1089,7 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 }
 func (s *service) ListNamespacePipelineReleases(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int32, string, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	pipeline, err := s.GetPipelineByUID(ctx, authUser, pipelineUID, ViewBasic)
 	if err != nil {
@@ -1131,7 +1126,7 @@ func (s *service) ListPipelineReleasesAdmin(ctx context.Context, pageSize int32,
 
 func (s *service) GetNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, id string, view View) (*pipelinePB.PipelineRelease, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	pipeline, err := s.GetPipelineByUID(ctx, authUser, pipelineUID, ViewBasic)
 	if err != nil {
@@ -1156,7 +1151,7 @@ func (s *service) GetNamespacePipelineReleaseByID(ctx context.Context, ns resour
 }
 func (s *service) GetNamespacePipelineReleaseByUID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, uid uuid.UUID, view View) (*pipelinePB.PipelineRelease, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	pipeline, err := s.GetPipelineByUID(ctx, authUser, pipelineUID, ViewBasic)
 	if err != nil {
@@ -1182,7 +1177,7 @@ func (s *service) GetNamespacePipelineReleaseByUID(ctx context.Context, ns resou
 
 func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, id string, toUpdPipeline *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	pipeline, err := s.GetPipelineByUID(ctx, authUser, pipelineUID, ViewBasic)
 	if err != nil {
@@ -1225,7 +1220,7 @@ func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns res
 
 func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	pipeline, err := s.GetPipelineByUID(ctx, authUser, pipelineUID, ViewBasic)
 	if err != nil {
@@ -1265,7 +1260,7 @@ func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns r
 }
 
 func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, id string) error {
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	pipeline, err := s.GetPipelineByUID(ctx, authUser, pipelineUID, ViewBasic)
 	if err != nil {
@@ -1287,7 +1282,7 @@ func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns res
 }
 
 func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, id string) error {
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	pipeline, err := s.GetPipelineByUID(ctx, authUser, pipelineUID, ViewBasic)
 	if err != nil {
@@ -1326,7 +1321,7 @@ func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns re
 
 func (s *service) SetDefaultNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, id string) error {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	pipeline, err := s.GetPipelineByUID(ctx, authUser, pipelineUID, ViewBasic)
 	if err != nil {
@@ -1426,7 +1421,7 @@ func (s *service) triggerPipeline(
 			PipelineReleaseID:          pipelineReleaseID,
 			PipelineReleaseUID:         pipelineReleaseUID,
 			PipelineRecipe:             recipe,
-			OwnerPermalink:             ns.String(),
+			OwnerPermalink:             ns.Permalink(),
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
 			Mode:                       mgmtPB.Mode_MODE_SYNC,
@@ -1525,7 +1520,7 @@ func (s *service) triggerAsyncPipeline(
 			PipelineReleaseID:          pipelineReleaseID,
 			PipelineReleaseUID:         pipelineReleaseUID,
 			PipelineRecipe:             recipe,
-			OwnerPermalink:             ns.String(),
+			OwnerPermalink:             ns.Permalink(),
 			UserPermalink:              authUser.Permalink(),
 			ReturnTraces:               returnTraces,
 			Mode:                       mgmtPB.Mode_MODE_ASYNC,
@@ -1546,7 +1541,7 @@ func (s *service) triggerAsyncPipeline(
 
 func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, inputs []*structpb.Struct, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
@@ -1576,7 +1571,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, inputs []*structpb.Struct, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false)
 	if err != nil {
@@ -1605,7 +1600,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 
 func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false)
 	if err != nil {
@@ -1681,7 +1676,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 
 func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, pipelineUID uuid.UUID, id string, inputs []*structpb.Struct, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false)
 	if err != nil {
@@ -1919,7 +1914,7 @@ func (s *service) ListConnectors(ctx context.Context, authUser *AuthUser, pageSi
 
 func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Namespace, authUser *AuthUser, connector *pipelinePB.Connector) (*pipelinePB.Connector, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	// TODO: optimize ACL model
 	if ns.NsType == "organizations" {
@@ -1957,7 +1952,7 @@ func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Name
 
 	dbConnectorToCreate := &datamodel.Connector{
 		ID:                     connector.Id,
-		Owner:                  ns.String(),
+		Owner:                  ns.Permalink(),
 		ConnectorDefinitionUID: connDefUID,
 		Tombstone:              false,
 		Configuration:          connConfig,
@@ -2001,7 +1996,7 @@ func (s *service) ListNamespaceConnectors(ctx context.Context, ns resource.Names
 		return nil, 0, "", err
 	}
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbConnectors, totalSize, nextPageToken, err := s.repository.ListNamespaceConnectors(ctx, ownerPermalink, int64(pageSize), pageToken, view == ViewBasic, filter, uidAllowList, showDeleted)
 
@@ -2027,7 +2022,7 @@ func (s *service) ListConnectorsAdmin(ctx context.Context, pageSize int32, pageT
 
 func (s *service) GetNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, view View, credentialMask bool) (*pipelinePB.Connector, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, view == ViewBasic)
 	if err != nil {
@@ -2054,9 +2049,9 @@ func (s *service) GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, vie
 
 func (s *service) UpdateNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, connector *pipelinePB.Connector) (*pipelinePB.Connector, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
-	dbConnectorToUpdate, err := s.convertProtoToDatamodel(ctx, connector)
+	dbConnectorToUpdate, err := s.convertProtoToDatamodel(ctx, ns, connector)
 	if err != nil {
 		return nil, err
 	}
@@ -2083,7 +2078,7 @@ func (s *service) UpdateNamespaceConnectorByID(ctx context.Context, ns resource.
 func (s *service) DeleteNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string) error {
 	// logger, _ := logger.GetZapLogger(ctx)
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, false)
 	if err != nil {
@@ -2135,7 +2130,7 @@ func (s *service) DeleteNamespaceConnectorByID(ctx context.Context, ns resource.
 
 func (s *service) UpdateNamespaceConnectorStateByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, state pipelinePB.Connector_State) (*pipelinePB.Connector, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	// Validation: trigger and response connector cannot be disconnected
 	conn, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, false)
@@ -2191,7 +2186,7 @@ func (s *service) UpdateNamespaceConnectorStateByID(ctx context.Context, ns reso
 
 func (s *service) UpdateNamespaceConnectorIDByID(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, newID string) (*pipelinePB.Connector, error) {
 
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, false)
 	if err != nil {
@@ -2219,7 +2214,7 @@ func (s *service) UpdateNamespaceConnectorIDByID(ctx context.Context, ns resourc
 func (s *service) Execute(ctx context.Context, ns resource.Namespace, authUser *AuthUser, id string, task string, inputs []*structpb.Struct) ([]*structpb.Struct, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
-	ownerPermalink := ns.String()
+	ownerPermalink := ns.Permalink()
 
 	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, false)
 	if err != nil {

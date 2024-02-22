@@ -1,0 +1,1109 @@
+syntax = "proto3";
+
+package core.mgmt.v1beta;
+
+import "../../../common/healthcheck/v1beta/healthcheck.proto";
+import "google/api/field_behavior.proto";
+// Google API
+import "google/api/resource.proto";
+// Protobuf standard
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// Common
+
+// LivenessRequest represents a request to check a service liveness status
+message LivenessRequest {
+  // HealthCheckRequest message
+  optional common.healthcheck.v1beta.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LivenessResponse represents a response for a service liveness status
+message LivenessResponse {
+  // HealthCheckResponse message
+  common.healthcheck.v1beta.HealthCheckResponse health_check_response = 1;
+}
+
+// ReadinessRequest represents a request to check a service readiness status
+message ReadinessRequest {
+  // HealthCheckRequest message
+  optional common.healthcheck.v1beta.HealthCheckRequest health_check_request = 1 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ReadinessResponse represents a response for a service readiness status
+message ReadinessResponse {
+  // HealthCheckResponse message
+  common.healthcheck.v1beta.HealthCheckResponse health_check_response = 1;
+}
+
+// View defines how a resource is presented. It can be used as a parameter in a
+// method request to allow clients to select the amount of information they
+// want in the response.
+enum View {
+  // Unspecified, equivalent to BASIC.
+  VIEW_UNSPECIFIED = 0;
+  // Default view, only includes basic information.
+  VIEW_BASIC = 1;
+  // Full representation.
+  VIEW_FULL = 2;
+}
+
+// OwnerType enumerates the owner type of any resource
+enum OwnerType {
+  // OwnerType: UNSPECIFIED
+  OWNER_TYPE_UNSPECIFIED = 0;
+  // OwnerType: USER
+  OWNER_TYPE_USER = 1;
+  // OwnerType: ORGANIZATION
+  OWNER_TYPE_ORGANIZATION = 2;
+}
+
+// MembershipState describes the state of a user membership to an organization.
+enum MembershipState {
+  // Unspecified.
+  MEMBERSHIP_STATE_UNSPECIFIED = 0;
+  // Active.
+  MEMBERSHIP_STATE_ACTIVE = 1;
+  // Pending, i.e., a request has been sent to the user to join an
+  // organization.
+  MEMBERSHIP_STATE_PENDING = 2;
+}
+
+// OnboardingStatus describes the status of the user onboarding process.
+enum OnboardingStatus {
+  // Unspecified.
+  ONBOARDING_STATUS_UNSPECIFIED = 0;
+  // In progress, i.e., the user has initiated the onboarding process
+  // but has not yet completed it.
+  ONBOARDING_STATUS_IN_PROGRESS = 1;
+  // Completed.
+  ONBOARDING_STATUS_COMPLETED = 2;
+}
+
+// UserProfile describes the public data of a user.
+message UserProfile {
+  // Display name.
+  optional string display_name = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Biography.
+  optional string bio = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Avatar in base64 format.
+  optional string avatar = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Public email.
+  optional string public_email = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Company name.
+  optional string company_name = 5 [(google.api.field_behavior) = OPTIONAL];
+  // Social profile links list the links to the user's social profiles.
+  // The key represents the provider, and the value is the corresponding URL.
+  map<string, string> social_profile_links = 6 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// OrganizationProfile describes the public data of an organization.
+message OrganizationProfile {
+  // Display name.
+  optional string display_name = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Biography.
+  optional string bio = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Avatar in base64 format.
+  optional string avatar = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Public email.
+  optional string public_email = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Social profile links list the links to the organization's social profiles.
+  // The key represents the provider, and the value is the corresponding URL.
+  map<string, string> social_profile_links = 5 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// AuthenticatedUser contains the information of an authenticated user, i.e.,
+// the public user information plus some fields that should only be accessed by
+// the user themselves.
+message AuthenticatedUser {
+  option (google.api.resource) = {type: "api.instill.tech/AuthenticatedUser"};
+
+  // The name of the user, defined by its ID.
+  // - Format: `users/{user.id}`.
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // User UUID. This field is optionally set by users on creation (it will be
+  // server-generated if unspecified).
+  optional string uid = 2 [(google.api.field_behavior) = IMMUTABLE];
+  // Resource ID (used in `name` as the last segment). This conforms to
+  // RFC-1034, which restricts to letters, numbers, and hyphen, with the first
+  // character a letter, the last a letter or a number, and a 63 character
+  // maximum.
+  //
+  // Note that the ID can be updated.
+  string id = 3 [(google.api.field_behavior) = REQUIRED];
+  // Creation time.
+  google.protobuf.Timestamp create_time = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Update time.
+  google.protobuf.Timestamp update_time = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Email.
+  string email = 7 [(google.api.field_behavior) = REQUIRED];
+  // Stripe customer ID. This field is used in Instill Cloud.
+  string customer_id = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Role.
+  //
+  // It must be one of the following allowed roles:
+  // - `manager`
+  // - `ai-researcher`
+  // - `ai-engineer`
+  // - `data-engineer`
+  // - `data-scientist`
+  // - `analytics-engineer`
+  // - `hobbyist`
+  optional string role = 12 [(google.api.field_behavior) = OPTIONAL];
+  // This defines whether the user is subscribed to Instill AI's newsletter.
+  bool newsletter_subscription = 13 [(google.api.field_behavior) = REQUIRED];
+  // Console cookie token.
+  optional string cookie_token = 14 [(google.api.field_behavior) = OPTIONAL];
+  // Onboarding Status.
+  OnboardingStatus onboarding_status = 17 [(google.api.field_behavior) = OPTIONAL];
+  // Profile.
+  UserProfile profile = 18;
+}
+
+// Owner is a wrapper for User and Organization, used to embed owner information in other resources.
+message Owner {
+  // The owner, which can be either a User or an Organization.
+  oneof owner {
+    // User.
+    core.mgmt.v1beta.User user = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // Organization.
+    core.mgmt.v1beta.Organization organization = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  }
+}
+
+// User describes an individual that interacts with Instill AI. It doesn't
+// contain any private information about the user.
+message User {
+  option (google.api.resource) = {
+    type: "api.instill.tech/User"
+    pattern: "users/{user.id}"
+    pattern: "users/{user.uid}"
+  };
+
+  // The name of the user, defined by its ID.
+  // - Format: `users/{user.id}`.
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // User UUID. This field is optionally set by users on creation (it will be
+  // server-generated if unspecified).
+  optional string uid = 2 [(google.api.field_behavior) = IMMUTABLE];
+  // Resource ID (used in `name` as the last segment). This conforms to
+  // RFC-1034, which restricts to letters, numbers, and hyphen, with the first
+  // character a letter, the last a letter or a number, and a 63 character
+  // maximum.
+  //
+  // Note that the ID can be updated.
+  string id = 3 [(google.api.field_behavior) = REQUIRED];
+  // Creation time.
+  google.protobuf.Timestamp create_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Update time.
+  google.protobuf.Timestamp update_time = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Profile.
+  UserProfile profile = 11;
+}
+
+// ListUsersAdminRequest represents a request to list all users by admin
+message ListUsersAdminRequest {
+  // The maximum number of users to return. If this parameter is unspecified,
+  // at most 10 pipelines will be returned. The cap value for this parameter is
+  // 100 (i.e. any value above that will be coerced to 100).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListUsersAdminResponse represents a response for a list of users
+message ListUsersAdminResponse {
+  // A list of users
+  repeated User users = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total number of users.
+  int32 total_size = 3;
+}
+
+// GetUserAdminRequest represents a request to query a user by admin
+message GetUserAdminRequest {
+  // Resource name of a user. For example:
+  // "users/local-user"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/User",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "user_name"}
+    }
+  ];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetUserAdminResponse represents a response for a user resource
+message GetUserAdminResponse {
+  // A user resource
+  User user = 1;
+}
+
+// LookUpUserAdminRequest represents a request to query a user via permalink by
+// admin
+message LookUpUserAdminRequest {
+  // Permalink of a user. For example:
+  // "users/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LookUpUserAdminResponse represents a response for a user resource by admin
+message LookUpUserAdminResponse {
+  // A user resource
+  User user = 1;
+}
+
+// ListOrganizationsAdminRequest represents a request to list all organizations by admin
+message ListOrganizationsAdminRequest {
+  // The maximum number of organizations to return. If this parameter is
+  // unspecified, at most 10 pipelines will be returned. The cap value for this
+  // parameter is 100 (i.e. any value above that will be coerced to 100).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListOrganizationsAdminResponse represents a response for a list of organizations
+message ListOrganizationsAdminResponse {
+  // A list of organizations
+  repeated Organization organizations = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total number of organizations.
+  int32 total_size = 3;
+}
+
+// GetOrganizationAdminRequest represents a request to query a organization by admin
+message GetOrganizationAdminRequest {
+  // Resource name of a organization. For example:
+  // "organizations/local-organization"
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/Organization",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_name"}
+    }
+  ];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetOrganizationAdminResponse represents a response for a organization resource
+message GetOrganizationAdminResponse {
+  // A organization resource
+  Organization organization = 1;
+}
+
+// LookUpOrganizationAdminRequest represents a request to query a organization via permalink by
+// admin
+message LookUpOrganizationAdminRequest {
+  // Permalink of a organization. For example:
+  // "organizations/{uid}"
+  string permalink = 1 [(google.api.field_behavior) = REQUIRED];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// LookUpOrganizationAdminResponse represents a response for a organization resource by admin
+message LookUpOrganizationAdminResponse {
+  // A organization resource
+  Organization organization = 1;
+}
+
+// ListUsersRequest represents a request to list all users.
+message ListUsersRequest {
+  // The maximum number of users to return. If this parameter is unspecified,
+  // at most 10 pipelines will be returned. The cap value for this parameter is
+  // 100 (i.e. any value above that will be coerced to 100).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListUsersResponse contains a list of users.
+message ListUsersResponse {
+  // A list of user resources.
+  repeated User users = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total number of users.
+  int32 total_size = 3;
+}
+
+// GetUserRequest represents a request to fetch the details of a user.
+message GetUserRequest {
+  // The resource name of the user, which allows its access by ID.
+  // - Format: `users/{user.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/User",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "user_name"}
+    }
+  ];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetUserResponse contains the requested user.
+message GetUserResponse {
+  // The user resource.
+  User user = 1;
+}
+
+// GetAuthenticatedUserRequest represents a request to get the
+// authenticated user.
+message GetAuthenticatedUserRequest {}
+
+// GetAuthenticatedUserResponse contains the requested authenticated user.
+message GetAuthenticatedUserResponse {
+  // The authenticated user resource.
+  AuthenticatedUser user = 1;
+}
+
+// PatchAuthenticatedUserRequest represents a request to update the
+// authenticated user.
+message PatchAuthenticatedUserRequest {
+  // The user fields that will replace the existing ones.
+  AuthenticatedUser user = 1;
+  // The update mask specifies the subset of fields that should be modified.
+  //
+  // For more information about this field, see
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#field-mask.
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// PatchAuthenticatedUserResponse contains the updated user.
+// the authenticated user resource
+message PatchAuthenticatedUserResponse {
+  // The updated user resource.
+  AuthenticatedUser user = 1;
+}
+
+// CheckNamespaceRequest represents a request to verify if a namespace is
+// available.
+message CheckNamespaceRequest {
+  // The namespace ID to be checked.
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// CheckNamespaceResponse contains the availability of a namespace or the type
+// of resource that's using it.
+message CheckNamespaceResponse {
+  // Namespace contains information about the availability of a namespace.
+  enum Namespace {
+    // Unspecified.
+    NAMESPACE_UNSPECIFIED = 0;
+    // Available.
+    NAMESPACE_AVAILABLE = 1;
+    // Namespace belongs to a user.
+    NAMESPACE_USER = 2;
+    // Namespace belongs to an organization.
+    NAMESPACE_ORGANIZATION = 3;
+    // Reserved.
+    NAMESPACE_RESERVED = 4;
+  }
+
+  // Namespace type.
+  Namespace type = 1;
+}
+
+// API tokens allow users to make requests to the Instill AI API.
+message ApiToken {
+  option (google.api.resource) = {
+    type: "api.instill.tech/ApiToken"
+    pattern: "tokens/{token.name}"
+  };
+
+  // google.protobuf.Timestamp last_use_time = 6;
+  reserved 6;
+
+  // State describes the state of an API token.
+  enum State {
+    // Unspecified.
+    STATE_UNSPECIFIED = 0;
+    // Inactive.
+    STATE_INACTIVE = 1;
+    // Active.
+    STATE_ACTIVE = 2;
+    // Expired.
+    STATE_EXPIRED = 3;
+  }
+
+  // The name of the token, define by its ID.
+  // - Format: `tokens/{token.id}`.
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // API token UUID.
+  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // API token resource ID (used in `name` as the last segment). This conforms
+  // to RFC-1034, which restricts to letters, numbers, and hyphen, with the
+  // first character a letter, the last a letter or a number, and a 63
+  // character maximum.
+  //
+  // This field can reflect the client(s) that will use the token.
+  string id = 3 [(google.api.field_behavior) = IMMUTABLE];
+  // Creation time.
+  google.protobuf.Timestamp create_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Update time.
+  google.protobuf.Timestamp update_time = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // An opaque access token representing the API token string.
+  //
+  // To validate the token, the recipient of the token needs to call the server
+  // that issued the token.
+  string access_token = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // State.
+  State state = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Token type. Value is fixed to "Bearer".
+  string token_type = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Expiration.
+  oneof expiration {
+    // The time-to-live in seconds for this resource.
+    int32 ttl = 10 [(google.api.field_behavior) = INPUT_ONLY];
+
+    // Expiration time.
+    google.protobuf.Timestamp expire_time = 11;
+  }
+}
+
+// CreateTokenRequest represents a request to create an API token.
+message CreateTokenRequest {
+  // The properties of the token to be created.
+  ApiToken token = 1;
+}
+
+// CreateTokenResponse contains the created token.
+message CreateTokenResponse {
+  // The created API token resource.
+  ApiToken token = 1;
+}
+
+// ListTokensRequest represents a request to list the API tokens of a user.
+message ListTokensRequest {
+  // The maximum number of tokens to return. If this parameter is unspecified,
+  // at most 10 pipelines will be returned. The cap value for this parameter is
+  // 100 (i.e. any value above that will be coerced to 100).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListTokensResponse contains a list of API tokens.
+message ListTokensResponse {
+  // A list of API token resources.
+  repeated ApiToken tokens = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total number of API token resources.
+  int32 total_size = 3;
+}
+
+// GetTokenRequest represents a request to fetch the details of an API token
+message GetTokenRequest {
+  // The resource name of the token, which allows its access by ID.
+  // - Format: `tokens/{token.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/ApiToken"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "token_name"}
+    }
+  ];
+}
+
+// GetTokenResponse contains the requested token.
+message GetTokenResponse {
+  // The API token resource.
+  ApiToken token = 1;
+}
+
+// DeleteTokenRequest represents a request to delete an API token resource.
+message DeleteTokenRequest {
+  // The resource name of the token, which allows its access by ID.
+  // - Format: `tokens/{token.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/ApiToken"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "token_name"}
+    }
+  ];
+}
+
+// DeleteTokenResponse is an empty response.
+message DeleteTokenResponse {}
+
+// ValidateTokenRequest represents a request to validate a token.
+message ValidateTokenRequest {}
+
+// ValidateTokenResponse contains the validation of a token.
+message ValidateTokenResponse {
+  // If token is valid, UUID of the user that owns it.
+  string user_uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// AuthTokenIssuerRequest represents a request to fetch the issuer details of a
+// token.
+message AuthTokenIssuerRequest {
+  // Username.
+  string username = 1 [(google.api.field_behavior) = REQUIRED];
+  // Password.
+  string password = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// AuthTokenIssuerResponse contains the token issuer details.
+message AuthTokenIssuerResponse {
+  // UnsignedAccessToken contains the token issuer information.
+  message UnsignedAccessToken {
+    // Audience.
+    string aud = 1;
+    // Issuer.
+    string iss = 2;
+    // Subject.
+    string sub = 3;
+    // Unique identifier of the user.
+    string jti = 4;
+    // Expiration date.
+    int32 exp = 5;
+  }
+
+  // Access token information.
+  UnsignedAccessToken access_token = 1;
+}
+
+// AuthLoginRequest represents a request for user login.
+message AuthLoginRequest {
+  // Username.
+  string username = 1 [(google.api.field_behavior) = REQUIRED];
+  // Password.
+  string password = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// AuthLoginResponse contains the access token of the authenticated user.
+message AuthLoginResponse {
+  // User access token.
+  string access_token = 1;
+}
+
+// AuthLogoutRequest represents a request for user logout.
+message AuthLogoutRequest {}
+
+// AuthLogoutResponse is an empty response.
+message AuthLogoutResponse {}
+
+// AuthValidateAccessTokenRequest represents a request for access token validation.
+message AuthValidateAccessTokenRequest {}
+
+// AuthValidateAccessTokenResponse is an empty response.
+message AuthValidateAccessTokenResponse {}
+
+// AuthChangePasswordRequest represents a request to update a user's password.
+message AuthChangePasswordRequest {
+  // Old password.
+  string old_password = 1;
+  // New password.
+  string new_password = 2;
+}
+
+// AuthChangePasswordResponse is an empty response.
+message AuthChangePasswordResponse {}
+
+// Organizations group several users. As entities, they can own resources such
+// as pipelines or releases.
+message Organization {
+  option (google.api.resource) = {
+    type: "api.instill.tech/Organization"
+    pattern: "organizations/{organization.id}"
+    pattern: "organizations/{organization.uid}"
+  };
+
+  // The name of the organization, defined by its ID.
+  // - Format: `organization/{organization.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_name"}
+    }
+  ];
+
+  // Organization UUID.
+  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Resource ID (used in `name` as the last segment). This conforms to
+  // RFC-1034, which restricts to letters, numbers, and hyphen, with the first
+  // character a letter, the last a letter or a number, and a 63 character
+  // maximum.
+  //
+  // Note that the ID can be updated.
+  string id = 3 [(google.api.field_behavior) = REQUIRED];
+  // Creation time.
+  google.protobuf.Timestamp create_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Update time.
+  google.protobuf.Timestamp update_time = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The user that owns the organization.
+  User owner = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Profile.
+  OrganizationProfile profile = 12;
+}
+
+// ListOrganizationsRequest represents a request to list all organizations
+message ListOrganizationsRequest {
+  // The maximum number of organizations to return. If this parameter is
+  // unspecified, at most 10 pipelines will be returned. The cap value for this
+  // parameter is 100 (i.e. any value above that will be coerced to 100).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListOrganizationsResponse represents a response for a list of organizations
+message ListOrganizationsResponse {
+  // A list of organizations
+  repeated Organization organizations = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total number of organizations.
+  int32 total_size = 3;
+}
+
+// CreateOrganizationRequest represents a request to create an organization.
+message CreateOrganizationRequest {
+  // The properties of the organization to be created.
+  Organization organization = 1;
+}
+
+// CreateOrganizationResponse contains the created organization.
+message CreateOrganizationResponse {
+  // The organization resource.
+  Organization organization = 1;
+}
+
+// GetOrganizationRequest represents a request to fetch the details of an
+// organization.
+message GetOrganizationRequest {
+  // The resource name of the organization, which allows its access by ID.
+  // - Format: `organizations/{organization.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/Organization",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_name"}
+    }
+  ];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetOrganizationResponse contains the requested organization.
+message GetOrganizationResponse {
+  // The organization resource.
+  Organization organization = 1;
+}
+
+// UpdateOrganizationRequest represents a request to update an organization.
+message UpdateOrganizationRequest {
+  // The organization fields that will replace the existing ones.
+  Organization organization = 1 [(google.api.field_behavior) = REQUIRED];
+  // The update mask specifies the subset of fields that should be modified.
+  //
+  // For more information about this field, see
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#field-mask.
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// UpdateOrganizationResponse contains the updated organization.
+message UpdateOrganizationResponse {
+  // The organization resource.
+  Organization organization = 1;
+}
+
+// DeleteOrganizationRequest represents a request to delete an organization.
+message DeleteOrganizationRequest {
+  // The resource name of the organization, which allows its access by ID.
+  // - Format: `organizations/{organization.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "api.instill.tech/Organization",
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_name"}
+    }
+  ];
+}
+
+// DeleteOrganizationResponse is an empty response.
+message DeleteOrganizationResponse {}
+
+// An organization membership defines the relationship between an organization
+// and a user that is attached to it.
+message OrganizationMembership {
+  // The resource name of the membership, which allows its access by
+  // organization and user ID.
+  // - Format: `organizations/{organization.id}/memberships/{user.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_membership_name"}
+    }
+  ];
+
+  // Role of the user in the organization.
+  string role = 3 [(google.api.field_behavior) = REQUIRED];
+  // State of the membership.
+  MembershipState state = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // User information.
+  User user = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Organization information.
+  Organization organization = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// A user membership defines the relationship between a user and an
+// organization they belong to.
+message UserMembership {
+  // The resource name of the membership, which allows its access by user and
+  // organization ID.
+  // - Format: `users/{user.id}/memberships/{organization.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "user_membership_name"}
+    }
+  ];
+
+  // Role of the user in the organization.
+  string role = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // State of the membership.
+  MembershipState state = 4 [(google.api.field_behavior) = REQUIRED];
+  // User information.
+  User user = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Organization information.
+  Organization organization = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ListUserMembershipsRequest represents a request to list the memberships of a
+// user.
+message ListUserMembershipsRequest {
+  // The parent resource, i.e., the user to which the memberships belong.
+  // Format: `users/{user.id}`.
+  string parent = 5 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Organization"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "user_name"}
+    }
+  ];
+}
+
+// ListUserMembershipsResponse contains a list of memberships.
+message ListUserMembershipsResponse {
+  // The user memberships, i.e., the organizations the user belongs to.
+  repeated UserMembership memberships = 1;
+}
+
+// GetUserMembershipRequest represents a request to query a user's membership.
+message GetUserMembershipRequest {
+  // The resource name of the membership, which allows its access by user and
+  // organization ID.
+  // - Format: `users/{user.id}/memberships/{organization.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/UserMembership"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "user_membership_name"}
+    }
+  ];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetUserMembershipResponse contains the user membership.
+message GetUserMembershipResponse {
+  // The requested user membership.
+  UserMembership membership = 1;
+}
+
+// UpdateUserMembershipRequest represents a request to update a user membership.
+message UpdateUserMembershipRequest {
+  // The membership fields to update.
+  UserMembership membership = 1 [(google.api.field_behavior) = REQUIRED];
+  // The update mask specifies the subset of fields that should be modified.
+  //
+  // For more information about this field, see
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#field-mask.
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// UpdateUserMembershipResponse contains the updated membership.
+message UpdateUserMembershipResponse {
+  // The updated membership resource.
+  UserMembership membership = 1;
+}
+
+// DeleteUserMembershipRequest represents a request to delete a user
+// membership.
+message DeleteUserMembershipRequest {
+  // The resource name of the membership, which allows its access by user and
+  // organization ID.
+  // - Format: `users/{user.id}/memberships/{organization.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/UserMembership"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "user_membership_name"}
+    }
+  ];
+}
+
+// DeleteUserMembershipResponse is an empty response.
+message DeleteUserMembershipResponse {}
+
+// ListOrganizationMembershipsRequest represents a request to list the
+// memberships of an organization.
+message ListOrganizationMembershipsRequest {
+  // The parent resource, i.e., the organization to which the memberships
+  // belong.
+  // Format: `organizations/{organization.id}`.
+  string parent = 5 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Organization"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_name"}
+    }
+  ];
+}
+
+// ListOrganizationMembershipsResponse contains a list of memberships.
+message ListOrganizationMembershipsResponse {
+  // The organization memberships, i.e., the users that belong to the
+  // organization.
+  repeated OrganizationMembership memberships = 1;
+}
+
+// GetOrganizationMembershipRequest represents a request to query a user's
+// membership to an organization.
+message GetOrganizationMembershipRequest {
+  // The resource name of the membership, which allows its access by
+  // organization and user ID.
+  // - Format: `organizations/{organization.id}/memberships/{user.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/OrganizationMembership"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_membership_name"}
+    }
+  ];
+  // View allows clients to specify the desired resource view in the response.
+  optional View view = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// GetOrganizationMembershipResponse contains the organization membership.
+message GetOrganizationMembershipResponse {
+  // The requested organization membership.
+  OrganizationMembership membership = 1;
+}
+
+// UpdateOrganizationMembershipRequest represents a request to update an
+// organization membership.
+message UpdateOrganizationMembershipRequest {
+  // The membership fields to update.
+  OrganizationMembership membership = 1 [(google.api.field_behavior) = REQUIRED];
+  // The update mask specifies the subset of fields that should be modified.
+  //
+  // For more information about this field, see
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#field-mask.
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// UpdateOrganizationMembershipResponse contains the updated membership.
+message UpdateOrganizationMembershipResponse {
+  // The updated membership resource.
+  OrganizationMembership membership = 1;
+}
+
+// DeleteOrganizationMembershipRequest represents a request to delete an
+// organization membership.
+message DeleteOrganizationMembershipRequest {
+  // The resource name of the membership, which allows its access by
+  // organization and user ID.
+  // - Format: `organizations/{organization.id}/memberships/{user.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/OrganizationMembership"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_membership_name"}
+    }
+  ];
+}
+
+// DeleteOrganizationMembershipResponse is an empty response.
+message DeleteOrganizationMembershipResponse {}
+
+// StripeSubscriptionDetail describes the details of a subscription in Stripe.
+message StripeSubscriptionDetail {
+  // Enumerates the status types for the user's subscription.
+  enum Status {
+    // Unspecified status.
+    STATUS_UNSPECIFIED = 0;
+    // Incomplete.
+    STATUS_INCOMPLETE = 1;
+    // Incomplete Expired.
+    STATUS_INCOMPLETE_EXPIRED = 2;
+    // Trialing.
+    STATUS_TRIALING = 3;
+    // Active.
+    STATUS_ACTIVE = 4;
+    // Past due.
+    STATUS_PAST_DUE = 5;
+    // Canceled.
+    STATUS_CANCELED = 6;
+    // Unpaid.
+    STATUS_UNPAID = 7;
+    // Paused.
+    STATUS_PAUSED = 8;
+  }
+
+  // Product name associated with the subscription in Stripe.
+  string product_name = 1;
+  // Unique identifier for the subscription.
+  string id = 2;
+  // Identifier for the specific item within the subscription.
+  string item_id = 3;
+  // Price of the subscription.
+  float price = 4;
+  // Optional timestamp indicating when the subscription was canceled, if applicable.
+  optional int32 canceled_at = 5;
+  // Optional timestamp indicating when the trial ended, if applicable.
+  optional int32 trial_end = 6;
+  // Status of the subscription.
+  Status status = 7;
+}
+
+// UserSubscription details describe the plan (i.e., features) a user has access to.
+message UserSubscription {
+  // Enumerates the plan types for the user subscription.
+  enum Plan {
+    // Unspecified plan.
+    PLAN_UNSPECIFIED = 0;
+    // Freemium plan.
+    PLAN_FREEMIUM = 1;
+    // Pro plan.
+    PLAN_PRO = 2;
+  }
+
+  // Plan identifier.
+  Plan plan = 1;
+  // Details of the associated Stripe subscription.
+  StripeSubscriptionDetail detail = 2;
+}
+
+// OrganizationSubscription details describe the plan (i.e., features) an organization has access to.
+message OrganizationSubscription {
+  // Enumerates the plan types for the organization subscription.
+  enum Plan {
+    // Unspecified plan.
+    PLAN_UNSPECIFIED = 0;
+    // Freemium plan.
+    PLAN_FREEMIUM = 1;
+    // Team plan.
+    PLAN_TEAM = 2;
+    // Enterprise plan.
+    PLAN_ENTERPRISE = 3;
+  }
+
+  // Plan identifier.
+  Plan plan = 1;
+  // Details of the associated Stripe subscription.
+  StripeSubscriptionDetail detail = 2;
+  // Maximum number of seats allowed.
+  int32 max_seats = 3;
+  // Number of used seats within the organization subscription.
+  int32 used_seats = 4;
+}
+
+// GetAuthenticatedUserSubscriptionRequest represents a query to fetch the subscription
+// details of the authenticated user.
+message GetAuthenticatedUserSubscriptionRequest {}
+
+// GetAuthenticatedUserSubscriptionResponse contains the requested subscription.
+message GetAuthenticatedUserSubscriptionResponse {
+  // The subscription resource.
+  UserSubscription subscription = 1;
+}
+
+// GetOrganizationSubscriptionRequest represents a query to fetch the
+// subscription details of an organization.
+message GetOrganizationSubscriptionRequest {
+  // The parent resource, i.e., the organization to which the subscription
+  // refers.
+  // Format: `organizations/{organization.id}`.
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Organization"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_name"}
+    }
+  ];
+}
+
+// GetOrganizationSubscriptionResponse contains the requested subscription.
+message GetOrganizationSubscriptionResponse {
+  // The subscription resource.
+  OrganizationSubscription subscription = 1;
+}
+
+// GetUserSubscriptionAdminRequest
+message GetUserSubscriptionAdminRequest {
+  // parent
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/User"}
+  ];
+}
+
+// GetUserSubscriptionAdminResponse
+message GetUserSubscriptionAdminResponse {
+  // Subscription
+  UserSubscription subscription = 1;
+}
+
+// GetOrganizationSubscriptionAdminRequest
+message GetOrganizationSubscriptionAdminRequest {
+  // parent
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {child_type: "api.instill.tech/Organization"}
+  ];
+}
+
+// GetOrganizationSubscriptionAdminResponse
+message GetOrganizationSubscriptionAdminResponse {
+  // Subscription
+  OrganizationSubscription subscription = 1;
+}

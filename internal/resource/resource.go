@@ -62,7 +62,10 @@ type Namespace struct {
 	NsUID  uuid.UUID
 }
 
-func (ns Namespace) String() string {
+func (ns Namespace) Name() string {
+	return fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)
+}
+func (ns Namespace) Permalink() string {
 	return fmt.Sprintf("%s/%s", ns.NsType, ns.NsUID.String())
 }
 

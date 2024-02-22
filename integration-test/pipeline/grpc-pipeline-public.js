@@ -46,8 +46,8 @@ export function CheckCreate(metadata) {
         (r) => r.message.pipeline.description === reqBody.description,
       "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline recipe is valid":
         (r) => helper.validateRecipeGRPC(r.message.pipeline.recipe, false),
-      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline owner is UUID":
-        (r) => helper.isValidOwner(r.message.pipeline.user),
+      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline owner is valid":
+        (r) => helper.isValidOwnerGRPC(r.message.pipeline.owner),
       "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline create_time":
         (r) =>
           new Date(r.message.pipeline.createTime).getTime() >
@@ -492,8 +492,8 @@ export function CheckGet(metadata) {
           (r) => r.message.pipeline.description === reqBody.description,
         [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline recipe is null`]:
           (r) => r.message.pipeline.recipe === null,
-        [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline owner is UUID`]:
-          (r) => helper.isValidOwner(r.message.pipeline.user),
+        [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline owner is invalid`]:
+          (r) => r.message.pipeline.owner === undefined,
       }
     );
 
@@ -511,8 +511,8 @@ export function CheckGet(metadata) {
           (r) => r.status === grpc.StatusOK,
         [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline recipe is null`]:
           (r) => r.message.pipeline.recipe !== null,
-        [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline owner is UUID`]:
-          (r) => helper.isValidOwner(r.message.pipeline.user),
+        [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline owner is valid`]:
+          (r) => helper.isValidOwnerGRPC(r.message.pipeline.owner),
       }
     );
 

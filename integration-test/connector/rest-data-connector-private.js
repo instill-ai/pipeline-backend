@@ -73,20 +73,20 @@ export function CheckList(header) {
         check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_BASIC`), {
             "GET /v1beta/admin/connectors?page_size=1&view=VIEW_BASIC response status 200": (r) => r.status === 200,
             "GET /v1beta/admin/connectors?page_size=1&view=VIEW_BASIC response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
-            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_BASIC response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user ),
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_BASIC response connectors[0].owner is invalid": (r) => r.json().connectors[0].owner === undefined,
         });
 
         check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1&view=VIEW_FULL`), {
             "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response status 200": (r) => r.status === 200,
             "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].configuration is not null": (r) => r.json().connectors[0].configuration !== null,
             "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].connector_definition_detail is not null": (r) => r.json().connectors[0].connector_definition_detail !== null,
-            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user ),
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].owner is valid": (r) => helper.isValidOwnerHTTP(r.json().connectors[0].owner ),
         });
 
         check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`), {
             "GET /v1beta/admin/connectors?page_size=1 response status 200": (r) => r.status === 200,
             "GET /v1beta/admin/connectors?page_size=1 response connectors[0].configuration is null": (r) => r.json().connectors[0].configuration === null,
-            "GET /v1beta/admin/connectors?page_size=1 response connectors[0].owner is UUID": (r) => helper.isValidOwner(r.json().connectors[0].user ),
+            "GET /v1beta/admin/connectors?page_size=1 response connectors[0].owner is invalid": (r) => r.json().connectors[0].owner === undefined,
         });
 
         check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=${limitedRecords.json().total_size}`), {
@@ -121,7 +121,7 @@ export function CheckLookUp(header) {
             [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response status 200`]: (r) => r.status === 200,
             [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector uid`]: (r) => r.json().connector.uid === resCSVDst.json().connector.uid,
             [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector connector_definition_name`]: (r) => r.json().connector.connector_definition_name === constant.csvDstDefRscName,
-            [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector owner is UUID`]: (r) => helper.isValidOwner(r.json().connector.user),
+            [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector owner is invalid`]: (r) => r.json().connector.owner === undefined,
         });
 
         check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {

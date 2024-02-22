@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package vdp.pipeline.v1beta;
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// These options define the OpenAPI definition document information.
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+info: {
+title: "💧 VDP";
+description: "VDP endpoints to manage pipeline resources";
+{{$info}}
+      };
+base_path: "/vdp";
+{{$conf}}
+};

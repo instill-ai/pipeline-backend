@@ -2,40 +2,102 @@ syntax = "proto3";
 
 package vdp.pipeline.v1beta;
 
-// Role
+import "google/api/field_behavior.proto";
+
+// Role describes the permissions a user has over a resource.
 enum Role {
-  // ROLE: UNSPECIFIED
+  // Unspecified, equivalent to VIEWER.
   ROLE_UNSPECIFIED = 0;
-  // Role: Viewer
+  // Viewers can see the resource properties.
   ROLE_VIEWER = 1;
-  // Role: Executor
+  // Executors can execute the resource (e.g. trigger a pipeline).
   ROLE_EXECUTOR = 2;
 }
 
-// Permission
-message Permission {
-  // User
+// Sharing contains the information to share a resource with other users.
+//
+// For more information, see [Share Pipelines](https://www.instill.tech/docs/latest/vdp/share).
+message Sharing {
+  // Describes the sharing configuration with a given user.
   message User {
-    // enabled
+    // Defines whether the sharing option with this user is enabled.
     bool enabled = 1;
-    // role
-    Role role = 4;
-  }
-  // Share Code
-  message ShareCode {
-    // user
-    string user = 1;
-    // user
-    string code = 2;
-    // enabled
-    bool enabled = 3;
-    // role
+    // Defines the role the user will have over the resource.
     Role role = 4;
   }
 
-  // users
+  // ShareCode describes a sharing configuration through a link.
+  message ShareCode {
+    // Defines which users will be able to access the resource through the
+    // code. This is a pattern that will be checked against user names.
+    //
+    // For now, the only accepted value is `*/*`.
+    string user = 1;
+    // The public URL that allows users to access the resource.
+    string code = 2;
+    // Defines whether the sharing option via link is enabled.
+    bool enabled = 3;
+    // Defines the role users will have over the resource.
+    Role role = 4;
+  }
+
+  // Defines sharing rules for a set of user resource names.
+  //
+  // Each key in this object should contain a pattern that can be matched
+  // against user names.
+  //
+  // Each value is a user sharing configuration.
+  //
+  // **NOTE**: For now, the only accepted key is `*/*`.
   map<string, User> users = 1;
 
-  // shared code
+  // Defines the configuration to share a resource via link.
   ShareCode share_code = 2;
+}
+
+// Permission defines how a resource can be used.
+message Permission {
+  // Defines whether the resource can be modified.
+  bool can_edit = 1;
+  // Defines whether the resource can be executed.
+  bool can_trigger = 2;
+}
+
+// CheckNameRequest represents a request to verify if a name is
+// available.
+message CheckNameRequest {
+  // The name of the resource to be checked. For the moment, only pipeline and
+  // connector names can be checked. The following formats are accepted:
+  // - `users/{user.id}/pipelines/{pipeline.id}`
+  // - `users/{user.id}/connectors/{connector.id}`
+  // - `organizations/{organization.id}/pipelines/{pipeline.id}`
+  // - `organizations/{organization.id}/connectors/{connector.id}`
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// CheckNameResponse contains the availability of a resource name.
+message CheckNameResponse {
+  // Name defines the availability of a resource name.
+  enum Name {
+    // Unspecified.
+    NAME_UNSPECIFIED = 0;
+    // Available.
+    NAME_AVAILABLE = 1;
+    // Unavailable.
+    NAME_UNAVAILABLE = 2;
+  }
+
+  // The availability of the requested name.
+  Name availability = 1;
+}
+
+// ComponentTask contains information about a task that a component can
+// perform.
+message ComponentTask {
+  // The task name, e.g. `TASK_TEXT_GENERATION`.
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Title is the task name in a human-friendly format.
+  string title = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Description contains information about the task.
+  string description = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
 }

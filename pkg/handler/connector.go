@@ -366,8 +366,6 @@ func (h *PublicHandler) createNamespaceConnector(ctx context.Context, connector 
 		return nil, st.Err()
 	}
 
-	connector.OwnerName = req.GetParent()
-
 	connectorCreated, err = h.service.CreateNamespaceConnector(ctx, ns, authUser, connector)
 
 	if err != nil {
