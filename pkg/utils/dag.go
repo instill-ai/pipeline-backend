@@ -11,8 +11,8 @@ import (
 	"go/parser"
 	"go/token"
 
+	"github.com/PaesslerAG/jsonpath"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/oliveagle/jsonpath"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -171,7 +171,7 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 
 func traverseBinding(bindings any, path string) (any, error) {
 
-	res, err := jsonpath.JsonPathLookup(bindings, "$."+path)
+	res, err := jsonpath.Get("$."+path, bindings)
 	if err != nil {
 		// check primitive value
 		var ret any
@@ -498,6 +498,29 @@ func EvalCondition(expr ast.Expr, value map[string]any) (any, error) {
 		}
 
 		return value[e.Name], nil
+
+	case *ast.IndexExpr:
+		v, err := EvalCondition(e.X, value)
+		if err != nil {
+			return nil, err
+		}
+		switch idxVal := e.Index.(type) {
+		case *ast.BasicLit:
+			// handle arr[index]
+			if idxVal.Kind == token.INT {
+				index, err := strconv.Atoi(idxVal.Value)
+				if err != nil {
+					return nil, err
+				}
+				return v.([]any)[index], nil
+			}
+			// handle obj[key]
+			if idxVal.Kind == token.STRING {
+				// key: remove ""
+				key := idxVal.Value[1 : len(idxVal.Value)-1]
+				return v.(map[string]any)[key], nil
+			}
+		}
 
 	}
 	return false, fmt.Errorf("condition error")
