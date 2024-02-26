@@ -12,7 +12,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
@@ -20,32 +19,6 @@ import (
 
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
-
-func (h *PrivateHandler) LookUpOperatorDefinitionAdmin(ctx context.Context, req *pipelinePB.LookUpOperatorDefinitionAdminRequest) (resp *pipelinePB.LookUpOperatorDefinitionAdminResponse, err error) {
-
-	logger, _ := logger.GetZapLogger(ctx)
-
-	resp = &pipelinePB.LookUpOperatorDefinitionAdminResponse{}
-
-	var connID string
-
-	if connID, err = resource.GetRscNameID(req.GetPermalink()); err != nil {
-		return resp, err
-	}
-
-	dbDef, err := h.service.GetOperatorDefinitionByID(ctx, connID)
-	if err != nil {
-		return resp, err
-	}
-	resp.OperatorDefinition = proto.Clone(dbDef).(*pipelinePB.OperatorDefinition)
-	if parseView(int32(*req.GetView().Enum())) == service.ViewBasic {
-		resp.OperatorDefinition.Spec = nil
-	}
-	resp.OperatorDefinition.Name = fmt.Sprintf("operator-definitions/%s", resp.OperatorDefinition.GetId())
-
-	logger.Info("GetOperatorDefinitionAdmin")
-	return resp, nil
-}
 
 func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.ListOperatorDefinitionsRequest) (resp *pipelinePB.ListOperatorDefinitionsResponse, err error) {
 	ctx, span := tracer.Start(ctx, "ListOperatorDefinitions",

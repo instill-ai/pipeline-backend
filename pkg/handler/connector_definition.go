@@ -12,25 +12,6 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-func (h *PrivateHandler) LookUpConnectorDefinitionAdmin(ctx context.Context, req *pipelinePB.LookUpConnectorDefinitionAdminRequest) (resp *pipelinePB.LookUpConnectorDefinitionAdminResponse, err error) {
-
-	resp = &pipelinePB.LookUpConnectorDefinitionAdminResponse{}
-
-	connUID, err := resource.GetRscPermalinkUID(req.GetPermalink())
-	if err != nil {
-		return resp, err
-	}
-
-	// TODO add a service wrapper
-	def, err := h.service.GetConnectorDefinitionByUIDAdmin(ctx, connUID, parseView(int32(*req.GetView().Enum())))
-	if err != nil {
-		return resp, err
-	}
-	resp.ConnectorDefinition = def
-
-	return resp, nil
-}
-
 func (h *PublicHandler) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.ListConnectorDefinitionsRequest) (resp *pipelinePB.ListConnectorDefinitionsResponse, err error) {
 	ctx, span := tracer.Start(ctx, "ListConnectorDefinitions",
 		trace.WithSpanKind(trace.SpanKindServer))
