@@ -309,39 +309,26 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				if statuses[idx][comp.ID].Started {
 					compInputTemplate := comp.Configuration
 
-					// TODO: remove this hardcode injection
-					// blockchain-numbers
+					// TODO: remove this hardcode injection (application-numbers)
 					if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
-						recipeByte, err := json.Marshal(param.PipelineRecipe)
+						metadata, err := structpb.NewValue(map[string]interface{}{
+							"pipeline": map[string]interface{}{
+								"uid":    "${global.pipeline.uid}",
+								"recipe": "${global.pipeline.recipe}",
+							},
+							"owner": map[string]interface{}{
+								"uid": "${global.owner.uid}",
+							},
+						})
 						if err != nil {
 							return nil, err
 						}
-						recipePb := &structpb.Struct{}
-						err = protojson.Unmarshal(recipeByte, recipePb)
-						if err != nil {
-							return nil, err
+						if compInputTemplate.Fields["input"].GetStructValue() == nil {
+							compInputTemplate.Fields["input"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
 						}
-
-						// TODO: remove this hardcode injection
-						if comp.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
-							metadata, err := structpb.NewValue(map[string]interface{}{
-								"pipeline": map[string]interface{}{
-									"uid":    "${global.pipeline.uid}",
-									"recipe": "${global.pipeline.recipe}",
-								},
-								"owner": map[string]interface{}{
-									"uid": "${global.owner.uid}",
-								},
-							})
-							if err != nil {
-								return nil, err
-							}
-							if compInputTemplate.Fields["input"].GetStructValue() == nil {
-								compInputTemplate.Fields["input"] = structpb.NewStructValue(&structpb.Struct{Fields: map[string]*structpb.Value{}})
-							}
-							compInputTemplate.Fields["input"].GetStructValue().Fields["metadata"] = metadata
-						}
+						compInputTemplate.Fields["input"].GetStructValue().Fields["metadata"] = metadata
 					}
+
 					compInputTemplateJSON, err := protojson.Marshal(compInputTemplate.Fields["input"].GetStructValue())
 					if err != nil {
 						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
