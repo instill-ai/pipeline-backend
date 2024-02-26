@@ -101,3 +101,21 @@ message ComponentTask {
   // Description contains information about the task.
   string description = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
+
+// ComponentType defines the component type based on its task features.
+enum ComponentType {
+  // Unspecified.
+  COMPONENT_TYPE_UNSPECIFIED = 0;
+  // Connect with an AI model.
+  COMPONENT_TYPE_CONNECTOR_AI = 1;
+  // Connect with a remote data source.
+  COMPONENT_TYPE_CONNECTOR_DATA = 2;
+  // 3 Is reserved for the connector blockchain type, deprecated by
+  // COMPONENT_TYPE_CONNECTOR_APPLICATION.
+  reserved 3;
+  // Manipulate data.
+  COMPONENT_TYPE_OPERATOR = 4;
+  // Connect with an external application.
+  COMPONENT_TYPE_CONNECTOR_APPLICATION = 5;
+
+}

@@ -9,8 +9,7 @@ import "google/api/visibility.proto";
 // OpenAPI definition
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "../../../vdp/pipeline/v1beta/connector.proto";
-import "../../../vdp/pipeline/v1beta/connector_definition.proto";
-import "../../../vdp/pipeline/v1beta/operator_definition.proto";
+import "../../../vdp/pipeline/v1beta/component_definition.proto";
 import "../../../vdp/pipeline/v1beta/pipeline.proto";
 
 // PipelinePrivateService defines private methods to interact with Pipeline
@@ -35,30 +34,12 @@ service PipelinePrivateService {
     option (google.api.method_signature) = "permalink";
   }
 
-  // Get an operator definition by UID (admin only)
-  //
-  // This is a *private* method that allows admin users to access an operator
-  // definition by its UID.
-  rpc LookUpOperatorDefinitionAdmin(LookUpOperatorDefinitionAdminRequest) returns (LookUpOperatorDefinitionAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/{permalink=operator-definitions/*}/lookUp"};
-    option (google.api.method_signature) = "permalink";
-  }
-
   // List pipeline releases (admin only)
   //
   // This is a *private* method that allows admin users to list *all* pipeline
   // releases.
   rpc ListPipelineReleasesAdmin(ListPipelineReleasesAdminRequest) returns (ListPipelineReleasesAdminResponse) {
     option (google.api.http) = {get: "/v1beta/admin/releases"};
-  }
-
-  // Get a connector definition by UID (admin only)
-  //
-  // This is a *private* method that allows admin users to access a connector
-  // definition by its UID.
-  rpc LookUpConnectorDefinitionAdmin(LookUpConnectorDefinitionAdminRequest) returns (LookUpConnectorDefinitionAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/{permalink=connector-definitions/*}/lookUp"};
-    option (google.api.method_signature) = "permalink";
   }
 
   // List connectors (admin only)

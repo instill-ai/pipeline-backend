@@ -17,9 +17,8 @@ import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 // VDP definitions
 import "../../../vdp/pipeline/v1beta/common.proto";
+import "../../../vdp/pipeline/v1beta/component_definition.proto";
 import "../../../vdp/pipeline/v1beta/connector.proto";
-import "../../../vdp/pipeline/v1beta/connector_definition.proto";
-import "../../../vdp/pipeline/v1beta/operator_definition.proto";
 
 // LivenessRequest represents a request to check a service liveness status
 message LivenessRequest {
@@ -43,20 +42,6 @@ message ReadinessRequest {
 message ReadinessResponse {
   // HealthCheckResponse message
   common.healthcheck.v1beta.HealthCheckResponse health_check_response = 1;
-}
-
-// ComponentType defines the component type based on its task features.
-enum ComponentType {
-  // Unspecified.
-  COMPONENT_TYPE_UNSPECIFIED = 0;
-  // Connect with an AI model.
-  COMPONENT_TYPE_CONNECTOR_AI = 1;
-  // Connect with a remote data source.
-  COMPONENT_TYPE_CONNECTOR_DATA = 2;
-  // Connect with a blockchain service.
-  COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN = 3;
-  // Manipulate data.
-  COMPONENT_TYPE_OPERATOR = 4;
 }
 
 // Component is the fundamental building block in pipelines.

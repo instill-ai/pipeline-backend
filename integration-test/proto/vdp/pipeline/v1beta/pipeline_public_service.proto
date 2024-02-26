@@ -11,8 +11,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 // VDP definitions
 import "../../../vdp/pipeline/v1beta/common.proto";
 import "../../../vdp/pipeline/v1beta/connector.proto";
-import "../../../vdp/pipeline/v1beta/connector_definition.proto";
-import "../../../vdp/pipeline/v1beta/operator_definition.proto";
+import "../../../vdp/pipeline/v1beta/component_definition.proto";
 import "../../../vdp/pipeline/v1beta/pipeline.proto";
 
 // VDP
@@ -623,6 +622,15 @@ service PipelinePublicService {
   // Returns a paginated list of operator definitions.
   rpc ListOperatorDefinitions(ListOperatorDefinitionsRequest) returns (ListOperatorDefinitionsResponse) {
     option (google.api.http) = {get: "/v1beta/operator-definitions"};
+  }
+
+  // List component definitions
+  //
+  // Returns a paginated list of component definitions, regardless their type.
+  // This offers a single source of truth, with pagination and filter
+  // capabilities, for the components that might be used in a VDP pipeline.
+  rpc ListComponentDefinitions(ListComponentDefinitionsRequest) returns (ListComponentDefinitionsResponse) {
+    option (google.api.http) = {get: "/v1beta/component-definitions"};
   }
 
   // Get operator definition
