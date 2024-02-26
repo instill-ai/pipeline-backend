@@ -10,10 +10,10 @@ import {
 import * as constant from "./const.js";
 import * as helper from "./helper.js";
 
-export function CheckList(header) {
+export function CheckList(data) {
   group("Pipelines API: List pipelines by admin", () => {
     check(
-      http.request("GET", `${pipelinePrivateHost}/v1beta/admin/pipelines`, null, header),
+      http.request("GET", `${pipelinePrivateHost}/v1beta/admin/pipelines`, null, data.header),
       {
         [`GET /v1beta/admin/pipelines response status is 200`]: (r) =>
           r.status === 200,
@@ -44,7 +44,7 @@ export function CheckList(header) {
           "POST",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
           JSON.stringify(reqBody),
-          header
+          data.header
         ),
         {
           [`POST /v1beta/${constant.namespace}/pipelines x${reqBodies.length} response status is 201`]:
@@ -203,7 +203,7 @@ export function CheckList(header) {
           "DELETE",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
           JSON.stringify(reqBody),
-          header
+          data.header
         ),
         {
           [`DELETE /v1beta/${constant.namespace}/pipelines x${reqBodies.length} response status is 204`]:
@@ -214,7 +214,7 @@ export function CheckList(header) {
   });
 }
 
-export function CheckLookUp(header) {
+export function CheckLookUp(data) {
   group("Pipelines API: Look up a pipeline by uid by admin", () => {
     var reqBody = Object.assign(
       {
@@ -228,7 +228,7 @@ export function CheckLookUp(header) {
       "POST",
       `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
       JSON.stringify(reqBody),
-      header
+      data.header
     );
 
     check(res, {
@@ -256,7 +256,7 @@ export function CheckLookUp(header) {
         "DELETE",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
-        header
+        data.header
       ),
       {
         [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>

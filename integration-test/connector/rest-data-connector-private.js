@@ -16,7 +16,7 @@ import {
 import * as constant from "./const.js"
 import * as helper from "./helper.js"
 
-export function CheckList(header) {
+export function CheckList(data) {
 
     group("Connector API: List destination connectors by admin", () => {
 
@@ -41,7 +41,7 @@ export function CheckList(header) {
         // Create connectors
         for (const reqBody of reqBodies) {
             var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
-                JSON.stringify(reqBody), header)
+                JSON.stringify(reqBody), data.header)
             check(resCSVDst, {
                 [`POST /v1beta/${constant.namespace}/connectors x${reqBodies.length} response status 201`]: (r) => r.status === 201,
             });
@@ -54,7 +54,7 @@ export function CheckList(header) {
         });
 
         var limitedRecords = http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA`)
-        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?page_size=0`, null, header), {
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?page_size=0`, null, data.header), {
             "GET /v1beta/admin/connectors?page_size=0 response status is 200": (r) => r.status === 200,
             "GET /v1beta/admin/connectors?page_size=0 response all records": (r) => r.json().connectors.length === limitedRecords.json().connectors.length,
         });
@@ -65,7 +65,7 @@ export function CheckList(header) {
         });
 
         var pageRes = http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`)
-        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token}`, null, header), {
+        check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token}`, null, data.header), {
             [`GET /v1beta/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response status is 200`]: (r) => r.status === 200,
             [`GET /v1beta/admin/connectors?page_size=1&page_token=${pageRes.json().next_page_token} response connectors size 1`]: (r) => r.json().connectors.length === 1,
         });
@@ -80,7 +80,7 @@ export function CheckList(header) {
             "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response status 200": (r) => r.status === 200,
             "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].configuration is not null": (r) => r.json().connectors[0].configuration !== null,
             "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].connector_definition_detail is not null": (r) => r.json().connectors[0].connector_definition_detail !== null,
-            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].owner is valid": (r) => helper.isValidOwnerHTTP(r.json().connectors[0].owner ),
+            "GET /v1beta/admin/connectors?page_size=1&view=VIEW_FULL response connectors[0].owner is valid": (r) => helper.isValidOwner(r.json().connectors[0].owner, data.expectedOwner),
         });
 
         check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors?filter=connector_type=CONNECTOR_TYPE_DATA&page_size=1`), {
@@ -96,14 +96,14 @@ export function CheckList(header) {
 
         // Delete the destination connectors
         for (const reqBody of reqBodies) {
-            check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${reqBody.id}`, null, header), {
+            check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${reqBody.id}`, null, data.header), {
                 [`DELETE /v1beta/admin/connectors x${reqBodies.length} response status is 204`]: (r) => r.status === 204,
             });
         }
     });
 }
 
-export function CheckLookUp(header) {
+export function CheckLookUp(data) {
 
     group("Connector API: Look up destination connectors by UID by admin", () => {
 
@@ -115,7 +115,7 @@ export function CheckLookUp(header) {
         }
 
         var resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
-            JSON.stringify(csvDstConnector), header)
+            JSON.stringify(csvDstConnector), data.header)
 
         check(http.request("GET", `${pipelinePrivateHost}/v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp`), {
             [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response status 200`]: (r) => r.status === 200,
@@ -124,7 +124,7 @@ export function CheckLookUp(header) {
             [`GET /v1beta/admin/connectors/${resCSVDst.json().connector.uid}/lookUp response connector owner is invalid`]: (r) => r.json().connector.owner === undefined,
         });
 
-        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, header), {
+        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, data.header), {
             [`DELETE /v1beta/admin/connectors/${resCSVDst.json().connector.id} response status 204`]: (r) => r.status === 204,
         });
 

@@ -14,7 +14,7 @@ import * as helper from "./helper.js"
 const client = new grpc.Client();
 client.load(['../proto/vdp/pipeline/v1beta'], 'pipeline_public_service.proto');
 
-export function CheckCreate(metadata) {
+export function CheckCreate(data) {
 
     group(`Connector API: Create destination connectors [with random "Instill-User-Uid" header]`, () => {
 
@@ -64,7 +64,7 @@ export function CheckCreate(metadata) {
 
 }
 
-export function CheckList(metadata) {
+export function CheckList(data) {
 
     group(`Connector API: List destination connectors [with random "Instill-User-Uid" header]`, () => {
 
@@ -84,7 +84,7 @@ export function CheckList(metadata) {
     });
 }
 
-export function CheckGet(metadata) {
+export function CheckGet(data) {
 
     group(`Connector API: Get destination connectors by ID [with random "Instill-User-Uid" header]`, () => {
 
@@ -102,7 +102,7 @@ export function CheckGet(metadata) {
         var resCSVDst = client.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
             parent: `${constant.namespace}`,
             connector: csvDstConnector
-        }, metadata)
+        }, data.metadata)
 
         // client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
         //     name: `${constant.namespace}/connectors/${csvDstConnector.id}`
@@ -123,7 +123,7 @@ export function CheckGet(metadata) {
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
-        }, metadata), {
+        }, data.metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${resCSVDst.message.connector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
         });
 
@@ -131,7 +131,7 @@ export function CheckGet(metadata) {
     });
 }
 
-export function CheckUpdate(metadata) {
+export function CheckUpdate(data) {
 
     group(`Connector API: Update destination connectors [with random "Instill-User-Uid" header]`, () => {
 
@@ -149,11 +149,11 @@ export function CheckUpdate(metadata) {
         client.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
             parent: `${constant.namespace}`,
             connector: csvDstConnector
-        }, metadata)
+        }, data.metadata)
 
         client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata)
+        }, data.metadata)
 
         var csvDstConnectorUpdate = {
             "id": csvDstConnector.id,
@@ -176,7 +176,7 @@ export function CheckUpdate(metadata) {
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata), {
+        }, data.metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${csvDstConnector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
         });
 
@@ -184,7 +184,7 @@ export function CheckUpdate(metadata) {
     });
 }
 
-export function CheckLookUp(metadata) {
+export function CheckLookUp(data) {
 
     group(`Connector API: Look up destination connectors by UID [with random "Instill-User-Uid" header]`, () => {
 
@@ -202,11 +202,11 @@ export function CheckLookUp(metadata) {
         var resCSVDst = client.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
             parent: `${constant.namespace}`,
             connector: csvDstConnector
-        }, metadata)
+        }, data.metadata)
 
         client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata)
+        }, data.metadata)
 
         // Cannot look up destination connector of a non-exist user
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/LookUpConnector', {
@@ -217,7 +217,7 @@ export function CheckLookUp(metadata) {
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata), {
+        }, data.metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${csvDstConnector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
         });
 
@@ -225,7 +225,7 @@ export function CheckLookUp(metadata) {
     });
 }
 
-export function CheckState(metadata) {
+export function CheckState(data) {
 
     group(`Connector API: Change state destination connectors [with random "Instill-User-Uid" header]`, () => {
 
@@ -243,11 +243,11 @@ export function CheckState(metadata) {
         var resCSVDst = client.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
             parent: `${constant.namespace}`,
             connector: csvDstConnector
-        }, metadata)
+        }, data.metadata)
 
         client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata)
+        }, data.metadata)
 
         // Cannot connect destination connector of a non-exist user
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
@@ -265,7 +265,7 @@ export function CheckState(metadata) {
 
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/WatchUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
-        }, metadata), {
+        }, data.metadata), {
             "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV destination connector STATE_CONNECTED": (r) => r.message.state === "STATE_CONNECTED",
         })
 
@@ -299,7 +299,7 @@ export function CheckState(metadata) {
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata), {
+        }, data.metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${csvDstConnector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
         });
 
@@ -307,7 +307,7 @@ export function CheckState(metadata) {
     });
 }
 
-export function CheckRename(metadata) {
+export function CheckRename(data) {
 
     group(`Connector API: Rename destination connectors [with random "Instill-User-Uid" header]`, () => {
 
@@ -325,11 +325,11 @@ export function CheckRename(metadata) {
         var resCSVDst = client.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
             parent: `${constant.namespace}`,
             connector: csvDstConnector
-        }, metadata)
+        }, data.metadata)
 
         client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata)
+        }, data.metadata)
 
         let new_id = `some_id_not_${resCSVDst.message.connector.id}`
 
@@ -343,7 +343,7 @@ export function CheckRename(metadata) {
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata), {
+        }, data.metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${csvDstConnector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
         });
 
@@ -351,7 +351,7 @@ export function CheckRename(metadata) {
     });
 }
 
-export function CheckExecute(metadata) {
+export function CheckExecute(data) {
 
     group(`Connector API: Write destination connectors [with random "Instill-User-Uid" header]`, () => {
 
@@ -375,15 +375,15 @@ export function CheckExecute(metadata) {
         resCSVDst = client.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
             parent: `${constant.namespace}`,
             connector: csvDstConnector
-        }, metadata)
+        }, data.metadata)
 
         client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata)
+        }, data.metadata)
 
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/WatchUserConnector', {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
-        }, metadata), {
+        }, data.metadata), {
             "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV destination connector STATE_CONNECTED": (r) => r.message.state === "STATE_CONNECTED",
         })
 
@@ -400,7 +400,7 @@ export function CheckExecute(metadata) {
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
             name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
-        }, metadata), {
+        }, data.metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${resCSVDst.message.connector.id} response (classification) StatusOK`]: (r) => r.status === grpc.StatusOK,
         });
 
@@ -408,7 +408,7 @@ export function CheckExecute(metadata) {
     });
 }
 
-export function CheckTest(metadata) {
+export function CheckTest(data) {
 
     group(`Connector API: Test destination connectors' connection [with random "Instill-User-Uid" header]`, () => {
 
@@ -426,11 +426,11 @@ export function CheckTest(metadata) {
         var resCSVDst = client.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
             parent: `${constant.namespace}`,
             connector: csvDstConnector
-        }, metadata)
+        }, data.metadata)
 
         client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata)
+        }, data.metadata)
 
         // Cannot test destination connector of a non-exist user
         check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/TestUserConnector', {
@@ -441,7 +441,7 @@ export function CheckTest(metadata) {
 
         check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata), {
+        }, data.metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${csvDstConnector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
         });
 

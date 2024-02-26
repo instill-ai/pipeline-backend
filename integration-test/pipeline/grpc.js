@@ -10,8 +10,10 @@ import * as trigger from "./grpc-trigger.js";
 import * as triggerAsync from "./grpc-trigger-async.js";
 
 const client = new grpc.Client();
+const mgmtClient = new grpc.Client();
 
 client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
+client.load(["../proto/core/mgmt/v1beta"], "mgmt_public_service.proto");
 
 import * as constant from "./const.js";
 
@@ -25,6 +27,10 @@ export let options = {
 
 export function setup() {
   client.connect(constant.pipelineGRPCPublicHost, {
+    plaintext: true,
+    timeout: "300s",
+  });
+  mgmtClient.connect(constant.mgmtGRPCPublicHost, {
     plaintext: true,
     timeout: "300s",
   });
@@ -116,11 +122,17 @@ export function setup() {
     }
   );
 
+  var resp = client.invoke(
+    "core.mgmt.v1beta.MgmtPublicService/GetAuthenticatedUser",
+    {},
+    metadata
+  );
   client.close();
-  return metadata
+  mgmtClient.close();
+  return {metadata: metadata, expectedOwner: resp.message.user};
 }
 
-export default function (metadata) {
+export default function (data) {
   /*
    * Pipelines API - API CALLS
    */
@@ -146,29 +158,29 @@ export default function (metadata) {
   }
 
   if (!constant.apiGatewayMode) {
-    pipelinePrivate.CheckList(metadata)
-    pipelinePrivate.CheckLookUp(metadata)
+    pipelinePrivate.CheckList(data)
+    pipelinePrivate.CheckLookUp(data)
 
   } else {
-    pipelineWithJwt.CheckCreate(metadata)
-    pipelineWithJwt.CheckList(metadata)
-    pipelineWithJwt.CheckGet(metadata)
-    pipelineWithJwt.CheckUpdate(metadata)
-    pipelineWithJwt.CheckRename(metadata)
-    pipelineWithJwt.CheckLookUp(metadata)
-    pipeline.CheckCreate(metadata)
-    pipeline.CheckList(metadata)
-    pipeline.CheckGet(metadata)
-    pipeline.CheckUpdate(metadata)
-    pipeline.CheckRename(metadata)
-    pipeline.CheckLookUp(metadata)
+    pipelineWithJwt.CheckCreate(data)
+    pipelineWithJwt.CheckList(data)
+    pipelineWithJwt.CheckGet(data)
+    pipelineWithJwt.CheckUpdate(data)
+    pipelineWithJwt.CheckRename(data)
+    pipelineWithJwt.CheckLookUp(data)
+    pipeline.CheckCreate(data)
+    pipeline.CheckList(data)
+    pipeline.CheckGet(data)
+    pipeline.CheckUpdate(data)
+    pipeline.CheckRename(data)
+    pipeline.CheckLookUp(data)
 
-    trigger.CheckTrigger(metadata);
-    triggerAsync.CheckTrigger(metadata);
+    trigger.CheckTrigger(data);
+    triggerAsync.CheckTrigger(data);
   }
 }
 
-export function teardown(metadata) {
+export function teardown(data) {
   group("Pipeline API: Delete all pipelines created by this test", () => {
     client.connect(constant.pipelineGRPCPublicHost, {
       plaintext: true,
@@ -180,7 +192,7 @@ export function teardown(metadata) {
         parent: `${constant.namespace}`,
         pageSize: 1000,
       },
-      metadata
+      data.metadata
     ).message.pipelines) {
       check(
         client.invoke(
@@ -188,7 +200,7 @@ export function teardown(metadata) {
           {
             name: `${constant.namespace}/pipelines/${pipeline.id}`,
           },
-          metadata
+          data.metadata
         ),
         {
           [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
@@ -213,7 +225,7 @@ export function teardown(metadata) {
           {
             name: `${constant.namespace}/connectors/${constant.dstCSVConnID1}`,
           },
-          metadata
+          data.metadata
         ),
         {
           [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector response StatusOK`]:
@@ -231,7 +243,7 @@ export function teardown(metadata) {
           {
             name: `${constant.namespace}/connectors/${constant.dstCSVConnID2}`,
           },
-          metadata
+          data.metadata
         ),
         {
           [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector response StatusOK`]:

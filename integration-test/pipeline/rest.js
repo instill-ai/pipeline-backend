@@ -85,11 +85,11 @@ export function setup() {
     http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID2}/connect`, {}, header)
 
   });
-
-  return header
+  var resp = http.request("GET", `${constant.mgmtPublicHost}/v1beta/user`, {}, {headers: {"Authorization": `Bearer ${loginResp.json().access_token}`}})
+  return {header: header, expectedOwner: resp.json().user}
 }
 
-export default function (header) {
+export default function (data) {
 
   /*
    * Pipelines API - API CALLS
@@ -105,46 +105,46 @@ export default function (header) {
   }
 
   if (!constant.apiGatewayMode) {
-    pipelinePrivate.CheckList(header)
-    pipelinePrivate.CheckLookUp(header)
+    pipelinePrivate.CheckList(data)
+    pipelinePrivate.CheckLookUp(data)
 
   } else {
 
-    pipelinePublicWithJwt.CheckCreate(header)
-    pipelinePublicWithJwt.CheckList(header)
-    pipelinePublicWithJwt.CheckGet(header)
-    pipelinePublicWithJwt.CheckUpdate(header)
-    pipelinePublicWithJwt.CheckRename(header)
-    pipelinePublicWithJwt.CheckLookUp(header)
-    pipelinePublic.CheckCreate(header)
-    pipelinePublic.CheckList(header)
-    pipelinePublic.CheckGet(header)
-    pipelinePublic.CheckUpdate(header)
-    pipelinePublic.CheckRename(header)
-    pipelinePublic.CheckLookUp(header)
+    pipelinePublicWithJwt.CheckCreate(data)
+    pipelinePublicWithJwt.CheckList(data)
+    pipelinePublicWithJwt.CheckGet(data)
+    pipelinePublicWithJwt.CheckUpdate(data)
+    pipelinePublicWithJwt.CheckRename(data)
+    pipelinePublicWithJwt.CheckLookUp(data)
+    pipelinePublic.CheckCreate(data)
+    pipelinePublic.CheckList(data)
+    pipelinePublic.CheckGet(data)
+    pipelinePublic.CheckUpdate(data)
+    pipelinePublic.CheckRename(data)
+    pipelinePublic.CheckLookUp(data)
 
-    trigger.CheckTrigger(header)
-    triggerAsync.CheckTrigger(header)
+    trigger.CheckTrigger(data)
+    triggerAsync.CheckTrigger(data)
 
   }
 }
 
-export function teardown(header) {
+export function teardown(data) {
 
   group("Connector API: Delete all pipelines created by this test", () => {
-    for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100`, null, header).json("pipelines")) {
-      check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipeline.id}`, null, header), {
+    for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100`, null, data.header).json("pipelines")) {
+      check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipeline.id}`, null, data.header), {
         [`DELETE /v1beta/${constant.namespace}/pipelines response status is 204`]: (r) => r.status === 204,
       });
     }
   });
   group("Connector Backend API: Delete the csv destination connector", function () {
-    check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID1}`, null, header), {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID1}`, null, data.header), {
       [`DELETE /v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID1} response status 204`]: (r) => r.status === 204,
     });
   });
   group("Connector Backend API: Delete the csv destination connector", function () {
-    check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID2}`, null, header), {
+    check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID2}`, null, data.header), {
       [`DELETE /v1beta/${constant.namespace}/connectors/${constant.dstCSVConnID2} response status 204`]: (r) => r.status === 204,
     });
   });

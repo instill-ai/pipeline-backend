@@ -6,7 +6,7 @@ import { pipelinePublicHost } from "./const.js";
 
 import * as constant from "./const.js";
 
-export function CheckCreate(header) {
+export function CheckCreate(data) {
   group(
     `Pipelines API: Create a pipeline [with random "Instill-User-Uid" header]`,
     () => {
@@ -35,7 +35,7 @@ export function CheckCreate(header) {
   );
 }
 
-export function CheckList(header) {
+export function CheckList(data) {
   group(`Pipelines API: List pipelines [with random "Instill-User-Uid" header]`, () => {
     // Cannot list pipelines of a non-exist user
     check(
@@ -53,7 +53,7 @@ export function CheckList(header) {
   });
 }
 
-export function CheckGet(header) {
+export function CheckGet(data) {
   group(`Pipelines API: Get a pipeline [with random "Instill-User-Uid" header]`, () => {
     var reqBody = Object.assign(
       {
@@ -69,7 +69,7 @@ export function CheckGet(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
@@ -97,7 +97,7 @@ export function CheckGet(header) {
         "DELETE",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
-        header
+        data.header
       ),
       {
         [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
@@ -107,7 +107,7 @@ export function CheckGet(header) {
   });
 }
 
-export function CheckUpdate(header) {
+export function CheckUpdate(data) {
   group(
     `Pipelines API: Update a pipeline [with random "Instill-User-Uid" header]`,
     () => {
@@ -123,7 +123,7 @@ export function CheckUpdate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       );
 
       check(resOrigin, {
@@ -157,7 +157,7 @@ export function CheckUpdate(header) {
           "DELETE",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
           null,
-          header
+          data.header
         ),
         {
           [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (
@@ -169,7 +169,7 @@ export function CheckUpdate(header) {
   );
 }
 
-export function CheckRename(header) {
+export function CheckRename(data) {
   group(
     `Pipelines API: Rename a pipeline [with random "Instill-User-Uid" header]`,
     () => {
@@ -186,7 +186,7 @@ export function CheckRename(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       );
 
       check(res, {
@@ -219,7 +219,7 @@ export function CheckRename(header) {
           "DELETE",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${id}`,
           null,
-          header
+          data.header
         ),
         {
           [`DELETE /v1beta/${constant.namespace}/pipelines/${id} response status 204`]: (r) =>
@@ -230,7 +230,7 @@ export function CheckRename(header) {
   );
 }
 
-export function CheckLookUp(header) {
+export function CheckLookUp(data) {
   group(
     `Pipelines API: Look up a pipeline by uid [with random "Instill-User-Uid" header]`,
     () => {
@@ -246,7 +246,7 @@ export function CheckLookUp(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       );
 
       check(res, {
@@ -275,7 +275,7 @@ export function CheckLookUp(header) {
           "DELETE",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
           null,
-          header
+          data.header
         ),
         {
           [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (
