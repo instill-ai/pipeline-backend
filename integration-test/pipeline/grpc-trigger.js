@@ -8,7 +8,7 @@ import * as constant from "./const.js";
 const client = new grpc.Client();
 client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
 
-export function CheckTrigger(metadata) {
+export function CheckTrigger(data) {
   group(
     "Pipelines API: Trigger a pipeline for single image and single model",
     () => {
@@ -31,7 +31,7 @@ export function CheckTrigger(metadata) {
             parent: `${constant.namespace}`,
             pipeline: reqGRPC,
           },
-          metadata
+          data.metadata
         ),
         {
           "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline GRPC pipeline response StatusOK":
@@ -46,7 +46,7 @@ export function CheckTrigger(metadata) {
             name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
             inputs: constant.simplePayload.inputs,
           },
-          metadata
+          data.metadata
         ),
         {
           [`vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline (url) response StatusOK`]:
@@ -61,7 +61,7 @@ export function CheckTrigger(metadata) {
           {
             name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
           },
-          metadata
+          data.metadata
         ),
         {
           [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline ${reqGRPC.id} response StatusOK`]:

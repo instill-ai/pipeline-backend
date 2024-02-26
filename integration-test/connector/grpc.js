@@ -12,7 +12,10 @@ import * as dataConnectorPublicWithJwt from './grpc-data-connector-public-with-j
 import * as dataConnectorPrivate from './grpc-data-connector-private.js';
 
 const client = new grpc.Client();
-client.load(['../proto/vdp/pipeline/v1beta'], 'pipeline_public_service.proto');
+const mgmtClient = new grpc.Client();
+
+client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
+client.load(["../proto/core/mgmt/v1beta"], "mgmt_public_service.proto");
 
 export let options = {
   setupTimeout: '10s',
@@ -26,6 +29,11 @@ export function setup() {
   client.connect(constant.pipelineGRPCPublicHost, {
     plaintext: true
   });
+  mgmtClient.connect(constant.mgmtGRPCPublicHost, {
+    plaintext: true,
+    timeout: "300s",
+  });
+
 
   var loginResp = http.request("POST", `${constant.mgmtPublicHost}/v1beta/auth/login`, JSON.stringify({
     "username": constant.defaultUsername,
@@ -56,11 +64,17 @@ export function setup() {
     }
   });
 
+  var resp = client.invoke(
+    "core.mgmt.v1beta.MgmtPublicService/GetAuthenticatedUser",
+    {},
+    metadata
+  );
   client.close();
-  return metadata
+  mgmtClient.close();
+  return {metadata: metadata, expectedOwner: resp.message.user};
 }
 
-export default function (metadata) {
+export default function (data) {
 
   /*
    * Connector API - API CALLS
@@ -81,43 +95,43 @@ export default function (metadata) {
 
   if (!constant.apiGatewayMode) {
     // data connector private
-    dataConnectorPrivate.CheckList(metadata)
-    dataConnectorPrivate.CheckLookUp(metadata)
+    dataConnectorPrivate.CheckList(data)
+    dataConnectorPrivate.CheckLookUp(data)
 
 
   } else {
 
     // data public with Instill-User-Uid
-    dataConnectorPublicWithJwt.CheckCreate(metadata)
-    dataConnectorPublicWithJwt.CheckList(metadata)
-    dataConnectorPublicWithJwt.CheckGet(metadata)
-    dataConnectorPublicWithJwt.CheckUpdate(metadata)
-    dataConnectorPublicWithJwt.CheckLookUp(metadata)
-    dataConnectorPublicWithJwt.CheckState(metadata)
-    dataConnectorPublicWithJwt.CheckRename(metadata)
-    dataConnectorPublicWithJwt.CheckExecute(metadata)
-    dataConnectorPublicWithJwt.CheckTest(metadata)
+    dataConnectorPublicWithJwt.CheckCreate(data)
+    dataConnectorPublicWithJwt.CheckList(data)
+    dataConnectorPublicWithJwt.CheckGet(data)
+    dataConnectorPublicWithJwt.CheckUpdate(data)
+    dataConnectorPublicWithJwt.CheckLookUp(data)
+    dataConnectorPublicWithJwt.CheckState(data)
+    dataConnectorPublicWithJwt.CheckRename(data)
+    dataConnectorPublicWithJwt.CheckExecute(data)
+    dataConnectorPublicWithJwt.CheckTest(data)
 
     // data connector Definitions
-    dataConnectorDefinition.CheckList(metadata)
-    dataConnectorDefinition.CheckGet(metadata)
+    dataConnectorDefinition.CheckList(data)
+    dataConnectorDefinition.CheckGet(data)
 
     // data connectors
-    dataConnectorPublic.CheckCreate(metadata)
-    dataConnectorPublic.CheckList(metadata)
-    dataConnectorPublic.CheckGet(metadata)
-    dataConnectorPublic.CheckUpdate(metadata)
-    dataConnectorPublic.CheckLookUp(metadata)
-    dataConnectorPublic.CheckState(metadata)
-    dataConnectorPublic.CheckRename(metadata)
-    dataConnectorPublic.CheckExecute(metadata)
-    dataConnectorPublic.CheckTest(metadata)
+    dataConnectorPublic.CheckCreate(data)
+    dataConnectorPublic.CheckList(data)
+    dataConnectorPublic.CheckGet(data)
+    dataConnectorPublic.CheckUpdate(data)
+    dataConnectorPublic.CheckLookUp(data)
+    dataConnectorPublic.CheckState(data)
+    dataConnectorPublic.CheckRename(data)
+    dataConnectorPublic.CheckExecute(data)
+    dataConnectorPublic.CheckTest(data)
 
   }
 
 }
 
-export function teardown(metadata) {
+export function teardown(data) {
 
   group("Connector API: Delete all pipelines created by this test", () => {
     client.connect(constant.pipelineGRPCPublicHost, {
@@ -126,10 +140,10 @@ export function teardown(metadata) {
 
     for (const pipeline of client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ListPipelines', {
       pageSize: 1000
-    }, metadata).message.pipelines) {
+    }, data.message).message.pipelines) {
       check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`, {
         name: `${constant.namespace}/pipelines/${pipeline.id}`
-      }, metadata), {
+      }, data.metadata), {
         [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]: (r) => r.status === grpc.StatusOK,
       });
     }
@@ -141,10 +155,10 @@ export function teardown(metadata) {
     plaintext: true
   });
   group("Connector API: Delete all connector created by this test", () => {
-    for (const connector of client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors', {}, metadata).message.connectors) {
+    for (const connector of client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ListUserConnectors', {}, data.metadata).message.connectors) {
       check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
         name: `${constant.namespace}/connectors/${connector.id}`
-      }, metadata), {
+      }, data.metadata), {
         [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${connector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
       });
     }

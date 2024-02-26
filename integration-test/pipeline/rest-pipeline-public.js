@@ -7,7 +7,7 @@ import { pipelinePublicHost } from "./const.js";
 import * as constant from "./const.js";
 import * as helper from "./helper.js";
 
-export function CheckCreate(header) {
+export function CheckCreate(data) {
   group("Pipelines API: Create a pipeline", () => {
 
     var reqBody = Object.assign(
@@ -23,7 +23,7 @@ export function CheckCreate(header) {
       "POST",
       `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
       JSON.stringify(reqBody),
-      header
+      data.header
     );
     check(resOrigin, {
       "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) => r.status === 201,
@@ -38,7 +38,7 @@ export function CheckCreate(header) {
       "POST /v1beta/${constant.namespace}/pipelines response pipeline recipe is valid": (r) =>
         helper.validateRecipe(r.json().pipeline.recipe, false),
       "POST /v1beta/${constant.namespace}/pipelines response pipeline owner isinvalid": (r) =>
-        helper.isValidOwnerHTTP(r.json().pipeline.owner),
+        helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
       "POST /v1beta/${constant.namespace}/pipelines response pipeline create_time": (r) =>
         new Date(r.json().pipeline.create_time).getTime() >
         new Date().setTime(0),
@@ -53,7 +53,7 @@ export function CheckCreate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify({}),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines request body JSON Schema failed status 400": (
@@ -67,7 +67,7 @@ export function CheckCreate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines re-create the same id response status is 409":
@@ -80,7 +80,7 @@ export function CheckCreate(header) {
         "DELETE",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
-        header
+        data.header
       ),
       {
         [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
@@ -93,7 +93,7 @@ export function CheckCreate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines re-create the same id after deletion response status is 201":
@@ -106,7 +106,7 @@ export function CheckCreate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify({}),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines with empty body response status is 400": (r) =>
@@ -119,7 +119,7 @@ export function CheckCreate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         null,
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines with null body response status is 400": (r) =>
@@ -133,7 +133,7 @@ export function CheckCreate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines with null id response status is 400": (r) =>
@@ -147,7 +147,7 @@ export function CheckCreate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines with non-RFC-1034 naming id response status is 400":
@@ -161,7 +161,7 @@ export function CheckCreate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines with > 32-character id response status is 400":
@@ -175,7 +175,7 @@ export function CheckCreate(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines with non-ASCII id response status is 400": (
@@ -191,7 +191,7 @@ export function CheckCreate(header) {
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${resOrigin.json().pipeline.id
         }`,
         null,
-        header
+        data.header
       ),
       {
         [`DELETE /v1beta/${constant.namespace}/pipelines/${resOrigin.json().pipeline.id
@@ -203,9 +203,9 @@ export function CheckCreate(header) {
 
 
 
-export function CheckList(header) {
+export function CheckList(data) {
   group("Pipelines API: List pipelines", () => {
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`, null, header), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`, null, data.header), {
       [`GET /v1beta/${constant.namespace}/pipelines response status is 200`]: (r) =>
         r.status === 200,
       [`GET /v1beta/${constant.namespace}/pipelines response next_page_token is empty`]: (r) =>
@@ -233,7 +233,7 @@ export function CheckList(header) {
           "POST",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
           JSON.stringify(reqBody),
-          header
+          data.header
         ),
         {
           [`POST /v1beta/${constant.namespace}/pipelines x${reqBodies.length} response status is 201`]:
@@ -247,7 +247,7 @@ export function CheckList(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines response status is 200`]: (r) =>
@@ -266,7 +266,7 @@ export function CheckList(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?view=VIEW_FULL`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines?view=VIEW_FULL response pipelines[0] has recipe`]:
@@ -281,7 +281,7 @@ export function CheckList(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?view=VIEW_BASIC`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines?view=VIEW_BASIC response pipelines[0].recipe is null`]:
@@ -294,7 +294,7 @@ export function CheckList(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=3`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines?page_size=3 response pipelines.length == 3`]: (
@@ -308,7 +308,7 @@ export function CheckList(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=101`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines?page_size=101 response pipelines.length == 100`]:
@@ -320,13 +320,13 @@ export function CheckList(header) {
       "GET",
       `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100`,
       null,
-      header
+      data.header
     );
     var resSecond100 = http.request(
       "GET",
       `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
       }`,
-      null, header
+      null, data.header
     );
     check(resSecond100, {
       [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
@@ -344,7 +344,7 @@ export function CheckList(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines response 200`]: (r) => r.status == 200,
@@ -358,7 +358,7 @@ export function CheckList(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?filter=create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
@@ -375,7 +375,7 @@ export function CheckList(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response 200`]:
@@ -392,7 +392,7 @@ export function CheckList(header) {
           "DELETE",
           `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
           JSON.stringify(reqBody),
-          header
+          data.header
         ),
         {
           [`DELETE /v1beta/${constant.namespace}/pipelines x${reqBodies.length} response status is 204`]:
@@ -403,7 +403,7 @@ export function CheckList(header) {
   });
 }
 
-export function CheckGet(header) {
+export function CheckGet(data) {
   group("Pipelines API: Get a pipeline", () => {
     var reqBody = Object.assign(
       {
@@ -419,7 +419,7 @@ export function CheckGet(header) {
         "POST",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
         JSON.stringify(reqBody),
-        header
+        data.header
       ),
       {
         "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) =>
@@ -432,7 +432,7 @@ export function CheckGet(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status is 200`]: (r) =>
@@ -457,7 +457,7 @@ export function CheckGet(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}?view=VIEW_FULL`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status is 200`]: (r) =>
@@ -465,7 +465,7 @@ export function CheckGet(header) {
         [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline recipe is not null`]:
           (r) => r.json().pipeline.recipe !== null,
         [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner isvalid`]:
-          (r) => helper.isValidOwnerHTTP(r.json().pipeline.owner),
+          (r) => helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
       }
     );
 
@@ -474,7 +474,7 @@ export function CheckGet(header) {
         "GET",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/this-id-does-not-exist`,
         null,
-        header
+        data.header
       ),
       {
         "GET /v1beta/${constant.namespace}/pipelines/this-id-does-not-exist response status is 404":
@@ -488,7 +488,7 @@ export function CheckGet(header) {
         "DELETE",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
-        header
+        data.header
       ),
       {
         [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
@@ -498,7 +498,7 @@ export function CheckGet(header) {
   });
 }
 
-export function CheckUpdate(header) {
+export function CheckUpdate(data) {
   group("Pipelines API: Update a pipeline", () => {
     var reqBody = Object.assign(
       {
@@ -512,7 +512,7 @@ export function CheckUpdate(header) {
       "POST",
       `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
       JSON.stringify(reqBody),
-      header
+      data.header
     );
 
     check(resOrigin, {
@@ -530,7 +530,7 @@ export function CheckUpdate(header) {
         "PATCH",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         JSON.stringify(reqBodyUpdate),
-        header
+        data.header
       ),
       {
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status is 200`]: (
@@ -549,7 +549,7 @@ export function CheckUpdate(header) {
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline description (OPTIONAL)`]:
           (r) => r.json().pipeline.description === reqBodyUpdate.description,
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner isvalid`]:
-          (r) => helper.isValidOwnerHTTP(r.json().pipeline.owner),
+          (r) => helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline create_time (OUTPUT_ONLY)`]:
           (r) =>
             new Date(r.json().pipeline.create_time).getTime() >
@@ -571,7 +571,7 @@ export function CheckUpdate(header) {
         "PATCH",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         JSON.stringify(reqBodyUpdate),
-        header
+        data.header
       ),
       {
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline empty description`]:
@@ -585,7 +585,7 @@ export function CheckUpdate(header) {
         "PATCH",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         JSON.stringify(reqBodyUpdate),
-        header
+        data.header
       ),
       {
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline non-empty description`]:
@@ -599,7 +599,7 @@ export function CheckUpdate(header) {
         "PATCH",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         JSON.stringify(reqBodyUpdate),
-        header
+        data.header
       ),
       {
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status for updating IMMUTABLE field with different id is 400`]:
@@ -613,7 +613,7 @@ export function CheckUpdate(header) {
         "PATCH",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         JSON.stringify(reqBodyUpdate),
-        header
+        data.header
       ),
       {
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status for updating IMMUTABLE field with the same id is 200`]:
@@ -626,7 +626,7 @@ export function CheckUpdate(header) {
         "PATCH",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/this-id-does-not-exist`,
         JSON.stringify(reqBodyUpdate),
-        header
+        data.header
       ),
       {
         "PATCH /v1beta/${constant.namespace}/pipelines/this-id-does-not-exist response status is 404":
@@ -640,7 +640,7 @@ export function CheckUpdate(header) {
         "DELETE",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
-        header
+        data.header
       ),
       {
         [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>
@@ -651,7 +651,7 @@ export function CheckUpdate(header) {
 }
 
 
-export function CheckRename(header) {
+export function CheckRename(data) {
   group("Pipelines API: Rename a pipeline", () => {
     var reqBody = Object.assign(
       {
@@ -665,7 +665,7 @@ export function CheckRename(header) {
       "POST",
       `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
       JSON.stringify(reqBody),
-      header
+      data.header
     );
 
     check(res, {
@@ -682,7 +682,7 @@ export function CheckRename(header) {
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${res.json().pipeline.id
         }/rename`,
         JSON.stringify(reqBody),
-        header
+        data.header
       ),
       {
         [`POST /v1beta/${constant.namespace}/pipelines/${res.json().pipeline.id
@@ -702,7 +702,7 @@ export function CheckRename(header) {
         "DELETE",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.new_pipeline_id}`,
         null,
-        header
+        data.header
       ),
       {
         [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.new_pipeline_id} response status 204`]:
@@ -712,7 +712,7 @@ export function CheckRename(header) {
   });
 }
 
-export function CheckLookUp(header) {
+export function CheckLookUp(data) {
   group("Pipelines API: Look up a pipeline by uid", () => {
     var reqBody = Object.assign(
       {
@@ -726,7 +726,7 @@ export function CheckLookUp(header) {
       "POST",
       `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`,
       JSON.stringify(reqBody),
-      header
+      data.header
     );
 
     check(res, {
@@ -739,7 +739,7 @@ export function CheckLookUp(header) {
         `${pipelinePublicHost}/v1beta/pipelines/${res.json().pipeline.uid
         }/lookUp`,
         null,
-        header
+        data.header
       ),
       {
         [`GET /v1beta/pipelines/${res.json().pipeline.uid
@@ -756,7 +756,7 @@ export function CheckLookUp(header) {
         "DELETE",
         `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}`,
         null,
-        header
+        data.header
       ),
       {
         [`DELETE /v1beta/${constant.namespace}/pipelines/${reqBody.id} response status 204`]: (r) =>

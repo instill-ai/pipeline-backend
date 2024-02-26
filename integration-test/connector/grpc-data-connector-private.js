@@ -16,7 +16,7 @@ const clientPublic = new grpc.Client();
 clientPrivate.load(['../proto/vdp/pipeline/v1beta'], 'pipeline_private_service.proto');
 clientPublic.load(['../proto/vdp/pipeline/v1beta'], 'pipeline_public_service.proto');
 
-export function CheckList(metadata) {
+export function CheckList(data) {
 
     group("Connector API: List data connectors by admin", () => {
 
@@ -51,10 +51,10 @@ export function CheckList(metadata) {
             var resDst = clientPublic.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
                 parent: `${constant.namespace}`,
                 connector: reqBody
-            }, metadata)
+            }, data.metadata)
             clientPublic.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
                 name: `${constant.namespace}/connectors/${resDst.message.connector.id}`
-            }, metadata)
+            }, data.metadata)
 
             check(resDst, {
                 [`vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector x${reqBodies.length} HTTP response StatusOK`]: (r) => r.status === grpc.StatusOK,
@@ -110,7 +110,7 @@ export function CheckList(metadata) {
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response StatusOK`]: (r) => r.status === grpc.StatusOK,
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response connectors[0].configuration is not null`]: (r) => r.message.connectors[0].configuration !== null,
             [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response connectors[0].connectorDefinitionDetail is not null`]: (r) => r.message.connectors[0].connectorDefinitionDetail !== null,
-            [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response connectors[0].owner is valid`]: (r) => helper.isValidOwnerGRPC(r.message.connectors[0].owner),
+            [`vdp.pipeline.v1beta.PipelinePrivateService/ListConnectorsAdmin pageSize=1 view=VIEW_FULL response connectors[0].owner is valid`]: (r) => helper.isValidOwner(r.message.connectors[0].owner, data.expectedOwner),
         });
 
 
@@ -133,7 +133,7 @@ export function CheckList(metadata) {
         for (const reqBody of reqBodies) {
             check(clientPublic.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
                 name: `${constant.namespace}/connectors/${reqBody.id}`
-            }, metadata), {
+            }, data.metadata), {
                 [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector x${reqBodies.length} response StatusOK`]: (r) => r.status === grpc.StatusOK,
             });
         }
@@ -143,7 +143,7 @@ export function CheckList(metadata) {
     });
 }
 
-export function CheckLookUp(metadata) {
+export function CheckLookUp(data) {
 
     group("Connector API: Look up data connectors by UID by admin", () => {
 
@@ -165,11 +165,11 @@ export function CheckLookUp(metadata) {
         var resCSVDst = clientPublic.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
             parent: `${constant.namespace}`,
             connector: csvDstConnector
-        }, metadata)
+        }, data.metadata)
 
         clientPublic.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata)
+        }, data.metadata)
 
         check(clientPrivate.invoke('vdp.pipeline.v1beta.PipelinePrivateService/LookUpConnectorAdmin', {
             permalink: `connectors/${resCSVDst.message.connector.uid}`
@@ -182,7 +182,7 @@ export function CheckLookUp(metadata) {
 
         check(clientPublic.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
             name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, metadata), {
+        }, data.metadata), {
             [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${csvDstConnector.id} response StatusOK`]: (r) => r.status === grpc.StatusOK,
         });
 

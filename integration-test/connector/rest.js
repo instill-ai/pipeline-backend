@@ -46,10 +46,11 @@ export function setup() {
     }
   });
 
-  return header
+  var resp = http.request("GET", `${constant.mgmtPublicHost}/v1beta/user`, {}, {headers: {"Authorization": `Bearer ${loginResp.json().access_token}`}})
+  return {header: header, expectedOwner: resp.json().user}
 }
 
-export default function (header) {
+export default function (data) {
 
   /*
    * Connector API - API CALLS
@@ -66,38 +67,38 @@ export default function (header) {
   if (!constant.apiGatewayMode) {
 
     // data connectors
-    dataConnectorPrivate.CheckList(header)
-    dataConnectorPrivate.CheckLookUp(header)
+    dataConnectorPrivate.CheckList(data)
+    dataConnectorPrivate.CheckLookUp(data)
 
 
   } else {
 
     // data public with Instill-User-Uid
-    dataConnectorPublicWithJwt.CheckCreate(header)
-    dataConnectorPublicWithJwt.CheckList(header)
-    dataConnectorPublicWithJwt.CheckGet(header)
-    dataConnectorPublicWithJwt.CheckUpdate(header)
-    dataConnectorPublicWithJwt.CheckLookUp(header)
-    dataConnectorPublicWithJwt.CheckState(header)
-    dataConnectorPublicWithJwt.CheckRename(header)
-    dataConnectorPublicWithJwt.CheckExecute(header)
-    dataConnectorPublicWithJwt.CheckTest(header)
+    dataConnectorPublicWithJwt.CheckCreate(data)
+    dataConnectorPublicWithJwt.CheckList(data)
+    dataConnectorPublicWithJwt.CheckGet(data)
+    dataConnectorPublicWithJwt.CheckUpdate(data)
+    dataConnectorPublicWithJwt.CheckLookUp(data)
+    dataConnectorPublicWithJwt.CheckState(data)
+    dataConnectorPublicWithJwt.CheckRename(data)
+    dataConnectorPublicWithJwt.CheckExecute(data)
+    dataConnectorPublicWithJwt.CheckTest(data)
 
     // data connector definitions
-    dataConnectorDefinition.CheckList(header)
-    dataConnectorDefinition.CheckGet(header)
+    dataConnectorDefinition.CheckList(data)
+    dataConnectorDefinition.CheckGet(data)
 
     // data connectors
-    dataConnectorPublic.CheckCreate(header)
-    dataConnectorPublic.CheckList(header)
-    dataConnectorPublic.CheckGet(header)
-    dataConnectorPublic.CheckUpdate(header)
-    dataConnectorPublic.CheckConnect(header)
-    dataConnectorPublic.CheckLookUp(header)
-    dataConnectorPublic.CheckState(header)
-    dataConnectorPublic.CheckRename(header)
-    dataConnectorPublic.CheckExecute(header)
-    dataConnectorPublic.CheckTest(header)
+    dataConnectorPublic.CheckCreate(data)
+    dataConnectorPublic.CheckList(data)
+    dataConnectorPublic.CheckGet(data)
+    dataConnectorPublic.CheckUpdate(data)
+    dataConnectorPublic.CheckConnect(data)
+    dataConnectorPublic.CheckLookUp(data)
+    dataConnectorPublic.CheckState(data)
+    dataConnectorPublic.CheckRename(data)
+    dataConnectorPublic.CheckExecute(data)
+    dataConnectorPublic.CheckTest(data)
   }
 
 
@@ -105,9 +106,9 @@ export default function (header) {
 
 }
 
-export function teardown(header) {
+export function teardown(data) {
   group("Connector API: Delete all pipelines created by this test", () => {
-    for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1beta/pipelines?page_size=100`, null, header).json("pipelines")) {
+    for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1beta/pipelines?page_size=100`, null, data.header).json("pipelines")) {
       check(http.request("DELETE", `${pipelinePublicHost}/v1beta/pipelines/${pipeline.id}`), {
         [`DELETE /v1beta/pipelines response status is 204`]: (r) => r.status === 204,
       });

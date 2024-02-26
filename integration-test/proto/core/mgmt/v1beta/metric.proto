@@ -1,0 +1,285 @@
+syntax = "proto3";
+
+package core.mgmt.v1beta;
+
+// Google API
+import "google/api/field_behavior.proto";
+// Protobuf standard
+import "google/protobuf/timestamp.proto";
+
+// Mode describes the execution mode of the pipeline (sync or async).
+enum Mode {
+  // Unspecified.
+  MODE_UNSPECIFIED = 0;
+  // Synchronous (result is returned in the response).
+  MODE_SYNC = 1;
+  // Asynchronous (response only contains acknowledgement).
+  MODE_ASYNC = 2;
+}
+
+// Status describes the output of an execution.
+enum Status {
+  // Unspecified.
+  STATUS_UNSPECIFIED = 0;
+  // Successfully completed.
+  STATUS_COMPLETED = 1;
+  // Finished with error.
+  STATUS_ERRORED = 2;
+}
+
+// ========== Pipeline endpoints
+
+// PipelineTriggerRecord represents a pipeline execution event.
+message PipelineTriggerRecord {
+  // The moment when the pipeline was triggered.
+  google.protobuf.Timestamp trigger_time = 1;
+  // UUID of the trigger.
+  string pipeline_trigger_id = 2;
+  // Pipeline ID.
+  string pipeline_id = 3;
+  // Pipeline UUID.
+  string pipeline_uid = 4;
+  // Trigger mode.
+  Mode trigger_mode = 5;
+  // Total execution duration.
+  float compute_time_duration = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Final status.
+  Status status = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // If a release of the pipeline was triggered, pipeline version.
+  string pipeline_release_id = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // If a release of the pipeline was triggered, release UUID.
+  string pipeline_release_uid = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PipelineTriggerTableRecord contains pipeline trigger metrics, aggregated by
+// pipeline ID.
+message PipelineTriggerTableRecord {
+  // Pipeline ID.
+  string pipeline_id = 1;
+  // Pipeline UUID.
+  string pipeline_uid = 2;
+  // Number of triggers with `STATUS_COMPLETED`.
+  int32 trigger_count_completed = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Number of triggers with `STATUS_ERRORED`.
+  int32 trigger_count_errored = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Version for the triggered pipeline if it is a release pipeline.
+  string pipeline_release_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release UUID for the triggered pipeline if it is a release pipeline.
+  string pipeline_release_uid = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// PipelineTriggerChartRecord contains pipeline trigger metrics, aggregated by
+// pipeline ID and time frame.
+message PipelineTriggerChartRecord {
+  // Pipeline ID.
+  string pipeline_id = 1;
+  // Pipeline UUID.
+  string pipeline_uid = 2;
+  // Trigger mode.
+  Mode trigger_mode = 3;
+  // Final status.
+  Status status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Time buckets.
+  repeated google.protobuf.Timestamp time_buckets = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Aggregated trigger count in each time bucket.
+  repeated int32 trigger_counts = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Total computation time duration in each time bucket.
+  repeated float compute_time_duration = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Version for the triggered pipeline if it is a release pipeline.
+  string pipeline_release_id = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release UUID for the triggered pipeline if it is a release pipeline.
+  string pipeline_release_uid = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ListPipelineTriggerRecordsRequest represents a request to list the triggers
+// of a pipeline.
+message ListPipelineTriggerRecordsRequest {
+  // The maximum number of triggers to return. If this parameter is unspecified,
+  // at most 100 pipelines will be returned. The cap value for this parameter is
+  // 1000 (i.e. any value above that will be coerced to 100).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListPipelineTriggerRecordsResponse contains a list of pipeline triggers.
+message ListPipelineTriggerRecordsResponse {
+  // A list of pipeline triggers.
+  repeated PipelineTriggerRecord pipeline_trigger_records = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total number of pipeline triggers.
+  int32 total_size = 3;
+}
+
+// ListPipelineTriggerTableRecordsRequest represents a request to list the
+// pipeline triggers metrics, aggregated by pipeline ID.
+message ListPipelineTriggerTableRecordsRequest {
+  // The maximum number of results to return. If this parameter is unspecified,
+  // at most 100 pipelines will be returned. The cap value for this parameter
+  // is 1000 (i.e. any value above that will be coerced to 1000).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListPipelineTriggerTableRecordsResponse contains the pipeline metrics.
+message ListPipelineTriggerTableRecordsResponse {
+  // A list of pipeline trigger tables.
+  repeated PipelineTriggerTableRecord pipeline_trigger_table_records = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total number of pipeline trigger records
+  int32 total_size = 3;
+}
+
+// ListPipelineTriggerChartRecordsRequest represents a request to list pipeline
+// trigger metrics, aggregated by pipeline ID and time frame.
+message ListPipelineTriggerChartRecordsRequest {
+  // Aggregation window in nanoseconds.
+  int32 aggregation_window = 1;
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListPipelineTriggerChartRecordsResponse contains a list of pipeline trigger
+// chart records.
+message ListPipelineTriggerChartRecordsResponse {
+  // A list of pipeline trigger records.
+  repeated PipelineTriggerChartRecord pipeline_trigger_chart_records = 1;
+}
+
+// ========== Connector endpoints
+
+// ConnectorExecuteRecord represents a connector execution event.
+message ConnectorExecuteRecord {
+  // The moment when the connector was executed.
+  google.protobuf.Timestamp execute_time = 1;
+  // UUID of the execution.
+  string connector_execute_id = 2;
+  // Connector ID.
+  string connector_id = 3;
+  // Connector UUID.
+  string connector_uid = 4;
+  // Connector definition UUID.
+  string connector_definition_uid = 5;
+  // Pipeline ID.
+  string pipeline_id = 6;
+  // Pipeline UUID.
+  string pipeline_uid = 7;
+  // UUID of the pipeline trigger.
+  string pipeline_trigger_id = 8;
+  // Total execution time.
+  float compute_time_duration = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Final status for the connector execution.
+  Status status = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ConnectorExecuteTableRecord contains connector execution metrics, a aggregated by connector ID.
+message ConnectorExecuteTableRecord {
+  // Connector ID.
+  string connector_id = 1;
+  // Connector UUID.
+  string connector_uid = 2;
+  // Number of executions with `STATUS_COMPLETED`.
+  int32 execute_count_completed = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Number of executions with `STATUS_ERRORED`.
+  int32 execute_count_errored = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ConnectorExecuteChartRecord contains connector execution metrics,
+// agggregated by connector ID and time frame.
+message ConnectorExecuteChartRecord {
+  // Connector ID.
+  string connector_id = 1;
+  // Connector UUID.
+  string connector_uid = 2;
+  // Final status.
+  Status status = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Time buckets.
+  repeated google.protobuf.Timestamp time_buckets = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Aggregated execution count in each time bucket.
+  repeated int32 execute_counts = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Total computation time duration in each time bucket.
+  repeated float compute_time_duration = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ListConnectorExecuteRecordsRequest represents a request to list connector
+// executions.
+message ListConnectorExecuteRecordsRequest {
+  // The maximum number of executions to return. If this parameter is
+  // unspecified, at most 100 pipelines will be returned. The cap value for
+  // this parameter is 1000 (i.e. any value above that will be coerced to
+  // 1000).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListConnectorExecuteRecordsResponse represents a response for a list
+// of connector execute record
+message ListConnectorExecuteRecordsResponse {
+  // A list of connector execute records
+  repeated ConnectorExecuteRecord connector_execute_records = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total count of connector execute records
+  int32 total_size = 3;
+}
+
+// ListConnectorExecuteTableRecordsRequest represents a request to list the
+// connector execution metrics, aggregated by connector.
+message ListConnectorExecuteTableRecordsRequest {
+  // The maximum number of results to return. If this parameter is unspecified,
+  // at most 100 pipelines will be returned. The cap value for this parameter
+  // is 1000 (i.e. any value above that will be coerced to 1000).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListConnectorExecuteTableRecordsResponse contains the connector metrics.
+message ListConnectorExecuteTableRecordsResponse {
+  // A list of connector execution records.
+  repeated ConnectorExecuteTableRecord connector_execute_table_records = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total number of connector execution records.
+  int32 total_size = 3;
+}
+
+// ListConnectorExecuteChartRecordsRequest represents a request to list
+// connector execution metrics, aggregated by connector and time frame.
+message ListConnectorExecuteChartRecordsRequest {
+  // Aggregation window in nanoseconds.
+  int32 aggregation_window = 1;
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListConnectorExecuteChartRecordsResponse contains a list of connector
+// execution chart records.
+message ListConnectorExecuteChartRecordsResponse {
+  // A list of connector execution records.
+  repeated ConnectorExecuteChartRecord connector_execute_chart_records = 1;
+}

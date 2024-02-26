@@ -1,0 +1,389 @@
+syntax = "proto3";
+
+package core.mgmt.v1beta;
+
+// Core definitions
+import "../../../core/mgmt/v1beta/metric.proto";
+import "../../../core/mgmt/v1beta/mgmt.proto";
+// Google API
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "google/api/visibility.proto";
+// OpenAPI definition
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+// MGMT
+//
+// MgmtPublicService exposes the public Core endpoints that allow clients to
+// manage user resources.
+service MgmtPublicService {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_tag) = {description: "Public Core endpoints"};
+
+  // Delete an organization membership
+  //
+  // Deletes a user membership within an organization.
+  rpc DeleteOrganizationMembership(DeleteOrganizationMembershipRequest) returns (DeleteOrganizationMembershipResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=organizations/*/memberships/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Check if the MGMT server is alive
+  //
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md.
+  rpc Liveness(LivenessRequest) returns (LivenessResponse) {
+    option (google.api.http) = {
+      get: "/v1beta/__liveness"
+      additional_bindings: [
+        {get: "/v1beta/health/mgmt"}]
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Check if the pipeline server is ready
+  //
+  // See https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+  rpc Readiness(ReadinessRequest) returns (ReadinessResponse) {
+    option (google.api.http) = {
+      get: "/v1beta/__readiness"
+      additional_bindings: [
+        {get: "/v1beta/ready/mgmt"}]
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Check if a namespace is in use
+  //
+  // Returns the availability of a namespace or, alternatively, the type of
+  // resource that is using it.
+  rpc CheckNamespace(CheckNamespaceRequest) returns (CheckNamespaceResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/check-namespace"
+      body: "*"
+    };
+    option (google.api.method_signature) = "namespace";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get the authenticated user
+  //
+  // Returns the details of the authenticated user.
+  rpc GetAuthenticatedUser(GetAuthenticatedUserRequest) returns (GetAuthenticatedUserResponse) {
+    option (google.api.http) = {get: "/v1beta/user"};
+    option (google.api.method_signature) = "user,update_mask";
+  }
+
+  // Update the authenticated user
+  //
+  // Updates the information of the authenticated user.
+  //
+  // In REST requests, only the supplied user fields will be taken into account
+  // when updating the resource.
+  rpc PatchAuthenticatedUser(PatchAuthenticatedUserRequest) returns (PatchAuthenticatedUserResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/user"
+      body: "user"
+    };
+    option (google.api.method_signature) = "user,update_mask";
+  }
+
+  // List users
+  //
+  // Returns a paginated list of users.
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {get: "/v1beta/users"};
+  }
+
+  // Get a user
+  //
+  // Returns the details of a user by their ID.
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=users/*}"};
+    option (google.api.method_signature) = "name";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List user memberships
+  //
+  // Returns the memberships of a user.
+  rpc ListUserMemberships(ListUserMembershipsRequest) returns (ListUserMembershipsResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=users/*}/memberships"};
+    option (google.api.method_signature) = "parent";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get a user membership
+  //
+  // Returns the details of the relationship between a user and an
+  // organization. The authenticated must match the membership parent.
+  rpc GetUserMembership(GetUserMembershipRequest) returns (GetUserMembershipResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=users/*/memberships/*}"};
+    option (google.api.method_signature) = "name";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Update a user membership
+  //
+  // Accesses and updates a user membership by parent and membership IDs.
+  rpc UpdateUserMembership(UpdateUserMembershipRequest) returns (UpdateUserMembershipResponse) {
+    option (google.api.http) = {
+      put: "/v1beta/{membership.name=users/*/memberships/*}"
+      body: "membership"
+    };
+    option (google.api.method_signature) = "membership,update_mask";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Delete a user membership
+  //
+  // Accesses and deletes a user membership by parent and membership IDs.
+  rpc DeleteUserMembership(DeleteUserMembershipRequest) returns (DeleteUserMembershipResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=users/*/memberships/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // List organizations
+  //
+  // Returns a paginated list of organizations.
+  rpc ListOrganizations(ListOrganizationsRequest) returns (ListOrganizationsResponse) {
+    option (google.api.http) = {get: "/v1beta/organizations"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Create an organization
+  //
+  // Creates an organization.
+  rpc CreateOrganization(CreateOrganizationRequest) returns (CreateOrganizationResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/organizations"
+      body: "organization"
+    };
+    option (google.api.method_signature) = "organization";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get an organization
+  //
+  // Returns the organization details by its ID.
+  rpc GetOrganization(GetOrganizationRequest) returns (GetOrganizationResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=organizations/*}"};
+    option (google.api.method_signature) = "name";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Update an organization
+  //
+  // Accesses and updates an organization by ID.
+  //
+  // In REST requests, only the supplied organization fields will be taken into
+  // account when updating the resource.
+  rpc UpdateOrganization(UpdateOrganizationRequest) returns (UpdateOrganizationResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{organization.name=organizations/*}"
+      body: "organization"
+    };
+    option (google.api.method_signature) = "organization,update_mask";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Delete an organization
+  //
+  // Accesses and deletes an organization by ID.
+  rpc DeleteOrganization(DeleteOrganizationRequest) returns (DeleteOrganizationResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=organizations/*}"};
+    option (google.api.method_signature) = "name";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List organization memberships
+  //
+  // Returns a paginated list of the user memberships in an organization.
+  rpc ListOrganizationMemberships(ListOrganizationMembershipsRequest) returns (ListOrganizationMembershipsResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/memberships"};
+    option (google.api.method_signature) = "parent";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get a an organization membership
+  //
+  // Returns the details of a user membership within an organization.
+  rpc GetOrganizationMembership(GetOrganizationMembershipRequest) returns (GetOrganizationMembershipResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=organizations/*/memberships/*}"};
+    option (google.api.method_signature) = "name";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Uppdate an organization membership
+  //
+  // Updates a user membership within an organization.
+  rpc UpdateOrganizationMembership(UpdateOrganizationMembershipRequest) returns (UpdateOrganizationMembershipResponse) {
+    option (google.api.http) = {
+      put: "/v1beta/{membership.name=organizations/*/memberships/*}"
+      body: "membership"
+    };
+    option (google.api.method_signature) = "membership,update_mask";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get the subscription of the authenticated user
+  //
+  // Returns the subscription details of the authenticated user.
+  rpc GetAuthenticatedUserSubscription(GetAuthenticatedUserSubscriptionRequest) returns (GetAuthenticatedUserSubscriptionResponse) {
+    option (google.api.http) = {get: "/v1beta/user/subscription"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get an organization subscription
+  //
+  // Returns the subscription details of an organization.
+  rpc GetOrganizationSubscription(GetOrganizationSubscriptionRequest) returns (GetOrganizationSubscriptionResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/subscription"};
+    option (google.api.method_signature) = "parent";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Create an API token
+  //
+  // Creates an API token for the authenticated user.
+  rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/tokens"
+      body: "token"
+    };
+    option (google.api.method_signature) = "token";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List API tokens
+  //
+  // Returns a paginated list of the API tokens of the authenticated user.
+  rpc ListTokens(ListTokensRequest) returns (ListTokensResponse) {
+    option (google.api.http) = {get: "/v1beta/tokens"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get an API token
+  //
+  // Returns the details of an API token.
+  rpc GetToken(GetTokenRequest) returns (GetTokenResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=tokens/*}"};
+    option (google.api.method_signature) = "name";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Delete an API token
+  //
+  // Deletes an API token.
+  rpc DeleteToken(DeleteTokenRequest) returns (DeleteTokenResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=tokens/*}"};
+    option (google.api.method_signature) = "name";
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Validate an API token.
+  //
+  // Validates an API token.
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {
+    option (google.api.http) = {post: "/v1beta/validate_token"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List pipeline triggers
+  //
+  // Returns a paginated list of pipeline executions.
+  rpc ListPipelineTriggerRecords(ListPipelineTriggerRecordsRequest) returns (ListPipelineTriggerRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/triggers"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List pipeline trigger metrics
+  //
+  // Returns a paginated list of pipeline executions aggregated by pipeline ID.
+  rpc ListPipelineTriggerTableRecords(ListPipelineTriggerTableRecordsRequest) returns (ListPipelineTriggerTableRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/tables"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List pipeline trigger computation time charts
+  //
+  // Returns a paginated list with pipeline trigger execution times, aggregated
+  // by pipeline and time frames.
+  rpc ListPipelineTriggerChartRecords(ListPipelineTriggerChartRecordsRequest) returns (ListPipelineTriggerChartRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/charts"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List connector executions
+  //
+  // Returns a paginated list of connector executions.
+  rpc ListConnectorExecuteRecords(ListConnectorExecuteRecordsRequest) returns (ListConnectorExecuteRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/connector/executes"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List connector execution metrics
+  //
+  // Returns a paginated list of connector executions aggregated by connector.
+  rpc ListConnectorExecuteTableRecords(ListConnectorExecuteTableRecordsRequest) returns (ListConnectorExecuteTableRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/connector/tables"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List connector execution computation time charts
+  //
+  // Returns a paginated list with connector execution times, aggregated by
+  // connector and time frames.
+  rpc ListConnectorExecuteChartRecords(ListConnectorExecuteChartRecordsRequest) returns (ListConnectorExecuteChartRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/connector/charts"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Auth endpoints are only used in the community edition and the OpenAPI
+  // documentation references Instill Cloud. Therefore, these endpoints are
+  // hidden.
+
+  // Get Auth token issuer
+  //
+  // Returns the auth token issuer details. This operation requires admin permissions.
+  rpc AuthTokenIssuer(AuthTokenIssuerRequest) returns (AuthTokenIssuerResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/auth/token_issuer",
+      body: "*"
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Log in a user
+  //
+  // Authenticates a user and returns an access token.
+  rpc AuthLogin(AuthLoginRequest) returns (AuthLoginResponse) {
+    option (google.api.http) = {post: "/v1beta/auth/login"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Log out a user
+  //
+  // Logs out an authenticated user.
+  rpc AuthLogout(AuthLogoutRequest) returns (AuthLogoutResponse) {
+    option (google.api.http) = {post: "/v1beta/auth/logout"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Change password
+  //
+  // Updates the password of a user.
+  rpc AuthChangePassword(AuthChangePasswordRequest) returns (AuthChangePasswordResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/auth/change_password",
+      body: "*"
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Validate an access token
+  //
+  // Checks the validity of an access token.
+  rpc AuthValidateAccessToken(AuthValidateAccessTokenRequest) returns (AuthValidateAccessTokenResponse) {
+    option (google.api.http) = {post: "/v1beta/auth/validate_access_token"};
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+}
