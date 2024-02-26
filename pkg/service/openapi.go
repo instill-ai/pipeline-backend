@@ -202,7 +202,14 @@ func (s *service) GenerateOpenAPISpec(startCompOrigin *pipelinePB.Component, end
 				// TODO
 				str = str[2:]
 				str = str[:len(str)-1]
-				str = strings.ReplaceAll(str, " ", "")
+
+				// We can not strip space inside the ""
+				splits := strings.Split(str, "\"")
+				stripSplits := make([]string, len(splits))
+				for idx := range splits {
+					stripSplits[idx] = strings.ReplaceAll(splits[idx], " ", "")
+				}
+				str = strings.Join(stripSplits, "\"")
 
 				var b interface{}
 				unmarshalErr := json.Unmarshal([]byte(str), &b)
@@ -281,7 +288,8 @@ func (s *service) GenerateOpenAPISpec(startCompOrigin *pipelinePB.Component, end
 
 						} else if comp.DefinitionName == "operator-definitions/start" {
 
-							walk = structpb.NewStructValue(openAPIInput)
+							// Clone the struct to avoid modify on the same address
+							walk = proto.Clone(structpb.NewStructValue(openAPIInput)).(*structpb.Value)
 
 						} else if utils.IsOperatorDefinition(comp.DefinitionName) {
 
@@ -336,7 +344,30 @@ func (s *service) GenerateOpenAPISpec(startCompOrigin *pipelinePB.Component, end
 								} else {
 									break
 								}
-								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
+
+								// Handle the case when using foo["bar"]
+								if strings.Contains(curr, "[\"") && strings.Contains(curr, "\"]") {
+									if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+										if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+											break
+										}
+									} else {
+										break
+									}
+									walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
+									target = curr[len(target)+2 : len(curr)-2]
+									if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+										if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+											break
+										}
+									} else {
+										break
+									}
+									walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
+								} else {
+									walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
+								}
+
 							} else {
 								target := curr
 

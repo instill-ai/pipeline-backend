@@ -6,6 +6,7 @@ toolchain go1.21.3
 
 require (
 	cloud.google.com/go/longrunning v0.5.2
+	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/frankban/quicktest v1.14.6
 	github.com/gabriel-vasile/mimetype v1.4.3
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
@@ -24,7 +25,6 @@ require (
 	github.com/instill-ai/x v0.4.0-alpha
 	github.com/knadh/koanf v1.5.0
 	github.com/mennanov/fieldmask-utils v1.0.0
-	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 	github.com/openfga/go-sdk v0.2.3
 	go.einride.tech/aip v0.60.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.17.0
@@ -58,6 +58,7 @@ require (
 	cloud.google.com/go/iam v1.1.5 // indirect
 	cloud.google.com/go/storage v1.34.1 // indirect
 	github.com/JohannesKaufmann/html-to-markdown v1.4.2 // indirect
+	github.com/PaesslerAG/gval v1.0.0 // indirect
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/antchfx/htmlquery v1.2.3 // indirect
