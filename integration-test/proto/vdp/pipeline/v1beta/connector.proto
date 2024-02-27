@@ -14,7 +14,7 @@ import "google/protobuf/timestamp.proto";
 // OpenAPI definition
 import "protoc-gen-openapiv2/options/annotations.proto";
 // VDP definitions
-import "../../../vdp/pipeline/v1beta/connector_definition.proto";
+import "../../../vdp/pipeline/v1beta/component_definition.proto";
 
 // A Connector is a type of pipeline component that queries, processes or sends
 // the ingested unstructured data to a service or app. Users need to configure

@@ -409,8 +409,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 				switch con.Type {
 				case pipelinePB.ConnectorType_CONNECTOR_TYPE_AI:
 					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
-				case pipelinePB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN:
-					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN
+				case pipelinePB.ConnectorType_CONNECTOR_TYPE_APPLICATION:
+					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION
 				case pipelinePB.ConnectorType_CONNECTOR_TYPE_DATA:
 					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA
 				}
@@ -682,8 +682,8 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 				switch con.Type {
 				case pipelinePB.ConnectorType_CONNECTOR_TYPE_AI:
 					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
-				case pipelinePB.ConnectorType_CONNECTOR_TYPE_BLOCKCHAIN:
-					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_BLOCKCHAIN
+				case pipelinePB.ConnectorType_CONNECTOR_TYPE_APPLICATION:
+					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION
 				case pipelinePB.ConnectorType_CONNECTOR_TYPE_DATA:
 					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA
 				}

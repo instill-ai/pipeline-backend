@@ -121,7 +121,6 @@ type Service interface {
 	ListConnectorDefinitions(ctx context.Context, pageSize int32, pageToken string, view View, filter filtering.Filter) ([]*pipelinePB.ConnectorDefinition, int32, string, error)
 	GetConnectorByUID(ctx context.Context, authUser *AuthUser, uid uuid.UUID, view View, credentialMask bool) (*pipelinePB.Connector, error)
 	GetConnectorDefinitionByID(ctx context.Context, id string, view View) (*pipelinePB.ConnectorDefinition, error)
-	GetConnectorDefinitionByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.ConnectorDefinition, error)
 
 	// Connector common
 	ListConnectors(ctx context.Context, authUser *AuthUser, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int32, string, error)
@@ -1867,20 +1866,6 @@ func (s *service) GetConnectorByUID(ctx context.Context, authUser *AuthUser, uid
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string, view View) (*pipelinePB.ConnectorDefinition, error) {
 
 	def, err := s.connector.GetConnectorDefinitionByID(id, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	def = proto.Clone(def).(*pipelinePB.ConnectorDefinition)
-	if view == ViewBasic {
-		def.Spec = nil
-	}
-	def.VendorAttributes = nil
-
-	return def, nil
-}
-func (s *service) GetConnectorDefinitionByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.ConnectorDefinition, error) {
-
-	def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, nil)
 	if err != nil {
 		return nil, err
 	}

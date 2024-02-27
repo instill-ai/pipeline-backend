@@ -3,61 +3,102 @@ package handler
 import (
 	"context"
 	"fmt"
-
 	"time"
 
+	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
 	"github.com/instill-ai/x/sterr"
 
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-func (h *PrivateHandler) LookUpOperatorDefinitionAdmin(ctx context.Context, req *pipelinePB.LookUpOperatorDefinitionAdminRequest) (resp *pipelinePB.LookUpOperatorDefinitionAdminResponse, err error) {
+func (h *PublicHandler) ListConnectorDefinitions(ctx context.Context, req *pb.ListConnectorDefinitionsRequest) (resp *pb.ListConnectorDefinitionsResponse, err error) {
+	ctx, span := tracer.Start(ctx, "ListConnectorDefinitions",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	resp = &pipelinePB.LookUpOperatorDefinitionAdminResponse{}
+	resp = &pb.ListConnectorDefinitionsResponse{}
+	pageSize := int64(req.GetPageSize())
+	pageToken := req.GetPageToken()
 
-	var connID string
-
-	if connID, err = resource.GetRscNameID(req.GetPermalink()); err != nil {
-		return resp, err
-	}
-
-	dbDef, err := h.service.GetOperatorDefinitionByID(ctx, connID)
+	var connType pb.ConnectorType
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareEnumIdent("connector_type", connType.Type()),
+	}...)
 	if err != nil {
+		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	resp.OperatorDefinition = proto.Clone(dbDef).(*pipelinePB.OperatorDefinition)
-	if parseView(int32(*req.GetView().Enum())) == service.ViewBasic {
-		resp.OperatorDefinition.Spec = nil
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
 	}
-	resp.OperatorDefinition.Name = fmt.Sprintf("operator-definitions/%s", resp.OperatorDefinition.GetId())
+	defs, totalSize, nextPageToken, err := h.service.ListConnectorDefinitions(ctx, int32(pageSize), pageToken, parseView(int32(*req.GetView().Enum())), filter)
 
-	logger.Info("GetOperatorDefinitionAdmin")
+	if err != nil {
+		return nil, err
+	}
+
+	resp.ConnectorDefinitions = defs
+	resp.NextPageToken = nextPageToken
+	resp.TotalSize = int32(totalSize)
+
+	logger.Info("ListConnectorDefinitions")
+
 	return resp, nil
 }
 
-func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.ListOperatorDefinitionsRequest) (resp *pipelinePB.ListOperatorDefinitionsResponse, err error) {
+func (h *PublicHandler) GetConnectorDefinition(ctx context.Context, req *pb.GetConnectorDefinitionRequest) (resp *pb.GetConnectorDefinitionResponse, err error) {
+	ctx, span := tracer.Start(ctx, "GetConnectorDefinition",
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp = &pb.GetConnectorDefinitionResponse{}
+
+	var connID string
+
+	if connID, err = resource.GetRscNameID(req.GetName()); err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+
+	dbDef, err := h.service.GetConnectorDefinitionByID(ctx, connID, parseView(int32(*req.GetView().Enum())))
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return resp, err
+	}
+	resp.ConnectorDefinition = dbDef
+
+	logger.Info("GetConnectorDefinition")
+	return resp, nil
+
+}
+
+func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pb.ListOperatorDefinitionsRequest) (resp *pb.ListOperatorDefinitionsResponse, err error) {
 	ctx, span := tracer.Start(ctx, "ListOperatorDefinitions",
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	resp = &pipelinePB.ListOperatorDefinitionsResponse{}
+	resp = &pb.ListOperatorDefinitionsResponse{}
 	pageSize := req.GetPageSize()
 	pageToken := req.GetPageToken()
-	isBasicView := (req.GetView() == pipelinePB.OperatorDefinition_VIEW_BASIC) || (req.GetView() == pipelinePB.OperatorDefinition_VIEW_UNSPECIFIED)
+	isBasicView := (req.GetView() == pb.ComponentDefinition_VIEW_BASIC) || (req.GetView() == pb.ComponentDefinition_VIEW_UNSPECIFIED)
 
 	prevLastUID := ""
 
@@ -97,9 +138,9 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipeli
 		}
 	}
 
-	page := []*pipelinePB.OperatorDefinition{}
+	page := []*pb.OperatorDefinition{}
 	for i := 0; i < int(pageSize) && startIdx+i < len(defs); i++ {
-		def := proto.Clone(defs[startIdx+i]).(*pipelinePB.OperatorDefinition)
+		def := proto.Clone(defs[startIdx+i]).(*pb.OperatorDefinition)
 		page = append(page, def)
 		lastUID = def.Uid
 	}
@@ -126,14 +167,14 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pipeli
 	return resp, nil
 }
 
-func (h *PublicHandler) GetOperatorDefinition(ctx context.Context, req *pipelinePB.GetOperatorDefinitionRequest) (resp *pipelinePB.GetOperatorDefinitionResponse, err error) {
+func (h *PublicHandler) GetOperatorDefinition(ctx context.Context, req *pb.GetOperatorDefinitionRequest) (resp *pb.GetOperatorDefinitionResponse, err error) {
 	ctx, span := tracer.Start(ctx, "GetOperatorDefinition",
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	resp = &pipelinePB.GetOperatorDefinitionResponse{}
+	resp = &pb.GetOperatorDefinitionResponse{}
 
 	var connID string
 
@@ -141,14 +182,14 @@ func (h *PublicHandler) GetOperatorDefinition(ctx context.Context, req *pipeline
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	isBasicView := (req.GetView() == pipelinePB.OperatorDefinition_VIEW_BASIC) || (req.GetView() == pipelinePB.OperatorDefinition_VIEW_UNSPECIFIED)
+	isBasicView := (req.GetView() == pb.ComponentDefinition_VIEW_BASIC) || (req.GetView() == pb.ComponentDefinition_VIEW_UNSPECIFIED)
 
 	dbDef, err := h.service.GetOperatorDefinitionByID(ctx, connID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	resp.OperatorDefinition = proto.Clone(dbDef).(*pipelinePB.OperatorDefinition)
+	resp.OperatorDefinition = proto.Clone(dbDef).(*pb.OperatorDefinition)
 	if isBasicView {
 		resp.OperatorDefinition.Spec = nil
 	}
