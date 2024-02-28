@@ -33,6 +33,14 @@ const (
 	ViewRecipe      View = 3
 )
 
+func parseView(i int32) View {
+	if i == 0 {
+		return ViewBasic
+	}
+
+	return View(i)
+}
+
 func (s *service) recipeNameToPermalink(recipeRscName *pipelinePB.Recipe) (*pipelinePB.Recipe, error) {
 
 	recipePermalink := &pipelinePB.Recipe{Version: recipeRscName.Version}
