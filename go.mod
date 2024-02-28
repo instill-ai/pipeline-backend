@@ -18,7 +18,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/component v0.11.0-beta.0.20240222072616-52804d408e44
-	github.com/instill-ai/connector v0.12.0-beta.0.20240227160925-e6c47ec07941
+	github.com/instill-ai/connector v0.12.0-beta.0.20240228213245-ef305c9c9ee3
 	github.com/instill-ai/operator v0.8.0-beta.0.20240226070114-0647a26ef93b
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240226101151-03ed57d8f5f7
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
