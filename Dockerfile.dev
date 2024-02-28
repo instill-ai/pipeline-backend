@@ -14,7 +14,7 @@ COPY --from=docker:dind-rootless --chown=nobody:nogroup /usr/local/bin/docker /u
 ARG TARGETOS TARGETARCH K6_VERSION
 
 # air
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@latest
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@v1.49
 
 # k6
 ADD https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz
