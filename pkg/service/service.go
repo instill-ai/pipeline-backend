@@ -118,6 +118,8 @@ type Service interface {
 
 	AuthenticateUser(ctx context.Context, allowVisitor bool) (authUser *AuthUser, err error)
 
+	ListComponentDefinitions(context.Context, *pipelinePB.ListComponentDefinitionsRequest) (*pipelinePB.ListComponentDefinitionsResponse, error)
+
 	ListConnectorDefinitions(context.Context, *pipelinePB.ListConnectorDefinitionsRequest) (*pipelinePB.ListConnectorDefinitionsResponse, error)
 	GetConnectorByUID(ctx context.Context, authUser *AuthUser, uid uuid.UUID, view View, credentialMask bool) (*pipelinePB.Connector, error)
 	GetConnectorDefinitionByID(ctx context.Context, id string, view View) (*pipelinePB.ConnectorDefinition, error)
@@ -410,25 +412,28 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 	return s.operator.GetOperatorDefinitionByID(defID, nil)
 }
 
-func (s *service) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.ListOperatorDefinitionsRequest) (*pipelinePB.ListOperatorDefinitionsResponse, error) {
-	prevLastUID := ""
-	if req.GetPageToken() != "" {
-		_, id, err := paginate.DecodeToken(req.GetPageToken())
-		if err != nil {
-			return nil, repository.ErrPageTokenDecode
+func (s *service) operatorDefinitions() []*pipelinePB.OperatorDefinition {
+	allDefs := s.operator.ListOperatorDefinitions()
+
+	// don't return definition with tombstone = true
+	withoutTombstone := make([]*pipelinePB.OperatorDefinition, 0, len(allDefs))
+	for _, def := range allDefs {
+		if !def.Tombstone {
+			withoutTombstone = append(withoutTombstone, def)
 		}
-
-		prevLastUID = id
 	}
 
-	pageSize := int(req.GetPageSize())
-	if pageSize == 0 {
-		pageSize = repository.DefaultPageSize
-	} else if pageSize > repository.MaxPageSize {
-		pageSize = repository.MaxPageSize
+	return withoutTombstone
+}
+
+func (s *service) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.ListOperatorDefinitionsRequest) (*pipelinePB.ListOperatorDefinitionsResponse, error) {
+	pageSize := s.pageSizeInRange(req.GetPageSize())
+	prevLastUID, err := s.lastUIDFromToken(req.GetPageToken())
+	if err != nil {
+		return nil, err
 	}
 
-	defs := s.operator.ListOperatorDefinitions()
+	defs := s.operatorDefinitions()
 
 	startIdx := 0
 	lastUID := ""
@@ -453,10 +458,7 @@ func (s *service) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.L
 
 	view := parseView(int32(req.GetView()))
 	for _, def := range page {
-		def.Name = fmt.Sprintf("operator-definitions/%s", def.Id)
-		if view == ViewBasic {
-			def.Spec = nil
-		}
+		s.applyViewToOperatorDefinition(def, view)
 	}
 
 	resp := &pipelinePB.ListOperatorDefinitionsResponse{
@@ -1852,22 +1854,106 @@ func (s *service) filterConnectorDefinitions(defs []*pipelinePB.ConnectorDefinit
 	return filtered
 }
 
-func (s *service) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.ListConnectorDefinitionsRequest) (*pipelinePB.ListConnectorDefinitionsResponse, error) {
-	prevLastUID := ""
-	if req.GetPageToken() != "" {
-		_, id, err := paginate.DecodeToken(req.GetPageToken())
-		if err != nil {
-			return nil, repository.ErrPageTokenDecode
-		}
-
-		prevLastUID = id
+func (s *service) lastUIDFromToken(token string) (string, error) {
+	if token == "" {
+		return "", nil
+	}
+	_, id, err := paginate.DecodeToken(token)
+	if err != nil {
+		return "", repository.ErrPageTokenDecode
 	}
 
-	pageSize := int(req.GetPageSize())
-	if pageSize == 0 {
-		pageSize = repository.DefaultPageSize
-	} else if pageSize > repository.MaxPageSize {
-		pageSize = repository.MaxPageSize
+	return id, nil
+}
+
+func (s *service) pageSizeInRange(pageSize int32) int {
+	if pageSize <= 0 {
+		return repository.DefaultPageSize
+	}
+
+	if pageSize > repository.MaxPageSize {
+		return repository.MaxPageSize
+	}
+
+	return int(pageSize)
+}
+
+func (s *service) offsetInRange(offset int32) int {
+	if offset <= 0 {
+		return 0
+	}
+
+	return int(offset)
+}
+
+func (s *service) applyViewToConnectorDefinition(cd *pipelinePB.ConnectorDefinition, v View) {
+	cd.VendorAttributes = nil
+	if v == ViewBasic {
+		cd.Spec = nil
+	}
+}
+
+func (s *service) applyViewToOperatorDefinition(od *pipelinePB.OperatorDefinition, v View) {
+	od.Name = fmt.Sprintf("operator-definitions/%s", od.Id)
+	if v == ViewBasic {
+		od.Spec = nil
+	}
+}
+
+// ListComponentDefinitions returns a paginated list of components.
+func (s *service) ListComponentDefinitions(ctx context.Context, req *pipelinePB.ListComponentDefinitionsRequest) (*pipelinePB.ListComponentDefinitionsResponse, error) {
+	view := parseView(int32(req.GetView()))
+	pageSize := s.pageSizeInRange(req.GetPageSize())
+	offset := s.offsetInRange(req.GetPage())
+	startIdx := pageSize * offset
+
+	connDefs := s.connectorDefinitions()
+	opDefs := s.operatorDefinitions()
+
+	// Build a list with all the component definitions.
+	compDefs := make([]*pipelinePB.ComponentDefinition, 0, len(connDefs)+len(opDefs))
+	for _, cd := range connDefs {
+		compDefs = append(compDefs, &pipelinePB.ComponentDefinition{
+			Type:       connectorTypeToComponentType[cd.Type],
+			Definition: &pipelinePB.ComponentDefinition_ConnectorDefinition{ConnectorDefinition: cd},
+		})
+	}
+	for _, od := range opDefs {
+		compDefs = append(compDefs, &pipelinePB.ComponentDefinition{
+			Type:       pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR,
+			Definition: &pipelinePB.ComponentDefinition_OperatorDefinition{OperatorDefinition: od},
+		})
+	}
+
+	// Extract a page from the list and compute view.
+	totalSize := len(compDefs)
+	compPage := make([]*pipelinePB.ComponentDefinition, 0, pageSize)
+	for i := 0; i < pageSize && startIdx+i < totalSize; i++ {
+		d := proto.Clone(compDefs[startIdx+i]).(*pipelinePB.ComponentDefinition)
+		if cd := d.GetConnectorDefinition(); cd != nil {
+			s.applyViewToConnectorDefinition(cd, view)
+		} else if od := d.GetOperatorDefinition(); od != nil {
+			s.applyViewToOperatorDefinition(od, view)
+		}
+
+		compPage = append(compPage, d)
+	}
+
+	resp := &pipelinePB.ListComponentDefinitionsResponse{
+		PageSize:             int32(pageSize),
+		Page:                 int32(offset),
+		TotalSize:            int32(totalSize),
+		ComponentDefinitions: compPage,
+	}
+
+	return resp, nil
+}
+
+func (s *service) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.ListConnectorDefinitionsRequest) (*pipelinePB.ListConnectorDefinitionsResponse, error) {
+	pageSize := s.pageSizeInRange(req.GetPageSize())
+	prevLastUID, err := s.lastUIDFromToken(req.GetPageToken())
+	if err != nil {
+		return nil, err
 	}
 
 	var connType pipelinePB.ConnectorType
@@ -1911,11 +1997,7 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.
 	view := parseView(int32(req.GetView()))
 	pageDefs := make([]*pipelinePB.ConnectorDefinition, 0, len(page))
 	for _, def := range page {
-		def := proto.Clone(def).(*pipelinePB.ConnectorDefinition)
-		if view == ViewBasic {
-			def.Spec = nil
-		}
-		def.VendorAttributes = nil
+		s.applyViewToConnectorDefinition(def, view)
 		pageDefs = append(pageDefs, def)
 	}
 

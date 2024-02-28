@@ -3,20 +3,32 @@ package handler
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/protobuf/proto"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
-	"github.com/instill-ai/x/paginate"
-	"github.com/instill-ai/x/sterr"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/repository"
 )
+
+// ListComponentDefinitions returns a paginated list of component (e.g.
+// operator, connector) definitions.
+func (h *PublicHandler) ListComponentDefinitions(ctx context.Context, req *pb.ListComponentDefinitionsRequest) (*pb.ListComponentDefinitionsResponse, error) {
+	ctx, span := tracer.Start(ctx, "ListComponentDefinitions", trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp, err := h.service.ListComponentDefinitions(ctx, req)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	logger.Info("ListComponentDefinitions")
+	return resp, nil
+}
 
 func (h *PublicHandler) ListConnectorDefinitions(ctx context.Context, req *pb.ListConnectorDefinitionsRequest) (*pb.ListConnectorDefinitionsResponse, error) {
 	ctx, span := tracer.Start(ctx, "ListConnectorDefinitions", trace.WithSpanKind(trace.SpanKindServer))

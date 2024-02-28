@@ -9,6 +9,7 @@ import {
   pipelinePublicHost,
 } from "./const.js";
 
+import * as componentDefinition from "./rest-component-definition.js";
 import * as connectorDefinition from "./rest-connector-definition.js";
 import * as constant from "./const.js";
 import * as operatorDefinition from "./rest-operator-definition.js";
@@ -111,7 +112,6 @@ export default function (data) {
     pipelinePrivate.CheckLookUp(data)
 
   } else {
-
     pipelinePublicWithJwt.CheckCreate(data)
     pipelinePublicWithJwt.CheckList(data)
     pipelinePublicWithJwt.CheckGet(data)
@@ -132,6 +132,7 @@ export default function (data) {
     connectorDefinition.CheckGet(data)
     operatorDefinition.CheckList()
     operatorDefinition.CheckGet()
+    componentDefinition.CheckList(data)
   }
 }
 

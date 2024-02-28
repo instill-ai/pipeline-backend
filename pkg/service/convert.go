@@ -370,6 +370,12 @@ func (s *service) PBToDBPipeline(ctx context.Context, ns resource.Namespace, pbP
 	}, nil
 }
 
+var connectorTypeToComponentType = map[pipelinePB.ConnectorType]pipelinePB.ComponentType{
+	pipelinePB.ConnectorType_CONNECTOR_TYPE_AI:          pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
+	pipelinePB.ConnectorType_CONNECTOR_TYPE_APPLICATION: pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
+	pipelinePB.ConnectorType_CONNECTOR_TYPE_DATA:        pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
+}
+
 // DBToPBPipeline converts db data model to protobuf data model
 func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, authUser *AuthUser, view View) (*pipelinePB.Pipeline, error) {
 
@@ -409,22 +415,16 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	if view == ViewRecipe || view == ViewFull {
 		for i := range pbRecipe.Components {
-			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions") {
+			switch {
+			case strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "connector-definitions"):
 				con, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(pbRecipe.Components[i].DefinitionName, "/")[1]), nil, nil)
 				if err != nil {
 					return nil, err
 				}
-				switch con.Type {
-				case pipelinePB.ConnectorType_CONNECTOR_TYPE_AI:
-					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI
-				case pipelinePB.ConnectorType_CONNECTOR_TYPE_APPLICATION:
-					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION
-				case pipelinePB.ConnectorType_CONNECTOR_TYPE_DATA:
-					pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA
-				}
 
-			}
-			if strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions") {
+				pbRecipe.Components[i].Type = connectorTypeToComponentType[con.Type]
+
+			case strings.HasPrefix(pbRecipe.Components[i].DefinitionName, "operator-definitions"):
 				pbRecipe.Components[i].Type = pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR
 			}
 		}
