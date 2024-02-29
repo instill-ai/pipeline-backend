@@ -4,7 +4,6 @@ import { check, group } from "k6";
 import { pipelinePublicHost } from "./const.js"
 
 import * as constant from "./const.js"
-import * as dataConnectorDefinition from './rest-data-connector-definition.js';
 import * as dataConnectorPublic from './rest-data-connector-public.js';
 import * as dataConnectorPublicWithJwt from './rest-data-connector-public-with-jwt.js';
 import * as dataConnectorPrivate from './rest-data-connector-private.js';
@@ -65,14 +64,10 @@ export default function (data) {
 
   // private API do not expose to public.
   if (!constant.apiGatewayMode) {
-
     // data connectors
     dataConnectorPrivate.CheckList(data)
     dataConnectorPrivate.CheckLookUp(data)
-
-
   } else {
-
     // data public with Instill-User-Uid
     dataConnectorPublicWithJwt.CheckCreate(data)
     dataConnectorPublicWithJwt.CheckList(data)
@@ -83,10 +78,6 @@ export default function (data) {
     dataConnectorPublicWithJwt.CheckRename(data)
     dataConnectorPublicWithJwt.CheckExecute(data)
     dataConnectorPublicWithJwt.CheckTest(data)
-
-    // data connector definitions
-    dataConnectorDefinition.CheckList(data)
-    dataConnectorDefinition.CheckGet(data)
 
     // data connectors
     dataConnectorPublic.CheckCreate(data)

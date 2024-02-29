@@ -60,7 +60,7 @@ import (
 // Service interface
 type Service interface {
 	GetOperatorDefinitionByID(ctx context.Context, defID string) (*pipelinePB.OperatorDefinition, error)
-	ListOperatorDefinitions(ctx context.Context) []*pipelinePB.OperatorDefinition
+	ListOperatorDefinitions(context.Context, *pipelinePB.ListOperatorDefinitionsRequest) (*pipelinePB.ListOperatorDefinitionsResponse, error)
 
 	ListPipelines(ctx context.Context, authUser *AuthUser, pageSize int32, pageToken string, view View, visibility *pipelinePB.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error)
 	GetPipelineByUID(ctx context.Context, authUser *AuthUser, uid uuid.UUID, view View) (*pipelinePB.Pipeline, error)
@@ -118,7 +118,9 @@ type Service interface {
 
 	AuthenticateUser(ctx context.Context, allowVisitor bool) (authUser *AuthUser, err error)
 
-	ListConnectorDefinitions(ctx context.Context, pageSize int32, pageToken string, view View, filter filtering.Filter) ([]*pipelinePB.ConnectorDefinition, int32, string, error)
+	ListComponentDefinitions(context.Context, *pipelinePB.ListComponentDefinitionsRequest) (*pipelinePB.ListComponentDefinitionsResponse, error)
+
+	ListConnectorDefinitions(context.Context, *pipelinePB.ListConnectorDefinitionsRequest) (*pipelinePB.ListConnectorDefinitionsResponse, error)
 	GetConnectorByUID(ctx context.Context, authUser *AuthUser, uid uuid.UUID, view View, credentialMask bool) (*pipelinePB.Connector, error)
 	GetConnectorDefinitionByID(ctx context.Context, id string, view View) (*pipelinePB.ConnectorDefinition, error)
 
@@ -410,8 +412,62 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 	return s.operator.GetOperatorDefinitionByID(defID, nil)
 }
 
-func (s *service) ListOperatorDefinitions(ctx context.Context) []*pipelinePB.OperatorDefinition {
-	return s.operator.ListOperatorDefinitions()
+func (s *service) operatorDefinitions() []*pipelinePB.OperatorDefinition {
+	allDefs := s.operator.ListOperatorDefinitions()
+
+	// don't return definition with tombstone = true
+	withoutTombstone := make([]*pipelinePB.OperatorDefinition, 0, len(allDefs))
+	for _, def := range allDefs {
+		if !def.Tombstone {
+			withoutTombstone = append(withoutTombstone, def)
+		}
+	}
+
+	return withoutTombstone
+}
+
+func (s *service) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.ListOperatorDefinitionsRequest) (*pipelinePB.ListOperatorDefinitionsResponse, error) {
+	pageSize := s.pageSizeInRange(req.GetPageSize())
+	prevLastUID, err := s.lastUIDFromToken(req.GetPageToken())
+	if err != nil {
+		return nil, err
+	}
+
+	defs := s.operatorDefinitions()
+
+	startIdx := 0
+	lastUID := ""
+	for idx, def := range defs {
+		if def.Uid == prevLastUID {
+			startIdx = idx + 1
+			break
+		}
+	}
+	page := make([]*pipelinePB.OperatorDefinition, 0, pageSize)
+	for i := 0; i < pageSize && startIdx+i < len(defs); i++ {
+		def := proto.Clone(defs[startIdx+i]).(*pipelinePB.OperatorDefinition)
+		page = append(page, def)
+		lastUID = def.Uid
+	}
+
+	nextPageToken := ""
+
+	if startIdx+len(page) < len(defs) {
+		nextPageToken = paginate.EncodeToken(time.Time{}, lastUID)
+	}
+
+	view := parseView(int32(req.GetView()))
+	for _, def := range page {
+		s.applyViewToOperatorDefinition(def, view)
+	}
+
+	resp := &pipelinePB.ListOperatorDefinitionsResponse{
+		NextPageToken:       nextPageToken,
+		TotalSize:           int32(len(page)),
+		OperatorDefinitions: page,
+	}
+
+	return resp, nil
 }
 
 func (s *service) ListPipelines(ctx context.Context, authUser *AuthUser, pageSize int32, pageToken string, view View, visibility *pipelinePB.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error) {
@@ -1757,58 +1813,164 @@ func (s *service) KeepCredentialFieldsWithMaskString(dbConnDefID string, config 
 	utils.KeepCredentialFieldsWithMaskString(s.connector, dbConnDefID, config)
 }
 
-func (s *service) ListConnectorDefinitions(ctx context.Context, pageSize int32, pageToken string, view View, filter filtering.Filter) ([]*pipelinePB.ConnectorDefinition, int32, string, error) {
-
-	var err error
-	prevLastUID := ""
-
-	if pageToken != "" {
-		_, prevLastUID, err = paginate.DecodeToken(pageToken)
-		if err != nil {
-
-			return nil, 0, "", repository.ErrPageTokenDecode
-		}
-	}
-
-	if pageSize == 0 {
-		pageSize = repository.DefaultPageSize
-	} else if pageSize > repository.MaxPageSize {
-		pageSize = repository.MaxPageSize
-	}
-
-	unfilteredDefs := s.connector.ListConnectorDefinitions()
+func (s *service) connectorDefinitions() []*pipelinePB.ConnectorDefinition {
+	allDefs := s.connector.ListConnectorDefinitions()
 
 	// don't return definition with tombstone = true
-	unfilteredDefsRemoveTombstone := []*pipelinePB.ConnectorDefinition{}
-	for idx := range unfilteredDefs {
-		if !unfilteredDefs[idx].Tombstone {
-			unfilteredDefsRemoveTombstone = append(unfilteredDefsRemoveTombstone, unfilteredDefs[idx])
+	withoutTombstone := make([]*pipelinePB.ConnectorDefinition, 0, len(allDefs))
+	for _, def := range allDefs {
+		if !def.Tombstone {
+			withoutTombstone = append(withoutTombstone, def)
 		}
 	}
-	unfilteredDefs = unfilteredDefsRemoveTombstone
 
-	var defs []*pipelinePB.ConnectorDefinition
-	if filter.CheckedExpr != nil {
-		trans := repository.NewTranspiler(filter)
-		expr, _ := trans.Transpile()
-		typeMap := map[string]bool{}
-		for idx := range expr.Vars {
-			if idx == 0 {
-				typeMap[string(expr.Vars[idx].(protoreflect.Name))] = true
-			} else {
-				typeMap[string(expr.Vars[idx].([]any)[0].(protoreflect.Name))] = true
-			}
+	return withoutTombstone
+}
 
-		}
-		for idx := range unfilteredDefs {
-			if _, ok := typeMap[unfilteredDefs[idx].Type.String()]; ok {
-				defs = append(defs, unfilteredDefs[idx])
-			}
-		}
-
-	} else {
-		defs = unfilteredDefs
+func (s *service) filterConnectorDefinitions(defs []*pipelinePB.ConnectorDefinition, filter filtering.Filter) []*pipelinePB.ConnectorDefinition {
+	if filter.CheckedExpr == nil {
+		return defs
 	}
+
+	filtered := make([]*pipelinePB.ConnectorDefinition, 0, len(defs))
+	trans := repository.NewTranspiler(filter)
+	expr, _ := trans.Transpile()
+	typeMap := map[string]bool{}
+	for i, v := range expr.Vars {
+		if i == 0 {
+			typeMap[string(v.(protoreflect.Name))] = true
+			continue
+		}
+
+		typeMap[string(v.([]any)[0].(protoreflect.Name))] = true
+	}
+
+	for _, def := range defs {
+		if _, ok := typeMap[def.Type.String()]; ok {
+			filtered = append(filtered, def)
+		}
+	}
+
+	return filtered
+}
+
+func (s *service) lastUIDFromToken(token string) (string, error) {
+	if token == "" {
+		return "", nil
+	}
+	_, id, err := paginate.DecodeToken(token)
+	if err != nil {
+		return "", repository.ErrPageTokenDecode
+	}
+
+	return id, nil
+}
+
+func (s *service) pageSizeInRange(pageSize int32) int {
+	if pageSize <= 0 {
+		return repository.DefaultPageSize
+	}
+
+	if pageSize > repository.MaxPageSize {
+		return repository.MaxPageSize
+	}
+
+	return int(pageSize)
+}
+
+func (s *service) offsetInRange(offset int32) int {
+	if offset <= 0 {
+		return 0
+	}
+
+	return int(offset)
+}
+
+func (s *service) applyViewToConnectorDefinition(cd *pipelinePB.ConnectorDefinition, v View) {
+	cd.VendorAttributes = nil
+	if v == ViewBasic {
+		cd.Spec = nil
+	}
+}
+
+func (s *service) applyViewToOperatorDefinition(od *pipelinePB.OperatorDefinition, v View) {
+	od.Name = fmt.Sprintf("operator-definitions/%s", od.Id)
+	if v == ViewBasic {
+		od.Spec = nil
+	}
+}
+
+// ListComponentDefinitions returns a paginated list of components.
+func (s *service) ListComponentDefinitions(ctx context.Context, req *pipelinePB.ListComponentDefinitionsRequest) (*pipelinePB.ListComponentDefinitionsResponse, error) {
+	view := parseView(int32(req.GetView()))
+	pageSize := s.pageSizeInRange(req.GetPageSize())
+	offset := s.offsetInRange(req.GetPage())
+	startIdx := pageSize * offset
+
+	connDefs := s.connectorDefinitions()
+	opDefs := s.operatorDefinitions()
+
+	// Build a list with all the component definitions.
+	compDefs := make([]*pipelinePB.ComponentDefinition, 0, len(connDefs)+len(opDefs))
+	for _, cd := range connDefs {
+		compDefs = append(compDefs, &pipelinePB.ComponentDefinition{
+			Type:       connectorTypeToComponentType[cd.Type],
+			Definition: &pipelinePB.ComponentDefinition_ConnectorDefinition{ConnectorDefinition: cd},
+		})
+	}
+	for _, od := range opDefs {
+		compDefs = append(compDefs, &pipelinePB.ComponentDefinition{
+			Type:       pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR,
+			Definition: &pipelinePB.ComponentDefinition_OperatorDefinition{OperatorDefinition: od},
+		})
+	}
+
+	// Extract a page from the list and compute view.
+	totalSize := len(compDefs)
+	compPage := make([]*pipelinePB.ComponentDefinition, 0, pageSize)
+	for i := 0; i < pageSize && startIdx+i < totalSize; i++ {
+		d := proto.Clone(compDefs[startIdx+i]).(*pipelinePB.ComponentDefinition)
+		if cd := d.GetConnectorDefinition(); cd != nil {
+			s.applyViewToConnectorDefinition(cd, view)
+		} else if od := d.GetOperatorDefinition(); od != nil {
+			s.applyViewToOperatorDefinition(od, view)
+		}
+
+		compPage = append(compPage, d)
+	}
+
+	resp := &pipelinePB.ListComponentDefinitionsResponse{
+		PageSize:             int32(pageSize),
+		Page:                 int32(offset),
+		TotalSize:            int32(totalSize),
+		ComponentDefinitions: compPage,
+	}
+
+	return resp, nil
+}
+
+func (s *service) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.ListConnectorDefinitionsRequest) (*pipelinePB.ListConnectorDefinitionsResponse, error) {
+	pageSize := s.pageSizeInRange(req.GetPageSize())
+	prevLastUID, err := s.lastUIDFromToken(req.GetPageToken())
+	if err != nil {
+		return nil, err
+	}
+
+	var connType pipelinePB.ConnectorType
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareEnumIdent("connector_type", connType.Type()),
+	}...)
+	if err != nil {
+		return nil, err
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return nil, err
+	}
+
+	defs := s.filterConnectorDefinitions(s.connectorDefinitions(), filter)
 
 	startIdx := 0
 	lastUID := ""
@@ -1819,8 +1981,8 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, pageSize int32, 
 		}
 	}
 
-	page := []*pipelinePB.ConnectorDefinition{}
-	for i := 0; i < int(pageSize) && startIdx+i < len(defs); i++ {
+	page := make([]*pipelinePB.ConnectorDefinition, 0, pageSize)
+	for i := 0; i < pageSize && startIdx+i < len(defs); i++ {
 		def := proto.Clone(defs[startIdx+i]).(*pipelinePB.ConnectorDefinition)
 		page = append(page, def)
 		lastUID = def.Uid
@@ -1832,18 +1994,18 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, pageSize int32, 
 		nextPageToken = paginate.EncodeToken(time.Time{}, lastUID)
 	}
 
-	pageDefs := []*pipelinePB.ConnectorDefinition{}
-
+	view := parseView(int32(req.GetView()))
+	pageDefs := make([]*pipelinePB.ConnectorDefinition, 0, len(page))
 	for _, def := range page {
-		def = proto.Clone(def).(*pipelinePB.ConnectorDefinition)
-		if view == ViewBasic {
-			def.Spec = nil
-		}
-		def.VendorAttributes = nil
+		s.applyViewToConnectorDefinition(def, view)
 		pageDefs = append(pageDefs, def)
 	}
-	return pageDefs, int32(len(defs)), nextPageToken, err
 
+	return &pipelinePB.ListConnectorDefinitionsResponse{
+		ConnectorDefinitions: pageDefs,
+		NextPageToken:        nextPageToken,
+		TotalSize:            int32(len(defs)),
+	}, nil
 }
 
 func (s *service) GetConnectorByUID(ctx context.Context, authUser *AuthUser, uid uuid.UUID, view View, credentialMask bool) (*pipelinePB.Connector, error) {
