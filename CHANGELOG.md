@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.23.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.22.0-beta...v0.23.0-beta) (2024-02-29)
+
+
+### Features
+
+* rename blockchain connector type to application ([#397](https://github.com/instill-ai/pipeline-backend/issues/397)) ([80aa6a5](https://github.com/instill-ai/pipeline-backend/commit/80aa6a5c725fa18c34a84db4ec426f60461fd702))
+* support reference with `foo["bar"]` syntax ([#394](https://github.com/instill-ai/pipeline-backend/issues/394)) ([ed82215](https://github.com/instill-ai/pipeline-backend/commit/ed8221504572ba67e39367b651085df438306c7d))
+* use `mgmtPB.Owner` to embed the owner information in response ([#392](https://github.com/instill-ai/pipeline-backend/issues/392)) ([d071461](https://github.com/instill-ai/pipeline-backend/commit/d0714617e34aa7779947b153297a7bffea7bd08f))
+
+
+### Miscellaneous Chores
+
+* release v0.23.0-beta ([53fbd18](https://github.com/instill-ai/pipeline-backend/commit/53fbd18e9de9b01d477b5f41a6eeee21ac41e67a))
+
 ## [0.22.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.21.1-beta...v0.22.0-beta) (2024-02-16)
 
 
