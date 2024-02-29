@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.24.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.23.0-beta...v0.24.0-beta) (2024-02-29)
+
+
+### Features
+
+* add component definition list endpoint ([#396](https://github.com/instill-ai/pipeline-backend/issues/396)) ([d565a22](https://github.com/instill-ai/pipeline-backend/commit/d565a2278cf6b0178273b85f53ef3df212371b8e))
+
 ## [0.23.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.22.0-beta...v0.23.0-beta) (2024-02-29)
 
 
