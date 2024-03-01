@@ -513,7 +513,7 @@ export function CheckGet(data) {
         [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline recipe is null`]:
           (r) => r.message.pipeline.recipe !== null,
         [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} view: "VIEW_FULL" response pipeline owner is valid`]:
-          (r) => {console.log(r.message.pipeline.owner); console.log(data.expectedOwner); return helper.isValidOwner(r.message.pipeline.owner, data.expectedOwner)},
+          (r) => helper.isValidOwner(r.message.pipeline.owner, data.expectedOwner),
       }
     );
 
