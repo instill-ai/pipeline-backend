@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.23.0-beta...v0.23.1-beta) (2024-03-01)
+
+
+### Bug Fixes
+
+* fix component ID with a hyphen cannot be referenced ([#401](https://github.com/instill-ai/pipeline-backend/issues/401)) ([2735639](https://github.com/instill-ai/pipeline-backend/commit/2735639665088ddb409c73ad2df24f0425275be1))
+
 ## [0.23.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.22.0-beta...v0.23.0-beta) (2024-02-29)
 
 
