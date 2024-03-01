@@ -412,20 +412,6 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 	return s.operator.GetOperatorDefinitionByID(defID, nil)
 }
 
-func (s *service) operatorDefinitions() []*pipelinePB.OperatorDefinition {
-	allDefs := s.operator.ListOperatorDefinitions()
-
-	// don't return definition with tombstone = true
-	withoutTombstone := make([]*pipelinePB.OperatorDefinition, 0, len(allDefs))
-	for _, def := range allDefs {
-		if !def.Tombstone {
-			withoutTombstone = append(withoutTombstone, def)
-		}
-	}
-
-	return withoutTombstone
-}
-
 func (s *service) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.ListOperatorDefinitionsRequest) (*pipelinePB.ListOperatorDefinitionsResponse, error) {
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 	prevLastUID, err := s.lastUIDFromToken(req.GetPageToken())
@@ -433,7 +419,7 @@ func (s *service) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.L
 		return nil, err
 	}
 
-	defs := s.operatorDefinitions()
+	defs := s.operator.ListOperatorDefinitions()
 
 	startIdx := 0
 	lastUID := ""
@@ -1821,20 +1807,6 @@ func (s *service) KeepCredentialFieldsWithMaskString(dbConnDefID string, config 
 	utils.KeepCredentialFieldsWithMaskString(s.connector, dbConnDefID, config)
 }
 
-func (s *service) connectorDefinitions() []*pipelinePB.ConnectorDefinition {
-	allDefs := s.connector.ListConnectorDefinitions()
-
-	// don't return definition with tombstone = true
-	withoutTombstone := make([]*pipelinePB.ConnectorDefinition, 0, len(allDefs))
-	for _, def := range allDefs {
-		if !def.Tombstone {
-			withoutTombstone = append(withoutTombstone, def)
-		}
-	}
-
-	return withoutTombstone
-}
-
 func (s *service) filterConnectorDefinitions(defs []*pipelinePB.ConnectorDefinition, filter filtering.Filter) []*pipelinePB.ConnectorDefinition {
 	if filter.CheckedExpr == nil {
 		return defs
@@ -1915,8 +1887,8 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pipelinePB.
 	offset := s.offsetInRange(req.GetPage())
 	startIdx := pageSize * offset
 
-	connDefs := s.connectorDefinitions()
-	opDefs := s.operatorDefinitions()
+	connDefs := s.connector.ListConnectorDefinitions()
+	opDefs := s.operator.ListOperatorDefinitions()
 
 	// Build a list with all the component definitions.
 	compDefs := make([]*pipelinePB.ComponentDefinition, 0, len(connDefs)+len(opDefs))
@@ -1978,7 +1950,7 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.
 		return nil, err
 	}
 
-	defs := s.filterConnectorDefinitions(s.connectorDefinitions(), filter)
+	defs := s.filterConnectorDefinitions(s.connector.ListConnectorDefinitions(), filter)
 
 	startIdx := 0
 	lastUID := ""
