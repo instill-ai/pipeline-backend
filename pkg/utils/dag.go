@@ -171,7 +171,21 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 
 func traverseBinding(bindings any, path string) (any, error) {
 
-	res, err := jsonpath.Get("$."+path, bindings)
+	// Note: We allow hyphens (-) in the component ID, but `jsonpath` doesn't support it.
+	// This workaround transcodes the component ID into a valid name for the `jsonpath` library.
+	componentID := strings.Split(path, ".")[0]
+	route := strings.Join(strings.Split(path, ".")[1:], ".")
+	componentIDMap := map[string]string{}
+	transcodedBinding := map[string]any{}
+	idx := 0
+	for k := range bindings.(map[string]any) {
+		// Generates a valid variable name for jsonpath
+		newID := fmt.Sprintf("comp%d", idx)
+		componentIDMap[k] = newID
+		transcodedBinding[newID] = bindings.(map[string]any)[k]
+		idx = idx + 1
+	}
+	res, err := jsonpath.Get(fmt.Sprintf("$.%s.%s", componentIDMap[componentID], route), transcodedBinding)
 	if err != nil {
 		// check primitive value
 		var ret any
