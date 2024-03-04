@@ -114,12 +114,15 @@ func (w *worker) SetBlob(inputs []*structpb.Struct) ([]string, error) {
 		}
 
 		blobRedisKey := fmt.Sprintf("async_connector_blob:%s:%d", id.String(), idx)
-		w.redisClient.Set(
+		cmd := w.redisClient.Set(
 			context.Background(),
 			blobRedisKey,
 			inputJSON,
 			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
 		)
+		if cmd.Err() != nil {
+			return nil, cmd.Err()
+		}
 		blobRedisKeys = append(blobRedisKeys, blobRedisKey)
 	}
 	return blobRedisKeys, nil
@@ -194,7 +197,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	pipelineInputs, err := w.GetBlob(param.PipelineInputBlobRedisKeys)
 	if err != nil {
 		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
-		return nil, err
+		return nil, fmt.Errorf("err TriggerPipelineWorkflow %v %v", err, param.PipelineInputBlobRedisKeys)
 	}
 	batchSize := len(pipelineInputs)
 	for idx := range pipelineInputs {
@@ -474,7 +477,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			}
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
-				return nil, err
+				return nil, fmt.Errorf("err TriggerPipelineWorkflow output %v %v", err, result.OutputBlobRedisKeys)
 			}
 			for compBatchIdx := range outputs {
 
@@ -537,13 +540,15 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return nil, err
 	}
 	blobRedisKey := fmt.Sprintf("async_pipeline_response:%s", workflow.GetInfo(ctx).WorkflowExecution.ID)
-	w.redisClient.Set(
+	cmd := w.redisClient.Set(
 		context.Background(),
 		blobRedisKey,
 		outputJSON,
 		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
 	)
-
+	if cmd.Err() != nil {
+		return nil, cmd.Err()
+	}
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
 
@@ -562,7 +567,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 
 	compInputs, err := w.GetBlob(param.InputBlobRedisKeys)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("err ConnectorActivity %v %v", err, param.InputBlobRedisKeys)
 	}
 
 	con, err := w.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(param.DefinitionName, "/")[1]), nil, nil)
@@ -621,7 +626,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 
 	compInputs, err := w.GetBlob(param.InputBlobRedisKeys)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("err OperatorActivity %v %v", err, param.InputBlobRedisKeys)
 	}
 
 	op, err := w.operator.GetOperatorDefinitionByUID(uuid.FromStringOrNil(strings.Split(param.DefinitionName, "/")[1]), nil)

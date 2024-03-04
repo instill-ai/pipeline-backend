@@ -1375,12 +1375,15 @@ func (s *service) triggerPipeline(
 		}
 
 		inputBlobRedisKey := fmt.Sprintf("async_pipeline_request:%s:%d", pipelineTriggerID, idx)
-		s.redisClient.Set(
+		cmd := s.redisClient.Set(
 			context.Background(),
 			inputBlobRedisKey,
 			inputJSON,
 			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
 		)
+		if cmd.Err() != nil {
+			return nil, nil, cmd.Err()
+		}
 		inputBlobRedisKeys = append(inputBlobRedisKeys, inputBlobRedisKey)
 		defer s.redisClient.Del(context.Background(), inputBlobRedisKey)
 	}
@@ -1475,12 +1478,15 @@ func (s *service) triggerAsyncPipeline(
 		}
 
 		inputBlobRedisKey := fmt.Sprintf("async_pipeline_request:%s:%d", pipelineTriggerID, idx)
-		s.redisClient.Set(
+		cmd := s.redisClient.Set(
 			context.Background(),
 			inputBlobRedisKey,
 			inputJSON,
 			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
 		)
+		if cmd.Err() != nil {
+			return nil, cmd.Err()
+		}
 		inputBlobRedisKeys = append(inputBlobRedisKeys, inputBlobRedisKey)
 	}
 	memo := map[string]interface{}{}
