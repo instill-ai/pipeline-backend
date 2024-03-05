@@ -83,7 +83,7 @@ export function CheckList() {
     });
 
 
-    // Fetcha page with operator definitions.
+    // Fetch a page with operator definitions.
     // TODO when there are more connector definitions than the max page size
     // (100), accessing the 2nd page won't work. We'll need to use a smaller
     // page size and compute the page where operator definitions start.
@@ -93,6 +93,29 @@ export function CheckList() {
       [`GET /v1beta/component-definitions?page_size=${connectorSize}&page=1 response status 200`]: (r) => r.status === 200,
       [`GET /v1beta/component-definitions?page_size=${connectorSize}&page=1 response contains operator definition type`]: (r) => r.json().component_definitions[0].type === "COMPONENT_TYPE_OPERATOR",
       [`GET /v1beta/component-definitions?page_size=${connectorSize}&page=1 response contains operator definitions`]: (r) => r.json().component_definitions[0].operator_definition.id != "",
+    });
+
+    // Filter (fuzzy) title
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1&filter=q_title="JSO"`, null, null), {
+      [`GET /v1beta/component-definitions?page_size=1&filter=q_title="JSO" response status 200`]: (r) => r.status === 200,
+      [`GET /v1beta/component-definitions?page_size=1&filter=q_title="JSO" single result`]: (r) => r.json().total_size === 1,
+      [`GET /v1beta/component-definitions?page_size=1&filter=q_title="JSO" title is JSON`]: (r) => r.json().component_definitions[0].operator_definition.title === "JSON",
+    });
+
+    // Filter component type
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1&filter=component_type=COMPONENT_TYPE_OPERATOR`, null, null), {
+      "GET /v1beta/component-definitions?page_size=1&filter=component_type=COMPONENT_TYPE_OPERATOR response status 200": (r) => r.status === 200,
+      "GET /v1beta/component-definitions?page_size=1&filter=component_type=COMPONENT_TYPE_OPERATOR total size is smaller": (r) => r.json().total_size < limitedRecords.json().total_size,
+      "GET /v1beta/component-definitions?page_size=1&filter=component_type=COMPONENT_TYPE_OPERATOR type is COMPONENT_TYPE_OPERATOR": (r) => r.json().component_definitions[0].type === "COMPONENT_TYPE_OPERATOR",
+    });
+
+    // Filter release stage
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1&filter=release_stage="RELEASE_STAGE_ALPHA"`, null, null), {
+      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage="RELEASE_STAGE_ALPHA" response status 200`]: (r) => r.status === 200,
+      // TODO when there are non-alpha components, update expectations.
+      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage="RELEASE_STAGE_ALPHA" number of results`]: (r) => r.json().total_size === limitedRecords.json().total_size,
+      // TODO check only prerelease in semver.
+      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage="RELEASE_STAGE_ALPHA" title is JSON`]: (r) => r.json().component_definitions[0].connector_definition.version === "0.1.0-alpha",
     });
   });
 }
