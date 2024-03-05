@@ -90,7 +90,7 @@ export const simpleRecipe = {
           fields: {
             input: {
               title: "Input",
-              instillFormat: "string"
+              instill_format: "string"
             }
           }
         }
@@ -109,7 +109,7 @@ export const simpleRecipe = {
       {
         id: "d01",
         connector_component: {
-          resource_name: `users/admin/connectors/${dstCSVConnID1}`,
+          connector_name: `users/admin/connectors/${dstCSVConnID1}`,
           definition_name: "connector-definitions/airbyte-destination",
           input: {
             data: {
@@ -122,7 +122,7 @@ export const simpleRecipe = {
       {
         id: "d02",
         connector_component: {
-          resource_name: `users/admin/connectors/${dstCSVConnID2}`,
+          connector_name: `users/admin/connectors/${dstCSVConnID2}`,
           definition_name: "connector-definitions/airbyte-destination",
           input: {
             data: {
@@ -145,7 +145,7 @@ export const simpleRecipeWithoutCSV = {
           fields: {
             input: {
               title: "Input",
-              instillFormat: "string"
+              instill_format: "string"
             }
           }
         }
@@ -175,7 +175,7 @@ export const simpleRecipeDupId = {
           fields: {
             input: {
               title: "Input",
-              instillFormat: "string"
+              instill_format: "string"
             }
           }
         }
@@ -194,7 +194,7 @@ export const simpleRecipeDupId = {
       {
         id: "d01",
         connector_component: {
-          resource_name: `users/admin/connectors/${dstCSVConnID1}`,
+          connector_name: `users/admin/connectors/${dstCSVConnID1}`,
           definition_name: "connector-definitions/airbyte-destination",
           input: {
             data: {
@@ -206,7 +206,7 @@ export const simpleRecipeDupId = {
       {
         id: "d01",
         connector_component: {
-          resource_name: `users/admin/connectors/${dstCSVConnID2}`,
+          connector_name: `users/admin/connectors/${dstCSVConnID2}`,
           definition_name: "connector-definitions/airbyte-destination",
           input: {
             data: {
