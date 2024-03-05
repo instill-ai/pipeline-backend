@@ -68,43 +68,18 @@ jobs:
             GOLANG_VERSION=${{ env.GOLANG_VERSION }}
           tags: instill/pipeline-backend:latest
 
-      - name: Checkout repo (core)
+      - name: Checkout repo (instill-core)
         uses: actions/checkout@v3
         with:
-          repository: instill-ai/core
-
-      - name: Load .env file (core)
-        uses: cardinalby/export-env-action@v2
-        with:
-          envFile: .env
-
-      - name: Launch Instill core (latest)
-        run: |
-          COMPOSE_PROFILES=all \
-          EDITION=local-ce:test \
-          docker compose -f docker-compose.yml -f docker-compose.latest.yml up -d --quiet-pull
-          COMPOSE_PROFILES=all \
-          EDITION=local-ce:test \
-          docker compose -f docker-compose.yml -f docker-compose.latest.yml rm -f
-
-      - name: Checkout repo (vdp)
-        uses: actions/checkout@v3
-        with:
-          repository: instill-ai/vdp
+          repository: instill-ai/instill-core
 
       - name: Load .env file (vdp)
         uses: cardinalby/export-env-action@v2
         with:
           envFile: .env
 
-      - name: Launch Instill VDP (latest)
-        run: |
-          COMPOSE_PROFILES=all \
-          EDITION=local-ce:test \
-          docker compose -f docker-compose.yml -f docker-compose.latest.yml up -d --quiet-pull
-          COMPOSE_PROFILES=all \
-          EDITION=local-ce:test \
-          docker compose -f docker-compose.yml -f docker-compose.latest.yml rm -f
+      - name: Launch Instill Core (latest)
+        run: make latest PROFILE=all
 
       - name: Install k6
         run: |
