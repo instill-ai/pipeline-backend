@@ -785,7 +785,11 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 		return nil, err
 	}
 	for idx := range sourcePipeline.Recipe.Components {
-		sourcePipeline.Recipe.Components[idx].ResourceName = ""
+		switch sourcePipeline.Recipe.Components[idx].Component.(type) {
+		case *pipelinePB.Component_ConnectorComponent:
+			sourcePipeline.Recipe.Components[idx].GetConnectorComponent().ConnectorName = ""
+		}
+
 	}
 	sourcePipeline.Id = targetID
 	targetPipeline, err := s.CreateNamespacePipeline(ctx, targetNS, authUser, sourcePipeline)
@@ -932,12 +936,16 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	instillFormatMap := map[string]string{}
 	for _, comp := range recipe.Components {
 		// op start
-		if comp.DefinitionName == "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" {
+		if comp.IsStartComponent() {
+
 			schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 			schStruct.Fields["type"] = structpb.NewStringValue("object")
-			schStruct.Fields["properties"] = structpb.NewStructValue(comp.Configuration.Fields["metadata"].GetStructValue())
-			for k, v := range comp.Configuration.Fields["metadata"].GetStructValue().Fields {
-				instillFormatMap[k] = v.GetStructValue().Fields["instillFormat"].GetStringValue()
+			b, _ := json.Marshal(comp.StartComponent.Fields)
+			properties := &structpb.Struct{}
+			_ = protojson.Unmarshal(b, properties)
+			schStruct.Fields["properties"] = structpb.NewStructValue(properties)
+			for k, v := range comp.StartComponent.Fields {
+				instillFormatMap[k] = v.InstillFormat
 			}
 			err := component.CompileInstillAcceptFormats(schStruct)
 			if err != nil {

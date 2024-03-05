@@ -176,26 +176,6 @@ export function CheckList(data) {
       }
     );
 
-    var srcConnPermalink = "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3"
-
-    // var modelUid = http.get(`${modelPublicHost}/v1beta/models/${constant.model_id}`, {}, constant.params).json().model.uid
-    // var modelPermalink = `models/${modelUid}`
-
-    check(
-      http.request(
-        "GET",
-        `${pipelinePrivateHost}/v1beta/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22`,
-        null,
-        constant.params
-      ),
-      {
-        [`GET /v1beta/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response 200`]:
-          (r) => r.status == 200,
-        [`GET /v1beta/admin/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]:
-          (r) => r.json().pipelines.length > 0,
-      }
-    );
-
     // Delete the pipelines
     for (const reqBody of reqBodies) {
       check(

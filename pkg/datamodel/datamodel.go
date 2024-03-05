@@ -75,10 +75,82 @@ type Recipe struct {
 }
 
 type Component struct {
-	ID             string           `json:"id"`
+	ID       string         `json:"id"`
+	Metadata datatypes.JSON `json:"metadata"`
+	// TODO: validate oneof
+	StartComponent     *StartComponent     `json:"start_component,omitempty"`
+	EndComponent       *EndComponent       `json:"end_component,omitempty"`
+	ConnectorComponent *ConnectorComponent `json:"connector_component,omitempty"`
+	OperatorComponent  *OperatorComponent  `json:"operator_component,omitempty"`
+	IteratorComponent  *IteratorComponent  `json:"iterator_component,omitempty"`
+}
+
+func (c *Component) IsStartComponent() bool {
+	return c.StartComponent != nil
+}
+func (c *Component) IsEndComponent() bool {
+	return c.EndComponent != nil
+}
+func (c *Component) IsConnectorComponent() bool {
+	return c.ConnectorComponent != nil
+}
+func (c *Component) IsOperatorComponent() bool {
+	return c.OperatorComponent != nil
+}
+func (c *Component) IsIteratorComponent() bool {
+	return c.IteratorComponent != nil
+}
+func (c *Component) GetCondition() *string {
+	if c.IsConnectorComponent() {
+		return c.ConnectorComponent.Condition
+	}
+	if c.IsOperatorComponent() {
+		return c.OperatorComponent.Condition
+	}
+	if c.IsIteratorComponent() {
+		return c.IteratorComponent.Condition
+	}
+	return nil
+}
+
+type StartComponent struct {
+	Fields map[string]struct {
+		Title          string `json:"title"`
+		Description    string `json:"description"`
+		InstillFormat  string `json:"instill_format"`
+		InstillUIOrder int32  `json:"instill_ui_order"`
+	} `json:"fields"`
+}
+
+type EndComponent struct {
+	Fields map[string]struct {
+		Title          string `json:"title"`
+		Description    string `json:"description"`
+		Value          string `json:"value"`
+		InstillUIOrder int32  `json:"instill_ui_order"`
+	} `json:"fields"`
+}
+
+type ConnectorComponent struct {
 	DefinitionName string           `json:"definition_name"`
-	ResourceName   string           `json:"resource_name"`
-	Configuration  *structpb.Struct `json:"configuration"`
+	ConnectorName  string           `json:"connector_name"`
+	Task           string           `json:"task"`
+	Input          *structpb.Struct `json:"input"`
+	Condition      *string          `json:"condition,omitempty"`
+}
+
+type OperatorComponent struct {
+	DefinitionName string           `json:"definition_name"`
+	Task           string           `json:"task"`
+	Input          *structpb.Struct `json:"input"`
+	Condition      *string          `json:"condition,omitempty"`
+}
+
+type IteratorComponent struct {
+	Input          string            `json:"input"`
+	OutputElements map[string]string `json:"output_elements"`
+	Condition      *string           `json:"condition,omitempty"`
+	Components     []*Component      `json:"components"`
 }
 
 type Sharing struct {

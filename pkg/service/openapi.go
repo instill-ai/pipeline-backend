@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -9,7 +8,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -164,8 +162,11 @@ func (s *service) GenerateOpenAPISpec(startCompOrigin *pipelinePB.Component, end
 	openAPIInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
 	startComp := proto.Clone(startCompOrigin).(*pipelinePB.Component)
-	for k, v := range startComp.Configuration.Fields["metadata"].GetStructValue().Fields {
-		openAPIInput.Fields["properties"].GetStructValue().Fields[k] = v
+	for k, v := range startComp.GetStartComponent().GetFields() {
+		b, _ := protojson.Marshal(v)
+		p := &structpb.Struct{}
+		_ = protojson.Unmarshal(b, p)
+		openAPIInput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(p)
 	}
 
 	templateWalk = template.GetFields()["paths"]
@@ -186,268 +187,160 @@ func (s *service) GenerateOpenAPISpec(startCompOrigin *pipelinePB.Component, end
 	openAPIOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
 	endComp := proto.Clone(endCompOrigin).(*pipelinePB.Component)
-	inputFields := endComp.Configuration.Fields["input"].GetStructValue().Fields
-	if endComp.Configuration.Fields["metadata"] == nil {
-		return nil, fmt.Errorf("metadata of end operator can not be empty")
-	}
-	for k, v := range endComp.Configuration.Fields["metadata"].GetStructValue().Fields {
+
+	for k, v := range endComp.GetEndComponent().Fields {
 		var m *structpb.Value
 
 		var err error
 
-		switch inputFields[k].AsInterface().(type) {
-		case string:
-			str := inputFields[k].GetStringValue()
-			if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
-				// TODO
-				str = str[2:]
-				str = str[:len(str)-1]
+		str := v.Value
+		if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
+			// TODO
+			str = str[2:]
+			str = str[:len(str)-1]
+			str = strings.ReplaceAll(str, " ", "")
 
-				// We can not strip space inside the ""
-				splits := strings.Split(str, "\"")
-				stripSplits := make([]string, len(splits))
-				for idx := range splits {
-					stripSplits[idx] = strings.ReplaceAll(splits[idx], " ", "")
+			compID := strings.Split(str, ".")[0]
+			str = str[len(strings.Split(str, ".")[0]):]
+			upstreamCompIdx := -1
+			for compIdx := range compsOrigin {
+				if compsOrigin[compIdx].Id == compID {
+					upstreamCompIdx = compIdx
 				}
-				str = strings.Join(stripSplits, "\"")
+			}
 
-				var b interface{}
-				unmarshalErr := json.Unmarshal([]byte(str), &b)
+			if upstreamCompIdx != -1 {
+				comp := proto.Clone(compsOrigin[upstreamCompIdx]).(*pipelinePB.Component)
 
-				// if the json is Unmarshalable, means that it is not a reference
-				if unmarshalErr == nil {
-					attrType := ""
-					instillFormat := ""
-					switch b.(type) {
-					case string:
-						attrType = "string"
-						instillFormat = "text"
-					case float64:
-						attrType = "number"
-						instillFormat = "number"
-					case bool:
-						attrType = "bool"
-						instillFormat = "bool"
-					case nil:
-						attrType = "null"
-						instillFormat = "null"
-					}
-					m, err = structpb.NewValue(map[string]interface{}{
-						"title":         v.GetStructValue().Fields["title"].GetStringValue(),
-						"description":   v.GetStructValue().Fields["description"].GetStringValue(),
-						"type":          attrType,
-						"instillFormat": instillFormat,
-					})
-
-				} else {
-					compID := strings.Split(str, ".")[0]
-					str = str[len(strings.Split(str, ".")[0]):]
-					upstreamCompIdx := -1
-					for compIdx := range compsOrigin {
-						if compsOrigin[compIdx].Id == compID {
-							upstreamCompIdx = compIdx
+				var walk *structpb.Value
+				switch comp.Component.(type) {
+				case *pipelinePB.Component_IteratorComponent:
+					// TODO: implement this
+					continue
+				case *pipelinePB.Component_ConnectorComponent:
+					task := comp.GetConnectorComponent().GetTask()
+					if task == "" {
+						keys := make([]string, 0, len(comp.GetConnectorComponent().GetDefinition().Spec.OpenapiSpecifications.GetFields()))
+						if len(keys) != 1 {
+							return nil, fmt.Errorf("must specify a task")
 						}
+						task = keys[0]
 					}
 
-					if upstreamCompIdx != -1 {
-						comp := proto.Clone(compsOrigin[upstreamCompIdx]).(*pipelinePB.Component)
+					if _, ok := comp.GetConnectorComponent().GetDefinition().Spec.OpenapiSpecifications.GetFields()[task]; !ok {
+						return nil, fmt.Errorf("generate OpenAPI spec error")
+					}
+					walk = comp.GetConnectorComponent().GetDefinition().Spec.OpenapiSpecifications.GetFields()[task]
 
-						var walk *structpb.Value
-						if strings.HasPrefix(comp.DefinitionName, "connector-definitions") {
-							task := ""
-							if parsedTask, ok := comp.GetConfiguration().Fields["task"]; ok {
-								task = parsedTask.GetStringValue()
-							}
-							if task == "" {
-								keys := make([]string, 0, len(comp.GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()))
-								if len(keys) != 1 {
-									return nil, fmt.Errorf("must specify a task")
-								}
-								task = keys[0]
-							}
+					splits := strings.Split(str, ".")
 
-							if _, ok := comp.GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()[task]; !ok {
-								return nil, fmt.Errorf("generate OpenAPI spec error")
-							}
-							walk = comp.GetConnectorDefinition().Spec.OpenapiSpecifications.GetFields()[task]
-
-							splits := strings.Split(str, ".")
-
-							if splits[1] == "output" {
-								for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
-									walk = walk.GetStructValue().Fields[key]
-								}
-							} else if splits[1] == "input" {
-								for _, key := range []string{"paths", "/execute", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
-									walk = walk.GetStructValue().Fields[key]
-								}
-							} else {
-								return nil, fmt.Errorf("generate OpenAPI spec error")
-							}
-							str = str[len(splits[1])+1:]
-
-						} else if comp.DefinitionName == "operator-definitions/start" {
-
-							// Clone the struct to avoid modify on the same address
-							walk = proto.Clone(structpb.NewStructValue(openAPIInput)).(*structpb.Value)
-
-						} else if utils.IsOperatorDefinition(comp.DefinitionName) {
-
-							task := ""
-							if parsedTask, ok := comp.GetConfiguration().Fields["task"]; ok {
-								task = parsedTask.GetStringValue()
-							}
-							if task == "" {
-								keys := make([]string, 0, len(comp.GetOperatorDefinition().Spec.OpenapiSpecifications.GetFields()))
-								if len(keys) != 1 {
-									return nil, fmt.Errorf("must specify a task")
-								}
-								task = keys[0]
-							}
-
-							if _, ok := comp.GetOperatorDefinition().Spec.OpenapiSpecifications.GetFields()[task]; !ok {
-								return nil, fmt.Errorf("generate OpenAPI spec error")
-							}
-
-							walk = comp.GetOperatorDefinition().Spec.OpenapiSpecifications.GetFields()[task]
-
-							splits := strings.Split(str, ".")
-
-							if splits[1] == "output" {
-								for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
-									walk = walk.GetStructValue().Fields[key]
-								}
-							} else if splits[1] == "input" {
-								for _, key := range []string{"paths", "/execute", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
-									walk = walk.GetStructValue().Fields[key]
-								}
-							} else {
-								return nil, fmt.Errorf("generate OpenAPI spec error")
-							}
-							str = str[len(splits[1])+1:]
+					if splits[1] == "output" {
+						for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
+							walk = walk.GetStructValue().Fields[key]
 						}
-
-						for {
-							if len(str) == 0 {
-								break
-							}
-
-							splits := strings.Split(str, ".")
-							curr := splits[1]
-
-							if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
-								target := strings.Split(curr, "[")[0]
-								if _, ok := walk.GetStructValue().Fields["properties"]; ok {
-									if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
-										break
-									}
-								} else {
-									break
-								}
-
-								// Handle the case when using foo["bar"]
-								if strings.Contains(curr, "[\"") && strings.Contains(curr, "\"]") {
-									if _, ok := walk.GetStructValue().Fields["properties"]; ok {
-										if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
-											break
-										}
-									} else {
-										break
-									}
-									walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
-									target = curr[len(target)+2 : len(curr)-2]
-									if _, ok := walk.GetStructValue().Fields["properties"]; ok {
-										if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
-											break
-										}
-									} else {
-										break
-									}
-									walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
-								} else {
-									walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
-								}
-
-							} else {
-								target := curr
-
-								if _, ok := walk.GetStructValue().Fields["properties"]; ok {
-									if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
-										break
-									}
-								} else {
-									break
-								}
-
-								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
-
-							}
-
-							str = str[len(curr)+1:]
+					} else if splits[1] == "input" {
+						for _, key := range []string{"paths", "/execute", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
+							walk = walk.GetStructValue().Fields[key]
 						}
-						m = structpb.NewStructValue(walk.GetStructValue())
-						if _, ok := v.GetStructValue().Fields["title"]; ok {
-							if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-								m.GetStructValue().Fields["title"] = v.GetStructValue().Fields["title"]
-							}
-						} else {
-							if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-								m.GetStructValue().Fields["title"] = structpb.NewStringValue("")
-							}
-						}
-						if _, ok := v.GetStructValue().Fields["description"]; ok {
-							if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-								m.GetStructValue().Fields["description"] = v.GetStructValue().Fields["description"]
-							}
-						} else {
-							if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-								m.GetStructValue().Fields["description"] = structpb.NewStringValue("")
-							}
-						}
-
 					} else {
 						return nil, fmt.Errorf("generate OpenAPI spec error")
 					}
+					str = str[len(splits[1])+1:]
+				case *pipelinePB.Component_StartComponent:
+					walk = structpb.NewStructValue(openAPIInput)
+				case *pipelinePB.Component_OperatorComponent:
+					task := comp.GetOperatorComponent().GetTask()
+					if task == "" {
+						keys := make([]string, 0, len(comp.GetOperatorComponent().GetDefinition().Spec.OpenapiSpecifications.GetFields()))
+						if len(keys) != 1 {
+							return nil, fmt.Errorf("must specify a task")
+						}
+						task = keys[0]
+					}
 
+					if _, ok := comp.GetOperatorComponent().GetDefinition().Spec.OpenapiSpecifications.GetFields()[task]; !ok {
+						return nil, fmt.Errorf("generate OpenAPI spec error")
+					}
+
+					walk = comp.GetOperatorComponent().GetDefinition().Spec.OpenapiSpecifications.GetFields()[task]
+
+					splits := strings.Split(str, ".")
+
+					if splits[1] == "output" {
+						for _, key := range []string{"paths", "/execute", "post", "responses", "200", "content", "application/json", "schema", "properties", "outputs", "items"} {
+							walk = walk.GetStructValue().Fields[key]
+						}
+					} else if splits[1] == "input" {
+						for _, key := range []string{"paths", "/execute", "post", "requestBody", "content", "application/json", "schema", "properties", "inputs", "items"} {
+							walk = walk.GetStructValue().Fields[key]
+						}
+					} else {
+						return nil, fmt.Errorf("generate OpenAPI spec error")
+					}
+					str = str[len(splits[1])+1:]
 				}
-				if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-					m.GetStructValue().Fields["instillUIOrder"] = structpb.NewNumberValue(v.GetStructValue().Fields["instillUIOrder"].GetNumberValue())
+
+				for {
+					if len(str) == 0 {
+						break
+					}
+
+					splits := strings.Split(str, ".")
+					curr := splits[1]
+
+					if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
+						target := strings.Split(curr, "[")[0]
+						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+								break
+							}
+						} else {
+							break
+						}
+						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
+					} else {
+						target := curr
+
+						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+								break
+							}
+						} else {
+							break
+						}
+
+						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
+
+					}
+
+					str = str[len(curr)+1:]
 				}
+				m = structpb.NewStructValue(walk.GetStructValue())
 
 			} else {
-				m, err = structpb.NewValue(map[string]interface{}{
-					"title":          v.GetStructValue().Fields["title"].GetStringValue(),
-					"description":    v.GetStructValue().Fields["description"].GetStringValue(),
-					"instillUIOrder": v.GetStructValue().Fields["instillUIOrder"].GetNumberValue(),
-					"type":           "string",
-					"instillFormat":  "text",
-				})
+				return nil, fmt.Errorf("generate OpenAPI spec error")
 			}
-		case float64:
+
+			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+				m.GetStructValue().Fields["title"] = structpb.NewStringValue(v.Title)
+			}
+			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+				m.GetStructValue().Fields["description"] = structpb.NewStringValue(v.Description)
+			}
+			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+				m.GetStructValue().Fields["instillUIOrder"] = structpb.NewNumberValue(float64(v.InstillUiOrder))
+			}
+
+		} else {
 			m, err = structpb.NewValue(map[string]interface{}{
-				"title":          v.GetStructValue().Fields["title"].GetStringValue(),
-				"description":    v.GetStructValue().Fields["description"].GetStringValue(),
-				"instillUIOrder": v.GetStructValue().Fields["instillUIOrder"].GetNumberValue(),
-				"type":           "number",
-				"instillFormat":  "number",
-			})
-		case bool:
-			m, err = structpb.NewValue(map[string]interface{}{
-				"title":          v.GetStructValue().Fields["title"].GetStringValue(),
-				"description":    v.GetStructValue().Fields["description"].GetStringValue(),
-				"instillUIOrder": v.GetStructValue().Fields["instillUIOrder"].GetNumberValue(),
-				"type":           "boolean",
-				"instillFormat":  "boolean",
-			})
-		case structpb.NullValue:
-			m, err = structpb.NewValue(map[string]interface{}{
-				"title":          v.GetStructValue().Fields["title"].GetStringValue(),
-				"description":    v.GetStructValue().Fields["description"].GetStringValue(),
-				"instillUIOrder": v.GetStructValue().Fields["instillUIOrder"].GetNumberValue(),
-				"type":           "null",
-				"instillFormat":  "null",
+				"title":          v.Title,
+				"description":    v.Description,
+				"instillUIOrder": v.InstillUiOrder,
+				"type":           "string",
+				"instillFormat":  "string",
 			})
 		}
+
 		if err != nil {
 			success = false
 		} else {

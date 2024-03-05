@@ -1,20 +1,25 @@
-package utils
+package worker
 
 import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 
 	"go/ast"
-	"go/parser"
 	"go/token"
 
 	"github.com/PaesslerAG/jsonpath"
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 type ComponentStatus struct {
@@ -169,7 +174,7 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 	return ans, nil
 }
 
-func traverseBinding(bindings any, path string) (any, error) {
+func traverseBinding(bindings ItemMemory, path string) (any, error) {
 
 	// Note: We allow hyphens (-) in the component ID, but `jsonpath` doesn't support it.
 	// This workaround transcodes the component ID into a valid name for the `jsonpath` library.
@@ -178,11 +183,22 @@ func traverseBinding(bindings any, path string) (any, error) {
 	componentIDMap := map[string]string{}
 	transcodedBinding := map[string]any{}
 	idx := 0
-	for k := range bindings.(map[string]any) {
+	for k := range bindings {
 		// Generates a valid variable name for jsonpath
 		newID := fmt.Sprintf("comp%d", idx)
 		componentIDMap[k] = newID
-		transcodedBinding[newID] = bindings.(map[string]any)[k]
+		// convert map[string]CompMemory to map[string]any{}
+		b, err := json.Marshal(bindings[k])
+		if err != nil {
+			return nil, err
+		}
+		var transcoded any
+
+		err = json.Unmarshal(b, &transcoded)
+		if err != nil {
+			return nil, err
+		}
+		transcodedBinding[newID] = transcoded
 		idx = idx + 1
 	}
 	res, err := jsonpath.Get(fmt.Sprintf("$.%s.%s", componentIDMap[componentID], route), transcodedBinding)
@@ -200,7 +216,7 @@ func traverseBinding(bindings any, path string) (any, error) {
 		return res, nil
 	}
 }
-func RenderInput(input any, bindings map[string]any) (any, error) {
+func RenderInput(input any, bindings ItemMemory) (any, error) {
 
 	switch input := input.(type) {
 	case string:
@@ -273,28 +289,6 @@ func RenderInput(input any, bindings map[string]any) (any, error) {
 		return val, nil
 	default:
 		return input, nil
-	}
-}
-
-func FindConditionUpstream(expr ast.Expr, upstreams *[]string) {
-	switch e := (expr).(type) {
-	case *ast.BinaryExpr:
-		FindConditionUpstream(e.X, upstreams)
-		FindConditionUpstream(e.Y, upstreams)
-	case *ast.ParenExpr:
-		FindConditionUpstream(e.X, upstreams)
-	case *ast.SelectorExpr:
-		FindConditionUpstream(e.X, upstreams)
-	case *ast.IndexExpr:
-		FindConditionUpstream(e.X, upstreams)
-	case *ast.Ident:
-		if e.Name == "true" {
-			return
-		}
-		if e.Name == "false" {
-			return
-		}
-		*upstreams = append(*upstreams, e.Name)
 	}
 }
 
@@ -576,106 +570,196 @@ func SanitizeCondition(cond string) (string, map[string]string, map[string]strin
 func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	componentIDMap := make(map[string]*datamodel.Component)
 
+	var startComp *datamodel.Component
 	for idx := range components {
 		componentIDMap[components[idx].ID] = components[idx]
+		if components[idx].IsStartComponent() {
+			startComp = components[idx]
+		}
+		if components[idx].IsIteratorComponent() {
+			for idx2 := range components[idx].IteratorComponent.Components {
+				componentIDMap[components[idx].IteratorComponent.Components[idx2].ID] = components[idx].IteratorComponent.Components[idx2]
+			}
+		}
 	}
 	graph := NewDAG(components)
+
+	// Force all component have start operator upstream
+	if startComp != nil {
+		for idx := range components {
+			if !components[idx].IsStartComponent() {
+				graph.AddEdge(startComp, components[idx])
+			}
+		}
+	}
+
 	for _, component := range components {
 
-		configuration := proto.Clone(component.Configuration)
-		template, _ := protojson.Marshal(configuration)
+		parents := []string{}
 
-		condUpstreams := []string{}
-		if cond := component.Configuration.Fields["condition"].GetStringValue(); cond != "" {
-			var varMapping map[string]string
-			cond, varMapping, _ = SanitizeCondition(cond)
-			expr, err := parser.ParseExpr(cond)
-			if err != nil {
-				return nil, err
+		if component.IsConnectorComponent() || component.IsOperatorComponent() || component.IsIteratorComponent() {
+			if component.GetCondition() != nil && *component.GetCondition() != "" {
+				parents = append(parents, FindReferenceParent(*component.GetCondition())...)
 			}
-			FindConditionUpstream(expr, &condUpstreams)
 
-			for idx := range condUpstreams {
-
-				if upstream, ok := componentIDMap[varMapping[condUpstreams[idx]]]; ok {
-					graph.AddEdge(upstream, component)
-				} else {
-					return nil, fmt.Errorf("no condition upstream component '%s'", condUpstreams[idx])
+		}
+		if component.IsConnectorComponent() {
+			configuration := proto.Clone(component.ConnectorComponent.Input)
+			template, _ := protojson.Marshal(configuration)
+			parents = append(parents, FindReferenceParent(string(template))...)
+		}
+		if component.IsOperatorComponent() {
+			configuration := proto.Clone(component.OperatorComponent.Input)
+			template, _ := protojson.Marshal(configuration)
+			parents = append(parents, FindReferenceParent(string(template))...)
+		}
+		if component.IsIteratorComponent() {
+			parents = append(parents, FindReferenceParent(component.IteratorComponent.Input)...)
+			nestedComponentIDs := []string{component.ID}
+			for _, nestedComponent := range component.IteratorComponent.Components {
+				nestedComponentIDs = append(nestedComponentIDs, nestedComponent.ID)
+			}
+			for _, nestedComponent := range component.IteratorComponent.Components {
+				if nestedComponent.IsConnectorComponent() || nestedComponent.IsOperatorComponent() {
+					if nestedComponent.GetCondition() != nil && *nestedComponent.GetCondition() != "" {
+						nestedParent := FindReferenceParent(*nestedComponent.GetCondition())
+						for idx := range nestedParent {
+							if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {
+								parents = append(parents, nestedParent[idx])
+							}
+						}
+					}
 				}
-
+				if nestedComponent.IsConnectorComponent() {
+					configuration := proto.Clone(nestedComponent.ConnectorComponent.Input)
+					template, _ := protojson.Marshal(configuration)
+					nestedParent := FindReferenceParent(string(template))
+					for idx := range nestedParent {
+						if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {
+							parents = append(parents, nestedParent[idx])
+						}
+					}
+				}
+				if nestedComponent.IsOperatorComponent() {
+					configuration := proto.Clone(nestedComponent.OperatorComponent.Input)
+					template, _ := protojson.Marshal(configuration)
+					nestedParent := FindReferenceParent(string(template))
+					for idx := range nestedParent {
+						if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {
+							parents = append(parents, nestedParent[idx])
+						}
+					}
+				}
+			}
+		}
+		if component.IsEndComponent() {
+			for _, v := range component.EndComponent.Fields {
+				parents = append(parents, FindReferenceParent(v.Value)...)
 			}
 		}
 
-		parents := FindReferenceParent(string(template))
 		for idx := range parents {
 			if upstream, ok := componentIDMap[parents[idx]]; ok {
 				graph.AddEdge(upstream, component)
-			} else {
-				return nil, fmt.Errorf("no upstream component '%s'", parents[idx])
 			}
-
 		}
 	}
 
 	return graph, nil
 }
 
-// TODO: simplify this
 func FindReferenceParent(input string) []string {
-	var parsed any
-	err := json.Unmarshal([]byte(input), &parsed)
-	if err != nil {
-		return []string{}
+	upstreams := []string{}
+	for {
+		startIdx := strings.Index(input, "${")
+		if startIdx == -1 {
+			break
+		}
+		input = input[startIdx:]
+		endIdx := strings.Index(input, "}")
+		if endIdx == -1 {
+			break
+		}
+		ref := strings.TrimSpace(input[2:endIdx])
+		upstreams = append(upstreams, strings.Split(ref, ".")[0])
+		input = input[endIdx+1:]
+	}
+	return upstreams
+}
+func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
+	trace := map[string]*pipelinePB.Trace{}
+	for groupIdx := range comps {
+		for compIdx := range comps[groupIdx] {
+			inputs := []*structpb.Struct{}
+			outputs := []*structpb.Struct{}
+			var traceStatuses []pipelinePB.Trace_Status
+			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
+				if memory[dataIdx][comps[groupIdx][compIdx].ID].Completed() {
+					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_COMPLETED)
+				} else if memory[dataIdx][comps[groupIdx][compIdx].ID].Skipped() {
+					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_SKIPPED)
+				} else if memory[dataIdx][comps[groupIdx][compIdx].ID].Error() {
+					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_ERROR)
+				} else {
+					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_UNSPECIFIED)
+				}
+
+			}
+
+			if !comps[groupIdx][compIdx].IsStartComponent() && !comps[groupIdx][compIdx].IsEndComponent() {
+				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
+					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["input"]; ok {
+						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["input"])
+						if err != nil {
+							return nil, err
+						}
+						inputStruct := &structpb.Struct{}
+						err = protojson.Unmarshal(data, inputStruct)
+						if err != nil {
+							return nil, err
+						}
+						inputs = append(inputs, inputStruct)
+					}
+
+				}
+				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
+					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["output"]; ok {
+						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["output"])
+						if err != nil {
+							return nil, err
+						}
+						outputStruct := &structpb.Struct{}
+						err = protojson.Unmarshal(data, outputStruct)
+						if err != nil {
+							return nil, err
+						}
+						outputs = append(outputs, outputStruct)
+					}
+
+				}
+			}
+
+			trace[comps[groupIdx][compIdx].ID] = &pipelinePB.Trace{
+				Statuses:             traceStatuses,
+				Inputs:               inputs,
+				Outputs:              outputs,
+				ComputeTimeInSeconds: computeTime[comps[groupIdx][compIdx].ID],
+			}
+		}
+	}
+	return trace, nil
+}
+
+func GenerateGlobalValue(pipelineUID uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]any, error) {
+	global := map[string]any{}
+
+	global["pipeline"] = map[string]any{
+		"uid":    pipelineUID.String(),
+		"recipe": recipe,
+	}
+	global["owner"] = map[string]any{
+		"uid": uuid.FromStringOrNil(strings.Split(ownerPermalink, "/")[1]),
 	}
 
-	switch parsed := parsed.(type) {
-	case string:
-
-		upstreams := []string{}
-		for {
-			startIdx := strings.Index(input, "${")
-			if startIdx == -1 {
-				break
-			}
-			input = input[startIdx:]
-			endIdx := strings.Index(input, "}")
-			if endIdx == -1 {
-				break
-			}
-			ref := strings.TrimSpace(input[2:endIdx])
-			upstreams = append(upstreams, strings.Split(ref, ".")[0])
-			input = input[endIdx+1:]
-		}
-
-		return upstreams
-
-	case map[string]any:
-		parents := []string{}
-		for _, v := range parsed {
-			encoded, err := json.Marshal(v)
-			if err != nil {
-				return []string{}
-			}
-			parents = append(parents, FindReferenceParent(string(encoded))...)
-
-		}
-		return parents
-	case []any:
-		parents := []string{}
-		for _, v := range parsed {
-			encoded, err := json.Marshal(v)
-			if err != nil {
-				return []string{}
-			}
-			parents = append(parents, FindReferenceParent(string(encoded))...)
-			if err != nil {
-				return []string{}
-			}
-
-		}
-		return parents
-
-	}
-
-	return []string{}
+	return global, nil
 }
