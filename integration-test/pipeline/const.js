@@ -86,48 +86,44 @@ export const simpleRecipe = {
     components: [
       {
         id: "start",
-        definition_name: "operator-definitions/start",
-        configuration: {
-          metadata: {
+        start_component: {
+          fields: {
             input: {
               title: "Input",
-              type: "string",
-              instillFormat: "string"
+              instill_format: "string"
             }
           }
         }
       },
       {
         id: "end",
-        definition_name: "operator-definitions/end",
-        configuration: {
-          metadata: {
+        end_component: {
+          fields: {
             answer: {
-              title: "Answer"
+              title: "Answer",
+              value: "${start.input}"
             }
-          },
-          input: {
-            answer: "${start.input}"
           }
         }
       },
       {
         id: "d01",
-        resource_name: `users/admin/connectors/${dstCSVConnID1}`,
-        definition_name: "connector-definitions/airbyte-destination",
-        configuration: {
+        connector_component: {
+          connector_name: `users/admin/connectors/${dstCSVConnID1}`,
+          definition_name: "connector-definitions/airbyte-destination",
           input: {
             data: {
               text: "${start.input}"
             }
           }
+
         }
       },
       {
         id: "d02",
-        resource_name: `users/admin/connectors/${dstCSVConnID2}`,
-        definition_name: "connector-definitions/airbyte-destination",
-        configuration: {
+        connector_component: {
+          connector_name: `users/admin/connectors/${dstCSVConnID2}`,
+          definition_name: "connector-definitions/airbyte-destination",
           input: {
             data: {
               text: "${start.input}"
@@ -145,28 +141,23 @@ export const simpleRecipeWithoutCSV = {
     components: [
       {
         id: "start",
-        definition_name: "operator-definitions/start",
-        configuration: {
-          metadata: {
+        start_component: {
+          fields: {
             input: {
               title: "Input",
-              type: "string",
-              instillFormat: "string"
+              instill_format: "string"
             }
           }
         }
       },
       {
         id: "end",
-        definition_name: "operator-definitions/end",
-        configuration: {
-          metadata: {
+        end_component: {
+          fields: {
             answer: {
-              title: "Answer"
+              title: "Answer",
+              value: "${start.input}"
             }
-          },
-          input: {
-            answer: "${start.input}"
           }
         }
       },
@@ -180,36 +171,31 @@ export const simpleRecipeDupId = {
     components: [
       {
         id: "start",
-        definition_name: "operator-definitions/start",
-        configuration: {
-          metadata: {
+        start_component: {
+          fields: {
             input: {
               title: "Input",
-              type: "string",
-              instillFormat: "string"
+              instill_format: "string"
             }
           }
         }
       },
       {
         id: "end",
-        definition_name: "operator-definitions/end",
-        configuration: {
-          metadata: {
+        end_component: {
+          fields: {
             answer: {
-              title: "Answer"
+              title: "Answer",
+              value: "${start.input}"
             }
-          },
-          input: {
-            answer: "${start.input}"
           }
         }
       },
       {
         id: "d01",
-        resource_name: `users/admin/connectors/${dstCSVConnID1}`,
-        definition_name: "connector-definitions/airbyte-destination",
-        configuration: {
+        connector_component: {
+          connector_name: `users/admin/connectors/${dstCSVConnID1}`,
+          definition_name: "connector-definitions/airbyte-destination",
           input: {
             data: {
               text: "${start.input}"
@@ -219,9 +205,9 @@ export const simpleRecipeDupId = {
       },
       {
         id: "d01",
-        resource_name: `users/admin/connectors/${dstCSVConnID2}`,
-        definition_name: "connector-definitions/airbyte-destination",
-        configuration: {
+        connector_component: {
+          connector_name: `users/admin/connectors/${dstCSVConnID2}`,
+          definition_name: "connector-definitions/airbyte-destination",
           input: {
             data: {
               text: "${start.input}"

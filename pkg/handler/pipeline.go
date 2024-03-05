@@ -274,8 +274,11 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 
 	if pipelineToCreate.Recipe != nil {
 		for _, comp := range pipelineToCreate.Recipe.Components {
-			if comp.ResourceName != "" && !strings.HasPrefix(comp.ResourceName, ns.Name()+"/") {
-				return nil, ErrConnectorNamespace
+			switch comp.Component.(type) {
+			case *pipelinePB.Component_ConnectorComponent:
+				if comp.GetConnectorComponent().ConnectorName != "" && !strings.HasPrefix(comp.GetConnectorComponent().ConnectorName, ns.Name()+"/") {
+					return nil, ErrConnectorNamespace
+				}
 			}
 		}
 	}
@@ -473,9 +476,9 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	logUUID, _ := uuid.NewV4()
+	// logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
+	// logger, _ := logger.GetZapLogger(ctx)
 
 	ns, id, err := h.service.GetRscNamespaceAndNameID(req.GetPipeline().Name)
 	if err != nil {
@@ -538,10 +541,15 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
+
+	// Check connector and pipeline belongs to same namespace
 	if pbPipelineReq.Recipe != nil {
 		for _, comp := range pbPipelineReq.Recipe.Components {
-			if comp.ResourceName != "" && !strings.HasPrefix(comp.ResourceName, ns.Name()+"/") {
-				return nil, ErrConnectorNamespace
+			switch comp.Component.(type) {
+			case *pipelinePB.Component_ConnectorComponent:
+				if comp.GetConnectorComponent().ConnectorName != "" && !strings.HasPrefix(comp.GetConnectorComponent().ConnectorName, ns.Name()+"/") {
+					return nil, ErrConnectorNamespace
+				}
 			}
 		}
 	}
@@ -552,13 +560,13 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
-		span,
-		logUUID.String(),
-		authUser.UID,
-		eventName,
-		custom_otel.SetEventResource(pbPipeline),
-	)))
+	// logger.Info(string(custom_otel.NewLogMessage(
+	// 	span,
+	// 	logUUID.String(),
+	// 	authUser.UID,
+	// 	eventName,
+	// 	custom_otel.SetEventResource(pbPipeline),
+	// )))
 
 	return pbPipeline, nil
 }
@@ -930,9 +938,9 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 
 	logUUID, _ := uuid.NewV4()
 
-	logger, _ := logger.GetZapLogger(ctx)
+	// logger, _ := logger.GetZapLogger(ctx)
 
-	ns, authUser, id, pbPipeline, returnTraces, err := h.preTriggerUserPipeline(ctx, req)
+	ns, authUser, id, _, returnTraces, err := h.preTriggerUserPipeline(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, nil, err
@@ -944,13 +952,13 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 		return nil, nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
-		span,
-		logUUID.String(),
-		authUser.UID,
-		eventName,
-		custom_otel.SetEventResource(pbPipeline),
-	)))
+	// logger.Info(string(custom_otel.NewLogMessage(
+	// 	span,
+	// 	logUUID.String(),
+	// 	authUser.UID,
+	// 	eventName,
+	// 	custom_otel.SetEventResource(pbPipeline),
+	// )))
 
 	return outputs, metadata, nil
 }

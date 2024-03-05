@@ -368,23 +368,6 @@ export function CheckList(data) {
       }
     );
 
-    var srcConnPermalink = "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3"
-
-    check(
-      http.request(
-        "GET",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22`,
-        null,
-        data.header
-      ),
-      {
-        [`GET /v1beta/${constant.namespace}/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response 200`]:
-          (r) => r.status == 200,
-        [`GET /v1beta/${constant.namespace}/pipelines?filter=recipe.components.definition_name:%22${srcConnPermalink}%22 response pipelines.length > 0`]:
-          (r) => r.json().pipelines.length > 0,
-      }
-    );
-
     // Delete the pipelines
     for (const reqBody of reqBodies) {
       check(

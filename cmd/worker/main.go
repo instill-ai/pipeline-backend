@@ -157,6 +157,7 @@ func main() {
 	})
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
+	w.RegisterActivity(cw.PipelineActivity)
 	w.RegisterActivity(cw.ConnectorActivity)
 	w.RegisterActivity(cw.OperatorActivity)
 

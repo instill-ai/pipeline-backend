@@ -1,27 +1,22 @@
 package utils
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	componentBase "github.com/instill-ai/component/pkg/base"
 	connector "github.com/instill-ai/connector/pkg"
 	connectorAirbyte "github.com/instill-ai/connector/pkg/airbyte/v0"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 const (
@@ -78,7 +73,7 @@ func NewPipelineDataPoint(data PipelineUsageMetricData) *write.Point {
 			"status":       data.Status.String(),
 			"trigger_mode": data.TriggerMode.String(),
 		},
-		map[string]interface{}{
+		map[string]any{
 			"owner_uid":             data.OwnerUID,
 			"owner_type":            data.OwnerType,
 			"user_uid":              data.UserUID,
@@ -116,7 +111,7 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 		map[string]string{
 			"status": data.Status.String(),
 		},
-		map[string]interface{}{
+		map[string]any{
 			"pipeline_id":              pipelineMetadata.GetStructValue().GetFields()["id"].GetStringValue(),
 			"pipeline_uid":             pipelineMetadata.GetStructValue().GetFields()["uid"].GetStringValue(),
 			"pipeline_release_id":      pipelineMetadata.GetStructValue().GetFields()["release_id"].GetStringValue(),
@@ -138,98 +133,19 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 	)
 }
 
-func GenerateTraces(comps [][]*datamodel.Component, memory []map[string]interface{}, status []map[string]*ComponentStatus, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
-	trace := map[string]*pipelinePB.Trace{}
-	for groupIdx := range comps {
-		for compIdx := range comps[groupIdx] {
-			inputs := []*structpb.Struct{}
-			outputs := []*structpb.Struct{}
-			var traceStatuses []pipelinePB.Trace_Status
-			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if status[dataIdx][comps[groupIdx][compIdx].ID].Completed {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_COMPLETED)
-				} else if status[dataIdx][comps[groupIdx][compIdx].ID].Skipped {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_SKIPPED)
-				} else if status[dataIdx][comps[groupIdx][compIdx].ID].Error {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_ERROR)
-				} else {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_UNSPECIFIED)
-				}
-
-			}
-
-			if comps[groupIdx][compIdx].DefinitionName != "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3" &&
-				comps[groupIdx][compIdx].DefinitionName != "operator-definitions/4f39c8bc-8617-495d-80de-80d0f5397516" {
-				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID].(map[string]interface{})["input"]; ok {
-						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID].(map[string]interface{})["input"])
-						if err != nil {
-							return nil, err
-						}
-						inputStruct := &structpb.Struct{}
-						err = protojson.Unmarshal(data, inputStruct)
-						if err != nil {
-							return nil, err
-						}
-						inputs = append(inputs, inputStruct)
-					}
-
-				}
-				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID].(map[string]interface{})["output"]; ok {
-						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID].(map[string]interface{})["output"])
-						if err != nil {
-							return nil, err
-						}
-						outputStruct := &structpb.Struct{}
-						err = protojson.Unmarshal(data, outputStruct)
-						if err != nil {
-							return nil, err
-						}
-						outputs = append(outputs, outputStruct)
-					}
-
-				}
-			}
-
-			trace[comps[groupIdx][compIdx].ID] = &pipelinePB.Trace{
-				Statuses:             traceStatuses,
-				Inputs:               inputs,
-				Outputs:              outputs,
-				ComputeTimeInSeconds: computeTime[comps[groupIdx][compIdx].ID],
-			}
-		}
-	}
-	return trace, nil
+func IsConnector(name string) bool {
+	return strings.HasPrefix(name, "connectors/")
+}
+func IsConnectorWithNamespace(name string) bool {
+	return len(strings.Split(name, "/")) > 3 && strings.Split(name, "/")[2] == "connectors"
 }
 
-func GenerateGlobalValue(pipelineUID uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]interface{}, error) {
-	global := map[string]interface{}{}
-
-	global["pipeline"] = map[string]interface{}{
-		"uid":    pipelineUID.String(),
-		"recipe": recipe,
-	}
-	global["owner"] = map[string]interface{}{
-		"uid": uuid.FromStringOrNil(strings.Split(ownerPermalink, "/")[1]),
-	}
-
-	return global, nil
+func IsConnectorDefinition(name string) bool {
+	return strings.HasPrefix(name, "connector-definitions/")
 }
 
-func IsConnector(resourceName string) bool {
-	return strings.HasPrefix(resourceName, "connectors/")
-}
-func IsConnectorWithNamespace(resourceName string) bool {
-	return len(strings.Split(resourceName, "/")) > 3 && strings.Split(resourceName, "/")[2] == "connectors"
-}
-
-func IsConnectorDefinition(resourceName string) bool {
-	return strings.HasPrefix(resourceName, "connector-definitions/")
-}
-
-func IsOperatorDefinition(resourceName string) bool {
-	return strings.HasPrefix(resourceName, "operator-definitions/")
+func IsOperatorDefinition(name string) bool {
+	return strings.HasPrefix(name, "operator-definitions/")
 }
 
 func MaskCredentialFields(connector componentBase.IConnector, defID string, config *structpb.Struct) {

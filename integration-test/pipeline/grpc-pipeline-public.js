@@ -401,26 +401,6 @@ export function CheckList(data) {
       }
     );
 
-    // Get UUID for foreign resources
-    var srcConnPermalink = "operator-definitions/2ac8be70-0f7a-4b61-a33d-098b8acfa6f3"
-
-    check(
-      client.invoke(
-        "vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines",
-        {
-          parent: `${constant.namespace}`,
-          filter: `recipe.components.definition_name:"${srcConnPermalink}"`,
-        },
-        data.metadata
-      ),
-      {
-        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: recipe.components.definition_name:"${srcConnPermalink}" response StatusOK`]:
-          (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: recipe.components.definition_name:"${srcConnPermalink}" response pipelines.length`]:
-          (r) => r.message.pipelines.length > 0,
-      }
-    );
-
     // Delete the pipelines
     for (const reqBody of reqBodies) {
       check(

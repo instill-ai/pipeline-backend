@@ -44,34 +44,145 @@ message ReadinessResponse {
   common.healthcheck.v1beta.HealthCheckResponse health_check_response = 1;
 }
 
-// Component is the fundamental building block in pipelines.
+// StartComponent
+// Configures the starting point for pipeline triggering.
+message StartComponent {
+  // Represents a field within the start component.
+  message Field {
+    // Title of the field.
+    string title = 1 [(google.api.field_behavior) = OPTIONAL];
+    // Description of the field.
+    string description = 2 [(google.api.field_behavior) = OPTIONAL];
+    // Instill format.
+    string instill_format = 3 [(google.api.field_behavior) = OPTIONAL];
+    // Instill UI order.
+    int32 instill_ui_order = 4 [(google.api.field_behavior) = OPTIONAL];
+  }
+  // Fields configuration.
+  // Key: Key in the request body.
+  // Field: Field settings of the value.
+  map<string, Field> fields = 1 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// EndComponent
+// Configures the ending point for pipeline triggering.
+message EndComponent {
+  // Represents a field within the end component.
+  message Field {
+    // Title of the field.
+    string title = 1 [(google.api.field_behavior) = OPTIONAL];
+    // Description of the field.
+    string description = 2 [(google.api.field_behavior) = OPTIONAL];
+    // Value of the field.
+    string value = 3 [(google.api.field_behavior) = OPTIONAL];
+    // Instill UI order.
+    int32 instill_ui_order = 4 [(google.api.field_behavior) = OPTIONAL];
+  }
+  // Fields configuration.
+  // Key: Key in the request body.
+  // Field: Field settings of the value.
+  map<string, Field> fields = 1 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ConnectorComponent
+// Configures a connector component. Requires the creation of a connector resource first.
+message ConnectorComponent {
+  // Definition name.
+  string definition_name = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Connector definition.
+  ConnectorDefinition definition = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Resource name. Leave empty if not created.
+  string resource_name = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Describes the connector resource details (e.g., configuration to connect with the vendor service).
+  Connector resource = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Task.
+  string task = 5 [(google.api.field_behavior) = OPTIONAL];
+  // Input configuration of the component. JSON schema described in the connector definition.
+  google.protobuf.Struct input = 6 [(google.api.field_behavior) = OPTIONAL];
+  // Condition statement determining whether the component is executed or not.
+  string condition = 7 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// OperatorComponent
+// Configures an operator component.
+message OperatorComponent {
+  // Definition name.
+  string definition_name = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Operator definition.
+  OperatorDefinition definition = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Task.
+  string task = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Input configuration of the component. JSON schema described in the operator definition.
+  google.protobuf.Struct input = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Condition statement determining whether the component is executed or not.
+  string condition = 5 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// IteratorComponent
+// Configures an iterator component for iteration.
+message IteratorComponent {
+  // Input array: The iterator will iterate over the elements of the input array.
+  string input_array = 1 [(google.api.field_behavior) = OPTIONAL];
+
+  // Output elements: Configure the output arrays of the map iterator.
+  // The key is the output element variable name, and the value is the data reference of the template.
+  // Example:
+  // output_elements: {
+  //   "key1": "${element.output.a}",
+  //   "key2": "${element.output.b}",
+  // }
+  // This will create the results:
+  // output: {
+  //   "key1": [ ${element1.output.a},  ${element2.output.a} ... ],
+  //   "key2": [ ${element1.output.b},  ${element2.output.b} ... ],
+  // }
+  map<string, string> output_elements = 2 [(google.api.field_behavior) = OPTIONAL];
+
+  // Components: These components will be executed for each input element.
+  repeated NestedComponent components = 3 [(google.api.field_behavior) = OPTIONAL];
+
+  // Condition statement determining whether the component is executed or not.
+  string condition = 4 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// Component
+// Fundamental building block in pipelines.
 //
 // For more information, see [Pipeline
 // Component](https://www.instill.tech/docs/latest/core/concepts/pipeline#pipeline-component)
 message Component {
   // Component ID, provided by the user on creation.
   string id = 1 [(google.api.field_behavior) = REQUIRED];
-  // Resource name.
-  string resource_name = 2 [(google.api.resource_reference).type = "*"];
-  // If the component is a connector, describes the connector details (e.g. the
-  // configuration to connect with an AI model).
-  Connector resource = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Describes the component configuration.
-  google.protobuf.Struct configuration = 4;
-  // Defines the type of task the component will perform.
-  ComponentType type = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // The name of the component definition. It references the connector or
-  // operator definition on top of which a connector is built.
-  string definition_name = 7 [
-    (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type = "*"
-  ];
-  // The component definition details.
-  oneof definition {
-    // operator definition detail
-    OperatorDefinition operator_definition = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
-    // connector definition detail
-    ConnectorDefinition connector_definition = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Metadata of the component.
+  google.protobuf.Struct metadata = 10 [(google.api.field_behavior) = OPTIONAL];
+  // The component configuration.
+  oneof component {
+    // StartComponent
+    StartComponent start_component = 11;
+    // EndComponent
+    EndComponent end_component = 12;
+    // ConnectorComponent
+    ConnectorComponent connector_component = 13;
+    // OperatorComponent
+    OperatorComponent operator_component = 14;
+    // IteratorComponent
+    IteratorComponent iterator_component = 15;
+  }
+}
+
+// NestedComponent
+// Fundamental building block in iterator component.
+message NestedComponent {
+  // Component ID, provided by the user on creation.
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Metadata of the component.
+  google.protobuf.Struct metadata = 2;
+  // The component configuration.
+  oneof component {
+    // ConnectorConfiguration
+    ConnectorComponent connector_component = 3;
+    // OperatorConfiguration
+    OperatorComponent operator_component = 4;
   }
 }
 
