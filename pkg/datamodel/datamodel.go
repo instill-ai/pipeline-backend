@@ -338,3 +338,42 @@ func (r *Task) Scan(value interface{}) error {
 func (r Task) Value() (driver.Value, error) {
 	return taskPB.Task(r).String(), nil
 }
+
+// ComponentDefinition is the data model for the component defintion table.
+type ComponentDefinition struct {
+	UID           uuid.UUID `gorm:"type:uuid;primaryKey;<-:create"` // allow read and create
+	ID            string
+	Title         string
+	ComponentType ComponentType
+	Version       string
+
+	// This is an enum in the database but it's only used for filtering, so for
+	// now we don't need to implement a domain type.
+	ReleaseStage string
+	// IsVisible is computed from a combination of fields (e.g. tombstone,
+	// public, deprecated), and is used to hide components from the list
+	// endpoint.
+	IsVisible bool
+	// FeatureScore is used to position results in a page, i.e., to give more
+	// visibility to certain components.
+	FeatureScore int
+}
+
+// TableName maps the ComponentDefinition object to a SQL table.
+func (ComponentDefinition) TableName() string {
+	return "component_definition_index"
+}
+
+// ComponentType is an alias type for proto enum ComponentType.
+type ComponentType pipelinePB.ComponentType
+
+// Scan function for custom GORM type ComponentType
+func (c *ComponentType) Scan(value any) error {
+	*c = ComponentType(pipelinePB.ComponentType_value[value.(string)])
+	return nil
+}
+
+// Value function for custom GORM type ComponentType
+func (c ComponentType) Value() (driver.Value, error) {
+	return pipelinePB.ComponentType(c).String(), nil
+}

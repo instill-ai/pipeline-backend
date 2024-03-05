@@ -66,6 +66,8 @@ type Repository interface {
 
 	ListConnectorsAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
 	GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
+
+	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
 }
 
 type repository struct {
@@ -735,4 +737,65 @@ func (r *repository) UpdateNamespaceConnectorStateByID(ctx context.Context, owne
 		return ErrNoDataUpdated
 	}
 	return nil
+}
+
+// ListComponentDefinitionsParams allows clients to request a page of component
+// definitions.
+type ListComponentDefinitionsParams struct {
+	Offset int
+	Limit  int
+	Filter filtering.Filter
+}
+
+// ListComponentDefinitionUIDs returns the UIDs of a page of component
+// definitions.
+//
+// The source of truth for a compnent definition is its JSON
+// specification. These are loaded in memory, but we hold a table that allows
+// us to quiclky transpile query filters and to have unified filtering and
+// pagination.
+//
+// Since the component definitions might take different shapes, we need to know
+// the component type in order to cast the definition to the right type.
+// Therefore, the whole datamodel is returned (some fields won't be needed by
+// the receiver but this solution is more compact than adding yet another type
+// with no methods).
+func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListComponentDefinitionsParams) (defs []*datamodel.ComponentDefinition, totalSize int64, err error) {
+	db := r.db
+	where := ""
+	whereArgs := []any{}
+
+	expr, err := r.transpileFilter(p.Filter)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if expr != nil {
+		where = "(?)"
+		whereArgs = []any{expr}
+	}
+
+	queryBuilder := db.Model(&datamodel.ComponentDefinition{}).
+		Where(where, whereArgs...).
+		Where("is_visible IS TRUE")
+
+	queryBuilder.Count(&totalSize)
+
+	rows, err := queryBuilder.Order("feature_score DESC").Limit(p.Limit).Offset(p.Offset).Rows()
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	defs = make([]*datamodel.ComponentDefinition, 0, p.Limit)
+	for rows.Next() {
+		item := new(datamodel.ComponentDefinition)
+		if err = db.ScanRows(rows, item); err != nil {
+			return nil, 0, err
+		}
+
+		defs = append(defs, item)
+	}
+
+	return defs, totalSize, nil
 }
