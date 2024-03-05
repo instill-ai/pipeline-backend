@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         component: [pipeline-backend]
-    uses: instill-ai/vdp/.github/workflows/integration-test-backend.yml@main
+    uses: instill-ai/instill-core/.github/workflows/integration-test-backend.yml@main
     with:
       component: ${{ matrix.component }}
       target: latest
@@ -68,43 +68,25 @@ jobs:
             GOLANG_VERSION=${{ env.GOLANG_VERSION }}
           tags: instill/pipeline-backend:latest
 
-      - name: Checkout repo (core)
+      - name: Checkout repo (instill-core)
         uses: actions/checkout@v3
         with:
-          repository: instill-ai/core
+          repository: instill-ai/instill-core
 
-      - name: Load .env file (core)
+      - name: Load .env file (instill-core)
         uses: cardinalby/export-env-action@v2
         with:
           envFile: .env
 
-      - name: Launch Instill core (latest)
+      - name: Launch Instill Core (latest)
         run: |
           COMPOSE_PROFILES=all \
           EDITION=local-ce:test \
-          docker compose -f docker-compose.yml -f docker-compose.latest.yml up -d --quiet-pull
+          RAY_LATEST_TAG=latest \
+          docker compose -f docker-compose.yml -f docker-compose-latest.yml up -d --quiet-pull
           COMPOSE_PROFILES=all \
           EDITION=local-ce:test \
-          docker compose -f docker-compose.yml -f docker-compose.latest.yml rm -f
-
-      - name: Checkout repo (vdp)
-        uses: actions/checkout@v3
-        with:
-          repository: instill-ai/vdp
-
-      - name: Load .env file (vdp)
-        uses: cardinalby/export-env-action@v2
-        with:
-          envFile: .env
-
-      - name: Launch Instill VDP (latest)
-        run: |
-          COMPOSE_PROFILES=all \
-          EDITION=local-ce:test \
-          docker compose -f docker-compose.yml -f docker-compose.latest.yml up -d --quiet-pull
-          COMPOSE_PROFILES=all \
-          EDITION=local-ce:test \
-          docker compose -f docker-compose.yml -f docker-compose.latest.yml rm -f
+          docker compose -f docker-compose.yml -f docker-compose-latest.yml rm -f
 
       - name: Install k6
         run: |
