@@ -257,96 +257,125 @@ func (s *service) operatorDefinitionPermalinkToName(permalink string) (string, e
 	return fmt.Sprintf("operator-definitions/%s", def.Id), nil
 }
 
+func (s *service) includeOperatorComponentDetail(comp *pipelinePB.OperatorComponent) error {
+	uid, err := resource.GetRscPermalinkUID(comp.DefinitionName)
+	if err != nil {
+		return err
+	}
+	conf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+	conf.Fields["input"] = structpb.NewStructValue(comp.Input)
+	def, err := s.operator.GetOperatorDefinitionByUID(uid, conf)
+	if err != nil {
+		return err
+	}
+
+	detail := &structpb.Struct{}
+	// Note: need to deal with camelCase or under_score for grpc in future
+	json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
+	if marshalErr != nil {
+		return marshalErr
+	}
+	unmarshalErr := detail.UnmarshalJSON(json)
+	if unmarshalErr != nil {
+		return unmarshalErr
+	}
+
+	comp.Definition = def
+	return nil
+}
+
+func (s *service) includeConnectorComponentDetail(comp *pipelinePB.ConnectorComponent, userUID uuid.UUID) error {
+	conn, err := s.repository.GetConnectorByUIDAdmin(
+		context.Background(),
+		uuid.FromStringOrNil(strings.Split(comp.ConnectorName, "/")[1]),
+		false,
+	)
+	if err != nil {
+		// Allow resource not created
+		comp.Connector = nil
+	} else {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		pbConnector, err := s.convertDatamodelToProto(ctx, conn, ViewFull, true)
+		if err != nil {
+			// Allow resource not created
+			comp.Connector = nil
+		} else {
+			comp.Connector = pbConnector
+			str := structpb.Struct{}
+			_ = str.UnmarshalJSON(conn.Configuration)
+			// TODO: optimize this
+			str.Fields["instill_user_uid"] = structpb.NewStringValue(userUID.String())
+			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
+			str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
+
+			conf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+			conf.Fields["input"] = structpb.NewStructValue(comp.Input)
+			d, err := s.connector.GetConnectorDefinitionByID(pbConnector.ConnectorDefinition.Id, &str, conf)
+			if err != nil {
+				return err
+			}
+			comp.Definition = d
+		}
+	}
+	if comp.Definition == nil {
+		uid, err := resource.GetRscPermalinkUID(comp.DefinitionName)
+		if err != nil {
+			return err
+		}
+		conf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+		conf.Fields["input"] = structpb.NewStructValue(comp.Input)
+		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, conf)
+		if err != nil {
+			return err
+		}
+
+		detail := &structpb.Struct{}
+		// Note: need to deal with camelCase or under_score for grpc in future
+		json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
+		if marshalErr != nil {
+			return marshalErr
+		}
+		unmarshalErr := detail.UnmarshalJSON(json)
+		if unmarshalErr != nil {
+			return unmarshalErr
+		}
+
+		comp.Definition = def
+	}
+	return nil
+}
+
 func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe, userUID uuid.UUID) error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	for idx := range recipe.Components {
-
 		switch recipe.Components[idx].Component.(type) {
 		case *pipelinePB.Component_ConnectorComponent:
-			conn, err := s.repository.GetConnectorByUIDAdmin(
-				context.Background(),
-				uuid.FromStringOrNil(strings.Split(recipe.Components[idx].GetConnectorComponent().ConnectorName, "/")[1]),
-				false,
-			)
+			err := s.includeConnectorComponentDetail(recipe.Components[idx].GetConnectorComponent(), userUID)
 			if err != nil {
-				// Allow resource not created
-				recipe.Components[idx].GetConnectorComponent().Connector = nil
-			} else {
-				pbConnector, err := s.convertDatamodelToProto(ctx, conn, ViewFull, true)
-				if err != nil {
-					// Allow resource not created
-					recipe.Components[idx].GetConnectorComponent().Connector = nil
-				} else {
-					recipe.Components[idx].GetConnectorComponent().Connector = pbConnector
-					str := structpb.Struct{}
-					_ = str.UnmarshalJSON(conn.Configuration)
-					// TODO: optimize this
-					str.Fields["instill_user_uid"] = structpb.NewStringValue(userUID.String())
-					str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
-					str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
-
-					conf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-					conf.Fields["input"] = structpb.NewStructValue(recipe.Components[idx].GetConnectorComponent().Input)
-					d, err := s.connector.GetConnectorDefinitionByID(pbConnector.ConnectorDefinition.Id, &str, conf)
+				return err
+			}
+		case *pipelinePB.Component_OperatorComponent:
+			err := s.includeOperatorComponentDetail(recipe.Components[idx].GetOperatorComponent())
+			if err != nil {
+				return err
+			}
+		case *pipelinePB.Component_IteratorComponent:
+			comps := recipe.Components[idx].GetIteratorComponent().Components
+			for nestIdx := range recipe.Components[idx].GetIteratorComponent().Components {
+				switch comps[nestIdx].Component.(type) {
+				case *pipelinePB.NestedComponent_ConnectorComponent:
+					err := s.includeConnectorComponentDetail(comps[nestIdx].GetConnectorComponent(), userUID)
 					if err != nil {
 						return err
 					}
-					recipe.Components[idx].GetConnectorComponent().Definition = d
+				case *pipelinePB.NestedComponent_OperatorComponent:
+					err := s.includeOperatorComponentDetail(comps[nestIdx].GetOperatorComponent())
+					if err != nil {
+						return err
+					}
 				}
 			}
-			if recipe.Components[idx].GetConnectorComponent().Definition == nil {
-				uid, err := resource.GetRscPermalinkUID(recipe.Components[idx].GetConnectorComponent().DefinitionName)
-				if err != nil {
-					return err
-				}
-				conf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-				conf.Fields["input"] = structpb.NewStructValue(recipe.Components[idx].GetConnectorComponent().Input)
-				def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, conf)
-				if err != nil {
-					return err
-				}
-
-				detail := &structpb.Struct{}
-				// Note: need to deal with camelCase or under_score for grpc in future
-				json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
-				if marshalErr != nil {
-					return marshalErr
-				}
-				unmarshalErr := detail.UnmarshalJSON(json)
-				if unmarshalErr != nil {
-					return unmarshalErr
-				}
-
-				recipe.Components[idx].GetConnectorComponent().Definition = def
-			}
-
-		case *pipelinePB.Component_OperatorComponent:
-			uid, err := resource.GetRscPermalinkUID(recipe.Components[idx].GetOperatorComponent().DefinitionName)
-			if err != nil {
-				return err
-			}
-			conf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-			conf.Fields["input"] = structpb.NewStructValue(recipe.Components[idx].GetOperatorComponent().Input)
-			def, err := s.operator.GetOperatorDefinitionByUID(uid, conf)
-			if err != nil {
-				return err
-			}
-
-			detail := &structpb.Struct{}
-			// Note: need to deal with camelCase or under_score for grpc in future
-			json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
-			if marshalErr != nil {
-				return marshalErr
-			}
-			unmarshalErr := detail.UnmarshalJSON(json)
-			if unmarshalErr != nil {
-				return unmarshalErr
-			}
-
-			recipe.Components[idx].GetOperatorComponent().Definition = def
 		}
 
 	}
