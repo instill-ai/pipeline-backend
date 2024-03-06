@@ -24,6 +24,7 @@ require (
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
 	github.com/knadh/koanf v1.5.0
+	github.com/launchdarkly/go-semver v1.0.2
 	github.com/mennanov/fieldmask-utils v1.0.0
 	github.com/openfga/go-sdk v0.2.3
 	go.einride.tech/aip v0.60.0

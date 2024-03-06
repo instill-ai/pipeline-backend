@@ -473,7 +473,8 @@ func (s *service) PBToDBPipeline(ctx context.Context, ns resource.Namespace, pbP
 	}, nil
 }
 
-var connectorTypeToComponentType = map[pipelinePB.ConnectorType]pipelinePB.ComponentType{
+// ConnectorTypeToComponentType ...
+var ConnectorTypeToComponentType = map[pipelinePB.ConnectorType]pipelinePB.ComponentType{
 	pipelinePB.ConnectorType_CONNECTOR_TYPE_AI:          pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
 	pipelinePB.ConnectorType_CONNECTOR_TYPE_APPLICATION: pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
 	pipelinePB.ConnectorType_CONNECTOR_TYPE_DATA:        pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,

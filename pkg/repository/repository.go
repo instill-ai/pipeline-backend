@@ -68,6 +68,8 @@ type Repository interface {
 	GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
 
 	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
+	GetComponentDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
+	UpsertComponentDefinition(context.Context, *pipelinePB.ComponentDefinition) error
 }
 
 type repository struct {
@@ -798,4 +800,37 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 	}
 
 	return defs, totalSize, nil
+}
+
+// GetComponentDefinition fetches the component definition datamodel given its
+// UID. Note that the repository only stores an index of the component
+// definition fields that the clients need to filter by and that the source of
+// truth for component definition info is always the definitions.json
+// configuration in each component.
+func (r *repository) GetComponentDefinitionByUID(_ context.Context, uid uuid.UUID) (*datamodel.ComponentDefinition, error) {
+	record := new(datamodel.ComponentDefinition)
+
+	if result := r.db.Model(record).Where("uid = ?", uid.String()).First(record); result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, ErrNotFound
+		}
+
+		return nil, result.Error
+	}
+
+	return record, nil
+}
+
+// UpsertComponentDefinition transforms a domain component definition into its
+// datamodel (i.e. the fields used for filtering) and stores it in the
+// database. If the record already exists, it will be updated with the provided
+// fields.
+func (r *repository) UpsertComponentDefinition(_ context.Context, cd *pipelinePB.ComponentDefinition) error {
+	record := datamodel.ComponentDefinitionFromProto(cd)
+	result := r.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(record)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
