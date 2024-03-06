@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/launchdarkly/go-semver"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -362,6 +363,75 @@ type ComponentDefinition struct {
 // TableName maps the ComponentDefinition object to a SQL table.
 func (ComponentDefinition) TableName() string {
 	return "component_definition_index"
+}
+
+const (
+	rsUnspecified        = "RELEASE_STAGE_UNSPECIFIED"
+	rsContribution       = "RELEASE_STAGE_OPEN_FOR_CONTRIBUTION"
+	rsComingSoon         = "RELEASE_STAGE_COMING_SOON"
+	rsAlpha              = "RELEASE_STAGE_ALPHA"
+	rsBeta               = "RELEASE_STAGE_BETA"
+	rsGenerallyAvailable = "RELEASE_STAGE_GA"
+)
+
+func (c ComponentDefinition) computeReleaseStage() string {
+	v, err := semver.Parse(c.Version)
+	if err != nil {
+		return rsUnspecified
+	}
+
+	switch v.GetPrerelease() {
+	case "alpha":
+		return rsAlpha
+	case "beta":
+		return rsBeta
+	}
+
+	// TODO compute Contribution / Coming soon when introduced.
+
+	return rsGenerallyAvailable
+}
+
+type pbDefinition interface {
+	GetUid() string
+	GetId() string
+	GetTitle() string
+	GetTombstone() bool
+	GetPublic() bool
+	GetVersion() string
+}
+
+// ComponentDefinitionFromProto parses a ComponentDefinition from the proto
+// structure.
+func ComponentDefinitionFromProto(cdpb *pipelinePB.ComponentDefinition) *ComponentDefinition {
+	var def pbDefinition
+	switch cdpb.Type {
+	case pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR:
+		def = cdpb.GetOperatorDefinition()
+	case pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
+		pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
+		pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION:
+
+		def = cdpb.GetConnectorDefinition()
+	default:
+		return nil
+	}
+
+	cd := &ComponentDefinition{
+		ComponentType: ComponentType(cdpb.Type),
+
+		UID:       uuid.FromStringOrNil(def.GetUid()),
+		ID:        def.GetId(),
+		Title:     def.GetTitle(),
+		Version:   def.GetVersion(),
+		IsVisible: def.GetPublic() && !def.GetTombstone(),
+	}
+
+	cd.ReleaseStage = cd.computeReleaseStage()
+
+	// TODO read FeatureScore from definition.
+
+	return cd
 }
 
 // ComponentType is an alias type for proto enum ComponentType.

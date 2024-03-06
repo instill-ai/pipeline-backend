@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	_ "embed"
 
 	"github.com/gofrs/uuid"
+	"github.com/launchdarkly/go-semver"
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"gorm.io/datatypes"
@@ -22,9 +24,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 
 	connector "github.com/instill-ai/connector/pkg"
+	operator "github.com/instill-ai/operator/pkg"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 )
 
@@ -77,14 +82,39 @@ func main() {
 	db := database.GetConnection()
 	defer database.Close(db)
 
-	repository := repository.NewRepository(db)
+	repo := repository.NewRepository(db)
 
-	// Set tombstone based on definition
-	connector := connector.Init(logger, utils.GetConnectorOptions())
-	definitions := connector.ListConnectorDefinitions()
-	for idx := range definitions {
-		if definitions[idx].Tombstone {
-			db.Unscoped().Model(&datamodel.Connector{}).Where("connector_definition_uid = ?", definitions[idx].Uid).Update("tombstone", true)
+	// Update component definitions and connectors based on latest version of
+	// definitions.json.
+	connDefs := connector.Init(logger, utils.GetConnectorOptions()).ListConnectorDefinitions()
+	for _, connDef := range connDefs {
+		if connDef.Tombstone {
+			db.Unscoped().Model(&datamodel.Connector{}).Where("connector_definition_uid = ?", connDef.Uid).Update("tombstone", true)
+		}
+
+		cd := &pipelinePB.ComponentDefinition{
+			Type: service.ConnectorTypeToComponentType[connDef.Type],
+			Definition: &pipelinePB.ComponentDefinition_ConnectorDefinition{
+				ConnectorDefinition: connDef,
+			},
+		}
+
+		if err := updateComponentDefinition(ctx, cd, repo); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	opDefs := operator.Init(logger).ListOperatorDefinitions()
+	for _, opDef := range opDefs {
+		cd := &pipelinePB.ComponentDefinition{
+			Type: pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR,
+			Definition: &pipelinePB.ComponentDefinition_OperatorDefinition{
+				OperatorDefinition: opDef,
+			},
+		}
+
+		if err := updateComponentDefinition(ctx, cd, repo); err != nil {
+			log.Fatal(err)
 		}
 	}
 
@@ -114,7 +144,7 @@ func main() {
 	var pipelines []*datamodel.Pipeline
 	pageToken := ""
 	for {
-		pipelines, _, pageToken, err = repository.ListPipelinesAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false)
+		pipelines, _, pageToken, err = repo.ListPipelinesAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false)
 		if err != nil {
 			panic(err)
 		}
@@ -138,18 +168,18 @@ func main() {
 	var connectors []*datamodel.Connector
 	pageToken = ""
 	for {
-		connectors, _, pageToken, err = repository.ListConnectorsAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false)
+		connectors, _, pageToken, err = repo.ListConnectorsAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false)
 		if err != nil {
 			panic(err)
 		}
-		for _, connector := range connectors {
-			nsType := strings.Split(connector.Owner, "/")[0]
+		for _, conn := range connectors {
+			nsType := strings.Split(conn.Owner, "/")[0]
 			nsType = nsType[0 : len(nsType)-1]
-			userUID, err := uuid.FromString(strings.Split(connector.Owner, "/")[1])
+			userUID, err := uuid.FromString(strings.Split(conn.Owner, "/")[1])
 			if err != nil {
 				panic(err)
 			}
-			err = aclClient.SetOwner("connector", connector.UID, nsType, userUID)
+			err = aclClient.SetOwner("connector", conn.UID, nsType, userUID)
 			if err != nil {
 				panic(err)
 			}
@@ -159,4 +189,55 @@ func main() {
 		}
 	}
 
+}
+
+func updateComponentDefinition(ctx context.Context, cd *pipelinePB.ComponentDefinition, repo repository.Repository) error {
+	var id, uniqueID, version string
+	switch cd.Type {
+	case pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR:
+		d := cd.GetOperatorDefinition()
+		id, uniqueID, version = d.GetId(), d.GetUid(), d.GetVersion()
+
+	case pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
+		pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
+		pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION:
+
+		d := cd.GetConnectorDefinition()
+		id, uniqueID, version = d.GetId(), d.GetUid(), d.GetVersion()
+	default:
+		return fmt.Errorf("unsupported component definition type")
+	}
+
+	uid, err := uuid.FromString(uniqueID)
+	if err != nil {
+		return fmt.Errorf("invalid UID in component definition %s: %w", id, err)
+	}
+
+	v, err := semver.Parse(version)
+	if err != nil {
+		return fmt.Errorf("failed to parse version from component definition %s: %w", id, err)
+	}
+
+	inDB, err := repo.GetComponentDefinitionByUID(ctx, uid)
+	if err != nil && !errors.Is(err, repository.ErrNotFound) {
+		return fmt.Errorf("error fetching component definition %s from DB: %w", id, err)
+	}
+
+	// Component definitions are only updated when there's a version bump.
+	if inDB != nil {
+		vInDB, err := semver.Parse(inDB.Version)
+		if err != nil {
+			return fmt.Errorf("failed to parse version from DB component definition %s: %w", id, err)
+		}
+
+		if v.ComparePrecedence(vInDB) <= 0 {
+			return nil
+		}
+	}
+
+	if err := repo.UpsertComponentDefinition(ctx, cd); err != nil {
+		return fmt.Errorf("failed to upsert component definition %s: %w", id, err)
+	}
+
+	return nil
 }
