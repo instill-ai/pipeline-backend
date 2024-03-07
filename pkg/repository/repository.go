@@ -66,6 +66,10 @@ type Repository interface {
 
 	ListConnectorsAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
 	GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
+
+	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
+	GetComponentDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
+	UpsertComponentDefinition(context.Context, *pipelinePB.ComponentDefinition) error
 }
 
 type repository struct {
@@ -734,5 +738,99 @@ func (r *repository) UpdateNamespaceConnectorStateByID(ctx context.Context, owne
 	} else if result.RowsAffected == 0 {
 		return ErrNoDataUpdated
 	}
+	return nil
+}
+
+// ListComponentDefinitionsParams allows clients to request a page of component
+// definitions.
+type ListComponentDefinitionsParams struct {
+	Offset int
+	Limit  int
+	Filter filtering.Filter
+}
+
+// ListComponentDefinitionUIDs returns the UIDs of a page of component
+// definitions.
+//
+// The source of truth for a compnent definition is its JSON
+// specification. These are loaded in memory, but we hold a table that allows
+// us to quiclky transpile query filters and to have unified filtering and
+// pagination.
+//
+// Since the component definitions might take different shapes, we need to know
+// the component type in order to cast the definition to the right type.
+// Therefore, the whole datamodel is returned (some fields won't be needed by
+// the receiver but this solution is more compact than adding yet another type
+// with no methods).
+func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListComponentDefinitionsParams) (defs []*datamodel.ComponentDefinition, totalSize int64, err error) {
+	db := r.db
+	where := ""
+	whereArgs := []any{}
+
+	expr, err := r.transpileFilter(p.Filter)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if expr != nil {
+		where = "(?)"
+		whereArgs = []any{expr}
+	}
+
+	queryBuilder := db.Model(&datamodel.ComponentDefinition{}).
+		Where(where, whereArgs...).
+		Where("is_visible IS TRUE")
+
+	queryBuilder.Count(&totalSize)
+
+	rows, err := queryBuilder.Order("feature_score DESC").Limit(p.Limit).Offset(p.Offset).Rows()
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	defs = make([]*datamodel.ComponentDefinition, 0, p.Limit)
+	for rows.Next() {
+		item := new(datamodel.ComponentDefinition)
+		if err = db.ScanRows(rows, item); err != nil {
+			return nil, 0, err
+		}
+
+		defs = append(defs, item)
+	}
+
+	return defs, totalSize, nil
+}
+
+// GetComponentDefinition fetches the component definition datamodel given its
+// UID. Note that the repository only stores an index of the component
+// definition fields that the clients need to filter by and that the source of
+// truth for component definition info is always the definitions.json
+// configuration in each component.
+func (r *repository) GetComponentDefinitionByUID(_ context.Context, uid uuid.UUID) (*datamodel.ComponentDefinition, error) {
+	record := new(datamodel.ComponentDefinition)
+
+	if result := r.db.Model(record).Where("uid = ?", uid.String()).First(record); result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, ErrNotFound
+		}
+
+		return nil, result.Error
+	}
+
+	return record, nil
+}
+
+// UpsertComponentDefinition transforms a domain component definition into its
+// datamodel (i.e. the fields used for filtering) and stores it in the
+// database. If the record already exists, it will be updated with the provided
+// fields.
+func (r *repository) UpsertComponentDefinition(_ context.Context, cd *pipelinePB.ComponentDefinition) error {
+	record := datamodel.ComponentDefinitionFromProto(cd)
+	result := r.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(record)
+	if result.Error != nil {
+		return result.Error
+	}
+
 	return nil
 }
