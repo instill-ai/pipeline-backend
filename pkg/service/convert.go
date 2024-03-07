@@ -262,9 +262,7 @@ func (s *service) includeOperatorComponentDetail(comp *pipelinePB.OperatorCompon
 	if err != nil {
 		return err
 	}
-	conf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-	conf.Fields["input"] = structpb.NewStructValue(comp.Input)
-	def, err := s.operator.GetOperatorDefinitionByUID(uid, conf)
+	def, err := s.operator.GetOperatorDefinitionByUID(uid, comp)
 	if err != nil {
 		return err
 	}
@@ -309,9 +307,7 @@ func (s *service) includeConnectorComponentDetail(comp *pipelinePB.ConnectorComp
 			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 			str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
 
-			conf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-			conf.Fields["input"] = structpb.NewStructValue(comp.Input)
-			d, err := s.connector.GetConnectorDefinitionByID(pbConnector.ConnectorDefinition.Id, &str, conf)
+			d, err := s.connector.GetConnectorDefinitionByID(pbConnector.ConnectorDefinition.Id, &str, comp)
 			if err != nil {
 				return err
 			}
@@ -323,9 +319,7 @@ func (s *service) includeConnectorComponentDetail(comp *pipelinePB.ConnectorComp
 		if err != nil {
 			return err
 		}
-		conf := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-		conf.Fields["input"] = structpb.NewStructValue(comp.Input)
-		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, conf)
+		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, comp)
 		if err != nil {
 			return err
 		}
@@ -346,6 +340,140 @@ func (s *service) includeConnectorComponentDetail(comp *pipelinePB.ConnectorComp
 	return nil
 }
 
+func (s *service) includeIteratorComponentDetail(comp *pipelinePB.IteratorComponent, userUID uuid.UUID) error {
+
+	for nestIdx := range comp.Components {
+		switch comp.Components[nestIdx].Component.(type) {
+		case *pipelinePB.NestedComponent_ConnectorComponent:
+			err := s.includeConnectorComponentDetail(comp.Components[nestIdx].GetConnectorComponent(), userUID)
+			if err != nil {
+				return err
+			}
+		case *pipelinePB.NestedComponent_OperatorComponent:
+			err := s.includeOperatorComponentDetail(comp.Components[nestIdx].GetOperatorComponent())
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	dataOutput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+	dataOutput.Fields["type"] = structpb.NewStringValue("object")
+	dataOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
+
+	for k, v := range comp.OutputElements {
+		var m *structpb.Value
+
+		var err error
+
+		str := v
+		if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
+			// TODO
+			str = str[2:]
+			str = str[:len(str)-1]
+			str = strings.ReplaceAll(str, " ", "")
+
+			compID := strings.Split(str, ".")[0]
+			str = str[len(strings.Split(str, ".")[0]):]
+			upstreamCompIdx := -1
+			for compIdx := range comp.Components {
+				if comp.Components[compIdx].Id == compID {
+					upstreamCompIdx = compIdx
+				}
+			}
+			if upstreamCompIdx != -1 {
+				comp := proto.Clone(comp.Components[upstreamCompIdx]).(*pipelinePB.NestedComponent)
+
+				var walk *structpb.Value
+				switch comp.Component.(type) {
+				case *pipelinePB.NestedComponent_ConnectorComponent:
+					task := comp.GetConnectorComponent().GetTask()
+
+					splits := strings.Split(str, ".")
+
+					if splits[1] == "output" {
+						walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
+					} else if splits[1] == "input" {
+						walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
+					} else {
+						return fmt.Errorf("generate OpenAPI spec error")
+					}
+					str = str[len(splits[1])+1:]
+				case *pipelinePB.NestedComponent_OperatorComponent:
+					task := comp.GetOperatorComponent().GetTask()
+					splits := strings.Split(str, ".")
+
+					if splits[1] == "output" {
+						walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
+					} else if splits[1] == "input" {
+						walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
+					} else {
+						return fmt.Errorf("generate OpenAPI spec error")
+					}
+					str = str[len(splits[1])+1:]
+				}
+
+				for {
+					if len(str) == 0 {
+						break
+					}
+
+					splits := strings.Split(str, ".")
+					curr := splits[1]
+
+					if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
+						target := strings.Split(curr, "[")[0]
+						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+								break
+							}
+						} else {
+							break
+						}
+						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
+					} else {
+						target := curr
+
+						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+								break
+							}
+						} else {
+							break
+						}
+
+						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
+
+					}
+
+					str = str[len(curr)+1:]
+				}
+				m = structpb.NewStructValue(walk.GetStructValue())
+
+			} else {
+				return fmt.Errorf("generate data spec error")
+			}
+
+		}
+
+		if err != nil {
+
+		} else {
+			s := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+			s.Fields["type"] = structpb.NewStringValue("array")
+			s.Fields["items"] = m
+			dataOutput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(s)
+
+		}
+	}
+
+	comp.DataSpecification = &pipelinePB.DataSpecification{
+		Output: dataOutput,
+	}
+
+	return nil
+}
+
 func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe, userUID uuid.UUID) error {
 
 	for idx := range recipe.Components {
@@ -361,20 +489,9 @@ func (s *service) includeDetailInRecipe(recipe *pipelinePB.Recipe, userUID uuid.
 				return err
 			}
 		case *pipelinePB.Component_IteratorComponent:
-			comps := recipe.Components[idx].GetIteratorComponent().Components
-			for nestIdx := range recipe.Components[idx].GetIteratorComponent().Components {
-				switch comps[nestIdx].Component.(type) {
-				case *pipelinePB.NestedComponent_ConnectorComponent:
-					err := s.includeConnectorComponentDetail(comps[nestIdx].GetConnectorComponent(), userUID)
-					if err != nil {
-						return err
-					}
-				case *pipelinePB.NestedComponent_OperatorComponent:
-					err := s.includeOperatorComponentDetail(comps[nestIdx].GetOperatorComponent())
-					if err != nil {
-						return err
-					}
-				}
+			err := s.includeIteratorComponentDetail(recipe.Components[idx].GetIteratorComponent(), userUID)
+			if err != nil {
+				return err
 			}
 		}
 
@@ -605,9 +722,9 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	}
 
 	if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
-		spec, err := s.GenerateOpenAPISpec(startComp, endComp, pbRecipe.Components)
+		spec, err := s.GeneratePipelineDataSpec(startComp, endComp, pbRecipe.Components)
 		if err == nil {
-			pbPipeline.OpenapiSchema = spec
+			pbPipeline.DataSpecification = spec
 		}
 	}
 	releases := []*datamodel.PipelineRelease{}
@@ -821,9 +938,9 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 	}
 
 	if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
-		spec, err := s.GenerateOpenAPISpec(startComp, endComp, pbRecipe.Components)
+		spec, err := s.GeneratePipelineDataSpec(startComp, endComp, pbRecipe.Components)
 		if err == nil {
-			pbPipelineRelease.OpenapiSchema = spec
+			pbPipelineRelease.DataSpecification = spec
 		}
 	}
 	if pbPipelineRelease.Uid == latestUUID.String() {
@@ -1037,5 +1154,173 @@ func (s *service) convertDatamodelArrayToProtoArray(
 	}
 
 	return pbConnectors, nil
+
+}
+
+// TODO: refactor these codes
+func (s *service) GeneratePipelineDataSpec(startCompOrigin *pipelinePB.Component, endCompOrigin *pipelinePB.Component, compsOrigin []*pipelinePB.Component) (*pipelinePB.DataSpecification, error) {
+	success := true
+	pipelineDataSpec := &pipelinePB.DataSpecification{}
+
+	dataInput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+	dataInput.Fields["type"] = structpb.NewStringValue("object")
+	dataInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
+
+	startComp := proto.Clone(startCompOrigin).(*pipelinePB.Component)
+	for k, v := range startComp.GetStartComponent().GetFields() {
+		b, _ := protojson.Marshal(v)
+		p := &structpb.Struct{}
+		_ = protojson.Unmarshal(b, p)
+		dataInput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(p)
+	}
+
+	// output
+	dataOutput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+	dataOutput.Fields["type"] = structpb.NewStringValue("object")
+	dataOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
+
+	endComp := proto.Clone(endCompOrigin).(*pipelinePB.Component)
+
+	for k, v := range endComp.GetEndComponent().Fields {
+		var m *structpb.Value
+
+		var err error
+
+		str := v.Value
+		if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
+			// TODO
+			str = str[2:]
+			str = str[:len(str)-1]
+			str = strings.ReplaceAll(str, " ", "")
+
+			compID := strings.Split(str, ".")[0]
+			str = str[len(strings.Split(str, ".")[0]):]
+			upstreamCompIdx := -1
+			for compIdx := range compsOrigin {
+				if compsOrigin[compIdx].Id == compID {
+					upstreamCompIdx = compIdx
+				}
+			}
+
+			if upstreamCompIdx != -1 {
+				comp := proto.Clone(compsOrigin[upstreamCompIdx]).(*pipelinePB.Component)
+
+				var walk *structpb.Value
+				switch comp.Component.(type) {
+				case *pipelinePB.Component_IteratorComponent:
+
+					splits := strings.Split(str, ".")
+
+					if splits[1] == "output" {
+						walk = structpb.NewStructValue(comp.GetIteratorComponent().DataSpecification.Output)
+					} else {
+						return nil, fmt.Errorf("generate OpenAPI spec error")
+					}
+					str = str[len(splits[1])+1:]
+				case *pipelinePB.Component_ConnectorComponent:
+					task := comp.GetConnectorComponent().GetTask()
+
+					splits := strings.Split(str, ".")
+
+					if splits[1] == "output" {
+						walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
+					} else if splits[1] == "input" {
+						walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
+					} else {
+						return nil, fmt.Errorf("generate OpenAPI spec error")
+					}
+					str = str[len(splits[1])+1:]
+				case *pipelinePB.Component_StartComponent:
+					walk = structpb.NewStructValue(dataInput)
+				case *pipelinePB.Component_OperatorComponent:
+					task := comp.GetOperatorComponent().GetTask()
+
+					splits := strings.Split(str, ".")
+
+					if splits[1] == "output" {
+						walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
+					} else if splits[1] == "input" {
+						walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
+					} else {
+						return nil, fmt.Errorf("generate OpenAPI spec error")
+					}
+					str = str[len(splits[1])+1:]
+				}
+
+				for {
+					if len(str) == 0 {
+						break
+					}
+
+					splits := strings.Split(str, ".")
+					curr := splits[1]
+
+					if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
+						target := strings.Split(curr, "[")[0]
+						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+								break
+							}
+						} else {
+							break
+						}
+						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
+					} else {
+						target := curr
+
+						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
+							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+								break
+							}
+						} else {
+							break
+						}
+
+						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
+
+					}
+
+					str = str[len(curr)+1:]
+				}
+				m = structpb.NewStructValue(walk.GetStructValue())
+
+			} else {
+				return nil, fmt.Errorf("generate data spec error")
+			}
+
+			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+				m.GetStructValue().Fields["title"] = structpb.NewStringValue(v.Title)
+			}
+			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+				m.GetStructValue().Fields["description"] = structpb.NewStringValue(v.Description)
+			}
+			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
+				m.GetStructValue().Fields["instillUIOrder"] = structpb.NewNumberValue(float64(v.InstillUiOrder))
+			}
+
+		} else {
+			m, err = structpb.NewValue(map[string]interface{}{
+				"title":          v.Title,
+				"description":    v.Description,
+				"instillUIOrder": v.InstillUiOrder,
+				"type":           "string",
+				"instillFormat":  "string",
+			})
+		}
+
+		if err != nil {
+			success = false
+		} else {
+			dataOutput.Fields["properties"].GetStructValue().Fields[k] = m
+		}
+
+	}
+
+	if success {
+		pipelineDataSpec.Input = dataInput
+		pipelineDataSpec.Output = dataOutput
+		return pipelineDataSpec, nil
+	}
+	return nil, fmt.Errorf("generate data spec error")
 
 }

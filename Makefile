@@ -10,8 +10,8 @@ export
 
 .PHONY: dev
 dev:							## Run dev container
-	@docker compose ls -q | grep -q "instill-vdp" && true || \
-		(echo "Error: Run \"make latest PROFILE=pipeline\" in vdp repository (https://github.com/instill-ai/vdp) in your local machine first." && exit 1)
+	@docker compose ls -q | grep -q "instill-core" && true || \
+		(echo "Error: Run \"make latest PROFILE=pipeline\" in vdp repository (https://github.com/instill-ai/instill-core) in your local machine first." && exit 1)
 	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
 		echo "Run dev container ${SERVICE_NAME}. To stop it, run \"make stop\"."
 	@docker run -d --rm \
