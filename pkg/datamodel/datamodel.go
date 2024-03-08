@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/launchdarkly/go-semver"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -347,10 +346,8 @@ type ComponentDefinition struct {
 	Title         string
 	ComponentType ComponentType
 	Version       string
+	ReleaseStage  ReleaseStage
 
-	// This is an enum in the database but it's only used for filtering, so for
-	// now we don't need to implement a domain type.
-	ReleaseStage string
 	// IsVisible is computed from a combination of fields (e.g. tombstone,
 	// public, deprecated), and is used to hide components from the list
 	// endpoint.
@@ -365,33 +362,6 @@ func (ComponentDefinition) TableName() string {
 	return "component_definition_index"
 }
 
-const (
-	rsUnspecified        = "RELEASE_STAGE_UNSPECIFIED"
-	rsContribution       = "RELEASE_STAGE_OPEN_FOR_CONTRIBUTION"
-	rsComingSoon         = "RELEASE_STAGE_COMING_SOON"
-	rsAlpha              = "RELEASE_STAGE_ALPHA"
-	rsBeta               = "RELEASE_STAGE_BETA"
-	rsGenerallyAvailable = "RELEASE_STAGE_GA"
-)
-
-func (c ComponentDefinition) computeReleaseStage() string {
-	v, err := semver.Parse(c.Version)
-	if err != nil {
-		return rsUnspecified
-	}
-
-	switch v.GetPrerelease() {
-	case "alpha":
-		return rsAlpha
-	case "beta":
-		return rsBeta
-	}
-
-	// TODO compute Contribution / Coming soon when introduced.
-
-	return rsGenerallyAvailable
-}
-
 type pbDefinition interface {
 	GetUid() string
 	GetId() string
@@ -399,6 +369,7 @@ type pbDefinition interface {
 	GetTombstone() bool
 	GetPublic() bool
 	GetVersion() string
+	GetReleaseStage() pipelinePB.ComponentDefinition_ReleaseStage
 }
 
 // FeatureScores holds the feature score of each component definition. If a
@@ -451,9 +422,8 @@ func ComponentDefinitionFromProto(cdpb *pipelinePB.ComponentDefinition) *Compone
 		Version:      def.GetVersion(),
 		IsVisible:    def.GetPublic() && !def.GetTombstone(),
 		FeatureScore: FeatureScores[def.GetId()],
+		ReleaseStage: ReleaseStage(def.GetReleaseStage()),
 	}
-
-	cd.ReleaseStage = cd.computeReleaseStage()
 
 	return cd
 }
@@ -470,4 +440,18 @@ func (c *ComponentType) Scan(value any) error {
 // Value function for custom GORM type ComponentType
 func (c ComponentType) Value() (driver.Value, error) {
 	return pipelinePB.ComponentType(c).String(), nil
+}
+
+// ReleaseStage is an alias type for proto enum ComponentDefinition_ReleaseStage.
+type ReleaseStage pipelinePB.ComponentDefinition_ReleaseStage
+
+// Scan function for custom GORM type ReleaseStage
+func (c *ReleaseStage) Scan(value any) error {
+	*c = ReleaseStage(pipelinePB.ComponentDefinition_ReleaseStage_value[value.(string)])
+	return nil
+}
+
+// Value function for custom GORM type ReleaseStage
+func (c ReleaseStage) Value() (driver.Value, error) {
+	return pipelinePB.ComponentDefinition_ReleaseStage(c).String(), nil
 }

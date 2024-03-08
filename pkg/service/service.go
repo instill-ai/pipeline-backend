@@ -1887,10 +1887,11 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pipelinePB.
 	view := parseView(int32(req.GetView()))
 
 	var compType pipelinePB.ComponentType
+	var releaseStage pipelinePB.ComponentDefinition_ReleaseStage
 	declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
 		filtering.DeclareIdent("q_title", filtering.TypeString),
-		filtering.DeclareIdent("release_stage", filtering.TypeString),
+		filtering.DeclareEnumIdent("release_stage", releaseStage.Type()),
 		filtering.DeclareEnumIdent("component_type", compType.Type()),
 	)
 	if err != nil {
