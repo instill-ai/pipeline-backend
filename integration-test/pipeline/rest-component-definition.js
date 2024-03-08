@@ -111,12 +111,11 @@ export function CheckList() {
     });
 
     // Filter release stage
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1&filter=release_stage="RELEASE_STAGE_ALPHA"`, null, null), {
-      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage="RELEASE_STAGE_ALPHA" response status 200`]: (r) => r.status === 200,
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1&filter=release_stage=RELEASE_STAGE_ALPHA`, null, null), {
+      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage=RELEASE_STAGE_ALPHA response status 200`]: (r) => r.status === 200,
       // TODO when there are non-alpha components, update expectations.
-      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage="RELEASE_STAGE_ALPHA" number of results`]: (r) => r.json().total_size === limitedRecords.json().total_size,
-      // TODO check only prerelease in semver.
-      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage="RELEASE_STAGE_ALPHA" title is JSON`]: (r) => r.json().component_definitions[0].connector_definition.version === "0.1.0-alpha",
+      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage=RELEASE_STAGE_ALPHA number of results`]: (r) => r.json().total_size === limitedRecords.json().total_size,
+      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage=RELEASE_STAGE_ALPHA release_stage is alpha`]: (r) => r.json().component_definitions[0].connector_definition.release_stage === "RELEASE_STAGE_ALPHA",
     });
   });
 }
