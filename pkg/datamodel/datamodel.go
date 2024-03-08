@@ -401,6 +401,31 @@ type pbDefinition interface {
 	GetVersion() string
 }
 
+// FeatureScores holds the feature score of each component definition. If a
+// component definition is not present in the map, the score will be 0.
+//
+// This is implemented as an inmem map because:
+//   - We plan on having a more sophisticated rank in the future (e.g. likes,
+//     pipeline triggers where the pipeline uses this component).
+//   - We don't want to expose a detail in the component definition list endpoint
+//     (mainly used for marketing) in the component definition.
+//   - Having a unified place with all the scores provides a quick way to figure
+//     out the resulting order.
+//
+// TODO when a component major version changes, a new component with a
+// different ID will be introduced. We'll probably want to keep the score, so
+// it would be good that the new ID is xxx.v1 and that we use everything before
+// the dot as the "component family" ID. This is what we should use to index
+// the score.
+var FeatureScores = map[string]int{
+	"instill-model": 50,
+	"openai":        40,
+	"pinecone":      30,
+	"numbers":       30,
+	"json":          20,
+	"redis":         20,
+}
+
 // ComponentDefinitionFromProto parses a ComponentDefinition from the proto
 // structure.
 func ComponentDefinitionFromProto(cdpb *pipelinePB.ComponentDefinition) *ComponentDefinition {
@@ -420,16 +445,15 @@ func ComponentDefinitionFromProto(cdpb *pipelinePB.ComponentDefinition) *Compone
 	cd := &ComponentDefinition{
 		ComponentType: ComponentType(cdpb.Type),
 
-		UID:       uuid.FromStringOrNil(def.GetUid()),
-		ID:        def.GetId(),
-		Title:     def.GetTitle(),
-		Version:   def.GetVersion(),
-		IsVisible: def.GetPublic() && !def.GetTombstone(),
+		UID:          uuid.FromStringOrNil(def.GetUid()),
+		ID:           def.GetId(),
+		Title:        def.GetTitle(),
+		Version:      def.GetVersion(),
+		IsVisible:    def.GetPublic() && !def.GetTombstone(),
+		FeatureScore: FeatureScores[def.GetId()],
 	}
 
 	cd.ReleaseStage = cd.computeReleaseStage()
-
-	// TODO read FeatureScore from definition.
 
 	return cd
 }

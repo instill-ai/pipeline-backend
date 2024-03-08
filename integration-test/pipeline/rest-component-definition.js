@@ -13,7 +13,8 @@ export function CheckList() {
       "GET /v1beta/component-definitions response total_size > 0": (r) => r.json().total_size > 0,
       "GET /v1beta/component-definitions response page 0": (r) => r.json().page === 0,
       [`GET /v1beta/component-definitions response default page size ${defaultPageSize}`]: (r) => r.json().component_definitions.length === defaultPageSize,
-      [`GET /v1beta/component-definitions response page size in response ${defaultPageSize}`]: (r) => r.json().page_size === defaultPageSize
+      [`GET /v1beta/component-definitions response page size in response ${defaultPageSize}`]: (r) => r.json().page_size === defaultPageSize,
+      "GET /v1beta/component-definitions response features Instill Model on top": (r) => r.json().component_definitions[0].connector_definition.id === "instill-model",
     });
 
     var limitedRecords = http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions`, null, null)
