@@ -362,19 +362,16 @@ func (s *service) includeIteratorComponentDetail(comp *pipelinePB.IteratorCompon
 	dataOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
 	for k, v := range comp.OutputElements {
-		var m *structpb.Value
+		path := v
+		if strings.HasPrefix(path, "${") && strings.HasSuffix(path, "}") && strings.Count(path, "${") == 1 {
+			// Remove "${" and "}"
+			path = path[2:]
+			path = path[:len(path)-1]
+			path = strings.ReplaceAll(path, " ", "")
 
-		var err error
-
-		str := v
-		if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
-			// TODO
-			str = str[2:]
-			str = str[:len(str)-1]
-			str = strings.ReplaceAll(str, " ", "")
-
-			compID := strings.Split(str, ".")[0]
-			str = str[len(strings.Split(str, ".")[0]):]
+			// Find upstream component
+			compID := strings.Split(path, ".")[0]
+			path = path[len(compID):]
 			upstreamCompIdx := -1
 			for compIdx := range comp.Components {
 				if comp.Components[compIdx].Id == compID {
@@ -382,88 +379,98 @@ func (s *service) includeIteratorComponentDetail(comp *pipelinePB.IteratorCompon
 				}
 			}
 			if upstreamCompIdx != -1 {
-				comp := proto.Clone(comp.Components[upstreamCompIdx]).(*pipelinePB.NestedComponent)
+				nestedComp := comp.Components[upstreamCompIdx]
 
 				var walk *structpb.Value
-				switch comp.Component.(type) {
+				switch nestedComp.Component.(type) {
 				case *pipelinePB.NestedComponent_ConnectorComponent:
-					task := comp.GetConnectorComponent().GetTask()
+					task := nestedComp.GetConnectorComponent().GetTask()
+					if task == "" {
+						// Skip schema generation if the task is not set.
+						continue
+					}
 
-					splits := strings.Split(str, ".")
+					splits := strings.Split(path, ".")
 
 					if splits[1] == "output" {
-						walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
+						walk = structpb.NewStructValue(nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
 					} else if splits[1] == "input" {
-						walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
+						walk = structpb.NewStructValue(nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
 					} else {
-						return fmt.Errorf("generate OpenAPI spec error")
+						// Skip schema generation if the configuration is not valid.
+						continue
 					}
-					str = str[len(splits[1])+1:]
+					path = path[len(splits[1])+1:]
 				case *pipelinePB.NestedComponent_OperatorComponent:
-					task := comp.GetOperatorComponent().GetTask()
-					splits := strings.Split(str, ".")
+					task := nestedComp.GetOperatorComponent().GetTask()
+					if task == "" {
+						// Skip schema generation if the task is not set.
+						continue
+					}
+					splits := strings.Split(path, ".")
 
 					if splits[1] == "output" {
-						walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
+						walk = structpb.NewStructValue(nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
 					} else if splits[1] == "input" {
-						walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
+						walk = structpb.NewStructValue(nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
 					} else {
-						return fmt.Errorf("generate OpenAPI spec error")
+						// Skip schema generation if the configuration is not valid.
+						continue
 					}
-					str = str[len(splits[1])+1:]
+					path = path[len(splits[1])+1:]
 				}
 
+				success := true
+
+				// Traverse the schema of upstream component
 				for {
-					if len(str) == 0 {
+					if len(path) == 0 {
 						break
 					}
 
-					splits := strings.Split(str, ".")
+					splits := strings.Split(path, ".")
 					curr := splits[1]
 
 					if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
 						target := strings.Split(curr, "[")[0]
 						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
-							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; ok {
+								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
+							} else {
+								success = false
 								break
 							}
 						} else {
+							success = false
 							break
 						}
-						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
 					} else {
 						target := curr
 
 						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
-							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; ok {
+								walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
+							} else {
+								success = false
 								break
 							}
 						} else {
+							success = false
 							break
 						}
 
-						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
-
 					}
 
-					str = str[len(curr)+1:]
+					path = path[len(curr)+1:]
 				}
-				m = structpb.NewStructValue(walk.GetStructValue())
+				if success {
+					s := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+					s.Fields["type"] = structpb.NewStringValue("array")
+					s.Fields["items"] = structpb.NewStructValue(walk.GetStructValue())
+					dataOutput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(s)
+				}
 
-			} else {
-				return fmt.Errorf("generate data spec error")
 			}
-
-		}
-
-		if err != nil {
-
-		} else {
-			s := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-			s.Fields["type"] = structpb.NewStringValue("array")
-			s.Fields["items"] = m
-			dataOutput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(s)
-
 		}
 	}
 
