@@ -412,6 +412,19 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 	return s.operator.GetOperatorDefinitionByID(defID, nil)
 }
 
+func (s *service) implementedOperatorDefinitions() []*pipelinePB.OperatorDefinition {
+	allDefs := s.operator.ListOperatorDefinitions()
+
+	implemented := make([]*pipelinePB.OperatorDefinition, 0, len(allDefs))
+	for _, def := range allDefs {
+		if implementedReleaseStages[def.GetReleaseStage()] {
+			implemented = append(implemented, def)
+		}
+	}
+
+	return implemented
+}
+
 func (s *service) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.ListOperatorDefinitionsRequest) (*pipelinePB.ListOperatorDefinitionsResponse, error) {
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 	prevLastUID, err := s.lastUIDFromToken(req.GetPageToken())
@@ -419,7 +432,13 @@ func (s *service) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.L
 		return nil, err
 	}
 
-	defs := s.operator.ListOperatorDefinitions()
+	// The client of this use case is the console pipeline builder, so we want
+	// to filter out the unimplemented definitions (that are present in the
+	// ListComponentDefinitions method, used also for the marketing website).
+	//
+	// TODO we can use only the component definition list and let the clients
+	// do the filtering in the query params.
+	defs := s.implementedOperatorDefinitions()
 
 	startIdx := 0
 	lastUID := ""
@@ -1964,6 +1983,25 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pipelinePB.
 	return resp, nil
 }
 
+var implementedReleaseStages = map[pipelinePB.ComponentDefinition_ReleaseStage]bool{
+	pipelinePB.ComponentDefinition_RELEASE_STAGE_ALPHA: true,
+	pipelinePB.ComponentDefinition_RELEASE_STAGE_BETA:  true,
+	pipelinePB.ComponentDefinition_RELEASE_STAGE_GA:    true,
+}
+
+func (s *service) implementedConnectorDefinitions() []*pipelinePB.ConnectorDefinition {
+	allDefs := s.connector.ListConnectorDefinitions()
+
+	implemented := make([]*pipelinePB.ConnectorDefinition, 0, len(allDefs))
+	for _, def := range allDefs {
+		if implementedReleaseStages[def.GetReleaseStage()] {
+			implemented = append(implemented, def)
+		}
+	}
+
+	return implemented
+}
+
 func (s *service) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.ListConnectorDefinitionsRequest) (*pipelinePB.ListConnectorDefinitionsResponse, error) {
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 	prevLastUID, err := s.lastUIDFromToken(req.GetPageToken())
@@ -1985,7 +2023,13 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.
 		return nil, err
 	}
 
-	defs := s.filterConnectorDefinitions(s.connector.ListConnectorDefinitions(), filter)
+	// The client of this use case is the console pipeline builder, so we want
+	// to filter out the unimplemented definitions (that are present in the
+	// ListComponentDefinitions method, used also for the marketing website).
+	//
+	// TODO we can use only the component definition list and let the clients
+	// do the filtering in the query params.
+	defs := s.filterConnectorDefinitions(s.implementedConnectorDefinitions(), filter)
 
 	startIdx := 0
 	lastUID := ""
