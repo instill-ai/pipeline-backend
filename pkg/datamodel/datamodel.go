@@ -255,13 +255,13 @@ func (p *SharingCode) Value() (driver.Value, error) {
 	return string(valueString), err
 }
 
-// Scan function for custom GORM type ReleaseStage
+// Scan function for custom GORM type PipelineRole
 func (p *PipelineRole) Scan(value interface{}) error {
 	*p = PipelineRole(pipelinePB.Role_value[value.(string)])
 	return nil
 }
 
-// Value function for custom GORM type ReleaseStage
+// Value function for custom GORM type PipelineRole
 func (p PipelineRole) Value() (driver.Value, error) {
 	return pipelinePB.Role(p).String(), nil
 }
@@ -318,13 +318,13 @@ func (r ConnectorState) Value() (driver.Value, error) {
 	return pipelinePB.Connector_State(r).String(), nil
 }
 
-// Scan function for custom GORM type ReleaseStage
+// Scan function for custom GORM type ConnectorVisibility
 func (r *ConnectorVisibility) Scan(value interface{}) error {
 	*r = ConnectorVisibility(pipelinePB.Connector_Visibility_value[value.(string)])
 	return nil
 }
 
-// Value function for custom GORM type ReleaseStage
+// Value function for custom GORM type ConnectorVisibility
 func (r ConnectorVisibility) Value() (driver.Value, error) {
 	return pipelinePB.Connector_Visibility(r).String(), nil
 }
