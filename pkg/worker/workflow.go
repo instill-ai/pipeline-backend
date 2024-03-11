@@ -126,10 +126,9 @@ func (w *worker) SetBlob(inputs []*structpb.Struct) ([]string, error) {
 	return blobRedisKeys, nil
 }
 
-type CompMemory map[string]any
-type ItemMemory map[string]CompMemory
+type ItemMemory map[string]map[string]any
 
-func (i CompMemory) Completed() bool {
+func checkComponentCompleted(i map[string]any) bool {
 	if status, ok := i["status"]; ok {
 		if completed, ok2 := status.(map[string]any)["completed"]; ok2 {
 			return completed.(bool)
@@ -137,7 +136,7 @@ func (i CompMemory) Completed() bool {
 	}
 	return false
 }
-func (i CompMemory) Started() bool {
+func checkComponentStarted(i map[string]any) bool {
 	if status, ok := i["status"]; ok {
 		if started, ok2 := status.(map[string]any)["started"]; ok2 {
 			return started.(bool)
@@ -145,7 +144,7 @@ func (i CompMemory) Started() bool {
 	}
 	return false
 }
-func (i CompMemory) Skipped() bool {
+func checkComponentSkipped(i map[string]any) bool {
 	if status, ok := i["status"]; ok {
 		if skipped, ok2 := status.(map[string]any)["skipped"]; ok2 {
 			return skipped.(bool)
@@ -153,7 +152,7 @@ func (i CompMemory) Skipped() bool {
 	}
 	return false
 }
-func (i CompMemory) Error() bool {
+func checkComponentError(i map[string]any) bool {
 	if status, ok := i["status"]; ok {
 		if error, ok2 := status.(map[string]any)["error"]; ok2 {
 			return error.(bool)
@@ -276,7 +275,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 	// Setup start component values
 	for idx := range inputs {
-		var inputStruct CompMemory
+		var inputStruct map[string]any
 		err := json.Unmarshal(inputs[idx], &inputStruct)
 		if err != nil {
 			w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
@@ -309,12 +308,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		for idx := 0; idx < batchSize; idx++ {
 			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
 			for k, v := range endComp.EndComponent.Fields {
-
-				o, err := RenderInput(v.Value, memory[idx])
-				if err != nil {
-					w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
-					return nil, err
-				}
+				// TODO: The end component should allow partial upstream skipping.
+				// This is a temporary implementation.
+				o, _ := RenderInput(v.Value, memory[idx])
 				structVal, err := structpb.NewValue(o)
 				if err != nil {
 					return nil, err
@@ -372,10 +368,10 @@ func (w *worker) PipelineActivity(ctx workflow.Context, ao workflow.ActivityOpti
 	var err error
 	for group := range param.OrderedComps {
 
-		var parallelTasks = make([]*parallelTask, len(param.OrderedComps[group]))
+		var parallelTasks = make([]*parallelTask, 0, len(param.OrderedComps[group]))
 
-		for compIdx, comp := range param.OrderedComps[group] {
-			parallelTasks[compIdx] = &parallelTask{
+		for _, comp := range param.OrderedComps[group] {
+			task := &parallelTask{
 				comp:   comp,
 				idxMap: map[int]int{},
 			}
@@ -396,13 +392,13 @@ func (w *worker) PipelineActivity(ctx workflow.Context, ao workflow.ActivityOpti
 				}
 
 				for _, ancestorID := range param.DAG.GetAncestorIDs(comp.ID) {
-					if param.Memory[idx][ancestorID].Skipped() {
+					if checkComponentSkipped(param.Memory[idx][ancestorID]) {
 						param.Memory[idx][comp.ID]["status"].(map[string]any)["skipped"] = true
 						break
 					}
 				}
 
-				if !param.Memory[idx][comp.ID].Skipped() {
+				if !checkComponentSkipped(param.Memory[idx][comp.ID]) {
 					if comp.GetCondition() != nil && *comp.GetCondition() != "" {
 						condStr := *comp.GetCondition()
 						var varMapping map[string]string
@@ -430,7 +426,7 @@ func (w *worker) PipelineActivity(ctx workflow.Context, ao workflow.ActivityOpti
 						param.Memory[idx][comp.ID]["status"].(map[string]any)["started"] = true
 					}
 				}
-				if param.Memory[idx][comp.ID].Started() {
+				if checkComponentStarted(param.Memory[idx][comp.ID]) {
 
 					// Render input
 
@@ -499,7 +495,7 @@ func (w *worker) PipelineActivity(ctx workflow.Context, ao workflow.ActivityOpti
 						}
 
 						param.Memory[idx][comp.ID]["input"] = compInputStruct
-						parallelTasks[compIdx].idxMap[len(compInputs)] = idx
+						task.idxMap[len(compInputs)] = idx
 						compInputs = append(compInputs, compInput)
 
 					}
@@ -516,14 +512,15 @@ func (w *worker) PipelineActivity(ctx workflow.Context, ao workflow.ActivityOpti
 
 						ctx = workflow.WithActivityOptions(ctx, ao)
 
-						parallelTasks[compIdx].startTime = time.Now()
-						parallelTasks[compIdx].future = workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
+						task.startTime = time.Now()
+						task.future = workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ExecuteConnectorActivityRequest{
 							ID:                 comp.ID,
 							InputBlobRedisKeys: inputBlobRedisKeys,
 							DefinitionName:     comp.ConnectorComponent.DefinitionName,
 							ConnectorName:      comp.ConnectorComponent.ConnectorName,
 							Task:               comp.ConnectorComponent.Task,
 						})
+						parallelTasks = append(parallelTasks, task)
 
 					case comp.IsOperatorComponent():
 						inputBlobRedisKeys, err := w.SetBlob(compInputs)
@@ -535,13 +532,14 @@ func (w *worker) PipelineActivity(ctx workflow.Context, ao workflow.ActivityOpti
 						}
 
 						ctx = workflow.WithActivityOptions(ctx, ao)
-						parallelTasks[compIdx].startTime = time.Now()
-						parallelTasks[compIdx].future = workflow.ExecuteActivity(ctx, w.OperatorActivity, &ExecuteOperatorActivityRequest{
+						task.startTime = time.Now()
+						task.future = workflow.ExecuteActivity(ctx, w.OperatorActivity, &ExecuteOperatorActivityRequest{
 							ID:                 comp.ID,
 							InputBlobRedisKeys: inputBlobRedisKeys,
 							DefinitionName:     comp.OperatorComponent.DefinitionName,
 							Task:               comp.OperatorComponent.Task,
 						})
+						parallelTasks = append(parallelTasks, task)
 
 					case comp.IsIteratorComponent():
 
