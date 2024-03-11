@@ -297,6 +297,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	})
 	if err != nil {
 		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+		return nil, err
 	}
 
 	pipelineOutputs := []*structpb.Struct{}
