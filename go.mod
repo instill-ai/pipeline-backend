@@ -19,7 +19,7 @@ require (
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/component v0.12.0-beta.0.20240307023544-7c27d15e4e01
 	github.com/instill-ai/connector v0.13.0-beta.0.20240308162446-7cfb11b5cf1f
-	github.com/instill-ai/operator v0.9.0-beta.0.20240308162331-d3a710391231
+	github.com/instill-ai/operator v0.9.0-beta.0.20240311160823-b9334d9686ec
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240308151517-4b0523c184d1
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
@@ -168,7 +168,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc2 // indirect
-	github.com/otiai10/gosseract/v2 v2.2.4 // indirect
+	github.com/otiai10/gosseract/v2 v2.4.1 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
