@@ -115,10 +115,11 @@ func (c *Component) GetCondition() *string {
 
 type StartComponent struct {
 	Fields map[string]struct {
-		Title          string `json:"title"`
-		Description    string `json:"description"`
-		InstillFormat  string `json:"instill_format"`
-		InstillUIOrder int32  `json:"instill_ui_order"`
+		Title              string `json:"title"`
+		Description        string `json:"description"`
+		InstillFormat      string `json:"instill_format"`
+		InstillUIOrder     int32  `json:"instill_ui_order"`
+		InstillUIMultiline bool   `json:"instill_ui_multiline"`
 	} `json:"fields"`
 }
 
