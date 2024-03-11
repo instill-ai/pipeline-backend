@@ -53,12 +53,18 @@ func (s *service) recipeNameToPermalink(recipeRscName *pipelinePB.Recipe) (*pipe
 
 		switch component.Component.(type) {
 		case *pipelinePB.Component_ConnectorComponent:
-			permalink, err := s.connectorNameToPermalink(component.GetConnectorComponent().ConnectorName)
-			if err != nil {
-				// Allow not created resource
-				componentPermalink.GetConnectorComponent().ConnectorName = ""
-			} else {
-				componentPermalink.GetConnectorComponent().ConnectorName = permalink
+			connectorName := component.GetConnectorComponent().ConnectorName
+			if connectorName != "" {
+				connectorNameSplits := strings.Split(connectorName, "/")
+				if len(connectorNameSplits) == 4 && (connectorNameSplits[0] == "users" || connectorNameSplits[0] == "organizations") && connectorNameSplits[2] == "connectors" {
+					permalink, err := s.connectorNameToPermalink(component.GetConnectorComponent().ConnectorName)
+					if err != nil {
+						return nil, ErrConnectorNotFound
+					}
+					componentPermalink.GetConnectorComponent().ConnectorName = permalink
+				} else {
+					return nil, fmt.Errorf("%s %v", connectorName, ErrConnectorNameError)
+				}
 			}
 			defPermalink, err := s.connectorDefinitionNameToPermalink(component.GetConnectorComponent().DefinitionName)
 			if err != nil {
@@ -83,12 +89,19 @@ func (s *service) recipeNameToPermalink(recipeRscName *pipelinePB.Recipe) (*pipe
 
 				switch nestedComponent.Component.(type) {
 				case *pipelinePB.NestedComponent_ConnectorComponent:
-					permalink, err := s.connectorNameToPermalink(nestedComponent.GetConnectorComponent().ConnectorName)
-					if err != nil {
-						// Allow not created resource
-						nestedComponentPermalink.GetConnectorComponent().ConnectorName = ""
-					} else {
-						nestedComponentPermalink.GetConnectorComponent().ConnectorName = permalink
+					connectorName := nestedComponent.GetConnectorComponent().ConnectorName
+					if connectorName != "" {
+						connectorNameSplits := strings.Split(connectorName, "/")
+						if len(connectorNameSplits) == 4 && (connectorNameSplits[0] == "users" || connectorNameSplits[0] == "organizations") && connectorNameSplits[2] == "connectors" {
+							permalink, err := s.connectorNameToPermalink(nestedComponent.GetConnectorComponent().ConnectorName)
+							if err != nil {
+								return nil, ErrConnectorNotFound
+							}
+							nestedComponentPermalink.GetConnectorComponent().ConnectorName = permalink
+						} else {
+							return nil, fmt.Errorf("%s %v", connectorName, ErrConnectorNameError)
+						}
+
 					}
 					defPermalink, err := s.connectorDefinitionNameToPermalink(nestedComponent.GetConnectorComponent().DefinitionName)
 					if err != nil {
@@ -127,12 +140,14 @@ func (s *service) recipePermalinkToName(recipePermalink *pipelinePB.Recipe) (*pi
 
 		switch component.Component.(type) {
 		case *pipelinePB.Component_ConnectorComponent:
-			name, err := s.connectorPermalinkToName(componentPermalink.GetConnectorComponent().ConnectorName)
-			if err != nil {
-				// Allow resource not created
-				component.GetConnectorComponent().ConnectorName = ""
-			} else {
-				component.GetConnectorComponent().ConnectorName = name
+			if componentPermalink.GetConnectorComponent().ConnectorName != "" {
+				name, err := s.connectorPermalinkToName(componentPermalink.GetConnectorComponent().ConnectorName)
+				if err != nil {
+					// Allow the connector to not exist instead of returning an error.
+					component.GetConnectorComponent().ConnectorName = ""
+				} else {
+					component.GetConnectorComponent().ConnectorName = name
+				}
 			}
 			defName, err := s.connectorDefinitionPermalinkToName(componentPermalink.GetConnectorComponent().DefinitionName)
 			if err != nil {
@@ -155,12 +170,14 @@ func (s *service) recipePermalinkToName(recipePermalink *pipelinePB.Recipe) (*pi
 				}
 				switch nestedComponentPermalink.Component.(type) {
 				case *pipelinePB.NestedComponent_ConnectorComponent:
-					name, err := s.connectorPermalinkToName(nestedComponentPermalink.GetConnectorComponent().ConnectorName)
-					if err != nil {
-						// Allow resource not created
-						nestedComponent.GetConnectorComponent().ConnectorName = ""
-					} else {
-						nestedComponent.GetConnectorComponent().ConnectorName = name
+					if nestedComponentPermalink.GetConnectorComponent().ConnectorName != "" {
+						name, err := s.connectorPermalinkToName(nestedComponentPermalink.GetConnectorComponent().ConnectorName)
+						if err != nil {
+							// Allow the connector to not exist instead of returning an error.
+							nestedComponent.GetConnectorComponent().ConnectorName = ""
+						} else {
+							nestedComponent.GetConnectorComponent().ConnectorName = name
+						}
 					}
 					defName, err := s.connectorDefinitionPermalinkToName(nestedComponentPermalink.GetConnectorComponent().DefinitionName)
 					if err != nil {
@@ -283,35 +300,37 @@ func (s *service) includeOperatorComponentDetail(comp *pipelinePB.OperatorCompon
 }
 
 func (s *service) includeConnectorComponentDetail(comp *pipelinePB.ConnectorComponent, userUID uuid.UUID) error {
-	conn, err := s.repository.GetConnectorByUIDAdmin(
-		context.Background(),
-		uuid.FromStringOrNil(strings.Split(comp.ConnectorName, "/")[1]),
-		false,
-	)
-	if err != nil {
-		// Allow resource not created
-		comp.Connector = nil
-	} else {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		pbConnector, err := s.convertDatamodelToProto(ctx, conn, ViewFull, true)
+	if comp.ConnectorName != "" {
+		conn, err := s.repository.GetConnectorByUIDAdmin(
+			context.Background(),
+			uuid.FromStringOrNil(strings.Split(comp.ConnectorName, "/")[1]),
+			false,
+		)
 		if err != nil {
-			// Allow resource not created
+			// Allow the connector to not exist instead of returning an error.
 			comp.Connector = nil
 		} else {
-			comp.Connector = pbConnector
-			str := structpb.Struct{}
-			_ = str.UnmarshalJSON(conn.Configuration)
-			// TODO: optimize this
-			str.Fields["instill_user_uid"] = structpb.NewStringValue(userUID.String())
-			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
-			str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
-
-			d, err := s.connector.GetConnectorDefinitionByID(pbConnector.ConnectorDefinition.Id, &str, comp)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			pbConnector, err := s.convertDatamodelToProto(ctx, conn, ViewFull, true)
 			if err != nil {
-				return err
+				// Allow the connector to not exist instead of returning an error.
+				comp.Connector = nil
+			} else {
+				comp.Connector = pbConnector
+				str := structpb.Struct{}
+				_ = str.UnmarshalJSON(conn.Configuration)
+				// TODO: optimize this
+				str.Fields["instill_user_uid"] = structpb.NewStringValue(userUID.String())
+				str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
+				str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
+
+				d, err := s.connector.GetConnectorDefinitionByID(pbConnector.ConnectorDefinition.Id, &str, comp)
+				if err != nil {
+					return err
+				}
+				comp.Definition = d
 			}
-			comp.Definition = d
 		}
 	}
 	if comp.Definition == nil {

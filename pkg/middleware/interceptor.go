@@ -99,6 +99,8 @@ func AsGRPCError(err error) error {
 		errors.Is(err, repository.ErrOwnerTypeNotMatch),
 		errors.Is(err, repository.ErrPageTokenDecode),
 		errors.Is(err, bcrypt.ErrMismatchedHashAndPassword),
+		errors.Is(err, service.ErrConnectorNameError),
+		errors.Is(err, service.ErrConnectorNotFound),
 		errors.Is(err, handler.ErrCheckUpdateImmutableFields),
 		errors.Is(err, handler.ErrCheckOutputOnlyFields),
 		errors.Is(err, handler.ErrCheckRequiredFields),

@@ -10,8 +10,8 @@ import "google/api/visibility.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 // VDP definitions
 import "../../../vdp/pipeline/v1beta/common.proto";
-import "../../../vdp/pipeline/v1beta/connector.proto";
 import "../../../vdp/pipeline/v1beta/component_definition.proto";
+import "../../../vdp/pipeline/v1beta/connector.proto";
 import "../../../vdp/pipeline/v1beta/pipeline.proto";
 
 // VDP
