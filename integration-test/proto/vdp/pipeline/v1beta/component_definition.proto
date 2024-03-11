@@ -28,6 +28,47 @@ message ComponentDefinition {
     VIEW_FULL = 2;
   }
 
+  // ReleaseStage defines the release stage of a component. This is used to
+  // group components with the same pre-relase groups (e.g. `0.1.0-beta`,
+  // `0.1.0-beta.1` -> `RELEASE_STAGE_BETA`) and to include other "in progress"
+  // (i.e. coming soon, open for contributions) stages that may not be relevant
+  // within semantic versioning.
+  // See the documentation of each value for potential constraints between
+  // `version` and `release_stage` fields.`
+  enum ReleaseStage {
+    // Unspecified.
+    RELEASE_STAGE_UNSPECIFIED = 0;
+    // This component is unimplemented and community contributions are welcome
+    // for this component.
+    //
+    // It is recommended that the major and minor versions for definitions at
+    // this release stage is kept at 0, e.g., `0.0.1`, `0.0.4`, etc.
+    RELEASE_STAGE_OPEN_FOR_CONTRIBUTION = 1;
+    // The implementation of this component is planned and will be tackled by
+    // the Instill AI team.
+    //
+    // It is recommended that the major and minor versions for definitions at
+    // this release stage is kept at 0, e.g., `0.0.1`, `0.0.4`, etc.
+    RELEASE_STAGE_COMING_SOON = 2;
+    // Initial implementation intended to gather feedback and issues from early
+    // adopters. Alpha releases are discouraged for production use cases.
+    //
+    // The `version` field in the definition must have `alpha` as its first
+    // pre-release identifier, e.g., `0.1.0-alpha`, `0.1.3-alpha.1`.
+    RELEASE_STAGE_ALPHA = 3;
+    // The connector has reached stability and no backwards incompatible
+    // changes are expected. Before reaching general availability, it should be
+    // validated by a broader group of users. Some fixes might be added during
+    // this process.
+    //
+    // The `version` field in the definition must have `beta` as its first
+    // pre-release identifier, e.g., `0.1.0-beta`, `0.1.3-beta.1`.
+    RELEASE_STAGE_BETA = 4;
+    // Generally available - ready for use in production and fully supported by
+    // Instill AI.
+    RELEASE_STAGE_GA = 5;
+  }
+
   // Defines the type of task the component will perform.
   ComponentType type = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The component definition details.
@@ -39,14 +80,25 @@ message ComponentDefinition {
   }
 }
 
+// DataSpecification describes the JSON schema of component input and output.
+message DataSpecification {
+  // JSON schema describing the component input data.
+  google.protobuf.Struct input = 1;
+  // JSON schema describing the component output data.
+  google.protobuf.Struct output = 2;
+}
+
 // ConnectorSpec represents a specification data model.
 message ConnectorSpec {
   // Resource specification.
   google.protobuf.Struct resource_specification = 2 [(google.api.field_behavior) = REQUIRED];
   // Component specification.
   google.protobuf.Struct component_specification = 3 [(google.api.field_behavior) = REQUIRED];
-  // OpenAPI specification.
-  google.protobuf.Struct openapi_specifications = 4 [(google.api.field_behavior) = REQUIRED];
+  // Deleted field.
+  reserved 4;
+  // Data specifications.
+  // The key represents the task, and the value is the corresponding data_specification.
+  map<string, DataSpecification> data_specifications = 5 [(google.api.field_behavior) = REQUIRED];
 }
 
 // ConnectorType defines the connector type based on its task features.
@@ -80,9 +132,9 @@ enum ConnectorType {
 // in the official documentation.
 message ConnectorDefinition {
   option (google.api.resource) = {
-type: "api.instill.tech/ConnectorDefinition"
-        pattern: "connector-definitions/{id}"
-        pattern: "connector-definitions/{uid}"
+    type: "api.instill.tech/ConnectorDefinition"
+    pattern: "connector-definitions/{id}"
+    pattern: "connector-definitions/{uid}"
   };
 
   // The name of the connector definition, defined by its ID.
@@ -130,14 +182,21 @@ type: "api.instill.tech/ConnectorDefinition"
   string version = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
   // List of tasks that can be executed by the connector.
   repeated ComponentTask tasks = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Short description of the connector.
+  string description = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release stage.
+  ComponentDefinition.ReleaseStage release_stage = 19 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // OperatorSpec represents a specification data model.
 message OperatorSpec {
   // Component specification.
   google.protobuf.Struct component_specification = 1 [(google.api.field_behavior) = REQUIRED];
-  // OpenAPI specification.
-  google.protobuf.Struct openapi_specifications = 2 [(google.api.field_behavior) = REQUIRED];
+  // Deleted field.
+  reserved 2;
+  // Data specifications.
+  // The key represents the task, and the value is the corresponding data_specification.
+  map<string, DataSpecification> data_specifications = 3 [(google.api.field_behavior) = REQUIRED];
 }
 
 // An Operator is a type of pipeline component that performs data injection and
@@ -148,9 +207,9 @@ message OperatorSpec {
 // in the official documentation.
 message OperatorDefinition {
   option (google.api.resource) = {
-type: "api.instill.tech/OperatorDefinition"
-        pattern: "operator-definitions/{id}"
-        pattern: "operator-definitions/{uid}"
+    type: "api.instill.tech/OperatorDefinition"
+    pattern: "operator-definitions/{id}"
+    pattern: "operator-definitions/{uid}"
   };
 
   // The name of the operator definition.
@@ -191,6 +250,10 @@ type: "api.instill.tech/OperatorDefinition"
   string version = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
   // List of tasks that can be executed by the operator.
   repeated ComponentTask tasks = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Short description of the operator.
+  string description = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release stage.
+  ComponentDefinition.ReleaseStage release_stage = 19 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -204,8 +267,12 @@ message ListComponentDefinitionsRequest {
   // is unspecified, at most 10 definitions will be returned. The cap value for
   // this parameter is 100 (i.e. any value above that will be coerced to 100).
   optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
-  // Page token.
-  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Field 2 is reserved for `page_token`. This endpoint initially implemented
+  // cursor-based pagination but it switched to order-based pagination in order
+  // to allow users to grasp the number of components that are implemented by
+  // Instill AI and accessing an arbitrary page without knowing the token or
+  // cursor information from the server.
+  reserved 2;
   // View allows clients to specify the desired resource view in the response.
   optional ComponentDefinition.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
@@ -213,16 +280,23 @@ message ListComponentDefinitionsRequest {
   // - Example: `component_type="COMPONENT_TYPE_CONNECTOR_AI"`.
   // - Example: `tasks:"TASK_TEXT_GENERATION"`.
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Page number.
+  optional int32 page = 5 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListComponentDefinitionsResponse contains a list of component definitions.
 message ListComponentDefinitionsResponse {
   // A list of component definition resources.
   repeated ComponentDefinition component_definitions = 1;
-  // Next page token.
-  string next_page_token = 2;
+  // Field 2 is reserved for `next_page_token`, which stopped being served
+  // after the endpoint switched to offset-based pagination.
+  reserved 2;
   // Total number of connector definitions.
   int32 total_size = 3;
+  // The requested page size.
+  int32 page_size = 4;
+  // The requested page offset.
+  int32 page = 5;
 }
 
 // ListConnectorDefinitionsRequest represents a request to list connector
@@ -264,7 +338,7 @@ message GetConnectorDefinitionRequest {
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference) = {type: "api.instill.tech/ConnectorDefinition"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-field_configuration: {path_param_name: "connector_definition_name"}
+      field_configuration: {path_param_name: "connector_definition_name"}
     }
   ];
   // field 2 is reserved for the "view" property of ConnectorDefinition.View
@@ -320,7 +394,7 @@ message GetOperatorDefinitionRequest {
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference) = {type: "api.instill.tech/OperatorDefinition"},
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-field_configuration: {path_param_name: "operator_definition_name"}
+      field_configuration: {path_param_name: "operator_definition_name"}
     }
   ];
   // field 2 is reserved for the "view" property of OperatorDefinition.View

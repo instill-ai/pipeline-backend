@@ -57,9 +57,11 @@ message StartComponent {
     string instill_format = 3 [(google.api.field_behavior) = OPTIONAL];
     // Instill UI order.
     int32 instill_ui_order = 4 [(google.api.field_behavior) = OPTIONAL];
+    // Instill UI Multiline.
+    bool instill_ui_multiline = 5 [(google.api.field_behavior) = OPTIONAL];
   }
   // Fields configuration.
-  // Key: Key in the request body.
+  // Key: Key of the input data.
   // Field: Field settings of the value.
   map<string, Field> fields = 1 [(google.api.field_behavior) = OPTIONAL];
 }
@@ -79,7 +81,7 @@ message EndComponent {
     int32 instill_ui_order = 4 [(google.api.field_behavior) = OPTIONAL];
   }
   // Fields configuration.
-  // Key: Key in the request body.
+  // Key: Key of the output data.
   // Field: Field settings of the value.
   map<string, Field> fields = 1 [(google.api.field_behavior) = OPTIONAL];
 }
@@ -91,10 +93,10 @@ message ConnectorComponent {
   string definition_name = 1 [(google.api.field_behavior) = OPTIONAL];
   // Connector definition.
   ConnectorDefinition definition = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Resource name. Leave empty if not created.
-  string resource_name = 3 [(google.api.field_behavior) = OPTIONAL];
-  // Describes the connector resource details (e.g., configuration to connect with the vendor service).
-  Connector resource = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Connector name. Leave empty if not created.
+  string connector_name = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Describes the connector details (e.g., configuration to connect with the vendor service).
+  Connector connector = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Task.
   string task = 5 [(google.api.field_behavior) = OPTIONAL];
   // Input configuration of the component. JSON schema described in the connector definition.
@@ -119,12 +121,15 @@ message OperatorComponent {
 }
 
 // IteratorComponent
-// Configures an iterator component for iteration.
+// Configures an iterator component. An iterator takes an array and executes an
+// operation (defined by a set of nested components) on each of its elements.
+// It can be regarded as triggering a sub-pipeline using the elements of an
+// array as input.
 message IteratorComponent {
-  // Input array: The iterator will iterate over the elements of the input array.
-  string input_array = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Input: The iterator will iterate over the elements of the input (must be an array).
+  string input = 1 [(google.api.field_behavior) = OPTIONAL];
 
-  // Output elements: Configure the output arrays of the map iterator.
+  // Output elements: Configure the output arrays of the iterator.
   // The key is the output element variable name, and the value is the data reference of the template.
   // Example:
   // output_elements: {
@@ -143,6 +148,9 @@ message IteratorComponent {
 
   // Condition statement determining whether the component is executed or not.
   string condition = 4 [(google.api.field_behavior) = OPTIONAL];
+
+  // DataSpecification returns the JSON schema for the iterator input and output.
+  DataSpecification data_specification = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // Component
@@ -153,6 +161,8 @@ message IteratorComponent {
 message Component {
   // Component ID, provided by the user on creation.
   string id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Deleted fields
+  reserved 2 to 9;
   // Metadata of the component.
   google.protobuf.Struct metadata = 10 [(google.api.field_behavior) = OPTIONAL];
   // The component configuration.
@@ -176,7 +186,7 @@ message NestedComponent {
   // Component ID, provided by the user on creation.
   string id = 1 [(google.api.field_behavior) = REQUIRED];
   // Metadata of the component.
-  google.protobuf.Struct metadata = 2;
+  google.protobuf.Struct metadata = 2 [(google.api.field_behavior) = OPTIONAL];
   // The component configuration.
   oneof component {
     // ConnectorConfiguration
@@ -265,8 +275,8 @@ message Pipeline {
   google.protobuf.Timestamp create_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline update time.
   google.protobuf.Timestamp update_time = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // OpenAPI schema.
-  google.protobuf.Struct openapi_schema = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Deleted field.
+  reserved 13;
   // Pipeline delete time.
   google.protobuf.Timestamp delete_time = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline sharing information.
@@ -290,6 +300,8 @@ message Pipeline {
     (google.api.field_behavior) = OPTIONAL,
     (google.api.field_behavior) = OUTPUT_ONLY
   ];
+  // Data specifications.
+  DataSpecification data_specification = 24 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // TriggerMetadata contains the traces of the pipeline inference.
@@ -353,8 +365,8 @@ message PipelineRelease {
   google.protobuf.Timestamp create_time = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline update time.
   google.protobuf.Timestamp update_time = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // OpenAPI schema.
-  google.protobuf.Struct openapi_schema = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Deleted field.
+  reserved 9;
   // Pipeline deletion time.
   google.protobuf.Timestamp delete_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Alias.
@@ -364,6 +376,8 @@ message PipelineRelease {
   google.protobuf.Struct metadata = 12;
   // README.
   string readme = 13 [(google.api.field_behavior) = OPTIONAL];
+  // Data specifications.
+  DataSpecification data_specification = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ListPipelinesRequest represents a request to list pipelines.
