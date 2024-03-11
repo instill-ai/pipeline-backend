@@ -187,18 +187,7 @@ func traverseBinding(bindings ItemMemory, path string) (any, error) {
 		// Generates a valid variable name for jsonpath
 		newID := fmt.Sprintf("comp%d", idx)
 		componentIDMap[k] = newID
-		// convert map[string]CompMemory to map[string]any{}
-		b, err := json.Marshal(bindings[k])
-		if err != nil {
-			return nil, err
-		}
-		var transcoded any
-
-		err = json.Unmarshal(b, &transcoded)
-		if err != nil {
-			return nil, err
-		}
-		transcodedBinding[newID] = transcoded
+		transcodedBinding[newID] = bindings[k]
 		idx = idx + 1
 	}
 	res, err := jsonpath.Get(fmt.Sprintf("$.%s.%s", componentIDMap[componentID], route), transcodedBinding)
@@ -694,11 +683,11 @@ func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, compute
 			outputs := []*structpb.Struct{}
 			var traceStatuses []pipelinePB.Trace_Status
 			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if memory[dataIdx][comps[groupIdx][compIdx].ID].Completed() {
+				if checkComponentCompleted(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
 					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_COMPLETED)
-				} else if memory[dataIdx][comps[groupIdx][compIdx].ID].Skipped() {
+				} else if checkComponentSkipped(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
 					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_SKIPPED)
-				} else if memory[dataIdx][comps[groupIdx][compIdx].ID].Error() {
+				} else if checkComponentError(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
 					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_ERROR)
 				} else {
 					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_UNSPECIFIED)
