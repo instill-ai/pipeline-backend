@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.24.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.23.0-beta...v0.24.0-beta) (2024-03-13)
+
+
+### Features
+
+* add migration script for new recipe format ([#415](https://github.com/instill-ai/pipeline-backend/issues/415)) ([af8a512](https://github.com/instill-ai/pipeline-backend/commit/af8a512abb1a30b1f8527728f67b6f3e6759f364))
+* Introduce component definition list filtering ([#410](https://github.com/instill-ai/pipeline-backend/issues/410)) ([08cf677](https://github.com/instill-ai/pipeline-backend/commit/08cf677f5b31be01cab12644a168fa049f7cb4c5))
+* revamp recipe format and implement iterator ([#405](https://github.com/instill-ai/pipeline-backend/issues/405)) ([1a676ff](https://github.com/instill-ai/pipeline-backend/commit/1a676fff87f3061b35f87606cea5812ce303875f))
+* simplify openapi_specifications to data_specifications ([#411](https://github.com/instill-ai/pipeline-backend/issues/411)) ([deaef9b](https://github.com/instill-ai/pipeline-backend/commit/deaef9b34fbc67b24b6d4bf1e11231f8c36a9ac0))
+* sort component list by score ([#412](https://github.com/instill-ai/pipeline-backend/issues/412)) ([2849555](https://github.com/instill-ai/pipeline-backend/commit/2849555ea1c0c44d8172c228bb17b9972526966d))
+* support unimplemented release stages in component definitions ([#414](https://github.com/instill-ai/pipeline-backend/issues/414)) ([c235592](https://github.com/instill-ai/pipeline-backend/commit/c2355921dc933a6de0a37419442d2b4e4086f645))
+
+
+### Bug Fixes
+
+* allow incomplete configuration in includeIteratorComponentDetail(). ([#413](https://github.com/instill-ai/pipeline-backend/issues/413)) ([2999599](https://github.com/instill-ai/pipeline-backend/commit/29995992bd9f2685e314122a1896bdb0c03e1a3e))
+* fix condition field bugs ([#417](https://github.com/instill-ai/pipeline-backend/issues/417)) ([ce720d5](https://github.com/instill-ai/pipeline-backend/commit/ce720d5d75e543dff1dbf0351cfc3ba811921d49))
+* fix missing error return in pipeline trigger ([a743ab1](https://github.com/instill-ai/pipeline-backend/commit/a743ab191f4070acfabf52335a3f4b9c6c862149))
+
 ## [0.23.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.22.0-beta...v0.23.0-beta) (2024-03-01)
 
 
