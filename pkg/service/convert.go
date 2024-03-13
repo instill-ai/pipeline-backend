@@ -485,6 +485,12 @@ func (s *service) includeIteratorComponentDetail(comp *pipelinePB.IteratorCompon
 				if success {
 					s := &structpb.Struct{Fields: map[string]*structpb.Value{}}
 					s.Fields["type"] = structpb.NewStringValue("array")
+					if f := walk.GetStructValue().Fields["instillFormat"].GetStringValue(); f != "" {
+						// Limitation: console can not support more then three levels of array.
+						if strings.Count(f, "array:") < 2 {
+							s.Fields["instillFormat"] = structpb.NewStringValue("array:" + f)
+						}
+					}
 					s.Fields["items"] = structpb.NewStructValue(walk.GetStructValue())
 					dataOutput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(s)
 				}
