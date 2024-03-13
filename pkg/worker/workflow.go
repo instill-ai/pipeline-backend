@@ -45,11 +45,18 @@ type TriggerPipelineWorkflowResponse struct {
 
 // ExecutePipelineActivityRequest represents the parameters for TriggerActivity
 type ExecutePipelineActivityRequest struct {
-	OrderedComps   [][]*datamodel.Component
-	Memory         []ItemMemory
-	DAG            *dag
-	BatchSize      int
-	PipelineRecipe *datamodel.Recipe
+	OrderedComps               [][]*datamodel.Component
+	Memory                     []ItemMemory
+	DAG                        *dag
+	BatchSize                  int
+	PipelineRecipe             *datamodel.Recipe
+	PipelineInputBlobRedisKeys []string
+	PipelineID                 string
+	PipelineUID                uuid.UUID
+	PipelineReleaseID          string
+	PipelineReleaseUID         uuid.UUID
+	OwnerPermalink             string
+	UserPermalink              string
 }
 
 type ExecutePipelineActivityResponse struct {
@@ -62,6 +69,7 @@ type ExecuteConnectorActivityRequest struct {
 	InputBlobRedisKeys []string
 	DefinitionName     string
 	ConnectorName      string
+	PipelineMetadata   PipelineMetadataStruct
 	Task               string
 }
 
@@ -70,11 +78,22 @@ type ExecuteOperatorActivityRequest struct {
 	ID                 string
 	InputBlobRedisKeys []string
 	DefinitionName     string
+	PipelineMetadata   PipelineMetadataStruct
 	Task               string
 }
 
 type ExecuteActivityResponse struct {
 	OutputBlobRedisKeys []string
+}
+
+type PipelineMetadataStruct struct {
+	ID         string
+	UID        string
+	ReleaseID  string
+	ReleaseUID string
+	Owner      string
+	TriggerID  string
+	UserUID    string
 }
 
 type parallelTask struct {
@@ -289,11 +308,18 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	orderedComp = orderedComp[1:]
 
 	err = w.PipelineActivity(ctx, ao, &ExecutePipelineActivityRequest{
-		OrderedComps:   orderedComp,
-		Memory:         memory,
-		DAG:            dag,
-		BatchSize:      batchSize,
-		PipelineRecipe: param.PipelineRecipe,
+		OrderedComps:               orderedComp,
+		Memory:                     memory,
+		DAG:                        dag,
+		BatchSize:                  batchSize,
+		PipelineRecipe:             param.PipelineRecipe,
+		PipelineInputBlobRedisKeys: param.PipelineInputBlobRedisKeys,
+		PipelineID:                 param.PipelineID,
+		PipelineUID:                param.PipelineUID,
+		PipelineReleaseID:          param.PipelineReleaseID,
+		PipelineReleaseUID:         param.PipelineReleaseUID,
+		OwnerPermalink:             param.OwnerPermalink,
+		UserPermalink:              param.UserPermalink,
 	})
 	if err != nil {
 		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
@@ -519,7 +545,16 @@ func (w *worker) PipelineActivity(ctx workflow.Context, ao workflow.ActivityOpti
 							InputBlobRedisKeys: inputBlobRedisKeys,
 							DefinitionName:     comp.ConnectorComponent.DefinitionName,
 							ConnectorName:      comp.ConnectorComponent.ConnectorName,
-							Task:               comp.ConnectorComponent.Task,
+							PipelineMetadata: PipelineMetadataStruct{
+								ID:         param.PipelineID,
+								UID:        param.PipelineUID.String(),
+								ReleaseID:  param.PipelineReleaseID,
+								ReleaseUID: param.PipelineReleaseUID.String(),
+								Owner:      param.OwnerPermalink,
+								TriggerID:  workflow.GetInfo(ctx).WorkflowExecution.ID,
+								UserUID:    strings.Split(param.UserPermalink, "/")[1],
+							},
+							Task: comp.ConnectorComponent.Task,
 						})
 						parallelTasks = append(parallelTasks, task)
 
@@ -538,7 +573,16 @@ func (w *worker) PipelineActivity(ctx workflow.Context, ao workflow.ActivityOpti
 							ID:                 comp.ID,
 							InputBlobRedisKeys: inputBlobRedisKeys,
 							DefinitionName:     comp.OperatorComponent.DefinitionName,
-							Task:               comp.OperatorComponent.Task,
+							PipelineMetadata: PipelineMetadataStruct{
+								ID:         param.PipelineID,
+								UID:        param.PipelineUID.String(),
+								ReleaseID:  param.PipelineReleaseID,
+								ReleaseUID: param.PipelineReleaseUID.String(),
+								Owner:      param.OwnerPermalink,
+								TriggerID:  workflow.GetInfo(ctx).WorkflowExecution.ID,
+								UserUID:    strings.Split(param.UserPermalink, "/")[1],
+							},
+							Task: comp.OperatorComponent.Task,
 						})
 						parallelTasks = append(parallelTasks, task)
 
@@ -573,11 +617,18 @@ func (w *worker) PipelineActivity(ctx workflow.Context, ao workflow.ActivityOpti
 						}
 
 						err = w.PipelineActivity(ctx, ao, &ExecutePipelineActivityRequest{
-							OrderedComps:   orderedComp,
-							Memory:         subMemory,
-							DAG:            dag,
-							BatchSize:      batchSize,
-							PipelineRecipe: param.PipelineRecipe,
+							OrderedComps:               orderedComp,
+							Memory:                     subMemory,
+							DAG:                        dag,
+							BatchSize:                  batchSize,
+							PipelineRecipe:             param.PipelineRecipe,
+							PipelineInputBlobRedisKeys: param.PipelineInputBlobRedisKeys,
+							PipelineID:                 param.PipelineID,
+							PipelineUID:                param.PipelineUID,
+							PipelineReleaseID:          param.PipelineReleaseID,
+							PipelineReleaseUID:         param.PipelineReleaseUID,
+							OwnerPermalink:             param.OwnerPermalink,
+							UserPermalink:              param.UserPermalink,
 						})
 						if err != nil {
 							return err
@@ -664,12 +715,14 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 				logger.Fatal(err.Error())
 			}
 			// TODO: optimize this
+			str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
 			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 			str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
 			return &str
 		}
 		str := structpb.Struct{Fields: make(map[string]*structpb.Value)}
 		// TODO: optimize this
+		str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
 		str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 		str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
 		return nil
