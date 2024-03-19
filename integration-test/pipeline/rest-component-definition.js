@@ -45,18 +45,18 @@ export function CheckList() {
     });
 
     // Access non-first page.
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=3&page=2`, null, null), {
-      "GET /v1beta/component-definitions?page_size=3&page=2 response status is 200": (r) => r.status === 200,
-      "GET /v1beta/component-definitions?page_size=3&page=2 response component_definitions size 3": (r) => r.json().component_definitions.length === 3,
-      "GET /v1beta/component-definitions?page_size=3&page=2 response page 0": (r) => r.json().page === 2,
-      "GET /v1beta/component-definitions?page_size=3&page=2 receives a different page": (r) => r.json().component_definitions[0].connector_definition.id != limitedRecords.json().component_definitions[0].connector_definition.id,
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=2&page=2`, null, null), {
+      "GET /v1beta/component-definitions?page_size=2&page=2 response status is 200": (r) => r.status === 200,
+      "GET /v1beta/component-definitions?page_size=2&page=2 response component_definitions size 3": (r) => r.json().component_definitions.length === 2,
+      "GET /v1beta/component-definitions?page_size=2&page=2 response page 0": (r) => r.json().page === 2,
+      "GET /v1beta/component-definitions?page_size=2&page=2 receives a different page": (r) => r.json().component_definitions[0].connector_definition.id != limitedRecords.json().component_definitions[0].connector_definition.id,
     });
 
     // Negative page index yields page 0.
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=3&page=-2`, null, null), {
-      "GET /v1beta/component-definitions?page_size=3&page=-2 response status is 200": (r) => r.status === 200,
-      "GET /v1beta/component-definitions?page_size=3&page=-2 response component_definitions size 3": (r) => r.json().component_definitions.length === 3,
-      "GET /v1beta/component-definitions?page_size=3&page=-2 response page 0": (r) => r.json().page === 0,
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=2&page=-2`, null, null), {
+      "GET /v1beta/component-definitions?page_size=2&page=-2 response status is 200": (r) => r.status === 200,
+      "GET /v1beta/component-definitions?page_size=2&page=-2 response component_definitions size 3": (r) => r.json().component_definitions.length === 2,
+      "GET /v1beta/component-definitions?page_size=2&page=-2 response page 0": (r) => r.json().page === 0,
     });
 
     // Page index beyond last page.
