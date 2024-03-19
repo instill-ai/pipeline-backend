@@ -783,7 +783,11 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 
 	queryBuilder.Count(&totalSize)
 
-	rows, err := queryBuilder.Order("feature_score DESC").Limit(p.Limit).Offset(p.Offset).Rows()
+	// Several results might have the same score and release stage. We need to
+	// sort by at least one unique field so the pagination results aren't
+	// arbitrary.
+	orderBy := "feature_score DESC, release_stage DESC, uid DESC"
+	rows, err := queryBuilder.Order(orderBy).Limit(p.Limit).Offset(p.Offset).Rows()
 	if err != nil {
 		return nil, 0, err
 	}
