@@ -14,8 +14,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 
 	componentBase "github.com/instill-ai/component/pkg/base"
-	connector "github.com/instill-ai/connector/pkg"
-	connectorAirbyte "github.com/instill-ai/connector/pkg/airbyte/v0"
+	connector "github.com/instill-ai/component/pkg/connector"
+	connectorAirbyte "github.com/instill-ai/component/pkg/connector/airbyte/v0"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
