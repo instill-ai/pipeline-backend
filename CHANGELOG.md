@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.24.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.24.0-beta...v0.24.1-beta) (2024-03-20)
+
+
+### Bug Fixes
+
+* duplicated values in component list ([#426](https://github.com/instill-ai/pipeline-backend/issues/426)) ([2e910e9](https://github.com/instill-ai/pipeline-backend/commit/2e910e925175617965cf76054cb88d0e251467ac))
+* fix GeneratePipelineDataSpec bug when task is empty ([181df09](https://github.com/instill-ai/pipeline-backend/commit/181df09c1968ce9db9808faf06a4c76d7a8885ee))
+
 ## [0.24.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.23.0-beta...v0.24.0-beta) (2024-03-13)
 
 
