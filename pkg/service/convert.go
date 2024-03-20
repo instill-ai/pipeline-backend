@@ -1251,6 +1251,9 @@ func (s *service) GeneratePipelineDataSpec(startCompOrigin *pipelinePB.Component
 					str = str[len(splits[1])+1:]
 				case *pipelinePB.Component_ConnectorComponent:
 					task := comp.GetConnectorComponent().GetTask()
+					if task == "" {
+						return nil, fmt.Errorf("generate OpenAPI spec error")
+					}
 
 					splits := strings.Split(str, ".")
 
@@ -1266,6 +1269,9 @@ func (s *service) GeneratePipelineDataSpec(startCompOrigin *pipelinePB.Component
 					walk = structpb.NewStructValue(dataInput)
 				case *pipelinePB.Component_OperatorComponent:
 					task := comp.GetOperatorComponent().GetTask()
+					if task == "" {
+						return nil, fmt.Errorf("generate OpenAPI spec error")
+					}
 
 					splits := strings.Split(str, ".")
 
