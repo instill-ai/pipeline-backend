@@ -28,8 +28,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 
-	connector "github.com/instill-ai/connector/pkg"
-	operator "github.com/instill-ai/operator/pkg"
+	connector "github.com/instill-ai/component/pkg/connector"
+	operator "github.com/instill-ai/component/pkg/operator"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 )
 
