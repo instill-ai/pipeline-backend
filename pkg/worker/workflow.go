@@ -15,10 +15,12 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
@@ -66,6 +68,7 @@ type ExecuteTriggerStartActivityRequest struct {
 	PipelineRecipe             *datamodel.Recipe
 	PipelineUID                uuid.UUID
 	OwnerPermalink             string
+	UserUID                    uuid.UUID
 }
 type ExecuteTriggerStartActivityResponse struct {
 	MemoryBlobRedisKeys []string
@@ -84,6 +87,7 @@ type ExecuteTriggerEndActivityRequest struct {
 	ComputeTime         map[string]float32
 	ReturnTraces        bool
 	WorkflowExecutionID string //workflow.GetInfo(ctx).WorkflowExecution.ID
+	UserUID             uuid.UUID
 }
 type ExecuteTriggerEndActivityResponse struct {
 	BlobRedisKey string
@@ -97,6 +101,7 @@ type ExecuteConnectorActivityRequest struct {
 	ConnectorName      string
 	PipelineMetadata   PipelineMetadataStruct
 	Task               string
+	UserUID            uuid.UUID
 }
 
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
@@ -106,6 +111,7 @@ type ExecuteOperatorActivityRequest struct {
 	DefinitionName     string
 	PipelineMetadata   PipelineMetadataStruct
 	Task               string
+	UserUID            uuid.UUID
 }
 
 type ExecuteActivityResponse struct {
@@ -285,6 +291,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		PipelineRecipe:             param.PipelineRecipe,
 		PipelineUID:                param.PipelineUID,
 		OwnerPermalink:             param.OwnerPermalink,
+		UserUID:                    param.UserUID,
 	}).Get(ctx, &startResult); err != nil {
 		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 		return nil, err
@@ -313,6 +320,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		ComputeTime:         startResult.ComputeTime,
 		ReturnTraces:        param.ReturnTraces,
 		WorkflowExecutionID: workflow.GetInfo(ctx).WorkflowExecution.ID,
+		UserUID:             param.UserUID,
 	}).Get(ctx, &endResult); err != nil {
 		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 		return nil, err
@@ -331,6 +339,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 }
 
 func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTriggerStartActivityRequest) (*ExecuteTriggerStartActivityResponse, error) {
+
+	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
+
 	var endComp *datamodel.Component
 	compsToDAG := []*datamodel.Component{}
 	for idx := range param.PipelineRecipe.Components {
@@ -423,6 +434,8 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 
 func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEndActivityRequest) (*ExecuteTriggerEndActivityResponse, error) {
 
+	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
+
 	memory, err := w.GetMemoryBlob(ctx, param.MemoryBlobRedisKeys)
 	if err != nil {
 		return nil, err
@@ -483,6 +496,8 @@ func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEn
 	}, nil
 }
 func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityRequest) (*ExecuteDAGActivityResponse, error) {
+
+	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
 
 	memory, err := w.GetMemoryBlob(ctx, param.MemoryBlobRedisKeys)
 	if err != nil {
@@ -642,7 +657,8 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								PipelineMetadata: PipelineMetadataStruct{
 									UserUID: param.UserUID.String(),
 								},
-								Task: task,
+								Task:    task,
+								UserUID: param.UserUID,
 							})
 							if err != nil {
 								return err
@@ -692,7 +708,8 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								PipelineMetadata: PipelineMetadataStruct{
 									UserUID: param.UserUID.String(),
 								},
-								Task: task,
+								Task:    task,
+								UserUID: param.UserUID,
 							})
 							if err != nil {
 								return err
@@ -814,6 +831,8 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ConnectorActivity started")
 
+	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
+
 	compInputs, err := w.GetBlob(ctx, param.InputBlobRedisKeys)
 	if err != nil {
 		return nil, err
@@ -824,7 +843,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		return nil, err
 	}
 
-	dbConnector, err := w.repository.GetConnectorByUIDAdmin(ctx, uuid.FromStringOrNil(strings.Split(param.ConnectorName, "/")[1]), false)
+	dbConnector, err := w.repository.GetConnectorByUID(ctx, uuid.FromStringOrNil(strings.Split(param.ConnectorName, "/")[1]), false)
 	if err != nil {
 		return nil, err
 	}
@@ -872,6 +891,8 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("OperatorActivity started")
+
+	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
 
 	compInputs, err := w.GetBlob(ctx, param.InputBlobRedisKeys)
 	if err != nil {

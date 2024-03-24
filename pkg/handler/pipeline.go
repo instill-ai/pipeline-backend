@@ -886,13 +886,8 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 	// 	return ns, nil, id, nil, false, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	// }
 	returnTraces := false
-	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		if len(md.Get(constant.ReturnTracesKey)) > 0 {
-			returnTraces, err = strconv.ParseBool(md.Get(constant.ReturnTracesKey)[0])
-			if err != nil {
-				return ns, id, nil, false, err
-			}
-		}
+	if resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true" {
+		returnTraces = true
 	}
 
 	return ns, id, pbPipeline, returnTraces, nil
@@ -1605,13 +1600,8 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return ns, "", nil, nil, false, err
 	}
 	returnTraces := false
-	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		if len(md.Get(constant.ReturnTracesKey)) > 0 {
-			returnTraces, err = strconv.ParseBool(md.Get(constant.ReturnTracesKey)[0])
-			if err != nil {
-				return ns, "", nil, nil, false, err
-			}
-		}
+	if resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true" {
+		returnTraces = true
 	}
 
 	return ns, releaseID, pbPipeline, pbPipelineRelease, returnTraces, nil

@@ -190,6 +190,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		lastUID := (pipelines)[len(pipelines)-1].UID
 		lastItem := &datamodel.Pipeline{}
 
+		db := r.checkPinnedUser(ctx, r.db)
 		if uidAllowList != nil {
 			if result := db.Model(&datamodel.Pipeline{}).
 				Where(where, whereArgs...).
@@ -404,6 +405,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	if len(pipelineReleases) > 0 {
 		lastUID := (pipelineReleases)[len(pipelineReleases)-1].UID
 		lastItem := &datamodel.PipelineRelease{}
+		db := r.checkPinnedUser(ctx, r.db)
 		if result := db.Model(&datamodel.PipelineRelease{}).
 			Where("pipeline_uid = ?", pipelineUID).
 			Order("create_time ASC, uid ASC").
@@ -478,6 +480,7 @@ func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int
 	if len(pipelineReleases) > 0 {
 		lastUID := (pipelineReleases)[len(pipelineReleases)-1].UID
 		lastItem := &datamodel.PipelineRelease{}
+		db := r.checkPinnedUser(ctx, r.db)
 		if result := db.Model(&datamodel.PipelineRelease{}).
 			Order("create_time ASC, uid ASC").
 			Limit(1).Find(lastItem); result.Error != nil {
@@ -660,7 +663,7 @@ func (r *repository) listConnectors(ctx context.Context, where string, whereArgs
 	if len(connectors) > 0 {
 		lastUID := (connectors)[len(connectors)-1].UID
 		lastItem := &datamodel.Connector{}
-
+		db := r.checkPinnedUser(ctx, r.db)
 		if uidAllowList != nil {
 			if result := db.Model(&datamodel.Connector{}).
 				Where(where, whereArgs...).
