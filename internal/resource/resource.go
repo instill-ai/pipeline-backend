@@ -69,19 +69,6 @@ func (ns Namespace) Permalink() string {
 	return fmt.Sprintf("%s/%s", ns.NsType, ns.NsUID.String())
 }
 
-func UserUIDToUserPermalink(userUID uuid.UUID) string {
-	return fmt.Sprintf("users/%s", userUID.String())
-}
-
-func ConvertConnectorToResourceName(connectorName string) string {
-
-	connectorTypeStr := "connectors"
-
-	resourceName := fmt.Sprintf("resources/%s/types/%s", connectorName, connectorTypeStr)
-
-	return resourceName
-}
-
 func GetOperationID(name string) (string, error) {
 	id := strings.TrimPrefix(name, "operations/")
 	if !strings.HasPrefix(name, "operations/") || id == "" {

@@ -6,10 +6,13 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	openfga "github.com/openfga/go-sdk"
 	openfgaClient "github.com/openfga/go-sdk/client"
+
+	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 )
 
 type ACLClient struct {
@@ -29,7 +32,7 @@ func NewACLClient(c *openfgaClient.OpenFgaClient, a *string) ACLClient {
 	}
 }
 
-func (c *ACLClient) SetOwner(objectType string, objectUID uuid.UUID, ownerType string, ownerUID uuid.UUID) error {
+func (c *ACLClient) SetOwner(ctx context.Context, objectType string, objectUID uuid.UUID, ownerType string, ownerUID uuid.UUID) error {
 	var err error
 	readOptions := openfgaClient.ClientReadOptions{}
 	writeOptions := openfgaClient.ClientWriteOptions{
@@ -41,7 +44,7 @@ func (c *ACLClient) SetOwner(objectType string, objectUID uuid.UUID, ownerType s
 		Relation: openfga.PtrString("owner"),
 		Object:   openfga.PtrString(fmt.Sprintf("%s:%s", objectType, objectUID.String())),
 	}
-	data, err := c.client.Read(context.Background()).Body(readBody).Options(readOptions).Execute()
+	data, err := c.client.Read(ctx).Body(readBody).Options(readOptions).Execute()
 	if err != nil {
 		return err
 	}
@@ -58,14 +61,14 @@ func (c *ACLClient) SetOwner(objectType string, objectUID uuid.UUID, ownerType s
 			}},
 	}
 
-	_, err = c.client.Write(context.Background()).Body(writeBody).Options(writeOptions).Execute()
+	_, err = c.client.Write(ctx).Body(writeBody).Options(writeOptions).Execute()
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error {
+func (c *ACLClient) SetPipelinePermissionMap(ctx context.Context, pipeline *datamodel.Pipeline) error {
 	// TODO: use OpenFGA as single source of truth
 	// TODO: support fine-grained permission settings
 
@@ -76,7 +79,7 @@ func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error
 
 		if perm.Role == "ROLE_VIEWER" || perm.Role == "ROLE_EXECUTOR" {
 			for _, t := range []string{"user", "visitor"} {
-				err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("%s:*", t), "reader", perm.Enabled)
+				err := c.SetPipelinePermission(ctx, pipeline.UID, fmt.Sprintf("%s:*", t), "reader", perm.Enabled)
 				if err != nil {
 					return err
 				}
@@ -84,7 +87,7 @@ func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error
 		}
 		if perm.Role == "ROLE_EXECUTOR" {
 			for _, t := range []string{"user"} {
-				err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("%s:*", t), "executor", perm.Enabled)
+				err := c.SetPipelinePermission(ctx, pipeline.UID, fmt.Sprintf("%s:*", t), "executor", perm.Enabled)
 				if err != nil {
 					return err
 				}
@@ -97,13 +100,13 @@ func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error
 			return fmt.Errorf("only support users: `*/*`")
 		}
 		if pipeline.Sharing.ShareCode.Role == "ROLE_VIEWER" {
-			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "reader", pipeline.Sharing.ShareCode.Enabled)
+			err := c.SetPipelinePermission(ctx, pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "reader", pipeline.Sharing.ShareCode.Enabled)
 			if err != nil {
 				return err
 			}
 		}
 		if pipeline.Sharing.ShareCode.Role == "ROLE_EXECUTOR" {
-			err := c.SetPipelinePermission(pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "executor", pipeline.Sharing.ShareCode.Enabled)
+			err := c.SetPipelinePermission(ctx, pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "executor", pipeline.Sharing.ShareCode.Enabled)
 			if err != nil {
 				return err
 			}
@@ -112,13 +115,13 @@ func (c *ACLClient) SetPipelinePermissionMap(pipeline *datamodel.Pipeline) error
 	return nil
 }
 
-func (c *ACLClient) SetPipelinePermission(pipelineUID uuid.UUID, user string, role string, enable bool) error {
+func (c *ACLClient) SetPipelinePermission(ctx context.Context, pipelineUID uuid.UUID, user string, role string, enable bool) error {
 	var err error
 	options := openfgaClient.ClientWriteOptions{
 		AuthorizationModelId: c.authorizationModelID,
 	}
 
-	_ = c.DeletePipelinePermission(pipelineUID, user)
+	_ = c.DeletePipelinePermission(ctx, pipelineUID, user)
 
 	if enable {
 		body := openfgaClient.ClientWriteRequest{
@@ -130,7 +133,7 @@ func (c *ACLClient) SetPipelinePermission(pipelineUID uuid.UUID, user string, ro
 				}},
 		}
 
-		_, err = c.client.Write(context.Background()).Body(body).Options(options).Execute()
+		_, err = c.client.Write(ctx).Body(body).Options(options).Execute()
 		if err != nil {
 			return err
 		}
@@ -139,7 +142,7 @@ func (c *ACLClient) SetPipelinePermission(pipelineUID uuid.UUID, user string, ro
 	return nil
 }
 
-func (c *ACLClient) DeletePipelinePermission(pipelineUID uuid.UUID, user string) error {
+func (c *ACLClient) DeletePipelinePermission(ctx context.Context, pipelineUID uuid.UUID, user string) error {
 	// var err error
 	options := openfgaClient.ClientWriteOptions{
 		AuthorizationModelId: c.authorizationModelID,
@@ -153,14 +156,14 @@ func (c *ACLClient) DeletePipelinePermission(pipelineUID uuid.UUID, user string)
 					Relation: role,
 					Object:   fmt.Sprintf("pipeline:%s", pipelineUID.String()),
 				}}}
-		_, _ = c.client.Write(context.Background()).Body(body).Options(options).Execute()
+		_, _ = c.client.Write(ctx).Body(body).Options(options).Execute()
 
 	}
 
 	return nil
 }
 
-func (c *ACLClient) Purge(objectType string, objectUID uuid.UUID) error {
+func (c *ACLClient) Purge(ctx context.Context, objectType string, objectUID uuid.UUID) error {
 	readOptions := openfgaClient.ClientReadOptions{}
 	writeOptions := openfgaClient.ClientWriteOptions{
 		AuthorizationModelId: c.authorizationModelID,
@@ -169,7 +172,7 @@ func (c *ACLClient) Purge(objectType string, objectUID uuid.UUID) error {
 	readBody := openfgaClient.ClientReadRequest{
 		Object: openfga.PtrString(fmt.Sprintf("%s:%s", objectType, objectUID)),
 	}
-	resp, err := c.client.Read(context.Background()).Body(readBody).Options(readOptions).Execute()
+	resp, err := c.client.Read(ctx).Body(readBody).Options(readOptions).Execute()
 	if err != nil {
 		return err
 	}
@@ -181,7 +184,7 @@ func (c *ACLClient) Purge(objectType string, objectUID uuid.UUID) error {
 					Relation: *data.Key.Relation,
 					Object:   *data.Key.Object,
 				}}}
-		_, err := c.client.Write(context.Background()).Body(body).Options(writeOptions).Execute()
+		_, err := c.client.Write(ctx).Body(body).Options(writeOptions).Execute()
 
 		if err != nil {
 			return err
@@ -191,17 +194,27 @@ func (c *ACLClient) Purge(objectType string, objectUID uuid.UUID) error {
 	return nil
 }
 
-func (c *ACLClient) CheckPermission(objectType string, objectUID uuid.UUID, userType string, userUID uuid.UUID, code string, role string) (bool, error) {
+func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, objectUID uuid.UUID, role string) (bool, error) {
 
 	options := openfgaClient.ClientCheckOptions{
 		AuthorizationModelId: c.authorizationModelID,
 	}
+
+	userType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
+	userUID := ""
+	if userType == "user" {
+		userUID = resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	} else {
+		userUID = resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey)
+	}
+	code := resource.GetRequestSingleHeader(ctx, constant.HeaderInstillCodeKey)
+
 	body := openfgaClient.ClientCheckRequest{
-		User:     fmt.Sprintf("%s:%s", userType, userUID.String()),
+		User:     fmt.Sprintf("%s:%s", userType, userUID),
 		Relation: role,
 		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
 	}
-	data, err := c.client.Check(context.Background()).Body(body).Options(options).Execute()
+	data, err := c.client.Check(ctx).Body(body).Options(options).Execute()
 	if err != nil {
 		return false, err
 	}
@@ -217,7 +230,7 @@ func (c *ACLClient) CheckPermission(objectType string, objectUID uuid.UUID, user
 		Relation: role,
 		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
 	}
-	data, err = c.client.Check(context.Background()).Body(body).Options(options).Execute()
+	data, err = c.client.Check(ctx).Body(body).Options(options).Execute()
 
 	if err != nil {
 		return false, err
@@ -226,7 +239,7 @@ func (c *ACLClient) CheckPermission(objectType string, objectUID uuid.UUID, user
 }
 
 // TODO refactor
-func (c *ACLClient) CheckPublicExecutable(objectType string, objectUID uuid.UUID) (bool, error) {
+func (c *ACLClient) CheckPublicExecutable(ctx context.Context, objectType string, objectUID uuid.UUID) (bool, error) {
 
 	options := openfgaClient.ClientCheckOptions{
 		AuthorizationModelId: c.authorizationModelID,
@@ -236,7 +249,7 @@ func (c *ACLClient) CheckPublicExecutable(objectType string, objectUID uuid.UUID
 		Relation: "executor",
 		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
 	}
-	data, err := c.client.Check(context.Background()).Body(body).Options(options).Execute()
+	data, err := c.client.Check(ctx).Body(body).Options(options).Execute()
 	if err != nil {
 		return false, err
 	}
@@ -247,14 +260,23 @@ func (c *ACLClient) CheckPublicExecutable(objectType string, objectUID uuid.UUID
 	return *data.Allowed, nil
 }
 
-func (c *ACLClient) ListPermissions(objectType string, userType string, userUID uuid.UUID, role string) ([]uuid.UUID, error) {
+func (c *ACLClient) ListPermissions(ctx context.Context, objectType string, role string, isPublic bool) ([]uuid.UUID, error) {
+
+	userType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
+	userUIDStr := ""
+	if userType == "user" {
+		userUIDStr = resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+
+	} else {
+		userUIDStr = resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey)
+	}
 
 	options := openfgaClient.ClientListObjectsOptions{
 		AuthorizationModelId: c.authorizationModelID,
 	}
-	userUIDStr := "*"
-	if userUID != uuid.Nil {
-		userUIDStr = userUID.String()
+
+	if isPublic {
+		userUIDStr = "*"
 	}
 
 	body := openfgaClient.ClientListObjectsRequest{
@@ -262,7 +284,7 @@ func (c *ACLClient) ListPermissions(objectType string, userType string, userUID 
 		Relation: role,
 		Type:     objectType,
 	}
-	listObjectsResult, err := c.client.ListObjects(context.Background()).Body(body).Options(options).Execute()
+	listObjectsResult, err := c.client.ListObjects(ctx).Body(body).Options(options).Execute()
 	if err != nil {
 		return nil, err
 	}

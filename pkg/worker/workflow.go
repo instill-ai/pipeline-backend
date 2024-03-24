@@ -38,7 +38,7 @@ type TriggerPipelineWorkflowRequest struct {
 	PipelineReleaseUID         uuid.UUID
 	PipelineRecipe             *datamodel.Recipe
 	OwnerPermalink             string
-	UserPermalink              string
+	UserUID                    uuid.UUID
 	ReturnTraces               bool
 	Mode                       mgmtPB.Mode
 }
@@ -55,7 +55,7 @@ type ExecuteDAGActivityRequest struct {
 	PipelineRecipe      *datamodel.Recipe
 	MemoryBlobRedisKeys []string
 	OwnerPermalink      string
-	UserPermalink       string
+	UserUID             uuid.UUID
 }
 type ExecuteDAGActivityResponse struct {
 	MemoryBlobRedisKeys []string
@@ -118,10 +118,10 @@ type PipelineMetadataStruct struct {
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
-func (w *worker) GetMemoryBlob(redisKeys []string) ([]ItemMemory, error) {
+func (w *worker) GetMemoryBlob(ctx context.Context, redisKeys []string) ([]ItemMemory, error) {
 	payloads := []ItemMemory{}
 	for idx := range redisKeys {
-		blob, err := w.redisClient.Get(context.Background(), redisKeys[idx]).Bytes()
+		blob, err := w.redisClient.Get(ctx, redisKeys[idx]).Bytes()
 		if err != nil {
 			return nil, err
 		}
@@ -137,7 +137,7 @@ func (w *worker) GetMemoryBlob(redisKeys []string) ([]ItemMemory, error) {
 	return payloads, nil
 }
 
-func (w *worker) SetMemoryBlob(inputs []ItemMemory) ([]string, error) {
+func (w *worker) SetMemoryBlob(ctx context.Context, inputs []ItemMemory) ([]string, error) {
 	id, _ := uuid.NewV4()
 	blobRedisKeys := []string{}
 	for idx, input := range inputs {
@@ -148,7 +148,7 @@ func (w *worker) SetMemoryBlob(inputs []ItemMemory) ([]string, error) {
 
 		blobRedisKey := fmt.Sprintf("pipeline_memory_blob:%s:%d", id.String(), idx)
 		w.redisClient.Set(
-			context.Background(),
+			ctx,
 			blobRedisKey,
 			inputJSON,
 			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
@@ -158,10 +158,10 @@ func (w *worker) SetMemoryBlob(inputs []ItemMemory) ([]string, error) {
 	return blobRedisKeys, nil
 }
 
-func (w *worker) GetBlob(redisKeys []string) ([]*structpb.Struct, error) {
+func (w *worker) GetBlob(ctx context.Context, redisKeys []string) ([]*structpb.Struct, error) {
 	payloads := []*structpb.Struct{}
 	for idx := range redisKeys {
-		blob, err := w.redisClient.Get(context.Background(), redisKeys[idx]).Bytes()
+		blob, err := w.redisClient.Get(ctx, redisKeys[idx]).Bytes()
 		if err != nil {
 			return nil, err
 		}
@@ -177,7 +177,7 @@ func (w *worker) GetBlob(redisKeys []string) ([]*structpb.Struct, error) {
 	return payloads, nil
 }
 
-func (w *worker) SetBlob(inputs []*structpb.Struct) ([]string, error) {
+func (w *worker) SetBlob(ctx context.Context, inputs []*structpb.Struct) ([]string, error) {
 	id, _ := uuid.NewV4()
 	blobRedisKeys := []string{}
 	for idx, input := range inputs {
@@ -188,7 +188,7 @@ func (w *worker) SetBlob(inputs []*structpb.Struct) ([]string, error) {
 
 		blobRedisKey := fmt.Sprintf("pipeline_blob:%s:%d", id.String(), idx)
 		w.redisClient.Set(
-			context.Background(),
+			ctx,
 			blobRedisKey,
 			inputJSON,
 			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
@@ -260,7 +260,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	dataPoint := utils.PipelineUsageMetricData{
 		OwnerUID:           strings.Split(param.OwnerPermalink, "/")[1],
 		OwnerType:          ownerType,
-		UserUID:            strings.Split(param.UserPermalink, "/")[1],
+		UserUID:            param.UserUID.String(),
 		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		TriggerMode:        param.Mode,
 		PipelineID:         param.PipelineID,
@@ -298,7 +298,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		BatchSize:           startResult.BatchSize,
 		PipelineRecipe:      param.PipelineRecipe,
 		OwnerPermalink:      param.OwnerPermalink,
-		UserPermalink:       param.UserPermalink,
+		UserUID:             param.UserUID,
 	}).Get(ctx, &dagResult); err != nil {
 		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 		return nil, err
@@ -357,7 +357,7 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 	}
 
 	var inputs [][]byte
-	pipelineInputs, err := w.GetBlob(param.PipelineInputBlobRedisKeys)
+	pipelineInputs, err := w.GetBlob(ctx, param.PipelineInputBlobRedisKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -407,7 +407,7 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 	// skip start component
 	orderedComp = orderedComp[1:]
 
-	memoryBlobRedisKeys, err := w.SetMemoryBlob(memory)
+	memoryBlobRedisKeys, err := w.SetMemoryBlob(ctx, memory)
 	if err != nil {
 		return nil, err
 	}
@@ -423,7 +423,7 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 
 func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEndActivityRequest) (*ExecuteTriggerEndActivityResponse, error) {
 
-	memory, err := w.GetMemoryBlob(param.MemoryBlobRedisKeys)
+	memory, err := w.GetMemoryBlob(ctx, param.MemoryBlobRedisKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -473,7 +473,7 @@ func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEn
 	}
 	blobRedisKey := fmt.Sprintf("async_pipeline_response:%s", param.WorkflowExecutionID)
 	w.redisClient.Set(
-		context.Background(),
+		ctx,
 		blobRedisKey,
 		outputJSON,
 		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
@@ -484,7 +484,7 @@ func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEn
 }
 func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityRequest) (*ExecuteDAGActivityResponse, error) {
 
-	memory, err := w.GetMemoryBlob(param.MemoryBlobRedisKeys)
+	memory, err := w.GetMemoryBlob(ctx, param.MemoryBlobRedisKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -621,12 +621,12 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 
 					switch {
 					case comp.IsConnectorComponent() && comp.ConnectorComponent.ConnectorName != "":
-						inputBlobRedisKeys, err := w.SetBlob(compInputs)
+						inputBlobRedisKeys, err := w.SetBlob(ctx, compInputs)
 						if err != nil {
 							return nil, err
 						}
 						for idx := range inputBlobRedisKeys {
-							defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
+							defer w.redisClient.Del(ctx, inputBlobRedisKeys[idx])
 						}
 						id := comp.ID
 						definitionName := comp.ConnectorComponent.DefinitionName
@@ -640,7 +640,7 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								DefinitionName:     definitionName,
 								ConnectorName:      connectorName,
 								PipelineMetadata: PipelineMetadataStruct{
-									UserUID: strings.Split(param.UserPermalink, "/")[1],
+									UserUID: param.UserUID.String(),
 								},
 								Task: task,
 							})
@@ -648,9 +648,9 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								return err
 							}
 
-							outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
+							outputs, err := w.GetBlob(ctx, result.OutputBlobRedisKeys)
 							for idx := range result.OutputBlobRedisKeys {
-								defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
+								defer w.redisClient.Del(ctx, result.OutputBlobRedisKeys[idx])
 							}
 							if err != nil {
 								return err
@@ -674,12 +674,12 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 						})
 
 					case comp.IsOperatorComponent():
-						inputBlobRedisKeys, err := w.SetBlob(compInputs)
+						inputBlobRedisKeys, err := w.SetBlob(ctx, compInputs)
 						if err != nil {
 							return nil, err
 						}
 						for idx := range inputBlobRedisKeys {
-							defer w.redisClient.Del(context.Background(), inputBlobRedisKeys[idx])
+							defer w.redisClient.Del(ctx, inputBlobRedisKeys[idx])
 						}
 						id := comp.ID
 						definitionName := comp.OperatorComponent.DefinitionName
@@ -690,7 +690,7 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								InputBlobRedisKeys: inputBlobRedisKeys,
 								DefinitionName:     definitionName,
 								PipelineMetadata: PipelineMetadataStruct{
-									UserUID: strings.Split(param.UserPermalink, "/")[1],
+									UserUID: param.UserUID.String(),
 								},
 								Task: task,
 							})
@@ -698,9 +698,9 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								return err
 							}
 
-							outputs, err := w.GetBlob(result.OutputBlobRedisKeys)
+							outputs, err := w.GetBlob(ctx, result.OutputBlobRedisKeys)
 							for idx := range result.OutputBlobRedisKeys {
-								defer w.redisClient.Del(context.Background(), result.OutputBlobRedisKeys[idx])
+								defer w.redisClient.Del(ctx, result.OutputBlobRedisKeys[idx])
 							}
 							if err != nil {
 								return err
@@ -751,7 +751,7 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 							return nil, err
 						}
 
-						subMemoryBlobRedisKeys, err := w.SetMemoryBlob(subMemory)
+						subMemoryBlobRedisKeys, err := w.SetMemoryBlob(ctx, subMemory)
 						if err != nil {
 							return nil, err
 						}
@@ -763,13 +763,13 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 							BatchSize:           batchSize,
 							PipelineRecipe:      param.PipelineRecipe,
 							OwnerPermalink:      param.OwnerPermalink,
-							UserPermalink:       param.UserPermalink,
+							UserUID:             param.UserUID,
 						})
 						if err != nil {
 							return nil, err
 						}
 
-						subMemory, err = w.GetMemoryBlob(result.MemoryBlobRedisKeys)
+						subMemory, err = w.GetMemoryBlob(ctx, result.MemoryBlobRedisKeys)
 						if err != nil {
 							return nil, err
 						}
@@ -800,7 +800,7 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 
 	}
 	// TODO
-	memoryBlobRedisKeys, err := w.SetMemoryBlob(memory)
+	memoryBlobRedisKeys, err := w.SetMemoryBlob(ctx, memory)
 	if err != nil {
 		return nil, err
 	}
@@ -814,7 +814,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ConnectorActivity started")
 
-	compInputs, err := w.GetBlob(param.InputBlobRedisKeys)
+	compInputs, err := w.GetBlob(ctx, param.InputBlobRedisKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -859,7 +859,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	outputBlobRedisKeys, err := w.SetBlob(compOutputs)
+	outputBlobRedisKeys, err := w.SetBlob(ctx, compOutputs)
 	if err != nil {
 		return nil, err
 	}
@@ -873,7 +873,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("OperatorActivity started")
 
-	compInputs, err := w.GetBlob(param.InputBlobRedisKeys)
+	compInputs, err := w.GetBlob(ctx, param.InputBlobRedisKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -892,7 +892,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorAct
 		return nil, w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	outputBlobRedisKeys, err := w.SetBlob(compOutputs)
+	outputBlobRedisKeys, err := w.SetBlob(ctx, compOutputs)
 	if err != nil {
 		return nil, err
 	}

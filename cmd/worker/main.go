@@ -13,13 +13,13 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	"github.com/go-redis/redis/v9"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/temporal"
 	"github.com/instill-ai/x/zapadapter"
+	"github.com/redis/go-redis/v9"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
@@ -98,7 +98,11 @@ func main() {
 
 	db := database.GetSharedConnection()
 	defer database.Close(db)
-	repository := repository.NewRepository(db)
+
+	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
+	defer redisClient.Close()
+
+	repository := repository.NewRepository(db, redisClient)
 
 	var err error
 
@@ -135,9 +139,6 @@ func main() {
 	if config.Config.Temporal.Ca == "" && config.Config.Temporal.Cert == "" && config.Config.Temporal.Key == "" {
 		initTemporalNamespace(ctx, temporalClient)
 	}
-
-	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
-	defer redisClient.Close()
 
 	influxDBClient, influxDBWriteClient := external.InitInfluxDBServiceClient(ctx)
 	defer influxDBClient.Close()

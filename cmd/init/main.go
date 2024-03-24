@@ -12,6 +12,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/launchdarkly/go-semver"
+	"github.com/redis/go-redis/v9"
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"gorm.io/datatypes"
@@ -82,7 +83,10 @@ func main() {
 	db := database.GetConnection()
 	defer database.Close(db)
 
-	repo := repository.NewRepository(db)
+	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
+	defer redisClient.Close()
+
+	repo := repository.NewRepository(db, redisClient)
 
 	// Update component definitions and connectors based on latest version of
 	// definitions.json.
@@ -155,7 +159,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			err = aclClient.SetOwner("pipeline", pipeline.UID, nsType, userUID)
+			err = aclClient.SetOwner(context.Background(), "pipeline", pipeline.UID, nsType, userUID)
 			if err != nil {
 				panic(err)
 			}
@@ -179,7 +183,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			err = aclClient.SetOwner("connector", conn.UID, nsType, userUID)
+			err = aclClient.SetOwner(context.Background(), "connector", conn.UID, nsType, userUID)
 			if err != nil {
 				panic(err)
 			}

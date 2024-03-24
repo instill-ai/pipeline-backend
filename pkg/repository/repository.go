@@ -2,14 +2,20 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/redis/go-redis/v9"
 	"go.einride.tech/aip/filtering"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/plugin/dbresolver"
 
+	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/x/paginate"
 
@@ -53,8 +59,8 @@ type Repository interface {
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Pipeline, error)
 	ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.PipelineRelease, int64, string, error)
 
-	ListConnectors(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
-	GetConnectorByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
+	ListConnectors(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
+	GetConnectorByUID(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
 
 	CreateNamespaceConnector(ctx context.Context, ownerPermalink string, connector *datamodel.Connector) error
 	ListNamespaceConnectors(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
@@ -73,18 +79,40 @@ type Repository interface {
 }
 
 type repository struct {
-	db *gorm.DB
+	db          *gorm.DB
+	redisClient *redis.Client
 }
 
 // NewRepository initiates a repository instance
-func NewRepository(db *gorm.DB) Repository {
+func NewRepository(db *gorm.DB, redisClient *redis.Client) Repository {
 	return &repository{
-		db: db,
+		db:          db,
+		redisClient: redisClient,
 	}
 }
 
+func (r *repository) checkPinnedUser(ctx context.Context, db *gorm.DB) *gorm.DB {
+	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	// If the user is pinned, we will use the primary database for querying.
+	if !errors.Is(r.redisClient.Get(ctx, fmt.Sprintf("db_pin_user:%s", userUID)).Err(), redis.Nil) {
+		db = db.Clauses(dbresolver.Write)
+	}
+	return db
+}
+
+func (r *repository) pinUser(ctx context.Context) {
+	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	// To solve the read-after-write inconsistency problem,
+	// we will direct the user to read from the primary database for a certain time frame
+	// to ensure that the data is synchronized from the primary DB to the replica DB.
+	_ = r.redisClient.Set(ctx, fmt.Sprintf("db_pin_user:%s", userUID), time.Now(), time.Duration(config.Config.Database.Replica.ReplicationTimeFrame)*time.Second)
+}
+
 func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error {
-	if result := r.db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	if result := db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -92,7 +120,7 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 
 func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
 
-	db := r.db
+	db := r.checkPinnedUser(ctx, r.db)
 	if showDeleted {
 		db = db.Unscoped()
 	}
@@ -206,9 +234,11 @@ func (r *repository) ListPipelinesAdmin(ctx context.Context, pageSize int64, pag
 
 func (r *repository) getNamespacePipeline(ctx context.Context, where string, whereArgs []interface{}, isBasicView bool) (*datamodel.Pipeline, error) {
 
+	db := r.checkPinnedUser(ctx, r.db)
+
 	var pipeline datamodel.Pipeline
 
-	queryBuilder := r.db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...)
+	queryBuilder := db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...)
 
 	if isBasicView {
 		queryBuilder.Omit("pipeline.recipe")
@@ -250,7 +280,10 @@ func (r *repository) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, i
 }
 
 func (r *repository) UpdateNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, pipeline *datamodel.Pipeline) error {
-	if result := r.db.Model(&datamodel.Pipeline{}).
+
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+	if result := db.Model(&datamodel.Pipeline{}).
 		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Updates(pipeline); result.Error != nil {
 		return result.Error
@@ -261,7 +294,11 @@ func (r *repository) UpdateNamespacePipelineByID(ctx context.Context, ownerPerma
 }
 
 func (r *repository) DeleteNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string) error {
-	result := r.db.Model(&datamodel.Pipeline{}).
+
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	result := db.Model(&datamodel.Pipeline{}).
 		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Delete(&datamodel.Pipeline{})
 
@@ -277,7 +314,11 @@ func (r *repository) DeleteNamespacePipelineByID(ctx context.Context, ownerPerma
 }
 
 func (r *repository) UpdateNamespacePipelineIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error {
-	if result := r.db.Model(&datamodel.Pipeline{}).
+
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	if result := db.Model(&datamodel.Pipeline{}).
 		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Update("id", newID); result.Error != nil {
 		return result.Error
@@ -295,7 +336,11 @@ func (r *repository) transpileFilter(filter filtering.Filter) (*clause.Expr, err
 }
 
 func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error {
-	if result := r.db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
+
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	if result := db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -303,7 +348,8 @@ func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPe
 
 func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (pipelineReleases []*datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
 
-	db := r.db
+	db := r.checkPinnedUser(ctx, r.db)
+
 	if showDeleted {
 		db = db.Unscoped()
 	}
@@ -376,7 +422,8 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 
 func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (pipelineReleases []*datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
 
-	db := r.db
+	db := r.checkPinnedUser(ctx, r.db)
+
 	if showDeleted {
 		db = db.Unscoped()
 	}
@@ -447,7 +494,10 @@ func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int
 }
 
 func (r *repository) GetNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, isBasicView bool) (*datamodel.PipelineRelease, error) {
-	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("id = ? AND pipeline_uid = ?", id, pipelineUID)
+
+	db := r.checkPinnedUser(ctx, r.db)
+
+	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Where("id = ? AND pipeline_uid = ?", id, pipelineUID)
 	if isBasicView {
 		queryBuilder.Omit("pipeline_release.recipe")
 	}
@@ -459,7 +509,10 @@ func (r *repository) GetNamespacePipelineReleaseByID(ctx context.Context, ownerP
 }
 
 func (r *repository) GetNamespacePipelineReleaseByUID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
-	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("uid = ? AND pipeline_uid = ?", uid, pipelineUID)
+
+	db := r.checkPinnedUser(ctx, r.db)
+
+	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Where("uid = ? AND pipeline_uid = ?", uid, pipelineUID)
 	if isBasicView {
 		queryBuilder.Omit("pipeline_release.recipe")
 	}
@@ -471,7 +524,11 @@ func (r *repository) GetNamespacePipelineReleaseByUID(ctx context.Context, owner
 }
 
 func (r *repository) UpdateNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, pipelineRelease *datamodel.PipelineRelease) error {
-	if result := r.db.Model(&datamodel.PipelineRelease{}).
+
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	if result := db.Model(&datamodel.PipelineRelease{}).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUID).
 		Updates(pipelineRelease); result.Error != nil {
 		return result.Error
@@ -482,7 +539,11 @@ func (r *repository) UpdateNamespacePipelineReleaseByID(ctx context.Context, own
 }
 
 func (r *repository) DeleteNamespacePipelineReleaseByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string) error {
-	result := r.db.Model(&datamodel.PipelineRelease{}).
+
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	result := db.Model(&datamodel.PipelineRelease{}).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUID).
 		Delete(&datamodel.PipelineRelease{})
 
@@ -498,7 +559,11 @@ func (r *repository) DeleteNamespacePipelineReleaseByID(ctx context.Context, own
 }
 
 func (r *repository) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, id string, newID string) error {
-	if result := r.db.Model(&datamodel.PipelineRelease{}).
+
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	if result := db.Model(&datamodel.PipelineRelease{}).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUID).
 		Update("id", newID); result.Error != nil {
 		return result.Error
@@ -509,7 +574,10 @@ func (r *repository) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, o
 }
 
 func (r *repository) GetLatestNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
-	queryBuilder := r.db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUID).Order("id DESC")
+
+	db := r.checkPinnedUser(ctx, r.db)
+
+	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUID).Order("id DESC")
 	if isBasicView {
 		queryBuilder.Omit("pipeline_release.recipe")
 	}
@@ -522,7 +590,8 @@ func (r *repository) GetLatestNamespacePipelineRelease(ctx context.Context, owne
 
 func (r *repository) listConnectors(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
 
-	db := r.db
+	db := r.checkPinnedUser(ctx, r.db)
+
 	if showDeleted {
 		db = db.Unscoped()
 	}
@@ -621,8 +690,9 @@ func (r *repository) ListConnectorsAdmin(ctx context.Context, pageSize int64, pa
 	return r.listConnectors(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted)
 }
 
-func (r *repository) ListConnectors(ctx context.Context, userPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
+func (r *repository) ListConnectors(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
 
+	userPermalink := fmt.Sprintf("users/%s", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
 	return r.listConnectors(ctx,
 		"(owner = ?)",
 		[]interface{}{userPermalink},
@@ -641,7 +711,10 @@ func (r *repository) ListNamespaceConnectors(ctx context.Context, ownerPermalink
 
 func (r *repository) CreateNamespaceConnector(ctx context.Context, ownerPermalink string, connector *datamodel.Connector) error {
 
-	if result := r.db.Model(&datamodel.Connector{}).Create(connector); result.Error != nil {
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	if result := db.Model(&datamodel.Connector{}).Create(connector); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -649,9 +722,11 @@ func (r *repository) CreateNamespaceConnector(ctx context.Context, ownerPermalin
 
 func (r *repository) getNamespaceConnector(ctx context.Context, where string, whereArgs []interface{}, isBasicView bool) (*datamodel.Connector, error) {
 
+	db := r.checkPinnedUser(ctx, r.db)
+
 	var connector datamodel.Connector
 
-	queryBuilder := r.db.Model(&datamodel.Connector{}).Where(where, whereArgs...)
+	queryBuilder := db.Model(&datamodel.Connector{}).Where(where, whereArgs...)
 
 	if isBasicView {
 		queryBuilder.Omit("configuration")
@@ -671,9 +746,9 @@ func (r *repository) GetNamespaceConnectorByID(ctx context.Context, ownerPermali
 		isBasicView)
 }
 
-func (r *repository) GetConnectorByUID(ctx context.Context, userPermalink string, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error) {
+func (r *repository) GetConnectorByUID(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error) {
 
-	// TODO: ACL
+	userPermalink := fmt.Sprintf("users/%s", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
 	return r.getNamespaceConnector(ctx,
 		"(uid = ? AND (owner = ?))",
 		[]interface{}{uid, userPermalink},
@@ -690,7 +765,10 @@ func (r *repository) GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, 
 
 func (r *repository) UpdateNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string, connector *datamodel.Connector) error {
 
-	if result := r.db.Model(&datamodel.Connector{}).
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	if result := db.Model(&datamodel.Connector{}).
 		Where("(id = ? AND owner = ? )", id, ownerPermalink).
 		Updates(connector); result.Error != nil {
 		return result.Error
@@ -702,7 +780,10 @@ func (r *repository) UpdateNamespaceConnectorByID(ctx context.Context, ownerPerm
 
 func (r *repository) DeleteNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string) error {
 
-	result := r.db.Model(&datamodel.Connector{}).
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	result := db.Model(&datamodel.Connector{}).
 		Where("(id = ? AND owner = ? )", id, ownerPermalink).
 		Delete(&datamodel.Connector{})
 
@@ -719,7 +800,10 @@ func (r *repository) DeleteNamespaceConnectorByID(ctx context.Context, ownerPerm
 
 func (r *repository) UpdateNamespaceConnectorIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error {
 
-	if result := r.db.Model(&datamodel.Connector{}).
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	if result := db.Model(&datamodel.Connector{}).
 		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Update("id", newID); result.Error != nil {
 		return result.Error
@@ -731,7 +815,10 @@ func (r *repository) UpdateNamespaceConnectorIDByID(ctx context.Context, ownerPe
 
 func (r *repository) UpdateNamespaceConnectorStateByID(ctx context.Context, ownerPermalink string, id string, state datamodel.ConnectorState) error {
 
-	if result := r.db.Model(&datamodel.Connector{}).
+	r.pinUser(ctx)
+	db := r.checkPinnedUser(ctx, r.db)
+
+	if result := db.Model(&datamodel.Connector{}).
 		Where("(id = ? AND owner = ?)", id, ownerPermalink).
 		Update("state", state); result.Error != nil {
 		return result.Error

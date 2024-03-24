@@ -98,6 +98,24 @@ func GetSharedConnection() *gorm.DB {
 			panic("Could not open database connection")
 		}
 
+		if databaseConfig.Replica.Host != "" {
+			replicaDSN := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=%s",
+				databaseConfig.Replica.Host,
+				databaseConfig.Replica.Username,
+				databaseConfig.Replica.Password,
+				databaseConfig.Name,
+				databaseConfig.Replica.Port,
+				databaseConfig.TimeZone,
+			)
+			err = db.Use(dbresolver.Register(dbresolver.Config{
+				Replicas:          []gorm.Dialector{postgres.Open(replicaDSN)},
+				TraceResolverMode: true,
+			}))
+			if err != nil {
+				panic("Could not open replica database connection")
+			}
+		}
+
 		sqlDB, _ := db.DB()
 
 		// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.

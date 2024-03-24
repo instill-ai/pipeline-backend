@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v9"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
+	"github.com/redis/go-redis/v9"
 )
 
 // Config - Global variable to export
@@ -83,10 +84,11 @@ type DatabaseConfig struct {
 	Host     string `koanf:"host"`
 	Port     int    `koanf:"port"`
 	Replica  struct {
-		Username string `koanf:"username"`
-		Password string `koanf:"password"`
-		Host     string `koanf:"host"`
-		Port     int    `koanf:"port"`
+		Username             string `koanf:"username"`
+		Password             string `koanf:"password"`
+		Host                 string `koanf:"host"`
+		Port                 int    `koanf:"port"`
+		ReplicationTimeFrame int    `koanf:"replicationtimeframe"` // in seconds
 	} `koanf:"replica"`
 	Name     string `koanf:"name"`
 	Version  uint   `koanf:"version"`
@@ -163,6 +165,12 @@ type ModelBackendConfig struct {
 func Init() error {
 	k := koanf.New(".")
 	parser := yaml.Parser()
+
+	if err := k.Load(confmap.Provider(map[string]interface{}{
+		"database.replica.replicationtimeframe": 180,
+	}, "."), nil); err != nil {
+		log.Fatal(err.Error())
+	}
 
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fileRelativePath := fs.String("file", "config/config.yaml", "configuration file")
