@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-redis/redis/v9"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
@@ -244,9 +244,6 @@ func main() {
 		defer mgmtPublicServiceClientConn.Close()
 	}
 
-	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
-	defer redisClient.Close()
-
 	influxDBClient, influxDBWriteClient := external.InitInfluxDBServiceClient(ctx)
 	defer influxDBClient.Close()
 
@@ -257,7 +254,10 @@ func main() {
 		}
 	}()
 
-	repository := repository.NewRepository(db)
+	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
+	defer redisClient.Close()
+
+	repository := repository.NewRepository(db, redisClient)
 
 	service := service.NewService(
 		repository,

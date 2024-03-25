@@ -3,8 +3,8 @@ package worker
 import (
 	"context"
 
-	"github.com/go-redis/redis/v9"
 	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/instill-ai/pipeline-backend/pkg/logger"

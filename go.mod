@@ -9,7 +9,6 @@ require (
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/frankban/quicktest v1.14.6
 	github.com/gabriel-vasile/mimetype v1.4.3
-	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/golang/mock v1.6.0
@@ -25,6 +24,7 @@ require (
 	github.com/launchdarkly/go-semver v1.0.2
 	github.com/mennanov/fieldmask-utils v1.0.0
 	github.com/openfga/go-sdk v0.2.3
+	github.com/redis/go-redis/v9 v9.5.1
 	go.einride.tech/aip v0.60.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.17.0
 	go.opentelemetry.io/otel v1.24.0
@@ -103,7 +103,6 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
-	github.com/redis/go-redis/v9 v9.5.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/temoto/robotstxt v1.1.1 // indirect
