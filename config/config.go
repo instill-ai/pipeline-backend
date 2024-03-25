@@ -34,8 +34,13 @@ type AppConfig struct {
 
 // OpenFGA config
 type OpenFGAConfig struct {
-	Host string `koanf:"host"`
-	Port int    `koanf:"port"`
+	Host    string `koanf:"host"`
+	Port    int    `koanf:"port"`
+	Replica struct {
+		Host                 string `koanf:"host"`
+		Port                 int    `koanf:"port"`
+		ReplicationTimeFrame int    `koanf:"replicationtimeframe"` // in seconds
+	} `koanf:"replica"`
 }
 
 // ServerConfig defines HTTP server configurations

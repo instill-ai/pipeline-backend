@@ -2,21 +2,27 @@ package acl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/redis/go-redis/v9"
 
 	openfga "github.com/openfga/go-sdk"
 	openfgaClient "github.com/openfga/go-sdk/client"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 )
 
 type ACLClient struct {
-	client               *openfgaClient.OpenFgaClient
+	writeClient          *openfgaClient.OpenFgaClient
+	readClient           *openfgaClient.OpenFgaClient
+	redisClient          *redis.Client
 	authorizationModelID *string
 }
 
@@ -25,11 +31,44 @@ type Relation struct {
 	Relation string
 }
 
-func NewACLClient(c *openfgaClient.OpenFgaClient, a *string) ACLClient {
+type Mode string
+
+const (
+	ReadMode  Mode = "read"
+	WriteMode Mode = "write"
+)
+
+func NewACLClient(wc *openfgaClient.OpenFgaClient, rc *openfgaClient.OpenFgaClient, redisClient *redis.Client, a *string) ACLClient {
+	if rc == nil {
+		rc = wc
+	}
+
 	return ACLClient{
-		client:               c,
+		writeClient:          wc,
+		readClient:           rc,
+		redisClient:          redisClient,
 		authorizationModelID: a,
 	}
+}
+
+func (c *ACLClient) getClient(ctx context.Context, mode Mode) *openfgaClient.OpenFgaClient {
+	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+
+	if mode == WriteMode {
+		// To solve the read-after-write inconsistency problem,
+		// we will direct the user to read from the primary database for a certain time frame
+		// to ensure that the data is synchronized from the primary DB to the replica DB.
+		_ = c.redisClient.Set(ctx, fmt.Sprintf("db_pin_user:%s", userUID), time.Now(), time.Duration(config.Config.OpenFGA.Replica.ReplicationTimeFrame)*time.Second)
+	}
+
+	// If the user is pinned, we will use the primary database for querying.
+	if !errors.Is(c.redisClient.Get(ctx, fmt.Sprintf("db_pin_user:%s", userUID)).Err(), redis.Nil) {
+		return c.writeClient
+	}
+	if mode == ReadMode {
+		return c.readClient
+	}
+	return c.writeClient
 }
 
 func (c *ACLClient) SetOwner(ctx context.Context, objectType string, objectUID uuid.UUID, ownerType string, ownerUID uuid.UUID) error {
@@ -44,7 +83,8 @@ func (c *ACLClient) SetOwner(ctx context.Context, objectType string, objectUID u
 		Relation: openfga.PtrString("owner"),
 		Object:   openfga.PtrString(fmt.Sprintf("%s:%s", objectType, objectUID.String())),
 	}
-	data, err := c.client.Read(ctx).Body(readBody).Options(readOptions).Execute()
+
+	data, err := c.getClient(ctx, ReadMode).Read(ctx).Body(readBody).Options(readOptions).Execute()
 	if err != nil {
 		return err
 	}
@@ -61,7 +101,7 @@ func (c *ACLClient) SetOwner(ctx context.Context, objectType string, objectUID u
 			}},
 	}
 
-	_, err = c.client.Write(ctx).Body(writeBody).Options(writeOptions).Execute()
+	_, err = c.getClient(ctx, WriteMode).Write(ctx).Body(writeBody).Options(writeOptions).Execute()
 	if err != nil {
 		return err
 	}
@@ -133,7 +173,7 @@ func (c *ACLClient) SetPipelinePermission(ctx context.Context, pipelineUID uuid.
 				}},
 		}
 
-		_, err = c.client.Write(ctx).Body(body).Options(options).Execute()
+		_, err = c.getClient(ctx, WriteMode).Write(ctx).Body(body).Options(options).Execute()
 		if err != nil {
 			return err
 		}
@@ -156,7 +196,7 @@ func (c *ACLClient) DeletePipelinePermission(ctx context.Context, pipelineUID uu
 					Relation: role,
 					Object:   fmt.Sprintf("pipeline:%s", pipelineUID.String()),
 				}}}
-		_, _ = c.client.Write(ctx).Body(body).Options(options).Execute()
+		_, _ = c.getClient(ctx, WriteMode).Write(ctx).Body(body).Options(options).Execute()
 
 	}
 
@@ -172,7 +212,7 @@ func (c *ACLClient) Purge(ctx context.Context, objectType string, objectUID uuid
 	readBody := openfgaClient.ClientReadRequest{
 		Object: openfga.PtrString(fmt.Sprintf("%s:%s", objectType, objectUID)),
 	}
-	resp, err := c.client.Read(ctx).Body(readBody).Options(readOptions).Execute()
+	resp, err := c.getClient(ctx, ReadMode).Read(ctx).Body(readBody).Options(readOptions).Execute()
 	if err != nil {
 		return err
 	}
@@ -184,7 +224,7 @@ func (c *ACLClient) Purge(ctx context.Context, objectType string, objectUID uuid
 					Relation: *data.Key.Relation,
 					Object:   *data.Key.Object,
 				}}}
-		_, err := c.client.Write(ctx).Body(body).Options(writeOptions).Execute()
+		_, err := c.getClient(ctx, WriteMode).Write(ctx).Body(body).Options(writeOptions).Execute()
 
 		if err != nil {
 			return err
@@ -214,7 +254,7 @@ func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, obje
 		Relation: role,
 		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
 	}
-	data, err := c.client.Check(ctx).Body(body).Options(options).Execute()
+	data, err := c.getClient(ctx, ReadMode).Check(ctx).Body(body).Options(options).Execute()
 	if err != nil {
 		return false, err
 	}
@@ -230,7 +270,7 @@ func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, obje
 		Relation: role,
 		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
 	}
-	data, err = c.client.Check(ctx).Body(body).Options(options).Execute()
+	data, err = c.getClient(ctx, ReadMode).Check(ctx).Body(body).Options(options).Execute()
 
 	if err != nil {
 		return false, err
@@ -249,7 +289,7 @@ func (c *ACLClient) CheckPublicExecutable(ctx context.Context, objectType string
 		Relation: "executor",
 		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
 	}
-	data, err := c.client.Check(ctx).Body(body).Options(options).Execute()
+	data, err := c.getClient(ctx, ReadMode).Check(ctx).Body(body).Options(options).Execute()
 	if err != nil {
 		return false, err
 	}
@@ -284,7 +324,7 @@ func (c *ACLClient) ListPermissions(ctx context.Context, objectType string, role
 		Relation: role,
 		Type:     objectType,
 	}
-	listObjectsResult, err := c.client.ListObjects(ctx).Body(body).Options(options).Execute()
+	listObjectsResult, err := c.getClient(ctx, ReadMode).ListObjects(ctx).Body(body).Options(options).Execute()
 	if err != nil {
 		return nil, err
 	}
