@@ -2171,18 +2171,24 @@ func (s *service) ListConnectorsAdmin(ctx context.Context, pageSize int32, pageT
 
 func (s *service) GetNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, id string, view View, credentialMask bool) (*pipelinePB.Connector, error) {
 
+	logger, _ := logger.GetZapLogger(ctx)
+
 	ownerPermalink := ns.Permalink()
 
+	logger.Info("LL1")
 	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, view == ViewBasic)
 	if err != nil {
 		return nil, ErrNotFound
 	}
+	logger.Info("LL2")
 	if granted, err := s.aclClient.CheckPermission(ctx, "connector", dbConnector.UID, "admin"); err != nil {
+		logger.Info("LL3")
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
+	logger.Info("LL4")
 	return s.convertDatamodelToProto(ctx, dbConnector, view, credentialMask)
 }
 

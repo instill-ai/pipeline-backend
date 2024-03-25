@@ -490,6 +490,7 @@ func (h *PublicHandler) getNamespaceConnector(ctx context.Context, req GetNamesp
 	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("L1")
 
 	ns, connID, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
 	if err != nil {
@@ -501,6 +502,7 @@ func (h *PublicHandler) getNamespaceConnector(ctx context.Context, req GetNamesp
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
+	logger.Info("L2")
 
 	connector, err = h.service.GetNamespaceConnectorByID(ctx, ns, connID, parseView(int32(*req.GetView().Enum())), true)
 	if err != nil {
@@ -508,6 +510,7 @@ func (h *PublicHandler) getNamespaceConnector(ctx context.Context, req GetNamesp
 		return nil, err
 	}
 
+	logger.Info("L3")
 	logger.Info(string(custom_otel.NewLogMessage(
 		ctx,
 		span,
