@@ -34,8 +34,13 @@ type AppConfig struct {
 
 // OpenFGA config
 type OpenFGAConfig struct {
-	Host string `koanf:"host"`
-	Port int    `koanf:"port"`
+	Host    string `koanf:"host"`
+	Port    int    `koanf:"port"`
+	Replica struct {
+		Host                 string `koanf:"host"`
+		Port                 int    `koanf:"port"`
+		ReplicationTimeFrame int    `koanf:"replicationtimeframe"` // in seconds
+	} `koanf:"replica"`
 }
 
 // ServerConfig defines HTTP server configurations
@@ -167,7 +172,8 @@ func Init() error {
 	parser := yaml.Parser()
 
 	if err := k.Load(confmap.Provider(map[string]interface{}{
-		"database.replica.replicationtimeframe": 180,
+		"database.replica.replicationtimeframe": 60,
+		"openfga.replica.replicationtimeframe":  60,
 	}, "."), nil); err != nil {
 		log.Fatal(err.Error())
 	}
