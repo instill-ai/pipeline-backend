@@ -702,7 +702,7 @@ func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.N
 	}
 
 	// TODO: pagination
-	pipelineReleases, _, _, err := s.repository.ListNamespacePipelineReleases(ctx, ownerPermalink, dbPipeline.UID, 1000, "", false, filtering.Filter{}, false)
+	pipelineReleases, _, _, err := s.repository.ListNamespacePipelineReleases(ctx, ownerPermalink, dbPipeline.UID, 1000, "", false, filtering.Filter{}, false, false)
 	if err != nil {
 		return err
 	}
@@ -1115,7 +1115,7 @@ func (s *service) ListNamespacePipelineReleases(ctx context.Context, ns resource
 		return nil, 0, "", ErrNotFound
 	}
 
-	dbPipelineReleases, ps, pt, err := s.repository.ListNamespacePipelineReleases(ctx, ownerPermalink, pipelineUID, int64(pageSize), pageToken, view == ViewBasic, filter, showDeleted)
+	dbPipelineReleases, ps, pt, err := s.repository.ListNamespacePipelineReleases(ctx, ownerPermalink, pipelineUID, int64(pageSize), pageToken, view == ViewBasic, filter, showDeleted, true)
 	if err != nil {
 		return nil, 0, "", err
 	}
