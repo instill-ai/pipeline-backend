@@ -619,20 +619,20 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	fmt.Println(111)
 	ownerPermalink := ns.Permalink()
 
-	dbPipelineToUpdate, err := s.PBToDBPipeline(ctx, ns, toUpdPipeline)
+	dbPipeline, err := s.PBToDBPipeline(ctx, ns, toUpdPipeline)
 	if err != nil {
 		return nil, ErrNotFound
 	}
 
 	fmt.Println(1112)
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipelineToUpdate.UID, "reader"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
 	fmt.Println(1113)
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipelineToUpdate.UID, "admin"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNoPermission
@@ -646,19 +646,13 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	fmt.Println(1114)
 
 	if existingPipeline.ShareCode == "" {
-		dbPipelineToUpdate.ShareCode = generateShareCode()
+		dbPipeline.ShareCode = generateShareCode()
 	}
 
-	if err := s.repository.UpdateNamespacePipelineByUID(ctx, dbPipelineToUpdate.UID, dbPipelineToUpdate); err != nil {
+	if err := s.repository.UpdateNamespacePipelineByUID(ctx, dbPipeline.UID, dbPipeline); err != nil {
 		return nil, err
 	}
 	fmt.Println(1115)
-
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, toUpdPipeline.Id, false)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(1116)
 
 	// TODO: use OpenFGA as single source of truth
 	err = s.aclClient.SetPipelinePermissionMap(ctx, dbPipeline)
