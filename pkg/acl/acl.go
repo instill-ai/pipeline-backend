@@ -146,6 +146,7 @@ func (c *ACLClient) SetPipelinePermissionMap(ctx context.Context, pipeline *data
 	// TODO: use OpenFGA as single source of truth
 	// TODO: support fine-grained permission settings
 
+	tuples := []*openfga.TupleKey{}
 	for user, perm := range pipeline.Sharing.Users {
 		if user != "*/*" {
 			return fmt.Errorf("only support users: `*/*`")
@@ -153,17 +154,23 @@ func (c *ACLClient) SetPipelinePermissionMap(ctx context.Context, pipeline *data
 
 		if perm.Role == "ROLE_VIEWER" || perm.Role == "ROLE_EXECUTOR" {
 			for _, t := range []string{"user", "visitor"} {
-				err := c.SetPipelinePermission(ctx, pipeline.UID, fmt.Sprintf("%s:*", t), "reader", perm.Enabled)
-				if err != nil {
-					return err
+				if perm.Enabled {
+					tuples = append(tuples, &openfga.TupleKey{
+						User:     fmt.Sprintf("%s:*", t),
+						Relation: "reader",
+						Object:   fmt.Sprintf("pipeline:%s", pipeline.UID.String()),
+					})
 				}
 			}
 		}
 		if perm.Role == "ROLE_EXECUTOR" {
 			for _, t := range []string{"user"} {
-				err := c.SetPipelinePermission(ctx, pipeline.UID, fmt.Sprintf("%s:*", t), "executor", perm.Enabled)
-				if err != nil {
-					return err
+				if perm.Enabled {
+					tuples = append(tuples, &openfga.TupleKey{
+						User:     fmt.Sprintf("%s:*", t),
+						Relation: "executor",
+						Object:   fmt.Sprintf("pipeline:%s", pipeline.UID.String()),
+					})
 				}
 			}
 		}
@@ -174,18 +181,38 @@ func (c *ACLClient) SetPipelinePermissionMap(ctx context.Context, pipeline *data
 			return fmt.Errorf("only support users: `*/*`")
 		}
 		if pipeline.Sharing.ShareCode.Role == "ROLE_VIEWER" {
-			err := c.SetPipelinePermission(ctx, pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "reader", pipeline.Sharing.ShareCode.Enabled)
-			if err != nil {
-				return err
+			if pipeline.Sharing.ShareCode.Enabled {
+				tuples = append(tuples, &openfga.TupleKey{
+					User:     fmt.Sprintf("code:%s", pipeline.ShareCode),
+					Relation: "reader",
+					Object:   fmt.Sprintf("pipeline:%s", pipeline.UID.String()),
+				})
 			}
+
 		}
 		if pipeline.Sharing.ShareCode.Role == "ROLE_EXECUTOR" {
-			err := c.SetPipelinePermission(ctx, pipeline.UID, fmt.Sprintf("code:%s", pipeline.ShareCode), "executor", pipeline.Sharing.ShareCode.Enabled)
-			if err != nil {
-				return err
+			if pipeline.Sharing.ShareCode.Enabled {
+				tuples = append(tuples, &openfga.TupleKey{
+					User:     fmt.Sprintf("code:%s", pipeline.ShareCode),
+					Relation: "executor",
+					Object:   fmt.Sprintf("pipeline:%s", pipeline.UID.String()),
+				})
 			}
 		}
 	}
+	if len(tuples) > 0 {
+		_, err := c.getClient(ctx, WriteMode).Write(ctx, &openfga.WriteRequest{
+			StoreId:              c.storeID,
+			AuthorizationModelId: c.authorizationModelID,
+			Writes: &openfga.WriteRequestWrites{
+				TupleKeys: tuples,
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
