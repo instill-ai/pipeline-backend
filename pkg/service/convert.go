@@ -857,7 +857,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(4)
+	wg.Add(5)
 	go func() {
 		defer wg.Done()
 		var owner *mgmtPB.Owner
@@ -869,7 +869,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			pbPipeline.Owner = owner
 		}
 	}()
-
+	pbPipeline.Permission = &pipelinePB.Permission{}
 	go func() {
 		defer wg.Done()
 		if !checkPermission {
@@ -880,14 +880,19 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		if err != nil {
 			return
 		}
+		pbPipeline.Permission.CanEdit = canEdit
+	}()
+	go func() {
+		defer wg.Done()
+		if !checkPermission {
+			return
+		}
+
 		canTrigger, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
 		if err != nil {
 			return
 		}
-		pbPipeline.Permission = &pipelinePB.Permission{
-			CanEdit:    canEdit,
-			CanTrigger: canTrigger,
-		}
+		pbPipeline.Permission.CanTrigger = canTrigger
 	}()
 
 	if view != ViewBasic {
