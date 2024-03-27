@@ -16,6 +16,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+	"go.einride.tech/aip/filtering"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -863,6 +864,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		OwnerName:   ownerName,
 		Owner:       owner,
 	}
+
 	canEdit, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
 	if err != nil {
 		return nil, err
@@ -894,25 +896,25 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 
-	// releases := []*datamodel.PipelineRelease{}
-	// pageToken := ""
-	// for {
-	// 	var page []*datamodel.PipelineRelease
-	// 	page, _, pageToken, err = s.repository.ListNamespacePipelineReleases(ctx, dbPipeline.Owner, dbPipeline.UID, 100, pageToken, false, filtering.Filter{}, false)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	releases = append(releases, page...)
-	// 	if pageToken == "" {
-	// 		break
-	// 	}
-	// }
-	// logger.Info("DBToPBPipeline14" + dbPipeline.ID)
-	// pbReleases, err := s.DBToPBPipelineReleases(ctx, releases, ViewFull)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// pbPipeline.Releases = pbReleases
+	releases := []*datamodel.PipelineRelease{}
+	pageToken := ""
+	for {
+		var page []*datamodel.PipelineRelease
+		page, _, pageToken, err = s.repository.ListNamespacePipelineReleases(ctx, dbPipeline.Owner, dbPipeline.UID, 100, pageToken, false, filtering.Filter{}, false)
+		if err != nil {
+			return nil, err
+		}
+		releases = append(releases, page...)
+		if pageToken == "" {
+			break
+		}
+	}
+	logger.Info("DBToPBPipeline14" + dbPipeline.ID)
+	pbReleases, err := s.DBToPBPipelineReleases(ctx, releases, ViewFull)
+	if err != nil {
+		return nil, err
+	}
+	pbPipeline.Releases = pbReleases
 	pbPipeline.Visibility = pipelinePB.Pipeline_VISIBILITY_PRIVATE
 	if u, ok := pbPipeline.Sharing.Users["*/*"]; ok {
 		if u.Enabled {
