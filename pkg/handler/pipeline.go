@@ -1212,10 +1212,6 @@ func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req Get
 	if err := authenticateUser(ctx, true); err != nil {
 		return nil, err
 	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
-		return nil, err
-	}
 
 	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
 	if err != nil {
@@ -1274,10 +1270,6 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
-		return nil, err
-	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
 		return nil, err
 	}
 
@@ -1390,10 +1382,6 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
 	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
-		return nil, err
-	}
 
 	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
 	if err != nil {
@@ -1457,10 +1445,6 @@ func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req 
 		return err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
-		return err
-	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
 		return err
 	}
 
@@ -1532,10 +1516,6 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
 	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
-		return nil, err
-	}
 
 	existPipelineRelease, err := h.GetUserPipelineRelease(ctx, &pipelinePB.GetUserPipelineReleaseRequest{Name: req.GetName()})
 	if err != nil {
@@ -1582,11 +1562,6 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return ns, "", nil, nil, false, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
-		return ns, "", nil, nil, false, err
-	}
-
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
 		return ns, "", nil, nil, false, err
 	}
 

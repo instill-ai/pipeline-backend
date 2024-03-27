@@ -2,17 +2,14 @@ name: Integration Test
 
 on:
   push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
 
 jobs:
   build-push-image:
-    if: github.ref == 'refs/heads/main'
     name: Build and push image
-    uses: instill-ai/pipeline-backend/.github/workflows/images.yml@main
+    uses: instill-ai/pipeline-backend/.github/workflows/images.yml@huitang/ins-3979-2
     secrets: inherit
   backends:
     needs: build-push-image
