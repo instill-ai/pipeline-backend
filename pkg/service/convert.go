@@ -771,7 +771,7 @@ var ConnectorTypeToComponentType = map[pipelinePB.ConnectorType]pipelinePB.Compo
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view View) (*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view View, checkPermission bool) (*pipelinePB.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -865,17 +865,19 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		Owner:       owner,
 	}
 
-	canEdit, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
-	if err != nil {
-		return nil, err
-	}
-	canTrigger, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
-	if err != nil {
-		return nil, err
-	}
-	pbPipeline.Permission = &pipelinePB.Permission{
-		CanEdit:    canEdit,
-		CanTrigger: canTrigger,
+	if checkPermission {
+		canEdit, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
+		if err != nil {
+			return nil, err
+		}
+		canTrigger, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
+		if err != nil {
+			return nil, err
+		}
+		pbPipeline.Permission = &pipelinePB.Permission{
+			CanEdit:    canEdit,
+			CanTrigger: canTrigger,
+		}
 	}
 
 	if view != ViewBasic {
@@ -925,7 +927,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, view View) ([]*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, view View, checkPermission bool) ([]*pipelinePB.Pipeline, error) {
 
 	type result struct {
 		idx      int
@@ -944,6 +946,7 @@ func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.
 				ctx,
 				dbPipelines[i],
 				view,
+				checkPermission,
 			)
 			ch <- result{
 				idx:      i,
