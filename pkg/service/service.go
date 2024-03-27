@@ -649,7 +649,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 		dbPipelineToUpdate.ShareCode = generateShareCode()
 	}
 
-	if err := s.repository.UpdateNamespacePipelineByID(ctx, ownerPermalink, id, dbPipelineToUpdate); err != nil {
+	if err := s.repository.UpdateNamespacePipelineByUID(ctx, dbPipelineToUpdate.UID, dbPipelineToUpdate); err != nil {
 		return nil, err
 	}
 	fmt.Println(1115)
@@ -1303,7 +1303,7 @@ func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns re
 	}
 	existingPipeline.Recipe = dbPipelineRelease.Recipe
 
-	if err := s.repository.UpdateNamespacePipelineByID(ctx, ownerPermalink, existingPipeline.ID, existingPipeline); err != nil {
+	if err := s.repository.UpdateNamespacePipelineByUID(ctx, existingPipeline.UID, existingPipeline); err != nil {
 		return err
 	}
 

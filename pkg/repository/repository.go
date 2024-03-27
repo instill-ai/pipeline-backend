@@ -41,7 +41,7 @@ type Repository interface {
 	ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Pipeline, int64, string, error)
 	GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool) (*datamodel.Pipeline, error)
 
-	UpdateNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, pipeline *datamodel.Pipeline) error
+	UpdateNamespacePipelineByUID(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) error
 	DeleteNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string) error
 	UpdateNamespacePipelineIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error
 
@@ -280,12 +280,12 @@ func (r *repository) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, i
 		isBasicView)
 }
 
-func (r *repository) UpdateNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, pipeline *datamodel.Pipeline) error {
+func (r *repository) UpdateNamespacePipelineByUID(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) error {
 
 	r.pinUser(ctx)
 	db := r.checkPinnedUser(ctx, r.db)
-	if result := db.Model(&datamodel.Pipeline{}).
-		Where("(id = ? AND owner = ?)", id, ownerPermalink).
+	if result := db.Unscoped().Model(&datamodel.Pipeline{}).
+		Where("(uid = ?)", uid).
 		Updates(pipeline); result.Error != nil {
 		return result.Error
 	} else if result.RowsAffected == 0 {
