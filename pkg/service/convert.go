@@ -780,14 +780,6 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		return nil, err
 	}
 
-	var owner *mgmtPB.Owner
-	if view != ViewBasic {
-		owner, err = s.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	var pbRecipe *pipelinePB.Recipe
 
 	var startComp *pipelinePB.Component
@@ -862,23 +854,41 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		Recipe:      pbRecipe,
 		Sharing:     pbSharing,
 		OwnerName:   ownerName,
-		Owner:       owner,
 	}
 
-	if checkPermission {
+	var wg sync.WaitGroup
+	wg.Add(4)
+	go func() {
+		defer wg.Done()
+		var owner *mgmtPB.Owner
+		if view != ViewBasic {
+			owner, err = s.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
+			if err != nil {
+				return
+			}
+			pbPipeline.Owner = owner
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if !checkPermission {
+			return
+		}
+
 		canEdit, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
 		if err != nil {
-			return nil, err
+			return
 		}
 		canTrigger, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
 		if err != nil {
-			return nil, err
+			return
 		}
 		pbPipeline.Permission = &pipelinePB.Permission{
 			CanEdit:    canEdit,
 			CanTrigger: canTrigger,
 		}
-	}
+	}()
 
 	if view != ViewBasic {
 		if dbPipeline.Metadata != nil {
@@ -891,32 +901,42 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 
-	if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
-		spec, err := s.GeneratePipelineDataSpec(startComp, endComp, pbRecipe.Components)
-		if err == nil {
+	go func() {
+		defer wg.Done()
+		if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
+			spec, err := s.GeneratePipelineDataSpec(startComp, endComp, pbRecipe.Components)
+			if err != nil {
+				return
+			}
 			pbPipeline.DataSpecification = spec
 		}
-	}
+	}()
 
-	releases := []*datamodel.PipelineRelease{}
-	pageToken := ""
-	for {
-		var page []*datamodel.PipelineRelease
-		page, _, pageToken, err = s.repository.ListNamespacePipelineReleases(ctx, dbPipeline.Owner, dbPipeline.UID, 100, pageToken, false, filtering.Filter{}, false)
+	go func() {
+		defer wg.Done()
+		releases := []*datamodel.PipelineRelease{}
+		pageToken := ""
+		for {
+			var page []*datamodel.PipelineRelease
+			page, _, pageToken, err = s.repository.ListNamespacePipelineReleases(ctx, dbPipeline.Owner, dbPipeline.UID, 100, pageToken, false, filtering.Filter{}, false)
+			if err != nil {
+				return
+			}
+			releases = append(releases, page...)
+			if pageToken == "" {
+				break
+			}
+		}
+
+		pbReleases, err := s.DBToPBPipelineReleases(ctx, releases, ViewFull)
 		if err != nil {
-			return nil, err
+			return
 		}
-		releases = append(releases, page...)
-		if pageToken == "" {
-			break
-		}
-	}
-	logger.Info("DBToPBPipeline14" + dbPipeline.ID)
-	pbReleases, err := s.DBToPBPipelineReleases(ctx, releases, ViewFull)
-	if err != nil {
-		return nil, err
-	}
-	pbPipeline.Releases = pbReleases
+		pbPipeline.Releases = pbReleases
+	}()
+
+	wg.Wait()
+
 	pbPipeline.Visibility = pipelinePB.Pipeline_VISIBILITY_PRIVATE
 	if u, ok := pbPipeline.Sharing.Users["*/*"]; ok {
 		if u.Enabled {
