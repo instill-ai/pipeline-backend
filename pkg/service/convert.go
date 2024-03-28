@@ -869,7 +869,9 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		defer wg.Done()
 		var owner *mgmtPB.Owner
 		if view != ViewBasic {
+			fmt.Println("eee")
 			owner, err = s.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
+			fmt.Println("eee")
 			if err != nil {
 				return
 			}
@@ -880,12 +882,14 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	fmt.Println(333312)
 	pbPipeline.Permission = &pipelinePB.Permission{}
 	go func() {
+		fmt.Println("ddd")
 		defer wg.Done()
 		if !checkPermission {
 			return
 		}
 
 		canEdit, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
+		fmt.Println("ddd")
 		if err != nil {
 			return
 		}
@@ -895,11 +899,13 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	fmt.Println(333313)
 	go func() {
 		defer wg.Done()
+		fmt.Println("ccc")
 		if !checkPermission {
 			return
 		}
 
 		canTrigger, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
+		fmt.Println("ccc")
 		if err != nil {
 			return
 		}
@@ -922,7 +928,9 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	go func() {
 		defer wg.Done()
 		if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
+			fmt.Println("bbb")
 			spec, err := s.GeneratePipelineDataSpec(startComp, endComp, pbRecipe.Components)
+			fmt.Println("bbb")
 			if err != nil {
 				return
 			}
@@ -932,7 +940,9 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	fmt.Println(333316)
 	go func() {
 		defer wg.Done()
+		fmt.Println("aaa")
 		pbReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline, dbPipeline.Releases, ViewFull)
+		fmt.Println("aaa")
 		if err != nil {
 			return
 		}
