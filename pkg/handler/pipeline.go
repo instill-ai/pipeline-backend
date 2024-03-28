@@ -99,44 +99,6 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelineP
 	return &resp, nil
 }
 
-func (h *PrivateHandler) ListPipelineReleasesAdmin(ctx context.Context, req *pipelinePB.ListPipelineReleasesAdminRequest) (*pipelinePB.ListPipelineReleasesAdminResponse, error) {
-
-	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
-		filtering.DeclareStandardFunctions(),
-		filtering.DeclareFunction("time.now", filtering.NewFunctionOverload("time.now", filtering.TypeTimestamp)),
-		filtering.DeclareIdent("q", filtering.TypeString),
-		filtering.DeclareIdent("uid", filtering.TypeString),
-		filtering.DeclareIdent("id", filtering.TypeString),
-		filtering.DeclareIdent("description", filtering.TypeString),
-		// only support "recipe.components.resource_name" for now
-		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
-		filtering.DeclareIdent("owner", filtering.TypeString),
-		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
-		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
-	}...)
-	if err != nil {
-		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
-	}
-
-	filter, err := filtering.ParseFilter(req, declarations)
-	if err != nil {
-		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
-	}
-
-	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleasesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
-	if err != nil {
-		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
-	}
-
-	resp := pipelinePB.ListPipelineReleasesAdminResponse{
-		Releases:      pbPipelineReleases,
-		NextPageToken: nextPageToken,
-		TotalSize:     int32(totalSize),
-	}
-
-	return &resp, nil
-}
-
 func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
 	eventName := "ListPipelines"
@@ -1212,10 +1174,6 @@ func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req Get
 	if err := authenticateUser(ctx, true); err != nil {
 		return nil, err
 	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
-		return nil, err
-	}
 
 	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
 	if err != nil {
@@ -1274,10 +1232,6 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
-		return nil, err
-	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
 		return nil, err
 	}
 
@@ -1390,10 +1344,6 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
 	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
-		return nil, err
-	}
 
 	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
 	if err != nil {
@@ -1457,10 +1407,6 @@ func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req 
 		return err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
-		return err
-	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
 		return err
 	}
 
@@ -1532,10 +1478,6 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 	if err := authenticateUser(ctx, false); err != nil {
 		return nil, err
 	}
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
-		return nil, err
-	}
 
 	existPipelineRelease, err := h.GetUserPipelineRelease(ctx, &pipelinePB.GetUserPipelineReleaseRequest{Name: req.GetName()})
 	if err != nil {
@@ -1582,11 +1524,6 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return ns, "", nil, nil, false, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
-		return ns, "", nil, nil, false, err
-	}
-
-	releaseID, err = h.service.ConvertReleaseIDAlias(ctx, ns, pipelineID, releaseID)
-	if err != nil {
 		return ns, "", nil, nil, false, err
 	}
 

@@ -1,8 +1,8 @@
 module github.com/instill-ai/pipeline-backend
 
-go 1.21.1
+go 1.21.3
 
-toolchain go1.21.3
+toolchain go1.22.0
 
 require (
 	cloud.google.com/go/longrunning v0.5.4
@@ -13,7 +13,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/golang/mock v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/component v0.13.0-beta.0.20240320083119-b06dbe0e05e3
@@ -23,7 +23,7 @@ require (
 	github.com/knadh/koanf v1.5.0
 	github.com/launchdarkly/go-semver v1.0.2
 	github.com/mennanov/fieldmask-utils v1.0.0
-	github.com/openfga/go-sdk v0.2.3
+	github.com/openfga/api/proto v0.0.0-20240318145204-66b9e5cb403c
 	github.com/redis/go-redis/v9 v9.5.1
 	go.einride.tech/aip v0.60.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.17.0
@@ -41,8 +41,8 @@ require (
 	golang.org/x/mod v0.12.0
 	golang.org/x/net v0.22.0
 	golang.org/x/sync v0.5.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240102182953-50ed04b92917
+	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/grpc v1.61.1
 	google.golang.org/protobuf v1.33.0
 	gorm.io/datatypes v1.0.7
@@ -70,6 +70,7 @@ require (
 	github.com/distribution/reference v0.5.0 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
+	github.com/envoyproxy/protoc-gen-validate v1.0.2 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
@@ -112,7 +113,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	golang.org/x/image v0.15.0 // indirect
-	golang.org/x/oauth2 v0.15.0 // indirect
+	golang.org/x/oauth2 v0.16.0 // indirect
 	golang.org/x/tools v0.10.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.150.0 // indirect
@@ -188,7 +189,7 @@ require (
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	google.golang.org/genproto v0.0.0-20231212172506-995d672761c0 // indirect
+	google.golang.org/genproto v0.0.0-20240116215550-a9fa1716bcac // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.4.3 // indirect
 )

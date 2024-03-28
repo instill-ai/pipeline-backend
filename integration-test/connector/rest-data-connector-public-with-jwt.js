@@ -195,50 +195,6 @@ export function CheckRename(data) {
     });
 }
 
-export function CheckExecute(data) {
-
-    group(`Connector API: Write destination connectors [with random "Instill-User-Uid" header]`, () => {
-
-        var csvDstConnector, resCSVDst, currentTime, timeoutTime
-
-        // Write classification output
-        csvDstConnector = {
-            "id": randomString(10),
-            "connector_definition_name": constant.csvDstDefRscName,
-            "description": randomString(50),
-            "configuration": {
-                "destination": "airbyte-destination-csv",
-                "destination_path": "/local/test-classification"
-            },
-        }
-
-        resCSVDst = http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors`,
-            JSON.stringify(csvDstConnector), data.header)
-
-        http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${csvDstConnector.id}/connect`,
-            {}, data.header)
-
-        check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch`, null, data.header), {
-            [`[with random "Instill-User-Uid" header] GET /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/watch response connector state is STATE_CONNECTED`]: (r) => r.json().state === "STATE_CONNECTED",
-        })
-
-        // Cannot write to destination connector of a non-exist user
-        check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute`,
-            JSON.stringify({
-                "inputs": constant.clsModelOutputs
-            }), constant.paramsHTTPWithJwt), {
-            [`[with random "Instill-User-Uid" header] POST /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}/execute response status 401 (classification)`]: (r) => r.status === 401,
-        });
-
-        // Wait for 1 sec for the connector writing to the destination-csv before deleting it
-        sleep(1)
-
-        check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id}`, null, data.header), {
-            [`DELETE /v1beta/${constant.namespace}/connectors/${resCSVDst.json().connector.id} response status 204 (classification)`]: (r) => r.status === 204,
-        });
-    });
-}
-
 export function CheckTest(data) {
 
     group(`Connector API: Test destination connectors by ID [with random "Instill-User-Uid" header]`, () => {

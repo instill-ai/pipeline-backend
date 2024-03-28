@@ -30,7 +30,7 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	openfgaClient "github.com/openfga/go-sdk/client"
+	openfga "github.com/openfga/api/proto/openfga/v1"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
@@ -194,41 +194,21 @@ func main() {
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
-	fgaClient, err := openfgaClient.NewSdkClient(&openfgaClient.ClientConfiguration{
-		ApiScheme: "http",
-		ApiHost:   fmt.Sprintf("%s:%d", config.Config.OpenFGA.Host, config.Config.OpenFGA.Port),
-	})
-	if err != nil {
-		panic(err)
+	fgaClient, fgaClientConn := acl.InitOpenFGAClient(ctx, config.Config.OpenFGA.Host, config.Config.OpenFGA.Port)
+	if fgaClientConn != nil {
+		defer fgaClientConn.Close()
 	}
-	var fgaReplicaClient *openfgaClient.OpenFgaClient
+	var fgaReplicaClient openfga.OpenFGAServiceClient
+	var fgaReplicaClientConn *grpc.ClientConn
 	if config.Config.OpenFGA.Replica.Host != "" {
 
-		fgaReplicaClient, err = openfgaClient.NewSdkClient(&openfgaClient.ClientConfiguration{
-			ApiScheme: "http",
-			ApiHost:   fmt.Sprintf("%s:%d", config.Config.OpenFGA.Replica.Host, config.Config.OpenFGA.Replica.Port),
-		})
-		if err != nil {
-			panic(err)
+		fgaReplicaClient, fgaReplicaClientConn = acl.InitOpenFGAClient(ctx, config.Config.OpenFGA.Replica.Host, config.Config.OpenFGA.Replica.Port)
+		if fgaReplicaClientConn != nil {
+			defer fgaReplicaClientConn.Close()
 		}
 	}
 
-	var aclClient acl.ACLClient
-	if stores, err := fgaClient.ListStores(context.Background()).Execute(); err == nil {
-		fgaClient.SetStoreId(*(*stores.Stores)[0].Id)
-		if fgaReplicaClient != nil {
-			fgaReplicaClient.SetStoreId(*(*stores.Stores)[0].Id)
-		}
-		if models, err := fgaClient.ReadAuthorizationModels(context.Background()).Execute(); err == nil {
-			aclClient = acl.NewACLClient(fgaClient, fgaReplicaClient, redisClient, (*models.AuthorizationModels)[0].Id)
-		}
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		panic(err)
-	}
+	aclClient := acl.NewACLClient(fgaClient, fgaReplicaClient, redisClient)
 
 	// Create tls based credential.
 	var creds credentials.TransportCredentials
@@ -255,10 +235,6 @@ func main() {
 	if mgmtPrivateServiceClientConn != nil {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
-	mgmtPublicServiceClient, mgmtPublicServiceClientConn := external.InitMgmtPublicServiceClient(ctx)
-	if mgmtPublicServiceClientConn != nil {
-		defer mgmtPublicServiceClientConn.Close()
-	}
 
 	influxDBClient, influxDBWriteClient := external.InitInfluxDBServiceClient(ctx)
 	defer influxDBClient.Close()
@@ -275,7 +251,6 @@ func main() {
 	service := service.NewService(
 		repository,
 		mgmtPrivateServiceClient,
-		mgmtPublicServiceClient,
 		redisClient,
 		temporalClient,
 		influxDBWriteClient,

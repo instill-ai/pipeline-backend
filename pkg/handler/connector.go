@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"strconv"
 
@@ -23,15 +22,12 @@ import (
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/sterr"
 
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -1164,128 +1160,4 @@ func (h *PublicHandler) testNamespaceConnector(ctx context.Context, req TestName
 	)))
 
 	return *statePtr, nil
-}
-
-type ExecuteNamespaceConnectorRequestInterface interface {
-	GetName() string
-	GetInputs() []*structpb.Struct
-	GetTask() string
-}
-
-func (h *PublicHandler) ExecuteUserConnector(ctx context.Context, req *pipelinePB.ExecuteUserConnectorRequest) (resp *pipelinePB.ExecuteUserConnectorResponse, err error) {
-	resp = &pipelinePB.ExecuteUserConnectorResponse{}
-	resp.Outputs, err = h.executeNamespaceConnector(ctx, req)
-	return resp, err
-}
-
-func (h *PublicHandler) ExecuteOrganizationConnector(ctx context.Context, req *pipelinePB.ExecuteOrganizationConnectorRequest) (resp *pipelinePB.ExecuteOrganizationConnectorResponse, err error) {
-	resp = &pipelinePB.ExecuteOrganizationConnectorResponse{}
-	resp.Outputs, err = h.executeNamespaceConnector(ctx, req)
-	return resp, err
-}
-
-func (h *PublicHandler) executeNamespaceConnector(ctx context.Context, req ExecuteNamespaceConnectorRequestInterface) (outputs []*structpb.Struct, err error) {
-
-	startTime := time.Now()
-	eventName := "ExecuteNamespaceConnector"
-
-	ctx, span := tracer.Start(ctx, eventName,
-		trace.WithSpanKind(trace.SpanKindServer))
-	defer span.End()
-
-	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
-
-	ns, connID, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, err
-	}
-	if err := authenticateUser(ctx, false); err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, err
-	}
-
-	connector, err := h.service.GetNamespaceConnectorByID(ctx, ns, connID, service.ViewFull, true)
-	if err != nil {
-		return nil, err
-	}
-	if connector.Tombstone {
-		st, _ := sterr.CreateErrorPreconditionFailure(
-			"ExecuteConnector",
-			[]*errdetails.PreconditionFailure_Violation{
-				{
-					Type:        "STATE",
-					Subject:     fmt.Sprintf("id %s", connID),
-					Description: "the connector definition is deprecated, you can not use it anymore",
-				},
-			})
-		return nil, st.Err()
-	}
-
-	var ownerType mgmtPB.OwnerType
-	switch ns.NsType {
-	case resource.Organization:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
-	case resource.User:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
-	default:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
-	}
-
-	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
-	dataPoint := utils.ConnectorUsageMetricData{
-		OwnerUID:               ns.NsUID.String(),
-		OwnerType:              ownerType,
-		UserUID:                userUID,
-		UserType:               mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
-		ConnectorID:            connector.Id,
-		ConnectorUID:           connector.Uid,
-		ConnectorExecuteUID:    logUUID.String(),
-		ConnectorDefinitionUID: connector.ConnectorDefinition.Uid,
-		ExecuteTime:            startTime.Format(time.RFC3339Nano),
-	}
-
-	md, _ := metadata.FromIncomingContext(ctx)
-
-	pipelineVal := &structpb.Value{}
-	if len(md.Get("id")) > 0 &&
-		len(md.Get("uid")) > 0 &&
-		len(md.Get("release_id")) > 0 &&
-		len(md.Get("release_uid")) > 0 &&
-		len(md.Get("owner")) > 0 &&
-		len(md.Get("trigger_id")) > 0 {
-		pipelineVal, _ = structpb.NewValue(map[string]interface{}{
-			"id":          md.Get("id")[0],
-			"uid":         md.Get("uid")[0],
-			"release_id":  md.Get("release_id")[0],
-			"release_uid": md.Get("release_uid")[0],
-			"owner":       md.Get("owner")[0],
-			"trigger_id":  md.Get("trigger_id")[0],
-		})
-	}
-
-	if outputs, err = h.service.Execute(ctx, ns, connID, req.GetTask(), req.GetInputs()); err != nil {
-		span.SetStatus(1, err.Error())
-		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-		dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
-		_ = h.service.WriteNewConnectorDataPoint(ctx, dataPoint, pipelineVal)
-		return nil, err
-	} else {
-
-		logger.Info(string(custom_otel.NewLogMessage(
-			ctx,
-			span,
-			logUUID.String(),
-			eventName,
-		)))
-		dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-		dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
-		if err := h.service.WriteNewConnectorDataPoint(ctx, dataPoint, pipelineVal); err != nil {
-			logger.Warn("usage and metric data write fail")
-		}
-	}
-	return outputs, nil
-
 }

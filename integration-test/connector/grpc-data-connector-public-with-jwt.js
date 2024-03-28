@@ -351,63 +351,6 @@ export function CheckRename(data) {
     });
 }
 
-export function CheckExecute(data) {
-
-    group(`Connector API: Write destination connectors [with random "Instill-User-Uid" header]`, () => {
-
-        client.connect(constant.pipelineGRPCPublicHost, {
-            plaintext: true
-        });
-
-        var csvDstConnector, resCSVDst, currentTime, timeoutTime
-
-        // Write classification output
-        csvDstConnector = {
-            "id": randomString(10),
-            "connector_definition_name": constant.csvDstDefRscName,
-            "description": randomString(50),
-            "configuration": {
-                "destination": "airbyte-destination-csv",
-                "destination_path": "/local/test-classification"
-            },
-        }
-
-        resCSVDst = client.invoke('vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector', {
-            parent: `${constant.namespace}`,
-            connector: csvDstConnector
-        }, data.metadata)
-
-        client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector', {
-            name: `${constant.namespace}/connectors/${csvDstConnector.id}`
-        }, data.metadata)
-
-        check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/WatchUserConnector', {
-            name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
-        }, data.metadata), {
-            "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV destination connector STATE_CONNECTED": (r) => r.message.state === "STATE_CONNECTED",
-        })
-
-        // Cannot write destination connector of a non-exist user
-        check(client.invoke('vdp.pipeline.v1beta.PipelinePublicService/ExecuteUserConnector', {
-            "name": `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`,
-            "inputs": constant.clsModelOutputs
-        }, constant.paramsGRPCWithJwt), {
-            [`[with random "Instill-User-Uid" header] vdp.pipeline.v1beta.PipelinePublicService/ExecuteUserConnector ${resCSVDst.message.connector.id} response (classification) StatusUnauthenticated`]: (r) => r.status === grpc.StatusUnauthenticated,
-        });
-
-        // Wait for 1 sec for the connector writing to the destination-csv before deleting it
-        sleep(1)
-
-        check(client.invoke(`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`, {
-            name: `${constant.namespace}/connectors/${resCSVDst.message.connector.id}`
-        }, data.metadata), {
-            [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector ${resCSVDst.message.connector.id} response (classification) StatusOK`]: (r) => r.status === grpc.StatusOK,
-        });
-
-        client.close();
-    });
-}
-
 export function CheckTest(data) {
 
     group(`Connector API: Test destination connectors' connection [with random "Instill-User-Uid" header]`, () => {

@@ -55,6 +55,7 @@ type Pipeline struct {
 	ShareCode         string
 	Metadata          datatypes.JSON `gorm:"type:jsonb"`
 	Readme            string
+	Releases          []*PipelineRelease
 }
 
 // PipelineRelease is the data model of the pipeline release table
