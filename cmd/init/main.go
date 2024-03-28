@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	_ "embed"
@@ -13,13 +12,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/launchdarkly/go-semver"
 	"github.com/redis/go-redis/v9"
-	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
@@ -117,62 +114,6 @@ func main() {
 
 		if err := updateComponentDefinition(ctx, cd, repo); err != nil {
 			log.Fatal(err)
-		}
-	}
-
-	fgaClient, fgaClientConn := acl.InitOpenFGAClient(ctx, config.Config.OpenFGA.Host, config.Config.OpenFGA.Port)
-	if fgaClientConn != nil {
-		defer fgaClientConn.Close()
-	}
-
-	aclClient := acl.NewACLClient(fgaClient, nil, redisClient)
-
-	var pipelines []*datamodel.Pipeline
-	var err error
-	pageToken := ""
-	for {
-		pipelines, _, pageToken, err = repo.ListPipelinesAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false, false)
-		if err != nil {
-			panic(err)
-		}
-		for _, pipeline := range pipelines {
-			nsType := strings.Split(pipeline.Owner, "/")[0]
-			nsType = nsType[0 : len(nsType)-1]
-			userUID, err := uuid.FromString(strings.Split(pipeline.Owner, "/")[1])
-			if err != nil {
-				panic(err)
-			}
-			err = aclClient.SetOwner(context.Background(), "pipeline", pipeline.UID, nsType, userUID)
-			if err != nil {
-				panic(err)
-			}
-		}
-		if pageToken == "" {
-			break
-		}
-	}
-
-	var connectors []*datamodel.Connector
-	pageToken = ""
-	for {
-		connectors, _, pageToken, err = repo.ListConnectorsAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false)
-		if err != nil {
-			panic(err)
-		}
-		for _, conn := range connectors {
-			nsType := strings.Split(conn.Owner, "/")[0]
-			nsType = nsType[0 : len(nsType)-1]
-			userUID, err := uuid.FromString(strings.Split(conn.Owner, "/")[1])
-			if err != nil {
-				panic(err)
-			}
-			err = aclClient.SetOwner(context.Background(), "connector", conn.UID, nsType, userUID)
-			if err != nil {
-				panic(err)
-			}
-		}
-		if pageToken == "" {
-			break
 		}
 	}
 

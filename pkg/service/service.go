@@ -219,18 +219,35 @@ func (s *service) convertOwnerPermalinkToName(ctx context.Context, permalink str
 }
 
 func (s *service) fetchOwnerByPermalink(ctx context.Context, permalink string) (*mgmtPB.Owner, error) {
+
+	key := fmt.Sprintf("owner_profile:%s", permalink)
+	if b, err := s.redisClient.Get(ctx, key).Bytes(); err == nil {
+		owner := &mgmtPB.Owner{}
+		if protojson.Unmarshal(b, owner) == nil {
+			return owner, nil
+		}
+	}
+
 	if strings.HasPrefix(permalink, "users") {
 		resp, err := s.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
 		if err != nil {
 			return nil, fmt.Errorf("fetchOwnerByPermalink error")
 		}
-		return &mgmtPB.Owner{Owner: &mgmtPB.Owner_User{User: resp.User}}, nil
+		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_User{User: resp.User}}
+		if b, err := protojson.Marshal(owner); err == nil {
+			s.redisClient.Set(ctx, key, b, 5*time.Minute)
+		}
+		return owner, nil
 	} else {
 		resp, err := s.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
 		if err != nil {
 			return nil, fmt.Errorf("fetchOwnerByPermalink error")
 		}
-		return &mgmtPB.Owner{Owner: &mgmtPB.Owner_Organization{Organization: resp.Organization}}, nil
+		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_Organization{Organization: resp.Organization}}
+		if b, err := protojson.Marshal(owner); err == nil {
+			s.redisClient.Set(ctx, key, b, 5*time.Minute)
+		}
+		return owner, nil
 
 	}
 }
