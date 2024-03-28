@@ -57,7 +57,6 @@ type Repository interface {
 	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByIDAdmin(ctx context.Context, id string, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
-	ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.PipelineRelease, int64, string, error)
 
 	ListConnectors(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
 	GetConnectorByUID(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
@@ -189,15 +188,16 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	if embedReleases {
+		releaseDB := r.checkPinnedUser(ctx, r.db, "pipeline")
 		releasesMap := map[uuid.UUID][]*datamodel.PipelineRelease{}
-		releaseRows, err := db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid in ?", pipelineUIDs).Order("create_time DESC, uid DESC").Rows()
+		releaseRows, err := releaseDB.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid in ?", pipelineUIDs).Order("create_time DESC, uid DESC").Rows()
 		if err != nil {
 			return nil, 0, "", err
 		}
 		defer releaseRows.Close()
 		for releaseRows.Next() {
 			var item datamodel.PipelineRelease
-			if err = db.ScanRows(releaseRows, &item); err != nil {
+			if err = releaseDB.ScanRows(releaseRows, &item); err != nil {
 				return nil, 0, "", err
 			}
 			pipelineUID := item.PipelineUID
@@ -277,14 +277,16 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 	}
 	if embedReleases {
 		pipeline.Releases = []*datamodel.PipelineRelease{}
-		releaseRows, err := db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipeline.UID).Order("create_time DESC, uid DESC").Rows()
+
+		releaseDB := r.checkPinnedUser(ctx, r.db, "pipeline")
+		releaseRows, err := releaseDB.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipeline.UID).Order("create_time DESC, uid DESC").Rows()
 		if err != nil {
 			return nil, err
 		}
 		defer releaseRows.Close()
 		for releaseRows.Next() {
 			var item datamodel.PipelineRelease
-			if err = db.ScanRows(releaseRows, &item); err != nil {
+			if err = releaseDB.ScanRows(releaseRows, &item); err != nil {
 				return nil, err
 			}
 			pipelineRelease := item
@@ -462,80 +464,6 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 		db := r.checkPinnedUser(ctx, r.db, "pipeline_release")
 		if result := db.Model(&datamodel.PipelineRelease{}).
 			Where("pipeline_uid = ?", pipelineUID).
-			Order("create_time ASC, uid ASC").
-			Limit(1).Find(lastItem); result.Error != nil {
-			return nil, 0, "", err
-		}
-		if lastItem.UID.String() == lastUID.String() {
-			nextPageToken = ""
-		} else {
-			nextPageToken = paginate.EncodeToken(createTime, lastUID.String())
-		}
-	}
-
-	return pipelineReleases, totalSize, nextPageToken, nil
-}
-
-func (r *repository) ListPipelineReleasesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (pipelineReleases []*datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
-
-	db := r.checkPinnedUser(ctx, r.db, "pipeline_release")
-
-	if showDeleted {
-		db = db.Unscoped()
-	}
-
-	if result := db.Model(&datamodel.PipelineRelease{}).Count(&totalSize); result.Error != nil {
-		return nil, 0, "", err
-	}
-
-	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Order("create_time DESC, uid DESC")
-
-	if pageSize == 0 {
-		pageSize = DefaultPageSize
-	} else if pageSize > MaxPageSize {
-		pageSize = MaxPageSize
-	}
-
-	queryBuilder = queryBuilder.Limit(int(pageSize))
-
-	if pageToken != "" {
-		createTime, uid, err := paginate.DecodeToken(pageToken)
-		if err != nil {
-			return nil, 0, "", ErrPageTokenDecode
-		}
-		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
-	}
-
-	if isBasicView {
-		queryBuilder.Omit("pipeline.recipe")
-	}
-
-	if expr, err := r.transpileFilter(filter); err != nil {
-		return nil, 0, "", err
-	} else if expr != nil {
-		queryBuilder.Clauses(expr)
-	}
-
-	var createTime time.Time
-	rows, err := queryBuilder.Rows()
-	if err != nil {
-		return nil, 0, "", err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var item *datamodel.PipelineRelease
-		if err = db.ScanRows(rows, &item); err != nil {
-			return nil, 0, "", err
-		}
-		createTime = item.CreateTime
-		pipelineReleases = append(pipelineReleases, item)
-	}
-
-	if len(pipelineReleases) > 0 {
-		lastUID := (pipelineReleases)[len(pipelineReleases)-1].UID
-		lastItem := &datamodel.PipelineRelease{}
-		db := r.checkPinnedUser(ctx, r.db, "pipeline_release")
-		if result := db.Model(&datamodel.PipelineRelease{}).
 			Order("create_time ASC, uid ASC").
 			Limit(1).Find(lastItem); result.Error != nil {
 			return nil, 0, "", err

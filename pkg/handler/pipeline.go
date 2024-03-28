@@ -99,44 +99,6 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelineP
 	return &resp, nil
 }
 
-func (h *PrivateHandler) ListPipelineReleasesAdmin(ctx context.Context, req *pipelinePB.ListPipelineReleasesAdminRequest) (*pipelinePB.ListPipelineReleasesAdminResponse, error) {
-
-	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
-		filtering.DeclareStandardFunctions(),
-		filtering.DeclareFunction("time.now", filtering.NewFunctionOverload("time.now", filtering.TypeTimestamp)),
-		filtering.DeclareIdent("q", filtering.TypeString),
-		filtering.DeclareIdent("uid", filtering.TypeString),
-		filtering.DeclareIdent("id", filtering.TypeString),
-		filtering.DeclareIdent("description", filtering.TypeString),
-		// only support "recipe.components.resource_name" for now
-		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
-		filtering.DeclareIdent("owner", filtering.TypeString),
-		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
-		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
-	}...)
-	if err != nil {
-		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
-	}
-
-	filter, err := filtering.ParseFilter(req, declarations)
-	if err != nil {
-		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
-	}
-
-	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListPipelineReleasesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
-	if err != nil {
-		return &pipelinePB.ListPipelineReleasesAdminResponse{}, err
-	}
-
-	resp := pipelinePB.ListPipelineReleasesAdminResponse{
-		Releases:      pbPipelineReleases,
-		NextPageToken: nextPageToken,
-		TotalSize:     int32(totalSize),
-	}
-
-	return &resp, nil
-}
-
 func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListPipelinesRequest) (*pipelinePB.ListPipelinesResponse, error) {
 
 	eventName := "ListPipelines"

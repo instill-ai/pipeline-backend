@@ -918,7 +918,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	go func() {
 		defer wg.Done()
-		pbReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline.Releases, ViewFull)
+		pbReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline, dbPipeline.Releases, ViewFull)
 		if err != nil {
 			return
 		}
@@ -1049,14 +1049,10 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUID uuid.UU
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *datamodel.PipelineRelease, view View) (*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view View) (*pipelinePB.PipelineRelease, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, dbPipelineRelease.PipelineUID, true, false)
-	if err != nil {
-		return nil, err
-	}
 	owner, err := s.convertOwnerPermalinkToName(ctx, dbPipeline.Owner)
 	if err != nil {
 		return nil, err
@@ -1139,7 +1135,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease []*datamodel.PipelineRelease, view View) ([]*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view View) ([]*pipelinePB.PipelineRelease, error) {
 
 	type result struct {
 		idx     int
@@ -1156,6 +1152,7 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipelineRelease 
 			defer wg.Done()
 			pbRelease, err := s.DBToPBPipelineRelease(
 				ctx,
+				dbPipeline,
 				dbPipelineRelease[i],
 				view,
 			)
