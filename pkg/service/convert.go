@@ -780,6 +780,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		return nil, err
 	}
 
+	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 	fmt.Println(3334)
 	var pbRecipe *pipelinePB.Recipe
 
@@ -887,6 +888,10 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		if !checkPermission {
 			return
 		}
+		if strings.Split(dbPipeline.Owner, "/")[1] == ctxUserUID {
+			pbPipeline.Permission.CanEdit = true
+			return
+		}
 
 		canEdit, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
 		fmt.Println("ddd")
@@ -901,6 +906,10 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		defer wg.Done()
 		fmt.Println("ccc")
 		if !checkPermission {
+			return
+		}
+		if strings.Split(dbPipeline.Owner, "/")[1] == ctxUserUID {
+			pbPipeline.Permission.CanTrigger = true
 			return
 		}
 
