@@ -772,6 +772,7 @@ var ConnectorTypeToComponentType = map[pipelinePB.ConnectorType]pipelinePB.Compo
 // DBToPBPipeline converts db data model to protobuf data model
 func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view View, checkPermission bool) (*pipelinePB.Pipeline, error) {
 
+	fmt.Println(3333)
 	logger, _ := logger.GetZapLogger(ctx)
 
 	ownerName, err := s.convertOwnerPermalinkToName(ctx, dbPipeline.Owner)
@@ -779,6 +780,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		return nil, err
 	}
 
+	fmt.Println(3334)
 	var pbRecipe *pipelinePB.Recipe
 
 	var startComp *pipelinePB.Component
@@ -799,6 +801,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	}
 
+	fmt.Println(3335)
 	if view == ViewFull {
 		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
@@ -812,6 +815,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			}
 		}
 	}
+	fmt.Println(3336)
 
 	if pbRecipe != nil {
 		pbRecipe, err = s.recipePermalinkToName(ctx, pbRecipe)
@@ -820,6 +824,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 
+	fmt.Println(3337)
 	pbSharing := &pipelinePB.Sharing{}
 
 	b, err := json.Marshal(dbPipeline.Sharing)
@@ -827,6 +832,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		return nil, err
 	}
 
+	fmt.Println(3338)
 	err = protojson.Unmarshal(b, pbSharing)
 	if err != nil {
 		return nil, err
@@ -834,6 +840,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	if pbSharing != nil && pbSharing.ShareCode != nil {
 		pbSharing.ShareCode.Code = dbPipeline.ShareCode
 	}
+	fmt.Println(3339)
 
 	pbPipeline := pipelinePB.Pipeline{
 		Name:       fmt.Sprintf("%s/pipelines/%s", ownerName, dbPipeline.ID),
@@ -855,6 +862,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		OwnerName:   ownerName,
 	}
 
+	fmt.Println(33311)
 	var wg sync.WaitGroup
 	wg.Add(5)
 	go func() {
@@ -868,6 +876,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			pbPipeline.Owner = owner
 		}
 	}()
+
+	fmt.Println(333312)
 	pbPipeline.Permission = &pipelinePB.Permission{}
 	go func() {
 		defer wg.Done()
@@ -881,6 +891,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 		pbPipeline.Permission.CanEdit = canEdit
 	}()
+
+	fmt.Println(333313)
 	go func() {
 		defer wg.Done()
 		if !checkPermission {
@@ -894,6 +906,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		pbPipeline.Permission.CanTrigger = canTrigger
 	}()
 
+	fmt.Println(333314)
 	if view != ViewBasic {
 		if dbPipeline.Metadata != nil {
 			str := structpb.Struct{}
@@ -905,6 +918,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		}
 	}
 
+	fmt.Println(33315)
 	go func() {
 		defer wg.Done()
 		if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
@@ -915,7 +929,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			pbPipeline.DataSpecification = spec
 		}
 	}()
-
+	fmt.Println(333316)
 	go func() {
 		defer wg.Done()
 		pbReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline, dbPipeline.Releases, ViewFull)
@@ -927,12 +941,14 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	wg.Wait()
 
+	fmt.Println(333318)
 	pbPipeline.Visibility = pipelinePB.Pipeline_VISIBILITY_PRIVATE
 	if u, ok := pbPipeline.Sharing.Users["*/*"]; ok {
 		if u.Enabled {
 			pbPipeline.Visibility = pipelinePB.Pipeline_VISIBILITY_PUBLIC
 		}
 	}
+	fmt.Println(333319)
 	return &pbPipeline, nil
 }
 

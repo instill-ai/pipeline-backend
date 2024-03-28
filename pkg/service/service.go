@@ -581,6 +581,7 @@ func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int32, pageTo
 
 func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, view View) (*pipelinePB.Pipeline, error) {
 
+	fmt.Println(11)
 	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, view == ViewBasic, true)
@@ -588,13 +589,17 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 		return nil, ErrNotFound
 	}
 
+	fmt.Println(22)
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
 		return nil, ErrNotFound
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, view, true)
+	fmt.Println(33)
+	a, b := s.DBToPBPipeline(ctx, dbPipeline, view, true)
+	fmt.Println(44)
+	return a, b
 }
 
 func (s *service) GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns resource.Namespace, id string) (uuid.UUID, error) {
