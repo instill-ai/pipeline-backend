@@ -16,7 +16,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
-	"go.einride.tech/aip/filtering"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -919,21 +918,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	go func() {
 		defer wg.Done()
-		releases := []*datamodel.PipelineRelease{}
-		pageToken := ""
-		for {
-			var page []*datamodel.PipelineRelease
-			page, _, pageToken, err = s.repository.ListNamespacePipelineReleases(ctx, dbPipeline.Owner, dbPipeline.UID, 100, pageToken, false, filtering.Filter{}, false, false)
-			if err != nil {
-				return
-			}
-			releases = append(releases, page...)
-			if pageToken == "" {
-				break
-			}
-		}
-
-		pbReleases, err := s.DBToPBPipelineReleases(ctx, releases, ViewFull)
+		pbReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline.Releases, ViewFull)
 		if err != nil {
 			return
 		}
@@ -1068,7 +1053,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipelineRelease *
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, dbPipelineRelease.PipelineUID, true)
+	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, dbPipelineRelease.PipelineUID, true, false)
 	if err != nil {
 		return nil, err
 	}

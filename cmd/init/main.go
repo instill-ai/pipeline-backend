@@ -131,7 +131,7 @@ func main() {
 	var err error
 	pageToken := ""
 	for {
-		pipelines, _, pageToken, err = repo.ListPipelinesAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false)
+		pipelines, _, pageToken, err = repo.ListPipelinesAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false, false)
 		if err != nil {
 			panic(err)
 		}
