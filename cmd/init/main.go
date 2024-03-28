@@ -18,8 +18,6 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
-	openfgaClient "github.com/openfga/go-sdk/client"
-
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -122,33 +120,18 @@ func main() {
 		}
 	}
 
-	fgaClient, err := openfgaClient.NewSdkClient(&openfgaClient.ClientConfiguration{
-		ApiScheme: "http",
-		ApiHost:   fmt.Sprintf("%s:%d", config.Config.OpenFGA.Host, config.Config.OpenFGA.Port),
-	})
-
-	if err != nil {
-		panic(err)
+	fgaClient, fgaClientConn := acl.InitOpenFGAClient(ctx, config.Config.OpenFGA.Host, config.Config.OpenFGA.Port)
+	if fgaClientConn != nil {
+		defer fgaClientConn.Close()
 	}
 
-	var aclClient acl.ACLClient
-	if stores, err := fgaClient.ListStores(context.Background()).Execute(); err == nil {
-		fgaClient.SetStoreId(*(*stores.Stores)[0].Id)
-		if models, err := fgaClient.ReadAuthorizationModels(context.Background()).Execute(); err == nil {
-			aclClient = acl.NewACLClient(fgaClient, nil, redisClient, (*models.AuthorizationModels)[0].Id)
-		}
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		panic(err)
-	}
+	aclClient := acl.NewACLClient(fgaClient, nil, redisClient)
 
 	var pipelines []*datamodel.Pipeline
+	var err error
 	pageToken := ""
 	for {
-		pipelines, _, pageToken, err = repo.ListPipelinesAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false)
+		pipelines, _, pageToken, err = repo.ListPipelinesAdmin(context.Background(), 100, pageToken, true, filtering.Filter{}, false, false)
 		if err != nil {
 			panic(err)
 		}

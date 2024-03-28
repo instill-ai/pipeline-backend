@@ -78,4 +78,4 @@ modelbackend:
     key:
 openfga:
   host: openfga
-  port: 8080
+  port: 8081

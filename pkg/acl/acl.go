@@ -9,9 +9,10 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/redis/go-redis/v9"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
-	openfga "github.com/openfga/go-sdk"
-	openfgaClient "github.com/openfga/go-sdk/client"
+	openfga "github.com/openfga/api/proto/openfga/v1"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
@@ -20,10 +21,11 @@ import (
 )
 
 type ACLClient struct {
-	writeClient          *openfgaClient.OpenFgaClient
-	readClient           *openfgaClient.OpenFgaClient
+	writeClient          openfga.OpenFGAServiceClient
+	readClient           openfga.OpenFGAServiceClient
 	redisClient          *redis.Client
-	authorizationModelID *string
+	authorizationModelID string
+	storeID              string
 }
 
 type Relation struct {
@@ -38,31 +40,56 @@ const (
 	WriteMode Mode = "write"
 )
 
-func NewACLClient(wc *openfgaClient.OpenFgaClient, rc *openfgaClient.OpenFgaClient, redisClient *redis.Client, a *string) ACLClient {
+func NewACLClient(wc openfga.OpenFGAServiceClient, rc openfga.OpenFGAServiceClient, redisClient *redis.Client) ACLClient {
 	if rc == nil {
 		rc = wc
 	}
+	storeResp, err := wc.ListStores(context.Background(), &openfga.ListStoresRequest{})
+	if err != nil {
+		panic(err)
+	}
+	storeID := storeResp.Stores[0].Id
+
+	modelResp, err := wc.ReadAuthorizationModels(context.Background(), &openfga.ReadAuthorizationModelsRequest{
+		StoreId: storeID,
+	})
+	if err != nil {
+		panic(err)
+	}
+	modelID := modelResp.AuthorizationModels[0].Id
 
 	return ACLClient{
 		writeClient:          wc,
 		readClient:           rc,
 		redisClient:          redisClient,
-		authorizationModelID: a,
+		authorizationModelID: modelID,
+		storeID:              storeID,
 	}
 }
 
-func (c *ACLClient) getClient(ctx context.Context, mode Mode) *openfgaClient.OpenFgaClient {
+func InitOpenFGAClient(ctx context.Context, host string, port int) (openfga.OpenFGAServiceClient, *grpc.ClientConn) {
+	clientDialOpts := grpc.WithTransportCredentials(insecure.NewCredentials())
+
+	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", host, port), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
+	if err != nil {
+		panic(err)
+	}
+
+	return openfga.NewOpenFGAServiceClient(clientConn), clientConn
+}
+
+func (c *ACLClient) getClient(ctx context.Context, mode Mode) openfga.OpenFGAServiceClient {
 	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 
 	if mode == WriteMode {
 		// To solve the read-after-write inconsistency problem,
 		// we will direct the user to read from the primary database for a certain time frame
 		// to ensure that the data is synchronized from the primary DB to the replica DB.
-		_ = c.redisClient.Set(ctx, fmt.Sprintf("db_pin_user:%s", userUID), time.Now(), time.Duration(config.Config.OpenFGA.Replica.ReplicationTimeFrame)*time.Second)
+		_ = c.redisClient.Set(ctx, fmt.Sprintf("db_pin_user:%s:openfga", userUID), time.Now(), time.Duration(config.Config.OpenFGA.Replica.ReplicationTimeFrame)*time.Second)
 	}
 
 	// If the user is pinned, we will use the primary database for querying.
-	if !errors.Is(c.redisClient.Get(ctx, fmt.Sprintf("db_pin_user:%s", userUID)).Err(), redis.Nil) {
+	if !errors.Is(c.redisClient.Get(ctx, fmt.Sprintf("db_pin_user:%s:openfga", userUID)).Err(), redis.Nil) {
 		return c.writeClient
 	}
 	if mode == ReadMode {
@@ -73,35 +100,35 @@ func (c *ACLClient) getClient(ctx context.Context, mode Mode) *openfgaClient.Ope
 
 func (c *ACLClient) SetOwner(ctx context.Context, objectType string, objectUID uuid.UUID, ownerType string, ownerUID uuid.UUID) error {
 	var err error
-	readOptions := openfgaClient.ClientReadOptions{}
-	writeOptions := openfgaClient.ClientWriteOptions{
-		AuthorizationModelId: c.authorizationModelID,
-	}
 
-	readBody := openfgaClient.ClientReadRequest{
-		User:     openfga.PtrString(fmt.Sprintf("%s:%s", ownerType, ownerUID.String())),
-		Relation: openfga.PtrString("owner"),
-		Object:   openfga.PtrString(fmt.Sprintf("%s:%s", objectType, objectUID.String())),
-	}
-
-	data, err := c.getClient(ctx, ReadMode).Read(ctx).Body(readBody).Options(readOptions).Execute()
+	data, err := c.getClient(ctx, ReadMode).Read(ctx, &openfga.ReadRequest{
+		StoreId: c.storeID,
+		TupleKey: &openfga.ReadRequestTupleKey{
+			User:     fmt.Sprintf("%s:%s", ownerType, ownerUID.String()),
+			Relation: "owner",
+			Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
+		},
+	})
 	if err != nil {
 		return err
 	}
-	if len(*data.Tuples) > 0 {
+	if len(data.Tuples) > 0 {
 		return nil
 	}
 
-	writeBody := openfgaClient.ClientWriteRequest{
-		Writes: &[]openfgaClient.ClientTupleKey{
-			{
-				User:     fmt.Sprintf("%s:%s", ownerType, ownerUID.String()),
-				Relation: "owner",
-				Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
-			}},
-	}
-
-	_, err = c.getClient(ctx, WriteMode).Write(ctx).Body(writeBody).Options(writeOptions).Execute()
+	_, err = c.getClient(ctx, WriteMode).Write(ctx, &openfga.WriteRequest{
+		StoreId:              c.storeID,
+		AuthorizationModelId: c.authorizationModelID,
+		Writes: &openfga.WriteRequestWrites{
+			TupleKeys: []*openfga.TupleKey{
+				{
+					User:     fmt.Sprintf("%s:%s", ownerType, ownerUID.String()),
+					Relation: "owner",
+					Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
+				},
+			},
+		},
+	})
 	if err != nil {
 		return err
 	}
@@ -157,23 +184,23 @@ func (c *ACLClient) SetPipelinePermissionMap(ctx context.Context, pipeline *data
 
 func (c *ACLClient) SetPipelinePermission(ctx context.Context, pipelineUID uuid.UUID, user string, role string, enable bool) error {
 	var err error
-	options := openfgaClient.ClientWriteOptions{
-		AuthorizationModelId: c.authorizationModelID,
-	}
-
 	_ = c.DeletePipelinePermission(ctx, pipelineUID, user)
 
 	if enable {
-		body := openfgaClient.ClientWriteRequest{
-			Writes: &[]openfgaClient.ClientTupleKey{
-				{
-					User:     user,
-					Relation: role,
-					Object:   fmt.Sprintf("pipeline:%s", pipelineUID.String()),
-				}},
-		}
 
-		_, err = c.getClient(ctx, WriteMode).Write(ctx).Body(body).Options(options).Execute()
+		_, err = c.getClient(ctx, WriteMode).Write(ctx, &openfga.WriteRequest{
+			StoreId:              c.storeID,
+			AuthorizationModelId: c.authorizationModelID,
+			Writes: &openfga.WriteRequestWrites{
+				TupleKeys: []*openfga.TupleKey{
+					{
+						User:     user,
+						Relation: role,
+						Object:   fmt.Sprintf("pipeline:%s", pipelineUID.String()),
+					},
+				},
+			},
+		})
 		if err != nil {
 			return err
 		}
@@ -183,20 +210,22 @@ func (c *ACLClient) SetPipelinePermission(ctx context.Context, pipelineUID uuid.
 }
 
 func (c *ACLClient) DeletePipelinePermission(ctx context.Context, pipelineUID uuid.UUID, user string) error {
-	// var err error
-	options := openfgaClient.ClientWriteOptions{
-		AuthorizationModelId: c.authorizationModelID,
-	}
 
 	for _, role := range []string{"admin", "writer", "executor", "reader"} {
-		body := openfgaClient.ClientWriteRequest{
-			Deletes: &[]openfgaClient.ClientTupleKey{
-				{
-					User:     user,
-					Relation: role,
-					Object:   fmt.Sprintf("pipeline:%s", pipelineUID.String()),
-				}}}
-		_, _ = c.getClient(ctx, WriteMode).Write(ctx).Body(body).Options(options).Execute()
+
+		_, _ = c.getClient(ctx, WriteMode).Write(ctx, &openfga.WriteRequest{
+			StoreId:              c.storeID,
+			AuthorizationModelId: c.authorizationModelID,
+			Deletes: &openfga.WriteRequestDeletes{
+				TupleKeys: []*openfga.TupleKeyWithoutCondition{
+					{
+						User:     user,
+						Relation: role,
+						Object:   fmt.Sprintf("pipeline:%s", pipelineUID.String()),
+					},
+				},
+			},
+		})
 
 	}
 
@@ -204,28 +233,30 @@ func (c *ACLClient) DeletePipelinePermission(ctx context.Context, pipelineUID uu
 }
 
 func (c *ACLClient) Purge(ctx context.Context, objectType string, objectUID uuid.UUID) error {
-	readOptions := openfgaClient.ClientReadOptions{}
-	writeOptions := openfgaClient.ClientWriteOptions{
-		AuthorizationModelId: c.authorizationModelID,
-	}
 
-	readBody := openfgaClient.ClientReadRequest{
-		Object: openfga.PtrString(fmt.Sprintf("%s:%s", objectType, objectUID)),
-	}
-	resp, err := c.getClient(ctx, ReadMode).Read(ctx).Body(readBody).Options(readOptions).Execute()
+	data, err := c.getClient(ctx, ReadMode).Read(ctx, &openfga.ReadRequest{
+		StoreId: c.storeID,
+		TupleKey: &openfga.ReadRequestTupleKey{
+			Object: fmt.Sprintf("%s:%s", objectType, objectUID),
+		},
+	})
 	if err != nil {
 		return err
 	}
-	for _, data := range *resp.Tuples {
-		body := openfgaClient.ClientWriteRequest{
-			Deletes: &[]openfgaClient.ClientTupleKey{
-				{
-					User:     *data.Key.User,
-					Relation: *data.Key.Relation,
-					Object:   *data.Key.Object,
-				}}}
-		_, err := c.getClient(ctx, WriteMode).Write(ctx).Body(body).Options(writeOptions).Execute()
-
+	for _, data := range data.Tuples {
+		_, err = c.getClient(ctx, WriteMode).Write(ctx, &openfga.WriteRequest{
+			StoreId:              c.storeID,
+			AuthorizationModelId: c.authorizationModelID,
+			Deletes: &openfga.WriteRequestDeletes{
+				TupleKeys: []*openfga.TupleKeyWithoutCondition{
+					{
+						User:     data.Key.User,
+						Relation: data.Key.Relation,
+						Object:   data.Key.Object,
+					},
+				},
+			},
+		})
 		if err != nil {
 			return err
 		}
@@ -236,10 +267,6 @@ func (c *ACLClient) Purge(ctx context.Context, objectType string, objectUID uuid
 
 func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, objectUID uuid.UUID, role string) (bool, error) {
 
-	options := openfgaClient.ClientCheckOptions{
-		AuthorizationModelId: c.authorizationModelID,
-	}
-
 	userType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
 	userUID := ""
 	if userType == "user" {
@@ -249,55 +276,55 @@ func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, obje
 	}
 	code := resource.GetRequestSingleHeader(ctx, constant.HeaderInstillCodeKey)
 
-	body := openfgaClient.ClientCheckRequest{
-		User:     fmt.Sprintf("%s:%s", userType, userUID),
-		Relation: role,
-		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
-	}
-	data, err := c.getClient(ctx, ReadMode).Check(ctx).Body(body).Options(options).Execute()
+	data, err := c.getClient(ctx, ReadMode).Check(ctx, &openfga.CheckRequest{
+		StoreId:              c.storeID,
+		AuthorizationModelId: c.authorizationModelID,
+		TupleKey: &openfga.CheckRequestTupleKey{
+			User:     fmt.Sprintf("%s:%s", userType, userUID),
+			Relation: role,
+			Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
+		},
+	})
 	if err != nil {
 		return false, err
 	}
-	if *data.Allowed {
-		return *data.Allowed, nil
+	if data.Allowed {
+		return data.Allowed, nil
 	}
 
 	if code == "" {
 		return false, nil
 	}
-	body = openfgaClient.ClientCheckRequest{
-		User:     fmt.Sprintf("code:%s", code),
-		Relation: role,
-		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
-	}
-	data, err = c.getClient(ctx, ReadMode).Check(ctx).Body(body).Options(options).Execute()
-
+	data, err = c.getClient(ctx, ReadMode).Check(ctx, &openfga.CheckRequest{
+		StoreId:              c.storeID,
+		AuthorizationModelId: c.authorizationModelID,
+		TupleKey: &openfga.CheckRequestTupleKey{
+			User:     fmt.Sprintf("code:%s", code),
+			Relation: role,
+			Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
+		},
+	})
 	if err != nil {
 		return false, err
 	}
-	return *data.Allowed, nil
+	return data.Allowed, nil
 }
 
 // TODO refactor
 func (c *ACLClient) CheckPublicExecutable(ctx context.Context, objectType string, objectUID uuid.UUID) (bool, error) {
-
-	options := openfgaClient.ClientCheckOptions{
+	data, err := c.getClient(ctx, ReadMode).Check(ctx, &openfga.CheckRequest{
+		StoreId:              c.storeID,
 		AuthorizationModelId: c.authorizationModelID,
-	}
-	body := openfgaClient.ClientCheckRequest{
-		User:     "user:*",
-		Relation: "executor",
-		Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
-	}
-	data, err := c.getClient(ctx, ReadMode).Check(ctx).Body(body).Options(options).Execute()
+		TupleKey: &openfga.CheckRequestTupleKey{
+			User:     "user:*",
+			Relation: "executor",
+			Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
+		},
+	})
 	if err != nil {
 		return false, err
 	}
-	if *data.Allowed {
-		return *data.Allowed, nil
-	}
-
-	return *data.Allowed, nil
+	return data.Allowed, nil
 }
 
 func (c *ACLClient) ListPermissions(ctx context.Context, objectType string, role string, isPublic bool) ([]uuid.UUID, error) {
@@ -311,23 +338,21 @@ func (c *ACLClient) ListPermissions(ctx context.Context, objectType string, role
 		userUIDStr = resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey)
 	}
 
-	options := openfgaClient.ClientListObjectsOptions{
-		AuthorizationModelId: c.authorizationModelID,
-	}
-
 	if isPublic {
 		userUIDStr = "*"
 	}
 
-	body := openfgaClient.ClientListObjectsRequest{
-		User:     fmt.Sprintf("%s:%s", userType, userUIDStr),
-		Relation: role,
-		Type:     objectType,
-	}
-	listObjectsResult, err := c.getClient(ctx, ReadMode).ListObjects(ctx).Body(body).Options(options).Execute()
+	listObjectsResult, err := c.getClient(ctx, ReadMode).ListObjects(ctx, &openfga.ListObjectsRequest{
+		StoreId:              c.storeID,
+		AuthorizationModelId: c.authorizationModelID,
+		User:                 fmt.Sprintf("%s:%s", userType, userUIDStr),
+		Relation:             role,
+		Type:                 objectType,
+	})
 	if err != nil {
 		return nil, err
 	}
+
 	objectUIDs := []uuid.UUID{}
 	for _, object := range listObjectsResult.GetObjects() {
 		objectUIDs = append(objectUIDs, uuid.FromStringOrNil(strings.Split(object, ":")[1]))
