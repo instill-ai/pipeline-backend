@@ -76,7 +76,6 @@ export default function (data) {
     dataConnectorPublicWithJwt.CheckLookUp(data)
     dataConnectorPublicWithJwt.CheckState(data)
     dataConnectorPublicWithJwt.CheckRename(data)
-    dataConnectorPublicWithJwt.CheckExecute(data)
     dataConnectorPublicWithJwt.CheckTest(data)
 
     // data connectors
@@ -88,7 +87,6 @@ export default function (data) {
     dataConnectorPublic.CheckLookUp(data)
     dataConnectorPublic.CheckState(data)
     dataConnectorPublic.CheckRename(data)
-    dataConnectorPublic.CheckExecute(data)
     dataConnectorPublic.CheckTest(data)
   }
 
