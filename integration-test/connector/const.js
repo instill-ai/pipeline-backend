@@ -39,7 +39,7 @@ export const mySQLDstDefRscPermalink = "connector-definitions/975678a2-5117-48a4
 
 export const namespace = "users/admin"
 export const defaultUsername = "admin"
-export const defaultPassword = "11111111"
+export const defaultPassword = "password"
 
 
 export const csvDstConfig = {

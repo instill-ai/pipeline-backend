@@ -18,7 +18,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
 )
 
 type ACLClient struct {
@@ -69,14 +68,11 @@ func NewACLClient(wc openfga.OpenFGAServiceClient, rc openfga.OpenFGAServiceClie
 }
 
 func InitOpenFGAClient(ctx context.Context, host string, port int) (openfga.OpenFGAServiceClient, *grpc.ClientConn) {
-	logger, _ := logger.GetZapLogger(ctx)
-
 	clientDialOpts := grpc.WithTransportCredentials(insecure.NewCredentials())
 
 	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", host, port), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
 	if err != nil {
-		logger.Error(err.Error())
-		return nil, nil
+		panic(err)
 	}
 
 	return openfga.NewOpenFGAServiceClient(clientConn), clientConn
