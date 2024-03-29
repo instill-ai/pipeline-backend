@@ -44,281 +44,162 @@ func parseView(i int32) View {
 
 func (s *service) recipeNameToPermalink(ctx context.Context, recipeRscName *pipelinePB.Recipe) (*pipelinePB.Recipe, error) {
 
-	recipePermalink := &pipelinePB.Recipe{
-		Version:    recipeRscName.Version,
-		Components: make([]*pipelinePB.Component, len(recipeRscName.Components)),
-	}
-
-	type result struct {
-		idx       int
-		component *pipelinePB.Component
-		err       error
-	}
-	ch := make(chan result)
-	var wg sync.WaitGroup
-	wg.Add(len(recipeRscName.Components))
-
-	for idx := range recipeRscName.Components {
-
-		go func(i int, component *pipelinePB.Component) {
-			defer wg.Done()
-			componentPermalink := &pipelinePB.Component{
-				Id:        component.Id,
-				Metadata:  component.Metadata,
-				Component: component.Component,
-			}
-
-			switch component.Component.(type) {
-			case *pipelinePB.Component_ConnectorComponent:
-				connectorName := component.GetConnectorComponent().ConnectorName
-				if connectorName != "" {
-					connectorNameSplits := strings.Split(connectorName, "/")
-					if len(connectorNameSplits) == 4 && (connectorNameSplits[0] == "users" || connectorNameSplits[0] == "organizations") && connectorNameSplits[2] == "connectors" {
-						permalink, err := s.connectorNameToPermalink(ctx, component.GetConnectorComponent().ConnectorName)
-						if err != nil {
-							ch <- result{
-								idx:       i,
-								component: nil,
-								err:       ErrConnectorNotFound,
-							}
-							return
-						}
-						componentPermalink.GetConnectorComponent().ConnectorName = permalink
-					} else {
-						ch <- result{
-							idx:       i,
-							component: nil,
-							err:       fmt.Errorf("%s %v", connectorName, ErrConnectorNameError),
-						}
-						return
-					}
-				}
-				defPermalink, err := s.connectorDefinitionNameToPermalink(ctx, component.GetConnectorComponent().DefinitionName)
-				if err != nil {
-					ch <- result{
-						idx:       i,
-						component: nil,
-						err:       err,
-					}
-					return
-				}
-				componentPermalink.GetConnectorComponent().DefinitionName = defPermalink
-			case *pipelinePB.Component_OperatorComponent:
-				defPermalink, err := s.operatorDefinitionNameToPermalink(ctx, component.GetOperatorComponent().DefinitionName)
-				if err != nil {
-					ch <- result{
-						idx:       i,
-						component: nil,
-						err:       err,
-					}
-					return
-				}
-				componentPermalink.GetOperatorComponent().DefinitionName = defPermalink
-			case *pipelinePB.Component_IteratorComponent:
-				nestedComponentPermalinks := []*pipelinePB.NestedComponent{}
-				for _, nestedComponent := range componentPermalink.GetIteratorComponent().Components {
-
-					nestedComponentPermalink := &pipelinePB.NestedComponent{
-						Id:        nestedComponent.Id,
-						Metadata:  nestedComponent.Metadata,
-						Component: nestedComponent.Component,
-					}
-
-					switch nestedComponent.Component.(type) {
-					case *pipelinePB.NestedComponent_ConnectorComponent:
-						connectorName := nestedComponent.GetConnectorComponent().ConnectorName
-						if connectorName != "" {
-							connectorNameSplits := strings.Split(connectorName, "/")
-							if len(connectorNameSplits) == 4 && (connectorNameSplits[0] == "users" || connectorNameSplits[0] == "organizations") && connectorNameSplits[2] == "connectors" {
-								permalink, err := s.connectorNameToPermalink(ctx, nestedComponent.GetConnectorComponent().ConnectorName)
-								if err != nil {
-									ch <- result{
-										idx:       i,
-										component: nil,
-										err:       ErrConnectorNotFound,
-									}
-									return
-								}
-								nestedComponentPermalink.GetConnectorComponent().ConnectorName = permalink
-							} else {
-								ch <- result{
-									idx:       i,
-									component: nil,
-									err:       fmt.Errorf("%s %v", connectorName, ErrConnectorNameError),
-								}
-								return
-							}
-
-						}
-						defPermalink, err := s.connectorDefinitionNameToPermalink(ctx, nestedComponent.GetConnectorComponent().DefinitionName)
-						if err != nil {
-							ch <- result{
-								idx:       i,
-								component: nil,
-								err:       err,
-							}
-							return
-						}
-						nestedComponentPermalink.GetConnectorComponent().DefinitionName = defPermalink
-						nestedComponentPermalinks = append(nestedComponentPermalinks, nestedComponentPermalink)
-					case *pipelinePB.NestedComponent_OperatorComponent:
-						defPermalink, err := s.operatorDefinitionNameToPermalink(ctx, nestedComponent.GetOperatorComponent().DefinitionName)
-						if err != nil {
-							ch <- result{
-								idx:       i,
-								component: nil,
-								err:       err,
-							}
-							return
-						}
-						nestedComponentPermalink.GetOperatorComponent().DefinitionName = defPermalink
-						nestedComponentPermalinks = append(nestedComponentPermalinks, nestedComponentPermalink)
-					}
-				}
-				componentPermalink.GetIteratorComponent().Components = nestedComponentPermalinks
-
-			}
-			ch <- result{
-				idx:       i,
-				component: componentPermalink,
-				err:       nil,
-			}
-
-		}(idx, recipeRscName.Components[idx])
-	}
-
-	for range recipeRscName.Components {
-		r := <-ch
-		if r.err != nil {
-			return nil, r.err
+	recipePermalink := &pipelinePB.Recipe{Version: recipeRscName.Version}
+	for _, component := range recipeRscName.Components {
+		componentPermalink := &pipelinePB.Component{
+			Id:        component.Id,
+			Metadata:  component.Metadata,
+			Component: component.Component,
 		}
-		recipePermalink.Components[r.idx] = r.component
-	}
 
+		switch component.Component.(type) {
+		case *pipelinePB.Component_ConnectorComponent:
+			connectorName := component.GetConnectorComponent().ConnectorName
+			if connectorName != "" {
+				connectorNameSplits := strings.Split(connectorName, "/")
+				if len(connectorNameSplits) == 4 && (connectorNameSplits[0] == "users" || connectorNameSplits[0] == "organizations") && connectorNameSplits[2] == "connectors" {
+					permalink, err := s.connectorNameToPermalink(ctx, component.GetConnectorComponent().ConnectorName)
+					if err != nil {
+						return nil, ErrConnectorNotFound
+					}
+					componentPermalink.GetConnectorComponent().ConnectorName = permalink
+				} else {
+					return nil, fmt.Errorf("%s %v", connectorName, ErrConnectorNameError)
+				}
+			}
+			defPermalink, err := s.connectorDefinitionNameToPermalink(ctx, component.GetConnectorComponent().DefinitionName)
+			if err != nil {
+				return nil, err
+			}
+			componentPermalink.GetConnectorComponent().DefinitionName = defPermalink
+		case *pipelinePB.Component_OperatorComponent:
+			defPermalink, err := s.operatorDefinitionNameToPermalink(ctx, component.GetOperatorComponent().DefinitionName)
+			if err != nil {
+				return nil, err
+			}
+			componentPermalink.GetOperatorComponent().DefinitionName = defPermalink
+		case *pipelinePB.Component_IteratorComponent:
+			nestedComponentPermalinks := []*pipelinePB.NestedComponent{}
+			for _, nestedComponent := range componentPermalink.GetIteratorComponent().Components {
+
+				nestedComponentPermalink := &pipelinePB.NestedComponent{
+					Id:        nestedComponent.Id,
+					Metadata:  nestedComponent.Metadata,
+					Component: nestedComponent.Component,
+				}
+
+				switch nestedComponent.Component.(type) {
+				case *pipelinePB.NestedComponent_ConnectorComponent:
+					connectorName := nestedComponent.GetConnectorComponent().ConnectorName
+					if connectorName != "" {
+						connectorNameSplits := strings.Split(connectorName, "/")
+						if len(connectorNameSplits) == 4 && (connectorNameSplits[0] == "users" || connectorNameSplits[0] == "organizations") && connectorNameSplits[2] == "connectors" {
+							permalink, err := s.connectorNameToPermalink(ctx, nestedComponent.GetConnectorComponent().ConnectorName)
+							if err != nil {
+								return nil, ErrConnectorNotFound
+							}
+							nestedComponentPermalink.GetConnectorComponent().ConnectorName = permalink
+						} else {
+							return nil, fmt.Errorf("%s %v", connectorName, ErrConnectorNameError)
+						}
+
+					}
+					defPermalink, err := s.connectorDefinitionNameToPermalink(ctx, nestedComponent.GetConnectorComponent().DefinitionName)
+					if err != nil {
+						return nil, err
+					}
+					nestedComponentPermalink.GetConnectorComponent().DefinitionName = defPermalink
+					nestedComponentPermalinks = append(nestedComponentPermalinks, nestedComponentPermalink)
+				case *pipelinePB.NestedComponent_OperatorComponent:
+					defPermalink, err := s.operatorDefinitionNameToPermalink(ctx, nestedComponent.GetOperatorComponent().DefinitionName)
+					if err != nil {
+						return nil, err
+					}
+					nestedComponentPermalink.GetOperatorComponent().DefinitionName = defPermalink
+					nestedComponentPermalinks = append(nestedComponentPermalinks, nestedComponentPermalink)
+				}
+			}
+			componentPermalink.GetIteratorComponent().Components = nestedComponentPermalinks
+
+		}
+
+		recipePermalink.Components = append(recipePermalink.Components, componentPermalink)
+	}
 	return recipePermalink, nil
 }
 
-func (s *service) recipePermalinkToName(ctx context.Context, recipePermalink *pipelinePB.Recipe) (*pipelinePB.Recipe, error) {
+func (s *service) recipePermalinkToName(ctx context.Context, recipePermalink *pipelinePB.Recipe, connectors map[uuid.UUID]*datamodel.Connector) (*pipelinePB.Recipe, error) {
 
-	recipe := &pipelinePB.Recipe{
-		Version:    recipePermalink.Version,
-		Components: make([]*pipelinePB.Component, len(recipePermalink.Components)),
-	}
+	recipe := &pipelinePB.Recipe{Version: recipePermalink.Version}
 
-	type result struct {
-		idx       int
-		component *pipelinePB.Component
-		err       error
-	}
-	ch := make(chan result)
-	var wg sync.WaitGroup
-	wg.Add(len(recipePermalink.Components))
-
-	for idx := range recipePermalink.Components {
-
-		go func(i int, componentPermalink *pipelinePB.Component) {
-			defer wg.Done()
-			component := &pipelinePB.Component{
-				Id:        componentPermalink.Id,
-				Metadata:  componentPermalink.Metadata,
-				Component: componentPermalink.Component,
-			}
-
-			switch component.Component.(type) {
-			case *pipelinePB.Component_ConnectorComponent:
-				if componentPermalink.GetConnectorComponent().ConnectorName != "" {
-					name, err := s.connectorPermalinkToName(ctx, componentPermalink.GetConnectorComponent().ConnectorName)
-					if err != nil {
-						// Allow the connector to not exist instead of returning an error.
-						component.GetConnectorComponent().ConnectorName = ""
-					} else {
-						component.GetConnectorComponent().ConnectorName = name
-					}
-				}
-				defName, err := s.connectorDefinitionPermalinkToName(ctx, componentPermalink.GetConnectorComponent().DefinitionName)
-				if err != nil {
-					ch <- result{
-						idx:       i,
-						component: nil,
-						err:       err,
-					}
-					return
-				}
-				component.GetConnectorComponent().DefinitionName = defName
-			case *pipelinePB.Component_OperatorComponent:
-				defName, err := s.operatorDefinitionPermalinkToName(ctx, componentPermalink.GetOperatorComponent().DefinitionName)
-				if err != nil {
-					ch <- result{
-						idx:       i,
-						component: nil,
-						err:       err,
-					}
-					return
-				}
-				component.GetOperatorComponent().DefinitionName = defName
-			case *pipelinePB.Component_IteratorComponent:
-				nestedComponents := []*pipelinePB.NestedComponent{}
-				for _, nestedComponentPermalink := range componentPermalink.GetIteratorComponent().Components {
-					nestedComponent := &pipelinePB.NestedComponent{
-						Id:        nestedComponentPermalink.Id,
-						Metadata:  nestedComponentPermalink.Metadata,
-						Component: nestedComponentPermalink.Component,
-					}
-					switch nestedComponentPermalink.Component.(type) {
-					case *pipelinePB.NestedComponent_ConnectorComponent:
-						if nestedComponentPermalink.GetConnectorComponent().ConnectorName != "" {
-							name, err := s.connectorPermalinkToName(ctx, nestedComponentPermalink.GetConnectorComponent().ConnectorName)
-							if err != nil {
-								// Allow the connector to not exist instead of returning an error.
-								nestedComponent.GetConnectorComponent().ConnectorName = ""
-							} else {
-								nestedComponent.GetConnectorComponent().ConnectorName = name
-							}
-						}
-						defName, err := s.connectorDefinitionPermalinkToName(ctx, nestedComponentPermalink.GetConnectorComponent().DefinitionName)
-						if err != nil {
-							ch <- result{
-								idx:       i,
-								component: nil,
-								err:       err,
-							}
-							return
-						}
-						nestedComponent.GetConnectorComponent().DefinitionName = defName
-						nestedComponents = append(nestedComponents, nestedComponent)
-					case *pipelinePB.NestedComponent_OperatorComponent:
-						defName, err := s.operatorDefinitionPermalinkToName(ctx, nestedComponentPermalink.GetOperatorComponent().DefinitionName)
-						if err != nil {
-							ch <- result{
-								idx:       i,
-								component: nil,
-								err:       err,
-							}
-							return
-						}
-						nestedComponent.GetOperatorComponent().DefinitionName = defName
-						nestedComponents = append(nestedComponents, nestedComponent)
-					}
-				}
-				component.GetIteratorComponent().Components = nestedComponents
-			}
-			ch <- result{
-				idx:       i,
-				component: component,
-				err:       nil,
-			}
-
-		}(idx, recipePermalink.Components[idx])
-	}
-
-	for range recipe.Components {
-		r := <-ch
-		if r.err != nil {
-			return nil, r.err
+	for _, componentPermalink := range recipePermalink.Components {
+		component := &pipelinePB.Component{
+			Id:        componentPermalink.Id,
+			Metadata:  componentPermalink.Metadata,
+			Component: componentPermalink.Component,
 		}
-		recipe.Components[r.idx] = r.component
-	}
 
+		switch component.Component.(type) {
+		case *pipelinePB.Component_ConnectorComponent:
+			if componentPermalink.GetConnectorComponent().ConnectorName != "" {
+				name, err := s.connectorPermalinkToName(ctx, componentPermalink.GetConnectorComponent().ConnectorName, connectors)
+				if err != nil {
+					// Allow the connector to not exist instead of returning an error.
+					component.GetConnectorComponent().ConnectorName = ""
+				} else {
+					component.GetConnectorComponent().ConnectorName = name
+				}
+			}
+			defName, err := s.connectorDefinitionPermalinkToName(ctx, componentPermalink.GetConnectorComponent().DefinitionName)
+			if err != nil {
+				return nil, err
+			}
+			component.GetConnectorComponent().DefinitionName = defName
+		case *pipelinePB.Component_OperatorComponent:
+			defName, err := s.operatorDefinitionPermalinkToName(ctx, componentPermalink.GetOperatorComponent().DefinitionName)
+			if err != nil {
+				return nil, err
+			}
+			component.GetOperatorComponent().DefinitionName = defName
+		case *pipelinePB.Component_IteratorComponent:
+			nestedComponents := []*pipelinePB.NestedComponent{}
+			for _, nestedComponentPermalink := range componentPermalink.GetIteratorComponent().Components {
+				nestedComponent := &pipelinePB.NestedComponent{
+					Id:        nestedComponentPermalink.Id,
+					Metadata:  nestedComponentPermalink.Metadata,
+					Component: nestedComponentPermalink.Component,
+				}
+				switch nestedComponentPermalink.Component.(type) {
+				case *pipelinePB.NestedComponent_ConnectorComponent:
+					if nestedComponentPermalink.GetConnectorComponent().ConnectorName != "" {
+						name, err := s.connectorPermalinkToName(ctx, nestedComponentPermalink.GetConnectorComponent().ConnectorName, connectors)
+						if err != nil {
+							// Allow the connector to not exist instead of returning an error.
+							nestedComponent.GetConnectorComponent().ConnectorName = ""
+						} else {
+							nestedComponent.GetConnectorComponent().ConnectorName = name
+						}
+					}
+					defName, err := s.connectorDefinitionPermalinkToName(ctx, nestedComponentPermalink.GetConnectorComponent().DefinitionName)
+					if err != nil {
+						return nil, err
+					}
+					nestedComponent.GetConnectorComponent().DefinitionName = defName
+					nestedComponents = append(nestedComponents, nestedComponent)
+				case *pipelinePB.NestedComponent_OperatorComponent:
+					defName, err := s.operatorDefinitionPermalinkToName(ctx, nestedComponentPermalink.GetOperatorComponent().DefinitionName)
+					if err != nil {
+						return nil, err
+					}
+					nestedComponent.GetOperatorComponent().DefinitionName = defName
+					nestedComponents = append(nestedComponents, nestedComponent)
+				}
+			}
+			component.GetIteratorComponent().Components = nestedComponents
+		}
+
+		recipe.Components = append(recipe.Components, component)
+	}
 	return recipe, nil
 }
 
@@ -336,11 +217,11 @@ func (s *service) connectorNameToPermalink(ctx context.Context, name string) (st
 	return fmt.Sprintf("connectors/%s", dbConnector.UID), nil
 }
 
-func (s *service) connectorPermalinkToName(ctx context.Context, permalink string) (string, error) {
+func (s *service) connectorPermalinkToName(ctx context.Context, permalink string, connectors map[uuid.UUID]*datamodel.Connector) (string, error) {
 
-	dbConnector, err := s.repository.GetConnectorByUIDAdmin(ctx, uuid.FromStringOrNil(strings.Split(permalink, "/")[1]), true)
-	if err != nil {
-		return "", err
+	dbConnector, ok := connectors[uuid.FromStringOrNil(strings.Split(permalink, "/")[1])]
+	if !ok {
+		return "", fmt.Errorf("connector not found")
 	}
 	owner, err := s.convertOwnerPermalinkToName(ctx, dbConnector.Owner)
 	if err != nil {
@@ -419,14 +300,10 @@ func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pipe
 	return nil
 }
 
-func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pipelinePB.ConnectorComponent) error {
+func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pipelinePB.ConnectorComponent, connectors map[uuid.UUID]*datamodel.Connector) error {
 	if comp.ConnectorName != "" {
-		conn, err := s.repository.GetConnectorByUIDAdmin(
-			ctx,
-			uuid.FromStringOrNil(strings.Split(comp.ConnectorName, "/")[1]),
-			false,
-		)
-		if err != nil {
+		conn, ok := connectors[uuid.FromStringOrNil(strings.Split(comp.ConnectorName, "/")[1])]
+		if !ok {
 			// Allow the connector to not exist instead of returning an error.
 			comp.Connector = nil
 		} else {
@@ -479,7 +356,7 @@ func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pip
 	return nil
 }
 
-func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pipelinePB.IteratorComponent) error {
+func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pipelinePB.IteratorComponent, connectors map[uuid.UUID]*datamodel.Connector) error {
 
 	var wg sync.WaitGroup
 	wg.Add(len(comp.Components))
@@ -490,7 +367,7 @@ func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pipe
 			defer wg.Done()
 			switch c.Component.(type) {
 			case *pipelinePB.NestedComponent_ConnectorComponent:
-				err := s.includeConnectorComponentDetail(ctx, c.GetConnectorComponent())
+				err := s.includeConnectorComponentDetail(ctx, c.GetConnectorComponent(), connectors)
 				ch <- err
 			case *pipelinePB.NestedComponent_OperatorComponent:
 				err := s.includeOperatorComponentDetail(ctx, c.GetOperatorComponent())
@@ -639,7 +516,7 @@ func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pipe
 	return nil
 }
 
-func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pipelinePB.Recipe) error {
+func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pipelinePB.Recipe, connectors map[uuid.UUID]*datamodel.Connector) error {
 
 	var wg sync.WaitGroup
 	wg.Add(len(recipe.Components))
@@ -649,13 +526,13 @@ func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pipelinePB.
 			defer wg.Done()
 			switch comp.Component.(type) {
 			case *pipelinePB.Component_ConnectorComponent:
-				err := s.includeConnectorComponentDetail(ctx, comp.GetConnectorComponent())
+				err := s.includeConnectorComponentDetail(ctx, comp.GetConnectorComponent(), connectors)
 				ch <- err
 			case *pipelinePB.Component_OperatorComponent:
 				err := s.includeOperatorComponentDetail(ctx, comp.GetOperatorComponent())
 				ch <- err
 			case *pipelinePB.Component_IteratorComponent:
-				err := s.includeIteratorComponentDetail(ctx, comp.GetIteratorComponent())
+				err := s.includeIteratorComponentDetail(ctx, comp.GetIteratorComponent(), connectors)
 				ch <- err
 			default:
 				ch <- nil
@@ -779,6 +656,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		return nil, err
 	}
 
+	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 	var pbRecipe *pipelinePB.Recipe
 
 	var startComp *pipelinePB.Component
@@ -800,7 +678,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	}
 
 	if view == ViewFull {
-		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
+		if err := s.includeDetailInRecipe(ctx, pbRecipe, dbPipeline.Connectors); err != nil {
 			return nil, err
 		}
 		for i := range pbRecipe.Components {
@@ -814,7 +692,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	}
 
 	if pbRecipe != nil {
-		pbRecipe, err = s.recipePermalinkToName(ctx, pbRecipe)
+		pbRecipe, err = s.recipePermalinkToName(ctx, pbRecipe, dbPipeline.Connectors)
 		if err != nil {
 			return nil, err
 		}
@@ -874,6 +752,10 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		if !checkPermission {
 			return
 		}
+		if strings.Split(dbPipeline.Owner, "/")[1] == ctxUserUID {
+			pbPipeline.Permission.CanEdit = true
+			return
+		}
 
 		canEdit, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
 		if err != nil {
@@ -884,6 +766,10 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	go func() {
 		defer wg.Done()
 		if !checkPermission {
+			return
+		}
+		if strings.Split(dbPipeline.Owner, "/")[1] == ctxUserUID {
+			pbPipeline.Permission.CanTrigger = true
 			return
 		}
 
@@ -918,7 +804,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	go func() {
 		defer wg.Done()
-		pbReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline, dbPipeline.Releases, ViewFull)
+		pbReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline, dbPipeline.Releases, view)
 		if err != nil {
 			return
 		}
@@ -1076,7 +962,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 	var endComp *pipelinePB.Component
 
 	if view == ViewFull {
-		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
+		if err := s.includeDetailInRecipe(ctx, pbRecipe, dbPipelineRelease.Connectors); err != nil {
 			return nil, err
 		}
 		for i := range pbRecipe.Components {
@@ -1090,7 +976,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 	}
 
 	if pbRecipe != nil {
-		pbRecipe, err = s.recipePermalinkToName(ctx, pbRecipe)
+		pbRecipe, err = s.recipePermalinkToName(ctx, pbRecipe, dbPipelineRelease.Connectors)
 		if err != nil {
 			return nil, err
 		}
