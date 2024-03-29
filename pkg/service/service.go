@@ -79,7 +79,6 @@ type Service interface {
 	CreateNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, pipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error)
 	ListNamespacePipelineReleases(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.PipelineRelease, int32, string, error)
 	GetNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, view View) (*pipelinePB.PipelineRelease, error)
-	GetNamespacePipelineReleaseByUID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, uid uuid.UUID, view View) (*pipelinePB.PipelineRelease, error)
 	UpdateNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, updatedPipelineRelease *pipelinePB.PipelineRelease) (*pipelinePB.PipelineRelease, error)
 	DeleteNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string) error
 	RestoreNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string) error
@@ -219,18 +218,35 @@ func (s *service) convertOwnerPermalinkToName(ctx context.Context, permalink str
 }
 
 func (s *service) fetchOwnerByPermalink(ctx context.Context, permalink string) (*mgmtPB.Owner, error) {
+
+	key := fmt.Sprintf("owner_profile:%s", permalink)
+	if b, err := s.redisClient.Get(ctx, key).Bytes(); err == nil {
+		owner := &mgmtPB.Owner{}
+		if protojson.Unmarshal(b, owner) == nil {
+			return owner, nil
+		}
+	}
+
 	if strings.HasPrefix(permalink, "users") {
 		resp, err := s.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
 		if err != nil {
 			return nil, fmt.Errorf("fetchOwnerByPermalink error")
 		}
-		return &mgmtPB.Owner{Owner: &mgmtPB.Owner_User{User: resp.User}}, nil
+		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_User{User: resp.User}}
+		if b, err := protojson.Marshal(owner); err == nil {
+			s.redisClient.Set(ctx, key, b, 5*time.Minute)
+		}
+		return owner, nil
 	} else {
 		resp, err := s.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
 		if err != nil {
 			return nil, fmt.Errorf("fetchOwnerByPermalink error")
 		}
-		return &mgmtPB.Owner{Owner: &mgmtPB.Owner_Organization{Organization: resp.Organization}}, nil
+		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_Organization{Organization: resp.Organization}}
+		if b, err := protojson.Marshal(owner); err == nil {
+			s.redisClient.Set(ctx, key, b, 5*time.Minute)
+		}
+		return owner, nil
 
 	}
 }
@@ -659,7 +675,11 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 		}
 	}
 
-	pipeline, err := s.DBToPBPipeline(ctx, dbPipeline, ViewFull, false)
+	dbPipelineUpdated, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
+	if err != nil {
+		return nil, err
+	}
+	pipeline, err := s.DBToPBPipeline(ctx, dbPipelineUpdated, ViewFull, false)
 	if err != nil {
 		return nil, err
 	}
@@ -1128,28 +1148,6 @@ func (s *service) GetNamespacePipelineReleaseByID(ctx context.Context, ns resour
 	}
 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, view == ViewBasic)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.DBToPBPipelineRelease(ctx, dbPipeline, dbPipelineRelease, view)
-
-}
-func (s *service) GetNamespacePipelineReleaseByUID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, uid uuid.UUID, view View) (*pipelinePB.PipelineRelease, error) {
-
-	ownerPermalink := ns.Permalink()
-
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
-	if err != nil {
-		return nil, ErrNotFound
-	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
-		return nil, err
-	} else if !granted {
-		return nil, ErrNotFound
-	}
-
-	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByUID(ctx, ownerPermalink, pipelineUID, uid, view == ViewBasic)
 	if err != nil {
 		return nil, err
 	}

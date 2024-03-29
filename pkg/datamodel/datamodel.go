@@ -56,6 +56,7 @@ type Pipeline struct {
 	Metadata          datatypes.JSON `gorm:"type:jsonb"`
 	Readme            string
 	Releases          []*PipelineRelease
+	Connectors        map[uuid.UUID]*Connector `gorm:"-" json:"-"`
 }
 
 // PipelineRelease is the data model of the pipeline release table
@@ -67,6 +68,7 @@ type PipelineRelease struct {
 	Recipe      *Recipe        `gorm:"type:jsonb"`
 	Metadata    datatypes.JSON `gorm:"type:jsonb"`
 	Readme      string
+	Connectors  map[uuid.UUID]*Connector `gorm:"-" json:"-"`
 }
 
 // Recipe is the data model of the pipeline recipe
