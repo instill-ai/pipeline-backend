@@ -1333,6 +1333,21 @@ func (s *service) triggerPipeline(
 		inputBlobRedisKeys = append(inputBlobRedisKeys, inputBlobRedisKey)
 		defer s.redisClient.Del(ctx, inputBlobRedisKey)
 	}
+
+	m := worker.WorkflowMeta{
+		HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+	}
+	b, _ := json.Marshal(m)
+	metadataRedisKey := fmt.Sprintf("async_pipeline_metadata:%s", pipelineTriggerID)
+
+	s.redisClient.Set(
+		ctx,
+		metadataRedisKey,
+		b,
+		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
+	)
+	defer s.redisClient.Del(ctx, metadataRedisKey)
+
 	memo := map[string]any{}
 	memo["number_of_data"] = len(inputBlobRedisKeys)
 
@@ -1363,6 +1378,7 @@ func (s *service) triggerPipeline(
 			UserUID:                    userUID,
 			ReturnTraces:               returnTraces,
 			Mode:                       mgmtPB.Mode_MODE_SYNC,
+			MetadataRedisKey:           metadataRedisKey,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1433,6 +1449,20 @@ func (s *service) triggerAsyncPipeline(
 		)
 		inputBlobRedisKeys = append(inputBlobRedisKeys, inputBlobRedisKey)
 	}
+
+	m := worker.WorkflowMeta{
+		HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+	}
+	b, _ := json.Marshal(m)
+	metadataRedisKey := fmt.Sprintf("async_pipeline_metadata:%s", pipelineTriggerID)
+
+	s.redisClient.Set(
+		ctx,
+		metadataRedisKey,
+		b,
+		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
+	)
+
 	memo := map[string]any{}
 	memo["number_of_data"] = len(inputBlobRedisKeys)
 
@@ -1462,6 +1492,7 @@ func (s *service) triggerAsyncPipeline(
 			UserUID:                    userUID,
 			ReturnTraces:               returnTraces,
 			Mode:                       mgmtPB.Mode_MODE_ASYNC,
+			MetadataRedisKey:           metadataRedisKey,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
