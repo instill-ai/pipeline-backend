@@ -43,6 +43,7 @@ type TriggerPipelineWorkflowRequest struct {
 	UserUID                    uuid.UUID
 	ReturnTraces               bool
 	Mode                       mgmtPB.Mode
+	MetadataRedisKey           string
 }
 
 type TriggerPipelineWorkflowResponse struct {
@@ -58,6 +59,7 @@ type ExecuteDAGActivityRequest struct {
 	MemoryBlobRedisKeys []string
 	OwnerPermalink      string
 	UserUID             uuid.UUID
+	MetadataRedisKey    string
 }
 type ExecuteDAGActivityResponse struct {
 	MemoryBlobRedisKeys []string
@@ -102,6 +104,7 @@ type ExecuteConnectorActivityRequest struct {
 	PipelineMetadata   PipelineMetadataStruct
 	Task               string
 	UserUID            uuid.UUID
+	MetadataRedisKey   string
 }
 
 // ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
@@ -112,6 +115,7 @@ type ExecuteOperatorActivityRequest struct {
 	PipelineMetadata   PipelineMetadataStruct
 	Task               string
 	UserUID            uuid.UUID
+	MetadataRedisKey   string
 }
 
 type ExecuteActivityResponse struct {
@@ -120,6 +124,10 @@ type ExecuteActivityResponse struct {
 
 type PipelineMetadataStruct struct {
 	UserUID string
+}
+
+type WorkflowMeta struct {
+	HeaderAuthorization string `json:"header_authorization"`
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -306,6 +314,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		PipelineRecipe:      param.PipelineRecipe,
 		OwnerPermalink:      param.OwnerPermalink,
 		UserUID:             param.UserUID,
+		MetadataRedisKey:    param.MetadataRedisKey,
 	}).Get(ctx, &dagResult); err != nil {
 		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 		return nil, err
@@ -657,8 +666,9 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								PipelineMetadata: PipelineMetadataStruct{
 									UserUID: param.UserUID.String(),
 								},
-								Task:    task,
-								UserUID: param.UserUID,
+								Task:             task,
+								UserUID:          param.UserUID,
+								MetadataRedisKey: param.MetadataRedisKey,
 							})
 							if err != nil {
 								return err
@@ -708,8 +718,9 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								PipelineMetadata: PipelineMetadataStruct{
 									UserUID: param.UserUID.String(),
 								},
-								Task:    task,
-								UserUID: param.UserUID,
+								Task:             task,
+								UserUID:          param.UserUID,
+								MetadataRedisKey: param.MetadataRedisKey,
 							})
 							if err != nil {
 								return err
@@ -856,16 +867,22 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 				logger.Fatal(err.Error())
 			}
 			// TODO: optimize this
+			m, err := w.redisClient.Get(ctx, param.MetadataRedisKey).Bytes()
+			if err != nil {
+				return nil
+			}
+			workflowMeta := WorkflowMeta{}
+			err = json.Unmarshal(m, &workflowMeta)
+			if err != nil {
+				return nil
+			}
+
+			str.Fields["header_authorization"] = structpb.NewStringValue(workflowMeta.HeaderAuthorization)
 			str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
 			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 			str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
 			return &str
 		}
-		str := structpb.Struct{Fields: make(map[string]*structpb.Value)}
-		// TODO: optimize this
-		str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
-		str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
-		str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
 		return nil
 	}()
 

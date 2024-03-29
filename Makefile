@@ -17,12 +17,15 @@ dev:							## Run dev container
 	@docker run -d --rm \
 		-e DOCKER_HOST=tcp://${SOCAT_HOST}:${SOCAT_PORT} \
 		-v $(PWD):/${SERVICE_NAME} \
+		-v $(PWD)/../go.work:/go.work \
+		-v $(PWD)/../go.work.sum:/go.work.sum \
+		-v $(PWD)/../component:/component \
 		-v vdp:/vdp \
 		-v airbyte:/airbyte \
 		-p ${SERVICE_PORT}:${SERVICE_PORT} \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
-		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
+		instill/${SERVICE_NAME}:dev
 
 .PHONY: logs
 logs:							## Tail container logs with -n 10

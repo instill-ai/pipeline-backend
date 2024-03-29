@@ -318,6 +318,7 @@ func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pip
 				str := structpb.Struct{}
 				_ = str.UnmarshalJSON(conn.Configuration)
 				// TODO: optimize this
+				str.Fields["header_authorization"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, "authorization"))
 				str.Fields["instill_user_uid"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
 				str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 				str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
@@ -1199,6 +1200,7 @@ func (s *service) convertDatamodelToProto(
 			str := proto.Clone(pbConnector.Configuration).(*structpb.Struct)
 			// TODO: optimize this
 			if str.Fields != nil {
+				str.Fields["header_authorization"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, "authorization"))
 				str.Fields["instill_user_uid"] = structpb.NewStringValue(uuid.FromStringOrNil(strings.Split(dbConnector.Owner, "/")[1]).String())
 				str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
 				str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
