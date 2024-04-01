@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.25.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.24.1-beta...v0.25.0-beta) (2024-04-01)
+
+
+### Features
+
+* add configuration for read-replica database ([#431](https://github.com/instill-ai/pipeline-backend/issues/431)) ([125fb6d](https://github.com/instill-ai/pipeline-backend/commit/125fb6dcdd57222fea0f22a8890176012cd990dd))
+* add connection to read replica OpenFGA ([#434](https://github.com/instill-ai/pipeline-backend/issues/434)) ([b229b8c](https://github.com/instill-ai/pipeline-backend/commit/b229b8cd648869fafbb4f9d0df87faae78e9159a))
+* pin the user to read from the primary database for a certain time frame after mutating the data ([#433](https://github.com/instill-ai/pipeline-backend/issues/433)) ([30e1de2](https://github.com/instill-ai/pipeline-backend/commit/30e1de289d14f947fde4d3d062ae98b869d5a2c3))
+
+
+### Bug Fixes
+
+* fix multi-region connection problem for Instill Model connector ([#439](https://github.com/instill-ai/pipeline-backend/issues/439)) ([a02add6](https://github.com/instill-ai/pipeline-backend/commit/a02add615cd3a6a40895e59cf8a45ef545db38d5))
+
 ## [0.24.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.24.0-beta...v0.24.1-beta) (2024-03-20)
 
 
