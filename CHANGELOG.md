@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.25.0-beta...v0.25.1-beta) (2024-04-05)
+
+
+### Bug Fixes
+
+* improve nil check ([290c331](https://github.com/instill-ai/pipeline-backend/commit/290c331e8d06496fb0b636fe3f6b575df570447c))
+
 ## [0.25.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.24.1-beta...v0.25.0-beta) (2024-04-01)
 
 
