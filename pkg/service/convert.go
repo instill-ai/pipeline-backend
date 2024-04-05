@@ -220,7 +220,7 @@ func (s *service) connectorNameToPermalink(ctx context.Context, name string) (st
 func (s *service) connectorPermalinkToName(ctx context.Context, permalink string, connectors map[uuid.UUID]*datamodel.Connector) (string, error) {
 
 	dbConnector, ok := connectors[uuid.FromStringOrNil(strings.Split(permalink, "/")[1])]
-	if !ok {
+	if !ok || dbConnector == nil {
 		return "", fmt.Errorf("connector not found")
 	}
 	owner, err := s.convertOwnerPermalinkToName(ctx, dbConnector.Owner)
@@ -303,7 +303,7 @@ func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pipe
 func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pipelinePB.ConnectorComponent, connectors map[uuid.UUID]*datamodel.Connector) error {
 	if comp.ConnectorName != "" {
 		conn, ok := connectors[uuid.FromStringOrNil(strings.Split(comp.ConnectorName, "/")[1])]
-		if !ok {
+		if !ok || conn == nil {
 			// Allow the connector to not exist instead of returning an error.
 			comp.Connector = nil
 		} else {
