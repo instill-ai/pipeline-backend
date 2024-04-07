@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.26.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.25.1-beta...v0.26.0-beta) (2024-04-07)
+
+
+### Features
+
+* remove embedded connector field in pipeline recipe ([2e10a1e](https://github.com/instill-ai/pipeline-backend/commit/2e10a1e3a40cefba4c495ac32b2617ce2541d84e))
+
 ## [0.25.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.25.0-beta...v0.25.1-beta) (2024-04-05)
 
 
