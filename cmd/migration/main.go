@@ -75,7 +75,7 @@ func checkExist(databaseConfig config.DatabaseConfig) error {
 func main() {
 	migrateFolder, _ := os.Getwd()
 
-	if err := config.Init(); err != nil {
+	if err := config.Init(config.ParseConfigFlag()); err != nil {
 		panic(err)
 	}
 
@@ -119,33 +119,31 @@ func main() {
 		if ExpectedVersion <= step {
 			fmt.Printf("Migration to version %d complete\n", ExpectedVersion)
 			break
-		} else {
-			if step == 5 {
-				if err := migratePipelineRecipeUp000006(); err != nil {
-					panic(err)
-				}
-			}
-			if step == 6 {
-				if err := migratePipelineRecipeUp000007(); err != nil {
-					panic(err)
-				}
-			}
-			if step == 11 {
-				if err := migratePipelineRecipeUp000012(); err != nil {
-					panic(err)
-				}
-			}
+		}
 
-			fmt.Printf("Step up to version %d\n", step+1)
-			if err := m.Steps(1); err != nil {
+		switch step {
+		case 5:
+			if err := migratePipelineRecipeUp000006(); err != nil {
+				panic(err)
+			}
+		case 6:
+			if err := migratePipelineRecipeUp000007(); err != nil {
+				panic(err)
+			}
+		case 11:
+			if err := migratePipelineRecipeUp000012(); err != nil {
 				panic(err)
 			}
 		}
 
-		step, _, err = m.Version()
-
-		if err != nil {
+		fmt.Printf("Step up to version %d\n", step+1)
+		if err := m.Steps(1); err != nil {
 			panic(err)
 		}
+
+		if step, _, err = m.Version(); err != nil {
+			panic(err)
+		}
+
 	}
 }

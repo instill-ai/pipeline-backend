@@ -69,8 +69,7 @@ func initTemporalNamespace(ctx context.Context, client client.Client) {
 }
 
 func main() {
-
-	if err := config.Init(); err != nil {
+	if err := config.Init(config.ParseConfigFlag()); err != nil {
 		log.Fatal(err.Error())
 	}
 
