@@ -409,7 +409,7 @@ func (s *service) ListOperatorDefinitions(ctx context.Context, req *pipelinePB.L
 
 func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken string, view View, visibility *pipelinePB.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Pipeline, int32, string, error) {
 
-	var uidAllowList []uuid.UUID
+	uidAllowList := []uuid.UUID{}
 	var err error
 
 	// TODO: optimize the logic
@@ -527,7 +527,7 @@ func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namesp
 
 	ownerPermalink := ns.Permalink()
 
-	var uidAllowList []uuid.UUID
+	uidAllowList := []uuid.UUID{}
 	var err error
 
 	// TODO: optimize the logic
