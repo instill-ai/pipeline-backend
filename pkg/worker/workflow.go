@@ -792,6 +792,7 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 							PipelineRecipe:      param.PipelineRecipe,
 							OwnerPermalink:      param.OwnerPermalink,
 							UserUID:             param.UserUID,
+							MetadataRedisKey:    param.MetadataRedisKey,
 						})
 						if err != nil {
 							return nil, err
