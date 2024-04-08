@@ -855,7 +855,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		return nil, err
 	}
 
-	dbConnector, err := w.repository.GetConnectorByUID(ctx, uuid.FromStringOrNil(strings.Split(param.ConnectorName, "/")[1]), false)
+	dbConnector, err := w.repository.GetConnectorByUIDAdmin(ctx, uuid.FromStringOrNil(strings.Split(param.ConnectorName, "/")[1]), false)
 	if err != nil {
 		return nil, err
 	}
