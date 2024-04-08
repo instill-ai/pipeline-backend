@@ -317,6 +317,19 @@ func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pip
 				comp.Connector = pbConnector
 				str := structpb.Struct{}
 				_ = str.UnmarshalJSON(conn.Configuration)
+
+				// This is a workaround solution for the Instill Model connector in Instill Cloud to improve response speed.
+				if config.Config.Connector.Instill.UseStaticModelList && conn.ConnectorDefinitionUID.String() == "ddcf42c3-4c30-4c65-9585-25f1c89b2b48" && str.Fields["mode"].GetStringValue() == "Internal Mode" {
+					b, err := s.redisClient.Get(ctx, "instill_model_connector_def").Bytes()
+					if err == nil {
+						d := &pipelinePB.ConnectorDefinition{}
+						if json.Unmarshal(b, d) == nil {
+							comp.Definition = d
+							return nil
+						}
+					}
+				}
+
 				// TODO: optimize this
 				str.Fields["header_authorization"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, "authorization"))
 				str.Fields["instill_user_uid"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
@@ -328,6 +341,11 @@ func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pip
 					return err
 				}
 				comp.Definition = d
+				if config.Config.Connector.Instill.UseStaticModelList && conn.ConnectorDefinitionUID.String() == "ddcf42c3-4c30-4c65-9585-25f1c89b2b48" && str.Fields["mode"].GetStringValue() == "Internal Mode" {
+					b, _ := json.Marshal(d)
+					_ = s.redisClient.Set(ctx, "instill_model_connector_def", b, 0)
+				}
+				return nil
 			}
 		}
 	}
@@ -1198,19 +1216,41 @@ func (s *service) convertDatamodelToProto(
 		if view == ViewFull {
 
 			str := proto.Clone(pbConnector.Configuration).(*structpb.Struct)
-			// TODO: optimize this
-			if str.Fields != nil {
-				str.Fields["header_authorization"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, "authorization"))
-				str.Fields["instill_user_uid"] = structpb.NewStringValue(uuid.FromStringOrNil(strings.Split(dbConnector.Owner, "/")[1]).String())
-				str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
-				str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
+
+			hit := false
+			// This is a workaround solution for the Instill Model connector in Instill Cloud to improve response speed.
+			if config.Config.Connector.Instill.UseStaticModelList && dbConnector.ConnectorDefinitionUID.String() == "ddcf42c3-4c30-4c65-9585-25f1c89b2b48" && str.Fields["mode"].GetStringValue() == "Internal Mode" {
+				b, err := s.redisClient.Get(ctx, "instill_model_connector_def").Bytes()
+				if err == nil {
+					d := &pipelinePB.ConnectorDefinition{}
+					if json.Unmarshal(b, d) == nil {
+						pbConnector.ConnectorDefinition = d
+						hit = true
+					}
+				}
 			}
 
-			dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, str, nil)
-			if err != nil {
-				return nil, err
+			if !hit {
+				// TODO: optimize this
+				if str.Fields != nil {
+					str.Fields["header_authorization"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, "authorization"))
+					str.Fields["instill_user_uid"] = structpb.NewStringValue(uuid.FromStringOrNil(strings.Split(dbConnector.Owner, "/")[1]).String())
+					str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
+					str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
+				}
+
+				dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, str, nil)
+				if err != nil {
+					return nil, err
+				}
+				pbConnector.ConnectorDefinition = dbConnDef
+
+				if config.Config.Connector.Instill.UseStaticModelList && dbConnector.ConnectorDefinitionUID.String() == "ddcf42c3-4c30-4c65-9585-25f1c89b2b48" && str.Fields["mode"].GetStringValue() == "Internal Mode" {
+					b, _ := json.Marshal(dbConnDef)
+					s.redisClient.Set(ctx, "instill_model_connector_def", b, 0)
+				}
 			}
-			pbConnector.ConnectorDefinition = dbConnDef
+
 		}
 		if credentialMask {
 			utils.MaskCredentialFields(s.connector, dbConnDef.Id, pbConnector.Configuration)

@@ -81,6 +81,9 @@ func main() {
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
+	// This is a workaround solution for the Instill Model connector in Instill Cloud to improve response speed.
+	_ = redisClient.Del(ctx, "instill_model_connector_def")
+
 	repo := repository.NewRepository(db, redisClient)
 
 	// Update component definitions and connectors based on latest version of

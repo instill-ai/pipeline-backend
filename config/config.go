@@ -80,6 +80,9 @@ type ConnectorConfig struct {
 		}
 		ExcludeLocalConnector bool `koanf:"excludelocalconnector"`
 	}
+	Instill struct {
+		UseStaticModelList bool `koanf:"usestaticmodellist"`
+	} `koanf:"instill"`
 }
 
 // DatabaseConfig related to database
