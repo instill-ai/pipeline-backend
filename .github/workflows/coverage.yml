@@ -9,6 +9,18 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v3
         with:
@@ -28,11 +40,11 @@ jobs:
       - name: Generate coverage report
         run: |
           go mod tidy
-          go test -race ./... -coverprofile=coverage.txt -covermode=atomic
+          make coverage DBTEST=true
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v2
         with:
-          file: ./coverage.txt
+          file: ./coverage.out
           flags: unittests
           name: codecov-umbrella

@@ -6,6 +6,11 @@
 include .env
 export
 
+GOTEST_FLAGS := CFG_DATABASE_HOST=${TEST_DBHOST} CFG_DATABASE_NAME=${TEST_DBNAME}
+ifeq (${DBTEST}, true)
+	GOTEST_TAGS := -tags=dbtest
+endif
+
 #============================================================================
 
 .PHONY: dev
@@ -52,12 +57,19 @@ build:							## Build dev docker image
 go-gen:       					## Generate codes
 	go generate ./...
 
-.PHONY: unit-test
-unit-test:       				## Run unit test
-	@go test -v -race -coverpkg=./... -coverprofile=coverage.out ./...
-	@go tool cover -func=coverage.out
-	@go tool cover -html=coverage.out
-	@rm coverage.out
+.PHONY: dbtest-pre
+dbtest-pre:
+	@${GOTEST_FLAGS} go run ./cmd/migration
+
+.PHONY: coverage
+coverage:
+	@if [ "${DBTEST}" = "true" ]; then  make dbtest-pre; fi
+	@${GOTEST_FLAGS} go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
+	@if [ "${HTML}" = "true" ]; then  \
+		go tool cover -func=coverage.out && \
+		go tool cover -html=coverage.out && \
+		rm coverage.out; \
+	fi
 
 .PHONY: integration-test
 integration-test:				## Run integration test

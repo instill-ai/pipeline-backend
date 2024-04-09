@@ -62,8 +62,7 @@ type Connector struct {
 }
 
 func main() {
-
-	if err := config.Init(); err != nil {
+	if err := config.Init(config.ParseConfigFlag()); err != nil {
 		log.Fatal(err.Error())
 	}
 	ctx, cancel := context.WithCancel(context.Background())
