@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.26.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.25.1-beta...v0.26.0-beta) (2024-04-10)
+
+
+### Features
+
+* add repository tests against DB ([#451](https://github.com/instill-ai/pipeline-backend/issues/451)) ([05bf562](https://github.com/instill-ai/pipeline-backend/commit/05bf562d81290667205b1f56584cdaf5b6451b60))
+
+
+### Bug Fixes
+
+* fix `uidAllowList` bug when listing pipeline ([#449](https://github.com/instill-ai/pipeline-backend/issues/449)) ([7fd5a26](https://github.com/instill-ai/pipeline-backend/commit/7fd5a2612208b7f86be097af549c7c512666bc18))
+* fix missing `releases` data in pipeline response ([68fc80e](https://github.com/instill-ai/pipeline-backend/commit/68fc80eb08ecd4257eae4275ce10d1ebb46815bf))
+
 ## [0.25.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.25.0-beta...v0.25.1-beta) (2024-04-08)
 
 
