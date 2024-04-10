@@ -212,32 +212,6 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		}
 	}
 
-	if !isBasicView {
-		connectorDB := r.db
-		connectorsMap := map[uuid.UUID]*datamodel.Connector{}
-		connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
-		if err != nil {
-			return nil, 0, "", err
-		}
-
-		defer connectorRows.Close()
-		for connectorRows.Next() {
-			var item datamodel.Connector
-			if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
-				return nil, 0, "", err
-			}
-			connectorsMap[item.UID] = &item
-		}
-
-		for idx := range pipelines {
-			pipelineConnectorsMap := map[uuid.UUID]*datamodel.Connector{}
-			for _, connectorUID := range pipelineConnectorUIDs[pipelines[idx].UID] {
-				pipelineConnectorsMap[connectorUID] = connectorsMap[connectorUID]
-			}
-			pipelines[idx].Connectors = pipelineConnectorsMap
-		}
-	}
-
 	if embedReleases {
 		releaseDB := r.checkPinnedUser(ctx, r.db, "pipeline")
 		releasesMap := map[uuid.UUID][]*datamodel.PipelineRelease{}
@@ -261,10 +235,98 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 				releasesMap[pipelineUID] = []*datamodel.PipelineRelease{}
 			}
 			releasesMap[pipelineUID] = append(releasesMap[pipelineUID], &pipelineRelease)
+			if !isBasicView {
+				for _, comp := range pipelineRelease.Recipe.Components {
+
+					if comp.IsConnectorComponent() {
+						if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
+							connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
+						}
+
+					}
+					if comp.IsIteratorComponent() {
+						for _, nestedComp := range comp.IteratorComponent.Components {
+							if nestedComp.IsConnectorComponent() {
+								if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
+									connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
+								}
+
+							}
+						}
+					}
+				}
+			}
 		}
 		for idx := range pipelines {
 			if releases, ok := releasesMap[pipelines[idx].UID]; ok {
 				pipelines[idx].Releases = releases
+
+			}
+		}
+	}
+
+	if !isBasicView {
+		connectorDB := r.db
+		connectorsMap := map[uuid.UUID]*datamodel.Connector{}
+		connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
+		if err != nil {
+			return nil, 0, "", err
+		}
+
+		defer connectorRows.Close()
+		for connectorRows.Next() {
+			var item datamodel.Connector
+			if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
+				return nil, 0, "", err
+			}
+			connectorsMap[item.UID] = &item
+		}
+
+		for idx := range pipelines {
+			pipelineConnectorsMap := map[uuid.UUID]*datamodel.Connector{}
+			for _, connectorUID := range pipelineConnectorUIDs[pipelines[idx].UID] {
+				pipelineConnectorsMap[connectorUID] = connectorsMap[connectorUID]
+			}
+			pipelines[idx].Connectors = pipelineConnectorsMap
+
+			if embedReleases {
+				for releaseIdx := range pipelines[idx].Releases {
+					for _, comp := range pipelines[idx].Releases[releaseIdx].Recipe.Components {
+
+						if comp.IsConnectorComponent() {
+							if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
+								connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
+							}
+
+						}
+						if comp.IsIteratorComponent() {
+							for _, nestedComp := range comp.IteratorComponent.Components {
+								if nestedComp.IsConnectorComponent() {
+									if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
+										connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
+									}
+
+								}
+							}
+						}
+					}
+
+					connectorDB := r.db
+					connectorsMap := map[uuid.UUID]*datamodel.Connector{}
+					connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
+					if err != nil {
+						return nil, 0, "", err
+					}
+					defer connectorRows.Close()
+					for connectorRows.Next() {
+						var item datamodel.Connector
+						if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
+							return nil, 0, "", err
+						}
+						connectorsMap[item.UID] = &item
+					}
+					pipelines[idx].Releases[releaseIdx].Connectors = connectorsMap
+				}
 			}
 		}
 	}
@@ -330,6 +392,9 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 	if result := queryBuilder.First(&pipeline); result.Error != nil {
 		return nil, result.Error
 	}
+
+	connectorUIDs := []uuid.UUID{}
+
 	if embedReleases {
 		pipeline.Releases = []*datamodel.PipelineRelease{}
 
@@ -351,11 +416,31 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 			}
 			pipelineRelease := item
 			pipeline.Releases = append(pipeline.Releases, &pipelineRelease)
+			if !isBasicView {
+				for _, comp := range pipelineRelease.Recipe.Components {
+
+					if comp.IsConnectorComponent() {
+						if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
+							connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
+						}
+
+					}
+					if comp.IsIteratorComponent() {
+						for _, nestedComp := range comp.IteratorComponent.Components {
+							if nestedComp.IsConnectorComponent() {
+								if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
+									connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
+								}
+
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
 	if !isBasicView {
-		connectorUIDs := []uuid.UUID{}
 		for _, comp := range pipeline.Recipe.Components {
 
 			if comp.IsConnectorComponent() {
@@ -391,6 +476,46 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 			connectorsMap[item.UID] = &item
 		}
 		pipeline.Connectors = connectorsMap
+
+		if embedReleases {
+			for releaseIdx := range pipeline.Releases {
+				for _, comp := range pipeline.Releases[releaseIdx].Recipe.Components {
+
+					if comp.IsConnectorComponent() {
+						if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
+							connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
+						}
+
+					}
+					if comp.IsIteratorComponent() {
+						for _, nestedComp := range comp.IteratorComponent.Components {
+							if nestedComp.IsConnectorComponent() {
+								if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
+									connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
+								}
+
+							}
+						}
+					}
+				}
+
+				connectorDB := r.db
+				connectorsMap := map[uuid.UUID]*datamodel.Connector{}
+				connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
+				if err != nil {
+					return nil, err
+				}
+				defer connectorRows.Close()
+				for connectorRows.Next() {
+					var item datamodel.Connector
+					if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
+						return nil, err
+					}
+					connectorsMap[item.UID] = &item
+				}
+				pipeline.Releases[releaseIdx].Connectors = connectorsMap
+			}
+		}
 	}
 
 	return &pipeline, nil
