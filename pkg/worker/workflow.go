@@ -28,7 +28,7 @@ import (
 	"github.com/instill-ai/x/errmsg"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // Note: These codes will be refactored soon
@@ -485,7 +485,7 @@ func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEn
 		}
 	}
 
-	var traces map[string]*pipelinePB.Trace
+	var traces map[string]*pb.Trace
 	if param.ReturnTraces {
 		traces, err = GenerateTraces(param.OrderedComps, memory, param.ComputeTime, param.BatchSize)
 
@@ -494,9 +494,9 @@ func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEn
 		}
 	}
 
-	pipelineResp := &pipelinePB.TriggerUserPipelineResponse{
+	pipelineResp := &pb.TriggerUserPipelineResponse{
 		Outputs: pipelineOutputs,
-		Metadata: &pipelinePB.TriggerMetadata{
+		Metadata: &pb.TriggerMetadata{
 			Traces: traces,
 		},
 	}

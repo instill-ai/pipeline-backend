@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 
 	taskPB "github.com/instill-ai/protogen-go/common/task/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // BaseDynamicHardDelete contains common columns for all tables with static UUID as primary key
@@ -184,7 +184,7 @@ type SharingCode struct {
 }
 
 // PipelineRole is an alias type for Protobuf enum
-type PipelineRole pipelinePB.Role
+type PipelineRole pb.Role
 
 // Scan function for custom GORM type Recipe
 func (r *Recipe) Scan(value interface{}) error {
@@ -268,13 +268,13 @@ func (p *SharingCode) Value() (driver.Value, error) {
 
 // Scan function for custom GORM type PipelineRole
 func (p *PipelineRole) Scan(value interface{}) error {
-	*p = PipelineRole(pipelinePB.Role_value[value.(string)])
+	*p = PipelineRole(pb.Role_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type PipelineRole
 func (p PipelineRole) Value() (driver.Value, error) {
-	return pipelinePB.Role(p).String(), nil
+	return pb.Role(p).String(), nil
 }
 
 // ConnectorType is an alias type for Protobuf enum ConnectorType
@@ -321,7 +321,7 @@ type pbDefinition interface {
 	GetTombstone() bool
 	GetPublic() bool
 	GetVersion() string
-	GetReleaseStage() pipelinePB.ComponentDefinition_ReleaseStage
+	GetReleaseStage() pb.ComponentDefinition_ReleaseStage
 }
 
 // FeatureScores holds the feature score of each component definition. If a
@@ -351,14 +351,14 @@ var FeatureScores = map[string]int{
 
 // ComponentDefinitionFromProto parses a ComponentDefinition from the proto
 // structure.
-func ComponentDefinitionFromProto(cdpb *pipelinePB.ComponentDefinition) *ComponentDefinition {
+func ComponentDefinitionFromProto(cdpb *pb.ComponentDefinition) *ComponentDefinition {
 	var def pbDefinition
 	switch cdpb.Type {
-	case pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR:
+	case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
 		def = cdpb.GetOperatorDefinition()
-	case pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
-		pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
-		pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION:
+	case pb.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
+		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
+		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION:
 
 		def = cdpb.GetConnectorDefinition()
 	default:
@@ -381,31 +381,31 @@ func ComponentDefinitionFromProto(cdpb *pipelinePB.ComponentDefinition) *Compone
 }
 
 // ComponentType is an alias type for proto enum ComponentType.
-type ComponentType pipelinePB.ComponentType
+type ComponentType pb.ComponentType
 
 // Scan function for custom GORM type ComponentType
 func (c *ComponentType) Scan(value any) error {
-	*c = ComponentType(pipelinePB.ComponentType_value[value.(string)])
+	*c = ComponentType(pb.ComponentType_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type ComponentType
 func (c ComponentType) Value() (driver.Value, error) {
-	return pipelinePB.ComponentType(c).String(), nil
+	return pb.ComponentType(c).String(), nil
 }
 
 // ReleaseStage is an alias type for proto enum ComponentDefinition_ReleaseStage.
-type ReleaseStage pipelinePB.ComponentDefinition_ReleaseStage
+type ReleaseStage pb.ComponentDefinition_ReleaseStage
 
 // Scan function for custom GORM type ReleaseStage
 func (c *ReleaseStage) Scan(value any) error {
-	*c = ReleaseStage(pipelinePB.ComponentDefinition_ReleaseStage_value[value.(string)])
+	*c = ReleaseStage(pb.ComponentDefinition_ReleaseStage_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type ReleaseStage
 func (c ReleaseStage) Value() (driver.Value, error) {
-	return pipelinePB.ComponentDefinition_ReleaseStage(c).String(), nil
+	return pb.ComponentDefinition_ReleaseStage(c).String(), nil
 }
 
 type Secret struct {

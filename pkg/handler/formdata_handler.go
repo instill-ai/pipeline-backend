@@ -20,7 +20,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 var forward_PipelinePublicService_TriggerUserPipeline_0 = runtime.ForwardResponseMessage
@@ -189,7 +189,7 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 }
 
 // HandleTrigger
-func HandleTrigger(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 
 	ctx, cancel := context.WithCancel(req.Context())
 	defer cancel()
@@ -213,7 +213,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServic
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err = request_PipelinePublicService_TriggerUserPipeline_0_form(annotatedContext, inboundMarshaler, client, &pipelinePB.TriggerUserPipelineRequest{
+		resp, md, err = request_PipelinePublicService_TriggerUserPipeline_0_form(annotatedContext, inboundMarshaler, client, &pb.TriggerUserPipelineRequest{
 			Inputs: inputs,
 		}, pathParams)
 		if err != nil {
@@ -236,7 +236,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServic
 }
 
 // HandleTriggerAsync
-func HandleTriggerAsync(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+func HandleTriggerAsync(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 
 	ctx, cancel := context.WithCancel(req.Context())
 	defer cancel()
@@ -260,7 +260,7 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pipelinePB.PipelinePublicS
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err = request_PipelinePublicService_TriggerAsyncUserPipeline_0_form(annotatedContext, inboundMarshaler, client, &pipelinePB.TriggerAsyncUserPipelineRequest{
+		resp, md, err = request_PipelinePublicService_TriggerAsyncUserPipeline_0_form(annotatedContext, inboundMarshaler, client, &pb.TriggerAsyncUserPipelineRequest{
 			Inputs: inputs,
 		}, pathParams)
 		if err != nil {
@@ -283,8 +283,8 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pipelinePB.PipelinePublicS
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerUserPipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinePB.TriggerUserPipelineRequest
+func request_PipelinePublicService_TriggerUserPipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pb.TriggerUserPipelineRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -318,7 +318,7 @@ func request_PipelinePublicService_TriggerUserPipeline_0(ctx context.Context, ma
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerUserPipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, protoReq *pipelinePB.TriggerUserPipelineRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerUserPipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, protoReq *pb.TriggerUserPipelineRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -343,8 +343,8 @@ func request_PipelinePublicService_TriggerUserPipeline_0_form(ctx context.Contex
 
 }
 
-func request_PipelinePublicService_TriggerAsyncUserPipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinePB.TriggerAsyncUserPipelineRequest
+func request_PipelinePublicService_TriggerAsyncUserPipeline_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pb.TriggerAsyncUserPipelineRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -378,7 +378,7 @@ func request_PipelinePublicService_TriggerAsyncUserPipeline_0(ctx context.Contex
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerAsyncUserPipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, protoReq *pipelinePB.TriggerAsyncUserPipelineRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerAsyncUserPipeline_0_form(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, protoReq *pb.TriggerAsyncUserPipelineRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -404,7 +404,7 @@ func request_PipelinePublicService_TriggerAsyncUserPipeline_0_form(ctx context.C
 }
 
 // HandleTrigger
-func HandleTriggerRelease(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 
 	ctx, cancel := context.WithCancel(req.Context())
 	defer cancel()
@@ -428,7 +428,7 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pipelinePB.PipelinePubli
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err = request_PipelinePublicService_TriggerUserPipelineRelease_0_form(annotatedContext, inboundMarshaler, client, &pipelinePB.TriggerUserPipelineReleaseRequest{
+		resp, md, err = request_PipelinePublicService_TriggerUserPipelineRelease_0_form(annotatedContext, inboundMarshaler, client, &pb.TriggerUserPipelineReleaseRequest{
 			Inputs: inputs,
 		}, pathParams)
 		if err != nil {
@@ -451,7 +451,7 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pipelinePB.PipelinePubli
 }
 
 // HandleTriggerAsync
-func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pipelinePB.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 
 	ctx, cancel := context.WithCancel(req.Context())
 	defer cancel()
@@ -475,7 +475,7 @@ func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pipelinePB.Pipeline
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err = request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0_form(annotatedContext, inboundMarshaler, client, &pipelinePB.TriggerAsyncUserPipelineReleaseRequest{
+		resp, md, err = request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0_form(annotatedContext, inboundMarshaler, client, &pb.TriggerAsyncUserPipelineReleaseRequest{
 			Inputs: inputs,
 		}, pathParams)
 		if err != nil {
@@ -498,8 +498,8 @@ func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pipelinePB.Pipeline
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerUserPipelineRelease_0(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinePB.TriggerUserPipelineReleaseRequest
+func request_PipelinePublicService_TriggerUserPipelineRelease_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pb.TriggerUserPipelineReleaseRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -533,7 +533,7 @@ func request_PipelinePublicService_TriggerUserPipelineRelease_0(ctx context.Cont
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerUserPipelineRelease_0_form(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, protoReq *pipelinePB.TriggerUserPipelineReleaseRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerUserPipelineRelease_0_form(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, protoReq *pb.TriggerUserPipelineReleaseRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -558,8 +558,8 @@ func request_PipelinePublicService_TriggerUserPipelineRelease_0_form(ctx context
 
 }
 
-func request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq pipelinePB.TriggerAsyncUserPipelineReleaseRequest
+func request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq pb.TriggerAsyncUserPipelineReleaseRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -593,7 +593,7 @@ func request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0(ctx context
 }
 
 // ref: the generated protogen-go files
-func request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0_form(ctx context.Context, marshaler runtime.Marshaler, client pipelinePB.PipelinePublicServiceClient, protoReq *pipelinePB.TriggerAsyncUserPipelineReleaseRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0_form(ctx context.Context, marshaler runtime.Marshaler, client pb.PipelinePublicServiceClient, protoReq *pb.TriggerAsyncUserPipelineReleaseRequest, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var metadata runtime.ServerMetadata
 
 	var (

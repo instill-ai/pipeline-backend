@@ -20,7 +20,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 type ComponentStatus struct {
@@ -659,22 +659,22 @@ func FindReferenceParent(input string) []string {
 	}
 	return upstreams
 }
-func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
-	trace := map[string]*pipelinePB.Trace{}
+func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, computeTime map[string]float32, batchSize int) (map[string]*pb.Trace, error) {
+	trace := map[string]*pb.Trace{}
 	for groupIdx := range comps {
 		for compIdx := range comps[groupIdx] {
 			inputs := []*structpb.Struct{}
 			outputs := []*structpb.Struct{}
-			var traceStatuses []pipelinePB.Trace_Status
+			var traceStatuses []pb.Trace_Status
 			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
 				if checkComponentCompleted(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_COMPLETED)
+					traceStatuses = append(traceStatuses, pb.Trace_STATUS_COMPLETED)
 				} else if checkComponentSkipped(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_SKIPPED)
+					traceStatuses = append(traceStatuses, pb.Trace_STATUS_SKIPPED)
 				} else if checkComponentError(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_ERROR)
+					traceStatuses = append(traceStatuses, pb.Trace_STATUS_ERROR)
 				} else {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_UNSPECIFIED)
+					traceStatuses = append(traceStatuses, pb.Trace_STATUS_UNSPECIFIED)
 				}
 
 			}
@@ -712,7 +712,7 @@ func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, compute
 				}
 			}
 
-			trace[comps[groupIdx][compIdx].ID] = &pipelinePB.Trace{
+			trace[comps[groupIdx][compIdx].ID] = &pb.Trace{
 				Statuses:             traceStatuses,
 				Inputs:               inputs,
 				Outputs:              outputs,

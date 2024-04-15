@@ -20,7 +20,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/paginate"
 
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // TODO: in the repository, we'd better use uid as our function params
@@ -58,7 +58,7 @@ type Repository interface {
 
 	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
 	GetComponentDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
-	UpsertComponentDefinition(context.Context, *pipelinePB.ComponentDefinition) error
+	UpsertComponentDefinition(context.Context, *pb.ComponentDefinition) error
 
 	CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error
 	ListNamespaceSecrets(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) ([]*datamodel.Secret, int64, string, error)
@@ -651,7 +651,7 @@ func (r *repository) GetComponentDefinitionByUID(_ context.Context, uid uuid.UUI
 // datamodel (i.e. the fields used for filtering) and stores it in the
 // database. If the record already exists, it will be updated with the provided
 // fields.
-func (r *repository) UpsertComponentDefinition(_ context.Context, cd *pipelinePB.ComponentDefinition) error {
+func (r *repository) UpsertComponentDefinition(_ context.Context, cd *pb.ComponentDefinition) error {
 	record := datamodel.ComponentDefinitionFromProto(cd)
 	result := r.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(record)
 	if result.Error != nil {

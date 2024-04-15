@@ -10,7 +10,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // PipelineJSONSchema represents the Pipeline JSON Schema for validating the payload
@@ -30,7 +30,7 @@ func InitJSONSchema(ctx context.Context) {
 }
 
 // ValidatePipelineJSONSchema validates the Protobuf message data
-func ValidatePipelineJSONSchema(pbPipeline *pipelinePB.Pipeline) error {
+func ValidatePipelineJSONSchema(pbPipeline *pb.Pipeline) error {
 
 	b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline)
 	if err != nil {

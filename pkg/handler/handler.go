@@ -11,7 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	healthcheckPB "github.com/instill-ai/protogen-go/common/healthcheck/v1beta"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // TODO: in the public_handler, we should convert all id to uuid when calling service
@@ -20,7 +20,7 @@ var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
 
 // PublicHandler handles public API
 type PublicHandler struct {
-	// pipelinePB.UnimplementedPipelinePublicServiceServer
+	// pb.UnimplementedPipelinePublicServiceServer
 	service service.Service
 }
 
@@ -33,7 +33,7 @@ type TriggerPipelineRequestInterface interface {
 }
 
 // NewPublicHandler initiates a handler instance
-func NewPublicHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePublicServiceServer {
+func NewPublicHandler(ctx context.Context, s service.Service) pb.PipelinePublicServiceServer {
 	datamodel.InitJSONSchema(ctx)
 	return &PublicHandler{
 		service: s,
@@ -50,16 +50,16 @@ func (h *PublicHandler) SetService(s service.Service) {
 	h.service = s
 }
 
-func (h *PublicHandler) Liveness(ctx context.Context, req *pipelinePB.LivenessRequest) (*pipelinePB.LivenessResponse, error) {
-	return &pipelinePB.LivenessResponse{
+func (h *PublicHandler) Liveness(ctx context.Context, req *pb.LivenessRequest) (*pb.LivenessResponse, error) {
+	return &pb.LivenessResponse{
 		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{
 			Status: healthcheckPB.HealthCheckResponse_SERVING_STATUS_SERVING,
 		},
 	}, nil
 }
 
-func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.ReadinessRequest) (*pipelinePB.ReadinessResponse, error) {
-	return &pipelinePB.ReadinessResponse{
+func (h *PublicHandler) Readiness(ctx context.Context, req *pb.ReadinessRequest) (*pb.ReadinessResponse, error) {
+	return &pb.ReadinessResponse{
 		HealthCheckResponse: &healthcheckPB.HealthCheckResponse{
 			Status: healthcheckPB.HealthCheckResponse_SERVING_STATUS_SERVING,
 		},
@@ -68,12 +68,12 @@ func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinePB.Readiness
 
 // PrivateHandler handles private API
 type PrivateHandler struct {
-	pipelinePB.UnimplementedPipelinePrivateServiceServer
+	pb.UnimplementedPipelinePrivateServiceServer
 	service service.Service
 }
 
 // NewPrivateHandler initiates a handler instance
-func NewPrivateHandler(ctx context.Context, s service.Service) pipelinePB.PipelinePrivateServiceServer {
+func NewPrivateHandler(ctx context.Context, s service.Service) pb.PipelinePrivateServiceServer {
 	datamodel.InitJSONSchema(ctx)
 	return &PrivateHandler{
 		service: s,
@@ -90,7 +90,7 @@ func (h *PrivateHandler) SetService(s service.Service) {
 	h.service = s
 }
 
-func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinePB.CheckNameRequest) (resp *pipelinePB.CheckNameResponse, err error) {
+func (h *PublicHandler) CheckName(ctx context.Context, req *pb.CheckNameRequest) (resp *pb.CheckNameResponse, err error) {
 	name := req.GetName()
 
 	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, name)
@@ -103,18 +103,18 @@ func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinePB.CheckName
 	rscType := strings.Split(name, "/")[2]
 
 	if rscType == "pipelines" {
-		_, err := h.service.GetNamespacePipelineByID(ctx, ns, id, pipelinePB.Pipeline_VIEW_BASIC)
+		_, err := h.service.GetNamespacePipelineByID(ctx, ns, id, pb.Pipeline_VIEW_BASIC)
 		if err != nil && errors.Is(err, service.ErrNotFound) {
-			return &pipelinePB.CheckNameResponse{
-				Availability: pipelinePB.CheckNameResponse_NAME_AVAILABLE,
+			return &pb.CheckNameResponse{
+				Availability: pb.CheckNameResponse_NAME_AVAILABLE,
 			}, nil
 		}
 	} else {
-		return &pipelinePB.CheckNameResponse{
-			Availability: pipelinePB.CheckNameResponse_NAME_UNAVAILABLE,
+		return &pb.CheckNameResponse{
+			Availability: pb.CheckNameResponse_NAME_UNAVAILABLE,
 		}, nil
 	}
-	return &pipelinePB.CheckNameResponse{
-		Availability: pipelinePB.CheckNameResponse_NAME_UNAVAILABLE,
+	return &pb.CheckNameResponse{
+		Availability: pb.CheckNameResponse_NAME_UNAVAILABLE,
 	}, nil
 }

@@ -47,7 +47,7 @@ import (
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 var propagator propagation.TextMapPropagator
@@ -71,7 +71,7 @@ func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handl
 }
 
 // InitPipelinePublicServiceClient initialises a PipelineServiceClient instance
-func InitPipelinePublicServiceClient(ctx context.Context) (pipelinePB.PipelinePublicServiceClient, *grpc.ClientConn) {
+func InitPipelinePublicServiceClient(ctx context.Context) (pb.PipelinePublicServiceClient, *grpc.ClientConn) {
 	logger, _ := logger.GetZapLogger(ctx)
 
 	var clientDialOpts grpc.DialOption
@@ -93,7 +93,7 @@ func InitPipelinePublicServiceClient(ctx context.Context) (pipelinePB.PipelinePu
 		return nil, nil
 	}
 
-	return pipelinePB.NewPipelinePublicServiceClient(clientConn), clientConn
+	return pb.NewPipelinePublicServiceClient(clientConn), clientConn
 }
 
 func main() {
@@ -262,12 +262,12 @@ func main() {
 	publicGrpcS := grpc.NewServer(grpcServerOpts...)
 	reflection.Register(publicGrpcS)
 
-	pipelinePB.RegisterPipelinePrivateServiceServer(
+	pb.RegisterPipelinePrivateServiceServer(
 		privateGrpcS,
 		handler.NewPrivateHandler(ctx, service),
 	)
 
-	pipelinePB.RegisterPipelinePublicServiceServer(
+	pb.RegisterPipelinePublicServiceServer(
 		publicGrpcS,
 		handler.NewPublicHandler(ctx, service),
 	)
@@ -334,11 +334,11 @@ func main() {
 		dialOpts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize))}
 	}
 
-	if err := pipelinePB.RegisterPipelinePrivateServiceHandlerFromEndpoint(ctx, privateServeMux, fmt.Sprintf(":%v", config.Config.Server.PrivatePort), dialOpts); err != nil {
+	if err := pb.RegisterPipelinePrivateServiceHandlerFromEndpoint(ctx, privateServeMux, fmt.Sprintf(":%v", config.Config.Server.PrivatePort), dialOpts); err != nil {
 		logger.Fatal(err.Error())
 	}
 
-	if err := pipelinePB.RegisterPipelinePublicServiceHandlerFromEndpoint(ctx, publicServeMux, fmt.Sprintf(":%v", config.Config.Server.PublicPort), dialOpts); err != nil {
+	if err := pb.RegisterPipelinePublicServiceHandlerFromEndpoint(ctx, publicServeMux, fmt.Sprintf(":%v", config.Config.Server.PublicPort), dialOpts); err != nil {
 		logger.Fatal(err.Error())
 	}
 
