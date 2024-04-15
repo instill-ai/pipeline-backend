@@ -209,7 +209,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
 			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA:
 
-			cd, err := s.connector.GetConnectorDefinitionByUID(uid.UID, nil, nil)
+			cd, err := s.connector.GetConnectorDefinitionByUID(uid.UID, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -332,7 +332,7 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string, view pb.ComponentDefinition_View) (*pb.ConnectorDefinition, error) {
 
-	def, err := s.connector.GetConnectorDefinitionByID(id, nil, nil)
+	def, err := s.connector.GetConnectorDefinitionByID(id, nil)
 	if err != nil {
 		return nil, err
 	}
