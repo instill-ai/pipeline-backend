@@ -93,15 +93,11 @@ type Component struct {
 	ID       string         `json:"id"`
 	Metadata datatypes.JSON `json:"metadata"`
 	// TODO: validate oneof
-	ResponseComponent  *ResponseComponent  `json:"response_component,omitempty"`
 	ConnectorComponent *ConnectorComponent `json:"connector_component,omitempty"`
 	OperatorComponent  *OperatorComponent  `json:"operator_component,omitempty"`
 	IteratorComponent  *IteratorComponent  `json:"iterator_component,omitempty"`
 }
 
-func (c *Component) IsResponseComponent() bool {
-	return c.ResponseComponent != nil
-}
 func (c *Component) IsConnectorComponent() bool {
 	return c.ConnectorComponent != nil
 }
@@ -124,23 +120,24 @@ func (c *Component) GetCondition() *string {
 	return nil
 }
 
-type TriggerByRequest struct {
-	Fields map[string]struct {
-		Title              string `json:"title"`
-		Description        string `json:"description"`
-		InstillFormat      string `json:"instill_format"`
-		InstillUIOrder     int32  `json:"instill_ui_order"`
-		InstillUIMultiline bool   `json:"instill_ui_multiline"`
-	} `json:"fields"`
+type TriggerByRequestRequestFields map[string]struct {
+	Title              string `json:"title"`
+	Description        string `json:"description"`
+	InstillFormat      string `json:"instill_format"`
+	InstillUIOrder     int32  `json:"instill_ui_order"`
+	InstillUIMultiline bool   `json:"instill_ui_multiline"`
 }
 
-type ResponseComponent struct {
-	Fields map[string]struct {
-		Title          string `json:"title"`
-		Description    string `json:"description"`
-		Value          string `json:"value"`
-		InstillUIOrder int32  `json:"instill_ui_order"`
-	} `json:"fields"`
+type TriggerByRequestResponseFields map[string]struct {
+	Title          string `json:"title"`
+	Description    string `json:"description"`
+	Value          string `json:"value"`
+	InstillUIOrder int32  `json:"instill_ui_order"`
+}
+
+type TriggerByRequest struct {
+	RequestFields  TriggerByRequestRequestFields  `json:"request_fields"`
+	ResponseFields TriggerByRequestResponseFields `json:"response_fields"`
 }
 
 type ConnectorComponent struct {

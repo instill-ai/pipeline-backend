@@ -625,11 +625,6 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 				}
 			}
 		}
-		if component.IsResponseComponent() {
-			for _, v := range component.ResponseComponent.Fields {
-				parents = append(parents, FindReferenceParent(v.Value)...)
-			}
-		}
 
 		for idx := range parents {
 			if upstream, ok := componentIDMap[parents[idx]]; ok {
@@ -679,37 +674,35 @@ func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, compute
 
 			}
 
-			if !comps[groupIdx][compIdx].IsResponseComponent() {
-				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["input"]; ok {
-						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["input"])
-						if err != nil {
-							return nil, err
-						}
-						inputStruct := &structpb.Struct{}
-						err = protojson.Unmarshal(data, inputStruct)
-						if err != nil {
-							return nil, err
-						}
-						inputs = append(inputs, inputStruct)
+			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
+				if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["input"]; ok {
+					data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["input"])
+					if err != nil {
+						return nil, err
 					}
-
-				}
-				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["output"]; ok {
-						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["output"])
-						if err != nil {
-							return nil, err
-						}
-						outputStruct := &structpb.Struct{}
-						err = protojson.Unmarshal(data, outputStruct)
-						if err != nil {
-							return nil, err
-						}
-						outputs = append(outputs, outputStruct)
+					inputStruct := &structpb.Struct{}
+					err = protojson.Unmarshal(data, inputStruct)
+					if err != nil {
+						return nil, err
 					}
-
+					inputs = append(inputs, inputStruct)
 				}
+
+			}
+			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
+				if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["output"]; ok {
+					data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["output"])
+					if err != nil {
+						return nil, err
+					}
+					outputStruct := &structpb.Struct{}
+					err = protojson.Unmarshal(data, outputStruct)
+					if err != nil {
+						return nil, err
+					}
+					outputs = append(outputs, outputStruct)
+				}
+
 			}
 
 			trace[comps[groupIdx][compIdx].ID] = &pb.Trace{

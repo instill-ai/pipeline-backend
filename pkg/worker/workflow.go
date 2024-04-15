@@ -78,7 +78,6 @@ type ExecuteTriggerStartActivityResponse struct {
 	OrderedComps        [][]*datamodel.Component
 	DAG                 *dag
 	BatchSize           int
-	RespComponent       *datamodel.Component
 	ComputeTime         map[string]float32
 }
 
@@ -86,7 +85,7 @@ type ExecuteTriggerEndActivityRequest struct {
 	MemoryBlobRedisKeys []string
 	OrderedComps        [][]*datamodel.Component
 	BatchSize           int
-	RespComponent       *datamodel.Component
+	ResponseFields      *datamodel.TriggerByRequestResponseFields
 	ComputeTime         map[string]float32
 	ReturnTraces        bool
 	WorkflowExecutionID string //workflow.GetInfo(ctx).WorkflowExecution.ID
@@ -326,7 +325,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		MemoryBlobRedisKeys: dagResult.MemoryBlobRedisKeys,
 		OrderedComps:        startResult.OrderedComps,
 		BatchSize:           startResult.BatchSize,
-		RespComponent:       startResult.RespComponent,
+		ResponseFields:      &param.PipelineRecipe.Trigger.TriggerByRequest.ResponseFields,
 		ComputeTime:         startResult.ComputeTime,
 		ReturnTraces:        param.ReturnTraces,
 		WorkflowExecutionID: workflow.GetInfo(ctx).WorkflowExecution.ID,
@@ -352,16 +351,7 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 
 	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
 
-	var respComp *datamodel.Component
-	compsToDAG := []*datamodel.Component{}
-	for idx := range param.PipelineRecipe.Components {
-		if param.PipelineRecipe.Components[idx].IsResponseComponent() {
-			respComp = param.PipelineRecipe.Components[idx]
-		} else {
-			compsToDAG = append(compsToDAG, param.PipelineRecipe.Components[idx])
-		}
-	}
-	dag, err := GenerateDAG(compsToDAG)
+	dag, err := GenerateDAG(param.PipelineRecipe.Components)
 	if err != nil {
 		return nil, err
 	}
@@ -447,7 +437,6 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 		OrderedComps:        orderedComp,
 		DAG:                 dag,
 		BatchSize:           batchSize,
-		RespComponent:       respComp,
 		ComputeTime:         computeTime,
 	}, nil
 }
@@ -462,14 +451,14 @@ func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEn
 	}
 
 	pipelineOutputs := []*structpb.Struct{}
-	if param.RespComponent == nil {
+	if param.ResponseFields == nil {
 		for idx := 0; idx < param.BatchSize; idx++ {
 			pipelineOutputs = append(pipelineOutputs, &structpb.Struct{})
 		}
 	} else {
 		for idx := 0; idx < param.BatchSize; idx++ {
 			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-			for k, v := range param.RespComponent.ResponseComponent.Fields {
+			for k, v := range *param.ResponseFields {
 				// TODO: The end component should allow partial upstream skipping.
 				// This is a temporary implementation.
 				o, _ := RenderInput(v.Value, memory[idx])

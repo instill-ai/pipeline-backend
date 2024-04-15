@@ -533,11 +533,11 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 	schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	schStruct.Fields["type"] = structpb.NewStringValue("object")
-	b, _ := json.Marshal(recipe.Trigger.TriggerByRequest.Fields)
+	b, _ := json.Marshal(recipe.Trigger.TriggerByRequest.RequestFields)
 	properties := &structpb.Struct{}
 	_ = protojson.Unmarshal(b, properties)
 	schStruct.Fields["properties"] = structpb.NewStructValue(properties)
-	for k, v := range recipe.Trigger.TriggerByRequest.Fields {
+	for k, v := range recipe.Trigger.TriggerByRequest.RequestFields {
 		instillFormatMap[k] = v.InstillFormat
 	}
 	err := component.CompileInstillAcceptFormats(schStruct)

@@ -474,8 +474,6 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 	var pbRecipe *pb.Recipe
 
-	var respComp *pb.ResponseComponent
-
 	if dbPipeline.Recipe != nil && view != pb.Pipeline_VIEW_BASIC {
 		pbRecipe = &pb.Recipe{}
 
@@ -494,12 +492,6 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	if view == pb.Pipeline_VIEW_FULL {
 		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
-		}
-		for i := range pbRecipe.Components {
-			switch pbRecipe.Components[i].Component.(type) {
-			case *pb.Component_ResponseComponent:
-				respComp = pbRecipe.Components[i].GetResponseComponent()
-			}
 		}
 	}
 
@@ -605,8 +597,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	go func() {
 		defer wg.Done()
-		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && pbRecipe.Trigger.GetTriggerByRequest() != nil && respComp != nil {
-			spec, err := s.GeneratePipelineDataSpec(pbRecipe.Trigger.GetTriggerByRequest(), respComp, pbRecipe.Components)
+		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && pbRecipe.Trigger.GetTriggerByRequest() != nil {
+			spec, err := s.GeneratePipelineDataSpec(pbRecipe.Trigger.GetTriggerByRequest(), pbRecipe.Components)
 			if err != nil {
 				return
 			}
@@ -771,17 +763,10 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 	}
 
 	var triggerByRequest *pb.TriggerByRequest
-	var respComp *pb.ResponseComponent
 
 	if view == pb.Pipeline_VIEW_FULL {
 		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
-		}
-		for i := range pbRecipe.Components {
-			switch pbRecipe.Components[i].Component.(type) {
-			case *pb.Component_ResponseComponent:
-				respComp = pbRecipe.Components[i].GetResponseComponent()
-			}
 		}
 	}
 
@@ -820,8 +805,8 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 		}
 	}
 
-	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && triggerByRequest != nil && respComp != nil {
-		spec, err := s.GeneratePipelineDataSpec(triggerByRequest, respComp, pbRecipe.Components)
+	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && triggerByRequest != nil {
+		spec, err := s.GeneratePipelineDataSpec(triggerByRequest, pbRecipe.Components)
 		if err == nil {
 			pbPipelineRelease.DataSpecification = spec
 		}
@@ -872,7 +857,7 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamo
 }
 
 // TODO: refactor these codes
-func (s *service) GeneratePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByRequest, respCompOrigin *pb.ResponseComponent, compsOrigin []*pb.Component) (*pb.DataSpecification, error) {
+func (s *service) GeneratePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByRequest, compsOrigin []*pb.Component) (*pb.DataSpecification, error) {
 	success := true
 	pipelineDataSpec := &pb.DataSpecification{}
 
@@ -881,7 +866,7 @@ func (s *service) GeneratePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByR
 	dataInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
 	triggerByRequest := proto.Clone(triggerByRequestOrigin).(*pb.TriggerByRequest)
-	for k, v := range triggerByRequest.GetFields() {
+	for k, v := range triggerByRequest.GetRequestFields() {
 		b, _ := protojson.Marshal(v)
 		p := &structpb.Struct{}
 		_ = protojson.Unmarshal(b, p)
@@ -893,12 +878,12 @@ func (s *service) GeneratePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByR
 	dataOutput.Fields["type"] = structpb.NewStringValue("object")
 	dataOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
-	respComp := proto.Clone(respCompOrigin).(*pb.ResponseComponent)
-
-	for k, v := range respComp.Fields {
+	for k, v := range triggerByRequest.GetResponseFields() {
 		var m *structpb.Value
 
 		var err error
+
+		v = proto.Clone(v).(*pb.TriggerByRequest_ResponseField)
 
 		str := v.Value
 		if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
