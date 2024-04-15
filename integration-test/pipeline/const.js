@@ -77,90 +77,30 @@ export const paramsHTTPWithJwt = {
   },
 };
 
-export const dstCSVConnID1 = "some_cool_name_for_connector_1";
-export const dstCSVConnID2 = "some_cool_name_for_connector_2";
 
 export const simpleRecipe = {
   recipe: {
     version:  "v1beta",
+    trigger_by_request: {
+      fields: {
+        input: {
+          title: "Input",
+          instill_format: "string"
+        }
+      }
+    },
     components: [
       {
-        id: "start",
-        start_component: {
-          fields: {
-            input: {
-              title: "Input",
-              instill_format: "string"
-            }
-          }
-        }
-      },
-      {
         id: "end",
-        end_component: {
+        response_component: {
           fields: {
             answer: {
               title: "Answer",
-              value: "${start.input}"
+              value: "${request.input}"
             }
           }
         }
-      },
-      {
-        id: "d01",
-        connector_component: {
-          connector_name: `users/admin/connectors/${dstCSVConnID1}`,
-          definition_name: "connector-definitions/airbyte-destination",
-          input: {
-            data: {
-              text: "${start.input}"
-            }
-          }
-
-        }
-      },
-      {
-        id: "d02",
-        connector_component: {
-          connector_name: `users/admin/connectors/${dstCSVConnID2}`,
-          definition_name: "connector-definitions/airbyte-destination",
-          input: {
-            data: {
-              text: "${start.input}"
-            }
-          }
-        }
-      },
-    ],
-  },
-};
-
-export const simpleRecipeWithoutCSV = {
-  recipe: {
-    version: "v1beta",
-    components: [
-      {
-        id: "start",
-        start_component: {
-          fields: {
-            input: {
-              title: "Input",
-              instill_format: "string"
-            }
-          }
-        }
-      },
-      {
-        id: "end",
-        end_component: {
-          fields: {
-            answer: {
-              title: "Answer",
-              value: "${start.input}"
-            }
-          }
-        }
-      },
+      }
     ],
   },
 };
@@ -182,7 +122,7 @@ export const simpleRecipeDupId = {
       },
       {
         id: "end",
-        end_component: {
+        response_component: {
           fields: {
             answer: {
               title: "Answer",
@@ -192,26 +132,20 @@ export const simpleRecipeDupId = {
         }
       },
       {
-        id: "d01",
-        connector_component: {
-          connector_name: `users/admin/connectors/${dstCSVConnID1}`,
-          definition_name: "connector-definitions/airbyte-destination",
+        id: "b01",
+        operator_component: {
+          definition_name: "operator-definitions/base64",
           input: {
-            data: {
-              text: "${start.input}"
-            }
+            data: "${start.input}"
           }
         }
       },
       {
-        id: "d01",
-        connector_component: {
-          connector_name: `users/admin/connectors/${dstCSVConnID2}`,
-          definition_name: "connector-definitions/airbyte-destination",
+        id: "b01",
+        operator_component: {
+          definition_name: "operator-definitions/base64",
           input: {
-            data: {
-              text: "${start.input}"
-            }
+            data: "${start.input}"
           }
         }
       },

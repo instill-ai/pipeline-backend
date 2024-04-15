@@ -11,8 +11,8 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 // VDP definitions
 import "../../../vdp/pipeline/v1beta/common.proto";
 import "../../../vdp/pipeline/v1beta/component_definition.proto";
-import "../../../vdp/pipeline/v1beta/connector.proto";
 import "../../../vdp/pipeline/v1beta/pipeline.proto";
+import "../../../vdp/pipeline/v1beta/secret.proto";
 
 // VDP
 //
@@ -641,269 +641,6 @@ service PipelinePublicService {
     option (google.api.method_signature) = "name";
   }
 
-  /////////////////////////////////
-  // Connector methods
-  /////////////////////////////////
-
-  // List connectors
-  //
-  // Returns all the connectors that are visible to the authenticated user.
-  rpc ListConnectors(ListConnectorsRequest) returns (ListConnectorsResponse) {
-    option (google.api.http) = {get: "/v1beta/connectors"};
-  }
-
-  // Get a connector by UID
-  //
-  // Returns the details of a connector by UID.
-  rpc LookUpConnector(LookUpConnectorRequest) returns (LookUpConnectorResponse) {
-    option (google.api.http) = {get: "/v1beta/{permalink=connectors/*}/lookUp"};
-    option (google.api.method_signature) = "permalink";
-  }
-
-  // Create a new user connector
-  //
-  // Creates a new connector under the parenthood of a user. Users can only
-  // create a connector parents of that resource (i.e. the authenticated user
-  // must match the `parent` path parameter).
-  rpc CreateUserConnector(CreateUserConnectorRequest) returns (CreateUserConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{parent=users/*}/connectors"
-      body: "connector"
-    };
-    option (google.api.method_signature) = "parent,connector";
-  }
-
-  // List user connectors
-  //
-  // Returns a paginated list of connectors that belong to the specified user.
-  rpc ListUserConnectors(ListUserConnectorsRequest) returns (ListUserConnectorsResponse) {
-    option (google.api.http) = {get: "/v1beta/{parent=users/*}/connectors"};
-    option (google.api.method_signature) = "parent";
-  }
-
-  // Get a connector owned by a user.
-  //
-  // Returns the details of a user-owned connector.
-  rpc GetUserConnector(GetUserConnectorRequest) returns (GetUserConnectorResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=users/*/connectors/*}"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // Update a connector owned by a user.
-  //
-  // Updates a user-owned connector. The authebnticated user must be the parent
-  // of the connector.
-  //
-  // In REST requests, only the supplied connector fields will be taken into
-  // account when updating the resource.
-  rpc UpdateUserConnector(UpdateUserConnectorRequest) returns (UpdateUserConnectorResponse) {
-    option (google.api.http) = {
-      patch: "/v1beta/{connector.name=users/*/connectors/*}"
-      body: "connector"
-    };
-    option (google.api.method_signature) = "connector,update_mask";
-  }
-
-  // Delete a connector owned by a user
-  //
-  // Deletes a connector. The authenticated user must be the parent of the
-  // connector in order to delete it.
-  rpc DeleteUserConnector(DeleteUserConnectorRequest) returns (DeleteUserConnectorResponse) {
-    option (google.api.http) = {delete: "/v1beta/{name=users/*/connectors/*}"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // Connect a connector owned by a user
-  //
-  // Transitions the state of a connector from `DISCONNECTED` to `CONNECTED`. If
-  // the state of the connector is different when the request is made, an error
-  // is returned.
-  rpc ConnectUserConnector(ConnectUserConnectorRequest) returns (ConnectUserConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{name=users/*/connectors/*}/connect"
-      body: "*"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // Disconnect a connector owned by a user
-  //
-  // Transitions the state of a connector from `CONNECTED` to `DISCONNECTED`. If
-  // the state of the connector is different when the request is made, an error
-  // is returned.
-  rpc DisconnectUserConnector(DisconnectUserConnectorRequest) returns (DisconnectUserConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{name=users/*/connectors/*}/disconnect"
-      body: "*"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // Rename a connector owned by a user
-  //
-  // Updates the ID of a connector. Since this is an output-only field, a custom
-  // method is required to modify it.
-  //
-  // The connector name will be updated accordingly, as it is  composed by the
-  // parent user and ID of the connector (e.g.
-  // `users/indiana-jones/connector/whip`).
-  //
-  // The authenticated user must be the parent of the connector in order to
-  // perform this action.
-  rpc RenameUserConnector(RenameUserConnectorRequest) returns (RenameUserConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{name=users/*/connectors/*}/rename"
-      body: "*"
-    };
-    option (google.api.method_signature) = "name,new_connector_id";
-  }
-
-  // Execute a connector owned by a user
-  //
-  // Executes a task in a user-owned connector.
-  rpc ExecuteUserConnector(ExecuteUserConnectorRequest) returns (ExecuteUserConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{name=users/*/connectors/*}/execute"
-      body: "*"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // Get the state of a connector owned by a user
-  //
-  // Gets the state of a user-owned connector.
-  rpc WatchUserConnector(WatchUserConnectorRequest) returns (WatchUserConnectorResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=users/*/connectors/*}/watch"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // Test a connector owned by a user
-  //
-  // Tests the connection on a user-owned connector.
-  rpc TestUserConnector(TestUserConnectorRequest) returns (TestUserConnectorResponse) {
-    option (google.api.http) = {post: "/v1beta/{name=users/*/connectors/*}/testConnection"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // Create a new organization connector
-  //
-  // Creates a new connector under the parenthood of an organization.
-  rpc CreateOrganizationConnector(CreateOrganizationConnectorRequest) returns (CreateOrganizationConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{parent=organizations/*}/connectors"
-      body: "connector"
-    };
-    option (google.api.method_signature) = "parent,connector";
-  }
-
-  // List organization connectors
-  //
-  // Returns a paginated list of connectors that belong to the specified
-  // organization.
-  rpc ListOrganizationConnectors(ListOrganizationConnectorsRequest) returns (ListOrganizationConnectorsResponse) {
-    option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/connectors"};
-    option (google.api.method_signature) = "parent";
-  }
-
-  // Get a connector owned by an organization.
-  //
-  // Returns the details of an organization-owned connector.
-  rpc GetOrganizationConnector(GetOrganizationConnectorRequest) returns (GetOrganizationConnectorResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=organizations/*/connectors/*}"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // Update a connector owned by an organization.
-  //
-  // Updates an organization-owned connector.
-  //
-  // In REST requests, only the supplied connector fields will be taken into
-  // account when updating the resource.
-  rpc UpdateOrganizationConnector(UpdateOrganizationConnectorRequest) returns (UpdateOrganizationConnectorResponse) {
-    option (google.api.http) = {
-      patch: "/v1beta/{connector.name=organizations/*/connectors/*}"
-      body: "connector"
-    };
-    option (google.api.method_signature) = "connector,update_mask";
-  }
-
-  // Delete a connector owned by an organization
-  //
-  // Deletes a connector.
-  rpc DeleteOrganizationConnector(DeleteOrganizationConnectorRequest) returns (DeleteOrganizationConnectorResponse) {
-    option (google.api.http) = {delete: "/v1beta/{name=organizations/*/connectors/*}"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // Connect a connector owned by an organization
-  //
-  // Transitions the state of a connector from `DISCONNECTED` to `CONNECTED`. If
-  // the state of the connector is different when the request is made, an error
-  // is returned.
-  rpc ConnectOrganizationConnector(ConnectOrganizationConnectorRequest) returns (ConnectOrganizationConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{name=organizations/*/connectors/*}/connect"
-      body: "*"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // Disconnect a connector owned by an organization
-  //
-  // Transitions the state of a connector from `CONNECTED` to `DISCONNECTED`. If
-  // the state of the connector is different when the request is made, an error
-  // is returned.
-  rpc DisconnectOrganizationConnector(DisconnectOrganizationConnectorRequest) returns (DisconnectOrganizationConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{name=organizations/*/connectors/*}/disconnect"
-      body: "*"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // Rename a connector owned by an organization
-  //
-  // Updates the ID of a connector. Since this is an output-only field, a custom
-  // method is required to modify it.
-  //
-  // The connector name will be updated accordingly, as it is  composed by the
-  // parent organization and ID of the connector (e.g.
-  // `organizations/indiana-jones/connector/whip`).
-  rpc RenameOrganizationConnector(RenameOrganizationConnectorRequest) returns (RenameOrganizationConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{name=organizations/*/connectors/*}/rename"
-      body: "*"
-    };
-    option (google.api.method_signature) = "name,new_connector_id";
-  }
-
-  // Execute a connector owned by an organization
-  //
-  // Executes a task in an organization-owned connector.
-  rpc ExecuteOrganizationConnector(ExecuteOrganizationConnectorRequest) returns (ExecuteOrganizationConnectorResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/{name=organizations/*/connectors/*}/execute"
-      body: "*"
-    };
-    option (google.api.method_signature) = "name";
-  }
-
-  // Get the state of a connector owned by an organization
-  //
-  // Gets the state of an organization-owned connector.
-  rpc WatchOrganizationConnector(WatchOrganizationConnectorRequest) returns (WatchOrganizationConnectorResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=organizations/*/connectors/*}/watch"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // Test a connector owned by an organization
-  //
-  // Tests the connection on an organization-owned connector.
-  rpc TestOrganizationConnector(TestOrganizationConnectorRequest) returns (TestOrganizationConnectorResponse) {
-    option (google.api.http) = {post: "/v1beta/{name=organizations/*/connectors/*}/testConnection"};
-    option (google.api.method_signature) = "name";
-  }
-
   // Check the availibity of a resource name
   //
   // Check whether a resource name is already in use. Currently this endpoint
@@ -913,6 +650,109 @@ service PipelinePublicService {
       post: "/v1beta/check-name"
       body: "*"
     };
+    option (google.api.method_signature) = "name";
+  }
+
+  // Create a new user secret
+  //
+  // Creates a new secret under the parenthood of an user.
+  rpc CreateUserSecret(CreateUserSecretRequest) returns (CreateUserSecretResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/user/secrets"
+      body: "secret"
+    };
+    option (google.api.method_signature) = "secret";
+  }
+
+  // List user secrets
+  //
+  // Returns a paginated list of secrets that belong to the specified
+  // user.
+  rpc ListUserSecrets(ListUserSecretsRequest) returns (ListUserSecretsResponse) {
+    option (google.api.http) = {get: "/v1beta/user/secrets"};
+  }
+
+  // Get a secret owned by an user
+  //
+  // Returns the details of an user-owned secret by its resource name,
+  // which is defined by the parent user and the ID of the secret.
+  rpc GetUserSecret(GetUserSecretRequest) returns (GetUserSecretResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=user/secrets/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Update a secret owned by an user
+  //
+  // Udpates a secret, accessing it by its resource name, which is defined by
+  //
+  // In REST requests, only the supplied secret fields will be taken into
+  // account when updating the resource.
+  rpc UpdateUserSecret(UpdateUserSecretRequest) returns (UpdateUserSecretResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{secret.name=user/secrets/*}"
+      body: "secret"
+    };
+    option (google.api.method_signature) = "secret,update_mask";
+  }
+
+  // Delete a secret owned by an user
+  //
+  // Deletes a secret, accesing it by its resource name, which is defined by
+  // the parent user and the ID of the secret.
+  rpc DeleteUserSecret(DeleteUserSecretRequest) returns (DeleteUserSecretResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=user/secrets/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Create a new organization secret
+  //
+  // Creates a new secret under the parenthood of an organization.
+  rpc CreateOrganizationSecret(CreateOrganizationSecretRequest) returns (CreateOrganizationSecretResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{parent=organizations/*}/secrets"
+      body: "secret"
+    };
+    option (google.api.method_signature) = "parent,secret";
+  }
+
+  // List organization secrets
+  //
+  // Returns a paginated list of secrets that belong to the specified
+  // organization.
+  rpc ListOrganizationSecrets(ListOrganizationSecretsRequest) returns (ListOrganizationSecretsResponse) {
+    option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/secrets"};
+    option (google.api.method_signature) = "parent";
+  }
+
+  // Get a secret owned by an organization
+  //
+  // Returns the details of an organization-owned secret by its resource name,
+  // which is defined by the parent organization and the ID of the secret.
+  rpc GetOrganizationSecret(GetOrganizationSecretRequest) returns (GetOrganizationSecretResponse) {
+    option (google.api.http) = {get: "/v1beta/{name=organizations/*/secrets/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Update a secret owned by an organization
+  //
+  // Udpates a secret, accessing it by its resource name, which is defined by
+  //
+  // In REST requests, only the supplied secret fields will be taken into
+  // account when updating the resource.
+  rpc UpdateOrganizationSecret(UpdateOrganizationSecretRequest) returns (UpdateOrganizationSecretResponse) {
+    option (google.api.http) = {
+      patch: "/v1beta/{secret.name=organizations/*/secrets/*}"
+      body: "secret"
+    };
+    option (google.api.method_signature) = "secret,update_mask";
+  }
+
+  // Delete a secret owned by an organization
+  //
+  // Deletes a secret, accesing it by its resource name, which is defined by
+  // the parent organization and the ID of the secret.
+  rpc DeleteOrganizationSecret(DeleteOrganizationSecretRequest) returns (DeleteOrganizationSecretResponse) {
+    option (google.api.http) = {delete: "/v1beta/{name=organizations/*/secrets/*}"};
     option (google.api.method_signature) = "name";
   }
 }

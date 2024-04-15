@@ -53,75 +53,6 @@ export function setup() {
     "timeout": "600s",
   }
 
-  group(
-    "Connector Backend API: Create a CSV destination connector 1",
-    function () {
-      check(
-        client.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector",
-          {
-            parent: `${constant.namespace}`,
-            connector: {
-              id: constant.dstCSVConnID1,
-              connector_definition_name:
-                "connector-definitions/airbyte-destination",
-              configuration: {
-                destination: "airbyte-destination-csv",
-                destination_path: "/local/pipeline-backend-test-1",
-              },
-            },
-          },
-          metadata
-        ),
-        {
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV response StatusOK":
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-      client.invoke(
-        "vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector",
-        {
-          name: `${constant.namespace}/connectors/${constant.dstCSVConnID1}`,
-        },
-        metadata
-      );
-    }
-  );
-  group(
-    "Connector Backend API: Create a CSV destination connector 2",
-    function () {
-      check(
-        client.invoke(
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector",
-          {
-            parent: `${constant.namespace}`,
-            connector: {
-              id: constant.dstCSVConnID2,
-              connector_definition_name:
-                "connector-definitions/airbyte-destination",
-              configuration: {
-                destination: "airbyte-destination-csv",
-                destination_path: "/local/pipeline-backend-test-2",
-              },
-            },
-          },
-          metadata
-        ),
-        {
-          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserConnector CSV response StatusOK":
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-      client.invoke(
-        "vdp.pipeline.v1beta.PipelinePublicService/ConnectUserConnector",
-        {
-          name: `${constant.namespace}/connectors/${constant.dstCSVConnID2}`,
-        },
-        metadata
-      );
-    }
-  );
-
   var resp = client.invoke(
     "core.mgmt.v1beta.MgmtPublicService/GetAuthenticatedUser",
     {},
@@ -215,43 +146,6 @@ export function teardown(data) {
   client.connect(constant.pipelineGRPCPublicHost, {
     plaintext: true,
   });
-
-  group(
-    "Connector Backend API: Delete the csv destination connector 1",
-    function () {
-      check(
-        client.invoke(
-          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`,
-          {
-            name: `${constant.namespace}/connectors/${constant.dstCSVConnID1}`,
-          },
-          data.metadata
-        ),
-        {
-          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-    }
-  );
-  group(
-    "Connector Backend API: Delete the csv destination connector 2",
-    function () {
-      check(
-        client.invoke(
-          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector`,
-          {
-            name: `${constant.namespace}/connectors/${constant.dstCSVConnID2}`,
-          },
-          data.metadata
-        ),
-        {
-          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserConnector response StatusOK`]:
-            (r) => r.status === grpc.StatusOK,
-        }
-      );
-    }
-  );
 
   client.close();
 }

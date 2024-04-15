@@ -89,9 +89,6 @@ func main() {
 	// definitions.json.
 	connDefs := connector.Init(logger, utils.GetConnectorOptions()).ListConnectorDefinitions()
 	for _, connDef := range connDefs {
-		if connDef.Tombstone {
-			db.Unscoped().Model(&datamodel.Connector{}).Where("connector_definition_uid = ?", connDef.Uid).Update("tombstone", true)
-		}
 
 		cd := &pb.ComponentDefinition{
 			Type: service.ConnectorTypeToComponentType[connDef.Type],

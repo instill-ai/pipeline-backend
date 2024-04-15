@@ -51,7 +51,7 @@ export function CheckList(data) {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.simpleRecipeWithoutCSV
+        constant.simpleRecipe
       );
     }
 

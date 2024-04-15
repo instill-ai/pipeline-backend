@@ -15,7 +15,7 @@ server:
   workflow:
     maxworkflowtimeout: 3600 # in seconds
     maxworkflowretry: 1
-    maxactivityretry: 3
+    maxactivityretry: 1
 connector:
   airbyte:
     mountsource:
@@ -31,7 +31,7 @@ database:
   host: pg-sql
   port: 5432
   name: pipeline
-  version: 12
+  version: 13
   timezone: Etc/UTC
   pool:
     idleconnections: 5

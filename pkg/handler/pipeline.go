@@ -230,17 +230,6 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 
 	pipelineToCreate := req.GetPipeline()
 
-	if pipelineToCreate.Recipe != nil {
-		for _, comp := range pipelineToCreate.Recipe.Components {
-			switch comp.Component.(type) {
-			case *pipelinePB.Component_ConnectorComponent:
-				if comp.GetConnectorComponent().ConnectorName != "" && !strings.HasPrefix(comp.GetConnectorComponent().ConnectorName, ns.Name()+"/") {
-					return nil, ErrConnectorNamespace
-				}
-			}
-		}
-	}
-
 	pipeline, err = h.service.CreateNamespacePipeline(ctx, ns, pipelineToCreate)
 
 	if err != nil {
@@ -455,6 +444,9 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 		if strings.Contains(path, "metadata") {
 			pbUpdateMask.Paths[idx] = "metadata"
 		}
+		if strings.Contains(path, "recipe") {
+			pbUpdateMask.Paths[idx] = "recipe"
+		}
 	}
 	// Validate the field mask
 	if !pbUpdateMask.IsValid(pbPipelineReq) {
@@ -496,18 +488,6 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
-	}
-
-	// Check connector and pipeline belongs to same namespace
-	if pbPipelineReq.Recipe != nil {
-		for _, comp := range pbPipelineReq.Recipe.Components {
-			switch comp.Component.(type) {
-			case *pipelinePB.Component_ConnectorComponent:
-				if comp.GetConnectorComponent().ConnectorName != "" && !strings.HasPrefix(comp.GetConnectorComponent().ConnectorName, ns.Name()+"/") {
-					return nil, ErrConnectorNamespace
-				}
-			}
-		}
 	}
 
 	pbPipeline, err := h.service.UpdateNamespacePipelineByID(ctx, ns, id, pbPipelineToUpdate)
@@ -1647,26 +1627,4 @@ func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context
 	)))
 
 	return operation, nil
-}
-
-type WatchNamespacePipelineReleaseRequestInterface interface {
-	GetName() string
-}
-
-func (h *PublicHandler) WatchUserPipelineRelease(ctx context.Context, req *pipelinePB.WatchUserPipelineReleaseRequest) (resp *pipelinePB.WatchUserPipelineReleaseResponse, err error) {
-	resp = &pipelinePB.WatchUserPipelineReleaseResponse{}
-	resp.State, err = h.watchNamespacePipelineRelease(ctx, req)
-	return resp, err
-}
-
-func (h *PublicHandler) WatchOrganizationPipelineRelease(ctx context.Context, req *pipelinePB.WatchOrganizationPipelineReleaseRequest) (resp *pipelinePB.WatchOrganizationPipelineReleaseResponse, err error) {
-	resp = &pipelinePB.WatchOrganizationPipelineReleaseResponse{}
-	resp.State, err = h.watchNamespacePipelineRelease(ctx, req)
-	return resp, err
-}
-
-func (h *PublicHandler) watchNamespacePipelineRelease(ctx context.Context, req WatchNamespacePipelineReleaseRequestInterface) (pipelinePB.State, error) {
-	// TODO
-	return pipelinePB.State_STATE_ACTIVE, nil
-
 }

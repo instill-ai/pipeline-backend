@@ -20,7 +20,7 @@ var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
 
 // PublicHandler handles public API
 type PublicHandler struct {
-	pipelinePB.UnimplementedPipelinePublicServiceServer
+	// pipelinePB.UnimplementedPipelinePublicServiceServer
 	service service.Service
 }
 
@@ -104,13 +104,6 @@ func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinePB.CheckName
 
 	if rscType == "pipelines" {
 		_, err := h.service.GetNamespacePipelineByID(ctx, ns, id, service.ViewBasic)
-		if err != nil && errors.Is(err, service.ErrNotFound) {
-			return &pipelinePB.CheckNameResponse{
-				Availability: pipelinePB.CheckNameResponse_NAME_AVAILABLE,
-			}, nil
-		}
-	} else if rscType == "connectors" {
-		_, err := h.service.GetNamespaceConnectorByID(ctx, ns, id, service.ViewBasic, true)
 		if err != nil && errors.Is(err, service.ErrNotFound) {
 			return &pipelinePB.CheckNameResponse{
 				Availability: pipelinePB.CheckNameResponse_NAME_AVAILABLE,

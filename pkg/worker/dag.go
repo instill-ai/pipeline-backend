@@ -17,6 +17,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -117,7 +118,7 @@ type topologicalSortNode struct {
 func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 
 	if len(d.comps) == 0 {
-		return nil, fmt.Errorf("no components")
+		return [][]*datamodel.Component{}, nil
 	}
 
 	indegreesMap := map[*datamodel.Component]int{}
@@ -165,10 +166,6 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 
 	if count < len(d.comps) {
 		return nil, fmt.Errorf("not a valid dag")
-	}
-
-	if d.uf.Count() != 1 {
-		return nil, fmt.Errorf("more than a dag")
 	}
 
 	return ans, nil
@@ -559,12 +556,8 @@ func SanitizeCondition(cond string) (string, map[string]string, map[string]strin
 func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	componentIDMap := make(map[string]*datamodel.Component)
 
-	var startComp *datamodel.Component
 	for idx := range components {
 		componentIDMap[components[idx].ID] = components[idx]
-		if components[idx].IsStartComponent() {
-			startComp = components[idx]
-		}
 		if components[idx].IsIteratorComponent() {
 			for idx2 := range components[idx].IteratorComponent.Components {
 				componentIDMap[components[idx].IteratorComponent.Components[idx2].ID] = components[idx].IteratorComponent.Components[idx2]
@@ -572,15 +565,6 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 		}
 	}
 	graph := NewDAG(components)
-
-	// Force all component have start operator upstream
-	if startComp != nil {
-		for idx := range components {
-			if !components[idx].IsStartComponent() {
-				graph.AddEdge(startComp, components[idx])
-			}
-		}
-	}
 
 	for _, component := range components {
 
@@ -641,8 +625,8 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 				}
 			}
 		}
-		if component.IsEndComponent() {
-			for _, v := range component.EndComponent.Fields {
+		if component.IsResponseComponent() {
+			for _, v := range component.ResponseComponent.Fields {
 				parents = append(parents, FindReferenceParent(v.Value)...)
 			}
 		}
@@ -695,7 +679,7 @@ func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, compute
 
 			}
 
-			if !comps[groupIdx][compIdx].IsStartComponent() && !comps[groupIdx][compIdx].IsEndComponent() {
+			if !comps[groupIdx][compIdx].IsResponseComponent() {
 				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
 					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["input"]; ok {
 						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["input"])
@@ -739,16 +723,16 @@ func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, compute
 	return trace, nil
 }
 
-func GenerateGlobalValue(pipelineUID uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]any, error) {
-	global := map[string]any{}
+func GenerateBuiltinVariables(pipelineUID uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]any, error) {
+	vars := map[string]any{}
 
-	global["pipeline"] = map[string]any{
-		"uid":    pipelineUID.String(),
-		"recipe": recipe,
-	}
-	global["owner"] = map[string]any{
-		"uid": uuid.FromStringOrNil(strings.Split(ownerPermalink, "/")[1]),
-	}
+	vars["_PIPELINE_UID"] = pipelineUID.String()
+	vars["_PIPELINE_RECIPE"] = recipe
+	vars["_OWNER_UID"] = uuid.FromStringOrNil(strings.Split(ownerPermalink, "/")[1])
+	vars["_USER_UID"] = "TODO"
+	vars["_HEADER_AUTHORIZATION"] = "TODO"
+	vars["_MODEL_BACKEND"] = fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort)
+	vars["_MGMT_BACKEND"] = fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort)
 
-	return global, nil
+	return vars, nil
 }

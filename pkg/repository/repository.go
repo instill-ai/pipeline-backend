@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -18,6 +17,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/paginate"
 
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -30,8 +30,6 @@ const DefaultPageSize = 10
 
 // MaxPageSize is the maximum pagination page size if the assigned value is over this number
 const MaxPageSize = 100
-
-const VisibilityPublic = datamodel.ConnectorVisibility(pipelinePB.Connector_VISIBILITY_PUBLIC)
 
 // Repository interface
 type Repository interface {
@@ -58,23 +56,15 @@ type Repository interface {
 	GetPipelineByIDAdmin(ctx context.Context, id string, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
-	ListConnectors(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
-	GetConnectorByUID(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
-
-	CreateNamespaceConnector(ctx context.Context, ownerPermalink string, connector *datamodel.Connector) error
-	ListNamespaceConnectors(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
-	GetNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool) (*datamodel.Connector, error)
-	UpdateNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string, connector *datamodel.Connector) error
-	DeleteNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string) error
-	UpdateNamespaceConnectorIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error
-	UpdateNamespaceConnectorStateByID(ctx context.Context, ownerPermalink string, id string, state datamodel.ConnectorState) error
-
-	ListConnectorsAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) ([]*datamodel.Connector, int64, string, error)
-	GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error)
-
 	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
 	GetComponentDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
 	UpsertComponentDefinition(context.Context, *pipelinePB.ComponentDefinition) error
+
+	CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error
+	ListNamespaceSecrets(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) ([]*datamodel.Secret, int64, string, error)
+	GetNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) (*datamodel.Secret, error)
+	UpdateNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string, secret *datamodel.Secret) error
+	DeleteNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) error
 }
 
 type repository struct {
@@ -177,8 +167,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 	defer rows.Close()
 	pipelineUIDs := []uuid.UUID{}
-	connectorUIDs := []uuid.UUID{}
-	pipelineConnectorUIDs := map[uuid.UUID][]uuid.UUID{}
+
 	for rows.Next() {
 		var item datamodel.Pipeline
 		if err = db.ScanRows(rows, &item); err != nil {
@@ -187,29 +176,6 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		createTime = item.CreateTime
 		pipelines = append(pipelines, &item)
 		pipelineUIDs = append(pipelineUIDs, item.UID)
-		pipelineConnectorUIDs[item.UID] = []uuid.UUID{}
-		if !isBasicView {
-			for _, comp := range item.Recipe.Components {
-				if comp.IsConnectorComponent() {
-					if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
-						connectorUID := uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1])
-						connectorUIDs = append(connectorUIDs, connectorUID)
-						pipelineConnectorUIDs[item.UID] = append(pipelineConnectorUIDs[item.UID], connectorUID)
-					}
-				}
-				if comp.IsIteratorComponent() {
-					for _, nestedComp := range comp.IteratorComponent.Components {
-						if nestedComp.IsConnectorComponent() {
-							if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
-								connectorUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1])
-								connectorUIDs = append(connectorUIDs, connectorUID)
-								pipelineConnectorUIDs[item.UID] = append(pipelineConnectorUIDs[item.UID], connectorUID)
-							}
-						}
-					}
-				}
-			}
-		}
 	}
 
 	if embedReleases {
@@ -235,98 +201,11 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 				releasesMap[pipelineUID] = []*datamodel.PipelineRelease{}
 			}
 			releasesMap[pipelineUID] = append(releasesMap[pipelineUID], &pipelineRelease)
-			if !isBasicView {
-				for _, comp := range pipelineRelease.Recipe.Components {
-
-					if comp.IsConnectorComponent() {
-						if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
-							connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
-						}
-
-					}
-					if comp.IsIteratorComponent() {
-						for _, nestedComp := range comp.IteratorComponent.Components {
-							if nestedComp.IsConnectorComponent() {
-								if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
-									connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
-								}
-
-							}
-						}
-					}
-				}
-			}
 		}
 		for idx := range pipelines {
 			if releases, ok := releasesMap[pipelines[idx].UID]; ok {
 				pipelines[idx].Releases = releases
 
-			}
-		}
-	}
-
-	if !isBasicView {
-		connectorDB := r.db
-		connectorsMap := map[uuid.UUID]*datamodel.Connector{}
-		connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
-		if err != nil {
-			return nil, 0, "", err
-		}
-
-		defer connectorRows.Close()
-		for connectorRows.Next() {
-			var item datamodel.Connector
-			if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
-				return nil, 0, "", err
-			}
-			connectorsMap[item.UID] = &item
-		}
-
-		for idx := range pipelines {
-			pipelineConnectorsMap := map[uuid.UUID]*datamodel.Connector{}
-			for _, connectorUID := range pipelineConnectorUIDs[pipelines[idx].UID] {
-				pipelineConnectorsMap[connectorUID] = connectorsMap[connectorUID]
-			}
-			pipelines[idx].Connectors = pipelineConnectorsMap
-
-			if embedReleases {
-				for releaseIdx := range pipelines[idx].Releases {
-					for _, comp := range pipelines[idx].Releases[releaseIdx].Recipe.Components {
-
-						if comp.IsConnectorComponent() {
-							if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
-								connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
-							}
-
-						}
-						if comp.IsIteratorComponent() {
-							for _, nestedComp := range comp.IteratorComponent.Components {
-								if nestedComp.IsConnectorComponent() {
-									if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
-										connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
-									}
-
-								}
-							}
-						}
-					}
-
-					connectorDB := r.db
-					connectorsMap := map[uuid.UUID]*datamodel.Connector{}
-					connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
-					if err != nil {
-						return nil, 0, "", err
-					}
-					defer connectorRows.Close()
-					for connectorRows.Next() {
-						var item datamodel.Connector
-						if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
-							return nil, 0, "", err
-						}
-						connectorsMap[item.UID] = &item
-					}
-					pipelines[idx].Releases[releaseIdx].Connectors = connectorsMap
-				}
 			}
 		}
 	}
@@ -393,8 +272,6 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 		return nil, result.Error
 	}
 
-	connectorUIDs := []uuid.UUID{}
-
 	if embedReleases {
 		pipeline.Releases = []*datamodel.PipelineRelease{}
 
@@ -416,105 +293,7 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 			}
 			pipelineRelease := item
 			pipeline.Releases = append(pipeline.Releases, &pipelineRelease)
-			if !isBasicView {
-				for _, comp := range pipelineRelease.Recipe.Components {
 
-					if comp.IsConnectorComponent() {
-						if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
-							connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
-						}
-
-					}
-					if comp.IsIteratorComponent() {
-						for _, nestedComp := range comp.IteratorComponent.Components {
-							if nestedComp.IsConnectorComponent() {
-								if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
-									connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
-								}
-
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if !isBasicView {
-		for _, comp := range pipeline.Recipe.Components {
-
-			if comp.IsConnectorComponent() {
-				if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
-					connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
-				}
-
-			}
-			if comp.IsIteratorComponent() {
-				for _, nestedComp := range comp.IteratorComponent.Components {
-					if nestedComp.IsConnectorComponent() {
-						if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
-							connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
-						}
-
-					}
-				}
-			}
-		}
-
-		connectorDB := r.db
-		connectorsMap := map[uuid.UUID]*datamodel.Connector{}
-		connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
-		if err != nil {
-			return nil, err
-		}
-		defer connectorRows.Close()
-		for connectorRows.Next() {
-			var item datamodel.Connector
-			if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
-				return nil, err
-			}
-			connectorsMap[item.UID] = &item
-		}
-		pipeline.Connectors = connectorsMap
-
-		if embedReleases {
-			for releaseIdx := range pipeline.Releases {
-				for _, comp := range pipeline.Releases[releaseIdx].Recipe.Components {
-
-					if comp.IsConnectorComponent() {
-						if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
-							connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
-						}
-
-					}
-					if comp.IsIteratorComponent() {
-						for _, nestedComp := range comp.IteratorComponent.Components {
-							if nestedComp.IsConnectorComponent() {
-								if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
-									connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
-								}
-
-							}
-						}
-					}
-				}
-
-				connectorDB := r.db
-				connectorsMap := map[uuid.UUID]*datamodel.Connector{}
-				connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
-				if err != nil {
-					return nil, err
-				}
-				defer connectorRows.Close()
-				for connectorRows.Next() {
-					var item datamodel.Connector
-					if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
-						return nil, err
-					}
-					connectorsMap[item.UID] = &item
-				}
-				pipeline.Releases[releaseIdx].Connectors = connectorsMap
-			}
 		}
 	}
 
@@ -674,9 +453,6 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	}
 	defer rows.Close()
 
-	connectorUIDs := []uuid.UUID{}
-	releaseConnectorUIDs := map[uuid.UUID][]uuid.UUID{}
-
 	for rows.Next() {
 		var item *datamodel.PipelineRelease
 		if err = db.ScanRows(rows, &item); err != nil {
@@ -684,54 +460,6 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 		}
 		createTime = item.CreateTime
 		pipelineReleases = append(pipelineReleases, item)
-		releaseConnectorUIDs[item.UID] = []uuid.UUID{}
-		if !isBasicView {
-			for _, comp := range item.Recipe.Components {
-				if comp.IsConnectorComponent() {
-					if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
-						connectorUID := uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1])
-						connectorUIDs = append(connectorUIDs, connectorUID)
-						releaseConnectorUIDs[item.UID] = append(releaseConnectorUIDs[item.UID], connectorUID)
-					}
-
-				}
-				if comp.IsIteratorComponent() {
-					for _, nestedComp := range comp.IteratorComponent.Components {
-						if nestedComp.IsConnectorComponent() {
-							if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
-								connectorUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1])
-								connectorUIDs = append(connectorUIDs, connectorUID)
-								releaseConnectorUIDs[item.UID] = append(releaseConnectorUIDs[item.UID], connectorUID)
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if !isBasicView {
-		connectorDB := r.db
-		connectorsMap := map[uuid.UUID]*datamodel.Connector{}
-		connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
-		if err != nil {
-			return nil, 0, "", err
-		}
-		defer connectorRows.Close()
-		for connectorRows.Next() {
-			var item datamodel.Connector
-			if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
-				return nil, 0, "", err
-			}
-			connectorsMap[item.UID] = &item
-		}
-		for idx := range pipelineReleases {
-			releaseConnectorsMap := map[uuid.UUID]*datamodel.Connector{}
-			for _, connectorUID := range releaseConnectorUIDs[pipelineReleases[idx].UID] {
-				releaseConnectorsMap[connectorUID] = connectorsMap[connectorUID]
-			}
-			pipelineReleases[idx].Connectors = releaseConnectorsMap
-		}
 	}
 
 	if len(pipelineReleases) > 0 {
@@ -766,44 +494,7 @@ func (r *repository) GetNamespacePipelineReleaseByID(ctx context.Context, ownerP
 	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
 		return nil, result.Error
 	}
-	if !isBasicView {
-		connectorUIDs := []uuid.UUID{}
-		for _, comp := range pipelineRelease.Recipe.Components {
 
-			if comp.IsConnectorComponent() {
-				if len(strings.Split(comp.ConnectorComponent.ConnectorName, "/")) == 2 {
-					connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.ConnectorName, "/")[1]))
-				}
-
-			}
-
-			if comp.IsIteratorComponent() {
-				for _, nestedComp := range comp.IteratorComponent.Components {
-					if nestedComp.IsConnectorComponent() {
-						if len(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")) == 2 {
-							connectorUIDs = append(connectorUIDs, uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.ConnectorName, "/")[1]))
-						}
-					}
-				}
-			}
-		}
-
-		connectorDB := r.db
-		connectorsMap := map[uuid.UUID]*datamodel.Connector{}
-		connectorRows, err := connectorDB.Model(&datamodel.Connector{}).Where("uid in ?", connectorUIDs).Order("create_time DESC, uid DESC").Rows()
-		if err != nil {
-			return nil, err
-		}
-		defer connectorRows.Close()
-		for connectorRows.Next() {
-			var item datamodel.Connector
-			if err = connectorDB.ScanRows(connectorRows, &item); err != nil {
-				return nil, err
-			}
-			connectorsMap[item.UID] = &item
-		}
-		pipelineRelease.Connectors = connectorsMap
-	}
 	return &pipelineRelease, nil
 }
 
@@ -870,245 +561,6 @@ func (r *repository) GetLatestNamespacePipelineRelease(ctx context.Context, owne
 		return nil, result.Error
 	}
 	return &pipelineRelease, nil
-}
-
-func (r *repository) listConnectors(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
-
-	db := r.db
-
-	if showDeleted {
-		db = db.Unscoped()
-	}
-
-	var expr *clause.Expr
-	if expr, err = r.transpileFilter(filter); err != nil {
-		return nil, 0, "", err
-	}
-	if expr != nil {
-		if len(whereArgs) == 0 {
-			where = "(?)"
-			whereArgs = append(whereArgs, expr)
-		} else {
-			where = fmt.Sprintf("((%s) AND ?)", where)
-			whereArgs = append(whereArgs, expr)
-		}
-	}
-
-	if uidAllowList != nil {
-		db.Model(&datamodel.Connector{}).Where(where, whereArgs...).Where("uid in ?", uidAllowList).Count(&totalSize)
-	} else {
-		db.Model(&datamodel.Connector{}).Where(where, whereArgs...).Count(&totalSize)
-	}
-
-	queryBuilder := db.Model(&datamodel.Connector{}).Order("create_time DESC, uid DESC").Where(where, whereArgs...)
-	if uidAllowList != nil {
-		queryBuilder = queryBuilder.Where("uid in ?", uidAllowList)
-	}
-
-	if pageSize == 0 {
-		pageSize = DefaultPageSize
-	} else if pageSize > MaxPageSize {
-		pageSize = MaxPageSize
-	}
-
-	queryBuilder = queryBuilder.Limit(int(pageSize))
-
-	if pageToken != "" {
-		createdAt, uid, err := paginate.DecodeToken(pageToken)
-		if err != nil {
-			return nil, 0, "", ErrPageTokenDecode
-		}
-
-		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createdAt, uid)
-	}
-
-	if isBasicView {
-		queryBuilder.Omit("configuration")
-	}
-
-	var createTime time.Time // only using one for all loops, we only need the latest one in the end
-	rows, err := queryBuilder.Rows()
-	if err != nil {
-		return nil, 0, "", err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var item datamodel.Connector
-		if err = db.ScanRows(rows, &item); err != nil {
-			return nil, 0, "", err
-		}
-		createTime = item.CreateTime
-		connectors = append(connectors, &item)
-	}
-
-	if len(connectors) > 0 {
-		lastUID := (connectors)[len(connectors)-1].UID
-		lastItem := &datamodel.Connector{}
-		if uidAllowList != nil {
-			if result := db.Model(&datamodel.Connector{}).
-				Where(where, whereArgs...).
-				Where("uid in ?", uidAllowList).
-				Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
-				return nil, 0, "", err
-			}
-		} else {
-			if result := db.Model(&datamodel.Connector{}).
-				Where(where, whereArgs...).
-				Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
-				return nil, 0, "", err
-			}
-		}
-
-		if lastItem.UID.String() == lastUID.String() {
-			nextPageToken = ""
-		} else {
-			nextPageToken = paginate.EncodeToken(createTime, lastUID.String())
-		}
-	}
-
-	return connectors, totalSize, nextPageToken, nil
-}
-
-func (r *repository) ListConnectorsAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
-	return r.listConnectors(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted)
-}
-
-func (r *repository) ListConnectors(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
-
-	userPermalink := fmt.Sprintf("users/%s", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-	return r.listConnectors(ctx,
-		"(owner = ?)",
-		[]interface{}{userPermalink},
-		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted)
-
-}
-
-func (r *repository) ListNamespaceConnectors(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool) (connectors []*datamodel.Connector, totalSize int64, nextPageToken string, err error) {
-
-	return r.listConnectors(ctx,
-		"(owner = ? )",
-		[]interface{}{ownerPermalink},
-		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted)
-
-}
-
-func (r *repository) CreateNamespaceConnector(ctx context.Context, ownerPermalink string, connector *datamodel.Connector) error {
-
-	r.pinUser(ctx, "connector")
-	db := r.checkPinnedUser(ctx, r.db, "connector")
-
-	if result := db.Model(&datamodel.Connector{}).Create(connector); result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func (r *repository) getNamespaceConnector(ctx context.Context, where string, whereArgs []interface{}, isBasicView bool) (*datamodel.Connector, error) {
-
-	db := r.checkPinnedUser(ctx, r.db, "connector")
-
-	var connector datamodel.Connector
-
-	queryBuilder := db.Model(&datamodel.Connector{}).Where(where, whereArgs...)
-
-	if isBasicView {
-		queryBuilder.Omit("configuration")
-	}
-
-	if result := queryBuilder.First(&connector); result.Error != nil {
-		return nil, result.Error
-	}
-	return &connector, nil
-}
-
-func (r *repository) GetNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool) (*datamodel.Connector, error) {
-
-	return r.getNamespaceConnector(ctx,
-		"(id = ? AND (owner = ?))",
-		[]interface{}{id, ownerPermalink},
-		isBasicView)
-}
-
-func (r *repository) GetConnectorByUID(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error) {
-
-	userPermalink := fmt.Sprintf("users/%s", resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-	return r.getNamespaceConnector(ctx,
-		"(uid = ? AND (owner = ?))",
-		[]interface{}{uid, userPermalink},
-		isBasicView)
-
-}
-
-func (r *repository) GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.Connector, error) {
-	return r.getNamespaceConnector(ctx,
-		"(uid = ?)",
-		[]interface{}{uid},
-		isBasicView)
-}
-
-func (r *repository) UpdateNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string, connector *datamodel.Connector) error {
-
-	r.pinUser(ctx, "connector")
-	db := r.checkPinnedUser(ctx, r.db, "connector")
-
-	if result := db.Model(&datamodel.Connector{}).
-		Where("(id = ? AND owner = ? )", id, ownerPermalink).
-		Updates(connector); result.Error != nil {
-		return result.Error
-	} else if result.RowsAffected == 0 {
-		return ErrNoDataUpdated
-	}
-	return nil
-}
-
-func (r *repository) DeleteNamespaceConnectorByID(ctx context.Context, ownerPermalink string, id string) error {
-
-	r.pinUser(ctx, "connector")
-	db := r.checkPinnedUser(ctx, r.db, "connector")
-
-	result := db.Model(&datamodel.Connector{}).
-		Where("(id = ? AND owner = ? )", id, ownerPermalink).
-		Delete(&datamodel.Connector{})
-
-	if result.Error != nil {
-		return result.Error
-	}
-
-	if result.RowsAffected == 0 {
-		return ErrNoDataDeleted
-	}
-
-	return nil
-}
-
-func (r *repository) UpdateNamespaceConnectorIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error {
-
-	r.pinUser(ctx, "connector")
-	db := r.checkPinnedUser(ctx, r.db, "connector")
-
-	if result := db.Model(&datamodel.Connector{}).
-		Where("(id = ? AND owner = ?)", id, ownerPermalink).
-		Update("id", newID); result.Error != nil {
-		return result.Error
-	} else if result.RowsAffected == 0 {
-		return ErrNoDataUpdated
-	}
-	return nil
-}
-
-func (r *repository) UpdateNamespaceConnectorStateByID(ctx context.Context, ownerPermalink string, id string, state datamodel.ConnectorState) error {
-
-	r.pinUser(ctx, "connector")
-	db := r.checkPinnedUser(ctx, r.db, "connector")
-
-	if result := db.Model(&datamodel.Connector{}).
-		Where("(id = ? AND owner = ?)", id, ownerPermalink).
-		Update("state", state); result.Error != nil {
-		return result.Error
-	} else if result.RowsAffected == 0 {
-		return ErrNoDataUpdated
-	}
-	return nil
 }
 
 // ListComponentDefinitionsParams allows clients to request a page of component
@@ -1204,6 +656,119 @@ func (r *repository) UpsertComponentDefinition(_ context.Context, cd *pipelinePB
 	result := r.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(record)
 	if result.Error != nil {
 		return result.Error
+	}
+
+	return nil
+}
+
+func (r *repository) CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error {
+	r.pinUser(ctx, "secret")
+	db := r.checkPinnedUser(ctx, r.db, "secret")
+
+	logger, _ := logger.GetZapLogger(ctx)
+	if result := db.Model(&datamodel.Secret{}).Create(secret); result.Error != nil {
+		logger.Error(result.Error.Error())
+		return result.Error
+	}
+	return nil
+}
+
+func (r *repository) ListNamespaceSecrets(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) (secrets []*datamodel.Secret, totalSize int64, nextPageToken string, err error) {
+	db := r.checkPinnedUser(ctx, r.db, "secret")
+
+	if result := db.Model(&datamodel.Secret{}).Where("owner = ?", ownerPermalink).Count(&totalSize); result.Error != nil {
+		return nil, 0, "", err
+	}
+
+	queryBuilder := db.Model(&datamodel.Secret{}).Order("create_time DESC, uid DESC").Where("owner = ?", ownerPermalink)
+
+	if pageSize == 0 {
+		pageSize = DefaultPageSize
+	} else if pageSize > MaxPageSize {
+		pageSize = MaxPageSize
+	}
+
+	queryBuilder = queryBuilder.Limit(int(pageSize))
+
+	if pageToken != "" {
+		createTime, uid, err := paginate.DecodeToken(pageToken)
+		if err != nil {
+			return nil, 0, "", err
+		}
+		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
+	}
+
+	var createTime time.Time
+	rows, err := queryBuilder.Rows()
+	if err != nil {
+		return nil, 0, "", err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var item datamodel.Secret
+		if err = db.ScanRows(rows, &item); err != nil {
+			return nil, 0, "", err
+		}
+		createTime = item.CreateTime
+		secrets = append(secrets, &item)
+	}
+
+	if len(secrets) > 0 {
+		lastUID := (secrets)[len(secrets)-1].UID
+		lastItem := &datamodel.Secret{}
+		if result := db.Model(&datamodel.Secret{}).
+			Where("owner = ?", ownerPermalink).
+			Order("create_time ASC, uid ASC").
+			Limit(1).Find(lastItem); result.Error != nil {
+			return nil, 0, "", err
+		}
+		if lastItem.UID.String() == lastUID.String() {
+			nextPageToken = ""
+		} else {
+			nextPageToken = paginate.EncodeToken(createTime, lastUID.String())
+		}
+	}
+
+	return secrets, totalSize, nextPageToken, nil
+}
+
+func (r *repository) GetNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) (*datamodel.Secret, error) {
+	db := r.checkPinnedUser(ctx, r.db, "secret")
+
+	queryBuilder := db.Model(&datamodel.Secret{}).Where("id = ? AND owner = ?", id, ownerPermalink)
+	var secret datamodel.Secret
+	if result := queryBuilder.First(&secret); result.Error != nil {
+		return nil, result.Error
+	}
+	return &secret, nil
+}
+
+func (r *repository) UpdateNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string, secret *datamodel.Secret) error {
+	r.pinUser(ctx, "secret")
+	db := r.checkPinnedUser(ctx, r.db, "secret")
+
+	logger, _ := logger.GetZapLogger(ctx)
+	if result := db.Select("*").Omit("UID").Model(&datamodel.Secret{}).Where("id = ? AND owner = ?", id, ownerPermalink).Updates(secret); result.Error != nil {
+		logger.Error(result.Error.Error())
+		return result.Error
+	}
+	return nil
+}
+
+func (r *repository) DeleteNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) error {
+	r.pinUser(ctx, "secret")
+	db := r.checkPinnedUser(ctx, r.db, "secret")
+
+	result := db.Model(&datamodel.Secret{}).
+		Where("id = ? AND owner = ?", id, ownerPermalink).
+		Delete(&datamodel.Secret{})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrNoDataDeleted
 	}
 
 	return nil

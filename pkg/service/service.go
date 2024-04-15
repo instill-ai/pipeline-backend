@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -24,7 +23,6 @@ import (
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -47,7 +45,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/paginate"
-	"github.com/instill-ai/x/sterr"
 
 	component "github.com/instill-ai/component/pkg/base"
 	connector "github.com/instill-ai/component/pkg/connector"
@@ -84,6 +81,12 @@ type Service interface {
 	RestoreNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string) error
 	UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, newID string) (*pipelinePB.PipelineRelease, error)
 
+	CreateNamespaceSecret(ctx context.Context, ns resource.Namespace, secret *pipelinePB.Secret) (*pipelinePB.Secret, error)
+	ListNamespaceSecrets(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, filter filtering.Filter) ([]*pipelinePB.Secret, int32, string, error)
+	GetNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string) (*pipelinePB.Secret, error)
+	UpdateNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string, updatedSecret *pipelinePB.Secret) (*pipelinePB.Secret, error)
+	DeleteNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string) error
+
 	// Influx API
 
 	TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, req []*structpb.Struct, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pipelinePB.TriggerMetadata, error)
@@ -95,6 +98,7 @@ type Service interface {
 
 	WriteNewPipelineDataPoint(ctx context.Context, data utils.PipelineUsageMetricData) error
 
+	GetCtxUserNamespace(ctx context.Context) (resource.Namespace, error)
 	GetRscNamespaceAndNameID(ctx context.Context, path string) (resource.Namespace, string, error)
 	GetRscNamespaceAndPermalinkUID(ctx context.Context, path string) (resource.Namespace, uuid.UUID, error)
 	GetRscNamespaceAndNameIDAndReleaseID(ctx context.Context, path string) (resource.Namespace, string, string, error)
@@ -109,27 +113,14 @@ type Service interface {
 	DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view View) (*pipelinePB.PipelineRelease, error)
 	DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view View) ([]*pipelinePB.PipelineRelease, error)
 
+	PBToDBSecret(ctx context.Context, ns resource.Namespace, pbSecret *pipelinePB.Secret) (*datamodel.Secret, error)
+	DBToPBSecret(ctx context.Context, dbSecret *datamodel.Secret) (*pipelinePB.Secret, error)
+	DBToPBSecrets(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pipelinePB.Secret, error)
+
 	ListComponentDefinitions(context.Context, *pipelinePB.ListComponentDefinitionsRequest) (*pipelinePB.ListComponentDefinitionsResponse, error)
 
 	ListConnectorDefinitions(context.Context, *pipelinePB.ListConnectorDefinitionsRequest) (*pipelinePB.ListConnectorDefinitionsResponse, error)
-	GetConnectorByUID(ctx context.Context, uid uuid.UUID, view View, credentialMask bool) (*pipelinePB.Connector, error)
 	GetConnectorDefinitionByID(ctx context.Context, id string, view View) (*pipelinePB.ConnectorDefinition, error)
-
-	// Connector common
-	ListConnectors(ctx context.Context, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int32, string, error)
-	CreateNamespaceConnector(ctx context.Context, ns resource.Namespace, connector *pipelinePB.Connector) (*pipelinePB.Connector, error)
-	ListNamespaceConnectors(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int32, string, error)
-	GetNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, id string, view View, credentialMask bool) (*pipelinePB.Connector, error)
-	UpdateNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, id string, connector *pipelinePB.Connector) (*pipelinePB.Connector, error)
-	UpdateNamespaceConnectorIDByID(ctx context.Context, ns resource.Namespace, id string, newID string) (*pipelinePB.Connector, error)
-	UpdateNamespaceConnectorStateByID(ctx context.Context, ns resource.Namespace, id string, state pipelinePB.Connector_State) (*pipelinePB.Connector, error)
-	DeleteNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, id string) error
-
-	ListConnectorsAdmin(ctx context.Context, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int32, string, error)
-	GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.Connector, error)
-
-	// Shared public/private method for checking connector's connection
-	CheckConnectorByUID(ctx context.Context, connUID uuid.UUID) (*pipelinePB.Connector_State, error)
 
 	// Influx API
 	WriteNewConnectorDataPoint(ctx context.Context, data utils.ConnectorUsageMetricData, pipelineMetadata *structpb.Value) error
@@ -279,7 +270,56 @@ func (s *service) convertOwnerNameToPermalink(ctx context.Context, name string) 
 	}
 }
 
+func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Namespace) error {
+	// TODO: optimize ACL model
+	if ns.NsType == "organizations" {
+		granted, err := s.aclClient.CheckPermission(ctx, "organization", ns.NsUID, "member")
+		if err != nil {
+			return err
+		}
+		if !granted {
+			return ErrNoPermission
+		}
+	} else {
+		if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
+			return ErrNoPermission
+		}
+	}
+	return nil
+}
+
+func (s *service) GetCtxUserNamespace(ctx context.Context) (resource.Namespace, error) {
+
+	uid := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+	name, err := s.convertOwnerPermalinkToName(ctx, fmt.Sprintf("users/%s", uid))
+	if err != nil {
+		return resource.Namespace{}, fmt.Errorf("namespace error")
+	}
+	// TODO: optimize the flow to get namespace
+	return resource.Namespace{
+		NsType: resource.NamespaceType("users"),
+		NsID:   strings.Split(name, "/")[1],
+		NsUID:  uid,
+	}, nil
+}
 func (s *service) GetRscNamespaceAndNameID(ctx context.Context, path string) (resource.Namespace, string, error) {
+
+	if strings.HasPrefix(path, "user/") {
+
+		uid := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+		splits := strings.Split(path, "/")
+
+		name, err := s.convertOwnerPermalinkToName(ctx, fmt.Sprintf("users/%s", uid))
+		if err != nil {
+			return resource.Namespace{}, "", fmt.Errorf("namespace error")
+		}
+
+		return resource.Namespace{
+			NsType: resource.NamespaceType("users"),
+			NsID:   strings.Split(name, "/")[1],
+			NsUID:  uid,
+		}, splits[2], nil
+	}
 
 	splits := strings.Split(path, "/")
 	if len(splits) < 2 {
@@ -465,6 +505,10 @@ func (s *service) GetPipelineByUID(ctx context.Context, uid uuid.UUID, view View
 }
 
 func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, pbPipeline *pipelinePB.Pipeline) (*pipelinePB.Pipeline, error) {
+
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, err
+	}
 
 	ownerPermalink := ns.Permalink()
 
@@ -746,13 +790,6 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 	if err != nil {
 		return nil, err
 	}
-	for idx := range sourcePipeline.Recipe.Components {
-		switch sourcePipeline.Recipe.Components[idx].Component.(type) {
-		case *pipelinePB.Component_ConnectorComponent:
-			sourcePipeline.Recipe.Components[idx].GetConnectorComponent().ConnectorName = ""
-		}
-
-	}
 	sourcePipeline.Id = targetID
 	targetPipeline, err := s.CreateNamespacePipeline(ctx, targetNS, sourcePipeline)
 	if err != nil {
@@ -897,32 +934,27 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	var metadata []byte
 
 	instillFormatMap := map[string]string{}
-	for _, comp := range recipe.Components {
-		// op start
-		if comp.IsStartComponent() {
 
-			schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
-			schStruct.Fields["type"] = structpb.NewStringValue("object")
-			b, _ := json.Marshal(comp.StartComponent.Fields)
-			properties := &structpb.Struct{}
-			_ = protojson.Unmarshal(b, properties)
-			schStruct.Fields["properties"] = structpb.NewStructValue(properties)
-			for k, v := range comp.StartComponent.Fields {
-				instillFormatMap[k] = v.InstillFormat
-			}
-			err := component.CompileInstillAcceptFormats(schStruct)
-			if err != nil {
-				return err
-			}
-			err = component.CompileInstillFormat(schStruct)
-			if err != nil {
-				return err
-			}
-			metadata, err = protojson.Marshal(schStruct)
-			if err != nil {
-				return err
-			}
-		}
+	schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+	schStruct.Fields["type"] = structpb.NewStringValue("object")
+	b, _ := json.Marshal(recipe.Trigger.TriggerByRequest.Fields)
+	properties := &structpb.Struct{}
+	_ = protojson.Unmarshal(b, properties)
+	schStruct.Fields["properties"] = structpb.NewStructValue(properties)
+	for k, v := range recipe.Trigger.TriggerByRequest.Fields {
+		instillFormatMap[k] = v.InstillFormat
+	}
+	err := component.CompileInstillAcceptFormats(schStruct)
+	if err != nil {
+		return err
+	}
+	err = component.CompileInstillFormat(schStruct)
+	if err != nil {
+		return err
+	}
+	metadata, err = protojson.Marshal(schStruct)
+	if err != nil {
+		return err
 	}
 
 	c := jsonschema.NewCompiler()
@@ -1968,22 +2000,6 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pipelinePB.
 	}, nil
 }
 
-func (s *service) GetConnectorByUID(ctx context.Context, uid uuid.UUID, view View, credentialMask bool) (*pipelinePB.Connector, error) {
-
-	if granted, err := s.aclClient.CheckPermission(ctx, "connector", uid, "admin"); err != nil {
-		return nil, err
-	} else if !granted {
-		return nil, ErrNotFound
-	}
-
-	dbConnector, err := s.repository.GetConnectorByUID(ctx, uid, view == ViewBasic)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.convertDatamodelToProto(ctx, dbConnector, view, credentialMask)
-}
-
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string, view View) (*pipelinePB.ConnectorDefinition, error) {
 
 	def, err := s.connector.GetConnectorDefinitionByID(id, nil, nil)
@@ -1999,355 +2015,89 @@ func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string, vie
 	return def, nil
 }
 
-func (s *service) ListConnectors(ctx context.Context, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int32, string, error) {
+func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespace, pbSecret *pipelinePB.Secret) (*pipelinePB.Secret, error) {
 
-	uidAllowList, err := s.aclClient.ListPermissions(ctx, "connector", "reader", false)
-	if err != nil {
-		return nil, 0, "", err
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, err
 	}
 
-	dbConnectors, totalSize, nextPageToken, err := s.repository.ListConnectors(ctx, int64(pageSize), pageToken, view == ViewBasic, filter, uidAllowList, showDeleted)
+	dbSecret, err := s.PBToDBSecret(ctx, ns, pbSecret)
 	if err != nil {
-		return nil, 0, "", err
+		return nil, err
 	}
 
-	pbConnectors, err := s.convertDatamodelArrayToProtoArray(ctx, dbConnectors, view, true)
-	return pbConnectors, int32(totalSize), nextPageToken, err
+	if err := s.repository.CreateNamespaceSecret(ctx, ns.Permalink(), dbSecret); err != nil {
+		return nil, err
+	}
+
+	dbCreatedSecret, err := s.repository.GetNamespaceSecretByID(ctx, ns.Permalink(), dbSecret.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.DBToPBSecret(ctx, dbCreatedSecret)
 
 }
 
-func (s *service) CreateNamespaceConnector(ctx context.Context, ns resource.Namespace, connector *pipelinePB.Connector) (*pipelinePB.Connector, error) {
+func (s *service) ListNamespaceSecrets(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, filter filtering.Filter) ([]*pipelinePB.Secret, int32, string, error) {
 
-	ownerPermalink := ns.Permalink()
-
-	// TODO: optimize ACL model
-	if ns.NsType == "organizations" {
-		if granted, err := s.aclClient.CheckPermission(ctx, "organization", ns.NsUID, "member"); err != nil {
-			return nil, err
-		} else if !granted {
-			return nil, ErrNoPermission
-		}
-	} else {
-		userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-		if ns.NsUID != userUID {
-			return nil, ErrNoPermission
-		}
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, 0, "", err
 	}
 
-	connDefResp, err := s.connector.GetConnectorDefinitionByID(strings.Split(connector.ConnectorDefinitionName, "/")[1], nil, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	connDefUID, err := uuid.FromString(connDefResp.GetUid())
-	if err != nil {
-		return nil, err
-	}
-
-	connConfig, err := connector.GetConfiguration().MarshalJSON()
-	if err != nil {
-
-		return nil, err
-	}
-
-	connDesc := sql.NullString{
-		String: connector.GetDescription(),
-		Valid:  len(connector.GetDescription()) > 0,
-	}
-
-	dbConnectorToCreate := &datamodel.Connector{
-		ID:                     connector.Id,
-		Owner:                  ns.Permalink(),
-		ConnectorDefinitionUID: connDefUID,
-		Tombstone:              false,
-		Configuration:          connConfig,
-		ConnectorType:          datamodel.ConnectorType(connDefResp.GetType()),
-		Description:            connDesc,
-		Visibility:             datamodel.ConnectorVisibility(connector.Visibility),
-	}
-
-	if existingConnector, _ := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, dbConnectorToCreate.ID, true); existingConnector != nil {
-		return nil, err
-	}
-
-	if err := s.repository.CreateNamespaceConnector(ctx, ownerPermalink, dbConnectorToCreate); err != nil {
-		return nil, err
-	}
-
-	// User desire state = DISCONNECTED
-	if err := s.repository.UpdateNamespaceConnectorStateByID(ctx, ownerPermalink, dbConnectorToCreate.ID, datamodel.ConnectorState(pipelinePB.Connector_STATE_DISCONNECTED)); err != nil {
-		return nil, err
-	}
-
-	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, dbConnectorToCreate.ID, false)
-	if err != nil {
-		return nil, err
-	}
-	ownerType := string(ns.NsType)[0 : len(string(ns.NsType))-1]
-	ownerUID := ns.NsUID
-	err = s.aclClient.SetOwner(ctx, "connector", dbConnector.UID, ownerType, ownerUID)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.convertDatamodelToProto(ctx, dbConnector, ViewFull, true)
-
-}
-
-func (s *service) ListNamespaceConnectors(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int32, string, error) {
-
-	uidAllowList, err := s.aclClient.ListPermissions(ctx, "connector", "reader", false)
+	dbSecrets, ps, pt, err := s.repository.ListNamespaceSecrets(ctx, ns.Permalink(), int64(pageSize), pageToken, filter)
 	if err != nil {
 		return nil, 0, "", err
+	}
+
+	pbSecrets, err := s.DBToPBSecrets(ctx, dbSecrets)
+	return pbSecrets, int32(ps), pt, err
+}
+
+func (s *service) GetNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string) (*pipelinePB.Secret, error) {
+
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, err
 	}
 
 	ownerPermalink := ns.Permalink()
 
-	dbConnectors, totalSize, nextPageToken, err := s.repository.ListNamespaceConnectors(ctx, ownerPermalink, int64(pageSize), pageToken, view == ViewBasic, filter, uidAllowList, showDeleted)
-
-	if err != nil {
-		return nil, 0, "", err
-	}
-
-	pbConnectors, err := s.convertDatamodelArrayToProtoArray(ctx, dbConnectors, view, true)
-	return pbConnectors, int32(totalSize), nextPageToken, err
-
-}
-
-func (s *service) ListConnectorsAdmin(ctx context.Context, pageSize int32, pageToken string, view View, filter filtering.Filter, showDeleted bool) ([]*pipelinePB.Connector, int32, string, error) {
-
-	dbConnectors, totalSize, nextPageToken, err := s.repository.ListConnectorsAdmin(ctx, int64(pageSize), pageToken, view == ViewBasic, filter, showDeleted)
-	if err != nil {
-		return nil, 0, "", err
-	}
-
-	pbConnectors, err := s.convertDatamodelArrayToProtoArray(ctx, dbConnectors, view, true)
-	return pbConnectors, int32(totalSize), nextPageToken, err
-}
-
-func (s *service) GetNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, id string, view View, credentialMask bool) (*pipelinePB.Connector, error) {
-
-	ownerPermalink := ns.Permalink()
-
-	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, view == ViewBasic)
+	dbSecret, err := s.repository.GetNamespaceSecretByID(ctx, ownerPermalink, id)
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "connector", dbConnector.UID, "admin"); err != nil {
-		return nil, err
-	} else if !granted {
-		return nil, ErrNotFound
-	}
-
-	return s.convertDatamodelToProto(ctx, dbConnector, view, credentialMask)
+	return s.DBToPBSecret(ctx, dbSecret)
 }
 
-func (s *service) GetConnectorByUIDAdmin(ctx context.Context, uid uuid.UUID, view View) (*pipelinePB.Connector, error) {
+func (s *service) UpdateNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string, updatedSecret *pipelinePB.Secret) (*pipelinePB.Secret, error) {
 
-	dbConnector, err := s.repository.GetConnectorByUIDAdmin(ctx, uid, view == ViewBasic)
-	if err != nil {
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
 		return nil, err
 	}
-
-	return s.convertDatamodelToProto(ctx, dbConnector, view, true)
-}
-
-func (s *service) UpdateNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, id string, connector *pipelinePB.Connector) (*pipelinePB.Connector, error) {
 
 	ownerPermalink := ns.Permalink()
 
-	dbConnectorToUpdate, err := s.convertProtoToDatamodel(ctx, ns, connector)
+	dbSecret, err := s.PBToDBSecret(ctx, ns, updatedSecret)
 	if err != nil {
-		return nil, err
-	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "connector", dbConnectorToUpdate.UID, "admin"); err != nil {
-		return nil, err
-	} else if !granted {
 		return nil, ErrNotFound
 	}
-	dbConnectorToUpdate.Owner = ownerPermalink
 
-	if err := s.repository.UpdateNamespaceConnectorByID(ctx, ownerPermalink, id, dbConnectorToUpdate); err != nil {
+	if _, err = s.repository.GetNamespaceSecretByID(ctx, ownerPermalink, id); err != nil {
 		return nil, err
 	}
 
-	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, dbConnectorToUpdate.ID, false)
-	if err != nil {
+	if err := s.repository.UpdateNamespaceSecretByID(ctx, ns.Permalink(), id, dbSecret); err != nil {
 		return nil, err
 	}
 
-	return s.convertDatamodelToProto(ctx, dbConnector, ViewFull, true)
-
+	return s.GetNamespaceSecretByID(ctx, ns, id)
 }
 
-func (s *service) DeleteNamespaceConnectorByID(ctx context.Context, ns resource.Namespace, id string) error {
-
-	ownerPermalink := ns.Permalink()
-
-	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, false)
-	if err != nil {
-		return ErrNotFound
-	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "connector", dbConnector.UID, "admin"); err != nil {
-		return err
-	} else if !granted {
-		return ErrNotFound
-	}
-
-	// TODO
-	// filter := fmt.Sprintf("recipe.components.resource_name:\"connector-resources/%s\"", dbConnector.UID)
-
-	// pipeResp, err := s.pipelinePublicServiceClient.ListPipelines(s.injectUserToContext(context.Background(), ownerPermalink), &pipelinePB.ListPipelinesRequest{
-	// 	Filter: &filter,
-	// })
-	// if err != nil {
-	// 	return err
-	// }
-
-	// if len(pipeResp.Pipelines) > 0 {
-	// 	var pipeIDs []string
-	// 	for _, pipe := range pipeResp.Pipelines {
-	// 		pipeIDs = append(pipeIDs, pipe.GetId())
-	// 	}
-	// 	st, err := sterr.CreateErrorPreconditionFailure(
-	// 		"[service] delete connector",
-	// 		[]*errdetails.PreconditionFailure_Violation{
-	// 			{
-	// 				Type:        "DELETE",
-	// 				Subject:     fmt.Sprintf("id %s", id),
-	// 				Description: fmt.Sprintf("The connector is still in use by pipeline: %s", strings.Join(pipeIDs, " ")),
-	// 			},
-	// 		})
-	// 	if err != nil {
-	// 		logger.Error(err.Error())
-	// 	}
-	// 	return st.Err()
-	// }
-
-	err = s.aclClient.Purge(ctx, "connector", dbConnector.UID)
-	if err != nil {
+func (s *service) DeleteNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string) error {
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
 		return err
 	}
-
-	return s.repository.DeleteNamespaceConnectorByID(ctx, ownerPermalink, id)
-}
-
-func (s *service) UpdateNamespaceConnectorStateByID(ctx context.Context, ns resource.Namespace, id string, state pipelinePB.Connector_State) (*pipelinePB.Connector, error) {
-
 	ownerPermalink := ns.Permalink()
 
-	// Validation: trigger and response connector cannot be disconnected
-	conn, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, false)
-	if err != nil {
-		return nil, ErrNotFound
-	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "connector", conn.UID, "admin"); err != nil {
-		return nil, err
-	} else if !granted {
-		return nil, ErrNotFound
-	}
-
-	if conn.Tombstone {
-		st, _ := sterr.CreateErrorPreconditionFailure(
-			"[service] update connector state",
-			[]*errdetails.PreconditionFailure_Violation{
-				{
-					Type:        "STATE",
-					Subject:     fmt.Sprintf("id %s", id),
-					Description: "the connector definition is deprecated, you can not use anymore",
-				},
-			})
-		return nil, st.Err()
-	}
-
-	switch state {
-	case pipelinePB.Connector_STATE_CONNECTED:
-
-		// Set connector state to user desire state
-		if err := s.repository.UpdateNamespaceConnectorStateByID(ctx, ownerPermalink, id, datamodel.ConnectorState(pipelinePB.Connector_STATE_CONNECTED)); err != nil {
-			return nil, err
-		}
-
-	case pipelinePB.Connector_STATE_DISCONNECTED:
-
-		if err := s.repository.UpdateNamespaceConnectorStateByID(ctx, ownerPermalink, id, datamodel.ConnectorState(pipelinePB.Connector_STATE_DISCONNECTED)); err != nil {
-			return nil, err
-		}
-
-	}
-
-	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, false)
-	if err != nil {
-		return nil, err
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return s.convertDatamodelToProto(ctx, dbConnector, ViewFull, true)
-}
-
-func (s *service) UpdateNamespaceConnectorIDByID(ctx context.Context, ns resource.Namespace, id string, newID string) (*pipelinePB.Connector, error) {
-
-	ownerPermalink := ns.Permalink()
-
-	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, id, false)
-	if err != nil {
-		return nil, ErrNotFound
-	}
-	if granted, err := s.aclClient.CheckPermission(ctx, "connector", dbConnector.UID, "admin"); err != nil {
-		return nil, err
-	} else if !granted {
-		return nil, ErrNotFound
-	}
-
-	if err := s.repository.UpdateNamespaceConnectorIDByID(ctx, ownerPermalink, id, newID); err != nil {
-		return nil, err
-	}
-
-	dbConnector, err = s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, newID, false)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.convertDatamodelToProto(ctx, dbConnector, ViewFull, true)
-
-}
-
-func (s *service) CheckConnectorByUID(ctx context.Context, connUID uuid.UUID) (*pipelinePB.Connector_State, error) {
-
-	logger, _ := logger.GetZapLogger(ctx)
-
-	dbConnector, err := s.repository.GetConnectorByUIDAdmin(ctx, connUID, false)
-	if err != nil {
-		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
-	}
-
-	configuration := func() *structpb.Struct {
-		if dbConnector.Configuration != nil {
-			str := structpb.Struct{}
-			err := str.UnmarshalJSON(dbConnector.Configuration)
-			if err != nil {
-				logger.Fatal(err.Error())
-			}
-			return &str
-		}
-		return nil
-	}()
-
-	state, err := s.connector.Test(dbConnector.ConnectorDefinitionUID, configuration, logger)
-	if err != nil {
-		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
-	}
-
-	switch state {
-	case pipelinePB.Connector_STATE_CONNECTED:
-		return pipelinePB.Connector_STATE_CONNECTED.Enum(), nil
-	case pipelinePB.Connector_STATE_ERROR:
-		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
-	default:
-		return pipelinePB.Connector_STATE_ERROR.Enum(), nil
-	}
-
+	return s.repository.DeleteNamespaceSecretByID(ctx, ownerPermalink, id)
 }

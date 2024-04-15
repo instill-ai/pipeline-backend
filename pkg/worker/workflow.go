@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/temporal"
@@ -77,7 +78,7 @@ type ExecuteTriggerStartActivityResponse struct {
 	OrderedComps        [][]*datamodel.Component
 	DAG                 *dag
 	BatchSize           int
-	EndComponent        *datamodel.Component
+	RespComponent       *datamodel.Component
 	ComputeTime         map[string]float32
 }
 
@@ -85,7 +86,7 @@ type ExecuteTriggerEndActivityRequest struct {
 	MemoryBlobRedisKeys []string
 	OrderedComps        [][]*datamodel.Component
 	BatchSize           int
-	EndComponent        *datamodel.Component
+	RespComponent       *datamodel.Component
 	ComputeTime         map[string]float32
 	ReturnTraces        bool
 	WorkflowExecutionID string //workflow.GetInfo(ctx).WorkflowExecution.ID
@@ -99,8 +100,8 @@ type ExecuteTriggerEndActivityResponse struct {
 type ExecuteConnectorActivityRequest struct {
 	ID                 string
 	InputBlobRedisKeys []string
+	Connection         *structpb.Struct
 	DefinitionName     string
-	ConnectorName      string
 	PipelineMetadata   PipelineMetadataStruct
 	Task               string
 	UserUID            uuid.UUID
@@ -325,7 +326,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		MemoryBlobRedisKeys: dagResult.MemoryBlobRedisKeys,
 		OrderedComps:        startResult.OrderedComps,
 		BatchSize:           startResult.BatchSize,
-		EndComponent:        startResult.EndComponent,
+		RespComponent:       startResult.RespComponent,
 		ComputeTime:         startResult.ComputeTime,
 		ReturnTraces:        param.ReturnTraces,
 		WorkflowExecutionID: workflow.GetInfo(ctx).WorkflowExecution.ID,
@@ -351,11 +352,11 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 
 	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
 
-	var endComp *datamodel.Component
+	var respComp *datamodel.Component
 	compsToDAG := []*datamodel.Component{}
 	for idx := range param.PipelineRecipe.Components {
-		if param.PipelineRecipe.Components[idx].IsEndComponent() {
-			endComp = param.PipelineRecipe.Components[idx]
+		if param.PipelineRecipe.Components[idx].IsResponseComponent() {
+			respComp = param.PipelineRecipe.Components[idx]
 		} else {
 			compsToDAG = append(compsToDAG, param.PipelineRecipe.Components[idx])
 		}
@@ -369,13 +370,6 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 	if err != nil {
 		return nil, err
 	}
-	var startCompID string
-	for _, c := range orderedComp[0] {
-		if c.IsStartComponent() {
-			startCompID = c.ID
-		}
-	}
-
 	var inputs [][]byte
 	pipelineInputs, err := w.GetBlob(ctx, param.PipelineInputBlobRedisKeys)
 	if err != nil {
@@ -407,9 +401,28 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 	for idx := range inputs {
 
 		// TODO: we should prevent user name a component call `global`
-		memory[idx]["global"], err = GenerateGlobalValue(param.PipelineUID, param.PipelineRecipe, param.OwnerPermalink)
+		memory[idx]["vars"], err = GenerateBuiltinVariables(param.PipelineUID, param.PipelineRecipe, param.OwnerPermalink)
 		if err != nil {
 			return nil, err
+		}
+		memory[idx]["secrets"] = map[string]any{}
+
+		pt := ""
+		for {
+			var secrets []*datamodel.Secret
+			// TODO: should use ctx user uid
+			secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, param.OwnerPermalink, 100, "", filtering.Filter{})
+			if err != nil {
+				return nil, err
+			}
+
+			for _, secret := range secrets {
+				memory[idx]["secrets"][secret.ID] = *secret.Value
+			}
+
+			if pt == "" {
+				break
+			}
 		}
 
 	}
@@ -420,23 +433,21 @@ func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTrigger
 		if err != nil {
 			return nil, err
 		}
-		memory[idx][startCompID] = inputStruct
-		computeTime[startCompID] = 0
+		memory[idx]["request"] = inputStruct
+		computeTime["request"] = 0
 	}
-
-	// skip start component
-	orderedComp = orderedComp[1:]
 
 	memoryBlobRedisKeys, err := w.SetMemoryBlob(ctx, memory)
 	if err != nil {
 		return nil, err
 	}
+
 	return &ExecuteTriggerStartActivityResponse{
 		MemoryBlobRedisKeys: memoryBlobRedisKeys,
 		OrderedComps:        orderedComp,
 		DAG:                 dag,
 		BatchSize:           batchSize,
-		EndComponent:        endComp,
+		RespComponent:       respComp,
 		ComputeTime:         computeTime,
 	}, nil
 }
@@ -451,14 +462,14 @@ func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEn
 	}
 
 	pipelineOutputs := []*structpb.Struct{}
-	if param.EndComponent == nil {
+	if param.RespComponent == nil {
 		for idx := 0; idx < param.BatchSize; idx++ {
 			pipelineOutputs = append(pipelineOutputs, &structpb.Struct{})
 		}
 	} else {
 		for idx := 0; idx < param.BatchSize; idx++ {
 			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-			for k, v := range param.EndComponent.EndComponent.Fields {
+			for k, v := range param.RespComponent.ResponseComponent.Fields {
 				// TODO: The end component should allow partial upstream skipping.
 				// This is a temporary implementation.
 				o, _ := RenderInput(v.Value, memory[idx])
@@ -593,11 +604,11 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								}
 								metadata, err := structpb.NewValue(map[string]any{
 									"pipeline": map[string]any{
-										"uid":    "${global.pipeline.uid}",
-										"recipe": "${global.pipeline.recipe}",
+										"uid":    "${vars.PIPELINE_UID}",
+										"recipe": "${vars.PIPELINE_RECIPE}",
 									},
 									"owner": map[string]any{
-										"uid": "${global.owner.uid}",
+										"uid": "${vars.OWNER_UID}",
 									},
 								})
 								if err != nil {
@@ -644,7 +655,7 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 					}
 
 					switch {
-					case comp.IsConnectorComponent() && comp.ConnectorComponent.ConnectorName != "":
+					case comp.IsConnectorComponent():
 						inputBlobRedisKeys, err := w.SetBlob(ctx, compInputs)
 						if err != nil {
 							return nil, err
@@ -654,15 +665,39 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 						}
 						id := comp.ID
 						definitionName := comp.ConnectorComponent.DefinitionName
-						connectorName := comp.ConnectorComponent.ConnectorName
 						task := comp.ConnectorComponent.Task
 
+						conTemplateJSON, err := protojson.Marshal(comp.ConnectorComponent.Connection)
+						if err != nil {
+							return nil, err
+						}
+						var conTemplateStruct any
+						err = json.Unmarshal(conTemplateJSON, &conTemplateStruct)
+						if err != nil {
+							return nil, err
+						}
+
+						conStruct, err := RenderInput(conTemplateStruct, memory[idx])
+						if err != nil {
+							return nil, err
+						}
+						conJSON, err := json.Marshal(conStruct)
+						if err != nil {
+							return nil, err
+						}
+						con := &structpb.Struct{}
+						err = protojson.Unmarshal([]byte(conJSON), con)
+						if err != nil {
+							return nil, err
+						}
+
+						// TODO: we should use Temporal Activity
 						eg.Go(func() error {
 							result, err := w.ConnectorActivity(ctx, &ExecuteConnectorActivityRequest{
 								ID:                 id,
 								InputBlobRedisKeys: inputBlobRedisKeys,
+								Connection:         con,
 								DefinitionName:     definitionName,
-								ConnectorName:      connectorName,
 								PipelineMetadata: PipelineMetadataStruct{
 									UserUID: param.UserUID.String(),
 								},
@@ -710,6 +745,8 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 						id := comp.ID
 						definitionName := comp.OperatorComponent.DefinitionName
 						task := comp.OperatorComponent.Task
+
+						// TODO: we should use Temporal Activity
 						eg.Go(func() error {
 							result, err := w.OperatorActivity(ctx, &ExecuteOperatorActivityRequest{
 								ID:                 id,
@@ -855,39 +892,9 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorA
 		return nil, err
 	}
 
-	dbConnector, err := w.repository.GetConnectorByUIDAdmin(ctx, uuid.FromStringOrNil(strings.Split(param.ConnectorName, "/")[1]), false)
-	if err != nil {
-		return nil, err
-	}
-
-	configuration := func() *structpb.Struct {
-		if dbConnector.Configuration != nil {
-			str := structpb.Struct{}
-			err := str.UnmarshalJSON(dbConnector.Configuration)
-			if err != nil {
-				logger.Fatal(err.Error())
-			}
-			// TODO: optimize this
-			m, err := w.redisClient.Get(ctx, param.MetadataRedisKey).Bytes()
-			if err != nil {
-				return nil
-			}
-			workflowMeta := WorkflowMeta{}
-			err = json.Unmarshal(m, &workflowMeta)
-			if err != nil {
-				return nil
-			}
-
-			str.Fields["header_authorization"] = structpb.NewStringValue(workflowMeta.HeaderAuthorization)
-			str.Fields["instill_user_uid"] = structpb.NewStringValue(param.PipelineMetadata.UserUID)
-			str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
-			str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
-			return &str
-		}
-		return nil
-	}()
-
-	execution, err := w.connector.CreateExecution(uuid.FromStringOrNil(con.Uid), param.Task, configuration, logger)
+	// TODO
+	// vars: header_authorization, instill_user_uid, instill_model_backend, instill_mgmt_backend
+	execution, err := w.connector.CreateExecution(uuid.FromStringOrNil(con.Uid), param.Task, param.Connection, logger)
 	if err != nil {
 		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}

@@ -79,12 +79,6 @@ integration-test:				## Run integration test
 	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} -e API_GATEWAY_URL=${API_GATEWAY_URL} \
 		integration-test/pipeline/rest.js --no-usage-report --quiet
-	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
-		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} -e API_GATEWAY_URL=${API_GATEWAY_URL} \
-		integration-test/connector/grpc.js --no-usage-report --quiet
-	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
-		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} -e API_GATEWAY_URL=${API_GATEWAY_URL} \
-		integration-test/connector/rest.js --no-usage-report --quiet
 
 .PHONY: help
 help:       	 				## Show this help

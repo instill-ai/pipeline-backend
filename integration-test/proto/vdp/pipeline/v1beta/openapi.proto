@@ -6,11 +6,11 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 // These options define the OpenAPI definition document information.
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-info: {
-title: "💧 VDP";
-description: "VDP endpoints to manage pipeline resources";
+  info: {
+    title: "💧 VDP";
+    description: "VDP endpoints to manage pipeline resources";
     // API info injected from common configuration.
-    version: "v0.11.0-beta";
+    version: "v0.11.1-beta";
     contact: {
       name: "Instill AI";
       url: "https://github.com/instill-ai";
@@ -20,9 +20,8 @@ description: "VDP endpoints to manage pipeline resources";
       name: "Elastic License 2.0 (ELv2)";
       url: "https://github.com/instill-ai/protobufs/blob/main/LICENSE";
     };
-
-      };
-base_path: "/vdp";
+  };
+  base_path: "/vdp";
   // API config injected from common configuration.
   host: "api.instill.tech";
   external_docs: {
@@ -54,5 +53,4 @@ base_path: "/vdp";
     key: "401";
     value: {description: "Returned when the client credentials are not valid."},
   }
-
 };
