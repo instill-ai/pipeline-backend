@@ -16,7 +16,7 @@ func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespa
 		return nil, err
 	}
 
-	dbSecret, err := s.PBToDBSecret(ctx, ns, pbSecret)
+	dbSecret, err := s.convertSecretToDB(ctx, ns, pbSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespa
 		return nil, err
 	}
 
-	return s.DBToPBSecret(ctx, dbCreatedSecret)
+	return s.convertSecretToPB(ctx, dbCreatedSecret)
 
 }
 
@@ -45,7 +45,7 @@ func (s *service) ListNamespaceSecrets(ctx context.Context, ns resource.Namespac
 		return nil, 0, "", err
 	}
 
-	pbSecrets, err := s.DBToPBSecrets(ctx, dbSecrets)
+	pbSecrets, err := s.convertSecretsToPB(ctx, dbSecrets)
 	return pbSecrets, int32(ps), pt, err
 }
 
@@ -61,7 +61,7 @@ func (s *service) GetNamespaceSecretByID(ctx context.Context, ns resource.Namesp
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	return s.DBToPBSecret(ctx, dbSecret)
+	return s.convertSecretToPB(ctx, dbSecret)
 }
 
 func (s *service) UpdateNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string, updatedSecret *pb.Secret) (*pb.Secret, error) {
@@ -72,7 +72,7 @@ func (s *service) UpdateNamespaceSecretByID(ctx context.Context, ns resource.Nam
 
 	ownerPermalink := ns.Permalink()
 
-	dbSecret, err := s.PBToDBSecret(ctx, ns, updatedSecret)
+	dbSecret, err := s.convertSecretToDB(ctx, ns, updatedSecret)
 	if err != nil {
 		return nil, ErrNotFound
 	}

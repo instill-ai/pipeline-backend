@@ -8,10 +8,8 @@ import (
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/paginate"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -81,14 +79,6 @@ func (s *service) ListOperatorDefinitions(ctx context.Context, req *pb.ListOpera
 	}
 
 	return resp, nil
-}
-
-func (s *service) RemoveCredentialFieldsWithMaskString(dbConnDefID string, config *structpb.Struct) {
-	utils.RemoveCredentialFieldsWithMaskString(s.connector, dbConnDefID, config)
-}
-
-func (s *service) KeepCredentialFieldsWithMaskString(dbConnDefID string, config *structpb.Struct) {
-	utils.KeepCredentialFieldsWithMaskString(s.connector, dbConnDefID, config)
 }
 
 func (s *service) filterConnectorDefinitions(defs []*pb.ConnectorDefinition, filter filtering.Filter) []*pb.ConnectorDefinition {
@@ -215,7 +205,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 			}
 
 			cd = proto.Clone(cd).(*pb.ConnectorDefinition)
-			s.applyViewToConnectorDefinition(cd, *req.View)
+			s.applyViewToConnectorDefinition(cd, req.GetView())
 			d.Definition = &pb.ComponentDefinition_ConnectorDefinition{
 				ConnectorDefinition: cd,
 			}
@@ -226,7 +216,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 			}
 
 			od = proto.Clone(od).(*pb.OperatorDefinition)
-			s.applyViewToOperatorDefinition(od, *req.View)
+			s.applyViewToOperatorDefinition(od, req.GetView())
 			d.Definition = &pb.ComponentDefinition_OperatorDefinition{
 				OperatorDefinition: od,
 			}
@@ -319,7 +309,7 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 
 	pageDefs := make([]*pb.ConnectorDefinition, 0, len(page))
 	for _, def := range page {
-		s.applyViewToConnectorDefinition(def, *req.View)
+		s.applyViewToConnectorDefinition(def, req.GetView())
 		pageDefs = append(pageDefs, def)
 	}
 
@@ -330,17 +320,6 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 	}, nil
 }
 
-func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string, view pb.ComponentDefinition_View) (*pb.ConnectorDefinition, error) {
-
-	def, err := s.connector.GetConnectorDefinitionByID(id, nil)
-	if err != nil {
-		return nil, err
-	}
-	def = proto.Clone(def).(*pb.ConnectorDefinition)
-	if view == pb.ComponentDefinition_VIEW_BASIC {
-		def.Spec = nil
-	}
-	def.VendorAttributes = nil
-
-	return def, nil
+func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error) {
+	return s.connector.GetConnectorDefinitionByID(id, nil)
 }

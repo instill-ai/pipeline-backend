@@ -16,7 +16,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.14.1-beta.0.20240415032046-763cc6d000e3
+	github.com/instill-ai/component v0.14.1-beta.0.20240416141731-9c0a57d6e66e
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240415145600-50085798159d
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
@@ -40,7 +40,6 @@ require (
 	go.uber.org/zap v1.26.0
 	golang.org/x/mod v0.12.0
 	golang.org/x/net v0.22.0
-	golang.org/x/sync v0.5.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/grpc v1.61.1
@@ -114,6 +113,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	golang.org/x/image v0.15.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
+	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/tools v0.10.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.150.0 // indirect

@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 
-	componentBase "github.com/instill-ai/component/pkg/base"
 	connector "github.com/instill-ai/component/pkg/connector"
 	connectorAirbyte "github.com/instill-ai/component/pkg/connector/airbyte/v0"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
@@ -131,76 +129,6 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 		},
 		time.Now(),
 	)
-}
-
-func IsConnector(name string) bool {
-	return strings.HasPrefix(name, "connectors/")
-}
-func IsConnectorWithNamespace(name string) bool {
-	return len(strings.Split(name, "/")) > 3 && strings.Split(name, "/")[2] == "connectors"
-}
-
-func IsConnectorDefinition(name string) bool {
-	return strings.HasPrefix(name, "connector-definitions/")
-}
-
-func IsOperatorDefinition(name string) bool {
-	return strings.HasPrefix(name, "operator-definitions/")
-}
-
-func MaskCredentialFields(connector componentBase.IConnector, defID string, config *structpb.Struct) {
-	maskCredentialFields(connector, defID, config, "")
-}
-
-func maskCredentialFields(connector componentBase.IConnector, defID string, config *structpb.Struct, prefix string) {
-
-	for k, v := range config.GetFields() {
-		key := prefix + k
-		if connector.IsCredentialField(defID, key) {
-			config.GetFields()[k] = structpb.NewStringValue(credentialMaskString)
-		}
-		if v.GetStructValue() != nil {
-			maskCredentialFields(connector, defID, v.GetStructValue(), fmt.Sprintf("%s.", key))
-		}
-
-	}
-}
-
-func RemoveCredentialFieldsWithMaskString(connector componentBase.IConnector, defID string, config *structpb.Struct) {
-	removeCredentialFieldsWithMaskString(connector, defID, config, "")
-}
-
-func KeepCredentialFieldsWithMaskString(connector componentBase.IConnector, defID string, config *structpb.Struct) {
-	keepCredentialFieldsWithMaskString(connector, defID, config, "")
-}
-
-func removeCredentialFieldsWithMaskString(connector componentBase.IConnector, defID string, config *structpb.Struct, prefix string) {
-
-	for k, v := range config.GetFields() {
-		key := prefix + k
-		if connector.IsCredentialField(defID, key) {
-			if v.GetStringValue() == credentialMaskString {
-				delete(config.GetFields(), k)
-			}
-		}
-		if v.GetStructValue() != nil {
-			removeCredentialFieldsWithMaskString(connector, defID, v.GetStructValue(), fmt.Sprintf("%s.", key))
-		}
-
-	}
-}
-func keepCredentialFieldsWithMaskString(connector componentBase.IConnector, defID string, config *structpb.Struct, prefix string) {
-
-	for k, v := range config.GetFields() {
-		key := prefix + k
-		if !connector.IsCredentialField(defID, key) {
-			delete(config.GetFields(), k)
-		}
-		if v.GetStructValue() != nil {
-			keepCredentialFieldsWithMaskString(connector, defID, v.GetStructValue(), fmt.Sprintf("%s.", key))
-		}
-
-	}
 }
 
 func GetConnectorOptions() connector.ConnectorOptions {

@@ -593,11 +593,11 @@ func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityReque
 								}
 								metadata, err := structpb.NewValue(map[string]any{
 									"pipeline": map[string]any{
-										"uid":    "${vars.PIPELINE_UID}",
-										"recipe": "${vars.PIPELINE_RECIPE}",
+										"uid":    "${vars._PIPELINE_UID}",
+										"recipe": "${vars._PIPELINE_RECIPE}",
 									},
 									"owner": map[string]any{
-										"uid": "${vars.OWNER_UID}",
+										"uid": "${vars._OWNER_UID}",
 									},
 								})
 								if err != nil {

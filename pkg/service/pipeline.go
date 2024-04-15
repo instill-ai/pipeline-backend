@@ -79,7 +79,7 @@ func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken s
 	if err != nil {
 		return nil, 0, "", err
 	}
-	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, view, true)
+	pbPipelines, err := s.convertPipelinesToPB(ctx, dbPipelines, view, true)
 	return pbPipelines, int32(totalSize), nextPageToken, err
 
 }
@@ -97,7 +97,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, uid uuid.UUID, view pb.P
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, view, true)
+	return s.convertPipelineToPB(ctx, dbPipeline, view, true)
 }
 
 func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*pb.Pipeline, error) {
@@ -123,7 +123,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		}
 	}
 
-	dbPipeline, err := s.PBToDBPipeline(ctx, ns, pbPipeline)
+	dbPipeline, err := s.convertPipelineToDB(ctx, ns, pbPipeline)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		return nil, err
 	}
 
-	pipeline, err := s.DBToPBPipeline(ctx, dbCreatedPipeline, pb.Pipeline_VIEW_FULL, false)
+	pipeline, err := s.convertPipelineToPB(ctx, dbCreatedPipeline, pb.Pipeline_VIEW_FULL, false)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namesp
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, view, true)
+	pbPipelines, err := s.convertPipelinesToPB(ctx, dbPipelines, view, true)
 	return pbPipelines, int32(ps), pt, err
 }
 
@@ -213,7 +213,7 @@ func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int32, pageTo
 		return nil, 0, "", err
 	}
 
-	pbPipelines, err := s.DBToPBPipelines(ctx, dbPipelines, view, true)
+	pbPipelines, err := s.convertPipelinesToPB(ctx, dbPipelines, view, true)
 	return pbPipelines, int32(ps), pt, err
 
 }
@@ -233,7 +233,7 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 		return nil, ErrNotFound
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, view, true)
+	return s.convertPipelineToPB(ctx, dbPipeline, view, true)
 }
 
 func (s *service) GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns resource.Namespace, id string) (uuid.UUID, error) {
@@ -260,7 +260,7 @@ func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, view, true)
+	return s.convertPipelineToPB(ctx, dbPipeline, view, true)
 
 }
 
@@ -268,7 +268,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	ownerPermalink := ns.Permalink()
 
-	dbPipeline, err := s.PBToDBPipeline(ctx, ns, toUpdPipeline)
+	dbPipeline, err := s.convertPipelineToDB(ctx, ns, toUpdPipeline)
 	if err != nil {
 		return nil, ErrNotFound
 	}
@@ -319,7 +319,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	if err != nil {
 		return nil, err
 	}
-	pipeline, err := s.DBToPBPipeline(ctx, dbPipelineUpdated, pb.Pipeline_VIEW_FULL, false)
+	pipeline, err := s.convertPipelineToPB(ctx, dbPipelineUpdated, pb.Pipeline_VIEW_FULL, false)
 	if err != nil {
 		return nil, err
 	}
@@ -426,7 +426,7 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
+	return s.convertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
 
 }
 
@@ -460,7 +460,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	return s.DBToPBPipeline(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
+	return s.convertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
 }
 
 func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resource.Namespace, recipe *datamodel.Recipe, pipelineInputs []*structpb.Struct) error {
@@ -654,7 +654,7 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 		return nil, ErrNoPermission
 	}
 
-	dbPipelineReleaseToCreate, err := s.PBToDBPipelineRelease(ctx, pipelineUID, pipelineRelease)
+	dbPipelineReleaseToCreate, err := s.convertPipelineReleaseToDB(ctx, pipelineUID, pipelineRelease)
 	if err != nil {
 		return nil, err
 	}
@@ -671,7 +671,7 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipeline, dbCreatedPipelineRelease, pb.Pipeline_VIEW_FULL)
+	return s.convertPipelineReleaseToPB(ctx, dbPipeline, dbCreatedPipelineRelease, pb.Pipeline_VIEW_FULL)
 
 }
 func (s *service) ListNamespacePipelineReleases(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, pageSize int32, pageToken string, view pb.Pipeline_View, filter filtering.Filter, showDeleted bool) ([]*pb.PipelineRelease, int32, string, error) {
@@ -693,7 +693,7 @@ func (s *service) ListNamespacePipelineReleases(ctx context.Context, ns resource
 		return nil, 0, "", err
 	}
 
-	pbPipelineReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline, dbPipelineReleases, view)
+	pbPipelineReleases, err := s.convertPipelineReleasesToPB(ctx, dbPipeline, dbPipelineReleases, view)
 	return pbPipelineReleases, int32(ps), pt, err
 }
 
@@ -716,7 +716,7 @@ func (s *service) GetNamespacePipelineReleaseByID(ctx context.Context, ns resour
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipeline, dbPipelineRelease, view)
+	return s.convertPipelineReleaseToPB(ctx, dbPipeline, dbPipelineRelease, view)
 
 }
 
@@ -744,7 +744,7 @@ func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns res
 		return nil, err
 	}
 
-	pbPipelineReleaseToUpdate, err := s.PBToDBPipelineRelease(ctx, pipelineUID, toUpdPipeline)
+	pbPipelineReleaseToUpdate, err := s.convertPipelineReleaseToDB(ctx, pipelineUID, toUpdPipeline)
 	if err != nil {
 		return nil, err
 	}
@@ -757,7 +757,7 @@ func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns res
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipeline, dbPipelineRelease, pb.Pipeline_VIEW_FULL)
+	return s.convertPipelineReleaseToPB(ctx, dbPipeline, dbPipelineRelease, pb.Pipeline_VIEW_FULL)
 }
 
 func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, newID string) (*pb.PipelineRelease, error) {
@@ -795,7 +795,7 @@ func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns r
 		return nil, err
 	}
 
-	return s.DBToPBPipelineRelease(ctx, dbPipeline, dbPipelineRelease, pb.Pipeline_VIEW_FULL)
+	return s.convertPipelineReleaseToPB(ctx, dbPipeline, dbPipelineRelease, pb.Pipeline_VIEW_FULL)
 }
 
 func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string) error {

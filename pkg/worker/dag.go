@@ -654,6 +654,7 @@ func FindReferenceParent(input string) []string {
 	}
 	return upstreams
 }
+
 func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, computeTime map[string]float32, batchSize int) (map[string]*pb.Trace, error) {
 	trace := map[string]*pb.Trace{}
 	for groupIdx := range comps {

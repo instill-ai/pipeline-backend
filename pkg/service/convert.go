@@ -131,17 +131,6 @@ func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pb.O
 		return err
 	}
 
-	detail := &structpb.Struct{}
-	// Note: need to deal with camelCase or under_score for grpc in future
-	json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
-	if marshalErr != nil {
-		return marshalErr
-	}
-	unmarshalErr := detail.UnmarshalJSON(json)
-	if unmarshalErr != nil {
-		return unmarshalErr
-	}
-
 	comp.Definition = def
 	return nil
 }
@@ -156,46 +145,20 @@ func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pb.
 		return err
 	}
 
-	detail := &structpb.Struct{}
-	// Note: need to deal with camelCase or under_score for grpc in future
-	json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
-	if marshalErr != nil {
-		return marshalErr
-	}
-	unmarshalErr := detail.UnmarshalJSON(json)
-	if unmarshalErr != nil {
-		return unmarshalErr
-	}
-
 	comp.Definition = def
 	return nil
 }
 
 func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pb.IteratorComponent) error {
 
-	var wg sync.WaitGroup
-	wg.Add(len(comp.Components))
-	ch := make(chan error)
-
 	for nestIdx := range comp.Components {
-		go func(c *pb.NestedComponent) {
-			defer wg.Done()
-			switch c.Component.(type) {
-			case *pb.NestedComponent_ConnectorComponent:
-				err := s.includeConnectorComponentDetail(ctx, c.GetConnectorComponent())
-				ch <- err
-			case *pb.NestedComponent_OperatorComponent:
-				err := s.includeOperatorComponentDetail(ctx, c.GetOperatorComponent())
-				ch <- err
-			default:
-				ch <- nil
-			}
-		}(comp.Components[nestIdx])
-
-	}
-
-	for range comp.Components {
-		err := <-ch
+		var err error
+		switch comp.Components[nestIdx].Component.(type) {
+		case *pb.NestedComponent_ConnectorComponent:
+			err = s.includeConnectorComponentDetail(ctx, comp.Components[nestIdx].GetConnectorComponent())
+		case *pb.NestedComponent_OperatorComponent:
+			err = s.includeOperatorComponentDetail(ctx, comp.Components[nestIdx].GetOperatorComponent())
+		}
 		if err != nil {
 			return err
 		}
@@ -226,43 +189,35 @@ func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pb.I
 				nestedComp := comp.Components[upstreamCompIdx]
 
 				var walk *structpb.Value
+				task := ""
+				input := &structpb.Struct{}
+				output := &structpb.Struct{}
 				switch nestedComp.Component.(type) {
 				case *pb.NestedComponent_ConnectorComponent:
-					task := nestedComp.GetConnectorComponent().GetTask()
-					if task == "" {
-						// Skip schema generation if the task is not set.
-						continue
-					}
+					task = nestedComp.GetConnectorComponent().GetTask()
+					input = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+					output = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
 
-					splits := strings.Split(path, ".")
-
-					if splits[1] == "output" {
-						walk = structpb.NewStructValue(nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
-					} else if splits[1] == "input" {
-						walk = structpb.NewStructValue(nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
-					} else {
-						// Skip schema generation if the configuration is not valid.
-						continue
-					}
-					path = path[len(splits[1])+1:]
 				case *pb.NestedComponent_OperatorComponent:
-					task := nestedComp.GetOperatorComponent().GetTask()
-					if task == "" {
-						// Skip schema generation if the task is not set.
-						continue
-					}
-					splits := strings.Split(path, ".")
-
-					if splits[1] == "output" {
-						walk = structpb.NewStructValue(nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
-					} else if splits[1] == "input" {
-						walk = structpb.NewStructValue(nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
-					} else {
-						// Skip schema generation if the configuration is not valid.
-						continue
-					}
-					path = path[len(splits[1])+1:]
+					task = nestedComp.GetOperatorComponent().GetTask()
+					input = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+					output = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
 				}
+				if task == "" {
+					// Skip schema generation if the task is not set.
+					continue
+				}
+				splits := strings.Split(path, ".")
+
+				if splits[1] == "output" {
+					walk = structpb.NewStructValue(output)
+				} else if splits[1] == "input" {
+					walk = structpb.NewStructValue(input)
+				} else {
+					// Skip schema generation if the configuration is not valid.
+					continue
+				}
+				path = path[len(splits[1])+1:]
 
 				success := true
 
@@ -333,29 +288,16 @@ func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pb.I
 
 func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe) error {
 
-	var wg sync.WaitGroup
-	wg.Add(len(recipe.Components))
-	ch := make(chan error)
 	for idx := range recipe.Components {
-		go func(comp *pb.Component) {
-			defer wg.Done()
-			switch comp.Component.(type) {
-			case *pb.Component_ConnectorComponent:
-				err := s.includeConnectorComponentDetail(ctx, comp.GetConnectorComponent())
-				ch <- err
-			case *pb.Component_OperatorComponent:
-				err := s.includeOperatorComponentDetail(ctx, comp.GetOperatorComponent())
-				ch <- err
-			case *pb.Component_IteratorComponent:
-				err := s.includeIteratorComponentDetail(ctx, comp.GetIteratorComponent())
-				ch <- err
-			default:
-				ch <- nil
-			}
-		}(recipe.Components[idx])
-	}
-	for range recipe.Components {
-		err := <-ch
+		var err error
+		switch recipe.Components[idx].Component.(type) {
+		case *pb.Component_ConnectorComponent:
+			err = s.includeConnectorComponentDetail(ctx, recipe.Components[idx].GetConnectorComponent())
+		case *pb.Component_OperatorComponent:
+			err = s.includeOperatorComponentDetail(ctx, recipe.Components[idx].GetOperatorComponent())
+		case *pb.Component_IteratorComponent:
+			err = s.includeIteratorComponentDetail(ctx, recipe.Components[idx].GetIteratorComponent())
+		}
 		if err != nil {
 			return err
 		}
@@ -363,11 +305,9 @@ func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe) 
 	return nil
 }
 
-// PBToDBPipeline converts protobuf data model to db data model
-func (s *service) PBToDBPipeline(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
+// convertPipelineToDB converts protobuf data model to db data model
+func (s *service) convertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
-
-	var err error
 
 	recipe := &datamodel.Recipe{}
 	if pbPipeline.GetRecipe() != nil {
@@ -388,11 +328,6 @@ func (s *service) PBToDBPipeline(ctx context.Context, ns resource.Namespace, pbP
 
 	dbSharing := &datamodel.Sharing{}
 	if pbPipeline.GetSharing() != nil {
-
-		if err != nil {
-			return nil, err
-		}
-
 		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetSharing())
 		if err != nil {
 			return nil, err
@@ -461,8 +396,8 @@ var ConnectorTypeToComponentType = map[pb.ConnectorType]pb.ComponentType{
 	pb.ConnectorType_CONNECTOR_TYPE_DATA:        pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
 }
 
-// DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error) {
+// convertPipelineToPB converts db data model to protobuf data model
+func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -598,7 +533,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	go func() {
 		defer wg.Done()
 		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && pbRecipe.Trigger.GetTriggerByRequest() != nil {
-			spec, err := s.GeneratePipelineDataSpec(pbRecipe.Trigger.GetTriggerByRequest(), pbRecipe.Components)
+			spec, err := s.generatePipelineDataSpec(pbRecipe.Trigger.GetTriggerByRequest(), pbRecipe.Components)
 			if err != nil {
 				return
 			}
@@ -608,7 +543,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	go func() {
 		defer wg.Done()
-		pbReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline, dbPipeline.Releases, view)
+		pbReleases, err := s.convertPipelineReleasesToPB(ctx, dbPipeline, dbPipeline.Releases, view)
 		if err != nil {
 			return
 		}
@@ -626,8 +561,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	return &pbPipeline, nil
 }
 
-// DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error) {
+// convertPipelineToPB converts db data model to protobuf data model
+func (s *service) convertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error) {
 
 	type result struct {
 		idx      int
@@ -642,7 +577,7 @@ func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.
 	for idx := range dbPipelines {
 		go func(i int) {
 			defer wg.Done()
-			pbPipeline, err := s.DBToPBPipeline(
+			pbPipeline, err := s.convertPipelineToPB(
 				ctx,
 				dbPipelines[i],
 				view,
@@ -667,8 +602,8 @@ func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.
 	return pbPipelines, nil
 }
 
-// PBToDBPipelineRelease converts protobuf data model to db data model
-func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error) {
+// convertPipelineReleaseToDB converts protobuf data model to db data model
+func (s *service) convertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
 	recipe := &datamodel.Recipe{}
@@ -738,8 +673,8 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUID uuid.UU
 	}, nil
 }
 
-// DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
+// convertPipelineReleaseToPB converts db data model to protobuf data model
+func (s *service) convertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -806,7 +741,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 	}
 
 	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && triggerByRequest != nil {
-		spec, err := s.GeneratePipelineDataSpec(triggerByRequest, pbRecipe.Components)
+		spec, err := s.generatePipelineDataSpec(triggerByRequest, pbRecipe.Components)
 		if err == nil {
 			pbPipelineRelease.DataSpecification = spec
 		}
@@ -815,8 +750,8 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 	return &pbPipelineRelease, nil
 }
 
-// DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pb.Pipeline_View) ([]*pb.PipelineRelease, error) {
+// convertPipelineReleaseToPB converts db data model to protobuf data model
+func (s *service) convertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pb.Pipeline_View) ([]*pb.PipelineRelease, error) {
 
 	type result struct {
 		idx     int
@@ -831,7 +766,7 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamo
 	for idx := range dbPipelineRelease {
 		go func(i int) {
 			defer wg.Done()
-			pbRelease, err := s.DBToPBPipelineRelease(
+			pbRelease, err := s.convertPipelineReleaseToPB(
 				ctx,
 				dbPipeline,
 				dbPipelineRelease[i],
@@ -857,7 +792,7 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamo
 }
 
 // TODO: refactor these codes
-func (s *service) GeneratePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByRequest, compsOrigin []*pb.Component) (*pb.DataSpecification, error) {
+func (s *service) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByRequest, compsOrigin []*pb.Component) (*pb.DataSpecification, error) {
 	success := true
 	pipelineDataSpec := &pb.DataSpecification{}
 
@@ -909,45 +844,40 @@ func (s *service) GeneratePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByR
 
 					switch comp.Component.(type) {
 					case *pb.Component_IteratorComponent:
-
 						splits := strings.Split(str, ".")
-
 						if splits[1] == "output" {
 							walk = structpb.NewStructValue(comp.GetIteratorComponent().DataSpecification.Output)
 						} else {
-							return nil, fmt.Errorf("generate OpenAPI spec error")
+							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 						str = str[len(splits[1])+1:]
-					case *pb.Component_ConnectorComponent:
-						task := comp.GetConnectorComponent().GetTask()
+					case *pb.Component_ConnectorComponent, *pb.Component_OperatorComponent:
+						task := ""
+						input := &structpb.Struct{}
+						output := &structpb.Struct{}
+						switch comp.Component.(type) {
+						case *pb.Component_ConnectorComponent:
+							task = comp.GetConnectorComponent().GetTask()
+							input = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+							output = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+						case *pb.Component_OperatorComponent:
+							task = comp.GetOperatorComponent().GetTask()
+							input = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+							output = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+						}
+
 						if task == "" {
-							return nil, fmt.Errorf("generate OpenAPI spec error")
+							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 
 						splits := strings.Split(str, ".")
 
 						if splits[1] == "output" {
-							walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
+							walk = structpb.NewStructValue(output)
 						} else if splits[1] == "input" {
-							walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
+							walk = structpb.NewStructValue(input)
 						} else {
-							return nil, fmt.Errorf("generate OpenAPI spec error")
-						}
-						str = str[len(splits[1])+1:]
-					case *pb.Component_OperatorComponent:
-						task := comp.GetOperatorComponent().GetTask()
-						if task == "" {
-							return nil, fmt.Errorf("generate OpenAPI spec error")
-						}
-
-						splits := strings.Split(str, ".")
-
-						if splits[1] == "output" {
-							walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
-						} else if splits[1] == "input" {
-							walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
-						} else {
-							return nil, fmt.Errorf("generate OpenAPI spec error")
+							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 						str = str[len(splits[1])+1:]
 					}
@@ -1027,11 +957,11 @@ func (s *service) GeneratePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByR
 		pipelineDataSpec.Output = dataOutput
 		return pipelineDataSpec, nil
 	}
-	return nil, fmt.Errorf("generate data spec error")
+	return nil, fmt.Errorf("generate pipeline data spec error")
 
 }
 
-func (s *service) PBToDBSecret(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error) {
+func (s *service) convertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -1069,7 +999,7 @@ func (s *service) PBToDBSecret(ctx context.Context, ns resource.Namespace, pbSec
 	}, nil
 }
 
-func (s *service) DBToPBSecret(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error) {
+func (s *service) convertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error) {
 
 	ownerName, err := s.convertOwnerPermalinkToName(ctx, dbSecret.Owner)
 	if err != nil {
@@ -1087,12 +1017,12 @@ func (s *service) DBToPBSecret(ctx context.Context, dbSecret *datamodel.Secret) 
 
 }
 
-func (s *service) DBToPBSecrets(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error) {
+func (s *service) convertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error) {
 
 	var err error
 	pbSecrets := make([]*pb.Secret, len(dbSecrets))
 	for idx := range dbSecrets {
-		pbSecrets[idx], err = s.DBToPBSecret(ctx, dbSecrets[idx])
+		pbSecrets[idx], err = s.convertSecretToPB(ctx, dbSecrets[idx])
 		if err != nil {
 			return nil, err
 		}

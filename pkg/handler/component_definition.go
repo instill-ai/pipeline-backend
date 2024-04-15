@@ -41,6 +41,12 @@ func (h *PublicHandler) ListConnectorDefinitions(ctx context.Context, req *pb.Li
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
+	isBasicView := (req.GetView() == pb.ComponentDefinition_VIEW_BASIC) || (req.GetView() == pb.ComponentDefinition_VIEW_UNSPECIFIED)
+	if isBasicView {
+		for idx := range resp.ConnectorDefinitions {
+			resp.ConnectorDefinitions[idx].Spec = nil
+		}
+	}
 
 	logger.Info("ListConnectorDefinitions")
 
@@ -63,12 +69,19 @@ func (h *PublicHandler) GetConnectorDefinition(ctx context.Context, req *pb.GetC
 		return resp, err
 	}
 
-	dbDef, err := h.service.GetConnectorDefinitionByID(ctx, connID, req.GetView())
+	dbDef, err := h.service.GetConnectorDefinitionByID(ctx, connID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err
 	}
-	resp.ConnectorDefinition = dbDef
+	resp.ConnectorDefinition = proto.Clone(dbDef).(*pb.ConnectorDefinition)
+
+	isBasicView := (req.GetView() == pb.ComponentDefinition_VIEW_BASIC) || (req.GetView() == pb.ComponentDefinition_VIEW_UNSPECIFIED)
+	if isBasicView {
+		resp.ConnectorDefinition.Spec = nil
+	}
+
+	resp.ConnectorDefinition.Name = fmt.Sprintf("connector-definitions/%s", resp.ConnectorDefinition.GetId())
 
 	logger.Info("GetConnectorDefinition")
 	return resp, nil
@@ -85,6 +98,12 @@ func (h *PublicHandler) ListOperatorDefinitions(ctx context.Context, req *pb.Lis
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
+	}
+	isBasicView := (req.GetView() == pb.ComponentDefinition_VIEW_BASIC) || (req.GetView() == pb.ComponentDefinition_VIEW_UNSPECIFIED)
+	if isBasicView {
+		for idx := range resp.OperatorDefinitions {
+			resp.OperatorDefinitions[idx].Spec = nil
+		}
 	}
 
 	logger.Info("ListOperatorDefinitions")
