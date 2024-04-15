@@ -1627,3 +1627,19 @@ func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context
 
 	return operation, nil
 }
+
+func (h *PublicHandler) GetOperation(ctx context.Context, req *pipelinePB.GetOperationRequest) (*pipelinePB.GetOperationResponse, error) {
+
+	operationID, err := resource.GetOperationID(req.Name)
+	if err != nil {
+		return &pipelinePB.GetOperationResponse{}, err
+	}
+	operation, err := h.service.GetOperation(ctx, operationID)
+	if err != nil {
+		return &pipelinePB.GetOperationResponse{}, err
+	}
+
+	return &pipelinePB.GetOperationResponse{
+		Operation: operation,
+	}, nil
+}
