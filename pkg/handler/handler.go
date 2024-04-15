@@ -103,7 +103,7 @@ func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinePB.CheckName
 	rscType := strings.Split(name, "/")[2]
 
 	if rscType == "pipelines" {
-		_, err := h.service.GetNamespacePipelineByID(ctx, ns, id, service.ViewBasic)
+		_, err := h.service.GetNamespacePipelineByID(ctx, ns, id, pipelinePB.Pipeline_VIEW_BASIC)
 		if err != nil && errors.Is(err, service.ErrNotFound) {
 			return &pipelinePB.CheckNameResponse{
 				Availability: pipelinePB.CheckNameResponse_NAME_AVAILABLE,

@@ -63,7 +63,7 @@ func (h *PublicHandler) GetConnectorDefinition(ctx context.Context, req *pb.GetC
 		return resp, err
 	}
 
-	dbDef, err := h.service.GetConnectorDefinitionByID(ctx, connID, parseView(int32(*req.GetView().Enum())))
+	dbDef, err := h.service.GetConnectorDefinitionByID(ctx, connID, req.GetView())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return resp, err

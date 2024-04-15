@@ -23,23 +23,6 @@ import (
 	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-type View int32
-
-const (
-	ViewUnspecified View = 0
-	ViewBasic       View = 1
-	ViewFull        View = 2
-	ViewRecipe      View = 3
-)
-
-func parseView(i int32) View {
-	if i == 0 {
-		return ViewBasic
-	}
-
-	return View(i)
-}
-
 func (s *service) recipeNameToPermalink(ctx context.Context, recipeRscName *pipelinePB.Recipe) (*pipelinePB.Recipe, error) {
 
 	recipePermalink := &pipelinePB.Recipe{Version: recipeRscName.Version, Trigger: recipeRscName.Trigger}
@@ -540,7 +523,7 @@ var ConnectorTypeToComponentType = map[pipelinePB.ConnectorType]pipelinePB.Compo
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view View, checkPermission bool) (*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view pipelinePB.Pipeline_View, checkPermission bool) (*pipelinePB.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -554,7 +537,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	var respComp *pipelinePB.ResponseComponent
 
-	if dbPipeline.Recipe != nil && view != ViewBasic {
+	if dbPipeline.Recipe != nil && view != pipelinePB.Pipeline_VIEW_BASIC {
 		pbRecipe = &pipelinePB.Recipe{}
 
 		b, err := json.Marshal(dbPipeline.Recipe)
@@ -569,7 +552,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	}
 
-	if view == ViewFull {
+	if view == pipelinePB.Pipeline_VIEW_FULL {
 		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
 		}
@@ -628,7 +611,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	go func() {
 		defer wg.Done()
 		var owner *mgmtPB.Owner
-		if view != ViewBasic {
+		if view != pipelinePB.Pipeline_VIEW_BASIC {
 			owner, err = s.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
 			if err != nil {
 				return
@@ -670,7 +653,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		pbPipeline.Permission.CanTrigger = canTrigger
 	}()
 
-	if view != ViewBasic {
+	if view != pipelinePB.Pipeline_VIEW_BASIC {
 		if dbPipeline.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipeline.Metadata)
@@ -683,7 +666,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	go func() {
 		defer wg.Done()
-		if pbRecipe != nil && view == ViewFull && pbRecipe.Trigger.GetTriggerByRequest() != nil && respComp != nil {
+		if pbRecipe != nil && view == pipelinePB.Pipeline_VIEW_FULL && pbRecipe.Trigger.GetTriggerByRequest() != nil && respComp != nil {
 			spec, err := s.GeneratePipelineDataSpec(pbRecipe.Trigger.GetTriggerByRequest(), respComp, pbRecipe.Components)
 			if err != nil {
 				return
@@ -713,7 +696,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 }
 
 // DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, view View, checkPermission bool) ([]*pipelinePB.Pipeline, error) {
+func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pipelinePB.Pipeline_View, checkPermission bool) ([]*pipelinePB.Pipeline, error) {
 
 	type result struct {
 		idx      int
@@ -825,7 +808,7 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUID uuid.UU
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view View) (*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pipelinePB.Pipeline_View) (*pipelinePB.PipelineRelease, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -834,7 +817,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 		return nil, err
 	}
 	var pbRecipe *pipelinePB.Recipe
-	if dbPipelineRelease.Recipe != nil && view != ViewBasic {
+	if dbPipelineRelease.Recipe != nil && view != pipelinePB.Pipeline_VIEW_BASIC {
 		pbRecipe = &pipelinePB.Recipe{}
 
 		b, err := json.Marshal(dbPipelineRelease.Recipe)
@@ -851,7 +834,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 	var triggerByRequest *pipelinePB.TriggerByRequest
 	var respComp *pipelinePB.ResponseComponent
 
-	if view == ViewFull {
+	if view == pipelinePB.Pipeline_VIEW_FULL {
 		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
 		}
@@ -887,7 +870,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 		Recipe:      pbRecipe,
 	}
 
-	if view != ViewBasic {
+	if view != pipelinePB.Pipeline_VIEW_BASIC {
 		if dbPipelineRelease.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipelineRelease.Metadata)
@@ -898,7 +881,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 		}
 	}
 
-	if pbRecipe != nil && view == ViewFull && triggerByRequest != nil && respComp != nil {
+	if pbRecipe != nil && view == pipelinePB.Pipeline_VIEW_FULL && triggerByRequest != nil && respComp != nil {
 		spec, err := s.GeneratePipelineDataSpec(triggerByRequest, respComp, pbRecipe.Components)
 		if err == nil {
 			pbPipelineRelease.DataSpecification = spec
@@ -909,7 +892,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 }
 
 // DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view View) ([]*pipelinePB.PipelineRelease, error) {
+func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pipelinePB.Pipeline_View) ([]*pipelinePB.PipelineRelease, error) {
 
 	type result struct {
 		idx     int

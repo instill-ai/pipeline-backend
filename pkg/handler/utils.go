@@ -9,13 +9,6 @@ import (
 	// pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-func parseView(view int32) service.View {
-	if view == 0 {
-		return service.ViewBasic
-	}
-	return service.View(view)
-}
-
 func authenticateUser(ctx context.Context, allowVisitor bool) error {
 	if resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey) == "user" {
 		if resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey) == "" {

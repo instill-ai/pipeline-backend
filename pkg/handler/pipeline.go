@@ -26,7 +26,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/checkfield"
 
 	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
@@ -57,7 +56,7 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pipelinePB
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelinesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelinesAdmin(ctx, req.GetPageSize(), req.GetPageToken(), req.GetView(), filter, req.GetShowDeleted())
 	if err != nil {
 		return &pipelinePB.ListPipelinesAdminResponse{}, err
 	}
@@ -87,7 +86,7 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pipelineP
 	if err != nil {
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err
 	}
-	pbPipeline, err := h.service.GetPipelineByUIDAdmin(ctx, uid, service.View(view))
+	pbPipeline, err := h.service.GetPipelineByUIDAdmin(ctx, uid, view)
 	if err != nil {
 		return &pipelinePB.LookUpPipelineAdminResponse{}, err
 	}
@@ -141,7 +140,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pipelinePB.ListP
 	}
 
 	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(
-		ctx, req.GetPageSize(), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), req.Visibility, filter, req.GetShowDeleted())
+		ctx, req.GetPageSize(), req.GetPageToken(), req.GetView(), req.Visibility, filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pipelinePB.ListPipelinesResponse{}, err
@@ -324,7 +323,7 @@ func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListName
 	}
 	visibility := req.GetVisibility()
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListNamespacePipelines(ctx, ns, req.GetPageSize(), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), &visibility, filter, req.GetShowDeleted())
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListNamespacePipelines(ctx, ns, req.GetPageSize(), req.GetPageToken(), req.GetView(), &visibility, filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, "", 0, err
@@ -379,7 +378,7 @@ func (h *PublicHandler) getNamespacePipeline(ctx context.Context, req GetNamespa
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, id, parseView(int32(*req.GetView().Enum())))
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, id, req.GetView())
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -599,7 +598,7 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pipelinePB.Look
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.GetPipelineByUID(ctx, uid, parseView(int32(*req.GetView().Enum())))
+	pbPipeline, err := h.service.GetPipelineByUID(ctx, uid, req.GetView())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -819,7 +818,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 		return ns, id, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, id, service.ViewFull)
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, id, pipelinePB.Pipeline_VIEW_FULL)
 	if err != nil {
 		return ns, id, nil, false, err
 	}
@@ -994,7 +993,7 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pipelinePB.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1096,12 +1095,12 @@ func (h *PublicHandler) listNamespacePipelineReleases(ctx context.Context, req L
 		return nil, "", 0, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pipelinePB.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, "", 0, err
 	}
 
-	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListNamespacePipelineReleases(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.GetPageSize(), req.GetPageToken(), parseView(int32(*req.GetView().Enum())), filter, req.GetShowDeleted())
+	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListNamespacePipelineReleases(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.GetPageSize(), req.GetPageToken(), req.GetView(), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, "", 0, err
@@ -1155,12 +1154,12 @@ func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req Get
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pipelinePB.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), releaseID, parseView(int32(*req.GetView().Enum())))
+	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), releaseID, req.GetView())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1223,7 +1222,7 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, ErrUpdateMask
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pipelinePB.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1325,7 +1324,7 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pipelinePB.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1396,7 +1395,7 @@ func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req 
 		return err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pipelinePB.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return err
 	}
@@ -1465,7 +1464,7 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewBasic)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pipelinePB.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1475,7 +1474,7 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), releaseID, service.ViewFull)
+	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), releaseID, pipelinePB.Pipeline_VIEW_FULL)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1507,12 +1506,12 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return ns, "", nil, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, service.ViewFull)
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pipelinePB.Pipeline_VIEW_FULL)
 	if err != nil {
 		return ns, "", nil, nil, false, err
 	}
 
-	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, service.ViewFull)
+	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, pipelinePB.Pipeline_VIEW_FULL)
 	if err != nil {
 		return ns, "", nil, nil, false, err
 	}
