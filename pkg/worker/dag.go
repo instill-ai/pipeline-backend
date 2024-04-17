@@ -171,7 +171,7 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 	return ans, nil
 }
 
-func traverseBinding(bindings ItemMemory, path string) (any, error) {
+func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string, path string, dataIndex int, inputKey string) (any, error) {
 
 	// Note: We allow hyphens (-) in the component ID, but `jsonpath` doesn't support it.
 	// This workaround transcodes the component ID into a valid name for the `jsonpath` library.
@@ -180,14 +180,27 @@ func traverseBinding(bindings ItemMemory, path string) (any, error) {
 	componentIDMap := map[string]string{}
 	transcodedBinding := map[string]any{}
 	idx := 0
-	for k := range bindings {
+	for k := range compsMemory {
 		// Generates a valid variable name for jsonpath
 		newID := fmt.Sprintf("comp%d", idx)
 		componentIDMap[k] = newID
-		transcodedBinding[newID] = bindings[k]
+		transcodedBinding[newID] = compsMemory[k][dataIndex]
 		idx = idx + 1
 	}
-	res, err := jsonpath.Get(fmt.Sprintf("$.%s.%s", componentIDMap[componentID], route), transcodedBinding)
+
+	if inputsMemory != nil {
+		componentIDMap[inputKey] = inputKey
+		transcodedBinding[inputKey] = inputsMemory[dataIndex]
+	}
+	if secretsMemory != nil {
+		componentIDMap["secrets"] = "secrets"
+		transcodedBinding["secrets"] = secretsMemory
+	}
+
+	b, _ := json.Marshal(transcodedBinding)
+	var transcodedBindingConverted any
+	_ = json.Unmarshal(b, &transcodedBindingConverted)
+	res, err := jsonpath.Get(fmt.Sprintf("$.%s.%s", componentIDMap[componentID], route), transcodedBindingConverted)
 	if err != nil {
 		// check primitive value
 		var ret any
@@ -202,15 +215,15 @@ func traverseBinding(bindings ItemMemory, path string) (any, error) {
 		return res, nil
 	}
 }
-func RenderInput(input any, bindings ItemMemory) (any, error) {
+func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string, inputKey string) (any, error) {
 
-	switch input := input.(type) {
+	switch input := inputTemplate.(type) {
 	case string:
 		if strings.HasPrefix(input, "${") && strings.HasSuffix(input, "}") && strings.Count(input, "${") == 1 {
 			input = input[2:]
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
-			val, err := traverseBinding(bindings, input)
+			val, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, input, dataIndex, inputKey)
 			if err != nil {
 				return nil, err
 			}
@@ -233,7 +246,7 @@ func RenderInput(input any, bindings ItemMemory) (any, error) {
 			}
 
 			ref := strings.TrimSpace(input[2:endIdx])
-			v, err := traverseBinding(bindings, ref)
+			v, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, ref, dataIndex, inputKey)
 			if err != nil {
 				return nil, err
 			}
@@ -255,7 +268,7 @@ func RenderInput(input any, bindings ItemMemory) (any, error) {
 	case map[string]any:
 		val := map[string]any{}
 		for k, v := range input {
-			converted, err := RenderInput(v, bindings)
+			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory, inputKey)
 			if err != nil {
 				return "", err
 			}
@@ -266,7 +279,7 @@ func RenderInput(input any, bindings ItemMemory) (any, error) {
 	case []any:
 		val := []any{}
 		for _, v := range input {
-			converted, err := RenderInput(v, bindings)
+			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory, inputKey)
 			if err != nil {
 				return "", err
 			}
@@ -655,68 +668,67 @@ func FindReferenceParent(input string) []string {
 	return upstreams
 }
 
-func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, computeTime map[string]float32, batchSize int) (map[string]*pb.Trace, error) {
+func GenerateTraces(comps []*datamodel.Component, memory *TriggerMemory) (map[string]*pb.Trace, error) {
 	trace := map[string]*pb.Trace{}
-	for groupIdx := range comps {
-		for compIdx := range comps[groupIdx] {
-			inputs := []*structpb.Struct{}
-			outputs := []*structpb.Struct{}
-			var traceStatuses []pb.Trace_Status
-			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if checkComponentCompleted(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
-					traceStatuses = append(traceStatuses, pb.Trace_STATUS_COMPLETED)
-				} else if checkComponentSkipped(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
-					traceStatuses = append(traceStatuses, pb.Trace_STATUS_SKIPPED)
-				} else if checkComponentError(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
-					traceStatuses = append(traceStatuses, pb.Trace_STATUS_ERROR)
-				} else {
-					traceStatuses = append(traceStatuses, pb.Trace_STATUS_UNSPECIFIED)
-				}
 
+	batchSize := len(memory.Inputs)
+
+	for compIdx := range comps {
+
+		inputs := make([]*structpb.Struct, batchSize)
+		outputs := make([]*structpb.Struct, batchSize)
+		traceStatuses := make([]pb.Trace_Status, batchSize)
+
+		for dataIdx := range memory.Components[comps[compIdx].ID] {
+			m := memory.Components[comps[compIdx].ID][dataIdx]
+			if m.Status.Completed {
+				traceStatuses[dataIdx] = pb.Trace_STATUS_COMPLETED
+			} else if m.Status.Skipped {
+				traceStatuses[dataIdx] = pb.Trace_STATUS_SKIPPED
+			} else {
+				traceStatuses[dataIdx] = pb.Trace_STATUS_ERROR
 			}
 
-			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["input"]; ok {
-					data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["input"])
-					if err != nil {
-						return nil, err
-					}
-					inputStruct := &structpb.Struct{}
-					err = protojson.Unmarshal(data, inputStruct)
-					if err != nil {
-						return nil, err
-					}
-					inputs = append(inputs, inputStruct)
-				}
+			if m.Input != nil {
 
-			}
-			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["output"]; ok {
-					data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["output"])
-					if err != nil {
-						return nil, err
-					}
-					outputStruct := &structpb.Struct{}
-					err = protojson.Unmarshal(data, outputStruct)
-					if err != nil {
-						return nil, err
-					}
-					outputs = append(outputs, outputStruct)
+				in, err := json.Marshal(m.Input)
+				if err != nil {
+					return nil, err
 				}
+				inputStruct := &structpb.Struct{}
 
+				err = protojson.Unmarshal(in, inputStruct)
+				if err != nil {
+					return nil, err
+				}
+				inputs[dataIdx] = inputStruct
 			}
 
-			trace[comps[groupIdx][compIdx].ID] = &pb.Trace{
-				Statuses:             traceStatuses,
-				Inputs:               inputs,
-				Outputs:              outputs,
-				ComputeTimeInSeconds: computeTime[comps[groupIdx][compIdx].ID],
+			if m.Output != nil {
+				out, err := json.Marshal(m.Output)
+				if err != nil {
+					return nil, err
+				}
+				outputStruct := &structpb.Struct{}
+				err = protojson.Unmarshal(out, outputStruct)
+				if err != nil {
+					return nil, err
+				}
+				outputs[dataIdx] = outputStruct
 			}
 		}
+
+		trace[comps[compIdx].ID] = &pb.Trace{
+			Statuses: traceStatuses,
+			Inputs:   inputs,
+			Outputs:  outputs,
+		}
 	}
+
 	return trace, nil
 }
 
+// TODO: refactor builtin vars
 func GenerateBuiltinVariables(pipelineUID uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]any, error) {
 	vars := map[string]any{}
 

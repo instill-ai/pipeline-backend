@@ -58,6 +58,18 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 		rsc.ConnectorComponent.DefinitionName = fmt.Sprintf("connector-definitions/%s", def.Uid)
 		return nil
 
+	case *pb.NestedComponent_ConnectorComponent:
+		id, err := resource.GetRscNameID(rsc.ConnectorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.connector.GetConnectorDefinitionByID(id, nil)
+		if err != nil {
+			return err
+		}
+		rsc.ConnectorComponent.DefinitionName = fmt.Sprintf("connector-definitions/%s", def.Uid)
+		return nil
+
 	case *pb.Component_OperatorComponent:
 		id, err := resource.GetRscNameID(rsc.OperatorComponent.DefinitionName)
 		if err != nil {
@@ -70,6 +82,17 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 		rsc.OperatorComponent.DefinitionName = fmt.Sprintf("operator-definitions/%s", def.Uid)
 		return nil
 
+	case *pb.NestedComponent_OperatorComponent:
+		id, err := resource.GetRscNameID(rsc.OperatorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.operator.GetOperatorDefinitionByID(id, nil)
+		if err != nil {
+			return err
+		}
+		rsc.OperatorComponent.DefinitionName = fmt.Sprintf("operator-definitions/%s", def.Uid)
+		return nil
 	}
 	return nil
 }
@@ -107,7 +130,29 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 		}
 		rsc.ConnectorComponent.DefinitionName = def.Name
 
+	case *pb.NestedComponent_ConnectorComponent:
+		uid, err := resource.GetRscPermalinkUID(rsc.ConnectorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil)
+		if err != nil {
+			return err
+		}
+		rsc.ConnectorComponent.DefinitionName = def.Name
+
 	case *pb.Component_OperatorComponent:
+		uid, err := resource.GetRscPermalinkUID(rsc.OperatorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.operator.GetOperatorDefinitionByUID(uid, nil)
+		if err != nil {
+			return err
+		}
+		rsc.OperatorComponent.DefinitionName = def.Name
+
+	case *pb.NestedComponent_OperatorComponent:
 		uid, err := resource.GetRscPermalinkUID(rsc.OperatorComponent.DefinitionName)
 		if err != nil {
 			return err

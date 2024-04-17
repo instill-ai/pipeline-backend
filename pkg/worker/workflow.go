@@ -10,249 +10,69 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/errmsg"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-// Note: These codes will be refactored soon
-
-type TriggerPipelineWorkflowRequest struct {
-	PipelineInputBlobRedisKeys []string
-	PipelineID                 string
-	PipelineUID                uuid.UUID
-	PipelineReleaseID          string
-	PipelineReleaseUID         uuid.UUID
-	PipelineRecipe             *datamodel.Recipe
-	OwnerPermalink             string
-	UserUID                    uuid.UUID
-	ReturnTraces               bool
-	Mode                       mgmtPB.Mode
-	MetadataRedisKey           string
-}
-
-type TriggerPipelineWorkflowResponse struct {
-	OutputBlobRedisKey string
-}
-
-// ExecuteDAGActivityRequest represents the parameters for TriggerActivity
-type ExecuteDAGActivityRequest struct {
-	OrderedComps        [][]*datamodel.Component
-	DAG                 *dag
-	BatchSize           int
-	PipelineRecipe      *datamodel.Recipe
-	MemoryBlobRedisKeys []string
-	OwnerPermalink      string
-	UserUID             uuid.UUID
-	MetadataRedisKey    string
-}
-type ExecuteDAGActivityResponse struct {
-	MemoryBlobRedisKeys []string
-}
-
-type ExecuteTriggerStartActivityRequest struct {
-	PipelineInputBlobRedisKeys []string
-	PipelineRecipe             *datamodel.Recipe
-	PipelineUID                uuid.UUID
-	OwnerPermalink             string
-	UserUID                    uuid.UUID
-}
-type ExecuteTriggerStartActivityResponse struct {
-	MemoryBlobRedisKeys []string
-	OrderedComps        [][]*datamodel.Component
-	DAG                 *dag
-	BatchSize           int
-	ComputeTime         map[string]float32
-}
-
-type ExecuteTriggerEndActivityRequest struct {
-	MemoryBlobRedisKeys []string
-	OrderedComps        [][]*datamodel.Component
-	BatchSize           int
-	ResponseFields      *datamodel.TriggerByRequestResponseFields
-	ComputeTime         map[string]float32
-	ReturnTraces        bool
-	WorkflowExecutionID string //workflow.GetInfo(ctx).WorkflowExecution.ID
-	UserUID             uuid.UUID
-}
-type ExecuteTriggerEndActivityResponse struct {
-	BlobRedisKey string
-}
-
-// ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
-type ExecuteConnectorActivityRequest struct {
-	ID                 string
-	InputBlobRedisKeys []string
-	Connection         *structpb.Struct
-	DefinitionName     string
-	PipelineMetadata   PipelineMetadataStruct
-	Task               string
+type TriggerPipelineWorkflowParam struct {
+	MemoryRedisKey     string
+	PipelineID         string
+	PipelineUID        uuid.UUID
+	PipelineReleaseID  string
+	PipelineReleaseUID uuid.UUID
+	OwnerPermalink     string
 	UserUID            uuid.UUID
-	MetadataRedisKey   string
+	Mode               mgmtPB.Mode
+	InputKey           string
 }
 
-// ExecuteConnectorActivityRequest represents the parameters for TriggerActivity
-type ExecuteOperatorActivityRequest struct {
-	ID                 string
-	InputBlobRedisKeys []string
-	DefinitionName     string
-	PipelineMetadata   PipelineMetadataStruct
-	Task               string
-	UserUID            uuid.UUID
-	MetadataRedisKey   string
+// ConnectorActivityParam represents the parameters for TriggerActivity
+type ConnectorActivityParam struct {
+	MemoryRedisKey string
+	ID             string
+	AncestorIDs    []string
+	Condition      *string
+	Input          *structpb.Struct
+	Connection     *structpb.Struct
+	DefinitionUID  uuid.UUID
+	Task           string
+	InputKey       string
 }
 
-type ExecuteActivityResponse struct {
-	OutputBlobRedisKeys []string
-}
-
-type PipelineMetadataStruct struct {
-	UserUID string
-}
-
-type WorkflowMeta struct {
-	HeaderAuthorization string `json:"header_authorization"`
+// OperatorActivityParam represents the parameters for TriggerActivity
+type OperatorActivityParam struct {
+	MemoryRedisKey string
+	ID             string
+	AncestorIDs    []string
+	Condition      *string
+	Input          *structpb.Struct
+	DefinitionUID  uuid.UUID
+	Task           string
+	InputKey       string
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
-func (w *worker) GetMemoryBlob(ctx context.Context, redisKeys []string) ([]ItemMemory, error) {
-	payloads := []ItemMemory{}
-	for idx := range redisKeys {
-		blob, err := w.redisClient.Get(ctx, redisKeys[idx]).Bytes()
-		if err != nil {
-			return nil, err
-		}
-		payload := ItemMemory{}
-		err = json.Unmarshal(blob, &payload)
-		if err != nil {
-			return nil, err
-		}
-
-		payloads = append(payloads, payload)
-
-	}
-	return payloads, nil
-}
-
-func (w *worker) SetMemoryBlob(ctx context.Context, inputs []ItemMemory) ([]string, error) {
-	id, _ := uuid.NewV4()
-	blobRedisKeys := []string{}
-	for idx, input := range inputs {
-		inputJSON, err := json.Marshal(input)
-		if err != nil {
-			return nil, err
-		}
-
-		blobRedisKey := fmt.Sprintf("pipeline_memory_blob:%s:%d", id.String(), idx)
-		w.redisClient.Set(
-			ctx,
-			blobRedisKey,
-			inputJSON,
-			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
-		)
-		blobRedisKeys = append(blobRedisKeys, blobRedisKey)
-	}
-	return blobRedisKeys, nil
-}
-
-func (w *worker) GetBlob(ctx context.Context, redisKeys []string) ([]*structpb.Struct, error) {
-	payloads := []*structpb.Struct{}
-	for idx := range redisKeys {
-		blob, err := w.redisClient.Get(ctx, redisKeys[idx]).Bytes()
-		if err != nil {
-			return nil, err
-		}
-		payload := &structpb.Struct{}
-		err = protojson.Unmarshal(blob, payload)
-		if err != nil {
-			return nil, err
-		}
-
-		payloads = append(payloads, payload)
-
-	}
-	return payloads, nil
-}
-
-func (w *worker) SetBlob(ctx context.Context, inputs []*structpb.Struct) ([]string, error) {
-	id, _ := uuid.NewV4()
-	blobRedisKeys := []string{}
-	for idx, input := range inputs {
-		inputJSON, err := protojson.Marshal(input)
-		if err != nil {
-			return nil, err
-		}
-
-		blobRedisKey := fmt.Sprintf("pipeline_blob:%s:%d", id.String(), idx)
-		w.redisClient.Set(
-			ctx,
-			blobRedisKey,
-			inputJSON,
-			time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
-		)
-		blobRedisKeys = append(blobRedisKeys, blobRedisKey)
-	}
-	return blobRedisKeys, nil
-}
-
-type ItemMemory map[string]map[string]any
-
-func checkComponentCompleted(i map[string]any) bool {
-	if status, ok := i["status"]; ok {
-		if completed, ok2 := status.(map[string]any)["completed"]; ok2 {
-			return completed.(bool)
-		}
-	}
-	return false
-}
-func checkComponentStarted(i map[string]any) bool {
-	if status, ok := i["status"]; ok {
-		if started, ok2 := status.(map[string]any)["started"]; ok2 {
-			return started.(bool)
-		}
-	}
-	return false
-}
-func checkComponentSkipped(i map[string]any) bool {
-	if status, ok := i["status"]; ok {
-		if skipped, ok2 := status.(map[string]any)["skipped"]; ok2 {
-			return skipped.(bool)
-		}
-	}
-	return false
-}
-func checkComponentError(i map[string]any) bool {
-	if status, ok := i["status"]; ok {
-		if error, ok2 := status.(map[string]any)["error"]; ok2 {
-			return error.(bool)
-		}
-	}
-	return false
-}
-
 // TriggerPipelineWorkflow is a pipeline trigger workflow definition.
-func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowRequest) (*TriggerPipelineWorkflowResponse, error) {
+// The workflow is only responsible for orchestrating the DAG, not processing or reading/writing the data.
+// All data processing should be done in activities.
+func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error {
 
-	startTime := time.Now()
 	eventName := "TriggerPipelineWorkflow"
 
+	startTime := time.Now()
 	sCtx, span := tracer.Start(context.Background(), eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
@@ -293,46 +113,189 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	var startResult ExecuteTriggerStartActivityResponse
-	if err := workflow.ExecuteActivity(ctx, w.TriggerStartActivity, &ExecuteTriggerStartActivityRequest{
-		PipelineInputBlobRedisKeys: param.PipelineInputBlobRedisKeys,
-		PipelineRecipe:             param.PipelineRecipe,
-		PipelineUID:                param.PipelineUID,
-		OwnerPermalink:             param.OwnerPermalink,
-		UserUID:                    param.UserUID,
-	}).Get(ctx, &startResult); err != nil {
-		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
-		return nil, err
+	recipe, err := LoadRecipe(sCtx, w.redisClient, param.MemoryRedisKey)
+	if err != nil {
+		return err
 	}
 
-	var dagResult ExecuteDAGActivityResponse
-	if err := workflow.ExecuteActivity(ctx, w.DAGActivity, &ExecuteDAGActivityRequest{
-		OrderedComps:        startResult.OrderedComps,
-		MemoryBlobRedisKeys: startResult.MemoryBlobRedisKeys,
-		DAG:                 startResult.DAG,
-		BatchSize:           startResult.BatchSize,
-		PipelineRecipe:      param.PipelineRecipe,
-		OwnerPermalink:      param.OwnerPermalink,
-		UserUID:             param.UserUID,
-		MetadataRedisKey:    param.MetadataRedisKey,
-	}).Get(ctx, &dagResult); err != nil {
-		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
-		return nil, err
+	dag, err := GenerateDAG(recipe.Components)
+	if err != nil {
+		return err
 	}
 
-	var endResult ExecuteTriggerEndActivityResponse
-	if err := workflow.ExecuteActivity(ctx, w.TriggerEndActivity, &ExecuteTriggerEndActivityRequest{
-		MemoryBlobRedisKeys: dagResult.MemoryBlobRedisKeys,
-		OrderedComps:        startResult.OrderedComps,
-		BatchSize:           startResult.BatchSize,
-		ResponseFields:      &param.PipelineRecipe.Trigger.TriggerByRequest.ResponseFields,
-		ComputeTime:         startResult.ComputeTime,
-		ReturnTraces:        param.ReturnTraces,
-		WorkflowExecutionID: workflow.GetInfo(ctx).WorkflowExecution.ID,
-		UserUID:             param.UserUID,
-	}).Get(ctx, &endResult); err != nil {
-		w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
-		return nil, err
+	orderedComp, err := dag.TopologicalSort()
+	if err != nil {
+		return err
+	}
+
+	// The components in the same group can be executed in parallel
+	for group := range orderedComp {
+
+		futures := []workflow.Future{}
+		for _, comp := range orderedComp[group] {
+
+			switch {
+			case comp.IsConnectorComponent():
+				futures = append(futures, workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ConnectorActivityParam{
+					ID:             comp.ID,
+					AncestorIDs:    dag.GetAncestorIDs(comp.ID),
+					MemoryRedisKey: param.MemoryRedisKey,
+					DefinitionUID:  uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1]),
+					Task:           comp.ConnectorComponent.Task,
+					Input:          comp.ConnectorComponent.Input,
+					Connection:     comp.ConnectorComponent.Connection,
+					Condition:      comp.ConnectorComponent.Condition,
+					InputKey:       param.InputKey,
+				}))
+
+			case comp.IsOperatorComponent():
+				futures = append(futures, workflow.ExecuteActivity(ctx, w.OperatorActivity, &OperatorActivityParam{
+					ID:             comp.ID,
+					AncestorIDs:    dag.GetAncestorIDs(comp.ID),
+					MemoryRedisKey: param.MemoryRedisKey,
+					DefinitionUID:  uuid.FromStringOrNil(strings.Split(comp.OperatorComponent.DefinitionName, "/")[1]),
+					Task:           comp.OperatorComponent.Task,
+					Input:          comp.OperatorComponent.Input,
+					Condition:      comp.OperatorComponent.Condition,
+					InputKey:       param.InputKey,
+				}))
+
+			case comp.IsIteratorComponent():
+				childWorkflowOptions := workflow.ChildWorkflowOptions{
+					TaskQueue:                TaskQueue,
+					WorkflowID:               fmt.Sprintf("%s:iterators:%s", workflow.GetInfo(ctx).WorkflowExecution.ID, comp.ID),
+					WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+					RetryPolicy: &temporal.RetryPolicy{
+						MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
+					},
+				}
+				ctx = workflow.WithChildOptions(ctx, childWorkflowOptions)
+
+				m, err := LoadMemory(sCtx, w.redisClient, param.MemoryRedisKey)
+				if err != nil {
+					logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+					return err
+				}
+
+				// TODO: use batch and put the preprocessing in activity
+				iterComp := ComponentsMemory{}
+				for batchIdx := range m.Inputs {
+
+					input, err := RenderInput(comp.IteratorComponent.Input, batchIdx, m.Components, m.Inputs, m.Secrets, param.InputKey)
+					if err != nil {
+						return err
+					}
+
+					subM := &TriggerMemory{
+						Components: map[string]ComponentsMemory{},
+						Inputs:     []InputsMemory{},
+						Secrets:    m.Secrets,
+						Vars:       m.Vars,
+						InputKey:   "request",
+					}
+
+					elems := make([]*ComponentItemMemory, len(input.([]any)))
+					for elemIdx := range input.([]any) {
+						elems[elemIdx] = &ComponentItemMemory{
+							Element: input.([]any)[elemIdx],
+						}
+
+					}
+
+					subM.Components[comp.ID] = elems
+
+					for k := range m.Components {
+						subM.Components[k] = ComponentsMemory{}
+						for range elems {
+							subM.Components[k] = append(subM.Components[k], m.Components[k][batchIdx])
+						}
+					}
+
+					for range elems {
+						subM.Inputs = append(subM.Inputs, m.Inputs[batchIdx])
+					}
+
+					iteratorRedisKey := fmt.Sprintf("pipeline_trigger:%s", childWorkflowOptions.WorkflowID)
+					err = WriteMemoryAndRecipe(
+						sCtx,
+						w.redisClient,
+						iteratorRedisKey,
+						&datamodel.Recipe{
+							Components: comp.IteratorComponent.Components,
+						},
+						subM,
+						param.OwnerPermalink,
+					)
+					if err != nil {
+						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+						return err
+					}
+
+					err = workflow.ExecuteChildWorkflow(
+						ctx,
+						"TriggerPipelineWorkflow",
+						&TriggerPipelineWorkflowParam{
+							MemoryRedisKey:     iteratorRedisKey,
+							PipelineID:         param.PipelineID,
+							PipelineUID:        param.PipelineUID,
+							PipelineReleaseID:  param.PipelineReleaseID,
+							PipelineReleaseUID: param.PipelineReleaseUID,
+							OwnerPermalink:     param.OwnerPermalink,
+							UserUID:            param.UserUID,
+							Mode:               mgmtPB.Mode_MODE_SYNC,
+						}).Get(ctx, nil)
+					if err != nil {
+						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+						return err
+					}
+
+					iteratorResult, err := LoadMemory(sCtx, w.redisClient, iteratorRedisKey)
+					if err != nil {
+						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+						return err
+					}
+
+					output := componentIO{}
+					for k, v := range comp.IteratorComponent.OutputElements {
+						elemVals := []any{}
+
+						for elemIdx := range input.([]any) {
+							elemVal, err := RenderInput(v, elemIdx, iteratorResult.Components, iteratorResult.Inputs, iteratorResult.Secrets, param.InputKey)
+							if err != nil {
+								return err
+							}
+							elemVals = append(elemVals, elemVal)
+
+						}
+						output[k] = elemVals
+					}
+
+					iterComp = append(iterComp, &ComponentItemMemory{
+						Output: &output,
+						Status: &componentStatus{ // TODO: use real status
+							Started:   true,
+							Completed: true,
+						},
+					})
+				}
+				err = writeComponentMemory(sCtx, w.redisClient, param.MemoryRedisKey, comp.ID, iterComp)
+				if err != nil {
+					logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+					return err
+				}
+			}
+
+		}
+
+		for idx := range futures {
+			err = futures[idx].Get(ctx, nil)
+			if err != nil {
+				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+				return err
+			}
+
+		}
+
 	}
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -342,596 +305,252 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		logger.Warn(err.Error())
 	}
 	logger.Info("TriggerPipelineWorkflow completed")
-	return &TriggerPipelineWorkflowResponse{
-		OutputBlobRedisKey: endResult.BlobRedisKey,
-	}, nil
+	return nil
 }
 
-func (w *worker) TriggerStartActivity(ctx context.Context, param *ExecuteTriggerStartActivityRequest) (*ExecuteTriggerStartActivityResponse, error) {
-
-	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
-
-	dag, err := GenerateDAG(param.PipelineRecipe.Components)
-	if err != nil {
-		return nil, err
-	}
-
-	orderedComp, err := dag.TopologicalSort()
-	if err != nil {
-		return nil, err
-	}
-	var inputs [][]byte
-	pipelineInputs, err := w.GetBlob(ctx, param.PipelineInputBlobRedisKeys)
-	if err != nil {
-		return nil, err
-	}
-	batchSize := len(pipelineInputs)
-	for idx := range pipelineInputs {
-		inputStruct := structpb.NewStructValue(pipelineInputs[idx])
-
-		input, err := protojson.Marshal(inputStruct)
-		if err != nil {
-			return nil, err
-		}
-		inputs = append(inputs, input)
-	}
-
-	memory := make([]ItemMemory, batchSize)
-	computeTime := map[string]float32{}
-
-	for idx := range inputs {
-		memory[idx] = ItemMemory{}
-		for _, comp := range param.PipelineRecipe.Components {
-			computeTime[comp.ID] = 0
-		}
-
-	}
-
-	// Setup global values
-	for idx := range inputs {
-
-		// TODO: we should prevent user name a component call `global`
-		memory[idx]["vars"], err = GenerateBuiltinVariables(param.PipelineUID, param.PipelineRecipe, param.OwnerPermalink)
-		if err != nil {
-			return nil, err
-		}
-		memory[idx]["secrets"] = map[string]any{}
-
-		pt := ""
-		for {
-			var secrets []*datamodel.Secret
-			// TODO: should use ctx user uid
-			secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, param.OwnerPermalink, 100, "", filtering.Filter{})
-			if err != nil {
-				return nil, err
-			}
-
-			for _, secret := range secrets {
-				memory[idx]["secrets"][secret.ID] = *secret.Value
-			}
-
-			if pt == "" {
-				break
-			}
-		}
-
-	}
-	// Setup start component values
-	for idx := range inputs {
-		var inputStruct map[string]any
-		err := json.Unmarshal(inputs[idx], &inputStruct)
-		if err != nil {
-			return nil, err
-		}
-		memory[idx]["request"] = inputStruct
-		computeTime["request"] = 0
-	}
-
-	memoryBlobRedisKeys, err := w.SetMemoryBlob(ctx, memory)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ExecuteTriggerStartActivityResponse{
-		MemoryBlobRedisKeys: memoryBlobRedisKeys,
-		OrderedComps:        orderedComp,
-		DAG:                 dag,
-		BatchSize:           batchSize,
-		ComputeTime:         computeTime,
-	}, nil
-}
-
-func (w *worker) TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEndActivityRequest) (*ExecuteTriggerEndActivityResponse, error) {
-
-	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
-
-	memory, err := w.GetMemoryBlob(ctx, param.MemoryBlobRedisKeys)
-	if err != nil {
-		return nil, err
-	}
-
-	pipelineOutputs := []*structpb.Struct{}
-	if param.ResponseFields == nil {
-		for idx := 0; idx < param.BatchSize; idx++ {
-			pipelineOutputs = append(pipelineOutputs, &structpb.Struct{})
-		}
-	} else {
-		for idx := 0; idx < param.BatchSize; idx++ {
-			pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-			for k, v := range *param.ResponseFields {
-				// TODO: The end component should allow partial upstream skipping.
-				// This is a temporary implementation.
-				o, _ := RenderInput(v.Value, memory[idx])
-				structVal, err := structpb.NewValue(o)
-				if err != nil {
-					return nil, err
-				}
-				pipelineOutput.Fields[k] = structVal
-
-			}
-			pipelineOutputs = append(pipelineOutputs, pipelineOutput)
-
-		}
-	}
-
-	var traces map[string]*pb.Trace
-	if param.ReturnTraces {
-		traces, err = GenerateTraces(param.OrderedComps, memory, param.ComputeTime, param.BatchSize)
-
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	pipelineResp := &pb.TriggerUserPipelineResponse{
-		Outputs: pipelineOutputs,
-		Metadata: &pb.TriggerMetadata{
-			Traces: traces,
-		},
-	}
-	outputJSON, err := protojson.Marshal(pipelineResp)
-	if err != nil {
-		return nil, err
-	}
-	blobRedisKey := fmt.Sprintf("async_pipeline_response:%s", param.WorkflowExecutionID)
-	w.redisClient.Set(
-		ctx,
-		blobRedisKey,
-		outputJSON,
-		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
-	)
-	return &ExecuteTriggerEndActivityResponse{
-		BlobRedisKey: blobRedisKey,
-	}, nil
-}
-func (w *worker) DAGActivity(ctx context.Context, param *ExecuteDAGActivityRequest) (*ExecuteDAGActivityResponse, error) {
-
-	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
-
-	memory, err := w.GetMemoryBlob(ctx, param.MemoryBlobRedisKeys)
-	if err != nil {
-		return nil, err
-	}
-
-	for group := range param.OrderedComps {
-
-		eg := errgroup.Group{}
-		for _, comp := range param.OrderedComps[group] {
-			idxMap := map[int]int{}
-
-			var compInputs []*structpb.Struct
-
-			for idx := 0; idx < param.BatchSize; idx++ {
-				if memory[idx][comp.ID] == nil {
-					memory[idx][comp.ID] = map[string]any{
-						"input":  map[string]any{},
-						"output": map[string]any{},
-						"status": map[string]any{
-							"started":   false,
-							"completed": false,
-							"skipped":   false,
-						},
-					}
-				}
-
-				for _, ancestorID := range param.DAG.GetAncestorIDs(comp.ID) {
-					if checkComponentSkipped(memory[idx][ancestorID]) {
-						memory[idx][comp.ID]["status"].(map[string]any)["skipped"] = true
-						break
-					}
-				}
-
-				if !checkComponentSkipped(memory[idx][comp.ID]) {
-					if comp.GetCondition() != nil && *comp.GetCondition() != "" {
-						condStr := *comp.GetCondition()
-						var varMapping map[string]string
-						condStr, _, varMapping = SanitizeCondition(condStr)
-
-						expr, err := parser.ParseExpr(condStr)
-						if err != nil {
-							return nil, err
-						}
-
-						condMemory := map[string]any{}
-						for k, v := range memory[idx] {
-							condMemory[varMapping[k]] = v
-						}
-						cond, err := EvalCondition(expr, condMemory)
-						if err != nil {
-							return nil, err
-						}
-						if cond == false {
-							memory[idx][comp.ID]["status"].(map[string]any)["skipped"] = true
-						} else {
-							memory[idx][comp.ID]["status"].(map[string]any)["started"] = true
-						}
-					} else {
-						memory[idx][comp.ID]["status"].(map[string]any)["started"] = true
-					}
-				}
-				if checkComponentStarted(memory[idx][comp.ID]) {
-
-					// Render input
-
-					if comp.IsConnectorComponent() || comp.IsOperatorComponent() {
-						var compInputTemplateJSON []byte
-						var compInputTemplate *structpb.Struct
-						if comp.IsConnectorComponent() {
-							compInputTemplate = comp.ConnectorComponent.Input
-							// TODO: remove this hardcode injection
-							// blockchain-numbers
-							if comp.ConnectorComponent.DefinitionName == "connector-definitions/70d8664a-d512-4517-a5e8-5d4da81756a7" {
-
-								recipeByte, err := json.Marshal(param.PipelineRecipe)
-								if err != nil {
-									return nil, err
-								}
-								recipePb := &structpb.Struct{}
-								err = protojson.Unmarshal(recipeByte, recipePb)
-								if err != nil {
-									return nil, err
-								}
-								metadata, err := structpb.NewValue(map[string]any{
-									"pipeline": map[string]any{
-										"uid":    "${vars._PIPELINE_UID}",
-										"recipe": "${vars._PIPELINE_RECIPE}",
-									},
-									"owner": map[string]any{
-										"uid": "${vars._OWNER_UID}",
-									},
-								})
-								if err != nil {
-									return nil, err
-								}
-								if compInputTemplate == nil {
-									compInputTemplate = &structpb.Struct{}
-								}
-								compInputTemplate.Fields["metadata"] = metadata
-							}
-						} else {
-							compInputTemplate = comp.OperatorComponent.Input
-						}
-
-						compInputTemplateJSON, err = protojson.Marshal(compInputTemplate)
-						if err != nil {
-							return nil, err
-						}
-						var compInputTemplateStruct any
-						err = json.Unmarshal(compInputTemplateJSON, &compInputTemplateStruct)
-						if err != nil {
-							return nil, err
-						}
-
-						compInputStruct, err := RenderInput(compInputTemplateStruct, memory[idx])
-						if err != nil {
-							return nil, err
-						}
-						compInputJSON, err := json.Marshal(compInputStruct)
-						if err != nil {
-							return nil, err
-						}
-
-						compInput := &structpb.Struct{}
-						err = protojson.Unmarshal([]byte(compInputJSON), compInput)
-						if err != nil {
-							return nil, err
-						}
-
-						memory[idx][comp.ID]["input"] = compInputStruct
-						idxMap[len(compInputs)] = idx
-						compInputs = append(compInputs, compInput)
-
-					}
-
-					switch {
-					case comp.IsConnectorComponent():
-						inputBlobRedisKeys, err := w.SetBlob(ctx, compInputs)
-						if err != nil {
-							return nil, err
-						}
-						for idx := range inputBlobRedisKeys {
-							defer w.redisClient.Del(ctx, inputBlobRedisKeys[idx])
-						}
-						id := comp.ID
-						definitionName := comp.ConnectorComponent.DefinitionName
-						task := comp.ConnectorComponent.Task
-
-						conTemplateJSON, err := protojson.Marshal(comp.ConnectorComponent.Connection)
-						if err != nil {
-							return nil, err
-						}
-						var conTemplateStruct any
-						err = json.Unmarshal(conTemplateJSON, &conTemplateStruct)
-						if err != nil {
-							return nil, err
-						}
-
-						conStruct, err := RenderInput(conTemplateStruct, memory[idx])
-						if err != nil {
-							return nil, err
-						}
-						conJSON, err := json.Marshal(conStruct)
-						if err != nil {
-							return nil, err
-						}
-						con := &structpb.Struct{}
-						err = protojson.Unmarshal([]byte(conJSON), con)
-						if err != nil {
-							return nil, err
-						}
-
-						// TODO: we should use Temporal Activity
-						eg.Go(func() error {
-							result, err := w.ConnectorActivity(ctx, &ExecuteConnectorActivityRequest{
-								ID:                 id,
-								InputBlobRedisKeys: inputBlobRedisKeys,
-								Connection:         con,
-								DefinitionName:     definitionName,
-								PipelineMetadata: PipelineMetadataStruct{
-									UserUID: param.UserUID.String(),
-								},
-								Task:             task,
-								UserUID:          param.UserUID,
-								MetadataRedisKey: param.MetadataRedisKey,
-							})
-							if err != nil {
-								return err
-							}
-
-							outputs, err := w.GetBlob(ctx, result.OutputBlobRedisKeys)
-							for idx := range result.OutputBlobRedisKeys {
-								defer w.redisClient.Del(ctx, result.OutputBlobRedisKeys[idx])
-							}
-							if err != nil {
-								return err
-							}
-							for compBatchIdx := range outputs {
-
-								outputJSON, err := protojson.Marshal(outputs[compBatchIdx])
-								if err != nil {
-									return err
-								}
-								var outputStruct map[string]any
-								err = json.Unmarshal(outputJSON, &outputStruct)
-								if err != nil {
-									return err
-								}
-
-								memory[idxMap[compBatchIdx]][id]["output"] = outputStruct
-								memory[idxMap[compBatchIdx]][id]["status"].(map[string]any)["completed"] = true
-							}
-							return nil
-						})
-
-					case comp.IsOperatorComponent():
-						inputBlobRedisKeys, err := w.SetBlob(ctx, compInputs)
-						if err != nil {
-							return nil, err
-						}
-						for idx := range inputBlobRedisKeys {
-							defer w.redisClient.Del(ctx, inputBlobRedisKeys[idx])
-						}
-						id := comp.ID
-						definitionName := comp.OperatorComponent.DefinitionName
-						task := comp.OperatorComponent.Task
-
-						// TODO: we should use Temporal Activity
-						eg.Go(func() error {
-							result, err := w.OperatorActivity(ctx, &ExecuteOperatorActivityRequest{
-								ID:                 id,
-								InputBlobRedisKeys: inputBlobRedisKeys,
-								DefinitionName:     definitionName,
-								PipelineMetadata: PipelineMetadataStruct{
-									UserUID: param.UserUID.String(),
-								},
-								Task:             task,
-								UserUID:          param.UserUID,
-								MetadataRedisKey: param.MetadataRedisKey,
-							})
-							if err != nil {
-								return err
-							}
-
-							outputs, err := w.GetBlob(ctx, result.OutputBlobRedisKeys)
-							for idx := range result.OutputBlobRedisKeys {
-								defer w.redisClient.Del(ctx, result.OutputBlobRedisKeys[idx])
-							}
-							if err != nil {
-								return err
-							}
-							for compBatchIdx := range outputs {
-
-								outputJSON, err := protojson.Marshal(outputs[compBatchIdx])
-								if err != nil {
-									return err
-								}
-								var outputStruct map[string]any
-								err = json.Unmarshal(outputJSON, &outputStruct)
-								if err != nil {
-									return err
-								}
-								memory[idxMap[compBatchIdx]][id]["output"] = outputStruct
-								memory[idxMap[compBatchIdx]][id]["status"].(map[string]any)["completed"] = true
-							}
-							return nil
-						})
-
-					case comp.IsIteratorComponent():
-
-						input, err := RenderInput(comp.IteratorComponent.Input, memory[idx])
-						if err != nil {
-							return nil, err
-						}
-						batchSize := len(input.([]any))
-
-						subMemory := make([]ItemMemory, batchSize)
-						for elemIdx, elem := range input.([]any) {
-							b, _ := json.Marshal(memory[idx])
-							_ = json.Unmarshal(b, &subMemory[elemIdx])
-
-							subMemory[elemIdx][comp.ID]["element"] = elem
-						}
-
-						comps := []*datamodel.Component{{ID: comp.ID}}
-						comps = append(comps, comp.IteratorComponent.Components...)
-
-						dag, err := GenerateDAG(comps)
-						if err != nil {
-							return nil, err
-						}
-
-						orderedComp, err := dag.TopologicalSort()
-						if err != nil {
-							return nil, err
-						}
-
-						subMemoryBlobRedisKeys, err := w.SetMemoryBlob(ctx, subMemory)
-						if err != nil {
-							return nil, err
-						}
-
-						result, err := w.DAGActivity(ctx, &ExecuteDAGActivityRequest{
-							OrderedComps:        orderedComp,
-							MemoryBlobRedisKeys: subMemoryBlobRedisKeys,
-							DAG:                 dag,
-							BatchSize:           batchSize,
-							PipelineRecipe:      param.PipelineRecipe,
-							OwnerPermalink:      param.OwnerPermalink,
-							UserUID:             param.UserUID,
-							MetadataRedisKey:    param.MetadataRedisKey,
-						})
-						if err != nil {
-							return nil, err
-						}
-
-						subMemory, err = w.GetMemoryBlob(ctx, result.MemoryBlobRedisKeys)
-						if err != nil {
-							return nil, err
-						}
-
-						memory[idx][comp.ID]["output"] = map[string]any{}
-						for k, v := range comp.IteratorComponent.OutputElements {
-							elemVals := []any{}
-
-							for elemIdx := range input.([]any) {
-								elemVal, err := RenderInput(v, subMemory[elemIdx])
-								if err != nil {
-									return nil, err
-								}
-								elemVals = append(elemVals, elemVal)
-
-							}
-							memory[idx][comp.ID]["output"].(map[string]any)[k] = elemVals
-						}
-					}
-
-				}
-			}
-		}
-
-		if err := eg.Wait(); err != nil {
-			return nil, err
-		}
-
-	}
-	// TODO
-	memoryBlobRedisKeys, err := w.SetMemoryBlob(ctx, memory)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ExecuteDAGActivityResponse{
-		MemoryBlobRedisKeys: memoryBlobRedisKeys,
-	}, nil
-}
-
-func (w *worker) ConnectorActivity(ctx context.Context, param *ExecuteConnectorActivityRequest) (*ExecuteActivityResponse, error) {
+func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivityParam) error {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ConnectorActivity started")
 
-	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
-
-	compInputs, err := w.GetBlob(ctx, param.InputBlobRedisKeys)
+	memory, err := LoadMemory(ctx, w.redisClient, param.MemoryRedisKey)
 	if err != nil {
-		return nil, err
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	con, err := w.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(param.DefinitionName, "/")[1]), nil)
+	compInputs, idxMap, err := w.processInput(memory, param.ID, param.AncestorIDs, param.Condition, param.Input, param.InputKey, param.DefinitionUID)
 	if err != nil {
-		return nil, err
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+	}
+
+	con, err := w.processConnection(memory, param.Connection)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	// TODO
 	// vars: header_authorization, instill_user_uid, instill_model_backend, instill_mgmt_backend
-	execution, err := w.connector.CreateExecution(uuid.FromStringOrNil(con.Uid), param.Task, param.Connection, logger)
+	execution, err := w.connector.CreateExecution(param.DefinitionUID, param.Task, con, logger)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
-	}
-	compOutputs, err := execution.ExecuteWithValidation(compInputs)
-	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	outputBlobRedisKeys, err := w.SetBlob(ctx, compOutputs)
+	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
-		return nil, err
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+	}
+
+	compMem, err := w.processOutput(memory, param.ID, compOutputs, idxMap)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+	}
+
+	err = writeComponentMemory(ctx, w.redisClient, param.MemoryRedisKey, param.ID, compMem)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	logger.Info("ConnectorActivity completed")
-	return &ExecuteActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
+	return nil
 }
 
-func (w *worker) OperatorActivity(ctx context.Context, param *ExecuteOperatorActivityRequest) (*ExecuteActivityResponse, error) {
+func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityParam) error {
 
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("OperatorActivity started")
 
-	ctx = metadata.NewIncomingContext(ctx, metadata.MD{constant.HeaderAuthTypeKey: []string{"user"}, constant.HeaderUserUIDKey: []string{param.UserUID.String()}})
-
-	compInputs, err := w.GetBlob(ctx, param.InputBlobRedisKeys)
+	memory, err := LoadMemory(ctx, w.redisClient, param.MemoryRedisKey)
 	if err != nil {
-		return nil, err
+		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	op, err := w.operator.GetOperatorDefinitionByUID(uuid.FromStringOrNil(strings.Split(param.DefinitionName, "/")[1]), nil)
+	compInputs, idxMap, err := w.processInput(memory, param.ID, param.AncestorIDs, param.Condition, param.Input, param.InputKey, param.DefinitionUID)
 	if err != nil {
-		return nil, err
+		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	execution, err := w.operator.CreateExecution(uuid.FromStringOrNil(op.Uid), param.Task, nil, logger)
+	// TODO
+	// vars: header_authorization, instill_user_uid, instill_model_backend, instill_mgmt_backend
+	execution, err := w.operator.CreateExecution(param.DefinitionUID, param.Task, nil, logger)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, OperatorActivityError)
+		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
+
 	compOutputs, err := execution.ExecuteWithValidation(compInputs)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, OperatorActivityError)
+		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	outputBlobRedisKeys, err := w.SetBlob(ctx, compOutputs)
+	compMem, err := w.processOutput(memory, param.ID, compOutputs, idxMap)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, OperatorActivityError)
+	}
+
+	err = writeComponentMemory(ctx, w.redisClient, param.MemoryRedisKey, param.ID, compMem)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, OperatorActivityError)
+	}
+
+	logger.Info("OperatorActivity completed")
+	return nil
+}
+
+func (w *worker) processInput(memory *TriggerMemory, id string, ancestorIDs []string, condition *string, input *structpb.Struct, inputKey string, definitionUID uuid.UUID) ([]*structpb.Struct, map[int]int, error) {
+	batchSize := len(memory.Inputs)
+	var compInputs []*structpb.Struct
+	idxMap := map[int]int{}
+
+	memory.Components[id] = make([]*ComponentItemMemory, batchSize)
+
+	for idx := 0; idx < batchSize; idx++ {
+
+		memory.Components[id][idx] = &ComponentItemMemory{
+			Input:  &componentIO{},
+			Output: &componentIO{},
+			Status: &componentStatus{},
+		}
+
+		for _, ancestorID := range ancestorIDs {
+			if memory.Components[ancestorID][idx].Status.Skipped {
+				memory.Components[id][idx].Status.Skipped = true
+				break
+			}
+		}
+		if !memory.Components[id][idx].Status.Skipped {
+			if condition != nil && *condition != "" {
+				condStr := *condition
+				var varMapping map[string]string
+				condStr, _, varMapping = SanitizeCondition(condStr)
+
+				expr, err := parser.ParseExpr(condStr)
+				if err != nil {
+					return nil, nil, err
+				}
+
+				condMemory := map[string]any{}
+
+				for k, v := range memory.Components {
+					condMemory[varMapping[k]] = v[idx]
+				}
+
+				cond, err := EvalCondition(expr, condMemory)
+				if err != nil {
+					return nil, nil, err
+				}
+				if cond == false {
+					memory.Components[id][idx].Status.Skipped = true
+				} else {
+					memory.Components[id][idx].Status.Started = true
+				}
+			} else {
+				memory.Components[id][idx].Status.Started = true
+			}
+		}
+		if memory.Components[id][idx].Status.Started {
+
+			var compInputTemplateJSON []byte
+			var compInputTemplate *structpb.Struct
+
+			compInputTemplate = input
+			// TODO: remove this hardcode injection
+			// blockchain-numbers
+			if definitionUID.String() == "70d8664a-d512-4517-a5e8-5d4da81756a7" {
+
+				metadata, err := structpb.NewValue(map[string]any{
+					"pipeline": map[string]any{
+						"uid":    "${vars._PIPELINE_UID}",
+						"recipe": "${vars._PIPELINE_RECIPE}",
+					},
+					"owner": map[string]any{
+						"uid": "${vars._OWNER_UID}",
+					},
+				})
+				if err != nil {
+					return nil, nil, err
+				}
+				if compInputTemplate == nil {
+					compInputTemplate = &structpb.Struct{}
+				}
+				compInputTemplate.Fields["metadata"] = metadata
+			}
+
+			compInputTemplateJSON, err := protojson.Marshal(compInputTemplate)
+			if err != nil {
+				return nil, nil, err
+			}
+			var compInputTemplateStruct any
+			err = json.Unmarshal(compInputTemplateJSON, &compInputTemplateStruct)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			compInputStruct, err := RenderInput(compInputTemplateStruct, idx, memory.Components, memory.Inputs, memory.Secrets, inputKey)
+			if err != nil {
+				return nil, nil, err
+			}
+			compInputJSON, err := json.Marshal(compInputStruct)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			compInput := &structpb.Struct{}
+			err = protojson.Unmarshal([]byte(compInputJSON), compInput)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			*memory.Components[id][idx].Input = compInputStruct.(map[string]any)
+
+			idxMap[len(compInputs)] = idx
+			compInputs = append(compInputs, compInput)
+
+		}
+	}
+	return compInputs, idxMap, nil
+}
+
+func (w *worker) processOutput(memory *TriggerMemory, id string, compOutputs []*structpb.Struct, idxMap map[int]int) ([]*ComponentItemMemory, error) {
+	for compBatchIdx := range compOutputs {
+
+		outputJSON, err := protojson.Marshal(compOutputs[compBatchIdx])
+		if err != nil {
+			return nil, err
+		}
+		var outputStruct map[string]any
+		err = json.Unmarshal(outputJSON, &outputStruct)
+		if err != nil {
+			return nil, err
+		}
+		*memory.Components[id][idxMap[compBatchIdx]].Output = outputStruct
+		memory.Components[id][idxMap[compBatchIdx]].Status.Completed = true
+	}
+	return memory.Components[id], nil
+}
+
+func (w *worker) processConnection(memory *TriggerMemory, connection *structpb.Struct) (*structpb.Struct, error) {
+	conTemplateJSON, err := protojson.Marshal(connection)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecuteActivityResponse{OutputBlobRedisKeys: outputBlobRedisKeys}, nil
+	var conTemplateStruct any
+	err = json.Unmarshal(conTemplateJSON, &conTemplateStruct)
+	if err != nil {
+		return nil, err
+	}
+	// TODO
+	conStruct, err := RenderInput(conTemplateStruct, 0, nil, nil, memory.Secrets, "")
+	if err != nil {
+		return nil, err
+	}
+	conJSON, err := json.Marshal(conStruct)
+	if err != nil {
+		return nil, err
+	}
+	con := &structpb.Struct{}
+	err = protojson.Unmarshal([]byte(conJSON), con)
+	if err != nil {
+		return nil, err
+	}
+	return con, nil
 }
 
 // writeErrorDataPoint is a helper function that writes the error data point to

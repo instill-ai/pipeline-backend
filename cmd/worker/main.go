@@ -157,9 +157,8 @@ func main() {
 	})
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
-	w.RegisterActivity(cw.TriggerStartActivity)
-	w.RegisterActivity(cw.TriggerEndActivity)
-	w.RegisterActivity(cw.DAGActivity)
+	w.RegisterActivity(cw.ConnectorActivity)
+	w.RegisterActivity(cw.OperatorActivity)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())
