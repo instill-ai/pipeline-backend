@@ -274,15 +274,6 @@ service PipelinePublicService {
     option (google.api.method_signature) = "name";
   }
 
-  // Get the state of a release in a pipeline owned by a user
-  //
-  // Gets the state of a pipeline release, where the pipeline is identified by
-  // its resource name, formed by the parent user and ID of the pipeline.
-  rpc WatchUserPipelineRelease(WatchUserPipelineReleaseRequest) returns (WatchUserPipelineReleaseResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=users/*/pipelines/*/releases/*}/watch"};
-    option (google.api.method_signature) = "name";
-  }
-
   // Rename a release in a pipeline owned by a user
   //
   // Updates the ID of a pipeline release, where the pipeline is identified by
@@ -530,15 +521,6 @@ service PipelinePublicService {
   // organization and ID.
   rpc RestoreOrganizationPipelineRelease(RestoreOrganizationPipelineReleaseRequest) returns (RestoreOrganizationPipelineReleaseResponse) {
     option (google.api.http) = {post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/restore"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // Get the state of a release in a pipeline owned by an organization
-  //
-  // Gets the state of a pipeline release, where the pipeline is identified by
-  // its resource name, formed by the parent organization and ID of the pipeline.
-  rpc WatchOrganizationPipelineRelease(WatchOrganizationPipelineReleaseRequest) returns (WatchOrganizationPipelineReleaseResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/watch"};
     option (google.api.method_signature) = "name";
   }
 

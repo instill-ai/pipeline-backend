@@ -200,6 +200,9 @@ func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []Inp
 	b, _ := json.Marshal(transcodedBinding)
 	var transcodedBindingConverted any
 	_ = json.Unmarshal(b, &transcodedBindingConverted)
+	if _, ok := componentIDMap[componentID]; !ok {
+		return nil, fmt.Errorf("upstream '%s' not found", componentID)
+	}
 	res, err := jsonpath.Get(fmt.Sprintf("$.%s.%s", componentIDMap[componentID], route), transcodedBindingConverted)
 	if err != nil {
 		// check primitive value

@@ -17,14 +17,6 @@ server:
     maxworkflowretry: 1
     maxactivityretry: 1
 connector:
-  airbyte:
-    mountsource:
-      vdp: vdp # vdp docker volume name by default
-      airbyte: airbyte # airbyte docker volume name by default
-    mounttarget:
-      vdp: /vdp
-      airbyte: /local
-    excludelocalconnector: false
 database:
   username: postgres
   password: password

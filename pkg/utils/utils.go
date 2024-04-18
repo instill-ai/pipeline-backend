@@ -9,11 +9,9 @@ import (
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
-	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 
 	connector "github.com/instill-ai/component/pkg/connector"
-	connectorAirbyte "github.com/instill-ai/component/pkg/connector/airbyte/v0"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
@@ -132,14 +130,6 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 }
 
 func GetConnectorOptions() connector.ConnectorOptions {
-	return connector.ConnectorOptions{
-		Airbyte: connectorAirbyte.ConnectorOptions{
-			MountSourceVDP:        config.Config.Connector.Airbyte.MountSource.VDP,
-			MountTargetVDP:        config.Config.Connector.Airbyte.MountTarget.VDP,
-			MountSourceAirbyte:    config.Config.Connector.Airbyte.MountSource.Airbyte,
-			MountTargetAirbyte:    config.Config.Connector.Airbyte.MountTarget.Airbyte,
-			ExcludeLocalConnector: config.Config.Connector.Airbyte.ExcludeLocalConnector,
-		},
-	}
+	return connector.ConnectorOptions{}
 
 }

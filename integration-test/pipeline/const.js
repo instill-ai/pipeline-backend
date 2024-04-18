@@ -81,26 +81,33 @@ export const paramsHTTPWithJwt = {
 export const simpleRecipe = {
   recipe: {
     version:  "v1beta",
-    trigger_by_request: {
-      fields: {
-        input: {
-          title: "Input",
-          instill_format: "string"
+    trigger: {
+      trigger_by_request: {
+        request_fields: {
+          input: {
+            title: "Input",
+            instill_format: "string"
+          }
+        },
+        response_fields: {
+          answer: {
+            title: "Answer",
+            value: "${b01.output.data}"
+          }
         }
-      }
+      },
     },
     components: [
       {
-        id: "end",
-        response_component: {
-          fields: {
-            answer: {
-              title: "Answer",
-              value: "${request.input}"
-            }
+        id: "b01",
+        operator_component: {
+          definition_name: "operator-definitions/base64",
+          task: "TASK_ENCODE",
+          input: {
+            data: "${request.input}"
           }
         }
-      }
+      },
     ],
   },
 };
@@ -108,26 +115,30 @@ export const simpleRecipe = {
 export const simpleRecipeDupId = {
   recipe: {
     version: "v1beta",
+    trigger: {
+      trigger_by_request: {
+        request_fields: {
+          input: {
+            title: "Input",
+            instill_format: "string"
+          }
+        },
+        response_fields: {
+          answer: {
+            title: "Answer",
+            value: "${request.input}"
+          }
+        }
+      },
+    },
     components: [
       {
-        id: "start",
-        start_component: {
-          fields: {
-            input: {
-              title: "Input",
-              instill_format: "string"
-            }
-          }
-        }
-      },
-      {
-        id: "end",
-        response_component: {
-          fields: {
-            answer: {
-              title: "Answer",
-              value: "${start.input}"
-            }
+        id: "b01",
+        operator_component: {
+          definition_name: "operator-definitions/base64",
+          task: "TASK_ENCODE",
+          input: {
+            data: "${request.input}"
           }
         }
       },
@@ -135,17 +146,9 @@ export const simpleRecipeDupId = {
         id: "b01",
         operator_component: {
           definition_name: "operator-definitions/base64",
+          task: "TASK_ENCODE",
           input: {
-            data: "${start.input}"
-          }
-        }
-      },
-      {
-        id: "b01",
-        operator_component: {
-          definition_name: "operator-definitions/base64",
-          input: {
-            data: "${start.input}"
+            data: "${request.input}"
           }
         }
       },

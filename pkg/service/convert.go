@@ -454,7 +454,7 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 	var pbRecipe *pb.Recipe
 
-	if dbPipeline.Recipe != nil && view != pb.Pipeline_VIEW_BASIC {
+	if dbPipeline.Recipe != nil && view > pb.Pipeline_VIEW_BASIC {
 		pbRecipe = &pb.Recipe{}
 
 		b, err := json.Marshal(dbPipeline.Recipe)
@@ -522,7 +522,7 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 	go func() {
 		defer wg.Done()
 		var owner *mgmtPB.Owner
-		if view != pb.Pipeline_VIEW_BASIC {
+		if view > pb.Pipeline_VIEW_BASIC {
 			owner, err = s.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
 			if err != nil {
 				return
@@ -564,7 +564,7 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 		pbPipeline.Permission.CanTrigger = canTrigger
 	}()
 
-	if view != pb.Pipeline_VIEW_BASIC {
+	if view > pb.Pipeline_VIEW_BASIC {
 		if dbPipeline.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipeline.Metadata)
@@ -728,7 +728,7 @@ func (s *service) convertPipelineReleaseToPB(ctx context.Context, dbPipeline *da
 		return nil, err
 	}
 	var pbRecipe *pb.Recipe
-	if dbPipelineRelease.Recipe != nil && view != pb.Pipeline_VIEW_BASIC {
+	if dbPipelineRelease.Recipe != nil && view > pb.Pipeline_VIEW_BASIC {
 		pbRecipe = &pb.Recipe{}
 
 		b, err := json.Marshal(dbPipelineRelease.Recipe)
@@ -774,7 +774,7 @@ func (s *service) convertPipelineReleaseToPB(ctx context.Context, dbPipeline *da
 		Recipe:      pbRecipe,
 	}
 
-	if view != pb.Pipeline_VIEW_BASIC {
+	if view > pb.Pipeline_VIEW_BASIC {
 		if dbPipelineRelease.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipelineRelease.Metadata)
@@ -903,12 +903,16 @@ func (s *service) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByR
 						switch comp.Component.(type) {
 						case *pb.Component_ConnectorComponent:
 							task = comp.GetConnectorComponent().GetTask()
-							input = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
-							output = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+							if _, ok := comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
+								input = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+								output = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+							}
 						case *pb.Component_OperatorComponent:
 							task = comp.GetOperatorComponent().GetTask()
-							input = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
-							output = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+							if _, ok := comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
+								input = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+								output = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+							}
 						}
 
 						if task == "" {

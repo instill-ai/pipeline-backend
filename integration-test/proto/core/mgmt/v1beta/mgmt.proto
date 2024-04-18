@@ -565,6 +565,43 @@ message ValidateTokenResponse {
   string user_uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
+// GetRemainingCreditRequest represents a request to get the remaining credit
+// of a user or organization.
+message GetRemainingCreditRequest {
+  // The user or organization to which the credit belongs.
+  // Format: `{[users|organizations]}/{id}`.
+  string owner = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "owner_name"}
+    }
+  ];
+}
+
+// GetRemainingCreditResponse contains the remaining credit of a user or
+// organization.
+message GetRemainingCreditResponse {
+  // The requested credit.
+  float amount = 1;
+}
+
+// SubtractCreditRequest represents a request to subtract Instill Credit from
+// an account.
+message SubtractCreditRequest {
+  // The user or organization to which the credit belongs.
+  // Format: `{[users|organizations]}/{id}`.
+  string owner = 1 [(google.api.field_behavior) = REQUIRED];
+  // The credit amount to subtract.
+  float amount = 2;
+}
+
+// SubtractCreditResponse contains the remaining credit of an account after the
+// subtraction.
+message SubtractCreditResponse {
+  // The remaining credit.
+  float amount = 1;
+}
+
 // AuthTokenIssuerRequest represents a request to fetch the issuer details of a
 // token.
 message AuthTokenIssuerRequest {
@@ -1003,6 +1040,8 @@ message StripeSubscriptionDetail {
   optional int32 trial_end = 6;
   // Status of the subscription.
   Status status = 7;
+  // Description of the subscription.
+  string description = 8;
 }
 
 // UserSubscription details describe the plan (i.e., features) a user has access to.

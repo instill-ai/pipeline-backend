@@ -20,7 +20,7 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 }
 
 func (s *service) implementedOperatorDefinitions() []*pb.OperatorDefinition {
-	allDefs := s.operator.ListOperatorDefinitions()
+	allDefs := s.operator.ListOperatorDefinitions(false)
 
 	implemented := make([]*pb.OperatorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -142,14 +142,14 @@ func (s *service) pageInRange(page int32) int {
 
 func (s *service) applyViewToConnectorDefinition(cd *pb.ConnectorDefinition, v pb.ComponentDefinition_View) {
 	cd.VendorAttributes = nil
-	if v == pb.ComponentDefinition_VIEW_BASIC {
+	if v <= pb.ComponentDefinition_VIEW_BASIC {
 		cd.Spec = nil
 	}
 }
 
 func (s *service) applyViewToOperatorDefinition(od *pb.OperatorDefinition, v pb.ComponentDefinition_View) {
 	od.Name = fmt.Sprintf("operator-definitions/%s", od.Id)
-	if v == pb.ComponentDefinition_VIEW_BASIC {
+	if v <= pb.ComponentDefinition_VIEW_BASIC {
 		od.Spec = nil
 	}
 }
@@ -193,7 +193,6 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 		d := &pb.ComponentDefinition{
 			Type: pb.ComponentType(uid.ComponentType),
 		}
-
 		switch d.Type {
 		case pb.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
 			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
@@ -244,7 +243,7 @@ var implementedReleaseStages = map[pb.ComponentDefinition_ReleaseStage]bool{
 }
 
 func (s *service) implementedConnectorDefinitions() []*pb.ConnectorDefinition {
-	allDefs := s.connector.ListConnectorDefinitions()
+	allDefs := s.connector.ListConnectorDefinitions(false)
 
 	implemented := make([]*pb.ConnectorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {

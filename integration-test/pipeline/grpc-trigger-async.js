@@ -11,7 +11,7 @@ client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
 
 export function CheckTrigger(data) {
   group(
-    "Pipelines API: Trigger an async pipeline for single image and single model",
+    "Pipelines API: Trigger an async pipeline",
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
@@ -50,9 +50,9 @@ export function CheckTrigger(data) {
         data.metadata
       ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline (url) response StatusOK`]:
+          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
-          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline (url) response has operation id`]:
+          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response has operation id`]:
             (r) => r.message.operation.name.startsWith("operations/"),
         }
       );

@@ -75,7 +75,7 @@ func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken s
 		}
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view == pb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true)
+	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view <= pb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -92,7 +92,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, uid uuid.UUID, view pb.P
 		return nil, ErrNotFound
 	}
 
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, uid, view == pb.Pipeline_VIEW_BASIC, true)
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, uid, view <= pb.Pipeline_VIEW_BASIC, true)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namesp
 		}
 	}
 
-	dbPipelines, ps, pt, err := s.repository.ListNamespacePipelines(ctx, ownerPermalink, int64(pageSize), pageToken, view == pb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true)
+	dbPipelines, ps, pt, err := s.repository.ListNamespacePipelines(ctx, ownerPermalink, int64(pageSize), pageToken, view <= pb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -208,7 +208,7 @@ func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namesp
 
 func (s *service) ListPipelinesAdmin(ctx context.Context, pageSize int32, pageToken string, view pb.Pipeline_View, filter filtering.Filter, showDeleted bool) ([]*pb.Pipeline, int32, string, error) {
 
-	dbPipelines, ps, pt, err := s.repository.ListPipelinesAdmin(ctx, int64(pageSize), pageToken, view == pb.Pipeline_VIEW_BASIC, filter, showDeleted, true)
+	dbPipelines, ps, pt, err := s.repository.ListPipelinesAdmin(ctx, int64(pageSize), pageToken, view <= pb.Pipeline_VIEW_BASIC, filter, showDeleted, true)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -222,7 +222,7 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 
 	ownerPermalink := ns.Permalink()
 
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, view == pb.Pipeline_VIEW_BASIC, true)
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, view <= pb.Pipeline_VIEW_BASIC, true)
 	if err != nil {
 		return nil, ErrNotFound
 	}
@@ -255,7 +255,7 @@ func (s *service) GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns r
 
 func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view pb.Pipeline_View) (*pb.Pipeline, error) {
 
-	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, uid, view == pb.Pipeline_VIEW_BASIC, true)
+	dbPipeline, err := s.repository.GetPipelineByUIDAdmin(ctx, uid, view <= pb.Pipeline_VIEW_BASIC, true)
 	if err != nil {
 		return nil, err
 	}
@@ -737,7 +737,7 @@ func (s *service) ListNamespacePipelineReleases(ctx context.Context, ns resource
 		return nil, 0, "", ErrNotFound
 	}
 
-	dbPipelineReleases, ps, pt, err := s.repository.ListNamespacePipelineReleases(ctx, ownerPermalink, pipelineUID, int64(pageSize), pageToken, view == pb.Pipeline_VIEW_BASIC, filter, showDeleted, true)
+	dbPipelineReleases, ps, pt, err := s.repository.ListNamespacePipelineReleases(ctx, ownerPermalink, pipelineUID, int64(pageSize), pageToken, view <= pb.Pipeline_VIEW_BASIC, filter, showDeleted, true)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -760,7 +760,7 @@ func (s *service) GetNamespacePipelineReleaseByID(ctx context.Context, ns resour
 		return nil, ErrNotFound
 	}
 
-	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, view == pb.Pipeline_VIEW_BASIC)
+	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, view <= pb.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -929,7 +929,7 @@ func (s *service) triggerPipeline(
 	if err != nil {
 		return nil, nil, err
 	}
-	defer worker.PurgeMemory(ctx, s.redisClient, redisKey)
+	// defer worker.PurgeMemory(ctx, s.redisClient, redisKey)
 
 	workflowOptions := client.StartWorkflowOptions{
 		ID:                       pipelineTriggerID,

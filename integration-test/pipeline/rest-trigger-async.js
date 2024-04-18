@@ -17,7 +17,7 @@ export function CheckTrigger(data) {
     constant.simpleRecipe
   );
 
-  group("Pipelines API: Trigger an async pipeline for single image and single model", () => {
+  group("Pipelines API: Trigger an async pipeline", () => {
 
     check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`, JSON.stringify(reqBody), data.header), {
       "POST /v1beta/${constant.namespace}/pipelines response status is 201": (r) => r.status === 201,
@@ -25,8 +25,8 @@ export function CheckTrigger(data) {
 
 
     check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync`, JSON.stringify(constant.simplePayload), data.header), {
-      [`POST /v1beta/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.status === 200,
-      [`POST /v1beta/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync (url) response status is 200`]: (r) => r.json().operation.name.startsWith("operations/"),
+      [`POST /v1beta/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync response status is 200`]: (r) => r.status === 200,
+      [`POST /v1beta/${constant.namespace}/pipelines/${reqBody.id}/triggerAsync response status is 200`]: (r) => r.json().operation.name.startsWith("operations/"),
     });
 
   });
