@@ -10,272 +10,163 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/internal/resource"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
+
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-type View int32
+// In the API, we expose the human-readable ID to the user. But in the database, we store it with UUID as the permanent identifier.
+// The `convertResourceNameToPermalink` function converts all resources that use ID to UUID.
+func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) error {
 
-const (
-	ViewUnspecified View = 0
-	ViewBasic       View = 1
-	ViewFull        View = 2
-	ViewRecipe      View = 3
-)
-
-func parseView(i int32) View {
-	if i == 0 {
-		return ViewBasic
-	}
-
-	return View(i)
-}
-
-func (s *service) recipeNameToPermalink(ctx context.Context, recipeRscName *pipelinePB.Recipe) (*pipelinePB.Recipe, error) {
-
-	recipePermalink := &pipelinePB.Recipe{Version: recipeRscName.Version}
-	for _, component := range recipeRscName.Components {
-		componentPermalink := &pipelinePB.Component{
-			Id:        component.Id,
-			Metadata:  component.Metadata,
-			Component: component.Component,
+	switch rsc := rsc.(type) {
+	case *pb.Recipe:
+		for idx := range rsc.Components {
+			if err := s.convertResourceNameToPermalink(ctx, rsc.Components[idx]); err != nil {
+				return err
+			}
+		}
+	case *pb.Component:
+		return s.convertResourceNameToPermalink(ctx, rsc.Component)
+	case *pb.NestedComponent:
+		return s.convertResourceNameToPermalink(ctx, rsc.Component)
+	case *pb.Component_IteratorComponent:
+		for idx := range rsc.IteratorComponent.Components {
+			if err := s.convertResourceNameToPermalink(ctx, rsc.IteratorComponent.Components[idx]); err != nil {
+				return err
+			}
 		}
 
-		switch component.Component.(type) {
-		case *pipelinePB.Component_ConnectorComponent:
-			connectorName := component.GetConnectorComponent().ConnectorName
-			if connectorName != "" {
-				connectorNameSplits := strings.Split(connectorName, "/")
-				if len(connectorNameSplits) == 4 && (connectorNameSplits[0] == "users" || connectorNameSplits[0] == "organizations") && connectorNameSplits[2] == "connectors" {
-					permalink, err := s.connectorNameToPermalink(ctx, component.GetConnectorComponent().ConnectorName)
-					if err != nil {
-						return nil, ErrConnectorNotFound
-					}
-					componentPermalink.GetConnectorComponent().ConnectorName = permalink
-				} else {
-					return nil, fmt.Errorf("%s %v", connectorName, ErrConnectorNameError)
-				}
-			}
-			defPermalink, err := s.connectorDefinitionNameToPermalink(ctx, component.GetConnectorComponent().DefinitionName)
-			if err != nil {
-				return nil, err
-			}
-			componentPermalink.GetConnectorComponent().DefinitionName = defPermalink
-		case *pipelinePB.Component_OperatorComponent:
-			defPermalink, err := s.operatorDefinitionNameToPermalink(ctx, component.GetOperatorComponent().DefinitionName)
-			if err != nil {
-				return nil, err
-			}
-			componentPermalink.GetOperatorComponent().DefinitionName = defPermalink
-		case *pipelinePB.Component_IteratorComponent:
-			nestedComponentPermalinks := []*pipelinePB.NestedComponent{}
-			for _, nestedComponent := range componentPermalink.GetIteratorComponent().Components {
+	case *pb.Component_ConnectorComponent:
+		id, err := resource.GetRscNameID(rsc.ConnectorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.connector.GetConnectorDefinitionByID(id, nil)
+		if err != nil {
+			return err
+		}
+		rsc.ConnectorComponent.DefinitionName = fmt.Sprintf("connector-definitions/%s", def.Uid)
+		return nil
 
-				nestedComponentPermalink := &pipelinePB.NestedComponent{
-					Id:        nestedComponent.Id,
-					Metadata:  nestedComponent.Metadata,
-					Component: nestedComponent.Component,
-				}
+	case *pb.NestedComponent_ConnectorComponent:
+		id, err := resource.GetRscNameID(rsc.ConnectorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.connector.GetConnectorDefinitionByID(id, nil)
+		if err != nil {
+			return err
+		}
+		rsc.ConnectorComponent.DefinitionName = fmt.Sprintf("connector-definitions/%s", def.Uid)
+		return nil
 
-				switch nestedComponent.Component.(type) {
-				case *pipelinePB.NestedComponent_ConnectorComponent:
-					connectorName := nestedComponent.GetConnectorComponent().ConnectorName
-					if connectorName != "" {
-						connectorNameSplits := strings.Split(connectorName, "/")
-						if len(connectorNameSplits) == 4 && (connectorNameSplits[0] == "users" || connectorNameSplits[0] == "organizations") && connectorNameSplits[2] == "connectors" {
-							permalink, err := s.connectorNameToPermalink(ctx, nestedComponent.GetConnectorComponent().ConnectorName)
-							if err != nil {
-								return nil, ErrConnectorNotFound
-							}
-							nestedComponentPermalink.GetConnectorComponent().ConnectorName = permalink
-						} else {
-							return nil, fmt.Errorf("%s %v", connectorName, ErrConnectorNameError)
-						}
+	case *pb.Component_OperatorComponent:
+		id, err := resource.GetRscNameID(rsc.OperatorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.operator.GetOperatorDefinitionByID(id, nil)
+		if err != nil {
+			return err
+		}
+		rsc.OperatorComponent.DefinitionName = fmt.Sprintf("operator-definitions/%s", def.Uid)
+		return nil
 
-					}
-					defPermalink, err := s.connectorDefinitionNameToPermalink(ctx, nestedComponent.GetConnectorComponent().DefinitionName)
-					if err != nil {
-						return nil, err
-					}
-					nestedComponentPermalink.GetConnectorComponent().DefinitionName = defPermalink
-					nestedComponentPermalinks = append(nestedComponentPermalinks, nestedComponentPermalink)
-				case *pipelinePB.NestedComponent_OperatorComponent:
-					defPermalink, err := s.operatorDefinitionNameToPermalink(ctx, nestedComponent.GetOperatorComponent().DefinitionName)
-					if err != nil {
-						return nil, err
-					}
-					nestedComponentPermalink.GetOperatorComponent().DefinitionName = defPermalink
-					nestedComponentPermalinks = append(nestedComponentPermalinks, nestedComponentPermalink)
-				}
+	case *pb.NestedComponent_OperatorComponent:
+		id, err := resource.GetRscNameID(rsc.OperatorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.operator.GetOperatorDefinitionByID(id, nil)
+		if err != nil {
+			return err
+		}
+		rsc.OperatorComponent.DefinitionName = fmt.Sprintf("operator-definitions/%s", def.Uid)
+		return nil
+	}
+	return nil
+}
+
+// In the API, we expose the human-readable ID to the user. But in the database, we store it with UUID as the permanent identifier.
+// The `convertResourceNameToPermalink` function converts all resources that use UUID to ID.
+func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) error {
+
+	switch rsc := rsc.(type) {
+	case *pb.Recipe:
+		for idx := range rsc.Components {
+			if err := s.convertResourcePermalinkToName(ctx, rsc.Components[idx]); err != nil {
+				return err
 			}
-			componentPermalink.GetIteratorComponent().Components = nestedComponentPermalinks
-
+		}
+	case *pb.Component:
+		return s.convertResourcePermalinkToName(ctx, rsc.Component)
+	case *pb.NestedComponent:
+		return s.convertResourcePermalinkToName(ctx, rsc.Component)
+	case *pb.Component_IteratorComponent:
+		for idx := range rsc.IteratorComponent.Components {
+			if err := s.convertResourcePermalinkToName(ctx, rsc.IteratorComponent.Components[idx]); err != nil {
+				return err
+			}
 		}
 
-		recipePermalink.Components = append(recipePermalink.Components, componentPermalink)
-	}
-	return recipePermalink, nil
-}
-
-func (s *service) recipePermalinkToName(ctx context.Context, recipePermalink *pipelinePB.Recipe, connectors map[uuid.UUID]*datamodel.Connector) (*pipelinePB.Recipe, error) {
-
-	recipe := &pipelinePB.Recipe{Version: recipePermalink.Version}
-
-	for _, componentPermalink := range recipePermalink.Components {
-		component := &pipelinePB.Component{
-			Id:        componentPermalink.Id,
-			Metadata:  componentPermalink.Metadata,
-			Component: componentPermalink.Component,
+	case *pb.Component_ConnectorComponent:
+		uid, err := resource.GetRscPermalinkUID(rsc.ConnectorComponent.DefinitionName)
+		if err != nil {
+			return err
 		}
-
-		switch component.Component.(type) {
-		case *pipelinePB.Component_ConnectorComponent:
-			if componentPermalink.GetConnectorComponent().ConnectorName != "" {
-				name, err := s.connectorPermalinkToName(ctx, componentPermalink.GetConnectorComponent().ConnectorName, connectors)
-				if err != nil {
-					// Allow the connector to not exist instead of returning an error.
-					component.GetConnectorComponent().ConnectorName = ""
-				} else {
-					component.GetConnectorComponent().ConnectorName = name
-				}
-			}
-			defName, err := s.connectorDefinitionPermalinkToName(ctx, componentPermalink.GetConnectorComponent().DefinitionName)
-			if err != nil {
-				return nil, err
-			}
-			component.GetConnectorComponent().DefinitionName = defName
-		case *pipelinePB.Component_OperatorComponent:
-			defName, err := s.operatorDefinitionPermalinkToName(ctx, componentPermalink.GetOperatorComponent().DefinitionName)
-			if err != nil {
-				return nil, err
-			}
-			component.GetOperatorComponent().DefinitionName = defName
-		case *pipelinePB.Component_IteratorComponent:
-			nestedComponents := []*pipelinePB.NestedComponent{}
-			for _, nestedComponentPermalink := range componentPermalink.GetIteratorComponent().Components {
-				nestedComponent := &pipelinePB.NestedComponent{
-					Id:        nestedComponentPermalink.Id,
-					Metadata:  nestedComponentPermalink.Metadata,
-					Component: nestedComponentPermalink.Component,
-				}
-				switch nestedComponentPermalink.Component.(type) {
-				case *pipelinePB.NestedComponent_ConnectorComponent:
-					if nestedComponentPermalink.GetConnectorComponent().ConnectorName != "" {
-						name, err := s.connectorPermalinkToName(ctx, nestedComponentPermalink.GetConnectorComponent().ConnectorName, connectors)
-						if err != nil {
-							// Allow the connector to not exist instead of returning an error.
-							nestedComponent.GetConnectorComponent().ConnectorName = ""
-						} else {
-							nestedComponent.GetConnectorComponent().ConnectorName = name
-						}
-					}
-					defName, err := s.connectorDefinitionPermalinkToName(ctx, nestedComponentPermalink.GetConnectorComponent().DefinitionName)
-					if err != nil {
-						return nil, err
-					}
-					nestedComponent.GetConnectorComponent().DefinitionName = defName
-					nestedComponents = append(nestedComponents, nestedComponent)
-				case *pipelinePB.NestedComponent_OperatorComponent:
-					defName, err := s.operatorDefinitionPermalinkToName(ctx, nestedComponentPermalink.GetOperatorComponent().DefinitionName)
-					if err != nil {
-						return nil, err
-					}
-					nestedComponent.GetOperatorComponent().DefinitionName = defName
-					nestedComponents = append(nestedComponents, nestedComponent)
-				}
-			}
-			component.GetIteratorComponent().Components = nestedComponents
+		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil)
+		if err != nil {
+			return err
 		}
+		rsc.ConnectorComponent.DefinitionName = def.Name
 
-		recipe.Components = append(recipe.Components, component)
+	case *pb.NestedComponent_ConnectorComponent:
+		uid, err := resource.GetRscPermalinkUID(rsc.ConnectorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil)
+		if err != nil {
+			return err
+		}
+		rsc.ConnectorComponent.DefinitionName = def.Name
+
+	case *pb.Component_OperatorComponent:
+		uid, err := resource.GetRscPermalinkUID(rsc.OperatorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.operator.GetOperatorDefinitionByUID(uid, nil)
+		if err != nil {
+			return err
+		}
+		rsc.OperatorComponent.DefinitionName = def.Name
+
+	case *pb.NestedComponent_OperatorComponent:
+		uid, err := resource.GetRscPermalinkUID(rsc.OperatorComponent.DefinitionName)
+		if err != nil {
+			return err
+		}
+		def, err := s.operator.GetOperatorDefinitionByUID(uid, nil)
+		if err != nil {
+			return err
+		}
+		rsc.OperatorComponent.DefinitionName = def.Name
 	}
-	return recipe, nil
+	return nil
 }
 
-func (s *service) connectorNameToPermalink(ctx context.Context, name string) (string, error) {
-
-	ownerPermalink, err := s.convertOwnerNameToPermalink(ctx, fmt.Sprintf("%s/%s", strings.Split(name, "/")[0], strings.Split(name, "/")[1]))
-	if err != nil {
-		return "", err
-	}
-	dbConnector, err := s.repository.GetNamespaceConnectorByID(ctx, ownerPermalink, strings.Split(name, "/")[3], true)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("connectors/%s", dbConnector.UID), nil
-}
-
-func (s *service) connectorPermalinkToName(ctx context.Context, permalink string, connectors map[uuid.UUID]*datamodel.Connector) (string, error) {
-
-	dbConnector, ok := connectors[uuid.FromStringOrNil(strings.Split(permalink, "/")[1])]
-	if !ok || dbConnector == nil {
-		return "", fmt.Errorf("connector not found")
-	}
-	owner, err := s.convertOwnerPermalinkToName(ctx, dbConnector.Owner)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%s/connectors/%s", owner, dbConnector.ID), nil
-
-}
-
-func (s *service) connectorDefinitionNameToPermalink(ctx context.Context, name string) (string, error) {
-
-	def, err := s.connector.GetConnectorDefinitionByID(strings.Split(name, "/")[1], nil, nil)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("connector-definitions/%s", def.Uid), nil
-}
-
-func (s *service) connectorDefinitionPermalinkToName(ctx context.Context, permalink string) (string, error) {
-	def, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(strings.Split(permalink, "/")[1]), nil, nil)
-	if err != nil {
-		return "", err
-	}
-	return def.Name, nil
-}
-
-func (s *service) operatorDefinitionNameToPermalink(ctx context.Context, name string) (string, error) {
-	id, err := resource.GetRscNameID(name)
-	if err != nil {
-		return "", err
-	}
-	def, err := s.operator.GetOperatorDefinitionByID(id, nil)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("operator-definitions/%s", def.Uid), nil
-}
-
-func (s *service) operatorDefinitionPermalinkToName(ctx context.Context, permalink string) (string, error) {
-	uid, err := resource.GetRscPermalinkUID(permalink)
-	if err != nil {
-		return "", err
-	}
-	def, err := s.operator.GetOperatorDefinitionByUID(uid, nil)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("operator-definitions/%s", def.Id), nil
-}
-
-func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pipelinePB.OperatorComponent) error {
+func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pb.OperatorComponent) error {
 	uid, err := resource.GetRscPermalinkUID(comp.DefinitionName)
 	if err != nil {
 		return err
@@ -285,121 +176,34 @@ func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pipe
 		return err
 	}
 
-	detail := &structpb.Struct{}
-	// Note: need to deal with camelCase or under_score for grpc in future
-	json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
-	if marshalErr != nil {
-		return marshalErr
+	comp.Definition = def
+	return nil
+}
+
+func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pb.ConnectorComponent) error {
+	uid, err := resource.GetRscPermalinkUID(comp.DefinitionName)
+	if err != nil {
+		return err
 	}
-	unmarshalErr := detail.UnmarshalJSON(json)
-	if unmarshalErr != nil {
-		return unmarshalErr
+	def, err := s.connector.GetConnectorDefinitionByUID(uid, comp)
+	if err != nil {
+		return err
 	}
 
 	comp.Definition = def
 	return nil
 }
 
-func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pipelinePB.ConnectorComponent, connectors map[uuid.UUID]*datamodel.Connector) error {
-	if comp.ConnectorName != "" {
-		conn, ok := connectors[uuid.FromStringOrNil(strings.Split(comp.ConnectorName, "/")[1])]
-		if !ok || conn == nil {
-			// Allow the connector to not exist instead of returning an error.
-			comp.Connector = nil
-		} else {
-			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-			defer cancel()
-			pbConnector, err := s.convertDatamodelToProto(ctx, conn, ViewFull, true)
-			if err != nil {
-				// Allow the connector to not exist instead of returning an error.
-				comp.Connector = nil
-			} else {
-				comp.Connector = pbConnector
-				str := structpb.Struct{}
-				_ = str.UnmarshalJSON(conn.Configuration)
-
-				// This is a workaround solution for the Instill Model connector in Instill Cloud to improve response speed.
-				if config.Config.Connector.Instill.UseStaticModelList && conn.ConnectorDefinitionUID.String() == "ddcf42c3-4c30-4c65-9585-25f1c89b2b48" && str.Fields["mode"].GetStringValue() == "Internal Mode" {
-					b, err := s.redisClient.Get(ctx, "instill_model_connector_def").Bytes()
-					if err == nil {
-						d := &pipelinePB.ConnectorDefinition{}
-						if json.Unmarshal(b, d) == nil {
-							comp.Definition = d
-							return nil
-						}
-					}
-				}
-
-				// TODO: optimize this
-				str.Fields["header_authorization"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, "authorization"))
-				str.Fields["instill_user_uid"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-				str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
-				str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
-
-				d, err := s.connector.GetConnectorDefinitionByID(pbConnector.ConnectorDefinition.Id, &str, comp)
-				if err != nil {
-					return err
-				}
-				comp.Definition = d
-				if config.Config.Connector.Instill.UseStaticModelList && conn.ConnectorDefinitionUID.String() == "ddcf42c3-4c30-4c65-9585-25f1c89b2b48" && str.Fields["mode"].GetStringValue() == "Internal Mode" {
-					b, _ := json.Marshal(d)
-					_ = s.redisClient.Set(ctx, "instill_model_connector_def", b, 0)
-				}
-				return nil
-			}
-		}
-	}
-	if comp.Definition == nil {
-		uid, err := resource.GetRscPermalinkUID(comp.DefinitionName)
-		if err != nil {
-			return err
-		}
-		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, comp)
-		if err != nil {
-			return err
-		}
-
-		detail := &structpb.Struct{}
-		// Note: need to deal with camelCase or under_score for grpc in future
-		json, marshalErr := protojson.MarshalOptions{UseProtoNames: true}.Marshal(def)
-		if marshalErr != nil {
-			return marshalErr
-		}
-		unmarshalErr := detail.UnmarshalJSON(json)
-		if unmarshalErr != nil {
-			return unmarshalErr
-		}
-
-		comp.Definition = def
-	}
-	return nil
-}
-
-func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pipelinePB.IteratorComponent, connectors map[uuid.UUID]*datamodel.Connector) error {
-
-	var wg sync.WaitGroup
-	wg.Add(len(comp.Components))
-	ch := make(chan error)
+func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pb.IteratorComponent) error {
 
 	for nestIdx := range comp.Components {
-		go func(c *pipelinePB.NestedComponent) {
-			defer wg.Done()
-			switch c.Component.(type) {
-			case *pipelinePB.NestedComponent_ConnectorComponent:
-				err := s.includeConnectorComponentDetail(ctx, c.GetConnectorComponent(), connectors)
-				ch <- err
-			case *pipelinePB.NestedComponent_OperatorComponent:
-				err := s.includeOperatorComponentDetail(ctx, c.GetOperatorComponent())
-				ch <- err
-			default:
-				ch <- nil
-			}
-		}(comp.Components[nestIdx])
-
-	}
-
-	for range comp.Components {
-		err := <-ch
+		var err error
+		switch comp.Components[nestIdx].Component.(type) {
+		case *pb.NestedComponent_ConnectorComponent:
+			err = s.includeConnectorComponentDetail(ctx, comp.Components[nestIdx].GetConnectorComponent())
+		case *pb.NestedComponent_OperatorComponent:
+			err = s.includeOperatorComponentDetail(ctx, comp.Components[nestIdx].GetOperatorComponent())
+		}
 		if err != nil {
 			return err
 		}
@@ -430,43 +234,35 @@ func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pipe
 				nestedComp := comp.Components[upstreamCompIdx]
 
 				var walk *structpb.Value
+				task := ""
+				input := &structpb.Struct{}
+				output := &structpb.Struct{}
 				switch nestedComp.Component.(type) {
-				case *pipelinePB.NestedComponent_ConnectorComponent:
-					task := nestedComp.GetConnectorComponent().GetTask()
-					if task == "" {
-						// Skip schema generation if the task is not set.
-						continue
-					}
+				case *pb.NestedComponent_ConnectorComponent:
+					task = nestedComp.GetConnectorComponent().GetTask()
+					input = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+					output = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
 
-					splits := strings.Split(path, ".")
-
-					if splits[1] == "output" {
-						walk = structpb.NewStructValue(nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
-					} else if splits[1] == "input" {
-						walk = structpb.NewStructValue(nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
-					} else {
-						// Skip schema generation if the configuration is not valid.
-						continue
-					}
-					path = path[len(splits[1])+1:]
-				case *pipelinePB.NestedComponent_OperatorComponent:
-					task := nestedComp.GetOperatorComponent().GetTask()
-					if task == "" {
-						// Skip schema generation if the task is not set.
-						continue
-					}
-					splits := strings.Split(path, ".")
-
-					if splits[1] == "output" {
-						walk = structpb.NewStructValue(nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
-					} else if splits[1] == "input" {
-						walk = structpb.NewStructValue(nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
-					} else {
-						// Skip schema generation if the configuration is not valid.
-						continue
-					}
-					path = path[len(splits[1])+1:]
+				case *pb.NestedComponent_OperatorComponent:
+					task = nestedComp.GetOperatorComponent().GetTask()
+					input = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+					output = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
 				}
+				if task == "" {
+					// Skip schema generation if the task is not set.
+					continue
+				}
+				splits := strings.Split(path, ".")
+
+				if splits[1] == "output" {
+					walk = structpb.NewStructValue(output)
+				} else if splits[1] == "input" {
+					walk = structpb.NewStructValue(input)
+				} else {
+					// Skip schema generation if the configuration is not valid.
+					continue
+				}
+				path = path[len(splits[1])+1:]
 
 				success := true
 
@@ -528,38 +324,25 @@ func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pipe
 		}
 	}
 
-	comp.DataSpecification = &pipelinePB.DataSpecification{
+	comp.DataSpecification = &pb.DataSpecification{
 		Output: dataOutput,
 	}
 
 	return nil
 }
 
-func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pipelinePB.Recipe, connectors map[uuid.UUID]*datamodel.Connector) error {
+func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe) error {
 
-	var wg sync.WaitGroup
-	wg.Add(len(recipe.Components))
-	ch := make(chan error)
 	for idx := range recipe.Components {
-		go func(comp *pipelinePB.Component) {
-			defer wg.Done()
-			switch comp.Component.(type) {
-			case *pipelinePB.Component_ConnectorComponent:
-				err := s.includeConnectorComponentDetail(ctx, comp.GetConnectorComponent(), connectors)
-				ch <- err
-			case *pipelinePB.Component_OperatorComponent:
-				err := s.includeOperatorComponentDetail(ctx, comp.GetOperatorComponent())
-				ch <- err
-			case *pipelinePB.Component_IteratorComponent:
-				err := s.includeIteratorComponentDetail(ctx, comp.GetIteratorComponent(), connectors)
-				ch <- err
-			default:
-				ch <- nil
-			}
-		}(recipe.Components[idx])
-	}
-	for range recipe.Components {
-		err := <-ch
+		var err error
+		switch recipe.Components[idx].Component.(type) {
+		case *pb.Component_ConnectorComponent:
+			err = s.includeConnectorComponentDetail(ctx, recipe.Components[idx].GetConnectorComponent())
+		case *pb.Component_OperatorComponent:
+			err = s.includeOperatorComponentDetail(ctx, recipe.Components[idx].GetOperatorComponent())
+		case *pb.Component_IteratorComponent:
+			err = s.includeIteratorComponentDetail(ctx, recipe.Components[idx].GetIteratorComponent())
+		}
 		if err != nil {
 			return err
 		}
@@ -567,20 +350,18 @@ func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pipelinePB.
 	return nil
 }
 
-// PBToDBPipeline converts protobuf data model to db data model
-func (s *service) PBToDBPipeline(ctx context.Context, ns resource.Namespace, pbPipeline *pipelinePB.Pipeline) (*datamodel.Pipeline, error) {
+// convertPipelineToDB converts protobuf data model to db data model
+func (s *service) convertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
-
-	var err error
 
 	recipe := &datamodel.Recipe{}
 	if pbPipeline.GetRecipe() != nil {
-		recipePermalink, err := s.recipeNameToPermalink(ctx, pbPipeline.Recipe)
+		err := s.convertResourceNameToPermalink(ctx, pbPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
 
-		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(recipePermalink)
+		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -592,11 +373,6 @@ func (s *service) PBToDBPipeline(ctx context.Context, ns resource.Namespace, pbP
 
 	dbSharing := &datamodel.Sharing{}
 	if pbPipeline.GetSharing() != nil {
-
-		if err != nil {
-			return nil, err
-		}
-
 		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetSharing())
 		if err != nil {
 			return nil, err
@@ -659,14 +435,14 @@ func (s *service) PBToDBPipeline(ctx context.Context, ns resource.Namespace, pbP
 }
 
 // ConnectorTypeToComponentType ...
-var ConnectorTypeToComponentType = map[pipelinePB.ConnectorType]pipelinePB.ComponentType{
-	pipelinePB.ConnectorType_CONNECTOR_TYPE_AI:          pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
-	pipelinePB.ConnectorType_CONNECTOR_TYPE_APPLICATION: pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
-	pipelinePB.ConnectorType_CONNECTOR_TYPE_DATA:        pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
+var ConnectorTypeToComponentType = map[pb.ConnectorType]pb.ComponentType{
+	pb.ConnectorType_CONNECTOR_TYPE_AI:          pb.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
+	pb.ConnectorType_CONNECTOR_TYPE_APPLICATION: pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
+	pb.ConnectorType_CONNECTOR_TYPE_DATA:        pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
 }
 
-// DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipeline, view View, checkPermission bool) (*pipelinePB.Pipeline, error) {
+// convertPipelineToPB converts db data model to protobuf data model
+func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -676,13 +452,10 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	}
 
 	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
-	var pbRecipe *pipelinePB.Recipe
+	var pbRecipe *pb.Recipe
 
-	var startComp *pipelinePB.Component
-	var endComp *pipelinePB.Component
-
-	if dbPipeline.Recipe != nil && view != ViewBasic {
-		pbRecipe = &pipelinePB.Recipe{}
+	if dbPipeline.Recipe != nil && view > pb.Pipeline_VIEW_BASIC {
+		pbRecipe = &pb.Recipe{}
 
 		b, err := json.Marshal(dbPipeline.Recipe)
 		if err != nil {
@@ -696,28 +469,20 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	}
 
-	if view == ViewFull {
-		if err := s.includeDetailInRecipe(ctx, pbRecipe, dbPipeline.Connectors); err != nil {
+	if view == pb.Pipeline_VIEW_FULL {
+		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
-		}
-		for i := range pbRecipe.Components {
-			switch pbRecipe.Components[i].Component.(type) {
-			case *pipelinePB.Component_StartComponent:
-				startComp = pbRecipe.Components[i]
-			case *pipelinePB.Component_EndComponent:
-				endComp = pbRecipe.Components[i]
-			}
 		}
 	}
 
 	if pbRecipe != nil {
-		pbRecipe, err = s.recipePermalinkToName(ctx, pbRecipe, dbPipeline.Connectors)
+		err = s.convertResourcePermalinkToName(ctx, pbRecipe)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	pbSharing := &pipelinePB.Sharing{}
+	pbSharing := &pb.Sharing{}
 
 	b, err := json.Marshal(dbPipeline.Sharing)
 	if err != nil {
@@ -732,7 +497,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		pbSharing.ShareCode.Code = dbPipeline.ShareCode
 	}
 
-	pbPipeline := pipelinePB.Pipeline{
+	pbPipeline := pb.Pipeline{
 		Name:       fmt.Sprintf("%s/pipelines/%s", ownerName, dbPipeline.ID),
 		Uid:        dbPipeline.BaseDynamic.UID.String(),
 		Id:         dbPipeline.ID,
@@ -757,7 +522,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 	go func() {
 		defer wg.Done()
 		var owner *mgmtPB.Owner
-		if view != ViewBasic {
+		if view > pb.Pipeline_VIEW_BASIC {
 			owner, err = s.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
 			if err != nil {
 				return
@@ -765,7 +530,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 			pbPipeline.Owner = owner
 		}
 	}()
-	pbPipeline.Permission = &pipelinePB.Permission{}
+	pbPipeline.Permission = &pb.Permission{}
 	go func() {
 		defer wg.Done()
 		if !checkPermission {
@@ -799,7 +564,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 		pbPipeline.Permission.CanTrigger = canTrigger
 	}()
 
-	if view != ViewBasic {
+	if view > pb.Pipeline_VIEW_BASIC {
 		if dbPipeline.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipeline.Metadata)
@@ -812,8 +577,8 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	go func() {
 		defer wg.Done()
-		if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
-			spec, err := s.GeneratePipelineDataSpec(startComp, endComp, pbRecipe.Components)
+		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && pbRecipe.Trigger.GetTriggerByRequest() != nil {
+			spec, err := s.generatePipelineDataSpec(pbRecipe.Trigger.GetTriggerByRequest(), pbRecipe.Components)
 			if err != nil {
 				return
 			}
@@ -823,7 +588,7 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	go func() {
 		defer wg.Done()
-		pbReleases, err := s.DBToPBPipelineReleases(ctx, dbPipeline, dbPipeline.Releases, view)
+		pbReleases, err := s.convertPipelineReleasesToPB(ctx, dbPipeline, dbPipeline.Releases, view)
 		if err != nil {
 			return
 		}
@@ -832,21 +597,21 @@ func (s *service) DBToPBPipeline(ctx context.Context, dbPipeline *datamodel.Pipe
 
 	wg.Wait()
 
-	pbPipeline.Visibility = pipelinePB.Pipeline_VISIBILITY_PRIVATE
+	pbPipeline.Visibility = pb.Pipeline_VISIBILITY_PRIVATE
 	if u, ok := pbPipeline.Sharing.Users["*/*"]; ok {
 		if u.Enabled {
-			pbPipeline.Visibility = pipelinePB.Pipeline_VISIBILITY_PUBLIC
+			pbPipeline.Visibility = pb.Pipeline_VISIBILITY_PUBLIC
 		}
 	}
 	return &pbPipeline, nil
 }
 
-// DBToPBPipeline converts db data model to protobuf data model
-func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.Pipeline, view View, checkPermission bool) ([]*pipelinePB.Pipeline, error) {
+// convertPipelineToPB converts db data model to protobuf data model
+func (s *service) convertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error) {
 
 	type result struct {
 		idx      int
-		pipeline *pipelinePB.Pipeline
+		pipeline *pb.Pipeline
 		err      error
 	}
 
@@ -857,7 +622,7 @@ func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.
 	for idx := range dbPipelines {
 		go func(i int) {
 			defer wg.Done()
-			pbPipeline, err := s.DBToPBPipeline(
+			pbPipeline, err := s.convertPipelineToPB(
 				ctx,
 				dbPipelines[i],
 				view,
@@ -871,7 +636,7 @@ func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.
 		}(idx)
 	}
 
-	pbPipelines := make([]*pipelinePB.Pipeline, len(dbPipelines))
+	pbPipelines := make([]*pb.Pipeline, len(dbPipelines))
 	for range dbPipelines {
 		r := <-ch
 		if r.err != nil {
@@ -882,18 +647,18 @@ func (s *service) DBToPBPipelines(ctx context.Context, dbPipelines []*datamodel.
 	return pbPipelines, nil
 }
 
-// PBToDBPipelineRelease converts protobuf data model to db data model
-func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pipelinePB.PipelineRelease) (*datamodel.PipelineRelease, error) {
+// convertPipelineReleaseToDB converts protobuf data model to db data model
+func (s *service) convertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
 	recipe := &datamodel.Recipe{}
 	if pbPipelineRelease.GetRecipe() != nil {
-		recipePermalink, err := s.recipeNameToPermalink(ctx, pbPipelineRelease.Recipe)
+		err := s.convertResourceNameToPermalink(ctx, pbPipelineRelease.Recipe)
 		if err != nil {
 			return nil, err
 		}
 
-		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(recipePermalink)
+		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipelineRelease.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -953,8 +718,8 @@ func (s *service) PBToDBPipelineRelease(ctx context.Context, pipelineUID uuid.UU
 	}, nil
 }
 
-// DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view View) (*pipelinePB.PipelineRelease, error) {
+// convertPipelineReleaseToPB converts db data model to protobuf data model
+func (s *service) convertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -962,9 +727,9 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 	if err != nil {
 		return nil, err
 	}
-	var pbRecipe *pipelinePB.Recipe
-	if dbPipelineRelease.Recipe != nil && view != ViewBasic {
-		pbRecipe = &pipelinePB.Recipe{}
+	var pbRecipe *pb.Recipe
+	if dbPipelineRelease.Recipe != nil && view > pb.Pipeline_VIEW_BASIC {
+		pbRecipe = &pb.Recipe{}
 
 		b, err := json.Marshal(dbPipelineRelease.Recipe)
 		if err != nil {
@@ -977,30 +742,21 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 		}
 	}
 
-	var startComp *pipelinePB.Component
-	var endComp *pipelinePB.Component
+	var triggerByRequest *pb.TriggerByRequest
 
-	if view == ViewFull {
-		if err := s.includeDetailInRecipe(ctx, pbRecipe, dbPipelineRelease.Connectors); err != nil {
+	if view == pb.Pipeline_VIEW_FULL {
+		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
-		}
-		for i := range pbRecipe.Components {
-			switch pbRecipe.Components[i].Component.(type) {
-			case *pipelinePB.Component_StartComponent:
-				startComp = pbRecipe.Components[i]
-			case *pipelinePB.Component_EndComponent:
-				endComp = pbRecipe.Components[i]
-			}
 		}
 	}
 
 	if pbRecipe != nil {
-		pbRecipe, err = s.recipePermalinkToName(ctx, pbRecipe, dbPipelineRelease.Connectors)
+		err = s.convertResourcePermalinkToName(ctx, pbRecipe)
 		if err != nil {
 			return nil, err
 		}
 	}
-	pbPipelineRelease := pipelinePB.PipelineRelease{
+	pbPipelineRelease := pb.PipelineRelease{
 		Name:       fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, dbPipeline.ID, dbPipelineRelease.ID),
 		Uid:        dbPipelineRelease.BaseDynamic.UID.String(),
 		Id:         dbPipelineRelease.ID,
@@ -1018,7 +774,7 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 		Recipe:      pbRecipe,
 	}
 
-	if view != ViewBasic {
+	if view > pb.Pipeline_VIEW_BASIC {
 		if dbPipelineRelease.Metadata != nil {
 			str := structpb.Struct{}
 			err := str.UnmarshalJSON(dbPipelineRelease.Metadata)
@@ -1029,8 +785,8 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 		}
 	}
 
-	if pbRecipe != nil && view == ViewFull && startComp != nil && endComp != nil {
-		spec, err := s.GeneratePipelineDataSpec(startComp, endComp, pbRecipe.Components)
+	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && triggerByRequest != nil {
+		spec, err := s.generatePipelineDataSpec(triggerByRequest, pbRecipe.Components)
 		if err == nil {
 			pbPipelineRelease.DataSpecification = spec
 		}
@@ -1039,12 +795,12 @@ func (s *service) DBToPBPipelineRelease(ctx context.Context, dbPipeline *datamod
 	return &pbPipelineRelease, nil
 }
 
-// DBToPBPipelineRelease converts db data model to protobuf data model
-func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view View) ([]*pipelinePB.PipelineRelease, error) {
+// convertPipelineReleaseToPB converts db data model to protobuf data model
+func (s *service) convertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pb.Pipeline_View) ([]*pb.PipelineRelease, error) {
 
 	type result struct {
 		idx     int
-		release *pipelinePB.PipelineRelease
+		release *pb.PipelineRelease
 		err     error
 	}
 
@@ -1055,7 +811,7 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamo
 	for idx := range dbPipelineRelease {
 		go func(i int) {
 			defer wg.Done()
-			pbRelease, err := s.DBToPBPipelineRelease(
+			pbRelease, err := s.convertPipelineReleaseToPB(
 				ctx,
 				dbPipeline,
 				dbPipelineRelease[i],
@@ -1069,7 +825,7 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamo
 		}(idx)
 	}
 
-	pbPipelineReleases := make([]*pipelinePB.PipelineRelease, len(dbPipelineRelease))
+	pbPipelineReleases := make([]*pb.PipelineRelease, len(dbPipelineRelease))
 	for range dbPipelineRelease {
 		r := <-ch
 		if r.err != nil {
@@ -1080,224 +836,17 @@ func (s *service) DBToPBPipelineReleases(ctx context.Context, dbPipeline *datamo
 	return pbPipelineReleases, nil
 }
 
-// convertProtoToDatamodel converts protobuf data model to db data model
-func (s *service) convertProtoToDatamodel(
-	ctx context.Context,
-	ns resource.Namespace,
-	pbConnector *pipelinePB.Connector,
-) (*datamodel.Connector, error) {
-
-	logger, _ := logger.GetZapLogger(ctx)
-
-	var uid uuid.UUID
-	var id string
-	var state datamodel.ConnectorState
-	var tombstone bool
-	var description sql.NullString
-	var configuration *structpb.Struct
-	var createTime time.Time
-	var updateTime time.Time
-	var err error
-
-	id = pbConnector.GetId()
-	state = datamodel.ConnectorState(pbConnector.GetState())
-	tombstone = pbConnector.GetTombstone()
-	configuration = pbConnector.GetConfiguration()
-	createTime = pbConnector.GetCreateTime().AsTime()
-	updateTime = pbConnector.GetUpdateTime().AsTime()
-
-	connectorDefinition, err := s.connector.GetConnectorDefinitionByID(strings.Split(pbConnector.ConnectorDefinitionName, "/")[1], nil, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	uid = uuid.FromStringOrNil(pbConnector.GetUid())
-	if err != nil {
-		return nil, err
-	}
-
-	description = sql.NullString{
-		String: pbConnector.GetDescription(),
-		Valid:  true,
-	}
-
-	return &datamodel.Connector{
-		Owner:                  ns.Permalink(),
-		ID:                     id,
-		ConnectorType:          datamodel.ConnectorType(connectorDefinition.Type),
-		Description:            description,
-		State:                  state,
-		Tombstone:              tombstone,
-		ConnectorDefinitionUID: uuid.FromStringOrNil(connectorDefinition.Uid),
-		Visibility:             datamodel.ConnectorVisibility(pbConnector.Visibility),
-
-		Configuration: func() []byte {
-			if configuration != nil {
-				b, err := configuration.MarshalJSON()
-				if err != nil {
-					logger.Error(err.Error())
-				}
-				return b
-			}
-			return []byte{}
-		}(),
-
-		BaseDynamic: datamodel.BaseDynamic{
-			UID:        uid,
-			CreateTime: createTime,
-			UpdateTime: updateTime,
-		},
-	}, nil
-}
-
-// convertDatamodelToProto converts db data model to protobuf data model
-func (s *service) convertDatamodelToProto(
-	ctx context.Context,
-	dbConnector *datamodel.Connector,
-	view View,
-	credentialMask bool,
-) (*pipelinePB.Connector, error) {
-
-	logger, _ := logger.GetZapLogger(ctx)
-
-	ownerName, err := s.convertOwnerPermalinkToName(ctx, dbConnector.Owner)
-	if err != nil {
-		return nil, err
-	}
-	var owner *mgmtPB.Owner
-	if view != ViewBasic {
-		owner, err = s.fetchOwnerByPermalink(ctx, dbConnector.Owner)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	pbConnector := &pipelinePB.Connector{
-		Uid:                     dbConnector.UID.String(),
-		Name:                    fmt.Sprintf("%s/connectors/%s", ownerName, dbConnector.ID),
-		Id:                      dbConnector.ID,
-		ConnectorDefinitionName: dbConnDef.GetName(),
-		Type:                    pipelinePB.ConnectorType(dbConnector.ConnectorType),
-		Description:             &dbConnector.Description.String,
-		State:                   pipelinePB.Connector_State(dbConnector.State),
-		Tombstone:               dbConnector.Tombstone,
-		CreateTime:              timestamppb.New(dbConnector.CreateTime),
-		UpdateTime:              timestamppb.New(dbConnector.UpdateTime),
-		DeleteTime: func() *timestamppb.Timestamp {
-			if dbConnector.DeleteTime.Time.IsZero() {
-				return nil
-			} else {
-				return timestamppb.New(dbConnector.DeleteTime.Time)
-			}
-		}(),
-		Visibility: pipelinePB.Connector_Visibility(dbConnector.Visibility),
-
-		Configuration: func() *structpb.Struct {
-			if dbConnector.Configuration != nil {
-				str := structpb.Struct{}
-				err := str.UnmarshalJSON(dbConnector.Configuration)
-				if err != nil {
-					logger.Error(err.Error())
-				}
-				return &str
-			}
-			return nil
-		}(),
-		OwnerName: ownerName,
-		Owner:     owner,
-	}
-
-	if view != ViewBasic {
-		if view == ViewFull {
-
-			str := proto.Clone(pbConnector.Configuration).(*structpb.Struct)
-
-			hit := false
-			// This is a workaround solution for the Instill Model connector in Instill Cloud to improve response speed.
-			if config.Config.Connector.Instill.UseStaticModelList && dbConnector.ConnectorDefinitionUID.String() == "ddcf42c3-4c30-4c65-9585-25f1c89b2b48" && str.Fields["mode"].GetStringValue() == "Internal Mode" {
-				b, err := s.redisClient.Get(ctx, "instill_model_connector_def").Bytes()
-				if err == nil {
-					d := &pipelinePB.ConnectorDefinition{}
-					if json.Unmarshal(b, d) == nil {
-						pbConnector.ConnectorDefinition = d
-						hit = true
-					}
-				}
-			}
-
-			if !hit {
-				// TODO: optimize this
-				if str.Fields != nil {
-					str.Fields["header_authorization"] = structpb.NewStringValue(resource.GetRequestSingleHeader(ctx, "authorization"))
-					str.Fields["instill_user_uid"] = structpb.NewStringValue(uuid.FromStringOrNil(strings.Split(dbConnector.Owner, "/")[1]).String())
-					str.Fields["instill_model_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort))
-					str.Fields["instill_mgmt_backend"] = structpb.NewStringValue(fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort))
-				}
-
-				dbConnDef, err := s.connector.GetConnectorDefinitionByUID(dbConnector.ConnectorDefinitionUID, str, nil)
-				if err != nil {
-					return nil, err
-				}
-				pbConnector.ConnectorDefinition = dbConnDef
-
-				if config.Config.Connector.Instill.UseStaticModelList && dbConnector.ConnectorDefinitionUID.String() == "ddcf42c3-4c30-4c65-9585-25f1c89b2b48" && str.Fields["mode"].GetStringValue() == "Internal Mode" {
-					b, _ := json.Marshal(dbConnDef)
-					s.redisClient.Set(ctx, "instill_model_connector_def", b, 0)
-				}
-			}
-
-		}
-		if credentialMask {
-			utils.MaskCredentialFields(s.connector, dbConnDef.Id, pbConnector.Configuration)
-		}
-	}
-
-	return pbConnector, nil
-
-}
-
-func (s *service) convertDatamodelArrayToProtoArray(
-	ctx context.Context,
-	dbConnectors []*datamodel.Connector,
-	view View,
-	credentialMask bool,
-) ([]*pipelinePB.Connector, error) {
-
-	var err error
-	pbConnectors := make([]*pipelinePB.Connector, len(dbConnectors))
-	for idx := range dbConnectors {
-		pbConnectors[idx], err = s.convertDatamodelToProto(
-			ctx,
-			dbConnectors[idx],
-			view,
-			credentialMask,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	return pbConnectors, nil
-
-}
-
 // TODO: refactor these codes
-func (s *service) GeneratePipelineDataSpec(startCompOrigin *pipelinePB.Component, endCompOrigin *pipelinePB.Component, compsOrigin []*pipelinePB.Component) (*pipelinePB.DataSpecification, error) {
+func (s *service) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByRequest, compsOrigin []*pb.Component) (*pb.DataSpecification, error) {
 	success := true
-	pipelineDataSpec := &pipelinePB.DataSpecification{}
+	pipelineDataSpec := &pb.DataSpecification{}
 
 	dataInput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	dataInput.Fields["type"] = structpb.NewStringValue("object")
 	dataInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
-	startComp := proto.Clone(startCompOrigin).(*pipelinePB.Component)
-	for k, v := range startComp.GetStartComponent().GetFields() {
+	triggerByRequest := proto.Clone(triggerByRequestOrigin).(*pb.TriggerByRequest)
+	for k, v := range triggerByRequest.GetRequestFields() {
 		b, _ := protojson.Marshal(v)
 		p := &structpb.Struct{}
 		_ = protojson.Unmarshal(b, p)
@@ -1309,16 +858,15 @@ func (s *service) GeneratePipelineDataSpec(startCompOrigin *pipelinePB.Component
 	dataOutput.Fields["type"] = structpb.NewStringValue("object")
 	dataOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
-	endComp := proto.Clone(endCompOrigin).(*pipelinePB.Component)
-
-	for k, v := range endComp.GetEndComponent().Fields {
+	for k, v := range triggerByRequest.GetResponseFields() {
 		var m *structpb.Value
 
 		var err error
 
+		v = proto.Clone(v).(*pb.TriggerByRequest_ResponseField)
+
 		str := v.Value
 		if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
-			// TODO
 			str = str[2:]
 			str = str[:len(str)-1]
 			str = strings.ReplaceAll(str, " ", "")
@@ -1332,55 +880,56 @@ func (s *service) GeneratePipelineDataSpec(startCompOrigin *pipelinePB.Component
 				}
 			}
 
-			if upstreamCompIdx != -1 {
-				comp := proto.Clone(compsOrigin[upstreamCompIdx]).(*pipelinePB.Component)
-
+			if upstreamCompIdx != -1 || compID == "request" {
 				var walk *structpb.Value
-				switch comp.Component.(type) {
-				case *pipelinePB.Component_IteratorComponent:
-
-					splits := strings.Split(str, ".")
-
-					if splits[1] == "output" {
-						walk = structpb.NewStructValue(comp.GetIteratorComponent().DataSpecification.Output)
-					} else {
-						return nil, fmt.Errorf("generate OpenAPI spec error")
-					}
-					str = str[len(splits[1])+1:]
-				case *pipelinePB.Component_ConnectorComponent:
-					task := comp.GetConnectorComponent().GetTask()
-					if task == "" {
-						return nil, fmt.Errorf("generate OpenAPI spec error")
-					}
-
-					splits := strings.Split(str, ".")
-
-					if splits[1] == "output" {
-						walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
-					} else if splits[1] == "input" {
-						walk = structpb.NewStructValue(comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
-					} else {
-						return nil, fmt.Errorf("generate OpenAPI spec error")
-					}
-					str = str[len(splits[1])+1:]
-				case *pipelinePB.Component_StartComponent:
+				if compID == "request" {
 					walk = structpb.NewStructValue(dataInput)
-				case *pipelinePB.Component_OperatorComponent:
-					task := comp.GetOperatorComponent().GetTask()
-					if task == "" {
-						return nil, fmt.Errorf("generate OpenAPI spec error")
-					}
+				} else {
+					comp := proto.Clone(compsOrigin[upstreamCompIdx]).(*pb.Component)
 
-					splits := strings.Split(str, ".")
+					switch comp.Component.(type) {
+					case *pb.Component_IteratorComponent:
+						splits := strings.Split(str, ".")
+						if splits[1] == "output" {
+							walk = structpb.NewStructValue(comp.GetIteratorComponent().DataSpecification.Output)
+						} else {
+							return nil, fmt.Errorf("generate pipeline data spec error")
+						}
+						str = str[len(splits[1])+1:]
+					case *pb.Component_ConnectorComponent, *pb.Component_OperatorComponent:
+						task := ""
+						input := &structpb.Struct{}
+						output := &structpb.Struct{}
+						switch comp.Component.(type) {
+						case *pb.Component_ConnectorComponent:
+							task = comp.GetConnectorComponent().GetTask()
+							if _, ok := comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
+								input = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+								output = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+							}
+						case *pb.Component_OperatorComponent:
+							task = comp.GetOperatorComponent().GetTask()
+							if _, ok := comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
+								input = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+								output = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+							}
+						}
 
-					if splits[1] == "output" {
-						walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output)
-					} else if splits[1] == "input" {
-						walk = structpb.NewStructValue(comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input)
-					} else {
-						return nil, fmt.Errorf("generate OpenAPI spec error")
+						if task == "" {
+							return nil, fmt.Errorf("generate pipeline data spec error")
+						}
+
+						splits := strings.Split(str, ".")
+
+						if splits[1] == "output" {
+							walk = structpb.NewStructValue(output)
+						} else if splits[1] == "input" {
+							walk = structpb.NewStructValue(input)
+						} else {
+							return nil, fmt.Errorf("generate pipeline data spec error")
+						}
+						str = str[len(splits[1])+1:]
 					}
-					str = str[len(splits[1])+1:]
 				}
 
 				for {
@@ -1457,6 +1006,75 @@ func (s *service) GeneratePipelineDataSpec(startCompOrigin *pipelinePB.Component
 		pipelineDataSpec.Output = dataOutput
 		return pipelineDataSpec, nil
 	}
-	return nil, fmt.Errorf("generate data spec error")
+	return nil, fmt.Errorf("generate pipeline data spec error")
 
+}
+
+func (s *service) convertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	return &datamodel.Secret{
+		BaseDynamicHardDelete: datamodel.BaseDynamicHardDelete{
+			UID: func() uuid.UUID {
+				if pbSecret.GetUid() == "" {
+					return uuid.UUID{}
+				}
+				id, err := uuid.FromString(pbSecret.GetUid())
+				if err != nil {
+					logger.Error(err.Error())
+				}
+				return id
+			}(),
+
+			CreateTime: func() time.Time {
+				if pbSecret.GetCreateTime() != nil {
+					return pbSecret.GetCreateTime().AsTime()
+				}
+				return time.Time{}
+			}(),
+
+			UpdateTime: func() time.Time {
+				if pbSecret.GetUpdateTime() != nil {
+					return pbSecret.GetUpdateTime().AsTime()
+				}
+				return time.Time{}
+			}(),
+		},
+		Owner:       ns.Permalink(),
+		ID:          pbSecret.GetId(),
+		Value:       pbSecret.Value,
+		Description: pbSecret.Description,
+	}, nil
+}
+
+func (s *service) convertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error) {
+
+	ownerName, err := s.convertOwnerPermalinkToName(ctx, dbSecret.Owner)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.Secret{
+		Name:        fmt.Sprintf("%s/secrets/%s", ownerName, dbSecret.ID),
+		Uid:         dbSecret.BaseDynamicHardDelete.UID.String(),
+		Id:          dbSecret.ID,
+		CreateTime:  timestamppb.New(dbSecret.CreateTime),
+		UpdateTime:  timestamppb.New(dbSecret.UpdateTime),
+		Description: dbSecret.Description,
+	}, nil
+
+}
+
+func (s *service) convertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error) {
+
+	var err error
+	pbSecrets := make([]*pb.Secret, len(dbSecrets))
+	for idx := range dbSecrets {
+		pbSecrets[idx], err = s.convertSecretToPB(ctx, dbSecrets[idx])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return pbSecrets, nil
 }

@@ -14,15 +14,14 @@ import (
 	"gorm.io/gorm"
 
 	taskPB "github.com/instill-ai/protogen-go/common/task/v1alpha"
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-// BaseStatic contains common columns for all tables with static UUID as primary key
-type BaseStatic struct {
-	UID        uuid.UUID      `gorm:"type:uuid;primary_key;<-:create"` // allow read and create
-	CreateTime time.Time      `gorm:"autoCreateTime:nano"`
-	UpdateTime time.Time      `gorm:"autoUpdateTime:nano"`
-	DeleteTime gorm.DeletedAt `sql:"index"`
+// BaseDynamicHardDelete contains common columns for all tables with static UUID as primary key
+type BaseDynamicHardDelete struct {
+	UID        uuid.UUID `gorm:"type:uuid;primary_key;<-:create"` // allow read and create
+	CreateTime time.Time `gorm:"autoCreateTime:nano"`
+	UpdateTime time.Time `gorm:"autoUpdateTime:nano"`
 }
 
 // BaseDynamic contains common columns for all tables with dynamic UUID as primary key generated when creating
@@ -35,6 +34,16 @@ type BaseDynamic struct {
 
 // BeforeCreate will set a UUID rather than numeric ID.
 func (base *BaseDynamic) BeforeCreate(db *gorm.DB) error {
+	uuid, err := uuid.NewV4()
+	if err != nil {
+		return err
+	}
+	db.Statement.SetColumn("UID", uuid)
+	return nil
+}
+
+// BeforeCreate will set a UUID rather than numeric ID.
+func (base *BaseDynamicHardDelete) BeforeCreate(db *gorm.DB) error {
 	uuid, err := uuid.NewV4()
 	if err != nil {
 		return err
@@ -56,7 +65,6 @@ type Pipeline struct {
 	Metadata          datatypes.JSON `gorm:"type:jsonb"`
 	Readme            string
 	Releases          []*PipelineRelease
-	Connectors        map[uuid.UUID]*Connector `gorm:"-" json:"-"`
 }
 
 // PipelineRelease is the data model of the pipeline release table
@@ -68,32 +76,28 @@ type PipelineRelease struct {
 	Recipe      *Recipe        `gorm:"type:jsonb"`
 	Metadata    datatypes.JSON `gorm:"type:jsonb"`
 	Readme      string
-	Connectors  map[uuid.UUID]*Connector `gorm:"-" json:"-"`
 }
 
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
 	Version    string       `json:"version,omitempty"`
+	Trigger    *Trigger     `json:"trigger,omitempty"`
 	Components []*Component `json:"components,omitempty"`
+}
+
+type Trigger struct {
+	TriggerByRequest *TriggerByRequest `json:"trigger_by_request,omitempty"`
 }
 
 type Component struct {
 	ID       string         `json:"id"`
 	Metadata datatypes.JSON `json:"metadata"`
 	// TODO: validate oneof
-	StartComponent     *StartComponent     `json:"start_component,omitempty"`
-	EndComponent       *EndComponent       `json:"end_component,omitempty"`
 	ConnectorComponent *ConnectorComponent `json:"connector_component,omitempty"`
 	OperatorComponent  *OperatorComponent  `json:"operator_component,omitempty"`
 	IteratorComponent  *IteratorComponent  `json:"iterator_component,omitempty"`
 }
 
-func (c *Component) IsStartComponent() bool {
-	return c.StartComponent != nil
-}
-func (c *Component) IsEndComponent() bool {
-	return c.EndComponent != nil
-}
 func (c *Component) IsConnectorComponent() bool {
 	return c.ConnectorComponent != nil
 }
@@ -116,31 +120,32 @@ func (c *Component) GetCondition() *string {
 	return nil
 }
 
-type StartComponent struct {
-	Fields map[string]struct {
-		Title              string `json:"title"`
-		Description        string `json:"description"`
-		InstillFormat      string `json:"instill_format"`
-		InstillUIOrder     int32  `json:"instill_ui_order"`
-		InstillUIMultiline bool   `json:"instill_ui_multiline"`
-	} `json:"fields"`
+type TriggerByRequestRequestFields map[string]struct {
+	Title              string `json:"title"`
+	Description        string `json:"description"`
+	InstillFormat      string `json:"instill_format"`
+	InstillUIOrder     int32  `json:"instill_ui_order"`
+	InstillUIMultiline bool   `json:"instill_ui_multiline"`
 }
 
-type EndComponent struct {
-	Fields map[string]struct {
-		Title          string `json:"title"`
-		Description    string `json:"description"`
-		Value          string `json:"value"`
-		InstillUIOrder int32  `json:"instill_ui_order"`
-	} `json:"fields"`
+type TriggerByRequestResponseFields map[string]struct {
+	Title          string `json:"title"`
+	Description    string `json:"description"`
+	Value          string `json:"value"`
+	InstillUIOrder int32  `json:"instill_ui_order"`
+}
+
+type TriggerByRequest struct {
+	RequestFields  TriggerByRequestRequestFields  `json:"request_fields"`
+	ResponseFields TriggerByRequestResponseFields `json:"response_fields"`
 }
 
 type ConnectorComponent struct {
 	DefinitionName string           `json:"definition_name"`
-	ConnectorName  string           `json:"connector_name"`
 	Task           string           `json:"task"`
 	Input          *structpb.Struct `json:"input"`
 	Condition      *string          `json:"condition,omitempty"`
+	Connection     *structpb.Struct `json:"connection"`
 }
 
 type OperatorComponent struct {
@@ -176,7 +181,7 @@ type SharingCode struct {
 }
 
 // PipelineRole is an alias type for Protobuf enum
-type PipelineRole pipelinePB.Role
+type PipelineRole pb.Role
 
 // Scan function for custom GORM type Recipe
 func (r *Recipe) Scan(value interface{}) error {
@@ -260,77 +265,17 @@ func (p *SharingCode) Value() (driver.Value, error) {
 
 // Scan function for custom GORM type PipelineRole
 func (p *PipelineRole) Scan(value interface{}) error {
-	*p = PipelineRole(pipelinePB.Role_value[value.(string)])
+	*p = PipelineRole(pb.Role_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type PipelineRole
 func (p PipelineRole) Value() (driver.Value, error) {
-	return pipelinePB.Role(p).String(), nil
+	return pb.Role(p).String(), nil
 }
-
-// Connector is the data model of the connector table
-type Connector struct {
-	BaseDynamic
-	ID                     string
-	Owner                  string
-	ConnectorDefinitionUID uuid.UUID
-	Description            sql.NullString
-	Tombstone              bool
-	Configuration          datatypes.JSON      `gorm:"type:jsonb"`
-	ConnectorType          ConnectorType       `sql:"type:CONNECTOR_VALID_CONNECTOR_TYPE"`
-	State                  ConnectorState      `sql:"type:CONNECTOR_VALID_CONNECTOR_STATE"`
-	Visibility             ConnectorVisibility `sql:"type:CONNECTOR_VALID_CONNECTOR_VISIBILITY"`
-}
-
-func (Connector) TableName() string {
-	return "connector"
-}
-
-// ConnectorType is an alias type for Protobuf enum ConnectorType
-type ConnectorVisibility pipelinePB.Connector_Visibility
-
-// ConnectorType is an alias type for Protobuf enum ConnectorType
-type ConnectorType pipelinePB.ConnectorType
 
 // ConnectorType is an alias type for Protobuf enum ConnectorType
 type Task taskPB.Task
-
-// Scan function for custom GORM type ConnectorType
-func (c *ConnectorType) Scan(value interface{}) error {
-	*c = ConnectorType(pipelinePB.ConnectorType_value[value.(string)])
-	return nil
-}
-
-// Value function for custom GORM type ConnectorType
-func (c ConnectorType) Value() (driver.Value, error) {
-	return pipelinePB.ConnectorType(c).String(), nil
-}
-
-// ConnectorState is an alias type for Protobuf enum ConnectorState
-type ConnectorState pipelinePB.Connector_State
-
-// Scan function for custom GORM type ConnectorState
-func (r *ConnectorState) Scan(value interface{}) error {
-	*r = ConnectorState(pipelinePB.Connector_State_value[value.(string)])
-	return nil
-}
-
-// Value function for custom GORM type ConnectorState
-func (r ConnectorState) Value() (driver.Value, error) {
-	return pipelinePB.Connector_State(r).String(), nil
-}
-
-// Scan function for custom GORM type ConnectorVisibility
-func (r *ConnectorVisibility) Scan(value interface{}) error {
-	*r = ConnectorVisibility(pipelinePB.Connector_Visibility_value[value.(string)])
-	return nil
-}
-
-// Value function for custom GORM type ConnectorVisibility
-func (r ConnectorVisibility) Value() (driver.Value, error) {
-	return pipelinePB.Connector_Visibility(r).String(), nil
-}
 
 // Scan function for custom GORM type Task
 func (r *Task) Scan(value interface{}) error {
@@ -373,7 +318,7 @@ type pbDefinition interface {
 	GetTombstone() bool
 	GetPublic() bool
 	GetVersion() string
-	GetReleaseStage() pipelinePB.ComponentDefinition_ReleaseStage
+	GetReleaseStage() pb.ComponentDefinition_ReleaseStage
 }
 
 // FeatureScores holds the feature score of each component definition. If a
@@ -403,14 +348,14 @@ var FeatureScores = map[string]int{
 
 // ComponentDefinitionFromProto parses a ComponentDefinition from the proto
 // structure.
-func ComponentDefinitionFromProto(cdpb *pipelinePB.ComponentDefinition) *ComponentDefinition {
+func ComponentDefinitionFromProto(cdpb *pb.ComponentDefinition) *ComponentDefinition {
 	var def pbDefinition
 	switch cdpb.Type {
-	case pipelinePB.ComponentType_COMPONENT_TYPE_OPERATOR:
+	case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
 		def = cdpb.GetOperatorDefinition()
-	case pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
-		pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
-		pipelinePB.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION:
+	case pb.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
+		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
+		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION:
 
 		def = cdpb.GetConnectorDefinition()
 	default:
@@ -433,29 +378,37 @@ func ComponentDefinitionFromProto(cdpb *pipelinePB.ComponentDefinition) *Compone
 }
 
 // ComponentType is an alias type for proto enum ComponentType.
-type ComponentType pipelinePB.ComponentType
+type ComponentType pb.ComponentType
 
 // Scan function for custom GORM type ComponentType
 func (c *ComponentType) Scan(value any) error {
-	*c = ComponentType(pipelinePB.ComponentType_value[value.(string)])
+	*c = ComponentType(pb.ComponentType_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type ComponentType
 func (c ComponentType) Value() (driver.Value, error) {
-	return pipelinePB.ComponentType(c).String(), nil
+	return pb.ComponentType(c).String(), nil
 }
 
 // ReleaseStage is an alias type for proto enum ComponentDefinition_ReleaseStage.
-type ReleaseStage pipelinePB.ComponentDefinition_ReleaseStage
+type ReleaseStage pb.ComponentDefinition_ReleaseStage
 
 // Scan function for custom GORM type ReleaseStage
 func (c *ReleaseStage) Scan(value any) error {
-	*c = ReleaseStage(pipelinePB.ComponentDefinition_ReleaseStage_value[value.(string)])
+	*c = ReleaseStage(pb.ComponentDefinition_ReleaseStage_value[value.(string)])
 	return nil
 }
 
 // Value function for custom GORM type ReleaseStage
 func (c ReleaseStage) Value() (driver.Value, error) {
-	return pipelinePB.ComponentDefinition_ReleaseStage(c).String(), nil
+	return pb.ComponentDefinition_ReleaseStage(c).String(), nil
+}
+
+type Secret struct {
+	BaseDynamicHardDelete
+	ID          string
+	Owner       string
+	Description string
+	Value       *string
 }

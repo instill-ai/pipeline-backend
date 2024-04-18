@@ -9,7 +9,7 @@ import * as constant from "./const.js"
 
 export function CheckTrigger(data) {
 
-  group("Pipelines API: Trigger a pipeline for single image and single model", () => {
+  group("Pipelines API: Trigger a pipeline", () => {
 
     var reqHTTP = Object.assign(
       {
@@ -24,7 +24,7 @@ export function CheckTrigger(data) {
     });
 
     check(http.request("POST", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${reqHTTP.id}/trigger`, JSON.stringify(constant.simplePayload), data.header), {
-      [`POST /v1beta/${constant.namespace}/pipelines/${reqHTTP.id}/trigger (url) response status is 200`]: (r) => r.status === 200,
+      [`POST /v1beta/${constant.namespace}/pipelines/${reqHTTP.id}/trigger response status is 200`]: (r) => r.status === 200,
     });
 
 

@@ -69,17 +69,6 @@ type ServerConfig struct {
 
 // ConnectorConfig defines the connector configurations
 type ConnectorConfig struct {
-	Airbyte struct {
-		MountSource struct {
-			VDP     string `koanf:"vdp"`
-			Airbyte string `koanf:"airbyte"`
-		}
-		MountTarget struct {
-			VDP     string `koanf:"vdp"`
-			Airbyte string `koanf:"airbyte"`
-		}
-		ExcludeLocalConnector bool `koanf:"excludelocalconnector"`
-	}
 	Instill struct {
 		UseStaticModelList bool `koanf:"usestaticmodellist"`
 	} `koanf:"instill"`

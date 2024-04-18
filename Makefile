@@ -20,10 +20,7 @@ dev:							## Run dev container
 	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
 		echo "Run dev container ${SERVICE_NAME}. To stop it, run \"make stop\"."
 	@docker run -d --rm \
-		-e DOCKER_HOST=tcp://${SOCAT_HOST}:${SOCAT_PORT} \
 		-v $(PWD):/${SERVICE_NAME} \
-		-v vdp:/vdp \
-		-v airbyte:/airbyte \
 		-p ${SERVICE_PORT}:${SERVICE_PORT} \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
@@ -79,12 +76,6 @@ integration-test:				## Run integration test
 	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} -e API_GATEWAY_URL=${API_GATEWAY_URL} \
 		integration-test/pipeline/rest.js --no-usage-report --quiet
-	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
-		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} -e API_GATEWAY_URL=${API_GATEWAY_URL} \
-		integration-test/connector/grpc.js --no-usage-report --quiet
-	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
-		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} -e API_GATEWAY_URL=${API_GATEWAY_URL} \
-		integration-test/connector/rest.js --no-usage-report --quiet
 
 .PHONY: help
 help:       	 				## Show this help

@@ -17,9 +17,10 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
-	pipelinePB "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 type ComponentStatus struct {
@@ -117,7 +118,7 @@ type topologicalSortNode struct {
 func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 
 	if len(d.comps) == 0 {
-		return nil, fmt.Errorf("no components")
+		return [][]*datamodel.Component{}, nil
 	}
 
 	indegreesMap := map[*datamodel.Component]int{}
@@ -167,14 +168,10 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 		return nil, fmt.Errorf("not a valid dag")
 	}
 
-	if d.uf.Count() != 1 {
-		return nil, fmt.Errorf("more than a dag")
-	}
-
 	return ans, nil
 }
 
-func traverseBinding(bindings ItemMemory, path string) (any, error) {
+func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string, path string, dataIndex int, inputKey string) (any, error) {
 
 	// Note: We allow hyphens (-) in the component ID, but `jsonpath` doesn't support it.
 	// This workaround transcodes the component ID into a valid name for the `jsonpath` library.
@@ -183,14 +180,30 @@ func traverseBinding(bindings ItemMemory, path string) (any, error) {
 	componentIDMap := map[string]string{}
 	transcodedBinding := map[string]any{}
 	idx := 0
-	for k := range bindings {
+	for k := range compsMemory {
 		// Generates a valid variable name for jsonpath
 		newID := fmt.Sprintf("comp%d", idx)
 		componentIDMap[k] = newID
-		transcodedBinding[newID] = bindings[k]
+		transcodedBinding[newID] = compsMemory[k][dataIndex]
 		idx = idx + 1
 	}
-	res, err := jsonpath.Get(fmt.Sprintf("$.%s.%s", componentIDMap[componentID], route), transcodedBinding)
+
+	if inputsMemory != nil {
+		componentIDMap[inputKey] = inputKey
+		transcodedBinding[inputKey] = inputsMemory[dataIndex]
+	}
+	if secretsMemory != nil {
+		componentIDMap["secrets"] = "secrets"
+		transcodedBinding["secrets"] = secretsMemory
+	}
+
+	b, _ := json.Marshal(transcodedBinding)
+	var transcodedBindingConverted any
+	_ = json.Unmarshal(b, &transcodedBindingConverted)
+	if _, ok := componentIDMap[componentID]; !ok {
+		return nil, fmt.Errorf("upstream '%s' not found", componentID)
+	}
+	res, err := jsonpath.Get(fmt.Sprintf("$.%s.%s", componentIDMap[componentID], route), transcodedBindingConverted)
 	if err != nil {
 		// check primitive value
 		var ret any
@@ -205,15 +218,15 @@ func traverseBinding(bindings ItemMemory, path string) (any, error) {
 		return res, nil
 	}
 }
-func RenderInput(input any, bindings ItemMemory) (any, error) {
+func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string, inputKey string) (any, error) {
 
-	switch input := input.(type) {
+	switch input := inputTemplate.(type) {
 	case string:
 		if strings.HasPrefix(input, "${") && strings.HasSuffix(input, "}") && strings.Count(input, "${") == 1 {
 			input = input[2:]
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
-			val, err := traverseBinding(bindings, input)
+			val, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, input, dataIndex, inputKey)
 			if err != nil {
 				return nil, err
 			}
@@ -236,7 +249,7 @@ func RenderInput(input any, bindings ItemMemory) (any, error) {
 			}
 
 			ref := strings.TrimSpace(input[2:endIdx])
-			v, err := traverseBinding(bindings, ref)
+			v, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, ref, dataIndex, inputKey)
 			if err != nil {
 				return nil, err
 			}
@@ -258,7 +271,7 @@ func RenderInput(input any, bindings ItemMemory) (any, error) {
 	case map[string]any:
 		val := map[string]any{}
 		for k, v := range input {
-			converted, err := RenderInput(v, bindings)
+			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory, inputKey)
 			if err != nil {
 				return "", err
 			}
@@ -269,7 +282,7 @@ func RenderInput(input any, bindings ItemMemory) (any, error) {
 	case []any:
 		val := []any{}
 		for _, v := range input {
-			converted, err := RenderInput(v, bindings)
+			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory, inputKey)
 			if err != nil {
 				return "", err
 			}
@@ -559,12 +572,8 @@ func SanitizeCondition(cond string) (string, map[string]string, map[string]strin
 func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 	componentIDMap := make(map[string]*datamodel.Component)
 
-	var startComp *datamodel.Component
 	for idx := range components {
 		componentIDMap[components[idx].ID] = components[idx]
-		if components[idx].IsStartComponent() {
-			startComp = components[idx]
-		}
 		if components[idx].IsIteratorComponent() {
 			for idx2 := range components[idx].IteratorComponent.Components {
 				componentIDMap[components[idx].IteratorComponent.Components[idx2].ID] = components[idx].IteratorComponent.Components[idx2]
@@ -572,15 +581,6 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 		}
 	}
 	graph := NewDAG(components)
-
-	// Force all component have start operator upstream
-	if startComp != nil {
-		for idx := range components {
-			if !components[idx].IsStartComponent() {
-				graph.AddEdge(startComp, components[idx])
-			}
-		}
-	}
 
 	for _, component := range components {
 
@@ -641,11 +641,6 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 				}
 			}
 		}
-		if component.IsEndComponent() {
-			for _, v := range component.EndComponent.Fields {
-				parents = append(parents, FindReferenceParent(v.Value)...)
-			}
-		}
 
 		for idx := range parents {
 			if upstream, ok := componentIDMap[parents[idx]]; ok {
@@ -675,80 +670,78 @@ func FindReferenceParent(input string) []string {
 	}
 	return upstreams
 }
-func GenerateTraces(comps [][]*datamodel.Component, memory []ItemMemory, computeTime map[string]float32, batchSize int) (map[string]*pipelinePB.Trace, error) {
-	trace := map[string]*pipelinePB.Trace{}
-	for groupIdx := range comps {
-		for compIdx := range comps[groupIdx] {
-			inputs := []*structpb.Struct{}
-			outputs := []*structpb.Struct{}
-			var traceStatuses []pipelinePB.Trace_Status
-			for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-				if checkComponentCompleted(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_COMPLETED)
-				} else if checkComponentSkipped(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_SKIPPED)
-				} else if checkComponentError(memory[dataIdx][comps[groupIdx][compIdx].ID]) {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_ERROR)
-				} else {
-					traceStatuses = append(traceStatuses, pipelinePB.Trace_STATUS_UNSPECIFIED)
-				}
 
+func GenerateTraces(comps []*datamodel.Component, memory *TriggerMemory) (map[string]*pb.Trace, error) {
+	trace := map[string]*pb.Trace{}
+
+	batchSize := len(memory.Inputs)
+
+	for compIdx := range comps {
+
+		inputs := make([]*structpb.Struct, batchSize)
+		outputs := make([]*structpb.Struct, batchSize)
+		traceStatuses := make([]pb.Trace_Status, batchSize)
+
+		for dataIdx := range memory.Components[comps[compIdx].ID] {
+			m := memory.Components[comps[compIdx].ID][dataIdx]
+			if m.Status.Completed {
+				traceStatuses[dataIdx] = pb.Trace_STATUS_COMPLETED
+			} else if m.Status.Skipped {
+				traceStatuses[dataIdx] = pb.Trace_STATUS_SKIPPED
+			} else {
+				traceStatuses[dataIdx] = pb.Trace_STATUS_ERROR
 			}
 
-			if !comps[groupIdx][compIdx].IsStartComponent() && !comps[groupIdx][compIdx].IsEndComponent() {
-				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["input"]; ok {
-						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["input"])
-						if err != nil {
-							return nil, err
-						}
-						inputStruct := &structpb.Struct{}
-						err = protojson.Unmarshal(data, inputStruct)
-						if err != nil {
-							return nil, err
-						}
-						inputs = append(inputs, inputStruct)
-					}
+			if m.Input != nil {
 
+				in, err := json.Marshal(m.Input)
+				if err != nil {
+					return nil, err
 				}
-				for dataIdx := 0; dataIdx < batchSize; dataIdx++ {
-					if _, ok := memory[dataIdx][comps[groupIdx][compIdx].ID]["output"]; ok {
-						data, err := json.Marshal(memory[dataIdx][comps[groupIdx][compIdx].ID]["output"])
-						if err != nil {
-							return nil, err
-						}
-						outputStruct := &structpb.Struct{}
-						err = protojson.Unmarshal(data, outputStruct)
-						if err != nil {
-							return nil, err
-						}
-						outputs = append(outputs, outputStruct)
-					}
+				inputStruct := &structpb.Struct{}
 
+				err = protojson.Unmarshal(in, inputStruct)
+				if err != nil {
+					return nil, err
 				}
+				inputs[dataIdx] = inputStruct
 			}
 
-			trace[comps[groupIdx][compIdx].ID] = &pipelinePB.Trace{
-				Statuses:             traceStatuses,
-				Inputs:               inputs,
-				Outputs:              outputs,
-				ComputeTimeInSeconds: computeTime[comps[groupIdx][compIdx].ID],
+			if m.Output != nil {
+				out, err := json.Marshal(m.Output)
+				if err != nil {
+					return nil, err
+				}
+				outputStruct := &structpb.Struct{}
+				err = protojson.Unmarshal(out, outputStruct)
+				if err != nil {
+					return nil, err
+				}
+				outputs[dataIdx] = outputStruct
 			}
 		}
+
+		trace[comps[compIdx].ID] = &pb.Trace{
+			Statuses: traceStatuses,
+			Inputs:   inputs,
+			Outputs:  outputs,
+		}
 	}
+
 	return trace, nil
 }
 
-func GenerateGlobalValue(pipelineUID uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]any, error) {
-	global := map[string]any{}
+// TODO: refactor builtin vars
+func GenerateBuiltinVariables(pipelineUID uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]any, error) {
+	vars := map[string]any{}
 
-	global["pipeline"] = map[string]any{
-		"uid":    pipelineUID.String(),
-		"recipe": recipe,
-	}
-	global["owner"] = map[string]any{
-		"uid": uuid.FromStringOrNil(strings.Split(ownerPermalink, "/")[1]),
-	}
+	vars["_PIPELINE_UID"] = pipelineUID.String()
+	vars["_PIPELINE_RECIPE"] = recipe
+	vars["_OWNER_UID"] = uuid.FromStringOrNil(strings.Split(ownerPermalink, "/")[1])
+	vars["_USER_UID"] = "TODO"
+	vars["_HEADER_AUTHORIZATION"] = "TODO"
+	vars["_MODEL_BACKEND"] = fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort)
+	vars["_MGMT_BACKEND"] = fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort)
 
-	return global, nil
+	return vars, nil
 }

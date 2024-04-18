@@ -77,87 +77,34 @@ export const paramsHTTPWithJwt = {
   },
 };
 
-export const dstCSVConnID1 = "some_cool_name_for_connector_1";
-export const dstCSVConnID2 = "some_cool_name_for_connector_2";
 
 export const simpleRecipe = {
   recipe: {
     version:  "v1beta",
+    trigger: {
+      trigger_by_request: {
+        request_fields: {
+          input: {
+            title: "Input",
+            instill_format: "string"
+          }
+        },
+        response_fields: {
+          answer: {
+            title: "Answer",
+            value: "${b01.output.data}"
+          }
+        }
+      },
+    },
     components: [
       {
-        id: "start",
-        start_component: {
-          fields: {
-            input: {
-              title: "Input",
-              instill_format: "string"
-            }
-          }
-        }
-      },
-      {
-        id: "end",
-        end_component: {
-          fields: {
-            answer: {
-              title: "Answer",
-              value: "${start.input}"
-            }
-          }
-        }
-      },
-      {
-        id: "d01",
-        connector_component: {
-          connector_name: `users/admin/connectors/${dstCSVConnID1}`,
-          definition_name: "connector-definitions/airbyte-destination",
+        id: "b01",
+        operator_component: {
+          definition_name: "operator-definitions/base64",
+          task: "TASK_ENCODE",
           input: {
-            data: {
-              text: "${start.input}"
-            }
-          }
-
-        }
-      },
-      {
-        id: "d02",
-        connector_component: {
-          connector_name: `users/admin/connectors/${dstCSVConnID2}`,
-          definition_name: "connector-definitions/airbyte-destination",
-          input: {
-            data: {
-              text: "${start.input}"
-            }
-          }
-        }
-      },
-    ],
-  },
-};
-
-export const simpleRecipeWithoutCSV = {
-  recipe: {
-    version: "v1beta",
-    components: [
-      {
-        id: "start",
-        start_component: {
-          fields: {
-            input: {
-              title: "Input",
-              instill_format: "string"
-            }
-          }
-        }
-      },
-      {
-        id: "end",
-        end_component: {
-          fields: {
-            answer: {
-              title: "Answer",
-              value: "${start.input}"
-            }
+            data: "${request.input}"
           }
         }
       },
@@ -168,50 +115,40 @@ export const simpleRecipeWithoutCSV = {
 export const simpleRecipeDupId = {
   recipe: {
     version: "v1beta",
+    trigger: {
+      trigger_by_request: {
+        request_fields: {
+          input: {
+            title: "Input",
+            instill_format: "string"
+          }
+        },
+        response_fields: {
+          answer: {
+            title: "Answer",
+            value: "${request.input}"
+          }
+        }
+      },
+    },
     components: [
       {
-        id: "start",
-        start_component: {
-          fields: {
-            input: {
-              title: "Input",
-              instill_format: "string"
-            }
-          }
-        }
-      },
-      {
-        id: "end",
-        end_component: {
-          fields: {
-            answer: {
-              title: "Answer",
-              value: "${start.input}"
-            }
-          }
-        }
-      },
-      {
-        id: "d01",
-        connector_component: {
-          connector_name: `users/admin/connectors/${dstCSVConnID1}`,
-          definition_name: "connector-definitions/airbyte-destination",
+        id: "b01",
+        operator_component: {
+          definition_name: "operator-definitions/base64",
+          task: "TASK_ENCODE",
           input: {
-            data: {
-              text: "${start.input}"
-            }
+            data: "${request.input}"
           }
         }
       },
       {
-        id: "d01",
-        connector_component: {
-          connector_name: `users/admin/connectors/${dstCSVConnID2}`,
-          definition_name: "connector-definitions/airbyte-destination",
+        id: "b01",
+        operator_component: {
+          definition_name: "operator-definitions/base64",
+          task: "TASK_ENCODE",
           input: {
-            data: {
-              text: "${start.input}"
-            }
+            data: "${request.input}"
           }
         }
       },

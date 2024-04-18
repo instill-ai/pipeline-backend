@@ -10,7 +10,7 @@ client.load(["../proto/vdp/pipeline/v1beta"], "pipeline_public_service.proto");
 
 export function CheckTrigger(data) {
   group(
-    "Pipelines API: Trigger a pipeline for single image and single model",
+    "Pipelines API: Trigger a pipeline",
     () => {
       client.connect(constant.pipelineGRPCPublicHost, {
         plaintext: true,
@@ -49,7 +49,7 @@ export function CheckTrigger(data) {
           data.metadata
         ),
         {
-          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline (url) response StatusOK`]:
+          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline response StatusOK`]:
             (r) => r.status === grpc.StatusOK,
         }
       );

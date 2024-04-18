@@ -21,12 +21,9 @@ const TaskQueue = "pipeline-backend"
 
 // Worker interface
 type Worker interface {
-	TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowRequest) (*TriggerPipelineWorkflowResponse, error)
-	TriggerStartActivity(ctx context.Context, param *ExecuteTriggerStartActivityRequest) (*ExecuteTriggerStartActivityResponse, error)
-	TriggerEndActivity(ctx context.Context, param *ExecuteTriggerEndActivityRequest) (*ExecuteTriggerEndActivityResponse, error)
-	DAGActivity(ctx context.Context, param *ExecuteDAGActivityRequest) (*ExecuteDAGActivityResponse, error)
-	ConnectorActivity(ctx context.Context, param *ExecuteConnectorActivityRequest) (*ExecuteActivityResponse, error)
-	OperatorActivity(ctx context.Context, param *ExecuteOperatorActivityRequest) (*ExecuteActivityResponse, error)
+	TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error
+	ConnectorActivity(ctx context.Context, param *ConnectorActivityParam) error
+	OperatorActivity(ctx context.Context, param *OperatorActivityParam) error
 }
 
 // worker represents resources required to run Temporal workflow and activity
@@ -39,14 +36,14 @@ type worker struct {
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
-func NewWorker(r repository.Repository, rd *redis.Client, i api.WriteAPI) Worker {
+func NewWorker(r repository.Repository, rd *redis.Client, i api.WriteAPI, u component.UsageHandler) Worker {
 
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &worker{
 		repository:          r,
 		redisClient:         rd,
 		influxDBWriteClient: i,
-		operator:            operator.Init(logger),
-		connector:           connector.Init(logger, utils.GetConnectorOptions()),
+		operator:            operator.Init(logger, u),
+		connector:           connector.Init(logger, u, utils.GetConnectorOptions()),
 	}
 }

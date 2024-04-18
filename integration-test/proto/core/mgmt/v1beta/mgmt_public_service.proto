@@ -61,7 +61,6 @@ service MgmtPublicService {
       body: "*"
     };
     option (google.api.method_signature) = "namespace";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Get the authenticated user
@@ -99,7 +98,6 @@ service MgmtPublicService {
   rpc GetUser(GetUserRequest) returns (GetUserResponse) {
     option (google.api.http) = {get: "/v1beta/{name=users/*}"};
     option (google.api.method_signature) = "name";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // List user memberships
@@ -108,7 +106,6 @@ service MgmtPublicService {
   rpc ListUserMemberships(ListUserMembershipsRequest) returns (ListUserMembershipsResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=users/*}/memberships"};
     option (google.api.method_signature) = "parent";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Get a user membership
@@ -118,7 +115,6 @@ service MgmtPublicService {
   rpc GetUserMembership(GetUserMembershipRequest) returns (GetUserMembershipResponse) {
     option (google.api.http) = {get: "/v1beta/{name=users/*/memberships/*}"};
     option (google.api.method_signature) = "name";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Update a user membership
@@ -130,7 +126,6 @@ service MgmtPublicService {
       body: "membership"
     };
     option (google.api.method_signature) = "membership,update_mask";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Delete a user membership
@@ -146,7 +141,6 @@ service MgmtPublicService {
   // Returns a paginated list of organizations.
   rpc ListOrganizations(ListOrganizationsRequest) returns (ListOrganizationsResponse) {
     option (google.api.http) = {get: "/v1beta/organizations"};
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Create an organization
@@ -158,7 +152,6 @@ service MgmtPublicService {
       body: "organization"
     };
     option (google.api.method_signature) = "organization";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Get an organization
@@ -167,7 +160,6 @@ service MgmtPublicService {
   rpc GetOrganization(GetOrganizationRequest) returns (GetOrganizationResponse) {
     option (google.api.http) = {get: "/v1beta/{name=organizations/*}"};
     option (google.api.method_signature) = "name";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Update an organization
@@ -182,7 +174,6 @@ service MgmtPublicService {
       body: "organization"
     };
     option (google.api.method_signature) = "organization,update_mask";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Delete an organization
@@ -191,7 +182,6 @@ service MgmtPublicService {
   rpc DeleteOrganization(DeleteOrganizationRequest) returns (DeleteOrganizationResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=organizations/*}"};
     option (google.api.method_signature) = "name";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // List organization memberships
@@ -200,7 +190,6 @@ service MgmtPublicService {
   rpc ListOrganizationMemberships(ListOrganizationMembershipsRequest) returns (ListOrganizationMembershipsResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/memberships"};
     option (google.api.method_signature) = "parent";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Get a an organization membership
@@ -209,7 +198,6 @@ service MgmtPublicService {
   rpc GetOrganizationMembership(GetOrganizationMembershipRequest) returns (GetOrganizationMembershipResponse) {
     option (google.api.http) = {get: "/v1beta/{name=organizations/*/memberships/*}"};
     option (google.api.method_signature) = "name";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Uppdate an organization membership
@@ -221,7 +209,6 @@ service MgmtPublicService {
       body: "membership"
     };
     option (google.api.method_signature) = "membership,update_mask";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Get the subscription of the authenticated user
@@ -229,7 +216,6 @@ service MgmtPublicService {
   // Returns the subscription details of the authenticated user.
   rpc GetAuthenticatedUserSubscription(GetAuthenticatedUserSubscriptionRequest) returns (GetAuthenticatedUserSubscriptionResponse) {
     option (google.api.http) = {get: "/v1beta/user/subscription"};
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Get an organization subscription
@@ -238,7 +224,6 @@ service MgmtPublicService {
   rpc GetOrganizationSubscription(GetOrganizationSubscriptionRequest) returns (GetOrganizationSubscriptionResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/subscription"};
     option (google.api.method_signature) = "parent";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Create an API token
@@ -250,7 +235,6 @@ service MgmtPublicService {
       body: "token"
     };
     option (google.api.method_signature) = "token";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // List API tokens
@@ -258,7 +242,6 @@ service MgmtPublicService {
   // Returns a paginated list of the API tokens of the authenticated user.
   rpc ListTokens(ListTokensRequest) returns (ListTokensResponse) {
     option (google.api.http) = {get: "/v1beta/tokens"};
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Get an API token
@@ -267,7 +250,6 @@ service MgmtPublicService {
   rpc GetToken(GetTokenRequest) returns (GetTokenResponse) {
     option (google.api.http) = {get: "/v1beta/{name=tokens/*}"};
     option (google.api.method_signature) = "name";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Delete an API token
@@ -276,7 +258,6 @@ service MgmtPublicService {
   rpc DeleteToken(DeleteTokenRequest) returns (DeleteTokenResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=tokens/*}"};
     option (google.api.method_signature) = "name";
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Validate an API token.
@@ -284,6 +265,22 @@ service MgmtPublicService {
   // Validates an API token.
   rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {
     option (google.api.http) = {post: "/v1beta/validate_token"};
+  }
+
+  // Get the remaining Instill Credit
+  //
+  // On Instill Cloud, users can use Instill Credit to execute pre-configured
+  // AI connectors. This simplifies the pipeline setup, removing the need to
+  // subscribe to third-party AI services. This endpoint returns the remaining
+  // Instill Credit of a given user or organization. The requested credit owner
+  // must be either the authenticated user or an organization they belong to.
+  //
+  // On Instill Core, this endpoint will return a 404 Not Found status.
+  rpc GetRemainingCredit(GetRemainingCreditRequest) returns (GetRemainingCreditResponse) {
+    option (google.api.http) = {get: "/v1beta/{owner=*/*}/credit"};
+    option (google.api.method_signature) = "owner";
+    // TODO we'll wait until the Credit feature is completed but this should be
+    // publicly available.
     option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
@@ -292,7 +289,6 @@ service MgmtPublicService {
   // Returns a paginated list of pipeline executions.
   rpc ListPipelineTriggerRecords(ListPipelineTriggerRecordsRequest) returns (ListPipelineTriggerRecordsResponse) {
     option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/triggers"};
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // List pipeline trigger metrics
@@ -300,7 +296,6 @@ service MgmtPublicService {
   // Returns a paginated list of pipeline executions aggregated by pipeline ID.
   rpc ListPipelineTriggerTableRecords(ListPipelineTriggerTableRecordsRequest) returns (ListPipelineTriggerTableRecordsResponse) {
     option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/tables"};
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // List pipeline trigger computation time charts
@@ -309,32 +304,6 @@ service MgmtPublicService {
   // by pipeline and time frames.
   rpc ListPipelineTriggerChartRecords(ListPipelineTriggerChartRecordsRequest) returns (ListPipelineTriggerChartRecordsResponse) {
     option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/charts"};
-    option (google.api.method_visibility).restriction = "INTERNAL";
-  }
-
-  // List connector executions
-  //
-  // Returns a paginated list of connector executions.
-  rpc ListConnectorExecuteRecords(ListConnectorExecuteRecordsRequest) returns (ListConnectorExecuteRecordsResponse) {
-    option (google.api.http) = {get: "/v1beta/metrics/vdp/connector/executes"};
-    option (google.api.method_visibility).restriction = "INTERNAL";
-  }
-
-  // List connector execution metrics
-  //
-  // Returns a paginated list of connector executions aggregated by connector.
-  rpc ListConnectorExecuteTableRecords(ListConnectorExecuteTableRecordsRequest) returns (ListConnectorExecuteTableRecordsResponse) {
-    option (google.api.http) = {get: "/v1beta/metrics/vdp/connector/tables"};
-    option (google.api.method_visibility).restriction = "INTERNAL";
-  }
-
-  // List connector execution computation time charts
-  //
-  // Returns a paginated list with connector execution times, aggregated by
-  // connector and time frames.
-  rpc ListConnectorExecuteChartRecords(ListConnectorExecuteChartRecordsRequest) returns (ListConnectorExecuteChartRecordsResponse) {
-    option (google.api.http) = {get: "/v1beta/metrics/vdp/connector/charts"};
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Auth endpoints are only used in the community edition and the OpenAPI

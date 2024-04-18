@@ -99,8 +99,6 @@ func AsGRPCError(err error) error {
 		errors.Is(err, repository.ErrOwnerTypeNotMatch),
 		errors.Is(err, repository.ErrPageTokenDecode),
 		errors.Is(err, bcrypt.ErrMismatchedHashAndPassword),
-		errors.Is(err, service.ErrConnectorNameError),
-		errors.Is(err, service.ErrConnectorNotFound),
 		errors.Is(err, handler.ErrCheckUpdateImmutableFields),
 		errors.Is(err, handler.ErrCheckOutputOnlyFields),
 		errors.Is(err, handler.ErrCheckRequiredFields),
@@ -108,7 +106,6 @@ func AsGRPCError(err error) error {
 		errors.Is(err, handler.ErrFieldMask),
 		errors.Is(err, handler.ErrResourceID),
 		errors.Is(err, handler.ErrSematicVersion),
-		errors.Is(err, handler.ErrConnectorNamespace),
 		errors.Is(err, handler.ErrUpdateMask):
 
 		code = codes.InvalidArgument

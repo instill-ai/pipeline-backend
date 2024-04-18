@@ -5,10 +5,6 @@ ARG SERVICE_NAME
 
 WORKDIR /${SERVICE_NAME}
 
-# -- DinD
-
-COPY --from=docker:dind-rootless --chown=nobody:nogroup /usr/local/bin/docker /usr/local/bin
-
 # -- install 3rd-party
 
 ARG TARGETOS TARGETARCH K6_VERSION
@@ -29,12 +25,6 @@ COPY . .
 RUN chown -R nobody:nogroup /go
 ENV GOCACHE /go/.cache/go-build
 ENV GOENV /go/.config/go/env
-
-# -- set up mounting points
-
-RUN mkdir /etc/vdp && chown -R nobody:nogroup /etc/vdp
-RUN mkdir /vdp && chown -R nobody:nogroup /vdp
-RUN mkdir /airbyte && chown -R nobody:nogroup /airbyte
 
 RUN apt update && apt install poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev -y
 

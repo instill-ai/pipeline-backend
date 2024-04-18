@@ -87,11 +87,8 @@ func main() {
 
 	// Update component definitions and connectors based on latest version of
 	// definitions.json.
-	connDefs := connector.Init(logger, utils.GetConnectorOptions()).ListConnectorDefinitions()
+	connDefs := connector.Init(logger, nil, utils.GetConnectorOptions()).ListConnectorDefinitions(true)
 	for _, connDef := range connDefs {
-		if connDef.Tombstone {
-			db.Unscoped().Model(&datamodel.Connector{}).Where("connector_definition_uid = ?", connDef.Uid).Update("tombstone", true)
-		}
 
 		cd := &pb.ComponentDefinition{
 			Type: service.ConnectorTypeToComponentType[connDef.Type],
@@ -105,7 +102,7 @@ func main() {
 		}
 	}
 
-	opDefs := operator.Init(logger).ListOperatorDefinitions()
+	opDefs := operator.Init(logger, nil).ListOperatorDefinitions(true)
 	for _, opDef := range opDefs {
 		cd := &pb.ComponentDefinition{
 			Type: pb.ComponentType_COMPONENT_TYPE_OPERATOR,
@@ -125,6 +122,8 @@ type definition interface {
 	GetUid() string
 	GetId() string
 	GetVersion() string
+	GetTombstone() bool
+	GetPublic() bool
 }
 
 func updateComponentDefinition(ctx context.Context, cd *pb.ComponentDefinition, repo repository.Repository) error {
@@ -170,10 +169,15 @@ func updateComponentDefinition(ctx context.Context, cd *pb.ComponentDefinition, 
 // A component definition is only upserted when either of these conditions is
 // satisfied:
 //   - There's a version bump in the definition.
+//   - The tombstone tag has changed.
 //   - The feature score of the component (defined in the codebase as this isn't
 //     a public property of the definition) has changed.
 func shouldSkipUpsert(def definition, inDB *datamodel.ComponentDefinition) (bool, error) {
 	if inDB == nil {
+		return false, nil
+	}
+
+	if inDB.IsVisible != (def.GetPublic() && !def.GetTombstone()) {
 		return false, nil
 	}
 
