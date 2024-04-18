@@ -7,7 +7,6 @@ import (
 
 	"go.opentelemetry.io/otel"
 
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	healthcheckPB "github.com/instill-ai/protogen-go/common/healthcheck/v1beta"
@@ -34,7 +33,6 @@ type TriggerPipelineRequestInterface interface {
 
 // NewPublicHandler initiates a handler instance
 func NewPublicHandler(ctx context.Context, s service.Service) pb.PipelinePublicServiceServer {
-	datamodel.InitJSONSchema(ctx)
 	return &PublicHandler{
 		service: s,
 	}
@@ -74,7 +72,6 @@ type PrivateHandler struct {
 
 // NewPrivateHandler initiates a handler instance
 func NewPrivateHandler(ctx context.Context, s service.Service) pb.PipelinePrivateServiceServer {
-	datamodel.InitJSONSchema(ctx)
 	return &PrivateHandler{
 		service: s,
 	}
