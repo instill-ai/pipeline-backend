@@ -536,7 +536,7 @@ func (w *worker) processConnection(memory *TriggerMemory, connection *structpb.S
 	if err != nil {
 		return nil, err
 	}
-	// TODO
+
 	conStruct, err := RenderInput(conTemplateStruct, 0, nil, nil, memory.Secrets, "")
 	if err != nil {
 		return nil, err

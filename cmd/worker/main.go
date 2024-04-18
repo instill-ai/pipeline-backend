@@ -17,6 +17,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/usage"
 	"github.com/instill-ai/x/temporal"
 	"github.com/instill-ai/x/zapadapter"
 	"github.com/redis/go-redis/v9"
@@ -149,7 +150,9 @@ func main() {
 		}
 	}()
 
-	cw := pipelineWorker.NewWorker(repository, redisClient, influxDBWriteClient)
+	usageHandler := usage.UsageHandler{}
+
+	cw := pipelineWorker.NewWorker(repository, redisClient, influxDBWriteClient, usageHandler)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
 		MaxConcurrentActivityExecutionSize: 2,

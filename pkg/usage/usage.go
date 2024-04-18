@@ -420,3 +420,14 @@ func (u *usage) TriggerSingleReporter(ctx context.Context) {
 		logger.Error(fmt.Sprintf("unable to trigger single reporter: %v\n", err))
 	}
 }
+
+// TODO: we should collect the component usage by this handler
+type UsageHandler struct{}
+
+func (u UsageHandler) Check() error {
+	return nil
+}
+
+func (u UsageHandler) Collect() error {
+	return nil
+}

@@ -93,21 +93,23 @@ type service struct {
 // NewService initiates a service instance
 func NewService(
 	r repository.Repository,
-	u mgmtPB.MgmtPrivateServiceClient,
+	m mgmtPB.MgmtPrivateServiceClient,
 	rc *redis.Client,
 	t client.Client,
 	i api.WriteAPI,
 	acl *acl.ACLClient,
+	u component.UsageHandler,
 ) Service {
 	logger, _ := logger.GetZapLogger(context.Background())
+
 	return &service{
 		repository:               r,
-		mgmtPrivateServiceClient: u,
+		mgmtPrivateServiceClient: m,
 		redisClient:              rc,
 		temporalClient:           t,
 		influxDBWriteClient:      i,
-		operator:                 operator.Init(logger),
-		connector:                connector.Init(logger, utils.GetConnectorOptions()),
+		operator:                 operator.Init(logger, u),
+		connector:                connector.Init(logger, u, utils.GetConnectorOptions()),
 		aclClient:                acl,
 	}
 }
