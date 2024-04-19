@@ -1,4 +1,4 @@
-package worker
+package recipe
 
 import (
 	"encoding/json"
@@ -22,13 +22,6 @@ import (
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
-
-type ComponentStatus struct {
-	Started   bool
-	Completed bool
-	Skipped   bool
-	Error     bool
-}
 
 type unionFind struct {
 	roots []int
