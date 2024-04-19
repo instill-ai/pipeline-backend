@@ -39,7 +39,7 @@ require (
 	go.temporal.io/sdk v1.21.0
 	go.uber.org/zap v1.26.0
 	golang.org/x/mod v0.12.0
-	golang.org/x/net v0.22.0
+	golang.org/x/net v0.23.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/grpc v1.61.1
