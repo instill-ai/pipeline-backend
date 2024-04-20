@@ -948,15 +948,20 @@ func (s *service) triggerPipeline(
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{
-			MemoryRedisKey:     redisKey,
-			PipelineID:         pipelineID,
-			PipelineUID:        pipelineUID,
-			PipelineReleaseID:  pipelineReleaseID,
-			PipelineReleaseUID: pipelineReleaseUID,
-			OwnerPermalink:     ns.Permalink(),
-			UserUID:            userUID,
-			Mode:               mgmtPB.Mode_MODE_SYNC,
-			InputKey:           "request",
+			MemoryRedisKey: redisKey,
+			SystemVariables: recipe.SystemVariables{
+				PipelineID:          pipelineID,
+				PipelineUID:         pipelineUID,
+				PipelineReleaseID:   pipelineReleaseID,
+				PipelineReleaseUID:  pipelineReleaseUID,
+				PipelineRecipe:      r,
+				PipelineOwnerType:   ns.NsType,
+				PipelineOwnerUID:    ns.NsUID,
+				PipelineUserUID:     userUID,
+				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+			},
+			Mode:     mgmtPB.Mode_MODE_SYNC,
+			InputKey: "request",
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1015,15 +1020,20 @@ func (s *service) triggerAsyncPipeline(
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{
-			MemoryRedisKey:     redisKey,
-			PipelineID:         pipelineID,
-			PipelineUID:        pipelineUID,
-			PipelineReleaseID:  pipelineReleaseID,
-			PipelineReleaseUID: pipelineReleaseUID,
-			OwnerPermalink:     ns.Permalink(),
-			UserUID:            userUID,
-			Mode:               mgmtPB.Mode_MODE_ASYNC,
-			InputKey:           "request",
+			MemoryRedisKey: redisKey,
+			SystemVariables: recipe.SystemVariables{
+				PipelineID:          pipelineID,
+				PipelineUID:         pipelineUID,
+				PipelineReleaseID:   pipelineReleaseID,
+				PipelineReleaseUID:  pipelineReleaseUID,
+				PipelineRecipe:      r,
+				PipelineOwnerType:   ns.NsType,
+				PipelineOwnerUID:    ns.NsUID,
+				PipelineUserUID:     userUID,
+				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+			},
+			Mode:     mgmtPB.Mode_MODE_ASYNC,
+			InputKey: "request",
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))

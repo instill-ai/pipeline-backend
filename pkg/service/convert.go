@@ -19,6 +19,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -51,7 +52,8 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.connector.GetConnectorDefinitionByID(id, nil)
+
+		def, err := s.connector.GetConnectorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -63,7 +65,7 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.connector.GetConnectorDefinitionByID(id, nil)
+		def, err := s.connector.GetConnectorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -75,7 +77,7 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.operator.GetOperatorDefinitionByID(id, nil)
+		def, err := s.operator.GetOperatorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -87,7 +89,7 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.operator.GetOperatorDefinitionByID(id, nil)
+		def, err := s.operator.GetOperatorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -124,7 +126,7 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil)
+		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -135,7 +137,7 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil)
+		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -146,7 +148,7 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.operator.GetOperatorDefinitionByUID(uid, nil)
+		def, err := s.operator.GetOperatorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -157,7 +159,7 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.operator.GetOperatorDefinitionByUID(uid, nil)
+		def, err := s.operator.GetOperatorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -171,7 +173,14 @@ func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pb.O
 	if err != nil {
 		return err
 	}
-	def, err := s.operator.GetOperatorDefinitionByUID(uid, comp)
+	vars, err := recipe.GenerateSystemVariables(recipe.SystemVariables{
+		PipelineUserUID:     uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+		HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+	})
+	if err != nil {
+		return err
+	}
+	def, err := s.operator.GetOperatorDefinitionByUID(uid, vars, comp)
 	if err != nil {
 		return err
 	}
@@ -185,7 +194,14 @@ func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pb.
 	if err != nil {
 		return err
 	}
-	def, err := s.connector.GetConnectorDefinitionByUID(uid, comp)
+	vars, err := recipe.GenerateSystemVariables(recipe.SystemVariables{
+		PipelineUserUID:     uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
+		HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+	})
+	if err != nil {
+		return err
+	}
+	def, err := s.connector.GetConnectorDefinitionByUID(uid, vars, comp)
 	if err != nil {
 		return err
 	}

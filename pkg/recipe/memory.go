@@ -13,11 +13,12 @@ import (
 )
 
 type TriggerMemory struct {
-	Components map[string]ComponentsMemory `json:"components"`
-	Inputs     []InputsMemory              `json:"inputs"`
-	Secrets    map[string]string           `json:"secrets"`
-	Vars       map[string]any              `json:"vars"`
-	InputKey   string                      `json:"input_key"`
+	Components      map[string]ComponentsMemory `json:"components"`
+	Inputs          []InputsMemory              `json:"inputs"`
+	Secrets         map[string]string           `json:"secrets"`
+	Vars            map[string]any              `json:"vars"`
+	SystemVariables SystemVariables             `json:"sys_vars"`
+	InputKey        string                      `json:"input_key"`
 	// Authorization string
 }
 

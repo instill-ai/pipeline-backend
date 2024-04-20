@@ -11,7 +11,6 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 
-	connector "github.com/instill-ai/component/pkg/connector"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
@@ -127,9 +126,4 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 		},
 		time.Now(),
 	)
-}
-
-func GetConnectorOptions() connector.ConnectorOptions {
-	return connector.ConnectorOptions{}
-
 }

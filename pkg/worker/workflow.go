@@ -18,6 +18,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
@@ -28,40 +29,37 @@ import (
 )
 
 type TriggerPipelineWorkflowParam struct {
-	MemoryRedisKey     string
-	PipelineID         string
-	PipelineUID        uuid.UUID
-	PipelineReleaseID  string
-	PipelineReleaseUID uuid.UUID
-	OwnerPermalink     string
-	UserUID            uuid.UUID
-	Mode               mgmtPB.Mode
-	InputKey           string
+	MemoryRedisKey  string
+	SystemVariables recipe.SystemVariables
+	Mode            mgmtPB.Mode
+	InputKey        string
 }
 
 // ConnectorActivityParam represents the parameters for TriggerActivity
 type ConnectorActivityParam struct {
-	MemoryRedisKey string
-	ID             string
-	AncestorIDs    []string
-	Condition      *string
-	Input          *structpb.Struct
-	Connection     *structpb.Struct
-	DefinitionUID  uuid.UUID
-	Task           string
-	InputKey       string
+	MemoryRedisKey  string
+	ID              string
+	AncestorIDs     []string
+	Condition       *string
+	Input           *structpb.Struct
+	Connection      *structpb.Struct
+	DefinitionUID   uuid.UUID
+	Task            string
+	InputKey        string
+	SystemVariables recipe.SystemVariables
 }
 
 // OperatorActivityParam represents the parameters for TriggerActivity
 type OperatorActivityParam struct {
-	MemoryRedisKey string
-	ID             string
-	AncestorIDs    []string
-	Condition      *string
-	Input          *structpb.Struct
-	DefinitionUID  uuid.UUID
-	Task           string
-	InputKey       string
+	MemoryRedisKey  string
+	ID              string
+	AncestorIDs     []string
+	Condition       *string
+	Input           *structpb.Struct
+	DefinitionUID   uuid.UUID
+	Task            string
+	InputKey        string
+	SystemVariables recipe.SystemVariables
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -81,27 +79,26 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
 
-	namespace := strings.Split(param.OwnerPermalink, "/")[0]
 	var ownerType mgmtPB.OwnerType
-	switch namespace {
-	case "organizations":
+	switch param.SystemVariables.PipelineOwnerType {
+	case resource.Organization:
 		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
-	case "users":
+	case resource.User:
 		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
 	default:
 		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
 	}
 
 	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           strings.Split(param.OwnerPermalink, "/")[1],
+		OwnerUID:           param.SystemVariables.PipelineOwnerUID.String(),
 		OwnerType:          ownerType,
-		UserUID:            param.UserUID.String(),
+		UserUID:            param.SystemVariables.PipelineUserUID.String(),
 		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		TriggerMode:        param.Mode,
-		PipelineID:         param.PipelineID,
-		PipelineUID:        param.PipelineUID.String(),
-		PipelineReleaseID:  param.PipelineReleaseID,
-		PipelineReleaseUID: param.PipelineReleaseUID.String(),
+		PipelineID:         param.SystemVariables.PipelineID,
+		PipelineUID:        param.SystemVariables.PipelineUID.String(),
+		PipelineReleaseID:  param.SystemVariables.PipelineReleaseID,
+		PipelineReleaseUID: param.SystemVariables.PipelineReleaseUID.String(),
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
@@ -138,27 +135,29 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			switch {
 			case comp.IsConnectorComponent():
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ConnectorActivityParam{
-					ID:             comp.ID,
-					AncestorIDs:    dag.GetAncestorIDs(comp.ID),
-					MemoryRedisKey: param.MemoryRedisKey,
-					DefinitionUID:  uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1]),
-					Task:           comp.ConnectorComponent.Task,
-					Input:          comp.ConnectorComponent.Input,
-					Connection:     comp.ConnectorComponent.Connection,
-					Condition:      comp.ConnectorComponent.Condition,
-					InputKey:       param.InputKey,
+					ID:              comp.ID,
+					AncestorIDs:     dag.GetAncestorIDs(comp.ID),
+					MemoryRedisKey:  param.MemoryRedisKey,
+					DefinitionUID:   uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1]),
+					Task:            comp.ConnectorComponent.Task,
+					Input:           comp.ConnectorComponent.Input,
+					Connection:      comp.ConnectorComponent.Connection,
+					Condition:       comp.ConnectorComponent.Condition,
+					InputKey:        param.InputKey,
+					SystemVariables: param.SystemVariables,
 				}))
 
 			case comp.IsOperatorComponent():
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.OperatorActivity, &OperatorActivityParam{
-					ID:             comp.ID,
-					AncestorIDs:    dag.GetAncestorIDs(comp.ID),
-					MemoryRedisKey: param.MemoryRedisKey,
-					DefinitionUID:  uuid.FromStringOrNil(strings.Split(comp.OperatorComponent.DefinitionName, "/")[1]),
-					Task:           comp.OperatorComponent.Task,
-					Input:          comp.OperatorComponent.Input,
-					Condition:      comp.OperatorComponent.Condition,
-					InputKey:       param.InputKey,
+					ID:              comp.ID,
+					AncestorIDs:     dag.GetAncestorIDs(comp.ID),
+					MemoryRedisKey:  param.MemoryRedisKey,
+					DefinitionUID:   uuid.FromStringOrNil(strings.Split(comp.OperatorComponent.DefinitionName, "/")[1]),
+					Task:            comp.OperatorComponent.Task,
+					Input:           comp.OperatorComponent.Input,
+					Condition:       comp.OperatorComponent.Condition,
+					InputKey:        param.InputKey,
+					SystemVariables: param.SystemVariables,
 				}))
 
 			case comp.IsIteratorComponent():
@@ -225,7 +224,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							Components: comp.IteratorComponent.Components,
 						},
 						subM,
-						param.OwnerPermalink,
+						fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwnerType, param.SystemVariables.PipelineOwnerUID),
 					)
 					if err != nil {
 						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -236,14 +235,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						ctx,
 						"TriggerPipelineWorkflow",
 						&TriggerPipelineWorkflowParam{
-							MemoryRedisKey:     iteratorRedisKey,
-							PipelineID:         param.PipelineID,
-							PipelineUID:        param.PipelineUID,
-							PipelineReleaseID:  param.PipelineReleaseID,
-							PipelineReleaseUID: param.PipelineReleaseUID,
-							OwnerPermalink:     param.OwnerPermalink,
-							UserUID:            param.UserUID,
-							Mode:               mgmtPB.Mode_MODE_SYNC,
+							MemoryRedisKey:  iteratorRedisKey,
+							SystemVariables: param.SystemVariables,
+							Mode:            mgmtPB.Mode_MODE_SYNC,
 						}).Get(ctx, nil)
 					if err != nil {
 						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -328,14 +322,17 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivity
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	// TODO
-	// vars: header_authorization, instill_user_uid, instill_model_backend, instill_mgmt_backend
-	execution, err := w.connector.CreateExecution(param.DefinitionUID, param.Task, con, logger)
+	vars, err := recipe.GenerateSystemVariables(param.SystemVariables)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	compOutputs, err := execution.ExecuteWithValidation(compInputs)
+	execution, err := w.connector.CreateExecution(param.DefinitionUID, vars, con, param.Task)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+	}
+
+	compOutputs, err := execution.Execute(compInputs)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
@@ -369,14 +366,17 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	// TODO
-	// vars: header_authorization, instill_user_uid, instill_model_backend, instill_mgmt_backend
-	execution, err := w.operator.CreateExecution(param.DefinitionUID, param.Task, nil, logger)
+	vars, err := recipe.GenerateSystemVariables(param.SystemVariables)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	compOutputs, err := execution.ExecuteWithValidation(compInputs)
+	execution, err := w.operator.CreateExecution(param.DefinitionUID, vars, param.Task)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, OperatorActivityError)
+	}
+
+	compOutputs, err := execution.Execute(compInputs)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
@@ -449,30 +449,7 @@ func (w *worker) processInput(memory *recipe.TriggerMemory, id string, ancestorI
 		if memory.Components[id][idx].Status.Started {
 
 			var compInputTemplateJSON []byte
-			var compInputTemplate *structpb.Struct
-
-			compInputTemplate = input
-			// TODO: remove this hardcode injection
-			// blockchain-numbers
-			if definitionUID.String() == "70d8664a-d512-4517-a5e8-5d4da81756a7" {
-
-				metadata, err := structpb.NewValue(map[string]any{
-					"pipeline": map[string]any{
-						"uid": "${vars._PIPELINE_UID}",
-						"r":   "${vars._PIPELINE_RECIPE}",
-					},
-					"owner": map[string]any{
-						"uid": "${vars._OWNER_UID}",
-					},
-				})
-				if err != nil {
-					return nil, nil, err
-				}
-				if compInputTemplate == nil {
-					compInputTemplate = &structpb.Struct{}
-				}
-				compInputTemplate.Fields["metadata"] = metadata
-			}
+			compInputTemplate := input
 
 			compInputTemplateJSON, err := protojson.Marshal(compInputTemplate)
 			if err != nil {
