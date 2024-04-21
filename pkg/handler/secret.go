@@ -16,7 +16,6 @@ import (
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
-	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/checkfield"
 
@@ -26,31 +25,22 @@ import (
 
 type CreateNamespaceSecretRequestInterface interface {
 	GetSecret() *pb.Secret
+	GetParent() string
 }
 
 func (h *PublicHandler) CreateUserSecret(ctx context.Context, req *pb.CreateUserSecretRequest) (resp *pb.CreateUserSecretResponse, err error) {
-	ns, err := h.service.GetCtxUserNamespace(ctx)
-	if err != nil {
-		return nil, err
-	}
 	resp = &pb.CreateUserSecretResponse{}
-	resp.Secret, err = h.createNamespaceSecret(ctx, ns, req)
+	resp.Secret, err = h.createNamespaceSecret(ctx, req)
 	return resp, err
 }
 
 func (h *PublicHandler) CreateOrganizationSecret(ctx context.Context, req *pb.CreateOrganizationSecretRequest) (resp *pb.CreateOrganizationSecretResponse, err error) {
-
-	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
-	if err != nil {
-		return nil, err
-	}
-
 	resp = &pb.CreateOrganizationSecretResponse{}
-	resp.Secret, err = h.createNamespaceSecret(ctx, ns, req)
+	resp.Secret, err = h.createNamespaceSecret(ctx, req)
 	return resp, err
 }
 
-func (h *PublicHandler) createNamespaceSecret(ctx context.Context, ns resource.Namespace, req CreateNamespaceSecretRequestInterface) (secret *pb.Secret, err error) {
+func (h *PublicHandler) createNamespaceSecret(ctx context.Context, req CreateNamespaceSecretRequestInterface) (secret *pb.Secret, err error) {
 
 	eventName := "CreateNamespaceSecret"
 
@@ -78,6 +68,12 @@ func (h *PublicHandler) createNamespaceSecret(ctx context.Context, ns resource.N
 	if err := checkfield.CheckResourceID(req.GetSecret().GetId()); err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, ErrResourceID
+	}
+
+	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
 	}
 
 	if err := authenticateUser(ctx, false); err != nil {
@@ -113,29 +109,22 @@ func (h *PublicHandler) createNamespaceSecret(ctx context.Context, ns resource.N
 type ListNamespaceSecretsRequestInterface interface {
 	GetPageSize() int32
 	GetPageToken() string
+	GetParent() string
 }
 
 func (h *PublicHandler) ListUserSecrets(ctx context.Context, req *pb.ListUserSecretsRequest) (resp *pb.ListUserSecretsResponse, err error) {
-	ns, err := h.service.GetCtxUserNamespace(ctx)
-	if err != nil {
-		return nil, err
-	}
 	resp = &pb.ListUserSecretsResponse{}
-	resp.Secrets, resp.NextPageToken, resp.TotalSize, err = h.listNamespaceSecrets(ctx, ns, req)
+	resp.Secrets, resp.NextPageToken, resp.TotalSize, err = h.listNamespaceSecrets(ctx, req)
 	return resp, err
 }
 
 func (h *PublicHandler) ListOrganizationSecrets(ctx context.Context, req *pb.ListOrganizationSecretsRequest) (resp *pb.ListOrganizationSecretsResponse, err error) {
-	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
-	if err != nil {
-		return nil, err
-	}
 	resp = &pb.ListOrganizationSecretsResponse{}
-	resp.Secrets, resp.NextPageToken, resp.TotalSize, err = h.listNamespaceSecrets(ctx, ns, req)
+	resp.Secrets, resp.NextPageToken, resp.TotalSize, err = h.listNamespaceSecrets(ctx, req)
 	return resp, err
 }
 
-func (h *PublicHandler) listNamespaceSecrets(ctx context.Context, ns resource.Namespace, req ListNamespaceSecretsRequestInterface) (pbSecrets []*pb.Secret, nextPageToken string, totalSize int32, err error) {
+func (h *PublicHandler) listNamespaceSecrets(ctx context.Context, req ListNamespaceSecretsRequestInterface) (pbSecrets []*pb.Secret, nextPageToken string, totalSize int32, err error) {
 
 	eventName := "ListNamespaceSecrets"
 
@@ -146,6 +135,12 @@ func (h *PublicHandler) listNamespaceSecrets(ctx context.Context, ns resource.Na
 	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
+
+	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, "", 0, err
+	}
 
 	if err := authenticateUser(ctx, true); err != nil {
 		span.SetStatus(1, err.Error())
