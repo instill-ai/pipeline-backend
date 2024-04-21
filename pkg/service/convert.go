@@ -366,6 +366,52 @@ func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe) 
 	return nil
 }
 
+func (s *service) checkCredentialFields(ctx context.Context, uid uuid.UUID, connection *structpb.Struct, prefix string) error {
+
+	for k, v := range connection.GetFields() {
+		key := prefix + k
+		if ok, err := s.connector.IsCredentialField(uid, key); err == nil && ok {
+			if v.GetStringValue() != "" {
+				if !strings.HasPrefix(v.GetStringValue(), "${") || !strings.HasSuffix(v.GetStringValue(), "}") {
+					return ErrCanNotUsePlaintextSecret
+				}
+			}
+		}
+		if v.GetStructValue() != nil {
+			err := s.checkCredentialFields(ctx, uid, v.GetStructValue(), fmt.Sprintf("%s.", key))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+func (s *service) checkCredential(ctx context.Context, recipe *datamodel.Recipe) error {
+
+	for _, comp := range recipe.Components {
+		if comp.IsConnectorComponent() {
+			defUID := uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1])
+			connection := comp.ConnectorComponent.Connection
+			err := s.checkCredentialFields(ctx, defUID, connection, "")
+			if err != nil {
+				return err
+			}
+		}
+		if comp.IsIteratorComponent() {
+			for _, nestedComp := range comp.IteratorComponent.Components {
+				defUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.DefinitionName, "/")[1])
+				connection := nestedComp.ConnectorComponent.Connection
+				err := s.checkCredentialFields(ctx, defUID, connection, "")
+				if err != nil {
+					return err
+				}
+
+			}
+		}
+	}
+	return nil
+}
+
 // convertPipelineToDB converts protobuf data model to db data model
 func (s *service) convertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
@@ -385,6 +431,11 @@ func (s *service) convertPipelineToDB(ctx context.Context, ns resource.Namespace
 			return nil, err
 		}
 
+	}
+
+	err := s.checkCredential(ctx, recipe)
+	if err != nil {
+		return nil, err
 	}
 
 	dbSharing := &datamodel.Sharing{}
