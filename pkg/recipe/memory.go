@@ -1,4 +1,4 @@
-package worker
+package recipe
 
 import (
 	"context"
@@ -13,11 +13,12 @@ import (
 )
 
 type TriggerMemory struct {
-	Components map[string]ComponentsMemory `json:"components"`
-	Inputs     []InputsMemory              `json:"inputs"`
-	Secrets    map[string]string           `json:"secrets"`
-	Vars       map[string]any              `json:"vars"`
-	InputKey   string                      `json:"input_key"`
+	Components      map[string]ComponentsMemory `json:"components"`
+	Inputs          []InputsMemory              `json:"inputs"`
+	Secrets         map[string]string           `json:"secrets"`
+	Vars            map[string]any              `json:"vars"`
+	SystemVariables SystemVariables             `json:"sys_vars"`
+	InputKey        string                      `json:"input_key"`
 	// Authorization string
 }
 
@@ -25,15 +26,15 @@ type ComponentsMemory []*ComponentItemMemory
 type InputsMemory map[string]any
 
 type ComponentItemMemory struct {
-	Input   *componentIO     `json:"input"`
-	Output  *componentIO     `json:"output"`
+	Input   *ComponentIO     `json:"input"`
+	Output  *ComponentIO     `json:"output"`
 	Element any              `json:"element"` // for iterator
-	Status  *componentStatus `json:"status"`
+	Status  *ComponentStatus `json:"status"`
 }
 
-type componentIO map[string]any
+type ComponentIO map[string]any
 
-type componentStatus struct {
+type ComponentStatus struct {
 	Started   bool `json:"started"`
 	Completed bool `json:"completed"`
 	Skipped   bool `json:"skipped"`
@@ -195,13 +196,13 @@ func LoadOwnerPermalink(ctx context.Context, rc *redis.Client, redisKey string) 
 }
 
 func PurgeMemory(ctx context.Context, rc *redis.Client, redisKey string) {
-	// iter := rc.Scan(ctx, 0, redisKey+":*", 0).Iterator()
-	// for iter.Next(ctx) {
-	// 	rc.Del(ctx, iter.Val())
-	// }
+	iter := rc.Scan(ctx, 0, redisKey+":*", 0).Iterator()
+	for iter.Next(ctx) {
+		rc.Del(ctx, iter.Val())
+	}
 }
 
-func writeComponentMemory(ctx context.Context, rc *redis.Client, redisKey string, compID string, compsMem []*ComponentItemMemory) error {
+func WriteComponentMemory(ctx context.Context, rc *redis.Client, redisKey string, compID string, compsMem []*ComponentItemMemory) error {
 
 	b, err := json.Marshal(compsMem)
 	if err != nil {

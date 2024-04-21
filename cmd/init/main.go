@@ -21,7 +21,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 
 	connector "github.com/instill-ai/component/pkg/connector"
@@ -87,7 +86,7 @@ func main() {
 
 	// Update component definitions and connectors based on latest version of
 	// definitions.json.
-	connDefs := connector.Init(logger, nil, utils.GetConnectorOptions()).ListConnectorDefinitions(true)
+	connDefs := connector.Init(logger, nil).ListConnectorDefinitions(true)
 	for _, connDef := range connDefs {
 
 		cd := &pb.ComponentDefinition{

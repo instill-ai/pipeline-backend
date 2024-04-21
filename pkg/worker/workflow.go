@@ -18,8 +18,10 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/errmsg"
 
@@ -27,40 +29,37 @@ import (
 )
 
 type TriggerPipelineWorkflowParam struct {
-	MemoryRedisKey     string
-	PipelineID         string
-	PipelineUID        uuid.UUID
-	PipelineReleaseID  string
-	PipelineReleaseUID uuid.UUID
-	OwnerPermalink     string
-	UserUID            uuid.UUID
-	Mode               mgmtPB.Mode
-	InputKey           string
+	MemoryRedisKey  string
+	SystemVariables recipe.SystemVariables
+	Mode            mgmtPB.Mode
+	InputKey        string
 }
 
 // ConnectorActivityParam represents the parameters for TriggerActivity
 type ConnectorActivityParam struct {
-	MemoryRedisKey string
-	ID             string
-	AncestorIDs    []string
-	Condition      *string
-	Input          *structpb.Struct
-	Connection     *structpb.Struct
-	DefinitionUID  uuid.UUID
-	Task           string
-	InputKey       string
+	MemoryRedisKey  string
+	ID              string
+	AncestorIDs     []string
+	Condition       *string
+	Input           *structpb.Struct
+	Connection      *structpb.Struct
+	DefinitionUID   uuid.UUID
+	Task            string
+	InputKey        string
+	SystemVariables recipe.SystemVariables
 }
 
 // OperatorActivityParam represents the parameters for TriggerActivity
 type OperatorActivityParam struct {
-	MemoryRedisKey string
-	ID             string
-	AncestorIDs    []string
-	Condition      *string
-	Input          *structpb.Struct
-	DefinitionUID  uuid.UUID
-	Task           string
-	InputKey       string
+	MemoryRedisKey  string
+	ID              string
+	AncestorIDs     []string
+	Condition       *string
+	Input           *structpb.Struct
+	DefinitionUID   uuid.UUID
+	Task            string
+	InputKey        string
+	SystemVariables recipe.SystemVariables
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -80,27 +79,26 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
 
-	namespace := strings.Split(param.OwnerPermalink, "/")[0]
 	var ownerType mgmtPB.OwnerType
-	switch namespace {
-	case "organizations":
+	switch param.SystemVariables.PipelineOwnerType {
+	case resource.Organization:
 		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
-	case "users":
+	case resource.User:
 		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
 	default:
 		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
 	}
 
 	dataPoint := utils.PipelineUsageMetricData{
-		OwnerUID:           strings.Split(param.OwnerPermalink, "/")[1],
+		OwnerUID:           param.SystemVariables.PipelineOwnerUID.String(),
 		OwnerType:          ownerType,
-		UserUID:            param.UserUID.String(),
+		UserUID:            param.SystemVariables.PipelineUserUID.String(),
 		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		TriggerMode:        param.Mode,
-		PipelineID:         param.PipelineID,
-		PipelineUID:        param.PipelineUID.String(),
-		PipelineReleaseID:  param.PipelineReleaseID,
-		PipelineReleaseUID: param.PipelineReleaseUID.String(),
+		PipelineID:         param.SystemVariables.PipelineID,
+		PipelineUID:        param.SystemVariables.PipelineUID.String(),
+		PipelineReleaseID:  param.SystemVariables.PipelineReleaseID,
+		PipelineReleaseUID: param.SystemVariables.PipelineReleaseUID.String(),
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
 	}
@@ -113,12 +111,12 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	recipe, err := LoadRecipe(sCtx, w.redisClient, param.MemoryRedisKey)
+	r, err := recipe.LoadRecipe(sCtx, w.redisClient, param.MemoryRedisKey)
 	if err != nil {
 		return err
 	}
 
-	dag, err := GenerateDAG(recipe.Components)
+	dag, err := recipe.GenerateDAG(r.Components)
 	if err != nil {
 		return err
 	}
@@ -137,27 +135,29 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			switch {
 			case comp.IsConnectorComponent():
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ConnectorActivityParam{
-					ID:             comp.ID,
-					AncestorIDs:    dag.GetAncestorIDs(comp.ID),
-					MemoryRedisKey: param.MemoryRedisKey,
-					DefinitionUID:  uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1]),
-					Task:           comp.ConnectorComponent.Task,
-					Input:          comp.ConnectorComponent.Input,
-					Connection:     comp.ConnectorComponent.Connection,
-					Condition:      comp.ConnectorComponent.Condition,
-					InputKey:       param.InputKey,
+					ID:              comp.ID,
+					AncestorIDs:     dag.GetAncestorIDs(comp.ID),
+					MemoryRedisKey:  param.MemoryRedisKey,
+					DefinitionUID:   uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1]),
+					Task:            comp.ConnectorComponent.Task,
+					Input:           comp.ConnectorComponent.Input,
+					Connection:      comp.ConnectorComponent.Connection,
+					Condition:       comp.ConnectorComponent.Condition,
+					InputKey:        param.InputKey,
+					SystemVariables: param.SystemVariables,
 				}))
 
 			case comp.IsOperatorComponent():
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.OperatorActivity, &OperatorActivityParam{
-					ID:             comp.ID,
-					AncestorIDs:    dag.GetAncestorIDs(comp.ID),
-					MemoryRedisKey: param.MemoryRedisKey,
-					DefinitionUID:  uuid.FromStringOrNil(strings.Split(comp.OperatorComponent.DefinitionName, "/")[1]),
-					Task:           comp.OperatorComponent.Task,
-					Input:          comp.OperatorComponent.Input,
-					Condition:      comp.OperatorComponent.Condition,
-					InputKey:       param.InputKey,
+					ID:              comp.ID,
+					AncestorIDs:     dag.GetAncestorIDs(comp.ID),
+					MemoryRedisKey:  param.MemoryRedisKey,
+					DefinitionUID:   uuid.FromStringOrNil(strings.Split(comp.OperatorComponent.DefinitionName, "/")[1]),
+					Task:            comp.OperatorComponent.Task,
+					Input:           comp.OperatorComponent.Input,
+					Condition:       comp.OperatorComponent.Condition,
+					InputKey:        param.InputKey,
+					SystemVariables: param.SystemVariables,
 				}))
 
 			case comp.IsIteratorComponent():
@@ -171,32 +171,32 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}
 				ctx = workflow.WithChildOptions(ctx, childWorkflowOptions)
 
-				m, err := LoadMemory(sCtx, w.redisClient, param.MemoryRedisKey)
+				m, err := recipe.LoadMemory(sCtx, w.redisClient, param.MemoryRedisKey)
 				if err != nil {
 					logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
 					return err
 				}
 
 				// TODO: use batch and put the preprocessing in activity
-				iterComp := ComponentsMemory{}
+				iterComp := recipe.ComponentsMemory{}
 				for batchIdx := range m.Inputs {
 
-					input, err := RenderInput(comp.IteratorComponent.Input, batchIdx, m.Components, m.Inputs, m.Secrets, param.InputKey)
+					input, err := recipe.RenderInput(comp.IteratorComponent.Input, batchIdx, m.Components, m.Inputs, m.Secrets, param.InputKey)
 					if err != nil {
 						return err
 					}
 
-					subM := &TriggerMemory{
-						Components: map[string]ComponentsMemory{},
-						Inputs:     []InputsMemory{},
+					subM := &recipe.TriggerMemory{
+						Components: map[string]recipe.ComponentsMemory{},
+						Inputs:     []recipe.InputsMemory{},
 						Secrets:    m.Secrets,
 						Vars:       m.Vars,
 						InputKey:   "request",
 					}
 
-					elems := make([]*ComponentItemMemory, len(input.([]any)))
+					elems := make([]*recipe.ComponentItemMemory, len(input.([]any)))
 					for elemIdx := range input.([]any) {
-						elems[elemIdx] = &ComponentItemMemory{
+						elems[elemIdx] = &recipe.ComponentItemMemory{
 							Element: input.([]any)[elemIdx],
 						}
 
@@ -205,7 +205,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					subM.Components[comp.ID] = elems
 
 					for k := range m.Components {
-						subM.Components[k] = ComponentsMemory{}
+						subM.Components[k] = recipe.ComponentsMemory{}
 						for range elems {
 							subM.Components[k] = append(subM.Components[k], m.Components[k][batchIdx])
 						}
@@ -216,7 +216,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					}
 
 					iteratorRedisKey := fmt.Sprintf("pipeline_trigger:%s", childWorkflowOptions.WorkflowID)
-					err = WriteMemoryAndRecipe(
+					err = recipe.WriteMemoryAndRecipe(
 						sCtx,
 						w.redisClient,
 						iteratorRedisKey,
@@ -224,7 +224,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							Components: comp.IteratorComponent.Components,
 						},
 						subM,
-						param.OwnerPermalink,
+						fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwnerType, param.SystemVariables.PipelineOwnerUID),
 					)
 					if err != nil {
 						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -235,32 +235,27 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						ctx,
 						"TriggerPipelineWorkflow",
 						&TriggerPipelineWorkflowParam{
-							MemoryRedisKey:     iteratorRedisKey,
-							PipelineID:         param.PipelineID,
-							PipelineUID:        param.PipelineUID,
-							PipelineReleaseID:  param.PipelineReleaseID,
-							PipelineReleaseUID: param.PipelineReleaseUID,
-							OwnerPermalink:     param.OwnerPermalink,
-							UserUID:            param.UserUID,
-							Mode:               mgmtPB.Mode_MODE_SYNC,
+							MemoryRedisKey:  iteratorRedisKey,
+							SystemVariables: param.SystemVariables,
+							Mode:            mgmtPB.Mode_MODE_SYNC,
 						}).Get(ctx, nil)
 					if err != nil {
 						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
 						return err
 					}
 
-					iteratorResult, err := LoadMemory(sCtx, w.redisClient, iteratorRedisKey)
+					iteratorResult, err := recipe.LoadMemory(sCtx, w.redisClient, iteratorRedisKey)
 					if err != nil {
 						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
 						return err
 					}
 
-					output := componentIO{}
+					output := recipe.ComponentIO{}
 					for k, v := range comp.IteratorComponent.OutputElements {
 						elemVals := []any{}
 
 						for elemIdx := range input.([]any) {
-							elemVal, err := RenderInput(v, elemIdx, iteratorResult.Components, iteratorResult.Inputs, iteratorResult.Secrets, param.InputKey)
+							elemVal, err := recipe.RenderInput(v, elemIdx, iteratorResult.Components, iteratorResult.Inputs, iteratorResult.Secrets, param.InputKey)
 							if err != nil {
 								return err
 							}
@@ -270,15 +265,15 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						output[k] = elemVals
 					}
 
-					iterComp = append(iterComp, &ComponentItemMemory{
+					iterComp = append(iterComp, &recipe.ComponentItemMemory{
 						Output: &output,
-						Status: &componentStatus{ // TODO: use real status
+						Status: &recipe.ComponentStatus{ // TODO: use real status
 							Started:   true,
 							Completed: true,
 						},
 					})
 				}
-				err = writeComponentMemory(sCtx, w.redisClient, param.MemoryRedisKey, comp.ID, iterComp)
+				err = recipe.WriteComponentMemory(sCtx, w.redisClient, param.MemoryRedisKey, comp.ID, iterComp)
 				if err != nil {
 					logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
 					return err
@@ -312,7 +307,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivity
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ConnectorActivity started")
 
-	memory, err := LoadMemory(ctx, w.redisClient, param.MemoryRedisKey)
+	memory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryRedisKey)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
@@ -327,14 +322,17 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivity
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	// TODO
-	// vars: header_authorization, instill_user_uid, instill_model_backend, instill_mgmt_backend
-	execution, err := w.connector.CreateExecution(param.DefinitionUID, param.Task, con, logger)
+	vars, err := recipe.GenerateSystemVariables(param.SystemVariables)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	compOutputs, err := execution.ExecuteWithValidation(compInputs)
+	execution, err := w.connector.CreateExecution(param.DefinitionUID, vars, con, param.Task)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+	}
+
+	compOutputs, err := execution.Execute(compInputs)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
@@ -344,7 +342,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivity
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	err = writeComponentMemory(ctx, w.redisClient, param.MemoryRedisKey, param.ID, compMem)
+	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.MemoryRedisKey, param.ID, compMem)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
@@ -358,7 +356,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("OperatorActivity started")
 
-	memory, err := LoadMemory(ctx, w.redisClient, param.MemoryRedisKey)
+	memory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryRedisKey)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
@@ -368,14 +366,17 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	// TODO
-	// vars: header_authorization, instill_user_uid, instill_model_backend, instill_mgmt_backend
-	execution, err := w.operator.CreateExecution(param.DefinitionUID, param.Task, nil, logger)
+	vars, err := recipe.GenerateSystemVariables(param.SystemVariables)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	compOutputs, err := execution.ExecuteWithValidation(compInputs)
+	execution, err := w.operator.CreateExecution(param.DefinitionUID, vars, param.Task)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, OperatorActivityError)
+	}
+
+	compOutputs, err := execution.Execute(compInputs)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
@@ -385,7 +386,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	err = writeComponentMemory(ctx, w.redisClient, param.MemoryRedisKey, param.ID, compMem)
+	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.MemoryRedisKey, param.ID, compMem)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
@@ -394,19 +395,19 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 	return nil
 }
 
-func (w *worker) processInput(memory *TriggerMemory, id string, ancestorIDs []string, condition *string, input *structpb.Struct, inputKey string, definitionUID uuid.UUID) ([]*structpb.Struct, map[int]int, error) {
+func (w *worker) processInput(memory *recipe.TriggerMemory, id string, ancestorIDs []string, condition *string, input *structpb.Struct, inputKey string, definitionUID uuid.UUID) ([]*structpb.Struct, map[int]int, error) {
 	batchSize := len(memory.Inputs)
 	var compInputs []*structpb.Struct
 	idxMap := map[int]int{}
 
-	memory.Components[id] = make([]*ComponentItemMemory, batchSize)
+	memory.Components[id] = make([]*recipe.ComponentItemMemory, batchSize)
 
 	for idx := 0; idx < batchSize; idx++ {
 
-		memory.Components[id][idx] = &ComponentItemMemory{
-			Input:  &componentIO{},
-			Output: &componentIO{},
-			Status: &componentStatus{},
+		memory.Components[id][idx] = &recipe.ComponentItemMemory{
+			Input:  &recipe.ComponentIO{},
+			Output: &recipe.ComponentIO{},
+			Status: &recipe.ComponentStatus{},
 		}
 
 		for _, ancestorID := range ancestorIDs {
@@ -419,7 +420,7 @@ func (w *worker) processInput(memory *TriggerMemory, id string, ancestorIDs []st
 			if condition != nil && *condition != "" {
 				condStr := *condition
 				var varMapping map[string]string
-				condStr, _, varMapping = SanitizeCondition(condStr)
+				condStr, _, varMapping = recipe.SanitizeCondition(condStr)
 
 				expr, err := parser.ParseExpr(condStr)
 				if err != nil {
@@ -432,7 +433,7 @@ func (w *worker) processInput(memory *TriggerMemory, id string, ancestorIDs []st
 					condMemory[varMapping[k]] = v[idx]
 				}
 
-				cond, err := EvalCondition(expr, condMemory)
+				cond, err := recipe.EvalCondition(expr, condMemory)
 				if err != nil {
 					return nil, nil, err
 				}
@@ -448,30 +449,7 @@ func (w *worker) processInput(memory *TriggerMemory, id string, ancestorIDs []st
 		if memory.Components[id][idx].Status.Started {
 
 			var compInputTemplateJSON []byte
-			var compInputTemplate *structpb.Struct
-
-			compInputTemplate = input
-			// TODO: remove this hardcode injection
-			// blockchain-numbers
-			if definitionUID.String() == "70d8664a-d512-4517-a5e8-5d4da81756a7" {
-
-				metadata, err := structpb.NewValue(map[string]any{
-					"pipeline": map[string]any{
-						"uid":    "${vars._PIPELINE_UID}",
-						"recipe": "${vars._PIPELINE_RECIPE}",
-					},
-					"owner": map[string]any{
-						"uid": "${vars._OWNER_UID}",
-					},
-				})
-				if err != nil {
-					return nil, nil, err
-				}
-				if compInputTemplate == nil {
-					compInputTemplate = &structpb.Struct{}
-				}
-				compInputTemplate.Fields["metadata"] = metadata
-			}
+			compInputTemplate := input
 
 			compInputTemplateJSON, err := protojson.Marshal(compInputTemplate)
 			if err != nil {
@@ -483,7 +461,7 @@ func (w *worker) processInput(memory *TriggerMemory, id string, ancestorIDs []st
 				return nil, nil, err
 			}
 
-			compInputStruct, err := RenderInput(compInputTemplateStruct, idx, memory.Components, memory.Inputs, memory.Secrets, inputKey)
+			compInputStruct, err := recipe.RenderInput(compInputTemplateStruct, idx, memory.Components, memory.Inputs, memory.Secrets, inputKey)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -508,7 +486,7 @@ func (w *worker) processInput(memory *TriggerMemory, id string, ancestorIDs []st
 	return compInputs, idxMap, nil
 }
 
-func (w *worker) processOutput(memory *TriggerMemory, id string, compOutputs []*structpb.Struct, idxMap map[int]int) ([]*ComponentItemMemory, error) {
+func (w *worker) processOutput(memory *recipe.TriggerMemory, id string, compOutputs []*structpb.Struct, idxMap map[int]int) ([]*recipe.ComponentItemMemory, error) {
 	for compBatchIdx := range compOutputs {
 
 		outputJSON, err := protojson.Marshal(compOutputs[compBatchIdx])
@@ -526,7 +504,7 @@ func (w *worker) processOutput(memory *TriggerMemory, id string, compOutputs []*
 	return memory.Components[id], nil
 }
 
-func (w *worker) processConnection(memory *TriggerMemory, connection *structpb.Struct) (*structpb.Struct, error) {
+func (w *worker) processConnection(memory *recipe.TriggerMemory, connection *structpb.Struct) (*structpb.Struct, error) {
 	conTemplateJSON, err := protojson.Marshal(connection)
 	if err != nil {
 		return nil, err
@@ -537,7 +515,7 @@ func (w *worker) processConnection(memory *TriggerMemory, connection *structpb.S
 		return nil, err
 	}
 
-	conStruct, err := RenderInput(conTemplateStruct, 0, nil, nil, memory.Secrets, "")
+	conStruct, err := recipe.RenderInput(conTemplateStruct, 0, nil, nil, memory.Secrets, "")
 	if err != nil {
 		return nil, err
 	}

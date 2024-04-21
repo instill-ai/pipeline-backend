@@ -1,4 +1,4 @@
-package worker
+package recipe
 
 import (
 	"encoding/json"
@@ -12,23 +12,14 @@ import (
 	"go/token"
 
 	"github.com/PaesslerAG/jsonpath"
-	"github.com/gofrs/uuid"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
-
-type ComponentStatus struct {
-	Started   bool
-	Completed bool
-	Skipped   bool
-	Error     bool
-}
 
 type unionFind struct {
 	roots []int
@@ -729,19 +720,4 @@ func GenerateTraces(comps []*datamodel.Component, memory *TriggerMemory) (map[st
 	}
 
 	return trace, nil
-}
-
-// TODO: refactor builtin vars
-func GenerateBuiltinVariables(pipelineUID uuid.UUID, recipe *datamodel.Recipe, ownerPermalink string) (map[string]any, error) {
-	vars := map[string]any{}
-
-	vars["_PIPELINE_UID"] = pipelineUID.String()
-	vars["_PIPELINE_RECIPE"] = recipe
-	vars["_OWNER_UID"] = uuid.FromStringOrNil(strings.Split(ownerPermalink, "/")[1])
-	vars["_USER_UID"] = "TODO"
-	vars["_HEADER_AUTHORIZATION"] = "TODO"
-	vars["_MODEL_BACKEND"] = fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort)
-	vars["_MGMT_BACKEND"] = fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort)
-
-	return vars, nil
 }

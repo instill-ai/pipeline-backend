@@ -16,7 +16,7 @@ import (
 )
 
 func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error) {
-	return s.operator.GetOperatorDefinitionByID(defID, nil)
+	return s.operator.GetOperatorDefinitionByID(defID, nil, nil)
 }
 
 func (s *service) implementedOperatorDefinitions() []*pb.OperatorDefinition {
@@ -198,7 +198,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
 			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA:
 
-			cd, err := s.connector.GetConnectorDefinitionByUID(uid.UID, nil)
+			cd, err := s.connector.GetConnectorDefinitionByUID(uid.UID, nil, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -209,7 +209,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 				ConnectorDefinition: cd,
 			}
 		case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
-			od, err := s.operator.GetOperatorDefinitionByUID(uid.UID, nil)
+			od, err := s.operator.GetOperatorDefinitionByUID(uid.UID, nil, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -320,5 +320,5 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 }
 
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error) {
-	return s.connector.GetConnectorDefinitionByID(id, nil)
+	return s.connector.GetConnectorDefinitionByID(id, nil, nil)
 }
