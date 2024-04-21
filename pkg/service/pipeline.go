@@ -271,7 +271,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	dbPipeline, err := s.convertPipelineToDB(ctx, ns, toUpdPipeline)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, err
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
