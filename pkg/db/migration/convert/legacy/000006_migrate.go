@@ -1,4 +1,4 @@
-package main
+package legacy
 
 import (
 	"database/sql"
@@ -59,7 +59,7 @@ func (r *recipe06) Value() (driver.Value, error) {
 	return string(valueString), err
 }
 
-func migratePipelineRecipeUp000006() error {
+func MigratePipelineRecipeUp000006() error {
 	db := database.GetConnection()
 	defer database.Close(db)
 
