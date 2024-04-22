@@ -11,6 +11,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000013"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/legacy"
 )
 
 func checkExist(databaseConfig config.DatabaseConfig) error {
@@ -123,15 +125,15 @@ func main() {
 
 		switch step {
 		case 5:
-			if err := migratePipelineRecipeUp000006(); err != nil {
+			if err := legacy.MigratePipelineRecipeUp000006(); err != nil {
 				panic(err)
 			}
 		case 6:
-			if err := migratePipelineRecipeUp000007(); err != nil {
+			if err := legacy.MigratePipelineRecipeUp000007(); err != nil {
 				panic(err)
 			}
 		case 11:
-			if err := migratePipelineRecipeUp000012(); err != nil {
+			if err := legacy.MigratePipelineRecipeUp000012(); err != nil {
 				panic(err)
 			}
 		}
@@ -143,6 +145,11 @@ func main() {
 
 		if step, _, err = m.Version(); err != nil {
 			panic(err)
+		}
+		if step == 13 {
+			if err := convert000013.Migrate(); err != nil {
+				panic(err)
+			}
 		}
 
 	}
