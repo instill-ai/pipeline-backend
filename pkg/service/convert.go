@@ -403,13 +403,14 @@ func (s *service) checkCredential(ctx context.Context, recipe *datamodel.Recipe)
 		}
 		if comp.IsIteratorComponent() {
 			for _, nestedComp := range comp.IteratorComponent.Components {
-				defUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.DefinitionName, "/")[1])
-				connection := nestedComp.ConnectorComponent.Connection
-				err := s.checkCredentialFields(ctx, defUID, connection, "")
-				if err != nil {
-					return err
+				if comp.IsConnectorComponent() {
+					defUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.DefinitionName, "/")[1])
+					connection := nestedComp.ConnectorComponent.Connection
+					err := s.checkCredentialFields(ctx, defUID, connection, "")
+					if err != nil {
+						return err
+					}
 				}
-
 			}
 		}
 	}
