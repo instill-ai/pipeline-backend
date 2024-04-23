@@ -672,7 +672,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	mem := &recipe.TriggerMemory{
 		Inputs:   inputs,
 		Secrets:  secrets,
-		InputKey: "request",
+		InputKey: "trigger",
 	}
 	redisKey := fmt.Sprintf("pipeline_trigger:%s", pipelineTriggerID)
 	err = recipe.WriteMemoryAndRecipe(ctx, s.redisClient, redisKey, r, mem, ns.Permalink())
@@ -961,7 +961,7 @@ func (s *service) triggerPipeline(
 				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode:     mgmtPB.Mode_MODE_SYNC,
-			InputKey: "request",
+			InputKey: "trigger",
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1033,7 +1033,7 @@ func (s *service) triggerAsyncPipeline(
 				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode:     mgmtPB.Mode_MODE_ASYNC,
-			InputKey: "request",
+			InputKey: "trigger",
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))

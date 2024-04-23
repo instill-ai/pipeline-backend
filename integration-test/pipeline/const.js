@@ -104,7 +104,7 @@ export const simpleRecipe = {
           definition_name: "operator-definitions/base64",
           task: "TASK_ENCODE",
           input: {
-            data: "${request.input}"
+            data: "${trigger.input}"
           }
         }
       },
@@ -126,7 +126,7 @@ export const simpleRecipeDupId = {
         response_fields: {
           answer: {
             title: "Answer",
-            value: "${request.input}"
+            value: "${trigger.input}"
           }
         }
       },
@@ -138,7 +138,7 @@ export const simpleRecipeDupId = {
           definition_name: "operator-definitions/base64",
           task: "TASK_ENCODE",
           input: {
-            data: "${request.input}"
+            data: "${trigger.input}"
           }
         }
       },
@@ -148,7 +148,7 @@ export const simpleRecipeDupId = {
           definition_name: "operator-definitions/base64",
           task: "TASK_ENCODE",
           input: {
-            data: "${request.input}"
+            data: "${trigger.input}"
           }
         }
       },
