@@ -256,13 +256,17 @@ func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pb.I
 				switch nestedComp.Component.(type) {
 				case *pb.NestedComponent_ConnectorComponent:
 					task = nestedComp.GetConnectorComponent().GetTask()
-					input = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
-					output = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+					if _, ok := nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
+						input = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+						output = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+					}
 
 				case *pb.NestedComponent_OperatorComponent:
 					task = nestedComp.GetOperatorComponent().GetTask()
-					input = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
-					output = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+					if _, ok := nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
+						input = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
+						output = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+					}
 				}
 				if task == "" {
 					// Skip schema generation if the task is not set.
