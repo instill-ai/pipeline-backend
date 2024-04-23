@@ -191,7 +191,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						Inputs:     []recipe.InputsMemory{},
 						Secrets:    m.Secrets,
 						Vars:       m.Vars,
-						InputKey:   "request",
+						InputKey:   "trigger",
 					}
 
 					elems := make([]*recipe.ComponentItemMemory, len(input.([]any)))

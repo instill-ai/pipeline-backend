@@ -381,7 +381,7 @@ func migratePipeline(connectorMap map[uuid.UUID]Connector) error {
 
 		recipeJSON, _ := json.Marshal(p.Recipe)
 		recipeJSONStr := string(recipeJSON)
-		recipeJSONStr = strings.ReplaceAll(recipeJSONStr, "${start.", "${request.")
+		recipeJSONStr = strings.ReplaceAll(recipeJSONStr, "${start.", "${trigger.")
 		newRecipe := &Recipe{}
 
 		err = json.Unmarshal([]byte(recipeJSONStr), newRecipe)
@@ -471,7 +471,7 @@ func migratePipelineRelease(connectorMap map[uuid.UUID]Connector) error {
 
 		recipeJSON, _ := json.Marshal(r.Recipe)
 		recipeJSONStr := string(recipeJSON)
-		recipeJSONStr = strings.ReplaceAll(recipeJSONStr, "${start.", "${request.")
+		recipeJSONStr = strings.ReplaceAll(recipeJSONStr, "${start.", "${trigger.")
 		newRecipe := &Recipe{}
 
 		err = json.Unmarshal([]byte(recipeJSONStr), newRecipe)
