@@ -164,37 +164,30 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 
 func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string, path string, dataIndex int, inputKey string) (any, error) {
 
-	// Note: We allow hyphens (-) in the component ID, but `jsonpath` doesn't support it.
-	// This workaround transcodes the component ID into a valid name for the `jsonpath` library.
-	componentID := strings.Split(path, ".")[0]
-	route := strings.Join(strings.Split(path, ".")[1:], ".")
-	componentIDMap := map[string]string{}
-	transcodedBinding := map[string]any{}
-	idx := 0
+	splits := strings.Split(path, ".")
+	newPath := ""
+	for _, s := range splits {
+		newPath += fmt.Sprintf("[\"%s\"]", s)
+	}
+
+	m := map[string]any{
+		"memory": map[string]any{},
+	}
 	for k := range compsMemory {
-		// Generates a valid variable name for jsonpath
-		newID := fmt.Sprintf("comp%d", idx)
-		componentIDMap[k] = newID
-		transcodedBinding[newID] = compsMemory[k][dataIndex]
-		idx = idx + 1
+		m["memory"].(map[string]any)[k] = compsMemory[k][dataIndex]
 	}
 
 	if inputsMemory != nil {
-		componentIDMap[inputKey] = inputKey
-		transcodedBinding[inputKey] = inputsMemory[dataIndex]
+		m["memory"].(map[string]any)[inputKey] = inputsMemory[dataIndex]
 	}
 	if secretsMemory != nil {
-		componentIDMap["secrets"] = "secrets"
-		transcodedBinding["secrets"] = secretsMemory
+		m["memory"].(map[string]any)["secrets"] = secretsMemory
 	}
 
-	b, _ := json.Marshal(transcodedBinding)
-	var transcodedBindingConverted any
-	_ = json.Unmarshal(b, &transcodedBindingConverted)
-	if _, ok := componentIDMap[componentID]; !ok {
-		return nil, fmt.Errorf("upstream '%s' not found", componentID)
-	}
-	res, err := jsonpath.Get(fmt.Sprintf("$.%s.%s", componentIDMap[componentID], route), transcodedBindingConverted)
+	b, _ := json.Marshal(m)
+	var mParsed any
+	_ = json.Unmarshal(b, &mParsed)
+	res, err := jsonpath.Get(fmt.Sprintf("$.memory%s", newPath), mParsed)
 	if err != nil {
 		// check primitive value
 		var ret any
