@@ -270,6 +270,8 @@ func migrateSecret() (map[uuid.UUID]Connector, error) {
 
 func migrateConnectorComponent(connectorMap map[uuid.UUID]Connector, c *Component, owner string) {
 	newComp := Component{
+		ID:       c.ID,
+		Metadata: c.Metadata,
 		ConnectorComponent: &ConnectorComponent{
 			DefinitionName: c.ConnectorComponent.DefinitionName,
 			Task:           c.ConnectorComponent.Task,
