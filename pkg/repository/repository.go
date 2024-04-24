@@ -19,6 +19,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/paginate"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -105,7 +106,7 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 	if result := db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return ErrNameExisted
+			return errmsg.AddMessage(ErrNameExists, "Pipeline ID already exists")
 		}
 		return result.Error
 	}
@@ -406,7 +407,7 @@ func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPe
 	if result := db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return ErrNameExisted
+			return errmsg.AddMessage(ErrNameExists, "Release version already exists")
 		}
 		return result.Error
 	}
@@ -679,7 +680,7 @@ func (r *repository) CreateNamespaceSecret(ctx context.Context, ownerPermalink s
 		logger.Error(result.Error.Error())
 		var pgErr *pgconn.PgError
 		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return ErrNameExisted
+			return errmsg.AddMessage(ErrNameExists, "Secret ID already exists")
 		}
 		return result.Error
 	}

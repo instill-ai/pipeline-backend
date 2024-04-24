@@ -83,7 +83,7 @@ func AsGRPCError(err error) error {
 	switch {
 	case
 		errors.Is(err, gorm.ErrDuplicatedKey),
-		errors.Is(err, repository.ErrNameExisted):
+		errors.Is(err, repository.ErrNameExists):
 
 		code = codes.AlreadyExists
 	case
