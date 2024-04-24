@@ -1,12 +1,14 @@
 package recipe
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 )
 
@@ -25,10 +27,20 @@ type SystemVariables struct {
 }
 
 // System variables are available to all component
-func GenerateSystemVariables(sysVar SystemVariables) (map[string]any, error) {
+func GenerateSystemVariables(ctx context.Context, sysVar SystemVariables) (map[string]any, error) {
 
-	sysVar.ModelBackend = fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort)
-	sysVar.MgmtBackend = fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort)
+	if sysVar.PipelineUserUID == uuid.Nil {
+		sysVar.PipelineUserUID = uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+	}
+	if sysVar.HeaderAuthorization == "" {
+		sysVar.HeaderAuthorization = resource.GetRequestSingleHeader(ctx, "Authorization")
+	}
+	if sysVar.ModelBackend == "" {
+		sysVar.ModelBackend = fmt.Sprintf("%s:%d", config.Config.ModelBackend.Host, config.Config.ModelBackend.PublicPort)
+	}
+	if sysVar.MgmtBackend == "" {
+		sysVar.MgmtBackend = fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort)
+	}
 
 	b, err := json.Marshal(sysVar)
 	if err != nil {
