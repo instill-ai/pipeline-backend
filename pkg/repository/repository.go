@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/jackc/pgconn"
 	"github.com/redis/go-redis/v9"
 	"go.einride.tech/aip/filtering"
 	"gorm.io/gorm"
@@ -102,6 +103,10 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 	db := r.checkPinnedUser(ctx, r.db, "pipeline")
 
 	if result := db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return ErrNameExisted
+		}
 		return result.Error
 	}
 	return nil
@@ -399,6 +404,10 @@ func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPe
 	db := r.checkPinnedUser(ctx, r.db, "pipeline_release")
 
 	if result := db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return ErrNameExisted
+		}
 		return result.Error
 	}
 	return nil
@@ -668,6 +677,10 @@ func (r *repository) CreateNamespaceSecret(ctx context.Context, ownerPermalink s
 	logger, _ := logger.GetZapLogger(ctx)
 	if result := db.Model(&datamodel.Secret{}).Create(secret); result.Error != nil {
 		logger.Error(result.Error.Error())
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return ErrNameExisted
+		}
 		return result.Error
 	}
 	return nil

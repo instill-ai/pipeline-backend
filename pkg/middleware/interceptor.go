@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	"github.com/jackc/pgconn"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
@@ -79,12 +79,11 @@ func AsGRPCError(err error) error {
 		return st.Err()
 	}
 
-	var pgErr *pgconn.PgError
 	var code codes.Code
 	switch {
 	case
-		errors.As(err, &pgErr) && pgErr.Code == "23505",
-		errors.Is(err, gorm.ErrDuplicatedKey):
+		errors.Is(err, gorm.ErrDuplicatedKey),
+		errors.Is(err, repository.ErrNameExisted):
 
 		code = codes.AlreadyExists
 	case

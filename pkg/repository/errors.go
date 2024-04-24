@@ -11,3 +11,4 @@ var ErrOwnerTypeNotMatch = errors.New("owner type not match")
 var ErrNoDataDeleted = errors.New("no data deleted")
 var ErrNoDataUpdated = errors.New("no data updated")
 var ErrNotFound = gorm.ErrRecordNotFound
+var ErrNameExisted = errors.New("name or ID already existed")
