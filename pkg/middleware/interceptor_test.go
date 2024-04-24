@@ -45,7 +45,7 @@ func TestAsGRPCError(t *testing.T) {
 				Detail:         "unique_violation",
 				ConstraintName: "idx_mytable_mycolumn",
 			},
-			wantCode:    codes.AlreadyExists,
+			wantCode:    codes.Unknown,
 			wantMessage: ".*FATAL.*unique_violation.*",
 		},
 		{

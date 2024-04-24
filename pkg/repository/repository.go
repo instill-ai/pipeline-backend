@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/jackc/pgconn"
 	"github.com/redis/go-redis/v9"
 	"go.einride.tech/aip/filtering"
 	"gorm.io/gorm"
@@ -18,6 +19,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/paginate"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -102,6 +104,10 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 	db := r.checkPinnedUser(ctx, r.db, "pipeline")
 
 	if result := db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return errmsg.AddMessage(ErrNameExists, "Pipeline ID already exists")
+		}
 		return result.Error
 	}
 	return nil
@@ -399,6 +405,10 @@ func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPe
 	db := r.checkPinnedUser(ctx, r.db, "pipeline_release")
 
 	if result := db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return errmsg.AddMessage(ErrNameExists, "Release version already exists")
+		}
 		return result.Error
 	}
 	return nil
@@ -668,6 +678,10 @@ func (r *repository) CreateNamespaceSecret(ctx context.Context, ownerPermalink s
 	logger, _ := logger.GetZapLogger(ctx)
 	if result := db.Model(&datamodel.Secret{}).Create(secret); result.Error != nil {
 		logger.Error(result.Error.Error())
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return errmsg.AddMessage(ErrNameExists, "Secret ID already exists")
+		}
 		return result.Error
 	}
 	return nil
