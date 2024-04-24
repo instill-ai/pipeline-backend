@@ -173,10 +173,7 @@ func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pb.O
 	if err != nil {
 		return err
 	}
-	vars, err := recipe.GenerateSystemVariables(recipe.SystemVariables{
-		PipelineUserUID:     uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
-		HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
-	})
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return err
 	}
@@ -194,10 +191,7 @@ func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pb.
 	if err != nil {
 		return err
 	}
-	vars, err := recipe.GenerateSystemVariables(recipe.SystemVariables{
-		PipelineUserUID:     uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)),
-		HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
-	})
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return err
 	}

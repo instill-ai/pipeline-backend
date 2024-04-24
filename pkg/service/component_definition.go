@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
+	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
 
@@ -16,11 +17,20 @@ import (
 )
 
 func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error) {
-	return s.operator.GetOperatorDefinitionByID(defID, nil, nil)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+
+	return s.operator.GetOperatorDefinitionByID(defID, vars, nil)
 }
 
-func (s *service) implementedOperatorDefinitions() []*pb.OperatorDefinition {
-	allDefs := s.operator.ListOperatorDefinitions(false)
+func (s *service) implementedOperatorDefinitions(ctx context.Context) ([]*pb.OperatorDefinition, error) {
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+	allDefs := s.operator.ListOperatorDefinitions(vars, false)
 
 	implemented := make([]*pb.OperatorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -29,7 +39,7 @@ func (s *service) implementedOperatorDefinitions() []*pb.OperatorDefinition {
 		}
 	}
 
-	return implemented
+	return implemented, nil
 }
 
 func (s *service) ListOperatorDefinitions(ctx context.Context, req *pb.ListOperatorDefinitionsRequest) (*pb.ListOperatorDefinitionsResponse, error) {
@@ -45,7 +55,10 @@ func (s *service) ListOperatorDefinitions(ctx context.Context, req *pb.ListOpera
 	//
 	// TODO we can use only the component definition list and let the clients
 	// do the filtering in the query params.
-	defs := s.implementedOperatorDefinitions()
+	defs, err := s.implementedOperatorDefinitions(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	startIdx := 0
 	lastUID := ""
@@ -187,6 +200,11 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 		return nil, err
 	}
 
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+
 	defs := make([]*pb.ComponentDefinition, len(uids))
 
 	for i, uid := range uids {
@@ -198,7 +216,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
 			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA:
 
-			cd, err := s.connector.GetConnectorDefinitionByUID(uid.UID, nil, nil)
+			cd, err := s.connector.GetConnectorDefinitionByUID(uid.UID, vars, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -209,7 +227,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 				ConnectorDefinition: cd,
 			}
 		case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
-			od, err := s.operator.GetOperatorDefinitionByUID(uid.UID, nil, nil)
+			od, err := s.operator.GetOperatorDefinitionByUID(uid.UID, vars, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -242,8 +260,12 @@ var implementedReleaseStages = map[pb.ComponentDefinition_ReleaseStage]bool{
 	pb.ComponentDefinition_RELEASE_STAGE_GA:    true,
 }
 
-func (s *service) implementedConnectorDefinitions() []*pb.ConnectorDefinition {
-	allDefs := s.connector.ListConnectorDefinitions(false)
+func (s *service) implementedConnectorDefinitions(ctx context.Context) ([]*pb.ConnectorDefinition, error) {
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+	allDefs := s.connector.ListConnectorDefinitions(vars, false)
 
 	implemented := make([]*pb.ConnectorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -252,7 +274,7 @@ func (s *service) implementedConnectorDefinitions() []*pb.ConnectorDefinition {
 		}
 	}
 
-	return implemented
+	return implemented, nil
 }
 
 func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConnectorDefinitionsRequest) (*pb.ListConnectorDefinitionsResponse, error) {
@@ -282,7 +304,11 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 	//
 	// TODO we can use only the component definition list and let the clients
 	// do the filtering in the query params.
-	defs := s.filterConnectorDefinitions(s.implementedConnectorDefinitions(), filter)
+	defs, err := s.implementedConnectorDefinitions(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defs = s.filterConnectorDefinitions(defs, filter)
 
 	startIdx := 0
 	lastUID := ""
@@ -320,5 +346,9 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 }
 
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error) {
-	return s.connector.GetConnectorDefinitionByID(id, nil, nil)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+	return s.connector.GetConnectorDefinitionByID(id, vars, nil)
 }

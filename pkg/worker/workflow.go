@@ -322,7 +322,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivity
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	vars, err := recipe.GenerateSystemVariables(param.SystemVariables)
+	vars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
@@ -366,7 +366,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	vars, err := recipe.GenerateSystemVariables(param.SystemVariables)
+	vars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
