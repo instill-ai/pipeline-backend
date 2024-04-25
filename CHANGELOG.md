@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.27.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.26.0-beta...v0.27.0-beta) (2024-04-25)
+
+
+### Features
+
+* implement system variables and adopt latest component interface ([#456](https://github.com/instill-ai/pipeline-backend/issues/456)) ([4b3b980](https://github.com/instill-ai/pipeline-backend/commit/4b3b980b23c1e961a4e9ec3ae113464044a12f3e))
+* prevent user using plaintext for credential fields ([#458](https://github.com/instill-ai/pipeline-backend/issues/458)) ([a0cf986](https://github.com/instill-ai/pipeline-backend/commit/a0cf98672d9731893f6429e31824a2a7edd236fc))
+* revamp recipe and retire connector resource ([#453](https://github.com/instill-ai/pipeline-backend/issues/453)) ([420b8c6](https://github.com/instill-ai/pipeline-backend/commit/420b8c6df5a9fd804668c0af45cfc8a3abda069b))
+* support hyphen in reference syntax ([#462](https://github.com/instill-ai/pipeline-backend/issues/462)) ([a6f1b0c](https://github.com/instill-ai/pipeline-backend/commit/a6f1b0c6f9e06ea0a72931bfe7439d9b3ad23520))
+
+
+### Bug Fixes
+
+* update error message for creating duplicated resource ([#465](https://github.com/instill-ai/pipeline-backend/issues/465)) ([a208c17](https://github.com/instill-ai/pipeline-backend/commit/a208c17091f4735d9d6ce0841b571903f5817e38))
+
 ## [0.26.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.25.1-beta...v0.26.0-beta) (2024-04-10)
 
 
