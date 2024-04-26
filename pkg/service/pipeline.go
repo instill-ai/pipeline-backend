@@ -656,7 +656,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		}
 
 		for _, nsSecret := range nsSecrets {
-			secrets[nsSecret.ID] = *nsSecret.Value
+			if nsSecret.Value != nil {
+				secrets[nsSecret.ID] = *nsSecret.Value
+			}
 		}
 
 		if pt == "" {
