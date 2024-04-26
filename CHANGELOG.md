@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.27.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.27.0-beta...v0.27.1-beta) (2024-04-26)
+
+
+### Bug Fixes
+
+* fix trigger pipeline bug when the secret value is nil ([#467](https://github.com/instill-ai/pipeline-backend/issues/467)) ([d8ecbc1](https://github.com/instill-ai/pipeline-backend/commit/d8ecbc1657e66a3e239566de5bacb84cdd877ded))
+
 ## [0.27.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.26.0-beta...v0.27.0-beta) (2024-04-25)
 
 
