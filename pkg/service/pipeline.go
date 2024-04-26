@@ -647,6 +647,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 	secrets := map[string]string{}
 	pt := ""
+	// TODO: We should only query the needed key.
 	for {
 		var nsSecrets []*datamodel.Secret
 		// TODO: should use ctx user uid
