@@ -103,6 +103,7 @@ func AsGRPCError(err error) error {
 		errors.Is(err, handler.ErrCheckRequiredFields),
 		errors.Is(err, service.ErrExceedMaxBatchSize),
 		errors.Is(err, service.ErrCanNotUsePlaintextSecret),
+		errors.Is(err, service.ErrTriggerFail),
 		errors.Is(err, handler.ErrFieldMask),
 		errors.Is(err, handler.ErrResourceID),
 		errors.Is(err, handler.ErrSematicVersion),

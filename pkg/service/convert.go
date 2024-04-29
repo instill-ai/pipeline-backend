@@ -946,9 +946,9 @@ func (s *service) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByR
 				}
 			}
 
-			if upstreamCompIdx != -1 || compID == "trigger" {
+			if upstreamCompIdx != -1 || compID == recipe.TriggerKey {
 				var walk *structpb.Value
-				if compID == "trigger" {
+				if compID == recipe.TriggerKey {
 					walk = structpb.NewStructValue(dataInput)
 				} else {
 					comp := proto.Clone(compsOrigin[upstreamCompIdx]).(*pb.Component)
