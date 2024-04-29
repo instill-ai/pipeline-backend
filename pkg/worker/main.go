@@ -23,6 +23,8 @@ type Worker interface {
 	TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error
 	ConnectorActivity(ctx context.Context, param *ConnectorActivityParam) error
 	OperatorActivity(ctx context.Context, param *OperatorActivityParam) error
+	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (childWorkflowIDs []string, err error)
+	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 }
 
 // worker represents resources required to run Temporal workflow and activity

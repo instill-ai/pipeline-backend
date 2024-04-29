@@ -59,6 +59,22 @@ type OperatorActivityParam struct {
 	SystemVariables recipe.SystemVariables
 }
 
+type PreIteratorActivityParam struct {
+	MemoryRedisKey  string
+	ID              string
+	Input           string
+	WorkflowID      string
+	SystemVariables recipe.SystemVariables
+}
+
+type PostIteratorActivityParam struct {
+	MemoryRedisKey   string
+	ID               string
+	OutputElements   map[string]string
+	ChildWorkflowIDs []string
+	SystemVariables  recipe.SystemVariables
+}
+
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
 // TriggerPipelineWorkflow is a pipeline trigger workflow definition.
@@ -156,122 +172,60 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}))
 
 			case comp.IsIteratorComponent():
-				childWorkflowOptions := workflow.ChildWorkflowOptions{
-					TaskQueue:                TaskQueue,
-					WorkflowID:               fmt.Sprintf("%s:iterators:%s", workflow.GetInfo(ctx).WorkflowExecution.ID, comp.ID),
-					WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-					RetryPolicy: &temporal.RetryPolicy{
-						MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
-					},
-				}
-				ctx = workflow.WithChildOptions(ctx, childWorkflowOptions)
 
-				m, err := recipe.LoadMemory(sCtx, w.redisClient, param.MemoryRedisKey)
-				if err != nil {
-					logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+				var childWorkflowIDs []string
+				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
+					ID:              comp.ID,
+					MemoryRedisKey:  param.MemoryRedisKey,
+					Input:           comp.IteratorComponent.Input,
+					WorkflowID:      workflow.GetInfo(ctx).WorkflowExecution.ID,
+					SystemVariables: param.SystemVariables,
+				}).Get(ctx, &childWorkflowIDs); err != nil {
 					return err
 				}
 
-				// TODO: use batch and put the preprocessing in activity
-				iterComp := recipe.ComponentsMemory{}
-				for batchIdx := range m.Inputs {
+				itFutures := []workflow.Future{}
+				for _, childWorkflowID := range childWorkflowIDs {
 
-					input, err := recipe.RenderInput(comp.IteratorComponent.Input, batchIdx, m.Components, m.Inputs, m.Secrets)
-					if err != nil {
-						return err
-					}
-
-					subM := &recipe.TriggerMemory{
-						Components: map[string]recipe.ComponentsMemory{},
-						Inputs:     []recipe.InputsMemory{},
-						Secrets:    m.Secrets,
-						Vars:       m.Vars,
-					}
-
-					elems := make([]*recipe.ComponentItemMemory, len(input.([]any)))
-					for elemIdx := range input.([]any) {
-						elems[elemIdx] = &recipe.ComponentItemMemory{
-							Element: input.([]any)[elemIdx],
-						}
-
-					}
-
-					subM.Components[comp.ID] = elems
-
-					for k := range m.Components {
-						subM.Components[k] = recipe.ComponentsMemory{}
-						for range elems {
-							subM.Components[k] = append(subM.Components[k], m.Components[k][batchIdx])
-						}
-					}
-
-					for range elems {
-						subM.Inputs = append(subM.Inputs, m.Inputs[batchIdx])
-					}
-
-					iteratorRedisKey := fmt.Sprintf("pipeline_trigger:%s", childWorkflowOptions.WorkflowID)
-					err = recipe.WriteMemoryAndRecipe(
-						sCtx,
-						w.redisClient,
-						iteratorRedisKey,
-						&datamodel.Recipe{
-							Components: comp.IteratorComponent.Components,
+					childWorkflowOptions := workflow.ChildWorkflowOptions{
+						TaskQueue:                TaskQueue,
+						WorkflowID:               fmt.Sprintf("%s:iterators:%s", workflow.GetInfo(ctx).WorkflowExecution.ID, comp.ID),
+						WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+						RetryPolicy: &temporal.RetryPolicy{
+							MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
 						},
-						subM,
-						fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwnerType, param.SystemVariables.PipelineOwnerUID),
-					)
-					if err != nil {
-						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
-						return err
 					}
+					itCtx := workflow.WithChildOptions(ctx, childWorkflowOptions)
 
-					err = workflow.ExecuteChildWorkflow(
-						ctx,
+					iteratorRedisKey := fmt.Sprintf("pipeline_trigger:%s", childWorkflowID)
+					itFutures = append(itFutures, workflow.ExecuteChildWorkflow(
+						itCtx,
 						"TriggerPipelineWorkflow",
 						&TriggerPipelineWorkflowParam{
 							MemoryRedisKey:  iteratorRedisKey,
 							SystemVariables: param.SystemVariables,
 							Mode:            mgmtPB.Mode_MODE_SYNC,
-						}).Get(ctx, nil)
-					if err != nil {
-						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
-						return err
-					}
+						}))
 
-					iteratorResult, err := recipe.LoadMemory(sCtx, w.redisClient, iteratorRedisKey)
-					if err != nil {
-						logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
-						return err
-					}
-
-					output := recipe.ComponentIO{}
-					for k, v := range comp.IteratorComponent.OutputElements {
-						elemVals := []any{}
-
-						for elemIdx := range input.([]any) {
-							elemVal, err := recipe.RenderInput(v, elemIdx, iteratorResult.Components, iteratorResult.Inputs, iteratorResult.Secrets)
-							if err != nil {
-								return err
-							}
-							elemVals = append(elemVals, elemVal)
-
-						}
-						output[k] = elemVals
-					}
-
-					iterComp = append(iterComp, &recipe.ComponentItemMemory{
-						Output: &output,
-						Status: &recipe.ComponentStatus{ // TODO: use real status
-							Started:   true,
-							Completed: true,
-						},
-					})
 				}
-				err = recipe.WriteComponentMemory(sCtx, w.redisClient, param.MemoryRedisKey, comp.ID, iterComp)
-				if err != nil {
-					logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+				for idx := range childWorkflowIDs {
+					err = itFutures[idx].Get(ctx, nil)
+					if err != nil {
+						logger.Error(fmt.Sprintf("unable to execute iterator workflow: %s", err.Error()))
+						return err
+					}
+				}
+
+				if err = workflow.ExecuteActivity(ctx, w.PostIteratorActivity, &PostIteratorActivityParam{
+					ID:               comp.ID,
+					MemoryRedisKey:   param.MemoryRedisKey,
+					OutputElements:   comp.IteratorComponent.OutputElements,
+					ChildWorkflowIDs: childWorkflowIDs,
+					SystemVariables:  param.SystemVariables,
+				}).Get(ctx, &childWorkflowIDs); err != nil {
 					return err
 				}
+
 			}
 
 		}
@@ -386,6 +340,144 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 	}
 
 	logger.Info("OperatorActivity completed")
+	return nil
+}
+
+func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (childWorkflowIDs []string, err error) {
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("PreIteratorActivity started")
+
+	m, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryRedisKey)
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+		return nil, w.toApplicationError(err, param.ID, PreIteratorActivityError)
+	}
+	r, err := recipe.LoadRecipe(ctx, w.redisClient, param.MemoryRedisKey)
+	if err != nil {
+		return nil, w.toApplicationError(err, param.ID, PreIteratorActivityError)
+	}
+
+	var iteratorRecipe *datamodel.Recipe
+	for _, comp := range r.Components {
+		if comp.ID == param.ID {
+			iteratorRecipe = &datamodel.Recipe{
+				Components: comp.IteratorComponent.Components,
+			}
+		}
+	}
+
+	childWorkflowIDs = make([]string, len(m.Inputs))
+	for batchIdx := range m.Inputs {
+
+		childWorkflowID := fmt.Sprintf("%s:iterators:%s", param.WorkflowID, param.ID)
+		childWorkflowIDs[batchIdx] = childWorkflowID
+
+		input, err := recipe.RenderInput(param.Input, batchIdx, m.Components, m.Inputs, m.Secrets)
+		if err != nil {
+			return nil, w.toApplicationError(err, param.ID, PreIteratorActivityError)
+		}
+
+		subM := &recipe.TriggerMemory{
+			Components: map[string]recipe.ComponentsMemory{},
+			Inputs:     []recipe.InputsMemory{},
+			Secrets:    m.Secrets,
+			Vars:       m.Vars,
+		}
+
+		elems := make([]*recipe.ComponentItemMemory, len(input.([]any)))
+		for elemIdx := range input.([]any) {
+			elems[elemIdx] = &recipe.ComponentItemMemory{
+				Element: input.([]any)[elemIdx],
+			}
+
+		}
+
+		subM.Components[param.ID] = elems
+
+		for k := range m.Components {
+			subM.Components[k] = recipe.ComponentsMemory{}
+			for range elems {
+				subM.Components[k] = append(subM.Components[k], m.Components[k][batchIdx])
+			}
+		}
+
+		for range elems {
+			subM.Inputs = append(subM.Inputs, m.Inputs[batchIdx])
+		}
+
+		iteratorRedisKey := fmt.Sprintf("pipeline_trigger:%s", childWorkflowID)
+		err = recipe.WriteMemoryAndRecipe(
+			ctx,
+			w.redisClient,
+			iteratorRedisKey,
+			iteratorRecipe,
+			subM,
+			fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwnerType, param.SystemVariables.PipelineOwnerUID),
+		)
+		if err != nil {
+			logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+			return nil, w.toApplicationError(err, param.ID, PreIteratorActivityError)
+		}
+
+	}
+
+	logger.Info("PreIteratorActivity completed")
+	return childWorkflowIDs, nil
+}
+
+func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error {
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("PostIteratorActivity started")
+
+	m, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryRedisKey)
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+		return w.toApplicationError(err, param.ID, PostIteratorActivityError)
+	}
+
+	iterComp := recipe.ComponentsMemory{}
+	for batchIdx := range m.Inputs {
+
+		iteratorRedisKey := fmt.Sprintf("pipeline_trigger:%s", param.ChildWorkflowIDs[batchIdx])
+
+		iteratorResult, err := recipe.LoadMemory(ctx, w.redisClient, iteratorRedisKey)
+		if err != nil {
+			logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+			return w.toApplicationError(err, param.ID, PostIteratorActivityError)
+		}
+
+		output := recipe.ComponentIO{}
+		for k, v := range param.OutputElements {
+			elemVals := []any{}
+
+			for elemIdx := range iteratorResult.Inputs {
+				elemVal, err := recipe.RenderInput(v, elemIdx, iteratorResult.Components, iteratorResult.Inputs, iteratorResult.Secrets)
+				if err != nil {
+					return w.toApplicationError(err, param.ID, PostIteratorActivityError)
+				}
+				elemVals = append(elemVals, elemVal)
+
+			}
+			output[k] = elemVals
+		}
+
+		iterComp = append(iterComp, &recipe.ComponentItemMemory{
+			Output: &output,
+			Status: &recipe.ComponentStatus{ // TODO: use real status
+				Started:   true,
+				Completed: true,
+			},
+		})
+	}
+	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.MemoryRedisKey, param.ID, iterComp)
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+		return w.toApplicationError(err, param.ID, PostIteratorActivityError)
+	}
+
+	logger.Info("PostIteratorActivity completed")
 	return nil
 }
 
@@ -554,8 +646,10 @@ func (w *worker) toApplicationError(err error, componentID, errType string) erro
 // business domain (e.g. VendorError (non billable), InputDataError (billable),
 // etc.).
 const (
-	ConnectorActivityError = "ConnectorActivityError"
-	OperatorActivityError  = "OperatorActivityError"
+	ConnectorActivityError    = "ConnectorActivityError"
+	OperatorActivityError     = "OperatorActivityError"
+	PreIteratorActivityError  = "PreIteratorActivityError"
+	PostIteratorActivityError = "PostIteratorActivityError"
 )
 
 // EndUserErrorDetails provides a structured way to add an end-user error

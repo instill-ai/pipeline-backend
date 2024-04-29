@@ -975,7 +975,9 @@ func (s *service) triggerPipeline(
 		if errors.As(err, &applicationErr) {
 			var details worker.EndUserErrorDetails
 			if dErr := applicationErr.Details(&details); dErr == nil && details.Message != "" {
-				err = errmsg.AddMessage(err, details.Message)
+				// Note: We categorize all pipeline trigger errors as ErrTriggerFail and mark the code as 400 InvalidArgument for now.
+				// We should further categorize them into InvalidArgument or PreconditionFailed or InternalError in the future.
+				err = errmsg.AddMessage(fmt.Errorf("%w %s", ErrTriggerFail, err), details.Message)
 			}
 		}
 
