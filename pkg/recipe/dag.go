@@ -165,7 +165,7 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 func splitFunc(s rune) bool {
 	return s == '.' || s == '['
 }
-func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string, path string, dataIndex int, inputKey string) (any, error) {
+func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string, path string, dataIndex int) (any, error) {
 
 	splits := strings.FieldsFunc(path, splitFunc)
 
@@ -179,17 +179,17 @@ func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []Inp
 	}
 
 	m := map[string]any{
-		"memory": map[string]any{},
+		MemoryKey: map[string]any{},
 	}
 	for k := range compsMemory {
-		m["memory"].(map[string]any)[k] = compsMemory[k][dataIndex]
+		m[MemoryKey].(map[string]any)[k] = compsMemory[k][dataIndex]
 	}
 
 	if inputsMemory != nil {
-		m["memory"].(map[string]any)[inputKey] = inputsMemory[dataIndex]
+		m[MemoryKey].(map[string]any)[TriggerKey] = inputsMemory[dataIndex]
 	}
 	if secretsMemory != nil {
-		m["memory"].(map[string]any)["secrets"] = secretsMemory
+		m[MemoryKey].(map[string]any)[SecretsKey] = secretsMemory
 	}
 
 	b, _ := json.Marshal(m)
@@ -210,7 +210,7 @@ func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []Inp
 		return res, nil
 	}
 }
-func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string, inputKey string) (any, error) {
+func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string) (any, error) {
 
 	switch input := inputTemplate.(type) {
 	case string:
@@ -218,7 +218,7 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 			input = input[2:]
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
-			val, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, input, dataIndex, inputKey)
+			val, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, input, dataIndex)
 			if err != nil {
 				return nil, err
 			}
@@ -241,7 +241,7 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 			}
 
 			ref := strings.TrimSpace(input[2:endIdx])
-			v, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, ref, dataIndex, inputKey)
+			v, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, ref, dataIndex)
 			if err != nil {
 				return nil, err
 			}
@@ -263,7 +263,7 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 	case map[string]any:
 		val := map[string]any{}
 		for k, v := range input {
-			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory, inputKey)
+			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory)
 			if err != nil {
 				return "", err
 			}
@@ -274,7 +274,7 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 	case []any:
 		val := []any{}
 		for _, v := range input {
-			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory, inputKey)
+			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory)
 			if err != nil {
 				return "", err
 			}

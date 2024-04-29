@@ -673,9 +673,8 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	}
 
 	mem := &recipe.TriggerMemory{
-		Inputs:   inputs,
-		Secrets:  secrets,
-		InputKey: "trigger",
+		Inputs:  inputs,
+		Secrets: secrets,
 	}
 	redisKey := fmt.Sprintf("pipeline_trigger:%s", pipelineTriggerID)
 	err = recipe.WriteMemoryAndRecipe(ctx, s.redisClient, redisKey, r, mem, ns.Permalink())
@@ -963,8 +962,7 @@ func (s *service) triggerPipeline(
 				PipelineUserUID:     userUID,
 				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
-			Mode:     mgmtPB.Mode_MODE_SYNC,
-			InputKey: "trigger",
+			Mode: mgmtPB.Mode_MODE_SYNC,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1035,8 +1033,7 @@ func (s *service) triggerAsyncPipeline(
 				PipelineUserUID:     userUID,
 				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
-			Mode:     mgmtPB.Mode_MODE_ASYNC,
-			InputKey: "trigger",
+			Mode: mgmtPB.Mode_MODE_ASYNC,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1064,7 +1061,7 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, redisKey string, r 
 	for idx := range memory.Inputs {
 		pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
 		for k, v := range r.Trigger.TriggerByRequest.ResponseFields {
-			o, err := recipe.RenderInput(v.Value, idx, memory.Components, memory.Inputs, memory.Secrets, memory.InputKey)
+			o, err := recipe.RenderInput(v.Value, idx, memory.Components, memory.Inputs, memory.Secrets)
 			if err != nil {
 				return nil, nil, err
 			}

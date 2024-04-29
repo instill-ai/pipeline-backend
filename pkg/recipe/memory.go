@@ -12,14 +12,18 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 )
 
+const (
+	MemoryKey  = "memory"
+	TriggerKey = "trigger"
+	SecretsKey = "secrets"
+)
+
 type TriggerMemory struct {
 	Components      map[string]ComponentsMemory `json:"components"`
 	Inputs          []InputsMemory              `json:"inputs"`
 	Secrets         map[string]string           `json:"secrets"`
 	Vars            map[string]any              `json:"vars"`
 	SystemVariables SystemVariables             `json:"sys_vars"`
-	InputKey        string                      `json:"input_key"`
-	// Authorization string
 }
 
 type ComponentsMemory []*ComponentItemMemory
@@ -48,12 +52,6 @@ func WriteMemoryAndRecipe(ctx context.Context, rc *redis.Client, redisKey string
 		ctx,
 		redisKey+":owner_permalink",
 		ownerPermalink,
-		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
-	)
-	rc.Set(
-		ctx,
-		redisKey+":input_key",
-		memory.InputKey,
 		time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout)*time.Second,
 	)
 
@@ -131,7 +129,6 @@ func LoadMemory(ctx context.Context, rc *redis.Client, redisKey string) (*Trigge
 		Vars:       map[string]any{},
 		Inputs:     []InputsMemory{},
 		Components: map[string]ComponentsMemory{},
-		InputKey:   rc.Get(ctx, redisKey+":input_key").Val(),
 	}
 
 	if b, err := rc.Get(ctx, redisKey+":secrets").Bytes(); err == nil {

@@ -32,7 +32,6 @@ type TriggerPipelineWorkflowParam struct {
 	MemoryRedisKey  string
 	SystemVariables recipe.SystemVariables
 	Mode            mgmtPB.Mode
-	InputKey        string
 }
 
 // ConnectorActivityParam represents the parameters for TriggerActivity
@@ -45,7 +44,6 @@ type ConnectorActivityParam struct {
 	Connection      *structpb.Struct
 	DefinitionUID   uuid.UUID
 	Task            string
-	InputKey        string
 	SystemVariables recipe.SystemVariables
 }
 
@@ -58,7 +56,6 @@ type OperatorActivityParam struct {
 	Input           *structpb.Struct
 	DefinitionUID   uuid.UUID
 	Task            string
-	InputKey        string
 	SystemVariables recipe.SystemVariables
 }
 
@@ -143,7 +140,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Input:           comp.ConnectorComponent.Input,
 					Connection:      comp.ConnectorComponent.Connection,
 					Condition:       comp.ConnectorComponent.Condition,
-					InputKey:        param.InputKey,
 					SystemVariables: param.SystemVariables,
 				}))
 
@@ -156,7 +152,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Task:            comp.OperatorComponent.Task,
 					Input:           comp.OperatorComponent.Input,
 					Condition:       comp.OperatorComponent.Condition,
-					InputKey:        param.InputKey,
 					SystemVariables: param.SystemVariables,
 				}))
 
@@ -181,7 +176,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				iterComp := recipe.ComponentsMemory{}
 				for batchIdx := range m.Inputs {
 
-					input, err := recipe.RenderInput(comp.IteratorComponent.Input, batchIdx, m.Components, m.Inputs, m.Secrets, param.InputKey)
+					input, err := recipe.RenderInput(comp.IteratorComponent.Input, batchIdx, m.Components, m.Inputs, m.Secrets)
 					if err != nil {
 						return err
 					}
@@ -191,7 +186,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						Inputs:     []recipe.InputsMemory{},
 						Secrets:    m.Secrets,
 						Vars:       m.Vars,
-						InputKey:   "trigger",
 					}
 
 					elems := make([]*recipe.ComponentItemMemory, len(input.([]any)))
@@ -255,7 +249,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						elemVals := []any{}
 
 						for elemIdx := range input.([]any) {
-							elemVal, err := recipe.RenderInput(v, elemIdx, iteratorResult.Components, iteratorResult.Inputs, iteratorResult.Secrets, param.InputKey)
+							elemVal, err := recipe.RenderInput(v, elemIdx, iteratorResult.Components, iteratorResult.Inputs, iteratorResult.Secrets)
 							if err != nil {
 								return err
 							}
@@ -312,7 +306,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivity
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	compInputs, idxMap, err := w.processInput(memory, param.ID, param.AncestorIDs, param.Condition, param.Input, param.InputKey, param.DefinitionUID)
+	compInputs, idxMap, err := w.processInput(memory, param.ID, param.AncestorIDs, param.Condition, param.Input, param.DefinitionUID)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
@@ -361,7 +355,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	compInputs, idxMap, err := w.processInput(memory, param.ID, param.AncestorIDs, param.Condition, param.Input, param.InputKey, param.DefinitionUID)
+	compInputs, idxMap, err := w.processInput(memory, param.ID, param.AncestorIDs, param.Condition, param.Input, param.DefinitionUID)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
@@ -395,7 +389,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 	return nil
 }
 
-func (w *worker) processInput(memory *recipe.TriggerMemory, id string, ancestorIDs []string, condition *string, input *structpb.Struct, inputKey string, definitionUID uuid.UUID) ([]*structpb.Struct, map[int]int, error) {
+func (w *worker) processInput(memory *recipe.TriggerMemory, id string, ancestorIDs []string, condition *string, input *structpb.Struct, definitionUID uuid.UUID) ([]*structpb.Struct, map[int]int, error) {
 	batchSize := len(memory.Inputs)
 	var compInputs []*structpb.Struct
 	idxMap := map[int]int{}
@@ -461,7 +455,7 @@ func (w *worker) processInput(memory *recipe.TriggerMemory, id string, ancestorI
 				return nil, nil, err
 			}
 
-			compInputStruct, err := recipe.RenderInput(compInputTemplateStruct, idx, memory.Components, memory.Inputs, memory.Secrets, inputKey)
+			compInputStruct, err := recipe.RenderInput(compInputTemplateStruct, idx, memory.Components, memory.Inputs, memory.Secrets)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -515,7 +509,7 @@ func (w *worker) processConnection(memory *recipe.TriggerMemory, connection *str
 		return nil, err
 	}
 
-	conStruct, err := recipe.RenderInput(conTemplateStruct, 0, nil, nil, memory.Secrets, "")
+	conStruct, err := recipe.RenderInput(conTemplateStruct, 0, nil, nil, memory.Secrets)
 	if err != nil {
 		return nil, err
 	}
