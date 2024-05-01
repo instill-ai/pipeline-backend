@@ -258,10 +258,10 @@ func LoadOwnerPermalink(ctx context.Context, rc *redis.Client, key string) strin
 }
 
 func Purge(ctx context.Context, rc *redis.Client, pipelineTriggerID string) {
-	iter := rc.Scan(ctx, 0, fmt.Sprintf("%s:%s:*", redisKeyPrefix, pipelineTriggerID), 0).Iterator()
-	for iter.Next(ctx) {
-		rc.Del(ctx, iter.Val())
-	}
+	// iter := rc.Scan(ctx, 0, fmt.Sprintf("%s:%s:*", redisKeyPrefix, pipelineTriggerID), 0).Iterator()
+	// for iter.Next(ctx) {
+	// 	rc.Del(ctx, iter.Val())
+	// }
 }
 
 func WriteComponentMemory(ctx context.Context, rc *redis.Client, key string, compsMem []*ComponentItemMemory) error {

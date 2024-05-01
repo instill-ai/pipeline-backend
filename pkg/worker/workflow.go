@@ -73,6 +73,7 @@ type PreIteratorActivityParam struct {
 
 type PreIteratorActivityResult struct {
 	MemoryStorageKeys []*recipe.TriggerMemoryKey
+	ElementSize       []int
 }
 
 type PostIteratorActivityParam struct {
@@ -220,6 +221,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						workflow.WithChildOptions(ctx, childWorkflowOptions),
 						"TriggerPipelineWorkflow",
 						&TriggerPipelineWorkflowParam{
+							BatchSize:        preIteratorResult.ElementSize[iter],
 							MemoryStorageKey: preIteratorResult.MemoryStorageKeys[iter],
 							SystemVariables:  param.SystemVariables,
 							Mode:             mgmtPB.Mode_MODE_SYNC,
@@ -393,6 +395,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 
 	result := &PreIteratorActivityResult{
 		MemoryStorageKeys: make([]*recipe.TriggerMemoryKey, len(m.Inputs)),
+		ElementSize:       make([]int, len(m.Inputs)),
 	}
 	recipeKey := fmt.Sprintf("%s:%s", param.TargetStorageKey, recipe.SegRecipe)
 	err = recipe.WriteRecipe(ctx, w.redisClient, recipeKey, iteratorRecipe)
@@ -414,6 +417,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 
 		}
 		elementSize := len(elems)
+		result.ElementSize[iter] = elementSize
 
 		err = recipe.WriteComponentMemory(ctx, w.redisClient, fmt.Sprintf("%s:%s:%d:%s:%s", param.TargetStorageKey, recipe.SegIteration, iter, recipe.SegComponent, param.ID), elems)
 		if err != nil {
