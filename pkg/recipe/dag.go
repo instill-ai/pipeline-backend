@@ -94,7 +94,7 @@ func (d *dag) AddEdge(from *datamodel.Component, to *datamodel.Component) {
 	d.ancestorsMap[to.ID] = append(d.ancestorsMap[to.ID], d.ancestorsMap[from.ID]...)
 }
 
-func (d *dag) GetAncestorIDs(id string) []string {
+func (d *dag) GetUpstreamCompIDs(id string) []string {
 	return d.ancestorsMap[id]
 }
 
@@ -179,23 +179,23 @@ func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []Inp
 	}
 
 	m := map[string]any{
-		MemoryKey: map[string]any{},
+		SegMemory: map[string]any{},
 	}
 	for k := range compsMemory {
-		m[MemoryKey].(map[string]any)[k] = compsMemory[k][dataIndex]
+		m[SegMemory].(map[string]any)[k] = compsMemory[k][dataIndex]
 	}
 
 	if inputsMemory != nil {
-		m[MemoryKey].(map[string]any)[TriggerKey] = inputsMemory[dataIndex]
+		m[SegMemory].(map[string]any)[SegTrigger] = inputsMemory[dataIndex]
 	}
 	if secretsMemory != nil {
-		m[MemoryKey].(map[string]any)[SecretsKey] = secretsMemory
+		m[SegMemory].(map[string]any)[SegSecrets] = secretsMemory
 	}
 
 	b, _ := json.Marshal(m)
 	var mParsed any
 	_ = json.Unmarshal(b, &mParsed)
-	res, err := jsonpath.Get(fmt.Sprintf("$.memory%s", newPath), mParsed)
+	res, err := jsonpath.Get(fmt.Sprintf("$.%s%s", SegMemory, newPath), mParsed)
 	if err != nil {
 		// check primitive value
 		var ret any

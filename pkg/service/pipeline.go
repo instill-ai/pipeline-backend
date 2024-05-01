@@ -464,11 +464,11 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	return s.convertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
 }
 
-func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineInputs []*structpb.Struct, pipelineSecrets map[string]string) (string, error) {
+func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineInputs []*structpb.Struct, pipelineSecrets map[string]string) (*recipe.TriggerMemoryKey, error) {
 
 	batchSize := len(pipelineInputs)
 	if batchSize > constant.MaxBatchSize {
-		return "", ErrExceedMaxBatchSize
+		return nil, ErrExceedMaxBatchSize
 	}
 
 	checkRateLimited := !isAdmin
@@ -482,10 +482,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 			if err != nil {
 				s, ok := status.FromError(err)
 				if !ok {
-					return "", err
+					return nil, err
 				}
 				if s.Code() != codes.Unimplemented {
-					return "", err
+					return nil, err
 				}
 			} else {
 				if resp.Subscription.Plan == mgmtPB.OrganizationSubscription_PLAN_FREEMIUM {
@@ -501,10 +501,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 			if err != nil {
 				s, ok := status.FromError(err)
 				if !ok {
-					return "", err
+					return nil, err
 				}
 				if s.Code() != codes.Unimplemented {
-					return "", err
+					return nil, err
 				}
 			} else {
 				if resp.Subscription.Plan == mgmtPB.UserSubscription_PLAN_FREEMIUM {
@@ -521,7 +521,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		if !errors.Is(err, redis.Nil) {
 			requestLeft, _ := strconv.ParseInt(value, 10, 64)
 			if requestLeft <= 0 {
-				return "", ErrRateLimiting
+				return nil, ErrRateLimiting
 			} else {
 				_ = s.redisClient.Decr(ctx, fmt.Sprintf("user_rate_limit:user:%s", userUID))
 			}
@@ -543,15 +543,15 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	}
 	err := component.CompileInstillAcceptFormats(schStruct)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	err = component.CompileInstillFormat(schStruct)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	metadata, err = protojson.Marshal(schStruct)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	c := jsonschema.NewCompiler()
@@ -559,13 +559,13 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	c.RegisterExtension("instillFormat", component.InstillFormatMeta, component.InstillFormatCompiler{})
 
 	if err := c.AddResource("schema.json", strings.NewReader(string(metadata))); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	sch, err := c.Compile("schema.json")
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	errors := []string{}
@@ -591,7 +591,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 					if !strings.HasPrefix(s, "data:") {
 						b, err := base64.StdEncoding.DecodeString(s)
 						if err != nil {
-							return "", fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
+							return nil, fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
 						}
 						mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
 						pipelineInput.Fields[k] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s))
@@ -603,7 +603,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 						if !strings.HasPrefix(s[idx], "data:") {
 							b, err := base64.StdEncoding.DecodeString(s[idx])
 							if err != nil {
-								return "", fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
+								return nil, fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
 							}
 							mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
 							pipelineInput.Fields[k].GetListValue().GetValues()[idx] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s[idx]))
@@ -628,19 +628,19 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	}
 
 	if len(errors) > 0 {
-		return "", fmt.Errorf("[Pipeline Trigger Data Error] %s", strings.Join(errors, "; "))
+		return nil, fmt.Errorf("[Pipeline Trigger Data Error] %s", strings.Join(errors, "; "))
 	}
 
 	inputs := make([]recipe.InputsMemory, len(pipelineInputs))
 	for idx, input := range pipelineInputs {
 		inputJSONBytes, err := protojson.Marshal(input)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		request := recipe.InputsMemory{}
 		err = json.Unmarshal(inputJSONBytes, &request)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		inputs[idx] = request
 	}
@@ -653,7 +653,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		// TODO: should use ctx user uid
 		nsSecrets, _, pt, err = s.repository.ListNamespaceSecrets(ctx, ns.Permalink(), 100, "", filtering.Filter{})
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		for _, nsSecret := range nsSecrets {
@@ -676,13 +676,13 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		Inputs:  inputs,
 		Secrets: secrets,
 	}
-	redisKey := fmt.Sprintf("pipeline_trigger:%s", pipelineTriggerID)
-	err = recipe.WriteMemoryAndRecipe(ctx, s.redisClient, redisKey, r, mem, ns.Permalink())
+
+	k, err := recipe.Write(ctx, s.redisClient, pipelineTriggerID, r, mem, ns.Permalink())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return redisKey, nil
+	return k, nil
 }
 
 func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, pipelineRelease *pb.PipelineRelease) (*pb.PipelineRelease, error) {
@@ -928,11 +928,11 @@ func (s *service) triggerPipeline(
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	redisKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineInputs, pipelineSecrets)
+	memoryKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineInputs, pipelineSecrets)
 	if err != nil {
 		return nil, nil, err
 	}
-	defer recipe.PurgeMemory(ctx, s.redisClient, redisKey)
+	defer recipe.Purge(ctx, s.redisClient, pipelineTriggerID)
 
 	workflowOptions := client.StartWorkflowOptions{
 		ID:                       pipelineTriggerID,
@@ -950,7 +950,8 @@ func (s *service) triggerPipeline(
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{
-			MemoryRedisKey: redisKey,
+			BatchSize:        len(pipelineInputs),
+			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
 				PipelineID:          pipelineID,
 				PipelineUID:         pipelineUID,
@@ -984,7 +985,7 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
-	return s.getOutputsAndMetadata(ctx, redisKey, r, returnTraces)
+	return s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
 }
 
 func (s *service) triggerAsyncPipeline(
@@ -1001,7 +1002,7 @@ func (s *service) triggerAsyncPipeline(
 	pipelineTriggerID string,
 	returnTraces bool) (*longrunningpb.Operation, error) {
 
-	redisKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineInputs, pipelineSecrets)
+	memoryKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineInputs, pipelineSecrets)
 	if err != nil {
 		return nil, err
 	}
@@ -1023,7 +1024,8 @@ func (s *service) triggerAsyncPipeline(
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{
-			MemoryRedisKey: redisKey,
+			BatchSize:        len(pipelineInputs),
+			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
 				PipelineID:          pipelineID,
 				PipelineUID:         pipelineUID,
@@ -1051,9 +1053,9 @@ func (s *service) triggerAsyncPipeline(
 
 }
 
-func (s *service) getOutputsAndMetadata(ctx context.Context, redisKey string, r *datamodel.Recipe, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
+func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID string, r *datamodel.Recipe, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
 
-	memory, err := recipe.LoadMemory(ctx, s.redisClient, redisKey)
+	memory, err := recipe.LoadMemoryByTriggerID(ctx, s.redisClient, pipelineTriggerID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1291,13 +1293,13 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 	switch workflowExecutionInfo.Status {
 	case enums.WORKFLOW_EXECUTION_STATUS_COMPLETED:
 
-		redisKey := fmt.Sprintf("pipeline_trigger:%s", workflowExecutionInfo.Execution.WorkflowId)
-		ownerPermalink := recipe.LoadOwnerPermalink(ctx, s.redisClient, redisKey)
-		r, err := recipe.LoadRecipe(ctx, s.redisClient, redisKey)
+		pipelineTriggerID := workflowExecutionInfo.Execution.WorkflowId
+		ownerPermalink := recipe.LoadOwnerPermalink(ctx, s.redisClient, pipelineTriggerID)
+		r, err := recipe.LoadRecipe(ctx, s.redisClient, fmt.Sprintf("%s:%s", pipelineTriggerID, recipe.SegRecipe))
 		if err != nil {
 			return nil, err
 		}
-		outputs, metadata, err := s.getOutputsAndMetadata(ctx, redisKey, r, true)
+		outputs, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, true)
 		if err != nil {
 			return nil, err
 		}
