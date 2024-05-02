@@ -23,7 +23,7 @@ type Worker interface {
 	TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error
 	ConnectorActivity(ctx context.Context, param *ConnectorActivityParam) error
 	OperatorActivity(ctx context.Context, param *OperatorActivityParam) error
-	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (childWorkflowIDs []string, err error)
+	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 }
 
