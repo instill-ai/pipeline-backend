@@ -371,7 +371,7 @@ func (s *service) checkCredentialFields(ctx context.Context, uid uuid.UUID, conn
 		if ok, err := s.connector.IsCredentialField(uid, key); err == nil && ok {
 			if v.GetStringValue() != "" {
 				if !strings.HasPrefix(v.GetStringValue(), "${") || !strings.HasSuffix(v.GetStringValue(), "}") {
-					return ErrCanNotUsePlaintextSecret
+					return errCanNotUsePlaintextSecret
 				}
 			}
 		}

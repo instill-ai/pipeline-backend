@@ -11,10 +11,11 @@ import (
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
@@ -22,8 +23,8 @@ import (
 )
 
 // RecoveryInterceptorOpt - panic handler
-func RecoveryInterceptorOpt() grpc_recovery.Option {
-	return grpc_recovery.WithRecoveryHandler(func(p interface{}) (err error) {
+func RecoveryInterceptorOpt() grpcrecovery.Option {
+	return grpcrecovery.WithRecoveryHandler(func(p interface{}) (err error) {
 		return status.Errorf(codes.Unknown, "panic triggered: %v", p)
 	})
 }
@@ -50,7 +51,7 @@ func StreamAppendMetadataInterceptor(srv interface{}, stream grpc.ServerStream, 
 	}
 
 	newCtx := metadata.NewIncomingContext(stream.Context(), md)
-	wrapped := grpc_middleware.WrapServerStream(stream)
+	wrapped := grpcmiddleware.WrapServerStream(stream)
 	wrapped.WrappedContext = newCtx
 
 	err := handler(srv, wrapped)
@@ -95,6 +96,7 @@ func AsGRPCError(err error) error {
 
 		code = codes.NotFound
 	case
+		errors.Is(err, errdomain.ErrInvalidArgument),
 		errors.Is(err, repository.ErrOwnerTypeNotMatch),
 		errors.Is(err, repository.ErrPageTokenDecode),
 		errors.Is(err, bcrypt.ErrMismatchedHashAndPassword),
@@ -102,10 +104,8 @@ func AsGRPCError(err error) error {
 		errors.Is(err, handler.ErrCheckOutputOnlyFields),
 		errors.Is(err, handler.ErrCheckRequiredFields),
 		errors.Is(err, service.ErrExceedMaxBatchSize),
-		errors.Is(err, service.ErrCanNotUsePlaintextSecret),
 		errors.Is(err, service.ErrTriggerFail),
 		errors.Is(err, handler.ErrFieldMask),
-		errors.Is(err, handler.ErrResourceID),
 		errors.Is(err, handler.ErrSematicVersion),
 		errors.Is(err, handler.ErrUpdateMask):
 

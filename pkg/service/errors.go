@@ -1,22 +1,21 @@
 package service
 
 import (
-	"errors"
+	"fmt"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/x/errmsg"
 )
 
-var ErrNoPermission = errors.New("no permission")
-var ErrNotFound = errors.New("not found")
-var ErrUnauthenticated = errors.New("unauthenticated")
-var ErrRateLimiting = errors.New("rate limiting")
-var ErrCanNotTriggerNonLatestPipelineRelease = errors.New("can not trigger non-latest pipeline release")
-var ErrExceedMaxBatchSize = errors.New("the batch size can not exceed 32")
-var ErrTriggerFail = errors.New("failed to trigger the pipeline")
+var ErrNoPermission = fmt.Errorf("no permission")
+var ErrNotFound = fmt.Errorf("not found")
+var ErrUnauthenticated = fmt.Errorf("unauthenticated")
+var ErrRateLimiting = fmt.Errorf("rate limiting")
+var ErrCanNotTriggerNonLatestPipelineRelease = fmt.Errorf("can not trigger non-latest pipeline release")
+var ErrExceedMaxBatchSize = fmt.Errorf("the batch size can not exceed 32")
+var ErrTriggerFail = fmt.Errorf("failed to trigger the pipeline")
 
-// ErrCanNotUsePlaintextSecret prevents users from adding connection details
-// with plaintext values.
-var ErrCanNotUsePlaintextSecret = errmsg.AddMessage(
-	errors.New("plaintext value in credential field"),
+var errCanNotUsePlaintextSecret = errmsg.AddMessage(
+	fmt.Errorf("%w: plaintext value in credential field", errdomain.ErrInvalidArgument),
 	"Plaintext values are forbidden in credential fields. You can create a secret and reference it with the syntax ${secrets.my-secret}.",
 )
