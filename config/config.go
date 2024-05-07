@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/instill-ai/component/pkg/connector"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
@@ -72,6 +73,8 @@ type ConnectorConfig struct {
 	Instill struct {
 		UseStaticModelList bool `koanf:"usestaticmodellist"`
 	} `koanf:"instill"`
+
+	Secrets connector.ConnectionSecrets
 }
 
 // DatabaseConfig related to database

@@ -2,10 +2,14 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"go.einride.tech/aip/filtering"
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	"github.com/instill-ai/x/errmsg"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -14,6 +18,13 @@ func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespa
 
 	if err := s.checkNamespacePermission(ctx, ns); err != nil {
 		return nil, err
+	}
+
+	if pbSecret.GetId() == constant.GlobalConnectionSecretKey {
+		return nil, errmsg.AddMessage(
+			fmt.Errorf("%w: reserved secret ID", errdomain.ErrInvalidArgument),
+			"The secret ID is reserved",
+		)
 	}
 
 	dbSecret, err := s.convertSecretToDB(ctx, ns, pbSecret)

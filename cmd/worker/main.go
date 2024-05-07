@@ -152,7 +152,7 @@ func main() {
 
 	usageHandler := usage.UsageHandler{}
 
-	cw := pipelineWorker.NewWorker(repository, redisClient, influxDBWriteClient, usageHandler)
+	cw := pipelineWorker.NewWorker(repository, redisClient, influxDBWriteClient, usageHandler, config.Config.Connector.Secrets)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
 		MaxConcurrentActivityExecutionSize: 2,

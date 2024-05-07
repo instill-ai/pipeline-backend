@@ -16,8 +16,9 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	component "github.com/instill-ai/component/pkg/base"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -210,6 +211,7 @@ func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []Inp
 		return res, nil
 	}
 }
+
 func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string) (any, error) {
 
 	switch input := inputTemplate.(type) {
@@ -218,6 +220,10 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 			input = input[2:]
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
+			if input == SegSecrets+"."+constant.GlobalConnectionSecretKey {
+				return component.ConnectionGlobalSecret, nil
+			}
+
 			val, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, input, dataIndex)
 			if err != nil {
 				return nil, err

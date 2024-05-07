@@ -37,14 +37,19 @@ type worker struct {
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
-func NewWorker(r repository.Repository, rd *redis.Client, i api.WriteAPI, u component.UsageHandler) Worker {
-
+func NewWorker(
+	r repository.Repository,
+	rd *redis.Client,
+	i api.WriteAPI,
+	u component.UsageHandler,
+	cs connector.ConnectionSecrets,
+) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &worker{
 		repository:          r,
 		redisClient:         rd,
 		influxDBWriteClient: i,
 		operator:            operator.Init(logger, u),
-		connector:           connector.Init(logger, u),
+		connector:           connector.Init(logger, u, cs),
 	}
 }

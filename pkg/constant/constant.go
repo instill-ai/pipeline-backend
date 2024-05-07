@@ -19,3 +19,11 @@ const HeaderVisitorUIDKey = "Instill-Visitor-Uid"
 const HeaderAuthTypeKey = "Instill-Auth-Type"
 const HeaderInstillCodeKey = "Instill-Share-Code"
 const HeaderReturnTracesKey = "Instill-Return-Traces"
+
+// GlobalConnectionSecretKey can be used to reference a global secret
+// secret in a connection configuration (i.e, ${secrets.INSTILL_CONNECTION}).
+//
+// This key will be interpreted during execution by each connector and
+// transformed into the value of the secret, in case a secret for that
+// connection parameter was injected.
+const GlobalConnectionSecretKey = "INSTILL_CONNECTION"
