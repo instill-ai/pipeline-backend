@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.27.3-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.27.2-beta...v0.27.3-beta) (2024-05-07)
+
+
+### Miscellaneous Chores
+
+* release v0.27.3-beta ([0cfb27f](https://github.com/instill-ai/pipeline-backend/commit/0cfb27fe70bf7b41d01e709b579eea44ed2c0e2e))
+
 ## [0.27.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.27.1-beta...v0.27.2-beta) (2024-05-02)
 
 
