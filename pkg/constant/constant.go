@@ -20,10 +20,10 @@ const HeaderAuthTypeKey = "Instill-Auth-Type"
 const HeaderInstillCodeKey = "Instill-Share-Code"
 const HeaderReturnTracesKey = "Instill-Return-Traces"
 
-// GlobalConnectionSecretKey can be used to reference a global secret
-// secret in a connection configuration (i.e, ${secrets.INSTILL_CONNECTION}).
+// GlobalCredentialSecretKey can be used to reference a global secret
+// in the configuration of a component (i.e, ${secrets.INSTILL_CREDENTIAL}).
 //
-// This key will be interpreted during execution by each connector and
-// transformed into the value of the secret, in case a secret for that
-// connection parameter was injected.
-const GlobalConnectionSecretKey = "INSTILL_CONNECTION"
+// Components can be configured to hold global secrets for certain parameters.
+// Given this configuration, a component will override the value of a parameter
+// with its global secret when it finds this keyword.
+const GlobalCredentialSecretKey = "INSTILL_CREDENTIAL"

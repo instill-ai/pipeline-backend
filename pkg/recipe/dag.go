@@ -220,8 +220,8 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 			input = input[2:]
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
-			if input == SegSecrets+"."+constant.GlobalConnectionSecretKey {
-				return component.ConnectionGlobalSecret, nil
+			if input == SegSecrets+"."+constant.GlobalCredentialSecretKey {
+				return component.CredentialGlobalSecret, nil
 			}
 
 			val, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, input, dataIndex)
