@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,6 +17,7 @@ import (
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/checkfield"
 
@@ -67,7 +69,7 @@ func (h *PublicHandler) createNamespaceSecret(ctx context.Context, req CreateNam
 	// Return error if resource ID does not follow RFC-1034
 	if err := checkfield.CheckResourceID(req.GetSecret().GetId()); err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, ErrResourceID
+		return nil, fmt.Errorf("%w: invalid pipeline ID: %w", errdomain.ErrInvalidArgument, err)
 	}
 
 	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())

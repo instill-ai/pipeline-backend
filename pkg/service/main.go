@@ -110,7 +110,7 @@ func NewService(
 		temporalClient:           t,
 		influxDBWriteClient:      i,
 		operator:                 operator.Init(logger, u),
-		connector:                connector.Init(logger, u),
+		connector:                connector.Init(logger, u, nil),
 		aclClient:                acl,
 	}
 }

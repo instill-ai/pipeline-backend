@@ -25,6 +25,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/checkfield"
 
@@ -212,7 +213,7 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 	// Return error if resource ID does not follow RFC-1034
 	if err := checkfield.CheckResourceID(req.GetPipeline().GetId()); err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, ErrResourceID
+		return nil, fmt.Errorf("%w: invalid secret ID: %w", errdomain.ErrInvalidArgument, err)
 	}
 
 	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
@@ -722,7 +723,7 @@ func (h *PublicHandler) renameNamespacePipeline(ctx context.Context, req RenameN
 	newID := req.GetNewPipelineId()
 	if err := checkfield.CheckResourceID(newID); err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, ErrResourceID
+		return nil, fmt.Errorf("%w: invalid pipeline ID: %w", errdomain.ErrInvalidArgument, err)
 	}
 
 	pbPipeline, err := h.service.UpdateNamespacePipelineIDByID(ctx, ns, id, newID)
