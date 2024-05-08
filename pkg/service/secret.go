@@ -3,14 +3,18 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
+	"github.com/gofrs/uuid"
 	"go.einride.tech/aip/filtering"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/errmsg"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -106,4 +110,51 @@ func (s *service) DeleteNamespaceSecretByID(ctx context.Context, ns resource.Nam
 	ownerPermalink := ns.Permalink()
 
 	return s.repository.DeleteNamespaceSecretByID(ctx, ownerPermalink, id)
+}
+
+func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, connection *structpb.Struct, prefix string) error {
+
+	for k, v := range connection.GetFields() {
+		key := prefix + k
+		if ok, err := s.connector.IsSecretField(uid, key); err == nil && ok {
+			if v.GetStringValue() != "" {
+				if !strings.HasPrefix(v.GetStringValue(), "${") || !strings.HasSuffix(v.GetStringValue(), "}") {
+					return errCanNotUsePlaintextSecret
+				}
+			}
+		}
+		if v.GetStructValue() != nil {
+			err := s.checkSecretFields(ctx, uid, v.GetStructValue(), fmt.Sprintf("%s.", key))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+func (s *service) checkSecret(ctx context.Context, recipe *datamodel.Recipe) error {
+
+	for _, comp := range recipe.Components {
+		if comp.IsConnectorComponent() {
+			defUID := uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1])
+			connection := comp.ConnectorComponent.Connection
+			err := s.checkSecretFields(ctx, defUID, connection, "")
+			if err != nil {
+				return err
+			}
+		}
+		if comp.IsIteratorComponent() {
+			for _, nestedComp := range comp.IteratorComponent.Components {
+				if comp.IsConnectorComponent() {
+					defUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.DefinitionName, "/")[1])
+					connection := nestedComp.ConnectorComponent.Connection
+					err := s.checkSecretFields(ctx, defUID, connection, "")
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
 }

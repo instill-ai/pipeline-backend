@@ -410,53 +410,6 @@ func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe
 	return nil
 }
 
-func (c *converter) checkCredentialFields(ctx context.Context, uid uuid.UUID, connection *structpb.Struct, prefix string) error {
-
-	for k, v := range connection.GetFields() {
-		key := prefix + k
-		if ok, err := c.connector.IsCredentialField(uid, key); err == nil && ok {
-			if v.GetStringValue() != "" {
-				if !strings.HasPrefix(v.GetStringValue(), "${") || !strings.HasSuffix(v.GetStringValue(), "}") {
-					return errCanNotUsePlaintextSecret
-				}
-			}
-		}
-		if v.GetStructValue() != nil {
-			err := c.checkCredentialFields(ctx, uid, v.GetStructValue(), fmt.Sprintf("%s.", key))
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-func (c *converter) checkCredential(ctx context.Context, recipe *datamodel.Recipe) error {
-
-	for _, comp := range recipe.Components {
-		if comp.IsConnectorComponent() {
-			defUID := uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1])
-			connection := comp.ConnectorComponent.Connection
-			err := c.checkCredentialFields(ctx, defUID, connection, "")
-			if err != nil {
-				return err
-			}
-		}
-		if comp.IsIteratorComponent() {
-			for _, nestedComp := range comp.IteratorComponent.Components {
-				if comp.IsConnectorComponent() {
-					defUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.DefinitionName, "/")[1])
-					connection := nestedComp.ConnectorComponent.Connection
-					err := c.checkCredentialFields(ctx, defUID, connection, "")
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
-
 // ConvertPipelineToDB converts protobuf data model to db data model
 func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
@@ -476,11 +429,6 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 			return nil, err
 		}
 
-	}
-
-	err := c.checkCredential(ctx, recipe)
-	if err != nil {
-		return nil, err
 	}
 
 	dbSharing := &datamodel.Sharing{}

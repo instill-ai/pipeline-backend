@@ -124,6 +124,9 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	if err != nil {
 		return nil, err
 	}
+	if err := s.checkSecret(ctx, dbPipeline.Recipe); err != nil {
+		return nil, err
+	}
 
 	if dbPipeline.ShareCode == "" {
 		dbPipeline.ShareCode = generateShareCode()
@@ -267,6 +270,9 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	dbPipeline, err := s.converter.ConvertPipelineToDB(ctx, ns, toUpdPipeline)
 	if err != nil {
+		return nil, err
+	}
+	if err := s.checkSecret(ctx, dbPipeline.Recipe); err != nil {
 		return nil, err
 	}
 
