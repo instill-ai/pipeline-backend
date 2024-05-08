@@ -86,7 +86,7 @@ func main() {
 
 	// Update component definitions and connectors based on latest version of
 	// definitions.json.
-	connDefs := connector.Init(logger, nil, nil).ListConnectorDefinitions(nil, true)
+	connDefs := connector.Init(logger, nil).ListConnectorDefinitions(nil, true)
 	for _, connDef := range connDefs {
 
 		cd := &pb.ComponentDefinition{
@@ -101,7 +101,7 @@ func main() {
 		}
 	}
 
-	opDefs := operator.Init(logger, nil).ListOperatorDefinitions(nil, true)
+	opDefs := operator.Init(logger).ListOperatorDefinitions(nil, true)
 	for _, opDef := range opDefs {
 		cd := &pb.ComponentDefinition{
 			Type: pb.ComponentType_COMPONENT_TYPE_OPERATOR,

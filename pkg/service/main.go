@@ -19,8 +19,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
-	component "github.com/instill-ai/component/pkg/base"
-
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -86,8 +84,8 @@ type service struct {
 	redisClient              *redis.Client
 	temporalClient           client.Client
 	influxDBWriteClient      api.WriteAPI
-	operator                 *operator.OperatorStore
-	connector                *connector.ConnectorStore
+	operator                 *operator.Store
+	connector                *connector.Store
 	aclClient                *acl.ACLClient
 }
 
@@ -99,7 +97,6 @@ func NewService(
 	t client.Client,
 	i api.WriteAPI,
 	acl *acl.ACLClient,
-	u component.UsageHandler,
 ) Service {
 	logger, _ := logger.GetZapLogger(context.Background())
 
@@ -109,8 +106,8 @@ func NewService(
 		redisClient:              rc,
 		temporalClient:           t,
 		influxDBWriteClient:      i,
-		operator:                 operator.Init(logger, u),
-		connector:                connector.Init(logger, u, nil),
+		operator:                 operator.Init(logger),
+		connector:                connector.Init(logger, nil),
 		aclClient:                acl,
 	}
 }
