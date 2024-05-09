@@ -67,6 +67,11 @@ type Repository interface {
 	GetNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) (*datamodel.Secret, error)
 	UpdateNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string, secret *datamodel.Secret) error
 	DeleteNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) error
+
+	CreateNamespaceTag(ctx context.Context, tag *datamodel.Tag) error
+	GetNamespaceTagsByPipelineID(ctx context.Context, pipeline_uid string) ([]*datamodel.Tag, error)
+	UpdateNamespaceTagByID(ctx context.Context, id string, tag *datamodel.Tag) error
+	DeleteNamespaceTagByID(ctx context.Context, id string) error
 }
 
 type repository struct {
@@ -777,6 +782,66 @@ func (r *repository) DeleteNamespaceSecretByID(ctx context.Context, ownerPermali
 		Where("id = ? AND owner = ?", id, ownerPermalink).
 		Delete(&datamodel.Secret{})
 
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ErrNoDataDeleted
+	}
+
+	return nil
+}
+
+
+func (r *repository) CreateNamespaceTag(ctx context.Context, tag *datamodel.Tag) error {
+	r.pinUser(ctx, "tag")
+	db := r.checkPinnedUser(ctx, r.db, "tag")
+
+	if result := db.Model(&datamodel.Tag{}).Create(tag); result.Error != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return errmsg.AddMessage(ErrNameExists, "Tag already exists")
+		}
+		return result.Error
+	}
+	return nil
+}
+
+func (r *repository) GetNamespaceTagsByPipelineID(ctx context.Context, pipeline_uid string) ([]*datamodel.Tag, error) {
+	db := r.db
+	var tags []*datamodel.Tag
+
+	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipeline_uid).Find(&tags)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return tags, nil
+}
+
+func (r *repository) UpdateNamespaceTagByID(ctx context.Context, id string, tag *datamodel.Tag) error {
+	
+	r.pinUser(ctx, "tag")
+	db := r.checkPinnedUser(ctx, r.db, "tag")
+
+	updateFields := map[string]interface{}{
+        "tag_name": tag.TagName,
+		// more fields if needed
+    }
+
+	if result := db.Model(&datamodel.Tag{}).Where("id = ?").Updates(updateFields); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *repository) DeleteNamespaceTagByID(ctx context.Context, id string) error {
+	r.pinUser(ctx, "tag")
+	db := r.checkPinnedUser(ctx, r.db, "tag")
+
+	result := db.Model(&datamodel.Tag{}).Where("id = ?", id).Delete(&datamodel.Tag{})
 	if result.Error != nil {
 		return result.Error
 	}
