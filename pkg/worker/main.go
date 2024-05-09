@@ -7,12 +7,11 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/workflow"
 
+	component "github.com/instill-ai/component/pkg/base"
 	"github.com/instill-ai/component/pkg/connector"
 	"github.com/instill-ai/component/pkg/operator"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-
-	component "github.com/instill-ai/component/pkg/base"
 )
 
 // TaskQueue is the Temporal task queue name for pipeline-backend
@@ -32,8 +31,8 @@ type worker struct {
 	repository          repository.Repository
 	redisClient         *redis.Client
 	influxDBWriteClient api.WriteAPI
-	operator            *operator.OperatorStore
-	connector           *connector.ConnectorStore
+	operator            *operator.Store
+	connector           *connector.Store
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
@@ -41,15 +40,15 @@ func NewWorker(
 	r repository.Repository,
 	rd *redis.Client,
 	i api.WriteAPI,
-	u component.UsageHandler,
 	cs connector.ConnectionSecrets,
+	uh map[string]component.UsageHandlerCreator,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &worker{
 		repository:          r,
 		redisClient:         rd,
 		influxDBWriteClient: i,
-		operator:            operator.Init(logger, u),
-		connector:           connector.Init(logger, u, cs),
+		operator:            operator.Init(logger),
+		connector:           connector.Init(logger, cs, uh),
 	}
 }

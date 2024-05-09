@@ -101,7 +101,7 @@ func main() {
 		}
 	}
 
-	opDefs := operator.Init(logger, nil).ListOperatorDefinitions(nil, true)
+	opDefs := operator.Init(logger).ListOperatorDefinitions(nil, true)
 	for _, opDef := range opDefs {
 		cd := &pb.ComponentDefinition{
 			Type: pb.ComponentType_COMPONENT_TYPE_OPERATOR,

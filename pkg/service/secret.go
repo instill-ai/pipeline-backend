@@ -20,7 +20,7 @@ func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespa
 		return nil, err
 	}
 
-	if pbSecret.GetId() == constant.GlobalCredentialSecretKey {
+	if pbSecret.GetId() == constant.GlobalSecretKey {
 		return nil, errmsg.AddMessage(
 			fmt.Errorf("%w: reserved secret ID", errdomain.ErrInvalidArgument),
 			"The secret ID is reserved",

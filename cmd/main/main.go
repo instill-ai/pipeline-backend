@@ -247,8 +247,6 @@ func main() {
 
 	repository := repository.NewRepository(db, redisClient)
 
-	usageHandler := usage.UsageHandler{}
-
 	service := service.NewService(
 		repository,
 		mgmtPrivateServiceClient,
@@ -256,7 +254,6 @@ func main() {
 		temporalClient,
 		influxDBWriteClient,
 		&aclClient,
-		usageHandler,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)
