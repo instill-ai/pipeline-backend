@@ -69,7 +69,7 @@ type Repository interface {
 	DeleteNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) error
 
 	CreateNamespaceTag(ctx context.Context, tag *datamodel.Tag) error
-	GetNamespaceTagsByPipelineID(ctx context.Context, pipeline_uid string) ([]*datamodel.Tag, error)
+	GetNamespaceTagsByPipelineID(ctx context.Context, pipelineUID string) ([]*datamodel.Tag, error)
 	UpdateNamespaceTagByID(ctx context.Context, id string, tag *datamodel.Tag) error
 	DeleteNamespaceTagByID(ctx context.Context, id string) error
 }
@@ -808,11 +808,11 @@ func (r *repository) CreateNamespaceTag(ctx context.Context, tag *datamodel.Tag)
 	return nil
 }
 
-func (r *repository) GetNamespaceTagsByPipelineID(ctx context.Context, pipeline_uid string) ([]*datamodel.Tag, error) {
+func (r *repository) GetNamespaceTagsByPipelineID(ctx context.Context, pipelineUID string) ([]*datamodel.Tag, error) {
 	db := r.db
 	var tags []*datamodel.Tag
 
-	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipeline_uid).Find(&tags)
+	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipelineUID).Find(&tags)
 
 	if result.Error != nil {
 		return nil, result.Error
