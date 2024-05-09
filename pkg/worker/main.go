@@ -7,6 +7,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/workflow"
 
+	component "github.com/instill-ai/component/pkg/base"
 	"github.com/instill-ai/component/pkg/connector"
 	"github.com/instill-ai/component/pkg/operator"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
@@ -40,6 +41,7 @@ func NewWorker(
 	rd *redis.Client,
 	i api.WriteAPI,
 	cs connector.ConnectionSecrets,
+	uh map[string]component.UsageHandlerCreator,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &worker{
@@ -47,6 +49,6 @@ func NewWorker(
 		redisClient:         rd,
 		influxDBWriteClient: i,
 		operator:            operator.Init(logger),
-		connector:           connector.Init(logger, cs),
+		connector:           connector.Init(logger, cs, uh),
 	}
 }

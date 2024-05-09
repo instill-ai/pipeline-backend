@@ -13,6 +13,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
+	component "github.com/instill-ai/component/pkg/base"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
@@ -149,7 +150,13 @@ func main() {
 		}
 	}()
 
-	cw := pipelineWorker.NewWorker(repository, redisClient, influxDBWriteClient, config.Config.Connector.Secrets)
+	cw := pipelineWorker.NewWorker(
+		repository,
+		redisClient,
+		influxDBWriteClient,
+		config.Config.Connector.Secrets,
+		map[string]component.UsageHandlerCreator{},
+	)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
 		MaxConcurrentActivityExecutionSize: 2,

@@ -86,7 +86,7 @@ func main() {
 
 	// Update component definitions and connectors based on latest version of
 	// definitions.json.
-	connDefs := connector.Init(logger, nil).ListConnectorDefinitions(nil, true)
+	connDefs := connector.Init(logger, nil, nil).ListConnectorDefinitions(nil, true)
 	for _, connDef := range connDefs {
 
 		cd := &pb.ComponentDefinition{
