@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -15,14 +14,11 @@ import (
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gofrs/uuid"
-	"github.com/redis/go-redis/v9"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.einride.tech/aip/filtering"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -469,63 +465,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	batchSize := len(pipelineInputs)
 	if batchSize > constant.MaxBatchSize {
 		return nil, ErrExceedMaxBatchSize
-	}
-
-	checkRateLimited := !isAdmin
-
-	if !checkRateLimited {
-		if ns.NsType == resource.Organization {
-			resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(
-				ctx,
-				&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-			)
-			if err != nil {
-				s, ok := status.FromError(err)
-				if !ok {
-					return nil, err
-				}
-				if s.Code() != codes.Unimplemented {
-					return nil, err
-				}
-			} else {
-				if resp.Subscription.Plan == mgmtPB.OrganizationSubscription_PLAN_FREEMIUM {
-					checkRateLimited = true
-				}
-			}
-
-		} else {
-			resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(
-				ctx,
-				&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-			)
-			if err != nil {
-				s, ok := status.FromError(err)
-				if !ok {
-					return nil, err
-				}
-				if s.Code() != codes.Unimplemented {
-					return nil, err
-				}
-			} else {
-				if resp.Subscription.Plan == mgmtPB.UserSubscription_PLAN_FREEMIUM {
-					checkRateLimited = true
-				}
-			}
-		}
-	}
-
-	if checkRateLimited {
-		userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-		value, err := s.redisClient.Get(ctx, fmt.Sprintf("user_rate_limit:user:%s", userUID)).Result()
-		// TODO: use a more robust way to check key exist
-		if !errors.Is(err, redis.Nil) {
-			requestLeft, _ := strconv.ParseInt(value, 10, 64)
-			if requestLeft <= 0 {
-				return nil, ErrRateLimiting
-			} else {
-				_ = s.redisClient.Decr(ctx, fmt.Sprintf("user_rate_limit:user:%s", userUID))
-			}
-		}
 	}
 
 	var metadata []byte
@@ -1165,50 +1104,6 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, err
 	}
 
-	latestReleaseUID, err := s.GetNamespacePipelineLatestReleaseUID(ctx, ns, dbPipeline.ID)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// TODO: move to cloud version
-	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(
-			ctx,
-			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, nil, err
-			}
-		} else {
-			if resp.Subscription.Plan == mgmtPB.OrganizationSubscription_PLAN_FREEMIUM && dbPipelineRelease.UID != latestReleaseUID {
-				return nil, nil, ErrCanNotTriggerNonLatestPipelineRelease
-			}
-		}
-	} else {
-		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(
-			ctx,
-			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, nil, err
-			}
-		} else {
-			if resp.Subscription.Plan == mgmtPB.UserSubscription_PLAN_FREEMIUM && dbPipelineRelease.UID != latestReleaseUID {
-				return nil, nil, ErrCanNotTriggerNonLatestPipelineRelease
-			}
-		}
-	}
-
 	return s.triggerPipeline(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, secrets, pipelineTriggerID, returnTraces)
 }
 
@@ -1229,50 +1124,6 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, false)
 	if err != nil {
 		return nil, err
-	}
-
-	latestReleaseUID, err := s.GetNamespacePipelineLatestReleaseUID(ctx, ns, dbPipeline.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: move to cloud version
-	if ns.NsType == resource.Organization {
-		resp, err := s.mgmtPrivateServiceClient.GetOrganizationSubscriptionAdmin(
-			ctx,
-			&mgmtPB.GetOrganizationSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			if resp.Subscription.Plan == mgmtPB.OrganizationSubscription_PLAN_FREEMIUM && dbPipelineRelease.UID != latestReleaseUID {
-				return nil, ErrCanNotTriggerNonLatestPipelineRelease
-			}
-		}
-	} else {
-		resp, err := s.mgmtPrivateServiceClient.GetUserSubscriptionAdmin(
-			ctx,
-			&mgmtPB.GetUserSubscriptionAdminRequest{Parent: fmt.Sprintf("%s/%s", ns.NsType, ns.NsID)},
-		)
-		if err != nil {
-			s, ok := status.FromError(err)
-			if !ok {
-				return nil, err
-			}
-			if s.Code() != codes.Unimplemented {
-				return nil, err
-			}
-		} else {
-			if resp.Subscription.Plan == mgmtPB.UserSubscription_PLAN_FREEMIUM && dbPipelineRelease.UID != latestReleaseUID {
-				return nil, ErrCanNotTriggerNonLatestPipelineRelease
-			}
-		}
 	}
 
 	return s.triggerAsyncPipeline(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, secrets, pipelineTriggerID, returnTraces)
