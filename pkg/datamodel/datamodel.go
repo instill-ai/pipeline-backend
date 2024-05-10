@@ -69,10 +69,10 @@ type Pipeline struct {
 }
 
 type Tag struct {
-	BaseDynamic
-	ID          string
 	PipelineUID string
 	TagName     string
+	CreateTime  time.Time `gorm:"autoCreateTime:nano"`
+	UpdateTime  time.Time `gorm:"autoUpdateTime:nano"`
 }
 
 // PipelineRelease is the data model of the pipeline release table
