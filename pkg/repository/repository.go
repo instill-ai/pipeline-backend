@@ -68,6 +68,9 @@ type Repository interface {
 	GetNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) (*datamodel.Secret, error)
 	UpdateNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string, secret *datamodel.Secret) error
 	DeleteNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) error
+	CreatePipelineTag(ctx context.Context, pipelineUID string, tagName string) error
+	DeletePipelineTag(ctx context.Context, pipelineUID string, tagName string) error
+	ListPipelineTags(ctx context.Context, pipelineUID string) ([]*datamodel.Tag, error)
 }
 
 type repository struct {
@@ -114,7 +117,7 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 	return nil
 }
 
-func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
+func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, tagNames []string) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
 
 	db := r.db
 	if showDeleted {
@@ -155,6 +158,12 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		queryBuilder.Order(orderString)
 	}
 	queryBuilder.Order("uid DESC")
+
+	if tagNames != nil {
+		queryBuilder = queryBuilder.
+			Joins("left join tags on tags.pipeline_uid = pipelines.uid").
+			Where("tags.tag_name in (?)", tagNames)
+	}
 
 	if uidAllowList != nil {
 		queryBuilder = queryBuilder.Where("uid in ?", uidAllowList)
@@ -305,17 +314,17 @@ func (r *repository) ListPipelines(ctx context.Context, pageSize int64, pageToke
 	return r.listPipelines(ctx,
 		"",
 		[]interface{}{},
-		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, nil)
 }
 func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
 		"(owner = ?)",
 		[]interface{}{ownerPermalink},
-		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, nil)
 }
 
 func (r *repository) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error) {
-	return r.listPipelines(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted, embedReleases, ordering.OrderBy{})
+	return r.listPipelines(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted, embedReleases, ordering.OrderBy{}, nil)
 }
 
 func (r *repository) getNamespacePipeline(ctx context.Context, where string, whereArgs []interface{}, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error) {
@@ -842,4 +851,77 @@ func (r *repository) DeleteNamespaceSecretByID(ctx context.Context, ownerPermali
 	}
 
 	return nil
+}
+
+func (r *repository) CreatePipelineTag(ctx context.Context, pipelineUID string, tagName string) error {
+
+	r.pinUser(ctx, "tag")
+
+	db := r.checkPinnedUser(ctx, r.db, "tag")
+
+	tag := datamodel.Tag{
+
+		PipelineUID: pipelineUID,
+
+		TagName: tagName,
+	}
+
+	if result := db.Model(&datamodel.Tag{}).Create(&tag); result.Error != nil {
+
+		var pgErr *pgconn.PgError
+
+		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+
+			return errmsg.AddMessage(ErrNameExists, "Tag already exists")
+
+		}
+
+		return result.Error
+
+	}
+
+	return nil
+
+}
+
+func (r *repository) DeletePipelineTag(ctx context.Context, pipelineUID string, tagName string) error {
+
+	r.pinUser(ctx, "tag")
+
+	db := r.checkPinnedUser(ctx, r.db, "tag")
+
+	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ? and tag_name = ?", pipelineUID, tagName).Delete(&datamodel.Tag{})
+
+	if result.Error != nil {
+
+		return result.Error
+
+	}
+
+	if result.RowsAffected == 0 {
+
+		return ErrNoDataDeleted
+
+	}
+
+	return nil
+
+}
+
+func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID string) ([]*datamodel.Tag, error) {
+
+	db := r.db
+
+	var tags []*datamodel.Tag
+
+	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipelineUID).Find(tags)
+
+	if result.Error != nil {
+
+		return nil, result.Error
+
+	}
+
+	return tags, nil
+
 }
