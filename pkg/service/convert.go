@@ -10,39 +10,85 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/component/pkg/connector"
+	"github.com/instill-ai/component/pkg/operator"
+	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
+	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
+type Converter interface {
+	ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error)
+	ConvertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error)
+	ConvertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error)
+
+	ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error)
+	ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error)
+	ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pb.Pipeline_View) ([]*pb.PipelineRelease, error)
+
+	ConvertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error)
+	ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error)
+	ConvertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error)
+
+	ConvertOwnerPermalinkToName(ctx context.Context, permalink string) (string, error)
+	ConvertOwnerNameToPermalink(ctx context.Context, name string) (string, error)
+}
+
+type converter struct {
+	mgmtPrivateServiceClient mgmtPB.MgmtPrivateServiceClient
+	redisClient              *redis.Client
+	operator                 *operator.Store
+	connector                *connector.Store
+	aclClient                *acl.ACLClient
+}
+
+// NewService initiates a service instance
+func NewConverter(
+	m mgmtPB.MgmtPrivateServiceClient,
+	rc *redis.Client,
+	acl *acl.ACLClient,
+) Converter {
+	logger, _ := logger.GetZapLogger(context.Background())
+
+	return &converter{
+		mgmtPrivateServiceClient: m,
+		redisClient:              rc,
+		operator:                 operator.Init(logger),
+		connector:                connector.Init(logger, nil, nil),
+		aclClient:                acl,
+	}
+}
+
 // In the API, we expose the human-readable ID to the user. But in the database, we store it with UUID as the permanent identifier.
 // The `convertResourceNameToPermalink` function converts all resources that use ID to UUID.
-func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) error {
+func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any) error {
 
 	switch rsc := rsc.(type) {
 	case *pb.Recipe:
 		for idx := range rsc.Components {
-			if err := s.convertResourceNameToPermalink(ctx, rsc.Components[idx]); err != nil {
+			if err := c.convertResourceNameToPermalink(ctx, rsc.Components[idx]); err != nil {
 				return err
 			}
 		}
 	case *pb.Component:
-		return s.convertResourceNameToPermalink(ctx, rsc.Component)
+		return c.convertResourceNameToPermalink(ctx, rsc.Component)
 	case *pb.NestedComponent:
-		return s.convertResourceNameToPermalink(ctx, rsc.Component)
+		return c.convertResourceNameToPermalink(ctx, rsc.Component)
 	case *pb.Component_IteratorComponent:
 		for idx := range rsc.IteratorComponent.Components {
-			if err := s.convertResourceNameToPermalink(ctx, rsc.IteratorComponent.Components[idx]); err != nil {
+			if err := c.convertResourceNameToPermalink(ctx, rsc.IteratorComponent.Components[idx]); err != nil {
 				return err
 			}
 		}
@@ -53,7 +99,7 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 			return err
 		}
 
-		def, err := s.connector.GetConnectorDefinitionByID(id, nil, nil)
+		def, err := c.connector.GetConnectorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -65,7 +111,7 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.connector.GetConnectorDefinitionByID(id, nil, nil)
+		def, err := c.connector.GetConnectorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -77,7 +123,7 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.operator.GetOperatorDefinitionByID(id, nil, nil)
+		def, err := c.operator.GetOperatorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -89,7 +135,7 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.operator.GetOperatorDefinitionByID(id, nil, nil)
+		def, err := c.operator.GetOperatorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -101,22 +147,22 @@ func (s *service) convertResourceNameToPermalink(ctx context.Context, rsc any) e
 
 // In the API, we expose the human-readable ID to the user. But in the database, we store it with UUID as the permanent identifier.
 // The `convertResourceNameToPermalink` function converts all resources that use UUID to ID.
-func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) error {
+func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any) error {
 
 	switch rsc := rsc.(type) {
 	case *pb.Recipe:
 		for idx := range rsc.Components {
-			if err := s.convertResourcePermalinkToName(ctx, rsc.Components[idx]); err != nil {
+			if err := c.convertResourcePermalinkToName(ctx, rsc.Components[idx]); err != nil {
 				return err
 			}
 		}
 	case *pb.Component:
-		return s.convertResourcePermalinkToName(ctx, rsc.Component)
+		return c.convertResourcePermalinkToName(ctx, rsc.Component)
 	case *pb.NestedComponent:
-		return s.convertResourcePermalinkToName(ctx, rsc.Component)
+		return c.convertResourcePermalinkToName(ctx, rsc.Component)
 	case *pb.Component_IteratorComponent:
 		for idx := range rsc.IteratorComponent.Components {
-			if err := s.convertResourcePermalinkToName(ctx, rsc.IteratorComponent.Components[idx]); err != nil {
+			if err := c.convertResourcePermalinkToName(ctx, rsc.IteratorComponent.Components[idx]); err != nil {
 				return err
 			}
 		}
@@ -126,7 +172,7 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, nil)
+		def, err := c.connector.GetConnectorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -137,7 +183,7 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.connector.GetConnectorDefinitionByUID(uid, nil, nil)
+		def, err := c.connector.GetConnectorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -148,7 +194,7 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.operator.GetOperatorDefinitionByUID(uid, nil, nil)
+		def, err := c.operator.GetOperatorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -159,7 +205,7 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 		if err != nil {
 			return err
 		}
-		def, err := s.operator.GetOperatorDefinitionByUID(uid, nil, nil)
+		def, err := c.operator.GetOperatorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -168,7 +214,7 @@ func (s *service) convertResourcePermalinkToName(ctx context.Context, rsc any) e
 	return nil
 }
 
-func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pb.OperatorComponent) error {
+func (c *converter) includeOperatorComponentDetail(ctx context.Context, comp *pb.OperatorComponent) error {
 	uid, err := resource.GetRscPermalinkUID(comp.DefinitionName)
 	if err != nil {
 		return err
@@ -177,7 +223,7 @@ func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pb.O
 	if err != nil {
 		return err
 	}
-	def, err := s.operator.GetOperatorDefinitionByUID(uid, vars, comp)
+	def, err := c.operator.GetOperatorDefinitionByUID(uid, vars, comp)
 	if err != nil {
 		return err
 	}
@@ -186,7 +232,7 @@ func (s *service) includeOperatorComponentDetail(ctx context.Context, comp *pb.O
 	return nil
 }
 
-func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pb.ConnectorComponent) error {
+func (c *converter) includeConnectorComponentDetail(ctx context.Context, comp *pb.ConnectorComponent) error {
 	uid, err := resource.GetRscPermalinkUID(comp.DefinitionName)
 	if err != nil {
 		return err
@@ -195,7 +241,7 @@ func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pb.
 	if err != nil {
 		return err
 	}
-	def, err := s.connector.GetConnectorDefinitionByUID(uid, vars, comp)
+	def, err := c.connector.GetConnectorDefinitionByUID(uid, vars, comp)
 	if err != nil {
 		return err
 	}
@@ -204,15 +250,15 @@ func (s *service) includeConnectorComponentDetail(ctx context.Context, comp *pb.
 	return nil
 }
 
-func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pb.IteratorComponent) error {
+func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *pb.IteratorComponent) error {
 
 	for nestIdx := range comp.Components {
 		var err error
 		switch comp.Components[nestIdx].Component.(type) {
 		case *pb.NestedComponent_ConnectorComponent:
-			err = s.includeConnectorComponentDetail(ctx, comp.Components[nestIdx].GetConnectorComponent())
+			err = c.includeConnectorComponentDetail(ctx, comp.Components[nestIdx].GetConnectorComponent())
 		case *pb.NestedComponent_OperatorComponent:
-			err = s.includeOperatorComponentDetail(ctx, comp.Components[nestIdx].GetOperatorComponent())
+			err = c.includeOperatorComponentDetail(ctx, comp.Components[nestIdx].GetOperatorComponent())
 		}
 		if err != nil {
 			return err
@@ -345,17 +391,17 @@ func (s *service) includeIteratorComponentDetail(ctx context.Context, comp *pb.I
 	return nil
 }
 
-func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe) error {
+func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe) error {
 
 	for idx := range recipe.Components {
 		var err error
 		switch recipe.Components[idx].Component.(type) {
 		case *pb.Component_ConnectorComponent:
-			err = s.includeConnectorComponentDetail(ctx, recipe.Components[idx].GetConnectorComponent())
+			err = c.includeConnectorComponentDetail(ctx, recipe.Components[idx].GetConnectorComponent())
 		case *pb.Component_OperatorComponent:
-			err = s.includeOperatorComponentDetail(ctx, recipe.Components[idx].GetOperatorComponent())
+			err = c.includeOperatorComponentDetail(ctx, recipe.Components[idx].GetOperatorComponent())
 		case *pb.Component_IteratorComponent:
-			err = s.includeIteratorComponentDetail(ctx, recipe.Components[idx].GetIteratorComponent())
+			err = c.includeIteratorComponentDetail(ctx, recipe.Components[idx].GetIteratorComponent())
 		}
 		if err != nil {
 			return err
@@ -364,11 +410,11 @@ func (s *service) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe) 
 	return nil
 }
 
-func (s *service) checkCredentialFields(ctx context.Context, uid uuid.UUID, connection *structpb.Struct, prefix string) error {
+func (c *converter) checkCredentialFields(ctx context.Context, uid uuid.UUID, connection *structpb.Struct, prefix string) error {
 
 	for k, v := range connection.GetFields() {
 		key := prefix + k
-		if ok, err := s.connector.IsCredentialField(uid, key); err == nil && ok {
+		if ok, err := c.connector.IsCredentialField(uid, key); err == nil && ok {
 			if v.GetStringValue() != "" {
 				if !strings.HasPrefix(v.GetStringValue(), "${") || !strings.HasSuffix(v.GetStringValue(), "}") {
 					return errCanNotUsePlaintextSecret
@@ -376,7 +422,7 @@ func (s *service) checkCredentialFields(ctx context.Context, uid uuid.UUID, conn
 			}
 		}
 		if v.GetStructValue() != nil {
-			err := s.checkCredentialFields(ctx, uid, v.GetStructValue(), fmt.Sprintf("%s.", key))
+			err := c.checkCredentialFields(ctx, uid, v.GetStructValue(), fmt.Sprintf("%s.", key))
 			if err != nil {
 				return err
 			}
@@ -384,13 +430,13 @@ func (s *service) checkCredentialFields(ctx context.Context, uid uuid.UUID, conn
 	}
 	return nil
 }
-func (s *service) checkCredential(ctx context.Context, recipe *datamodel.Recipe) error {
+func (c *converter) checkCredential(ctx context.Context, recipe *datamodel.Recipe) error {
 
 	for _, comp := range recipe.Components {
 		if comp.IsConnectorComponent() {
 			defUID := uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1])
 			connection := comp.ConnectorComponent.Connection
-			err := s.checkCredentialFields(ctx, defUID, connection, "")
+			err := c.checkCredentialFields(ctx, defUID, connection, "")
 			if err != nil {
 				return err
 			}
@@ -400,7 +446,7 @@ func (s *service) checkCredential(ctx context.Context, recipe *datamodel.Recipe)
 				if comp.IsConnectorComponent() {
 					defUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.DefinitionName, "/")[1])
 					connection := nestedComp.ConnectorComponent.Connection
-					err := s.checkCredentialFields(ctx, defUID, connection, "")
+					err := c.checkCredentialFields(ctx, defUID, connection, "")
 					if err != nil {
 						return err
 					}
@@ -411,13 +457,13 @@ func (s *service) checkCredential(ctx context.Context, recipe *datamodel.Recipe)
 	return nil
 }
 
-// convertPipelineToDB converts protobuf data model to db data model
-func (s *service) convertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
+// ConvertPipelineToDB converts protobuf data model to db data model
+func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
 	recipe := &datamodel.Recipe{}
 	if pbPipeline.GetRecipe() != nil {
-		err := s.convertResourceNameToPermalink(ctx, pbPipeline.Recipe)
+		err := c.convertResourceNameToPermalink(ctx, pbPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -432,7 +478,7 @@ func (s *service) convertPipelineToDB(ctx context.Context, ns resource.Namespace
 
 	}
 
-	err := s.checkCredential(ctx, recipe)
+	err := c.checkCredential(ctx, recipe)
 	if err != nil {
 		return nil, err
 	}
@@ -507,12 +553,12 @@ var ConnectorTypeToComponentType = map[pb.ConnectorType]pb.ComponentType{
 	pb.ConnectorType_CONNECTOR_TYPE_DATA:        pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
 }
 
-// convertPipelineToPB converts db data model to protobuf data model
-func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error) {
+// ConvertPipelineToPB converts db data model to protobuf data model
+func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ownerName, err := s.convertOwnerPermalinkToName(ctx, dbPipeline.Owner)
+	ownerName, err := c.ConvertOwnerPermalinkToName(ctx, dbPipeline.Owner)
 	if err != nil {
 		return nil, err
 	}
@@ -536,13 +582,13 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 	}
 
 	if view == pb.Pipeline_VIEW_FULL {
-		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
+		if err := c.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
 		}
 	}
 
 	if pbRecipe != nil {
-		err = s.convertResourcePermalinkToName(ctx, pbRecipe)
+		err = c.convertResourcePermalinkToName(ctx, pbRecipe)
 		if err != nil {
 			return nil, err
 		}
@@ -589,7 +635,7 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 		defer wg.Done()
 		var owner *mgmtPB.Owner
 		if view > pb.Pipeline_VIEW_BASIC {
-			owner, err = s.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
+			owner, err = c.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
 			if err != nil {
 				return
 			}
@@ -607,11 +653,12 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 			return
 		}
 
-		canEdit, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
+		canEdit, err := c.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
 		if err != nil {
 			return
 		}
 		pbPipeline.Permission.CanEdit = canEdit
+		pbPipeline.Permission.CanRelease = canEdit
 	}()
 	go func() {
 		defer wg.Done()
@@ -623,7 +670,7 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 			return
 		}
 
-		canTrigger, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
+		canTrigger, err := c.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
 		if err != nil {
 			return
 		}
@@ -644,7 +691,7 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 	go func() {
 		defer wg.Done()
 		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && pbRecipe.Trigger.GetTriggerByRequest() != nil {
-			spec, err := s.generatePipelineDataSpec(pbRecipe.Trigger.GetTriggerByRequest(), pbRecipe.Components)
+			spec, err := c.generatePipelineDataSpec(pbRecipe.Trigger.GetTriggerByRequest(), pbRecipe.Components)
 			if err != nil {
 				return
 			}
@@ -654,7 +701,7 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 
 	go func() {
 		defer wg.Done()
-		pbReleases, err := s.convertPipelineReleasesToPB(ctx, dbPipeline, dbPipeline.Releases, view)
+		pbReleases, err := c.ConvertPipelineReleasesToPB(ctx, dbPipeline, dbPipeline.Releases, view)
 		if err != nil {
 			return
 		}
@@ -672,8 +719,8 @@ func (s *service) convertPipelineToPB(ctx context.Context, dbPipeline *datamodel
 	return &pbPipeline, nil
 }
 
-// convertPipelineToPB converts db data model to protobuf data model
-func (s *service) convertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error) {
+// ConvertPipelinesToPB converts db data model to protobuf data model
+func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error) {
 
 	type result struct {
 		idx      int
@@ -688,7 +735,7 @@ func (s *service) convertPipelinesToPB(ctx context.Context, dbPipelines []*datam
 	for idx := range dbPipelines {
 		go func(i int) {
 			defer wg.Done()
-			pbPipeline, err := s.convertPipelineToPB(
+			pbPipeline, err := c.ConvertPipelineToPB(
 				ctx,
 				dbPipelines[i],
 				view,
@@ -713,13 +760,13 @@ func (s *service) convertPipelinesToPB(ctx context.Context, dbPipelines []*datam
 	return pbPipelines, nil
 }
 
-// convertPipelineReleaseToDB converts protobuf data model to db data model
-func (s *service) convertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error) {
+// ConvertPipelineReleaseToDB converts protobuf data model to db data model
+func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
 	recipe := &datamodel.Recipe{}
 	if pbPipelineRelease.GetRecipe() != nil {
-		err := s.convertResourceNameToPermalink(ctx, pbPipelineRelease.Recipe)
+		err := c.convertResourceNameToPermalink(ctx, pbPipelineRelease.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -784,12 +831,12 @@ func (s *service) convertPipelineReleaseToDB(ctx context.Context, pipelineUID uu
 	}, nil
 }
 
-// convertPipelineReleaseToPB converts db data model to protobuf data model
-func (s *service) convertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
+// ConvertPipelineReleaseToPB converts db data model to protobuf data model
+func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := s.convertOwnerPermalinkToName(ctx, dbPipeline.Owner)
+	owner, err := c.ConvertOwnerPermalinkToName(ctx, dbPipeline.Owner)
 	if err != nil {
 		return nil, err
 	}
@@ -811,13 +858,13 @@ func (s *service) convertPipelineReleaseToPB(ctx context.Context, dbPipeline *da
 	var triggerByRequest *pb.TriggerByRequest
 
 	if view == pb.Pipeline_VIEW_FULL {
-		if err := s.includeDetailInRecipe(ctx, pbRecipe); err != nil {
+		if err := c.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
 		}
 	}
 
 	if pbRecipe != nil {
-		err = s.convertResourcePermalinkToName(ctx, pbRecipe)
+		err = c.convertResourcePermalinkToName(ctx, pbRecipe)
 		if err != nil {
 			return nil, err
 		}
@@ -852,7 +899,7 @@ func (s *service) convertPipelineReleaseToPB(ctx context.Context, dbPipeline *da
 	}
 
 	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && triggerByRequest != nil {
-		spec, err := s.generatePipelineDataSpec(triggerByRequest, pbRecipe.Components)
+		spec, err := c.generatePipelineDataSpec(triggerByRequest, pbRecipe.Components)
 		if err == nil {
 			pbPipelineRelease.DataSpecification = spec
 		}
@@ -861,8 +908,8 @@ func (s *service) convertPipelineReleaseToPB(ctx context.Context, dbPipeline *da
 	return &pbPipelineRelease, nil
 }
 
-// convertPipelineReleaseToPB converts db data model to protobuf data model
-func (s *service) convertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pb.Pipeline_View) ([]*pb.PipelineRelease, error) {
+// ConvertPipelineReleaseToPB converts db data model to protobuf data model
+func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pb.Pipeline_View) ([]*pb.PipelineRelease, error) {
 
 	type result struct {
 		idx     int
@@ -877,7 +924,7 @@ func (s *service) convertPipelineReleasesToPB(ctx context.Context, dbPipeline *d
 	for idx := range dbPipelineRelease {
 		go func(i int) {
 			defer wg.Done()
-			pbRelease, err := s.convertPipelineReleaseToPB(
+			pbRelease, err := c.ConvertPipelineReleaseToPB(
 				ctx,
 				dbPipeline,
 				dbPipelineRelease[i],
@@ -903,7 +950,7 @@ func (s *service) convertPipelineReleasesToPB(ctx context.Context, dbPipeline *d
 }
 
 // TODO: refactor these codes
-func (s *service) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByRequest, compsOrigin []*pb.Component) (*pb.DataSpecification, error) {
+func (c *converter) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByRequest, compsOrigin []*pb.Component) (*pb.DataSpecification, error) {
 	success := true
 	pipelineDataSpec := &pb.DataSpecification{}
 
@@ -1076,7 +1123,7 @@ func (s *service) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByR
 
 }
 
-func (s *service) convertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error) {
+func (c *converter) ConvertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -1114,9 +1161,9 @@ func (s *service) convertSecretToDB(ctx context.Context, ns resource.Namespace, 
 	}, nil
 }
 
-func (s *service) convertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error) {
+func (c *converter) ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error) {
 
-	ownerName, err := s.convertOwnerPermalinkToName(ctx, dbSecret.Owner)
+	ownerName, err := c.ConvertOwnerPermalinkToName(ctx, dbSecret.Owner)
 	if err != nil {
 		return nil, err
 	}
@@ -1132,15 +1179,105 @@ func (s *service) convertSecretToPB(ctx context.Context, dbSecret *datamodel.Sec
 
 }
 
-func (s *service) convertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error) {
+func (c *converter) ConvertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error) {
 
 	var err error
 	pbSecrets := make([]*pb.Secret, len(dbSecrets))
 	for idx := range dbSecrets {
-		pbSecrets[idx], err = s.convertSecretToPB(ctx, dbSecrets[idx])
+		pbSecrets[idx], err = c.ConvertSecretToPB(ctx, dbSecrets[idx])
 		if err != nil {
 			return nil, err
 		}
 	}
 	return pbSecrets, nil
+}
+
+// Note: Currently, we don't allow changing the owner ID. We are safe to use a cache with a longer TTL for this function.
+func (c *converter) ConvertOwnerPermalinkToName(ctx context.Context, permalink string) (string, error) {
+
+	splits := strings.Split(permalink, "/")
+	nsType := splits[0]
+	uid := splits[1]
+	key := fmt.Sprintf("user:%s:uid_to_id", uid)
+	if id, err := c.redisClient.Get(ctx, key).Result(); err != redis.Nil {
+		return fmt.Sprintf("%s/%s", nsType, id), nil
+	}
+
+	if nsType == "users" {
+		userResp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
+		if err != nil {
+			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
+		}
+		c.redisClient.Set(ctx, key, userResp.User.Id, 24*time.Hour)
+		return fmt.Sprintf("users/%s", userResp.User.Id), nil
+	} else {
+		orgResp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
+		if err != nil {
+			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
+		}
+		c.redisClient.Set(ctx, key, orgResp.Organization.Id, 24*time.Hour)
+		return fmt.Sprintf("organizations/%s", orgResp.Organization.Id), nil
+	}
+}
+
+func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string) (*mgmtPB.Owner, error) {
+
+	key := fmt.Sprintf("owner_profile:%s", permalink)
+	if b, err := c.redisClient.Get(ctx, key).Bytes(); err == nil {
+		owner := &mgmtPB.Owner{}
+		if protojson.Unmarshal(b, owner) == nil {
+			return owner, nil
+		}
+	}
+
+	if strings.HasPrefix(permalink, "users") {
+		resp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
+		if err != nil {
+			return nil, fmt.Errorf("fetchOwnerByPermalink error")
+		}
+		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_User{User: resp.User}}
+		if b, err := protojson.Marshal(owner); err == nil {
+			c.redisClient.Set(ctx, key, b, 5*time.Minute)
+		}
+		return owner, nil
+	} else {
+		resp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
+		if err != nil {
+			return nil, fmt.Errorf("fetchOwnerByPermalink error")
+		}
+		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_Organization{Organization: resp.Organization}}
+		if b, err := protojson.Marshal(owner); err == nil {
+			c.redisClient.Set(ctx, key, b, 5*time.Minute)
+		}
+		return owner, nil
+
+	}
+}
+
+// Note: Currently, we don't allow changing the owner ID. We are safe to use a cache with a longer TTL for this function.
+func (c *converter) ConvertOwnerNameToPermalink(ctx context.Context, name string) (string, error) {
+
+	splits := strings.Split(name, "/")
+	nsType := splits[0]
+	id := splits[1]
+	key := fmt.Sprintf("user:%s:id_to_uid", id)
+	if uid, err := c.redisClient.Get(ctx, key).Result(); err != redis.Nil {
+		return fmt.Sprintf("%s/%s", nsType, uid), nil
+	}
+
+	if nsType == "users" {
+		userResp, err := c.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: name})
+		if err != nil {
+			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
+		}
+		c.redisClient.Set(ctx, key, *userResp.User.Uid, 24*time.Hour)
+		return fmt.Sprintf("users/%s", *userResp.User.Uid), nil
+	} else {
+		orgResp, err := c.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtPB.GetOrganizationAdminRequest{Name: name})
+		if err != nil {
+			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
+		}
+		c.redisClient.Set(ctx, key, orgResp.Organization.Uid, 24*time.Hour)
+		return fmt.Sprintf("organizations/%s", orgResp.Organization.Uid), nil
+	}
 }

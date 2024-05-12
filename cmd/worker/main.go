@@ -23,7 +23,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
+	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineWorker "github.com/instill-ai/pipeline-backend/pkg/worker"
 )
 
@@ -77,7 +77,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// setup tracing and metrics
-	if tp, err := custom_otel.SetupTracing(ctx, "pipeline-backend-worker"); err != nil {
+	if tp, err := customotel.SetupTracing(ctx, "pipeline-backend-worker"); err != nil {
 		panic(err)
 	} else {
 		defer func() {
