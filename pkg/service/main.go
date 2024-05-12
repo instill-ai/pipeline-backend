@@ -13,13 +13,12 @@ import (
 
 	"github.com/instill-ai/component/pkg/connector"
 	"github.com/instill-ai/component/pkg/operator"
-	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -79,35 +78,35 @@ type Service interface {
 }
 
 type service struct {
-	repository               repository.Repository
-	mgmtPrivateServiceClient mgmtPB.MgmtPrivateServiceClient
-	redisClient              *redis.Client
-	temporalClient           client.Client
-	influxDBWriteClient      api.WriteAPI
-	operator                 *operator.Store
-	connector                *connector.Store
-	aclClient                *acl.ACLClient
+	repository          repository.Repository
+	redisClient         *redis.Client
+	temporalClient      client.Client
+	influxDBWriteClient api.WriteAPI
+	operator            *operator.Store
+	connector           *connector.Store
+	aclClient           *acl.ACLClient
+	converter           Converter
 }
 
 // NewService initiates a service instance
 func NewService(
 	r repository.Repository,
-	m mgmtPB.MgmtPrivateServiceClient,
 	rc *redis.Client,
 	t client.Client,
 	i api.WriteAPI,
 	acl *acl.ACLClient,
+	c Converter,
 ) Service {
 	logger, _ := logger.GetZapLogger(context.Background())
 
 	return &service{
-		repository:               r,
-		mgmtPrivateServiceClient: m,
-		redisClient:              rc,
-		temporalClient:           t,
-		influxDBWriteClient:      i,
-		operator:                 operator.Init(logger),
-		connector:                connector.Init(logger, nil, nil),
-		aclClient:                acl,
+		repository:          r,
+		redisClient:         rc,
+		temporalClient:      t,
+		influxDBWriteClient: i,
+		operator:            operator.Init(logger),
+		connector:           connector.Init(logger, nil, nil),
+		aclClient:           acl,
+		converter:           c,
 	}
 }

@@ -46,7 +46,7 @@ import (
 	"github.com/instill-ai/x/zapadapter"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
+	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -104,7 +104,7 @@ func main() {
 	// setup tracing and metrics
 	ctx, cancel := context.WithCancel(context.Background())
 
-	if tp, err := custom_otel.SetupTracing(ctx, "pipeline-backend"); err != nil {
+	if tp, err := customotel.SetupTracing(ctx, "pipeline-backend"); err != nil {
 		panic(err)
 	} else {
 		defer func() {
@@ -249,11 +249,11 @@ func main() {
 
 	service := service.NewService(
 		repository,
-		mgmtPrivateServiceClient,
 		redisClient,
 		temporalClient,
 		influxDBWriteClient,
 		&aclClient,
+		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient),
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)

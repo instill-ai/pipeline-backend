@@ -9,7 +9,7 @@ import (
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 
-	"github.com/instill-ai/pipeline-backend/internal/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )

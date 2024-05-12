@@ -8,13 +8,9 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/redis/go-redis/v9"
-	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	"github.com/instill-ai/pipeline-backend/pkg/resource"
 )
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -32,96 +28,6 @@ func randomStrWithCharset(length int, charset string) string {
 
 func generateShareCode() string {
 	return randomStrWithCharset(32, charset)
-}
-
-// Note: Currently, we don't allow changing the owner ID. We are safe to use a cache with a longer TTL for this function.
-func (s *service) convertOwnerPermalinkToName(ctx context.Context, permalink string) (string, error) {
-
-	splits := strings.Split(permalink, "/")
-	nsType := splits[0]
-	uid := splits[1]
-	key := fmt.Sprintf("user:%s:uid_to_id", uid)
-	if id, err := s.redisClient.Get(ctx, key).Result(); err != redis.Nil {
-		return fmt.Sprintf("%s/%s", nsType, id), nil
-	}
-
-	if nsType == "users" {
-		userResp, err := s.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
-		if err != nil {
-			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
-		}
-		s.redisClient.Set(ctx, key, userResp.User.Id, 24*time.Hour)
-		return fmt.Sprintf("users/%s", userResp.User.Id), nil
-	} else {
-		orgResp, err := s.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
-		if err != nil {
-			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
-		}
-		s.redisClient.Set(ctx, key, orgResp.Organization.Id, 24*time.Hour)
-		return fmt.Sprintf("organizations/%s", orgResp.Organization.Id), nil
-	}
-}
-
-func (s *service) fetchOwnerByPermalink(ctx context.Context, permalink string) (*mgmtPB.Owner, error) {
-
-	key := fmt.Sprintf("owner_profile:%s", permalink)
-	if b, err := s.redisClient.Get(ctx, key).Bytes(); err == nil {
-		owner := &mgmtPB.Owner{}
-		if protojson.Unmarshal(b, owner) == nil {
-			return owner, nil
-		}
-	}
-
-	if strings.HasPrefix(permalink, "users") {
-		resp, err := s.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
-		if err != nil {
-			return nil, fmt.Errorf("fetchOwnerByPermalink error")
-		}
-		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_User{User: resp.User}}
-		if b, err := protojson.Marshal(owner); err == nil {
-			s.redisClient.Set(ctx, key, b, 5*time.Minute)
-		}
-		return owner, nil
-	} else {
-		resp, err := s.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
-		if err != nil {
-			return nil, fmt.Errorf("fetchOwnerByPermalink error")
-		}
-		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_Organization{Organization: resp.Organization}}
-		if b, err := protojson.Marshal(owner); err == nil {
-			s.redisClient.Set(ctx, key, b, 5*time.Minute)
-		}
-		return owner, nil
-
-	}
-}
-
-// Note: Currently, we don't allow changing the owner ID. We are safe to use a cache with a longer TTL for this function.
-func (s *service) convertOwnerNameToPermalink(ctx context.Context, name string) (string, error) {
-
-	splits := strings.Split(name, "/")
-	nsType := splits[0]
-	id := splits[1]
-	key := fmt.Sprintf("user:%s:id_to_uid", id)
-	if uid, err := s.redisClient.Get(ctx, key).Result(); err != redis.Nil {
-		return fmt.Sprintf("%s/%s", nsType, uid), nil
-	}
-
-	if nsType == "users" {
-		userResp, err := s.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: name})
-		if err != nil {
-			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
-		}
-		s.redisClient.Set(ctx, key, *userResp.User.Uid, 24*time.Hour)
-		return fmt.Sprintf("users/%s", *userResp.User.Uid), nil
-	} else {
-		orgResp, err := s.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtPB.GetOrganizationAdminRequest{Name: name})
-		if err != nil {
-			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
-		}
-		s.redisClient.Set(ctx, key, orgResp.Organization.Uid, 24*time.Hour)
-		return fmt.Sprintf("organizations/%s", orgResp.Organization.Uid), nil
-	}
 }
 
 func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Namespace) error {
@@ -145,7 +51,7 @@ func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Name
 func (s *service) GetCtxUserNamespace(ctx context.Context) (resource.Namespace, error) {
 
 	uid := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-	name, err := s.convertOwnerPermalinkToName(ctx, fmt.Sprintf("users/%s", uid))
+	name, err := s.converter.ConvertOwnerPermalinkToName(ctx, fmt.Sprintf("users/%s", uid))
 	if err != nil {
 		return resource.Namespace{}, fmt.Errorf("namespace error")
 	}
@@ -163,7 +69,7 @@ func (s *service) GetRscNamespaceAndNameID(ctx context.Context, path string) (re
 		uid := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
 		splits := strings.Split(path, "/")
 
-		name, err := s.convertOwnerPermalinkToName(ctx, fmt.Sprintf("users/%s", uid))
+		name, err := s.converter.ConvertOwnerPermalinkToName(ctx, fmt.Sprintf("users/%s", uid))
 		if err != nil {
 			return resource.Namespace{}, "", fmt.Errorf("namespace error")
 		}
@@ -179,7 +85,7 @@ func (s *service) GetRscNamespaceAndNameID(ctx context.Context, path string) (re
 	if len(splits) < 2 {
 		return resource.Namespace{}, "", fmt.Errorf("namespace error")
 	}
-	uidStr, err := s.convertOwnerNameToPermalink(ctx, fmt.Sprintf("%s/%s", splits[0], splits[1]))
+	uidStr, err := s.converter.ConvertOwnerNameToPermalink(ctx, fmt.Sprintf("%s/%s", splits[0], splits[1]))
 
 	if err != nil {
 		return resource.Namespace{}, "", fmt.Errorf("namespace error %w", err)
@@ -203,7 +109,7 @@ func (s *service) GetRscNamespaceAndPermalinkUID(ctx context.Context, path strin
 	if len(splits) < 2 {
 		return resource.Namespace{}, uuid.Nil, fmt.Errorf("namespace error")
 	}
-	uidStr, err := s.convertOwnerNameToPermalink(ctx, fmt.Sprintf("%s/%s", splits[0], splits[1]))
+	uidStr, err := s.converter.ConvertOwnerNameToPermalink(ctx, fmt.Sprintf("%s/%s", splits[0], splits[1]))
 	if err != nil {
 		return resource.Namespace{}, uuid.Nil, fmt.Errorf("namespace error")
 	}

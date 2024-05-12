@@ -6,9 +6,9 @@ import (
 
 	"go.einride.tech/aip/filtering"
 
-	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/errmsg"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -27,7 +27,7 @@ func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespa
 		)
 	}
 
-	dbSecret, err := s.convertSecretToDB(ctx, ns, pbSecret)
+	dbSecret, err := s.converter.ConvertSecretToDB(ctx, ns, pbSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (s *service) CreateNamespaceSecret(ctx context.Context, ns resource.Namespa
 		return nil, err
 	}
 
-	return s.convertSecretToPB(ctx, dbCreatedSecret)
+	return s.converter.ConvertSecretToPB(ctx, dbCreatedSecret)
 
 }
 
@@ -56,7 +56,7 @@ func (s *service) ListNamespaceSecrets(ctx context.Context, ns resource.Namespac
 		return nil, 0, "", err
 	}
 
-	pbSecrets, err := s.convertSecretsToPB(ctx, dbSecrets)
+	pbSecrets, err := s.converter.ConvertSecretsToPB(ctx, dbSecrets)
 	return pbSecrets, int32(ps), pt, err
 }
 
@@ -72,7 +72,7 @@ func (s *service) GetNamespaceSecretByID(ctx context.Context, ns resource.Namesp
 	if err != nil {
 		return nil, ErrNotFound
 	}
-	return s.convertSecretToPB(ctx, dbSecret)
+	return s.converter.ConvertSecretToPB(ctx, dbSecret)
 }
 
 func (s *service) UpdateNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string, updatedSecret *pb.Secret) (*pb.Secret, error) {
@@ -83,7 +83,7 @@ func (s *service) UpdateNamespaceSecretByID(ctx context.Context, ns resource.Nam
 
 	ownerPermalink := ns.Permalink()
 
-	dbSecret, err := s.convertSecretToDB(ctx, ns, updatedSecret)
+	dbSecret, err := s.converter.ConvertSecretToDB(ctx, ns, updatedSecret)
 	if err != nil {
 		return nil, ErrNotFound
 	}

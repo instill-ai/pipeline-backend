@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 
-	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	// pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )

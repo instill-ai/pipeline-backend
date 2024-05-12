@@ -23,13 +23,13 @@ import (
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
-	"github.com/instill-ai/pipeline-backend/internal/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/checkfield"
 
-	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -147,7 +147,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelines
 		return &pb.ListPipelinesResponse{}, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -243,12 +243,12 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pipeline),
+		customotel.SetEventResource(pipeline),
 	)))
 
 	return pipeline, nil
@@ -330,7 +330,7 @@ func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListName
 		return nil, "", 0, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -386,12 +386,12 @@ func (h *PublicHandler) getNamespacePipeline(ctx context.Context, req GetNamespa
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipeline),
+		customotel.SetEventResource(pbPipeline),
 	)))
 
 	return pbPipeline, nil
@@ -496,12 +496,12 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 		return nil, err
 	}
 
-	// logger.Info(string(custom_otel.NewLogMessage(
+	// logger.Info(string(customotel.NewLogMessage(
 	// 	span,
 	// 	logUUID.String(),
 	// 	authUser.UID,
 	// 	eventName,
-	// 	custom_otel.SetEventResource(pbPipeline),
+	// 	customotel.SetEventResource(pbPipeline),
 	// )))
 
 	return pbPipeline, nil
@@ -560,12 +560,12 @@ func (h *PublicHandler) deleteNamespacePipeline(ctx context.Context, req DeleteN
 		return err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(existPipeline.GetPipeline()),
+		customotel.SetEventResource(existPipeline.GetPipeline()),
 	)))
 
 	return nil
@@ -609,12 +609,12 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pb.LookUpPipeli
 		Pipeline: pbPipeline,
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipeline),
+		customotel.SetEventResource(pbPipeline),
 	)))
 
 	return &resp, nil
@@ -664,12 +664,12 @@ func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req Valid
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipeline),
+		customotel.SetEventResource(pbPipeline),
 	)))
 
 	return pbPipeline, nil
@@ -732,12 +732,12 @@ func (h *PublicHandler) renameNamespacePipeline(ctx context.Context, req RenameN
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipeline),
+		customotel.SetEventResource(pbPipeline),
 	)))
 
 	return pbPipeline, nil
@@ -794,12 +794,12 @@ func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNam
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipeline),
+		customotel.SetEventResource(pbPipeline),
 	)))
 	return pbPipeline, nil
 }
@@ -878,12 +878,12 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 		return nil, nil, err
 	}
 
-	// logger.Info(string(custom_otel.NewLogMessage(
+	// logger.Info(string(customotel.NewLogMessage(
 	// 	span,
 	// 	logUUID.String(),
 	// 	authUser.UID,
 	// 	eventName,
-	// 	custom_otel.SetEventResource(pbPipeline),
+	// 	customotel.SetEventResource(pbPipeline),
 	// )))
 
 	return outputs, metadata, nil
@@ -931,12 +931,12 @@ func (h *PublicHandler) triggerAsyncNamespacePipeline(ctx context.Context, req T
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(dbPipeline),
+		customotel.SetEventResource(dbPipeline),
 	)))
 
 	return operation, nil
@@ -1021,12 +1021,12 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipelineRelease),
+		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
 	return pbPipelineRelease, nil
@@ -1109,7 +1109,7 @@ func (h *PublicHandler) listNamespacePipelineReleases(ctx context.Context, req L
 		return nil, "", 0, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -1168,12 +1168,12 @@ func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req Get
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipelineRelease),
+		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
 	return pbPipelineRelease, nil
@@ -1273,12 +1273,12 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipelineRelease),
+		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
 	return pbPipelineRelease, nil
@@ -1346,12 +1346,12 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipelineRelease),
+		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
 	return pbPipelineRelease, nil
@@ -1414,12 +1414,12 @@ func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req 
 		return err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(existPipelineRelease.GetRelease()),
+		customotel.SetEventResource(existPipelineRelease.GetRelease()),
 	)))
 
 	return nil
@@ -1483,12 +1483,12 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(existPipelineRelease.GetRelease()),
+		customotel.SetEventResource(existPipelineRelease.GetRelease()),
 	)))
 
 	return pbPipelineRelease, nil
@@ -1569,12 +1569,12 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 		return nil, nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipelineRelease),
+		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
 	return outputs, metadata, nil
@@ -1622,12 +1622,12 @@ func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
 		eventName,
-		custom_otel.SetEventResource(pbPipelineRelease),
+		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
 	return operation, nil

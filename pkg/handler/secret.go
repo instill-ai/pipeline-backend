@@ -21,7 +21,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/checkfield"
 
-	custom_otel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
+	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -98,7 +98,7 @@ func (h *PublicHandler) createNamespaceSecret(ctx context.Context, req CreateNam
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -155,7 +155,7 @@ func (h *PublicHandler) listNamespaceSecrets(ctx context.Context, req ListNamesp
 		return nil, "", 0, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -210,7 +210,7 @@ func (h *PublicHandler) getNamespaceSecret(ctx context.Context, req GetNamespace
 		return nil, err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
@@ -372,7 +372,7 @@ func (h *PublicHandler) deleteNamespaceSecret(ctx context.Context, req DeleteNam
 		return err
 	}
 
-	logger.Info(string(custom_otel.NewLogMessage(
+	logger.Info(string(customotel.NewLogMessage(
 		ctx,
 		span,
 		logUUID.String(),
