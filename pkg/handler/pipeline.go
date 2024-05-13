@@ -116,7 +116,7 @@ func (h *PublicHandler) CountPipelines(ctx context.Context, req *pb.CountPipelin
 		return &pb.CountPipelinesResponse{}, err
 	}
 
-	count, err := h.service.CountPublicPipelines()
+	count, err := h.service.CountPublicPipelines(ctx)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())

@@ -40,9 +40,14 @@ import (
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-func (s *service) CountPublicPipelines() (int64, error) {
+func (s *service) CountPublicPipelines(ctx context.Context) (int64, error) {
+	
+	uidAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader", true)
+	if err != nil {
+		return 0, err
+	}
 
-	count, err := s.repository.CountPublicPipelines()
+	count, err := s.repository.CountPublicPipelines(uidAllowList)
 
 	if err != nil {
 		return 0, err

@@ -35,7 +35,7 @@ const MaxPageSize = 100
 
 // Repository interface
 type Repository interface {
-	CountPublicPipelines() (int64, error)
+	CountPublicPipelines(uidAllowList []uuid.UUID) (int64, error)
 	ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
@@ -114,13 +114,13 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 	return nil
 }
 
-func (r *repository) CountPublicPipelines() (int64, error) {
+func (r *repository) CountPublicPipelines(uidAllowList []uuid.UUID) (int64, error) {
 
 	db := r.db
 
 	var totalSize int64
-	// TODO: which column is for public pipeline?
-	db.Model(&datamodel.Pipeline{}).Count(&totalSize)
+	
+	db.Model(&datamodel.Pipeline{}).Where("uid in ?", uidAllowList).Count(&totalSize)
 
 	return totalSize, nil
 }
