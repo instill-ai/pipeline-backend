@@ -178,8 +178,8 @@ func (r *Recipe) Value() (driver.Value, error) {
 	return string(valueString), err
 }
 
-// Note: We list the `credentialFields` that need to be migrated manually.
-var credentialFields = map[string]string{
+// Note: We list the `secretFields` that need to be migrated manually.
+var secretFields = map[string]string{
 	"e414a1f8-5fdf-4292-b050-9f9176254a4b": "api_key",
 	"e2ffe076-ab2c-4e5e-9587-a613a6b1c146": "json_key",
 	"205cbeff-6f45-4abe-b0a8-cec1a310137f": "json_key",
@@ -237,7 +237,7 @@ func migrateSecret() (map[uuid.UUID]Connector, error) {
 	}
 	for _, con := range connectors {
 		defUID := con.ConnectorDefinitionUID.String()
-		if keys, ok := credentialFields[defUID]; ok {
+		if keys, ok := secretFields[defUID]; ok {
 			for _, key := range strings.Split(keys, ",") {
 				cfg := map[string]any{}
 				err := json.Unmarshal(con.Configuration, &cfg)
@@ -291,7 +291,7 @@ func migrateConnectorComponent(connectorMap map[uuid.UUID]Connector, c *Componen
 
 			b, _ := json.Marshal(connector.Configuration)
 			_ = protojson.Unmarshal(b, newComp.ConnectorComponent.Connection)
-			keys := credentialFields[defUID]
+			keys := secretFields[defUID]
 			for _, key := range strings.Split(keys, ",") {
 				if splits := strings.Split(key, "."); len(splits) == 1 {
 					conID := connectorMap[conUID].ID

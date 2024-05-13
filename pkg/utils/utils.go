@@ -15,17 +15,16 @@ import (
 )
 
 const (
-	CreateEvent          string = "Create"
-	UpdateEvent          string = "Update"
-	DeleteEvent          string = "Delete"
-	ActivateEvent        string = "Activate"
-	DeactivateEvent      string = "Deactivate"
-	TriggerEvent         string = "Trigger"
-	ConnectEvent         string = "Connect"
-	DisconnectEvent      string = "Disconnect"
-	RenameEvent          string = "Rename"
-	ExecuteEvent         string = "Execute"
-	credentialMaskString string = "*****MASK*****"
+	CreateEvent     string = "Create"
+	UpdateEvent     string = "Update"
+	DeleteEvent     string = "Delete"
+	ActivateEvent   string = "Activate"
+	DeactivateEvent string = "Deactivate"
+	TriggerEvent    string = "Trigger"
+	ConnectEvent    string = "Connect"
+	DisconnectEvent string = "Disconnect"
+	RenameEvent     string = "Rename"
+	ExecuteEvent    string = "Execute"
 )
 
 func IsAuditEvent(eventName string) bool {
