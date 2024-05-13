@@ -16,6 +16,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.einride.tech/aip/filtering"
+	"go.einride.tech/aip/ordering"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
@@ -40,7 +41,7 @@ import (
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken string, view pb.Pipeline_View, visibility *pb.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pb.Pipeline, int32, string, error) {
+func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken string, view pb.Pipeline_View, visibility *pb.Pipeline_Visibility, filter filtering.Filter, showDeleted bool, order ordering.OrderBy) ([]*pb.Pipeline, int32, string, error) {
 
 	uidAllowList := []uuid.UUID{}
 	var err error
