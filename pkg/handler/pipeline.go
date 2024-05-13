@@ -99,6 +99,42 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pb.LookUp
 	return &resp, nil
 }
 
+func (h *PublicHandler) CountPipelines(ctx context.Context, req *pb.CountPipelinesRequest) (*pb.CountPipelinesResponse, error) {
+
+	eventName := "CountPipelines"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	if err := authenticateUser(ctx, true); err != nil {
+		span.SetStatus(1, err.Error())
+		return &pb.CountPipelinesResponse{}, err
+	}
+
+	count, err := h.service.CountPublicPipelines()
+
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pb.CountPipelinesResponse{}, err
+	}
+
+	logger.Info(string(customotel.NewLogMessage(
+		ctx,
+		span,
+		logUUID.String(),
+		eventName,
+	)))
+	
+	return &pb.CountPipelinesResponse{
+		TotalSize: int32(count),
+	}, nil
+}
+
 func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelinesRequest) (*pb.ListPipelinesResponse, error) {
 
 	eventName := "ListPipelines"

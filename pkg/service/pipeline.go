@@ -40,6 +40,17 @@ import (
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
+func (s *service) CountPublicPipelines() (int64, error) {
+
+	count, err := s.repository.CountPublicPipelines()
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken string, view pb.Pipeline_View, visibility *pb.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pb.Pipeline, int32, string, error) {
 
 	uidAllowList := []uuid.UUID{}
