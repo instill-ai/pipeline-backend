@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/redis/go-redis/v9"
 	"go.einride.tech/aip/filtering"
+	"go.einride.tech/aip/ordering"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/plugin/dbresolver"
@@ -35,7 +36,7 @@ const MaxPageSize = 100
 
 // Repository interface
 type Repository interface {
-	ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error)
+	ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
 	CreateNamespacePipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error
@@ -113,7 +114,7 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 	return nil
 }
 
-func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
+func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
 
 	db := r.db
 	if showDeleted {
@@ -140,7 +141,16 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Count(&totalSize)
 	}
 
-	queryBuilder := db.Model(&datamodel.Pipeline{}).Order("create_time DESC, uid DESC").Where(where, whereArgs...)
+	var queryBuilder *gorm.DB
+	queryBuilder = db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...)
+	if order.Fields == nil {
+		queryBuilder.Order("create_time DESC, uid DESC")
+	} else {
+		for _, field := range order.Fields {
+			orderString := field.Path + transformBoolToDescString(field.Desc)
+			queryBuilder.Order(orderString)
+		}
+	}
 
 	if uidAllowList != nil {
 		queryBuilder = queryBuilder.Where("uid in ?", uidAllowList)
@@ -245,21 +255,21 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	return pipelines, totalSize, nextPageToken, nil
 }
 
-func (r *repository) ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error) {
+func (r *repository) ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
 		"",
 		[]interface{}{},
-		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases)
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 }
 func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
 		"(owner = ?)",
 		[]interface{}{ownerPermalink},
-		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases)
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, ordering.OrderBy{})
 }
 
 func (r *repository) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error) {
-	return r.listPipelines(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted, embedReleases)
+	return r.listPipelines(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted, embedReleases, ordering.OrderBy{})
 }
 
 func (r *repository) getNamespacePipeline(ctx context.Context, where string, whereArgs []interface{}, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error) {

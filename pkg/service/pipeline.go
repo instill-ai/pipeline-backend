@@ -73,7 +73,7 @@ func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken s
 		}
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view <= pb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true)
+	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view <= pb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true, order)
 	if err != nil {
 		return nil, 0, "", err
 	}
