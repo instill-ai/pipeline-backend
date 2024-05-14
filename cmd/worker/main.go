@@ -156,6 +156,7 @@ func main() {
 		influxDBWriteClient,
 		config.Config.Connector.Secrets,
 		map[string]component.UsageHandlerCreator{},
+		nil,
 	)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{

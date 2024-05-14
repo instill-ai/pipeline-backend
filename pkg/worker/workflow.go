@@ -142,6 +142,23 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	if err != nil {
 		return err
 	}
+	numComponents := len(r.Components)
+	for _, comp := range r.Components {
+		if comp.IsIteratorComponent() {
+			numComponents += len(comp.IteratorComponent.Components)
+		}
+	}
+	if err := w.pipelineUsageHandler.Check(sCtx, param.SystemVariables, numComponents); err != nil {
+		details := EndUserErrorDetails{
+			Message: fmt.Sprintf("Pipeline %s failed to execute. %s", param.SystemVariables.PipelineUID, errmsg.MessageOrErr(err)),
+		}
+		return temporal.NewApplicationErrorWithCause("pipeline failed to trigger", PipelineWorkflowError, err, details)
+	}
+
+	// TODO: we should check whether to collect failed component or not
+	defer func() {
+		_ = w.pipelineUsageHandler.Collect(sCtx, param.SystemVariables, numComponents)
+	}()
 
 	orderedComp, err := dag.TopologicalSort()
 	if err != nil {
@@ -682,6 +699,7 @@ func (w *worker) toApplicationError(err error, componentID, errType string) erro
 // business domain (e.g. VendorError (non billable), InputDataError (billable),
 // etc.).
 const (
+	PipelineWorkflowError     = "PipelineWorkflowError"
 	ConnectorActivityError    = "ConnectorActivityError"
 	OperatorActivityError     = "OperatorActivityError"
 	PreIteratorActivityError  = "PreIteratorActivityError"
