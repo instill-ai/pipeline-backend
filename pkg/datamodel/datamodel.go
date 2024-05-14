@@ -52,6 +52,11 @@ func (base *BaseDynamicHardDelete) BeforeCreate(db *gorm.DB) error {
 	return nil
 }
 
+type HubStats struct {
+	NumberOfPublicPipelines int32
+	NumberOfFeaturedPipelines int32
+}
+
 // Pipeline is the data model of the pipeline table
 type Pipeline struct {
 	BaseDynamic

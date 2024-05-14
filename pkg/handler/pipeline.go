@@ -99,9 +99,9 @@ func (h *PrivateHandler) LookUpPipelineAdmin(ctx context.Context, req *pb.LookUp
 	return &resp, nil
 }
 
-func (h *PublicHandler) CountPipelines(ctx context.Context, req *pb.CountPipelinesRequest) (*pb.CountPipelinesResponse, error) {
+func (h *PublicHandler) GetHubStats(ctx context.Context, req *pb.GetHubStatsRequest) (*pb.GetHubStatsResponse, error) {
 
-	eventName := "CountPipelines"
+	eventName := "GetHubStats"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -113,14 +113,14 @@ func (h *PublicHandler) CountPipelines(ctx context.Context, req *pb.CountPipelin
 
 	if err := authenticateUser(ctx, true); err != nil {
 		span.SetStatus(1, err.Error())
-		return &pb.CountPipelinesResponse{}, err
+		return &pb.GetHubStatsResponse{}, err
 	}
 
-	count, err := h.service.CountPublicPipelines(ctx)
+	resp, err := h.service.GetHubStats(ctx)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return &pb.CountPipelinesResponse{}, err
+		return &pb.GetHubStatsResponse{}, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -130,9 +130,7 @@ func (h *PublicHandler) CountPipelines(ctx context.Context, req *pb.CountPipelin
 		eventName,
 	)))
 	
-	return &pb.CountPipelinesResponse{
-		TotalSize: int32(count),
-	}, nil
+	return resp, nil
 }
 
 func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelinesRequest) (*pb.ListPipelinesResponse, error) {

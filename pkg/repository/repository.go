@@ -35,7 +35,7 @@ const MaxPageSize = 100
 
 // Repository interface
 type Repository interface {
-	CountPublicPipelines(uidAllowList []uuid.UUID) (int64, error)
+	GetHubStats(uidAllowList []uuid.UUID) (*datamodel.HubStats, error)
 	ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
@@ -114,7 +114,7 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 	return nil
 }
 
-func (r *repository) CountPublicPipelines(uidAllowList []uuid.UUID) (int64, error) {
+func (r *repository) GetHubStats(uidAllowList []uuid.UUID) (*datamodel.HubStats, error) {
 
 	db := r.db
 
@@ -122,7 +122,10 @@ func (r *repository) CountPublicPipelines(uidAllowList []uuid.UUID) (int64, erro
 	
 	db.Model(&datamodel.Pipeline{}).Where("uid in ?", uidAllowList).Count(&totalSize)
 
-	return totalSize, nil
+	return &datamodel.HubStats{
+		NumberOfPublicPipelines: int32(totalSize),
+		NumberOfFeaturedPipelines: int32(totalSize), // TODO: after tag system is ok, we can extract the count of featured pipelines.
+	}, nil
 }
 
 func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {

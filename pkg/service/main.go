@@ -24,7 +24,7 @@ import (
 
 // Service interface
 type Service interface {
-	CountPublicPipelines(ctx context.Context) (int64, error)
+	GetHubStats(ctx context.Context) (*pb.GetHubStatsResponse, error)
 	ListPipelines(ctx context.Context, pageSize int32, pageToken string, view pb.Pipeline_View, visibility *pb.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pb.Pipeline, int32, string, error)
 	GetPipelineByUID(ctx context.Context, uid uuid.UUID, view pb.Pipeline_View) (*pb.Pipeline, error)
 	CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, pipeline *pb.Pipeline) (*pb.Pipeline, error)
