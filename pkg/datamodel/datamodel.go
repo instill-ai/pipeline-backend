@@ -65,6 +65,14 @@ type Pipeline struct {
 	Metadata          datatypes.JSON `gorm:"type:jsonb"`
 	Readme            string
 	Releases          []*PipelineRelease
+	Tags              []*Tag
+}
+
+type Tag struct {
+	PipelineUID string
+	TagName     string
+	CreateTime  time.Time `gorm:"autoCreateTime:nano"`
+	UpdateTime  time.Time `gorm:"autoUpdateTime:nano"`
 }
 
 // PipelineRelease is the data model of the pipeline release table
