@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 	"go.einride.tech/aip/filtering"
+	"go.einride.tech/aip/ordering"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/mod/semver"
 	"google.golang.org/grpc"
@@ -140,8 +141,14 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelines
 		return &pb.ListPipelinesResponse{}, err
 	}
 
+	orderBy, err := ordering.ParseOrderBy(req)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return &pb.ListPipelinesResponse{}, err
+	}
+
 	pbPipelines, totalSize, nextPageToken, err := h.service.ListPipelines(
-		ctx, req.GetPageSize(), req.GetPageToken(), req.GetView(), req.Visibility, filter, req.GetShowDeleted())
+		ctx, req.GetPageSize(), req.GetPageToken(), req.GetView(), req.Visibility, filter, req.GetShowDeleted(), orderBy)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return &pb.ListPipelinesResponse{}, err
@@ -260,6 +267,7 @@ type ListNamespacePipelinesRequestInterface interface {
 	GetView() pb.Pipeline_View
 	GetVisibility() pb.Pipeline_Visibility
 	GetFilter() string
+	GetOrderBy() string
 	GetParent() string
 	GetShowDeleted() bool
 }
@@ -324,7 +332,13 @@ func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListName
 	}
 	visibility := req.GetVisibility()
 
-	pbPipelines, totalSize, nextPageToken, err := h.service.ListNamespacePipelines(ctx, ns, req.GetPageSize(), req.GetPageToken(), req.GetView(), &visibility, filter, req.GetShowDeleted())
+	orderBy, err := ordering.ParseOrderBy(req)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, "", 0, err
+	}
+
+	pbPipelines, totalSize, nextPageToken, err := h.service.ListNamespacePipelines(ctx, ns, req.GetPageSize(), req.GetPageToken(), req.GetView(), &visibility, filter, req.GetShowDeleted(), orderBy)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, "", 0, err
