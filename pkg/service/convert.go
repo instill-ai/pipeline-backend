@@ -557,6 +557,11 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 		pbSharing.ShareCode.Code = dbPipeline.ShareCode
 	}
 
+	tags := []string{}
+	for _, t := range dbPipeline.Tags {
+		tags = append(tags, t.TagName)
+	}
+
 	pbPipeline := pb.Pipeline{
 		Name:       fmt.Sprintf("%s/pipelines/%s", ownerName, dbPipeline.ID),
 		Uid:        dbPipeline.BaseDynamic.UID.String(),
@@ -575,6 +580,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 		Recipe:      pbRecipe,
 		Sharing:     pbSharing,
 		OwnerName:   ownerName,
+		Tags:        tags,
 	}
 
 	var wg sync.WaitGroup

@@ -187,6 +187,9 @@ func (t *Transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (
 		case "q_title":
 			sql = fmt.Sprintf("%s LIKE ?", "title")
 			vars = append(vars, fmt.Sprintf("%%%s%%", con.Vars[0]))
+		case "tag":
+			sql = "tag.tag_name = ?"
+			vars = append(vars, con.Vars...)
 		default:
 			sql = fmt.Sprintf("%s = ?", ident.SQL)
 			vars = append(vars, con.Vars...)

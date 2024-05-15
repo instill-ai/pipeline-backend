@@ -117,7 +117,7 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink
 	return nil
 }
 
-func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, tagNames []string) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
+func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
 
 	db := r.db
 	if showDeleted {
@@ -138,14 +138,16 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		}
 	}
 
+	joinStr := "left join tag on tag.pipeline_uid = pipeline.uid"
+
+	countBuilder := db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Joins(joinStr)
 	if uidAllowList != nil {
-		db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Where("uid in ?", uidAllowList).Count(&totalSize)
-	} else {
-		db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Count(&totalSize)
+		countBuilder = countBuilder.Where("uid in ?", uidAllowList).Count(&totalSize)
 	}
 
-	var queryBuilder *gorm.DB
-	queryBuilder = db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...)
+	countBuilder.Count(&totalSize)
+
+	queryBuilder := db.Model(&datamodel.Pipeline{}).Joins(joinStr).Where(where, whereArgs...)
 	if order.Fields == nil || len(order.Fields) == 0 {
 		order.Fields = append(order.Fields, ordering.Field{
 			Path: "create_time",
@@ -158,12 +160,6 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		queryBuilder.Order(orderString)
 	}
 	queryBuilder.Order("uid DESC")
-
-	if tagNames != nil {
-		queryBuilder = queryBuilder.
-			Joins("left join tags on tags.pipeline_uid = pipelines.uid").
-			Where("tags.tag_name in (?)", tagNames)
-	}
 
 	if uidAllowList != nil {
 		queryBuilder = queryBuilder.Where("uid in ?", uidAllowList)
@@ -209,20 +205,14 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		queryBuilder.Omit("pipeline.recipe")
 	}
 
-	rows, err := queryBuilder.Rows()
-	if err != nil {
-		return nil, 0, "", err
+	result := queryBuilder.Preload("Tags").Find(&pipelines)
+	if result.Error != nil {
+		return nil, 0, "", result.Error
 	}
-	defer rows.Close()
 	pipelineUIDs := []uuid.UUID{}
 
-	for rows.Next() {
-		var item datamodel.Pipeline
-		if err = db.ScanRows(rows, &item); err != nil {
-			return nil, 0, "", err
-		}
-		pipelines = append(pipelines, &item)
-		pipelineUIDs = append(pipelineUIDs, item.UID)
+	for _, p := range pipelines {
+		pipelineUIDs = append(pipelineUIDs, p.UID)
 	}
 
 	if embedReleases {
@@ -266,20 +256,16 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 
 		tokens := map[string]string{}
 
-		var queryBuilder *gorm.DB
+		lastItemQueryBuilder := db.Model(&datamodel.Pipeline{}).Joins(joinStr).
+			Where(where, whereArgs...)
 		if uidAllowList != nil {
-			queryBuilder = db.Model(&datamodel.Pipeline{}).
-				Where(where, whereArgs...).
-				Where("uid in ?", uidAllowList)
+			lastItemQueryBuilder = lastItemQueryBuilder.Where("uid in ?", uidAllowList)
 
-		} else {
-			queryBuilder = db.Model(&datamodel.Pipeline{}).
-				Where(where, whereArgs...)
 		}
 
 		for _, field := range order.Fields {
 			orderString := field.Path + transformBoolToDescString(!field.Desc)
-			queryBuilder.Order(orderString)
+			lastItemQueryBuilder.Order(orderString)
 			switch field.Path {
 			case "id":
 				tokens[field.Path] = lastID
@@ -290,10 +276,10 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 			}
 
 		}
-		queryBuilder.Order("uid ASC")
+		lastItemQueryBuilder.Order("uid ASC")
 		tokens["uid"] = lastUID.String()
 
-		if result := queryBuilder.Limit(1).Find(lastItem); result.Error != nil {
+		if result := lastItemQueryBuilder.Limit(1).Find(lastItem); result.Error != nil {
 			return nil, 0, "", err
 		}
 
@@ -314,17 +300,17 @@ func (r *repository) ListPipelines(ctx context.Context, pageSize int64, pageToke
 	return r.listPipelines(ctx,
 		"",
 		[]interface{}{},
-		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, nil)
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 }
 func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
 		"(owner = ?)",
 		[]interface{}{ownerPermalink},
-		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, nil)
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 }
 
 func (r *repository) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error) {
-	return r.listPipelines(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted, embedReleases, ordering.OrderBy{}, nil)
+	return r.listPipelines(ctx, "", []interface{}{}, pageSize, pageToken, isBasicView, filter, nil, showDeleted, embedReleases, ordering.OrderBy{})
 }
 
 func (r *repository) getNamespacePipeline(ctx context.Context, where string, whereArgs []interface{}, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error) {
