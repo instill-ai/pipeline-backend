@@ -36,6 +36,7 @@ const MaxPageSize = 100
 
 // Repository interface
 type Repository interface {
+	GetHubStats(uidAllowList []uuid.UUID) (*datamodel.HubStats, error)
 	ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
@@ -84,6 +85,20 @@ func NewRepository(db *gorm.DB, redisClient *redis.Client) Repository {
 		db:          db,
 		redisClient: redisClient,
 	}
+}
+
+func (r *repository) GetHubStats(uidAllowList []uuid.UUID) (*datamodel.HubStats, error) {
+
+	db := r.db
+
+	var totalSize int64
+
+	db.Model(&datamodel.Pipeline{}).Where("uid in ?", uidAllowList).Count(&totalSize)
+
+	return &datamodel.HubStats{
+		NumberOfPublicPipelines: int32(totalSize),
+		NumberOfFeaturedPipelines: int32(totalSize), // TODO: after tag system is ok, we can extract the count of featured pipelines.
+	}, nil
 }
 
 func (r *repository) checkPinnedUser(ctx context.Context, db *gorm.DB, table string) *gorm.DB {

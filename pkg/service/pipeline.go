@@ -41,6 +41,27 @@ import (
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
+
+func (s *service) GetHubStats(ctx context.Context) (*pb.GetHubStatsResponse, error) {
+	
+	uidAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader", true)
+	if err != nil {
+		return &pb.GetHubStatsResponse{}, err
+	}
+
+	hubStats, err := s.repository.GetHubStats(uidAllowList)
+
+	if err != nil {
+		return &pb.GetHubStatsResponse{}, err
+	}
+
+	return &pb.GetHubStatsResponse{
+		NumberOfPublicPipelines: int32(hubStats.NumberOfPublicPipelines),
+		NumberOfFeaturedPipelines: int32(hubStats.NumberOfFeaturedPipelines), // TODO: change to the featured count.
+	}, nil
+}
+
+
 func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken string, view pb.Pipeline_View, visibility *pb.Pipeline_Visibility, filter filtering.Filter, showDeleted bool, order ordering.OrderBy) ([]*pb.Pipeline, int32, string, error) {
 
 	uidAllowList := []uuid.UUID{}
