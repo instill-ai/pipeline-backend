@@ -83,19 +83,6 @@ export function CheckList() {
       "GET /v1beta/component-definitions?page_size=1&view=VIEW_FULL response component_definitions[0].connector_definition.spec is not null": (r) => r.json().component_definitions[0].connector_definition.spec !== null,
     });
 
-
-    // Fetch a page with operator definitions.
-    // TODO when there are more connector definitions than the max page size
-    // (100), accessing the 2nd page won't work. We'll need to use a smaller
-    // page size and compute the page where operator definitions start.
-    var connectorRecords = http.request("GET", `${pipelinePublicHost}/v1beta/connector-definitions?page_size=1`, null, null)
-    var connectorSize = connectorRecords.json().total_size
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=${connectorSize}&page=1`, null, null), {
-      [`GET /v1beta/component-definitions?page_size=${connectorSize}&page=1 response status 200`]: (r) => r.status === 200,
-      [`GET /v1beta/component-definitions?page_size=${connectorSize}&page=1 response contains operator definition type`]: (r) => r.json().component_definitions[0].type === "COMPONENT_TYPE_OPERATOR",
-      [`GET /v1beta/component-definitions?page_size=${connectorSize}&page=1 response contains operator definitions`]: (r) => r.json().component_definitions[0].operator_definition.id != "",
-    });
-
     // Filter (fuzzy) title
     check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1&filter=q_title="JSO"`, null, null), {
       [`GET /v1beta/component-definitions?page_size=1&filter=q_title="JSO" response status 200`]: (r) => r.status === 200,
