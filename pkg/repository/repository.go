@@ -183,10 +183,11 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 			if v, ok := tokens[o.Path]; ok {
 				switch o.Path {
 				case "create_time", "update_time":
+					// Add "pipeline." prefix to prevent ambiguous since tag table also has the two columns.
 					if o.Desc {
-						queryBuilder = queryBuilder.Where(o.Path+" < ?::timestamp", v)
+						queryBuilder = queryBuilder.Where("pipeline."+o.Path+" < ?::timestamp", v)
 					} else {
-						queryBuilder = queryBuilder.Where(o.Path+" > ?::timestamp", v)
+						queryBuilder = queryBuilder.Where("pipeline."+o.Path+" > ?::timestamp", v)
 					}
 				default:
 					if o.Desc {
@@ -256,8 +257,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 
 		tokens := map[string]string{}
 
-		lastItemQueryBuilder := db.Model(&datamodel.Pipeline{}).Joins(joinStr).
-			Where(where, whereArgs...)
+		lastItemQueryBuilder := db.Model(&datamodel.Pipeline{}).Joins(joinStr).Where(where, whereArgs...)
 		if uidAllowList != nil {
 			lastItemQueryBuilder = lastItemQueryBuilder.Where("uid in ?", uidAllowList)
 

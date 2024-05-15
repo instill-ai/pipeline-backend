@@ -177,6 +177,13 @@ func (t *Transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (
 
 	var sql string
 	var vars []interface{}
+
+	// TODO: we should remove the hardcode table prefix here.
+	// Add "pipeline." prefix to prevent ambiguous since tag table also has the two columns.
+	if ident.SQL == "create_time" || ident.SQL == "update_time" {
+		ident.SQL = "pipeline." + ident.SQL
+	}
+
 	switch op.(type) {
 	case clause.Eq:
 		switch ident.SQL {
