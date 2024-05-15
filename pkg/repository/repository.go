@@ -40,7 +40,7 @@ type Repository interface {
 	GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
 	CreateNamespacePipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error
-	ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error)
+	ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error)
 	GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
 	UpdateNamespacePipelineByUID(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) error
@@ -143,14 +143,18 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 
 	var queryBuilder *gorm.DB
 	queryBuilder = db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...)
-	if order.Fields == nil {
-		queryBuilder.Order("create_time DESC, uid DESC")
-	} else {
-		for _, field := range order.Fields {
-			orderString := field.Path + transformBoolToDescString(field.Desc)
-			queryBuilder.Order(orderString)
-		}
+	if order.Fields == nil || len(order.Fields) == 0 {
+		order.Fields = append(order.Fields, ordering.Field{
+			Path: "create_time",
+			Desc: true,
+		})
 	}
+
+	for _, field := range order.Fields {
+		orderString := field.Path + transformBoolToDescString(field.Desc)
+		queryBuilder.Order(orderString)
+	}
+	queryBuilder.Order("uid DESC")
 
 	if uidAllowList != nil {
 		queryBuilder = queryBuilder.Where("uid in ?", uidAllowList)
@@ -164,19 +168,38 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	queryBuilder = queryBuilder.Limit(int(pageSize))
 
 	if pageToken != "" {
-		createdAt, uid, err := paginate.DecodeToken(pageToken)
+		tokens, err := DecodeToken(pageToken)
 		if err != nil {
 			return nil, 0, "", ErrPageTokenDecode
 		}
 
-		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createdAt, uid)
+		for _, o := range order.Fields {
+
+			if v, ok := tokens[o.Path]; ok {
+				switch o.Path {
+				case "create_time", "update_time":
+					if o.Desc {
+						queryBuilder = queryBuilder.Where(o.Path+" < ?::timestamp", v)
+					} else {
+						queryBuilder = queryBuilder.Where(o.Path+" > ?::timestamp", v)
+					}
+				default:
+					if o.Desc {
+						queryBuilder = queryBuilder.Where(o.Path+" < ?", v)
+					} else {
+						queryBuilder = queryBuilder.Where(o.Path+" > ?", v)
+					}
+				}
+
+			}
+		}
+
 	}
 
 	if isBasicView {
 		queryBuilder.Omit("pipeline.recipe")
 	}
 
-	var createTime time.Time // only using one for all loops, we only need the latest one in the end
 	rows, err := queryBuilder.Rows()
 	if err != nil {
 		return nil, 0, "", err
@@ -189,7 +212,6 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		if err = db.ScanRows(rows, &item); err != nil {
 			return nil, 0, "", err
 		}
-		createTime = item.CreateTime
 		pipelines = append(pipelines, &item)
 		pipelineUIDs = append(pipelineUIDs, item.UID)
 	}
@@ -227,28 +249,52 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	if len(pipelines) > 0 {
+		lastID := (pipelines)[len(pipelines)-1].ID
 		lastUID := (pipelines)[len(pipelines)-1].UID
+		lastCreateTime := (pipelines)[len(pipelines)-1].CreateTime
+		lastUpdateTime := (pipelines)[len(pipelines)-1].UpdateTime
 		lastItem := &datamodel.Pipeline{}
 
+		tokens := map[string]string{}
+
+		var queryBuilder *gorm.DB
 		if uidAllowList != nil {
-			if result := db.Model(&datamodel.Pipeline{}).
+			queryBuilder = db.Model(&datamodel.Pipeline{}).
 				Where(where, whereArgs...).
-				Where("uid in ?", uidAllowList).
-				Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
-				return nil, 0, "", err
-			}
+				Where("uid in ?", uidAllowList)
+
 		} else {
-			if result := db.Model(&datamodel.Pipeline{}).
-				Where(where, whereArgs...).
-				Order("create_time ASC, uid ASC").Limit(1).Find(lastItem); result.Error != nil {
-				return nil, 0, "", err
+			queryBuilder = db.Model(&datamodel.Pipeline{}).
+				Where(where, whereArgs...)
+		}
+
+		for _, field := range order.Fields {
+			orderString := field.Path + transformBoolToDescString(!field.Desc)
+			queryBuilder.Order(orderString)
+			switch field.Path {
+			case "id":
+				tokens[field.Path] = lastID
+			case "create_time":
+				tokens[field.Path] = lastCreateTime.Format(time.RFC3339Nano)
+			case "update_time":
+				tokens[field.Path] = lastUpdateTime.Format(time.RFC3339Nano)
 			}
+
+		}
+		queryBuilder.Order("uid ASC")
+		tokens["uid"] = lastUID.String()
+
+		if result := queryBuilder.Limit(1).Find(lastItem); result.Error != nil {
+			return nil, 0, "", err
 		}
 
 		if lastItem.UID.String() == lastUID.String() {
 			nextPageToken = ""
 		} else {
-			nextPageToken = paginate.EncodeToken(createTime, lastUID.String())
+			nextPageToken, err = EncodeToken(tokens)
+			if err != nil {
+				return nil, 0, "", err
+			}
 		}
 	}
 
@@ -261,11 +307,11 @@ func (r *repository) ListPipelines(ctx context.Context, pageSize int64, pageToke
 		[]interface{}{},
 		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 }
-func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error) {
+func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error) {
 	return r.listPipelines(ctx,
 		"(owner = ?)",
 		[]interface{}{ownerPermalink},
-		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, ordering.OrderBy{})
+		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 }
 
 func (r *repository) ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error) {

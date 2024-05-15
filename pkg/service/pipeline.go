@@ -164,7 +164,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	return pipeline, nil
 }
 
-func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, view pb.Pipeline_View, visibility *pb.Pipeline_Visibility, filter filtering.Filter, showDeleted bool) ([]*pb.Pipeline, int32, string, error) {
+func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, view pb.Pipeline_View, visibility *pb.Pipeline_Visibility, filter filtering.Filter, showDeleted bool, order ordering.OrderBy) ([]*pb.Pipeline, int32, string, error) {
 
 	ownerPermalink := ns.Permalink()
 
@@ -198,7 +198,7 @@ func (s *service) ListNamespacePipelines(ctx context.Context, ns resource.Namesp
 		}
 	}
 
-	dbPipelines, ps, pt, err := s.repository.ListNamespacePipelines(ctx, ownerPermalink, int64(pageSize), pageToken, view <= pb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true)
+	dbPipelines, ps, pt, err := s.repository.ListNamespacePipelines(ctx, ownerPermalink, int64(pageSize), pageToken, view <= pb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true, order)
 	if err != nil {
 		return nil, 0, "", err
 	}
