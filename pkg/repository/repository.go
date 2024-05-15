@@ -92,12 +92,17 @@ func (r *repository) GetHubStats(uidAllowList []uuid.UUID) (*datamodel.HubStats,
 	db := r.db
 
 	var totalSize int64
+	var totalFeaturedSize int64
 
 	db.Model(&datamodel.Pipeline{}).Where("uid in ?", uidAllowList).Count(&totalSize)
+	db.Model(&datamodel.Pipeline{}).Joins("left join tag on tag.pipeline_uid = pipeline.uid").
+		Where("uid in ?", uidAllowList).
+		Where("tag.tag_name = ?", "featured").
+		Count(&totalFeaturedSize)
 
 	return &datamodel.HubStats{
-		NumberOfPublicPipelines: int32(totalSize),
-		NumberOfFeaturedPipelines: int32(totalSize), // TODO: after tag system is ok, we can extract the count of featured pipelines.
+		NumberOfPublicPipelines:   int32(totalSize),
+		NumberOfFeaturedPipelines: int32(totalFeaturedSize),
 	}, nil
 }
 
