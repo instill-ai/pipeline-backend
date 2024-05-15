@@ -124,7 +124,7 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelines
 		filtering.DeclareIdent("uid", filtering.TypeString),
 		filtering.DeclareIdent("id", filtering.TypeString),
 		filtering.DeclareIdent("description", filtering.TypeString),
-		// Currently, we only have a "feature" tag, so we'll only support single tag filter for now.
+		// Currently, we only have a "featured" tag, so we'll only support single tag filter for now.
 		filtering.DeclareIdent("tag", filtering.TypeString),
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
@@ -315,7 +315,7 @@ func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListName
 		filtering.DeclareIdent("q", filtering.TypeString),
 		filtering.DeclareIdent("uid", filtering.TypeString),
 		filtering.DeclareIdent("id", filtering.TypeString),
-		// Currently, we only have a "feature" tag, so we'll only support single tag filter for now.
+		// Currently, we only have a "featured" tag, so we'll only support single tag filter for now.
 		filtering.DeclareIdent("tag", filtering.TypeString),
 		filtering.DeclareIdent("description", filtering.TypeString),
 		// only support "recipe.components.resource_name" for now
