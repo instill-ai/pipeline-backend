@@ -70,10 +70,6 @@ type ServerConfig struct {
 
 // ConnectorConfig defines the connector configurations
 type ConnectorConfig struct {
-	Instill struct {
-		UseStaticModelList bool `koanf:"usestaticmodellist"`
-	} `koanf:"instill"`
-
 	Secrets connector.ConnectionSecrets
 }
 
