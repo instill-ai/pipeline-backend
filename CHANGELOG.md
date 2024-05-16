@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.28.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.27.3-beta...v0.28.0-beta) (2024-05-16)
+
+
+### Features
+
+* add pipelineUsageHandler ([#485](https://github.com/instill-ai/pipeline-backend/issues/485)) ([d53147f](https://github.com/instill-ai/pipeline-backend/commit/d53147f9bdb30c4c7577785ada77f294bbcaa927))
+* implement hub-stats endpoint ([#487](https://github.com/instill-ai/pipeline-backend/issues/487)) ([4a68f5e](https://github.com/instill-ai/pipeline-backend/commit/4a68f5e1cef148be5f940d5681dfc334dcfb51b3))
+* implement tag system for pipeline ([#481](https://github.com/instill-ai/pipeline-backend/issues/481)) ([7823db3](https://github.com/instill-ai/pipeline-backend/commit/7823db3b5383eca49fe330a496b1d7439f19d3d5))
+* remove subscription related logic ([#479](https://github.com/instill-ai/pipeline-backend/issues/479)) ([8c4ef38](https://github.com/instill-ai/pipeline-backend/commit/8c4ef3849deac27a7796e62ae205ea4789cb8e61))
+* support sorting pipelines options by id and update_time ([#486](https://github.com/instill-ai/pipeline-backend/issues/486)) ([e7f2847](https://github.com/instill-ai/pipeline-backend/commit/e7f2847222e3dda0390b0dd97b3a1864b95ef708))
+* use global secrets in connectors ([#474](https://github.com/instill-ai/pipeline-backend/issues/474)) ([5c0a12a](https://github.com/instill-ai/pipeline-backend/commit/5c0a12ae3bd4458a29c7fcc68da0b4d61f6eaec1))
+
 ## [0.27.3-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.27.2-beta...v0.27.3-beta) (2024-05-07)
 
 
