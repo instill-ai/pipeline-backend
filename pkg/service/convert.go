@@ -30,7 +30,7 @@ import (
 
 type Converter interface {
 	ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error)
-	ConvertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error)
+	ConvertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) (*pb.Pipeline, error)
 	ConvertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error)
 
 	ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error)
@@ -137,27 +137,36 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 	return nil
 }
 
-func (c *converter) includeComponentDetail(ctx context.Context, compConfig *componentbase.ComponentConfig) error {
+func (c *converter) includeComponentDetail(ctx context.Context, compConfig *componentbase.ComponentConfig, useDynamicDef bool) error {
 
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return err
 	}
-	def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(compConfig.Type), vars, compConfig)
-	if err != nil {
-		return err
+	if useDynamicDef {
+		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(compConfig.Type), vars, compConfig)
+		if err != nil {
+			return err
+		}
+		compConfig.Definition = def
+	} else {
+		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(compConfig.Type), nil, nil)
+		if err != nil {
+			return err
+		}
+		compConfig.Definition = def
 	}
-	compConfig.Definition = def
+
 	return nil
 }
 
-func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *datamodel.IteratorComponent) error {
+func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *datamodel.IteratorComponent, useDynamicDef bool) error {
 
 	for _, itComp := range comp.Component {
 		var err error
 		switch itComp := itComp.(type) {
 		case *componentbase.ComponentConfig:
-			err = c.includeComponentDetail(ctx, itComp)
+			err = c.includeComponentDetail(ctx, itComp, useDynamicDef)
 		}
 		if err != nil {
 			return err
@@ -283,15 +292,15 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *da
 	return nil
 }
 
-func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *datamodel.Recipe) error {
+func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *datamodel.Recipe, useDynamicDef bool) error {
 
 	for _, comp := range recipe.Component {
 		var err error
 		switch comp := comp.(type) {
 		case *componentbase.ComponentConfig:
-			err = c.includeComponentDetail(ctx, comp)
+			err = c.includeComponentDetail(ctx, comp, useDynamicDef)
 		case *datamodel.IteratorComponent:
-			err = c.includeIteratorComponentDetail(ctx, comp)
+			err = c.includeIteratorComponentDetail(ctx, comp, useDynamicDef)
 		}
 		if err != nil {
 			return err
@@ -389,7 +398,7 @@ var ConnectorTypeToComponentType = map[pb.ConnectorType]pb.ComponentType{
 }
 
 // ConvertPipelineToPB converts db data model to protobuf data model
-func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error) {
+func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) (*pb.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
@@ -413,7 +422,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 
 	if view == pb.Pipeline_VIEW_FULL {
-		if err := c.includeDetailInRecipe(ctx, dbPipeline.Recipe); err != nil {
+		if err := c.includeDetailInRecipe(ctx, dbPipeline.Recipe, useDynamicDef); err != nil {
 			return nil, err
 		}
 	}
@@ -565,6 +574,7 @@ func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*dat
 				dbPipelines[i],
 				view,
 				checkPermission,
+				false, // to reduce loading, we don't use dynamic definition when convert the list
 			)
 			ch <- result{
 				idx:      i,
@@ -677,7 +687,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipelineOr
 	}
 
 	if view == pb.Pipeline_VIEW_FULL {
-		if err := c.includeDetailInRecipe(ctx, dbPipelineRelease.Recipe); err != nil {
+		if err := c.includeDetailInRecipe(ctx, dbPipelineRelease.Recipe, false); err != nil {
 			return nil, err
 		}
 	}
