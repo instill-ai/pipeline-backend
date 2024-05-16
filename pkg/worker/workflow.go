@@ -84,6 +84,15 @@ type PostIteratorActivityParam struct {
 	SystemVariables   recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 }
 
+type UsageCollectActivityParam struct {
+	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	NumComponents   int
+}
+type UsageCheckActivityParam struct {
+	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	NumComponents   int
+}
+
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
 // TriggerPipelineWorkflow is a pipeline trigger workflow definition.
@@ -148,17 +157,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			numComponents += len(comp.IteratorComponent.Components)
 		}
 	}
-	if err := w.pipelineUsageHandler.Check(sCtx, param.SystemVariables, numComponents); err != nil {
+
+	if err := workflow.ExecuteActivity(ctx, w.UsageCheckActivity, &UsageCheckActivityParam{
+		SystemVariables: param.SystemVariables,
+		NumComponents:   numComponents,
+	}).Get(ctx, nil); err != nil {
 		details := EndUserErrorDetails{
 			Message: fmt.Sprintf("Pipeline %s failed to execute. %s", param.SystemVariables.PipelineUID, errmsg.MessageOrErr(err)),
 		}
 		return temporal.NewApplicationErrorWithCause("pipeline failed to trigger", PipelineWorkflowError, err, details)
 	}
-
-	// TODO: we should check whether to collect failed component or not
-	defer func() {
-		_ = w.pipelineUsageHandler.Collect(sCtx, param.SystemVariables, numComponents)
-	}()
 
 	orderedComp, err := dag.TopologicalSort()
 	if err != nil {
@@ -286,6 +294,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
 
+	// TODO: we should check whether to collect failed component or not
+	if err := workflow.ExecuteActivity(ctx, w.UsageCollectActivity, &UsageCollectActivityParam{
+		SystemVariables: param.SystemVariables,
+		NumComponents:   numComponents,
+	}).Get(ctx, nil); err != nil {
+		return err
+	}
 	if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
 		logger.Warn(err.Error())
 	}
@@ -534,6 +549,32 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 	return nil
 }
 
+func (w *worker) UsageCheckActivity(ctx context.Context, param *UsageCheckActivityParam) error {
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("UsageCheckActivity started")
+
+	err := w.pipelineUsageHandler.Check(ctx, param.SystemVariables, param.NumComponents)
+	if err != nil {
+		return w.toApplicationError(err, "usage_check", UsageCollectActivityError)
+	}
+	logger.Info("UsageCheckActivity completed")
+	return nil
+}
+
+func (w *worker) UsageCollectActivity(ctx context.Context, param *UsageCollectActivityParam) error {
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("UsageCollectActivity started")
+
+	err := w.pipelineUsageHandler.Collect(ctx, param.SystemVariables, param.NumComponents)
+	if err != nil {
+		return w.toApplicationError(err, "usage_collect", UsageCollectActivityError)
+	}
+	logger.Info("UsageCollectActivity completed")
+	return nil
+}
+
 func (w *worker) processInput(memory *recipe.TriggerMemory, id string, UpstreamIDs []string, condition *string, input *structpb.Struct) ([]*structpb.Struct, map[int]int, error) {
 	batchSize := len(memory.Inputs)
 	var compInputs []*structpb.Struct
@@ -704,6 +745,8 @@ const (
 	OperatorActivityError     = "OperatorActivityError"
 	PreIteratorActivityError  = "PreIteratorActivityError"
 	PostIteratorActivityError = "PostIteratorActivityError"
+	UsageCheckActivityError   = "UsageCheckActivityError"
+	UsageCollectActivityError = "UsageCollectActivityError"
 )
 
 // EndUserErrorDetails provides a structured way to add an end-user error
