@@ -114,7 +114,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, uid uuid.UUID, view pb.P
 		return nil, err
 	}
 
-	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true, true)
+	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true)
 }
 
 func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*pb.Pipeline, error) {
@@ -172,7 +172,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		return nil, err
 	}
 
-	pipeline, err := s.converter.ConvertPipelineToPB(ctx, dbCreatedPipeline, pb.Pipeline_VIEW_FULL, false, true)
+	pipeline, err := s.converter.ConvertPipelineToPB(ctx, dbCreatedPipeline, pb.Pipeline_VIEW_FULL, false)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 		return nil, ErrNotFound
 	}
 
-	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true, true)
+	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true)
 }
 
 func (s *service) GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns resource.Namespace, id string) (uuid.UUID, error) {
@@ -280,7 +280,7 @@ func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view
 		return nil, err
 	}
 
-	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true, true)
+	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true)
 
 }
 
@@ -342,7 +342,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	if err != nil {
 		return nil, err
 	}
-	pipeline, err := s.converter.ConvertPipelineToPB(ctx, dbPipelineUpdated, pb.Pipeline_VIEW_FULL, false, true)
+	pipeline, err := s.converter.ConvertPipelineToPB(ctx, dbPipelineUpdated, pb.Pipeline_VIEW_FULL, false)
 	if err != nil {
 		return nil, err
 	}
@@ -449,7 +449,7 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true, true)
+	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
 
 }
 
@@ -483,7 +483,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 		return nil, err
 	}
 
-	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true, true)
+	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
 }
 
 func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineInputs []*structpb.Struct, pipelineSecrets map[string]string) (*recipe.TriggerMemoryKey, error) {
