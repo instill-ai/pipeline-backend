@@ -24,7 +24,6 @@ type SystemVariables struct {
 	HeaderAuthorization string                 `json:"__PIPELINE_HEADER_AUTHORIZATION"`
 	ModelBackend        string                 `json:"__MODEL_BACKEND"`
 	MgmtBackend         string                 `json:"__MGMT_BACKEND"`
-	StaticModelList     bool                   `json:"__STATIC_MODEL_LIST"`
 }
 
 // System variables are available to all component
@@ -42,7 +41,6 @@ func GenerateSystemVariables(ctx context.Context, sysVar SystemVariables) (map[s
 	if sysVar.MgmtBackend == "" {
 		sysVar.MgmtBackend = fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort)
 	}
-	sysVar.StaticModelList = config.Config.Connector.Instill.UseStaticModelList
 
 	b, err := json.Marshal(sysVar)
 	if err != nil {
