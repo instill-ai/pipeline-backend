@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.28.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.28.0-beta...v0.28.1-beta) (2024-05-17)
+
+
+### Bug Fixes
+
+* move usage_check and collect to Temporal activity ([7e07972](https://github.com/instill-ai/pipeline-backend/commit/7e07972172b6d253ac52f8d68cf16d1d090df4f2))
+* resolve condition field bug ([#491](https://github.com/instill-ai/pipeline-backend/issues/491)) ([19b8d43](https://github.com/instill-ai/pipeline-backend/commit/19b8d43980296d7869b61f01f99b8aed39c3108e))
+
 ## [0.28.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.27.3-beta...v0.28.0-beta) (2024-05-16)
 
 
