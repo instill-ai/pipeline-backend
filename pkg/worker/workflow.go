@@ -598,6 +598,8 @@ func (w *worker) processInput(memory *recipe.TriggerMemory, id string, UpstreamI
 		}
 		if !memory.Components[id][idx].Status.Skipped {
 			if condition != nil && *condition != "" {
+
+				// TODO: these code should be refactored and shared some common functions with RenderInput
 				condStr := *condition
 				var varMapping map[string]string
 				condStr, _, varMapping = recipe.SanitizeCondition(condStr)
@@ -612,6 +614,7 @@ func (w *worker) processInput(memory *recipe.TriggerMemory, id string, UpstreamI
 				for k, v := range memory.Components {
 					condMemory[varMapping[k]] = v[idx]
 				}
+				condMemory[varMapping["trigger"]] = memory.Inputs[idx]
 
 				cond, err := recipe.EvalCondition(expr, condMemory)
 				if err != nil {
