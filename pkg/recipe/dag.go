@@ -485,7 +485,12 @@ func EvalCondition(expr ast.Expr, value map[string]any) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		return v.(map[string]any)[e.Sel.String()], nil
+		// Convert InputsMemory and ComponentItemMemory into map[string]any.
+		// Ignore error handling here since all of them are JSON data.
+		b, _ := json.Marshal(v)
+		m := map[string]any{}
+		_ = json.Unmarshal(b, &m)
+		return m[e.Sel.String()], nil
 	case *ast.BasicLit:
 		if e.Kind == token.INT {
 			return strconv.ParseInt(e.Value, 10, 64)
