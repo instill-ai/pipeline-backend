@@ -9,6 +9,12 @@ WORKDIR /${SERVICE_NAME}
 
 ARG TARGETOS TARGETARCH K6_VERSION
 
+# Install Python, create virtual environment, and install pdfplumber
+RUN apt-get update && \
+    apt-get install -y python3 python3-venv && \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install pdfplumber
+
 # air
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@v1.49
 
