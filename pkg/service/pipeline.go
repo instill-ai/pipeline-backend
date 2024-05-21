@@ -606,6 +606,32 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		}
 	}
 
+	for idx, data := range pipelineData {
+		varJSONBytes, err := protojson.Marshal(data.Variable)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(varJSONBytes, &memory[idx].Variable)
+		if err != nil {
+			return nil, err
+		}
+		if memory[idx].Variable == nil {
+			memory[idx].Variable = make(recipe.VariableMemory)
+		}
+
+		secretJSONBytes, err := json.Marshal(data.Secret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(secretJSONBytes, &memory[idx].Secret)
+		if err != nil {
+			return nil, err
+		}
+		if memory[idx].Secret == nil {
+			memory[idx].Secret = make(recipe.SecretMemory)
+		}
+	}
 	pt := ""
 	// TODO: We should only query the needed key.
 	for {
@@ -619,7 +645,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		for _, nsSecret := range nsSecrets {
 			if nsSecret.Value != nil {
 				for idx := range pipelineData {
-					memory[idx].Secret[nsSecret.ID] = *nsSecret.Value
+					if _, ok := memory[idx].Secret[nsSecret.ID]; !ok {
+						memory[idx].Secret[nsSecret.ID] = *nsSecret.Value
+					}
 				}
 			}
 		}
@@ -629,26 +657,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		}
 	}
 
-	for idx, data := range pipelineData {
-		varJSONBytes, err := protojson.Marshal(data.Variable)
-		if err != nil {
-			return nil, err
-		}
-
-		err = json.Unmarshal(varJSONBytes, &memory[idx].Variable)
-		if err != nil {
-			return nil, err
-		}
-
-		secretJSONBytes, err := json.Marshal(data.Secret)
-		if err != nil {
-			return nil, err
-		}
-		err = json.Unmarshal(secretJSONBytes, &memory[idx].Secret)
-		if err != nil {
-			return nil, err
-		}
-	}
 	k, err := recipe.Write(ctx, s.redisClient, pipelineTriggerID, r, memory, ns.Permalink())
 	if err != nil {
 		return nil, err
