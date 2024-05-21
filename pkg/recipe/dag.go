@@ -149,7 +149,6 @@ func (d *dag) TopologicalSort() ([]map[string]*datamodel.Component, error) {
 				})
 			}
 		}
-
 	}
 
 	if count < len(d.compMap) {
@@ -574,6 +573,17 @@ func SanitizeCondition(cond string) (string, map[string]string, map[string]strin
 
 func GenerateDAG(componentMap map[string]*datamodel.Component) (*dag, error) {
 
+	componentIDMap := make(map[string]bool)
+
+	for id := range componentMap {
+		componentIDMap[id] = true
+		if componentMap[id].IsIteratorComponent() {
+			for nestedID := range componentMap[id].IteratorComponent.Component {
+				componentIDMap[nestedID] = true
+			}
+		}
+	}
+
 	graph := NewDAG(componentMap)
 
 	for id, component := range componentMap {
@@ -637,7 +647,7 @@ func GenerateDAG(componentMap map[string]*datamodel.Component) (*dag, error) {
 		}
 
 		for _, upstreamID := range parents {
-			if upstreamID != SegVariable {
+			if _, ok := componentIDMap[upstreamID]; ok {
 				graph.AddEdge(upstreamID, id)
 			}
 
