@@ -58,6 +58,8 @@ type Service interface {
 	TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error)
 	TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error)
 
+	TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool, streamChan chan<- StreamResult) error
+
 	TriggerNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error)
 	TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error)
 	GetOperation(ctx context.Context, workflowID string) (*longrunningpb.Operation, error)
@@ -77,6 +79,11 @@ type Service interface {
 
 	// Influx API
 	WriteNewConnectorDataPoint(ctx context.Context, data utils.ConnectorUsageMetricData, pipelineMetadata *structpb.Value) error
+}
+
+type StreamResult struct {
+	Result   []*structpb.Struct
+	Metadata *pb.TriggerMetadata
 }
 
 type service struct {

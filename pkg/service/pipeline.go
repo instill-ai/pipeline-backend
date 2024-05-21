@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"slices"
 	"strings"
 	"sync"
@@ -953,6 +954,119 @@ func (s *service) triggerPipeline(
 	return s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
 }
 
+// TODO tillknuesting: consider	to merge with with triggerPipeline
+func (s *service) triggerPipelineWithStream(
+	ctx context.Context,
+	ns resource.Namespace,
+	r *datamodel.Recipe,
+	isAdmin bool,
+	pipelineID string,
+	pipelineUID uuid.UUID,
+	pipelineReleaseID string,
+	pipelineReleaseUID uuid.UUID,
+	pipelineInputs []*structpb.Struct,
+	pipelineSecrets map[string]string,
+	pipelineTriggerID string,
+	returnTraces bool,
+	streamChan chan<- StreamResult) error {
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	memoryKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineInputs, pipelineSecrets)
+	if err != nil {
+		return fmt.Errorf("from preTriggerPipeline: %w", err)
+	}
+	defer recipe.Purge(ctx, s.redisClient, pipelineTriggerID)
+
+	workflowOptions := client.StartWorkflowOptions{
+		ID:                       pipelineTriggerID,
+		TaskQueue:                worker.TaskQueue,
+		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
+		},
+	}
+
+	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+
+	we, err := s.temporalClient.ExecuteWorkflow(
+		ctx,
+		workflowOptions,
+		"TriggerPipelineWorkflow",
+		&worker.TriggerPipelineWorkflowParam{
+			BatchSize:        len(pipelineInputs),
+			MemoryStorageKey: memoryKey,
+			SystemVariables: recipe.SystemVariables{
+				PipelineID:          pipelineID,
+				PipelineUID:         pipelineUID,
+				PipelineReleaseID:   pipelineReleaseID,
+				PipelineReleaseUID:  pipelineReleaseUID,
+				PipelineRecipe:      r,
+				PipelineOwnerType:   ns.NsType,
+				PipelineOwnerUID:    ns.NsUID,
+				PipelineUserUID:     userUID,
+				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+			},
+			Mode: mgmtPB.Mode_MODE_SYNC,
+		})
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+		return fmt.Errorf("unable to execute workflow: %w", err)
+	}
+
+	//TODO: refactor logic to get intermediate results
+	c := s.temporalClient
+	go func() {
+		for {
+			// Add a delay to ensure the workflow has started and the query handler is registered
+			time.Sleep(time.Millisecond * 500) //TODO tillknuesting: make this configurable
+
+			// Query the SecondaryWorkflow status
+			queryResult, err := c.QueryWorkflow(context.Background(), "secondary_workflow", "", "status")
+			if err != nil {
+				log.Println("Unable to query workflow", err)
+				continue
+			}
+
+			var status string
+			if err := queryResult.Get(&status); err != nil {
+				log.Println("Unable to get query result", err)
+				continue
+			}
+
+			fmt.Println("SecondaryWorkflow status:", status)
+
+			//TODO tillknuesting: Refactor to load result from memory here and put in channel
+			outputs, metadata, _ := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, true)
+			streamChan <- StreamResult{
+				Result:   outputs,
+				Metadata: metadata,
+			}
+			// Break the loop if the workflow is completed
+			if status == "Completed" {
+				break
+			}
+		}
+	}()
+
+	err = we.Get(ctx, nil)
+	if err != nil {
+		var applicationErr *temporal.ApplicationError
+		if errors.As(err, &applicationErr) {
+			var details worker.EndUserErrorDetails
+			if dErr := applicationErr.Details(&details); dErr == nil && details.Message != "" {
+				// Note: We categorize all pipeline trigger errors as ErrTriggerFail and mark the code as 400 InvalidArgument for now.
+				// We should further categorize them into InvalidArgument or PreconditionFailed or InternalError in the future.
+				err = errmsg.AddMessage(fmt.Errorf("%w %s", ErrTriggerFail, err), details.Message)
+			}
+		}
+
+		return fmt.Errorf("from workflow Get: %w", err)
+	}
+
+	return nil
+}
+
 func (s *service) triggerAsyncPipeline(
 	ctx context.Context,
 	ns resource.Namespace,
@@ -1092,6 +1206,22 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 	}
 
 	return s.triggerPipeline(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, secrets, pipelineTriggerID, returnTraces)
+}
+
+func (s *service) TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool, streamChan chan<- StreamResult) error {
+	ownerPermalink := ns.Permalink()
+
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
+	if err != nil {
+		return ErrNotFound
+	}
+
+	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
+	if err != nil {
+		return err
+	}
+
+	return s.triggerPipelineWithStream(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, secrets, pipelineTriggerID, returnTraces, streamChan)
 }
 
 func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {

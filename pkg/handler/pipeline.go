@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"net/http"
 	"strings"
 
@@ -898,6 +899,54 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.Trigger
 	resp = &pb.TriggerUserPipelineResponse{}
 	resp.Outputs, resp.Metadata, err = h.triggerNamespacePipeline(ctx, req)
 	return resp, err
+}
+
+func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelineWithStreamRequest, server pb.PipelinePublicService_TriggerUserPipelineWithStreamServer) error {
+	resultChan := make(chan service.StreamResult)
+	go func() {
+		defer close(resultChan)
+		for r := range resultChan {
+			resp := &pb.TriggerUserPipelineWithStreamResponse{
+				Outputs:  r.Result,
+				Metadata: r.Metadata,
+			}
+			if err := server.Send(resp); err != nil {
+				panic(err) //TODO: handle connection failures
+			}
+		}
+	}()
+
+	err := h.triggerNamespacePipelineWithStream(nil, req, resultChan)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TODO tillknuesting: Consider merging with triggerNamespacePipeline
+func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, req TriggerNamespacePipelineRequestInterface, streamChan chan<- service.StreamResult) error {
+
+	eventName := "TriggerNamespacePipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	ns, id, _, returnTraces, err := h.preTriggerUserPipeline(ctx, req)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return err
+	}
+
+	err = h.service.TriggerNamespacePipelineByIDWithStream(ctx, ns, id, req.GetInputs(), req.GetSecrets(), logUUID.String(), returnTraces, streamChan)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (h *PublicHandler) TriggerOrganizationPipeline(ctx context.Context, req *pb.TriggerOrganizationPipelineRequest) (resp *pb.TriggerOrganizationPipelineResponse, err error) {

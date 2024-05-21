@@ -142,6 +142,15 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
+	//TODO tillknuesting: Implement QueryHandler logic
+	status := "Started"
+	err := workflow.SetQueryHandler(ctx, "status", func() (string, error) {
+		return status, nil
+	})
+	if err != nil {
+		return err
+	}
+
 	r, err := recipe.LoadRecipe(sCtx, w.redisClient, param.MemoryStorageKey.Recipe)
 	if err != nil {
 		return err
@@ -259,6 +268,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						logger.Error(fmt.Sprintf("unable to execute iterator workflow: %s", err.Error()))
 						return err
 					}
+					// TODO tillknuesting: update status
+					status = "Executing Activity"
 				}
 
 				if err = workflow.ExecuteActivity(ctx, w.PostIteratorActivity, &PostIteratorActivityParam{
@@ -281,6 +292,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 				return err
 			}
+			// TODO tillknuesting: update status
+			status = "Executing Activity"
 		}
 		for _, comp := range orderedComp[group] {
 			param.MemoryStorageKey.Components[comp.ID] = make([]string, param.BatchSize)
