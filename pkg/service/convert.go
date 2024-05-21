@@ -74,8 +74,8 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 
 	switch rsc := rsc.(type) {
 	case *pb.Recipe:
-		for idx := range rsc.Components {
-			if err := c.convertResourceNameToPermalink(ctx, rsc.Components[idx]); err != nil {
+		for id := range rsc.Component {
+			if err := c.convertResourceNameToPermalink(ctx, rsc.Component[id]); err != nil {
 				return err
 			}
 		}
@@ -84,8 +84,8 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 	case *pb.NestedComponent:
 		return c.convertResourceNameToPermalink(ctx, rsc.Component)
 	case *pb.Component_IteratorComponent:
-		for idx := range rsc.IteratorComponent.Components {
-			if err := c.convertResourceNameToPermalink(ctx, rsc.IteratorComponent.Components[idx]); err != nil {
+		for id := range rsc.IteratorComponent.Component {
+			if err := c.convertResourceNameToPermalink(ctx, rsc.IteratorComponent.Component[id]); err != nil {
 				return err
 			}
 		}
@@ -148,8 +148,8 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 
 	switch rsc := rsc.(type) {
 	case *pb.Recipe:
-		for idx := range rsc.Components {
-			if err := c.convertResourcePermalinkToName(ctx, rsc.Components[idx]); err != nil {
+		for id := range rsc.Component {
+			if err := c.convertResourcePermalinkToName(ctx, rsc.Component[id]); err != nil {
 				return err
 			}
 		}
@@ -158,8 +158,8 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 	case *pb.NestedComponent:
 		return c.convertResourcePermalinkToName(ctx, rsc.Component)
 	case *pb.Component_IteratorComponent:
-		for idx := range rsc.IteratorComponent.Components {
-			if err := c.convertResourcePermalinkToName(ctx, rsc.IteratorComponent.Components[idx]); err != nil {
+		for id := range rsc.IteratorComponent.Component {
+			if err := c.convertResourcePermalinkToName(ctx, rsc.IteratorComponent.Component[id]); err != nil {
 				return err
 			}
 		}
@@ -249,13 +249,13 @@ func (c *converter) includeConnectorComponentDetail(ctx context.Context, comp *p
 
 func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *pb.IteratorComponent) error {
 
-	for nestIdx := range comp.Components {
+	for nestID := range comp.Component {
 		var err error
-		switch comp.Components[nestIdx].Component.(type) {
+		switch comp.Component[nestID].Component.(type) {
 		case *pb.NestedComponent_ConnectorComponent:
-			err = c.includeConnectorComponentDetail(ctx, comp.Components[nestIdx].GetConnectorComponent())
+			err = c.includeConnectorComponentDetail(ctx, comp.Component[nestID].GetConnectorComponent())
 		case *pb.NestedComponent_OperatorComponent:
-			err = c.includeOperatorComponentDetail(ctx, comp.Components[nestIdx].GetOperatorComponent())
+			err = c.includeOperatorComponentDetail(ctx, comp.Component[nestID].GetOperatorComponent())
 		}
 		if err != nil {
 			return err
@@ -277,14 +277,14 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *pb
 			// Find upstream component
 			compID := strings.Split(path, ".")[0]
 			path = path[len(compID):]
-			upstreamCompIdx := -1
-			for compIdx := range comp.Components {
-				if comp.Components[compIdx].Id == compID {
-					upstreamCompIdx = compIdx
+			upstreamCompID := ""
+			for id := range comp.Component {
+				if id == compID {
+					upstreamCompID = id
 				}
 			}
-			if upstreamCompIdx != -1 {
-				nestedComp := comp.Components[upstreamCompIdx]
+			if upstreamCompID != "" {
+				nestedComp := comp.Component[upstreamCompID]
 
 				var walk *structpb.Value
 				task := ""
@@ -390,15 +390,15 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *pb
 
 func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe) error {
 
-	for idx := range recipe.Components {
+	for id := range recipe.Component {
 		var err error
-		switch recipe.Components[idx].Component.(type) {
+		switch recipe.Component[id].Component.(type) {
 		case *pb.Component_ConnectorComponent:
-			err = c.includeConnectorComponentDetail(ctx, recipe.Components[idx].GetConnectorComponent())
+			err = c.includeConnectorComponentDetail(ctx, recipe.Component[id].GetConnectorComponent())
 		case *pb.Component_OperatorComponent:
-			err = c.includeOperatorComponentDetail(ctx, recipe.Components[idx].GetOperatorComponent())
+			err = c.includeOperatorComponentDetail(ctx, recipe.Component[id].GetOperatorComponent())
 		case *pb.Component_IteratorComponent:
-			err = c.includeIteratorComponentDetail(ctx, recipe.Components[idx].GetIteratorComponent())
+			err = c.includeIteratorComponentDetail(ctx, recipe.Component[id].GetIteratorComponent())
 		}
 		if err != nil {
 			return err
@@ -641,8 +641,8 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 
 	go func() {
 		defer wg.Done()
-		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && pbRecipe.Trigger.GetTriggerByRequest() != nil {
-			spec, err := c.generatePipelineDataSpec(pbRecipe.Trigger.GetTriggerByRequest(), pbRecipe.Components)
+		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && pbRecipe.Variable != nil {
+			spec, err := c.generatePipelineDataSpec(pbRecipe.Variable, pbRecipe.Output, pbRecipe.Component)
 			if err != nil {
 				return
 			}
@@ -806,8 +806,6 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		}
 	}
 
-	var triggerByRequest *pb.TriggerByRequest
-
 	if view == pb.Pipeline_VIEW_FULL {
 		if err := c.includeDetailInRecipe(ctx, pbRecipe); err != nil {
 			return nil, err
@@ -849,8 +847,8 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		}
 	}
 
-	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && triggerByRequest != nil {
-		spec, err := c.generatePipelineDataSpec(triggerByRequest, pbRecipe.Components)
+	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL {
+		spec, err := c.generatePipelineDataSpec(pbRecipe.Variable, pbRecipe.Output, pbRecipe.Component)
 		if err == nil {
 			pbPipelineRelease.DataSpecification = spec
 		}
@@ -901,7 +899,7 @@ func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline 
 }
 
 // TODO: refactor these codes
-func (c *converter) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerByRequest, compsOrigin []*pb.Component) (*pb.DataSpecification, error) {
+func (c *converter) generatePipelineDataSpec(variables map[string]*pb.Variable, outputs map[string]*pb.Output, compsOrigin map[string]*pb.Component) (*pb.DataSpecification, error) {
 	success := true
 	pipelineDataSpec := &pb.DataSpecification{}
 
@@ -909,8 +907,7 @@ func (c *converter) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerB
 	dataInput.Fields["type"] = structpb.NewStringValue("object")
 	dataInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
-	triggerByRequest := proto.Clone(triggerByRequestOrigin).(*pb.TriggerByRequest)
-	for k, v := range triggerByRequest.GetRequestFields() {
+	for k, v := range variables {
 		b, _ := protojson.Marshal(v)
 		p := &structpb.Struct{}
 		_ = protojson.Unmarshal(b, p)
@@ -922,12 +919,12 @@ func (c *converter) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerB
 	dataOutput.Fields["type"] = structpb.NewStringValue("object")
 	dataOutput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
-	for k, v := range triggerByRequest.GetResponseFields() {
+	for k, v := range outputs {
 		var m *structpb.Value
 
 		var err error
 
-		v = proto.Clone(v).(*pb.TriggerByRequest_ResponseField)
+		v = proto.Clone(v).(*pb.Output)
 
 		str := v.Value
 		if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
@@ -937,19 +934,19 @@ func (c *converter) generatePipelineDataSpec(triggerByRequestOrigin *pb.TriggerB
 
 			compID := strings.Split(str, ".")[0]
 			str = str[len(strings.Split(str, ".")[0]):]
-			upstreamCompIdx := -1
-			for compIdx := range compsOrigin {
-				if compsOrigin[compIdx].Id == compID {
-					upstreamCompIdx = compIdx
+			upstreamCompID := ""
+			for id := range compsOrigin {
+				if id == compID {
+					upstreamCompID = id
 				}
 			}
 
-			if upstreamCompIdx != -1 || compID == recipe.SegTrigger {
+			if upstreamCompID != "" || compID == recipe.SegVariable {
 				var walk *structpb.Value
-				if compID == recipe.SegTrigger {
+				if compID == recipe.SegVariable {
 					walk = structpb.NewStructValue(dataInput)
 				} else {
-					comp := proto.Clone(compsOrigin[upstreamCompIdx]).(*pb.Component)
+					comp := proto.Clone(compsOrigin[upstreamCompID]).(*pb.Component)
 
 					switch comp.Component.(type) {
 					case *pb.Component_IteratorComponent:

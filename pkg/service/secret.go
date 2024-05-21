@@ -134,7 +134,7 @@ func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, connecti
 }
 func (s *service) checkSecret(ctx context.Context, recipe *datamodel.Recipe) error {
 
-	for _, comp := range recipe.Components {
+	for _, comp := range recipe.Component {
 		if comp.IsConnectorComponent() {
 			defUID := uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1])
 			connection := comp.ConnectorComponent.Connection
@@ -144,7 +144,7 @@ func (s *service) checkSecret(ctx context.Context, recipe *datamodel.Recipe) err
 			}
 		}
 		if comp.IsIteratorComponent() {
-			for _, nestedComp := range comp.IteratorComponent.Components {
+			for _, nestedComp := range comp.IteratorComponent.Component {
 				if comp.IsConnectorComponent() {
 					defUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.DefinitionName, "/")[1])
 					connection := nestedComp.ConnectorComponent.Connection

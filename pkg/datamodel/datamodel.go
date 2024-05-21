@@ -53,7 +53,7 @@ func (base *BaseDynamicHardDelete) BeforeCreate(db *gorm.DB) error {
 }
 
 type HubStats struct {
-	NumberOfPublicPipelines int32
+	NumberOfPublicPipelines   int32
 	NumberOfFeaturedPipelines int32
 }
 
@@ -93,17 +93,14 @@ type PipelineRelease struct {
 
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
-	Version    string       `json:"version,omitempty"`
-	Trigger    *Trigger     `json:"trigger,omitempty"`
-	Components []*Component `json:"components,omitempty"`
-}
-
-type Trigger struct {
-	TriggerByRequest *TriggerByRequest `json:"trigger_by_request,omitempty"`
+	Version   string                `json:"version,omitempty"`
+	On        *On                   `json:"on"`
+	Component map[string]*Component `json:"component"`
+	Variable  Variable              `json:"variable"`
+	Output    Output                `json:"output"`
 }
 
 type Component struct {
-	ID       string         `json:"id"`
 	Metadata datatypes.JSON `json:"metadata"`
 	// TODO: validate oneof
 	ConnectorComponent *ConnectorComponent `json:"connector_component,omitempty"`
@@ -133,7 +130,7 @@ func (c *Component) GetCondition() *string {
 	return nil
 }
 
-type TriggerByRequestRequestFields map[string]struct {
+type Variable map[string]struct {
 	Title              string `json:"title"`
 	Description        string `json:"description"`
 	InstillFormat      string `json:"instill_format"`
@@ -141,16 +138,14 @@ type TriggerByRequestRequestFields map[string]struct {
 	InstillUIMultiline bool   `json:"instill_ui_multiline"`
 }
 
-type TriggerByRequestResponseFields map[string]struct {
+type Output map[string]struct {
 	Title          string `json:"title"`
 	Description    string `json:"description"`
 	Value          string `json:"value"`
 	InstillUIOrder int32  `json:"instill_ui_order"`
 }
 
-type TriggerByRequest struct {
-	RequestFields  TriggerByRequestRequestFields  `json:"request_fields"`
-	ResponseFields TriggerByRequestResponseFields `json:"response_fields"`
+type On struct {
 }
 
 type ConnectorComponent struct {
@@ -169,10 +164,10 @@ type OperatorComponent struct {
 }
 
 type IteratorComponent struct {
-	Input          string            `json:"input"`
-	OutputElements map[string]string `json:"output_elements"`
-	Condition      *string           `json:"condition,omitempty"`
-	Components     []*Component      `json:"components"`
+	Input          string                `json:"input"`
+	OutputElements map[string]string     `json:"output_elements"`
+	Condition      *string               `json:"condition,omitempty"`
+	Component      map[string]*Component `json:"component"`
 }
 
 type Sharing struct {

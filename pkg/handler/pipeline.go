@@ -890,8 +890,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 
 type TriggerNamespacePipelineRequestInterface interface {
 	GetName() string
-	GetInputs() []*structpb.Struct
-	GetSecrets() map[string]string
+	GetData() []*pb.TriggerData
 }
 
 func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.TriggerUserPipelineRequest) (resp *pb.TriggerUserPipelineResponse, err error) {
@@ -924,7 +923,7 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 		return nil, nil, err
 	}
 
-	outputs, metadata, err = h.service.TriggerNamespacePipelineByID(ctx, ns, id, req.GetInputs(), req.GetSecrets(), logUUID.String(), returnTraces)
+	outputs, metadata, err = h.service.TriggerNamespacePipelineByID(ctx, ns, id, req.GetData(), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, nil, err
@@ -943,8 +942,7 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 
 type TriggerAsyncNamespacePipelineRequestInterface interface {
 	GetName() string
-	GetInputs() []*structpb.Struct
-	GetSecrets() map[string]string
+	GetData() []*pb.TriggerData
 }
 
 func (h *PublicHandler) TriggerAsyncUserPipeline(ctx context.Context, req *pb.TriggerAsyncUserPipelineRequest) (resp *pb.TriggerAsyncUserPipelineResponse, err error) {
@@ -977,7 +975,7 @@ func (h *PublicHandler) triggerAsyncNamespacePipeline(ctx context.Context, req T
 		return nil, err
 	}
 
-	operation, err = h.service.TriggerAsyncNamespacePipelineByID(ctx, ns, id, req.GetInputs(), req.GetSecrets(), logUUID.String(), returnTraces)
+	operation, err = h.service.TriggerAsyncNamespacePipelineByID(ctx, ns, id, req.GetData(), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1581,8 +1579,7 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 
 type TriggerNamespacePipelineReleaseRequestInterface interface {
 	GetName() string
-	GetInputs() []*structpb.Struct
-	GetSecrets() map[string]string
+	GetData() []*pb.TriggerData
 }
 
 func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pb.TriggerUserPipelineReleaseRequest) (resp *pb.TriggerUserPipelineReleaseResponse, err error) {
@@ -1615,7 +1612,7 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 		return nil, nil, err
 	}
 
-	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetInputs(), req.GetSecrets(), logUUID.String(), returnTraces)
+	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetData(), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, nil, err
@@ -1634,8 +1631,7 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 
 type TriggerAsyncNamespacePipelineReleaseRequestInterface interface {
 	GetName() string
-	GetInputs() []*structpb.Struct
-	GetSecrets() map[string]string
+	GetData() []*pb.TriggerData
 }
 
 func (h *PublicHandler) TriggerAsyncUserPipelineRelease(ctx context.Context, req *pb.TriggerAsyncUserPipelineReleaseRequest) (resp *pb.TriggerAsyncUserPipelineReleaseResponse, err error) {
@@ -1668,7 +1664,7 @@ func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context
 		return nil, err
 	}
 
-	operation, err = h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetInputs(), req.GetSecrets(), logUUID.String(), returnTraces)
+	operation, err = h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetData(), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
