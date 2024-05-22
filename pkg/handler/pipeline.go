@@ -678,27 +678,25 @@ type ValidateNamespacePipelineRequest interface {
 
 func (h *PublicHandler) ValidateUserPipeline(ctx context.Context, req *pb.ValidateUserPipelineRequest) (resp *pb.ValidateUserPipelineResponse, err error) {
 	resp = &pb.ValidateUserPipelineResponse{}
-	resp.Pipeline, err = h.validateNamespacePipeline(ctx, req)
+	resp.Errors, err = h.validateNamespacePipeline(ctx, req)
+	resp.Success = len(resp.Errors) == 0
 	return resp, err
 }
 
 func (h *PublicHandler) ValidateOrganizationPipeline(ctx context.Context, req *pb.ValidateOrganizationPipelineRequest) (resp *pb.ValidateOrganizationPipelineResponse, err error) {
 	resp = &pb.ValidateOrganizationPipelineResponse{}
-	resp.Pipeline, err = h.validateNamespacePipeline(ctx, req)
+	resp.Errors, err = h.validateNamespacePipeline(ctx, req)
+	resp.Success = len(resp.Errors) == 0
 	return resp, err
 }
 
-func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req ValidateNamespacePipelineRequest) (*pb.Pipeline, error) {
+func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req ValidateNamespacePipelineRequest) ([]*pb.PipelineValidationError, error) {
 
 	eventName := "ValidateNamespacePipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
-
-	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
 	if err != nil {
@@ -710,21 +708,13 @@ func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req Valid
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.ValidateNamespacePipelineByID(ctx, ns, id)
+	validationErrors, err := h.service.ValidateNamespacePipelineByID(ctx, ns, id)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
-		ctx,
-		span,
-		logUUID.String(),
-		eventName,
-		customotel.SetEventResource(pbPipeline),
-	)))
-
-	return pbPipeline, nil
+	return validationErrors, nil
 }
 
 type RenameNamespacePipelineRequestInterface interface {

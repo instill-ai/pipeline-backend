@@ -94,11 +94,11 @@ type PipelineRelease struct {
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
 	Version   string                `json:"version,omitempty"`
-	On        *On                   `json:"on"`
-	Component map[string]IComponent `json:"component"`
-	Variable  map[string]*Variable  `json:"variable"`
-	Secret    map[string]string     `json:"secret"`
-	Output    map[string]*Output    `json:"output"`
+	On        *On                   `json:"on,omitempty"`
+	Component map[string]IComponent `json:"component,omitempty"`
+	Variable  map[string]*Variable  `json:"variable,omitempty"`
+	Secret    map[string]string     `json:"secret,omitempty"`
+	Output    map[string]*Output    `json:"output,omitempty"`
 }
 
 type IComponent interface {
@@ -169,30 +169,30 @@ func (i *IteratorComponent) GetCondition() *string {
 }
 
 type Variable struct {
-	Title              string `json:"title"`
-	Description        string `json:"description"`
-	InstillFormat      string `json:"instillFormat"`
-	InstillUIOrder     int32  `json:"instillUiOrder"`
-	InstillUIMultiline bool   `json:"instillUiMultiline"`
+	Title              string `json:"title,omitempty"`
+	Description        string `json:"description,omitempty"`
+	InstillFormat      string `json:"instillFormat,omitempty"`
+	InstillUIOrder     int32  `json:"instillUiOrder,omitempty"`
+	InstillUIMultiline bool   `json:"instillUiMultiline,omitempty"`
 }
 
 type Output struct {
-	Title          string `json:"title"`
-	Description    string `json:"description"`
-	Value          string `json:"value"`
-	InstillUIOrder int32  `json:"instillUiOrder"`
+	Title          string `json:"title,omitempty"`
+	Description    string `json:"description,omitempty"`
+	Value          string `json:"value,omitempty"`
+	InstillUIOrder int32  `json:"instillUiOrder,omitempty"`
 }
 
 type On struct {
 }
 
 type IteratorComponent struct {
-	Input             string                `json:"input"`
-	OutputElements    map[string]string     `json:"outputElements"`
+	Input             string                `json:"input,omitempty"`
+	OutputElements    map[string]string     `json:"outputElements,omitempty"`
 	Condition         *string               `json:"condition,omitempty"`
-	Component         map[string]IComponent `json:"component"`
-	Metadata          datatypes.JSON        `json:"metadata"`
-	DataSpecification *pb.DataSpecification `json:"dataSpecification"`
+	Component         map[string]IComponent `json:"component,omitempty"`
+	Metadata          datatypes.JSON        `json:"metadata,omitempty"`
+	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty"`
 }
 
 func (i *IteratorComponent) UnmarshalJSON(data []byte) error {

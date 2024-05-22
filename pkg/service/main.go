@@ -33,7 +33,7 @@ type Service interface {
 	UpdateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, updatedPipeline *pb.Pipeline) (*pb.Pipeline, error)
 	UpdateNamespacePipelineIDByID(ctx context.Context, ns resource.Namespace, id string, newID string) (*pb.Pipeline, error)
 	DeleteNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) error
-	ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) (*pb.Pipeline, error)
+	ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) ([]*pb.PipelineValidationError, error)
 	GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns resource.Namespace, id string) (uuid.UUID, error)
 	CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id string, targetNS resource.Namespace, targetID string) (*pb.Pipeline, error)
 

@@ -417,7 +417,7 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 	return targetPipeline, nil
 }
 
-func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) (*pb.Pipeline, error) {
+func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) ([]*pb.PipelineValidationError, error) {
 
 	ownerPermalink := ns.Permalink()
 
@@ -438,18 +438,12 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 		return nil, ErrNoPermission
 	}
 
-	recipeErr := s.checkRecipe(ownerPermalink, dbPipeline.Recipe)
-
-	if recipeErr != nil {
-		return nil, recipeErr
-	}
-
-	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
+	validateErrs, err := s.checkRecipe(dbPipeline.Recipe)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
+	return validateErrs, nil
 
 }
 
@@ -488,7 +482,6 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 
 func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineData []*pb.TriggerData) (*recipe.BatchMemoryKey, error) {
 
-	fmt.Println("preTriggerPipeline")
 	batchSize := len(pipelineData)
 	if batchSize > constant.MaxBatchSize {
 		return nil, ErrExceedMaxBatchSize
@@ -498,7 +491,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 	instillFormatMap := map[string]string{}
 
-	fmt.Println("preTriggerPipeline22")
 	schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	schStruct.Fields["type"] = structpb.NewStringValue("object")
 	b, _ := json.Marshal(r.Variable)
@@ -506,25 +498,20 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	_ = protojson.Unmarshal(b, properties)
 	schStruct.Fields["properties"] = structpb.NewStructValue(properties)
 	for k, v := range r.Variable {
-		fmt.Println("xxx", k, v)
 		instillFormatMap[k] = v.InstillFormat
 	}
 	err := componentbase.CompileInstillAcceptFormats(schStruct)
 	if err != nil {
 		return nil, err
 	}
-	b, _ = protojson.Marshal(schStruct)
-	fmt.Println("11111", string(b))
 	err = componentbase.CompileInstillFormat(schStruct)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("111121")
 	metadata, err = protojson.Marshal(schStruct)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("preTriggerPipeline23")
 
 	c := jsonschema.NewCompiler()
 	c.RegisterExtension("instillAcceptFormats", componentbase.InstillAcceptFormatsMeta, componentbase.InstillAcceptFormatsCompiler{})
@@ -542,7 +529,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 	errors := []string{}
 
-	fmt.Println("preTriggerPipeline2")
 	for idx, data := range pipelineData {
 		vars := data.Variable
 		b, err := protojson.Marshal(vars)
@@ -558,7 +544,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 		m := i.(map[string]any)
 
-		fmt.Println("preTriggerPipeline23")
 		for k := range m {
 			switch s := m[k].(type) {
 			case string:
@@ -588,7 +573,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 				}
 			}
 		}
-		fmt.Println("preTriggerPipeline24")
 
 		if err = sch.Validate(m); err != nil {
 			e := err.(*jsonschema.ValidationError)
@@ -607,7 +591,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		return nil, fmt.Errorf("[Pipeline Trigger Data Error] %s", strings.Join(errors, "; "))
 	}
 
-	fmt.Println("preTriggerPipeline2")
 	memory := make([]*recipe.Memory, len(pipelineData))
 	for idx := range pipelineData {
 		memory[idx] = &recipe.Memory{

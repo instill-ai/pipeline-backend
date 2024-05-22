@@ -1,0 +1,80 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "version": {
+        "type": "string"
+      },
+      "on": {
+        "type": "object"
+      },
+      "variable": {
+        "type": "object",
+        "patternProperties": {
+          "^[a-z][-a-z0-9]{0,31}$": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "instillUiMultiline": {
+                "type": "boolean"
+              },
+              "instillUiOrder": {
+                "type": "integer"
+              },
+              "instillFormat": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "instillFormat"
+            ]
+          }
+        }
+      },
+      "secret": {
+        "type": "object",
+        "patternProperties": {
+          "^[a-z][-a-z0-9]{0,31}$": {
+            "type": "string"
+          }
+        }
+      },
+      "output": {
+        "type": "object",
+        "patternProperties": {
+          "^[a-z][-a-z0-9]{0,31}$": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "instillUiMultiline": {
+                "type": "boolean"
+              },
+              "instillUiOrder": {
+                "type": "integer"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        }
+      },
+      "component": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  }
