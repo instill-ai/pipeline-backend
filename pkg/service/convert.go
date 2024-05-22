@@ -12,7 +12,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -24,6 +23,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
+	componentbase "github.com/instill-ai/component/base"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -72,72 +72,42 @@ func NewConverter(
 // The `convertResourceNameToPermalink` function converts all resources that use ID to UUID.
 func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any) error {
 
+	if rsc == nil {
+		return nil
+	}
+
 	switch rsc := rsc.(type) {
-	case *pb.Recipe:
+	case *datamodel.Recipe:
 		for id := range rsc.Component {
 			if err := c.convertResourceNameToPermalink(ctx, rsc.Component[id]); err != nil {
 				return err
 			}
 		}
-	case *pb.Component:
-		return c.convertResourceNameToPermalink(ctx, rsc.Component)
-	case *pb.NestedComponent:
-		return c.convertResourceNameToPermalink(ctx, rsc.Component)
-	case *pb.Component_IteratorComponent:
-		for id := range rsc.IteratorComponent.Component {
-			if err := c.convertResourceNameToPermalink(ctx, rsc.IteratorComponent.Component[id]); err != nil {
+	case *datamodel.IteratorComponent:
+		for id := range rsc.Component {
+			if err := c.convertResourceNameToPermalink(ctx, rsc.Component[id]); err != nil {
 				return err
 			}
 		}
 
-	case *pb.Component_ConnectorComponent:
-		id, err := resource.GetRscNameID(rsc.ConnectorComponent.DefinitionName)
-		if err != nil {
-			return err
-		}
+	case *componentbase.ConnectorComponent:
 
-		def, err := c.component.GetConnectorDefinitionByID(id, nil, nil)
+		def, err := c.component.GetConnectorDefinitionByID(rsc.Type, nil, nil)
 		if err != nil {
 			return err
 		}
-		rsc.ConnectorComponent.DefinitionName = fmt.Sprintf("connector-definitions/%s", def.Uid)
+		rsc.Type = def.Uid
 		return nil
 
-	case *pb.NestedComponent_ConnectorComponent:
-		id, err := resource.GetRscNameID(rsc.ConnectorComponent.DefinitionName)
+	case *componentbase.OperatorComponent:
+
+		def, err := c.component.GetOperatorDefinitionByID(rsc.Type, nil, nil)
 		if err != nil {
 			return err
 		}
-		def, err := c.component.GetConnectorDefinitionByID(id, nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.ConnectorComponent.DefinitionName = fmt.Sprintf("connector-definitions/%s", def.Uid)
+		rsc.Type = def.Uid
 		return nil
 
-	case *pb.Component_OperatorComponent:
-		id, err := resource.GetRscNameID(rsc.OperatorComponent.DefinitionName)
-		if err != nil {
-			return err
-		}
-		def, err := c.component.GetOperatorDefinitionByID(id, nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.OperatorComponent.DefinitionName = fmt.Sprintf("operator-definitions/%s", def.Uid)
-		return nil
-
-	case *pb.NestedComponent_OperatorComponent:
-		id, err := resource.GetRscNameID(rsc.OperatorComponent.DefinitionName)
-		if err != nil {
-			return err
-		}
-		def, err := c.component.GetOperatorDefinitionByID(id, nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.OperatorComponent.DefinitionName = fmt.Sprintf("operator-definitions/%s", def.Uid)
-		return nil
 	}
 	return nil
 }
@@ -146,81 +116,48 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 // The `convertResourceNameToPermalink` function converts all resources that use UUID to ID.
 func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any) error {
 
+	if rsc == nil {
+		return nil
+	}
 	switch rsc := rsc.(type) {
-	case *pb.Recipe:
+	case *datamodel.Recipe:
 		for id := range rsc.Component {
 			if err := c.convertResourcePermalinkToName(ctx, rsc.Component[id]); err != nil {
 				return err
 			}
 		}
-	case *pb.Component:
-		return c.convertResourcePermalinkToName(ctx, rsc.Component)
-	case *pb.NestedComponent:
-		return c.convertResourcePermalinkToName(ctx, rsc.Component)
-	case *pb.Component_IteratorComponent:
-		for id := range rsc.IteratorComponent.Component {
-			if err := c.convertResourcePermalinkToName(ctx, rsc.IteratorComponent.Component[id]); err != nil {
+	case *datamodel.IteratorComponent:
+		for id := range rsc.Component {
+			if err := c.convertResourcePermalinkToName(ctx, rsc.Component[id]); err != nil {
 				return err
 			}
 		}
 
-	case *pb.Component_ConnectorComponent:
-		uid, err := resource.GetRscPermalinkUID(rsc.ConnectorComponent.DefinitionName)
+	case *componentbase.ConnectorComponent:
+		def, err := c.component.GetConnectorDefinitionByUID(uuid.FromStringOrNil(rsc.Type), nil, nil)
 		if err != nil {
 			return err
 		}
-		def, err := c.component.GetConnectorDefinitionByUID(uid, nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.ConnectorComponent.DefinitionName = def.Name
 
-	case *pb.NestedComponent_ConnectorComponent:
-		uid, err := resource.GetRscPermalinkUID(rsc.ConnectorComponent.DefinitionName)
-		if err != nil {
-			return err
-		}
-		def, err := c.component.GetConnectorDefinitionByUID(uid, nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.ConnectorComponent.DefinitionName = def.Name
+		rsc.Type = def.Id
 
-	case *pb.Component_OperatorComponent:
-		uid, err := resource.GetRscPermalinkUID(rsc.OperatorComponent.DefinitionName)
+	case *componentbase.OperatorComponent:
+		def, err := c.component.GetOperatorDefinitionByUID(uuid.FromStringOrNil(rsc.Type), nil, nil)
 		if err != nil {
 			return err
 		}
-		def, err := c.component.GetOperatorDefinitionByUID(uid, nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.OperatorComponent.DefinitionName = def.Name
-
-	case *pb.NestedComponent_OperatorComponent:
-		uid, err := resource.GetRscPermalinkUID(rsc.OperatorComponent.DefinitionName)
-		if err != nil {
-			return err
-		}
-		def, err := c.component.GetOperatorDefinitionByUID(uid, nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.OperatorComponent.DefinitionName = def.Name
+		rsc.Type = def.Id
 	}
 	return nil
 }
 
-func (c *converter) includeOperatorComponentDetail(ctx context.Context, comp *pb.OperatorComponent) error {
-	uid, err := resource.GetRscPermalinkUID(comp.DefinitionName)
-	if err != nil {
-		return err
-	}
+func (c *converter) includeOperatorComponentDetail(ctx context.Context, comp *componentbase.OperatorComponent) error {
+
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return err
 	}
-	def, err := c.component.GetOperatorDefinitionByUID(uid, vars, comp)
+	def, err := c.component.GetOperatorDefinitionByUID(uuid.FromStringOrNil(comp.Type), vars, comp)
 	if err != nil {
 		return err
 	}
@@ -229,16 +166,13 @@ func (c *converter) includeOperatorComponentDetail(ctx context.Context, comp *pb
 	return nil
 }
 
-func (c *converter) includeConnectorComponentDetail(ctx context.Context, comp *pb.ConnectorComponent) error {
-	uid, err := resource.GetRscPermalinkUID(comp.DefinitionName)
-	if err != nil {
-		return err
-	}
+func (c *converter) includeConnectorComponentDetail(ctx context.Context, comp *componentbase.ConnectorComponent) error {
+
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return err
 	}
-	def, err := c.component.GetConnectorDefinitionByUID(uid, vars, comp)
+	def, err := c.component.GetConnectorDefinitionByUID(uuid.FromStringOrNil(comp.Type), vars, comp)
 	if err != nil {
 		return err
 	}
@@ -247,15 +181,15 @@ func (c *converter) includeConnectorComponentDetail(ctx context.Context, comp *p
 	return nil
 }
 
-func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *pb.IteratorComponent) error {
+func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *datamodel.IteratorComponent) error {
 
 	for nestID := range comp.Component {
 		var err error
-		switch comp.Component[nestID].Component.(type) {
-		case *pb.NestedComponent_ConnectorComponent:
-			err = c.includeConnectorComponentDetail(ctx, comp.Component[nestID].GetConnectorComponent())
-		case *pb.NestedComponent_OperatorComponent:
-			err = c.includeOperatorComponentDetail(ctx, comp.Component[nestID].GetOperatorComponent())
+		switch comp := comp.Component[nestID].(type) {
+		case *componentbase.ConnectorComponent:
+			err = c.includeConnectorComponentDetail(ctx, comp)
+		case *componentbase.OperatorComponent:
+			err = c.includeOperatorComponentDetail(ctx, comp)
 		}
 		if err != nil {
 			return err
@@ -290,19 +224,19 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *pb
 				task := ""
 				input := &structpb.Struct{}
 				output := &structpb.Struct{}
-				switch nestedComp.Component.(type) {
-				case *pb.NestedComponent_ConnectorComponent:
-					task = nestedComp.GetConnectorComponent().GetTask()
-					if _, ok := nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
-						input = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
-						output = nestedComp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+				switch nestedC := nestedComp.(type) {
+				case *componentbase.ConnectorComponent:
+					task = nestedC.Task
+					if _, ok := nestedC.Definition.Spec.DataSpecifications[task]; ok {
+						input = nestedC.Definition.Spec.DataSpecifications[task].Input
+						output = nestedC.Definition.Spec.DataSpecifications[task].Output
 					}
 
-				case *pb.NestedComponent_OperatorComponent:
-					task = nestedComp.GetOperatorComponent().GetTask()
-					if _, ok := nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
-						input = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
-						output = nestedComp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+				case *componentbase.OperatorComponent:
+					task = nestedC.Task
+					if _, ok := nestedC.Definition.Spec.DataSpecifications[task]; ok {
+						input = nestedC.Definition.Spec.DataSpecifications[task].Input
+						output = nestedC.Definition.Spec.DataSpecifications[task].Output
 					}
 				}
 				if task == "" {
@@ -388,17 +322,17 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *pb
 	return nil
 }
 
-func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *pb.Recipe) error {
+func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *datamodel.Recipe) error {
 
 	for id := range recipe.Component {
 		var err error
-		switch recipe.Component[id].Component.(type) {
-		case *pb.Component_ConnectorComponent:
-			err = c.includeConnectorComponentDetail(ctx, recipe.Component[id].GetConnectorComponent())
-		case *pb.Component_OperatorComponent:
-			err = c.includeOperatorComponentDetail(ctx, recipe.Component[id].GetOperatorComponent())
-		case *pb.Component_IteratorComponent:
-			err = c.includeIteratorComponentDetail(ctx, recipe.Component[id].GetIteratorComponent())
+		switch comp := recipe.Component[id].(type) {
+		case *componentbase.ConnectorComponent:
+			err = c.includeConnectorComponentDetail(ctx, comp)
+		case *componentbase.OperatorComponent:
+			err = c.includeOperatorComponentDetail(ctx, comp)
+		case *datamodel.IteratorComponent:
+			err = c.includeIteratorComponentDetail(ctx, comp)
 		}
 		if err != nil {
 			return err
@@ -412,25 +346,22 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 	logger, _ := logger.GetZapLogger(ctx)
 
 	recipe := &datamodel.Recipe{}
-	if pbPipeline.GetRecipe() != nil {
-		err := c.convertResourceNameToPermalink(ctx, pbPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
+	b, err := protojson.Marshal(pbPipeline.Recipe)
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(b, &recipe); err != nil {
+		return nil, err
+	}
 
-		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
-		if err := json.Unmarshal(b, &recipe); err != nil {
-			return nil, err
-		}
-
+	err = c.convertResourceNameToPermalink(ctx, recipe)
+	if err != nil {
+		return nil, err
 	}
 
 	dbSharing := &datamodel.Sharing{}
 	if pbPipeline.GetSharing() != nil {
-		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipeline.GetSharing())
+		b, err := protojson.Marshal(pbPipeline.GetSharing())
 		if err != nil {
 			return nil, err
 		}
@@ -509,31 +440,15 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 	}
 
 	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
-	var pbRecipe *pb.Recipe
-
-	if dbPipeline.Recipe != nil && view > pb.Pipeline_VIEW_BASIC {
-		pbRecipe = &pb.Recipe{}
-
-		b, err := json.Marshal(dbPipeline.Recipe)
-		if err != nil {
-			return nil, err
-		}
-
-		err = protojson.Unmarshal(b, pbRecipe)
-		if err != nil {
-			return nil, err
-		}
-
-	}
 
 	if view == pb.Pipeline_VIEW_FULL {
-		if err := c.includeDetailInRecipe(ctx, pbRecipe); err != nil {
+		if err := c.includeDetailInRecipe(ctx, dbPipeline.Recipe); err != nil {
 			return nil, err
 		}
 	}
 
-	if pbRecipe != nil {
-		err = c.convertResourcePermalinkToName(ctx, pbRecipe)
+	if dbPipeline.Recipe != nil {
+		err = c.convertResourcePermalinkToName(ctx, dbPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
@@ -557,6 +472,19 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 	tags := []string{}
 	for _, t := range dbPipeline.Tags {
 		tags = append(tags, t.TagName)
+	}
+
+	pbRecipe := &structpb.Struct{}
+	if dbPipeline.Recipe != nil {
+		b, err = json.Marshal(dbPipeline.Recipe)
+		if err != nil {
+			return nil, err
+		}
+
+		err = protojson.Unmarshal(b, pbRecipe)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	pbPipeline := pb.Pipeline{
@@ -641,8 +569,8 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 
 	go func() {
 		defer wg.Done()
-		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && pbRecipe.Variable != nil {
-			spec, err := c.generatePipelineDataSpec(pbRecipe.Variable, pbRecipe.Output, pbRecipe.Component)
+		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && dbPipeline.Recipe.Variable != nil {
+			spec, err := c.generatePipelineDataSpec(dbPipeline.Recipe.Variable, dbPipeline.Recipe.Output, dbPipeline.Recipe.Component)
 			if err != nil {
 				return
 			}
@@ -716,21 +644,19 @@ func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID 
 	logger, _ := logger.GetZapLogger(ctx)
 
 	recipe := &datamodel.Recipe{}
-	if pbPipelineRelease.GetRecipe() != nil {
-		err := c.convertResourceNameToPermalink(ctx, pbPipelineRelease.Recipe)
-		if err != nil {
-			return nil, err
-		}
-
-		b, err := protojson.MarshalOptions{UseProtoNames: true}.Marshal(pbPipelineRelease.Recipe)
-		if err != nil {
-			return nil, err
-		}
-		if err := json.Unmarshal(b, &recipe); err != nil {
-			return nil, err
-		}
-
+	b, err := protojson.Marshal(pbPipelineRelease.Recipe)
+	if err != nil {
+		return nil, err
 	}
+	if err := json.Unmarshal(b, &recipe); err != nil {
+		return nil, err
+	}
+
+	err = c.convertResourceNameToPermalink(ctx, pbPipelineRelease.Recipe)
+	if err != nil {
+		return nil, err
+	}
+
 	return &datamodel.PipelineRelease{
 		ID: pbPipelineRelease.GetId(),
 
@@ -791,10 +717,22 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 	if err != nil {
 		return nil, err
 	}
-	var pbRecipe *pb.Recipe
-	if dbPipelineRelease.Recipe != nil && view > pb.Pipeline_VIEW_BASIC {
-		pbRecipe = &pb.Recipe{}
 
+	if view == pb.Pipeline_VIEW_FULL {
+		if err := c.includeDetailInRecipe(ctx, dbPipelineRelease.Recipe); err != nil {
+			return nil, err
+		}
+	}
+
+	if dbPipelineRelease.Recipe != nil {
+		err = c.convertResourcePermalinkToName(ctx, dbPipelineRelease.Recipe)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	pbRecipe := &structpb.Struct{}
+	if dbPipelineRelease.Recipe != nil {
 		b, err := json.Marshal(dbPipelineRelease.Recipe)
 		if err != nil {
 			return nil, err
@@ -806,18 +744,6 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		}
 	}
 
-	if view == pb.Pipeline_VIEW_FULL {
-		if err := c.includeDetailInRecipe(ctx, pbRecipe); err != nil {
-			return nil, err
-		}
-	}
-
-	if pbRecipe != nil {
-		err = c.convertResourcePermalinkToName(ctx, pbRecipe)
-		if err != nil {
-			return nil, err
-		}
-	}
 	pbPipelineRelease := pb.PipelineRelease{
 		Name:       fmt.Sprintf("%s/pipelines/%s/releases/%s", owner, dbPipeline.ID, dbPipelineRelease.ID),
 		Uid:        dbPipelineRelease.BaseDynamic.UID.String(),
@@ -848,7 +774,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 	}
 
 	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL {
-		spec, err := c.generatePipelineDataSpec(pbRecipe.Variable, pbRecipe.Output, pbRecipe.Component)
+		spec, err := c.generatePipelineDataSpec(dbPipelineRelease.Recipe.Variable, dbPipelineRelease.Recipe.Output, dbPipelineRelease.Recipe.Component)
 		if err == nil {
 			pbPipelineRelease.DataSpecification = spec
 		}
@@ -899,7 +825,7 @@ func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline 
 }
 
 // TODO: refactor these codes
-func (c *converter) generatePipelineDataSpec(variables map[string]*pb.Variable, outputs map[string]*pb.Output, compsOrigin map[string]*pb.Component) (*pb.DataSpecification, error) {
+func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin map[string]datamodel.IComponent) (*pb.DataSpecification, error) {
 	success := true
 	pipelineDataSpec := &pb.DataSpecification{}
 
@@ -908,7 +834,7 @@ func (c *converter) generatePipelineDataSpec(variables map[string]*pb.Variable, 
 	dataInput.Fields["properties"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 
 	for k, v := range variables {
-		b, _ := protojson.Marshal(v)
+		b, _ := json.Marshal(v)
 		p := &structpb.Struct{}
 		_ = protojson.Unmarshal(b, p)
 		dataInput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(p)
@@ -923,8 +849,6 @@ func (c *converter) generatePipelineDataSpec(variables map[string]*pb.Variable, 
 		var m *structpb.Value
 
 		var err error
-
-		v = proto.Clone(v).(*pb.Output)
 
 		str := v.Value
 		if strings.HasPrefix(str, "${") && strings.HasSuffix(str, "}") && strings.Count(str, "${") == 1 {
@@ -946,33 +870,33 @@ func (c *converter) generatePipelineDataSpec(variables map[string]*pb.Variable, 
 				if compID == recipe.SegVariable {
 					walk = structpb.NewStructValue(dataInput)
 				} else {
-					comp := proto.Clone(compsOrigin[upstreamCompID]).(*pb.Component)
+					comp := compsOrigin[upstreamCompID]
 
-					switch comp.Component.(type) {
-					case *pb.Component_IteratorComponent:
+					switch c := comp.(type) {
+					case *datamodel.IteratorComponent:
 						splits := strings.Split(str, ".")
 						if splits[1] == "output" {
-							walk = structpb.NewStructValue(comp.GetIteratorComponent().DataSpecification.Output)
+							walk = structpb.NewStructValue(c.DataSpecification.Output)
 						} else {
 							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 						str = str[len(splits[1])+1:]
-					case *pb.Component_ConnectorComponent, *pb.Component_OperatorComponent:
+					case *componentbase.ConnectorComponent, *componentbase.OperatorComponent:
 						task := ""
 						input := &structpb.Struct{}
 						output := &structpb.Struct{}
-						switch comp.Component.(type) {
-						case *pb.Component_ConnectorComponent:
-							task = comp.GetConnectorComponent().GetTask()
-							if _, ok := comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
-								input = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Input
-								output = comp.GetConnectorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+						switch c := comp.(type) {
+						case *componentbase.ConnectorComponent:
+							task = c.Task
+							if _, ok := c.Definition.Spec.DataSpecifications[task]; ok {
+								input = c.Definition.Spec.DataSpecifications[task].Input
+								output = c.Definition.Spec.DataSpecifications[task].Output
 							}
-						case *pb.Component_OperatorComponent:
-							task = comp.GetOperatorComponent().GetTask()
-							if _, ok := comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task]; ok {
-								input = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Input
-								output = comp.GetOperatorComponent().GetDefinition().Spec.DataSpecifications[task].Output
+						case *componentbase.OperatorComponent:
+							task = c.Task
+							if _, ok := c.Definition.Spec.DataSpecifications[task]; ok {
+								input = c.Definition.Spec.DataSpecifications[task].Input
+								output = c.Definition.Spec.DataSpecifications[task].Output
 							}
 						}
 
@@ -1041,14 +965,14 @@ func (c *converter) generatePipelineDataSpec(variables map[string]*pb.Variable, 
 				m.GetStructValue().Fields["description"] = structpb.NewStringValue(v.Description)
 			}
 			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-				m.GetStructValue().Fields["instillUIOrder"] = structpb.NewNumberValue(float64(v.InstillUiOrder))
+				m.GetStructValue().Fields["instillUIOrder"] = structpb.NewNumberValue(float64(v.InstillUIOrder))
 			}
 
 		} else {
 			m, err = structpb.NewValue(map[string]interface{}{
 				"title":          v.Title,
 				"description":    v.Description,
-				"instillUIOrder": v.InstillUiOrder,
+				"instillUIOrder": v.InstillUIOrder,
 				"type":           "string",
 				"instillFormat":  "string",
 			})

@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"google.golang.org/protobuf/types/known/structpb"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
+	componentbase "github.com/instill-ai/component/base"
 	taskPB "github.com/instill-ai/protogen-go/common/task/v1alpha"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -95,79 +95,155 @@ type PipelineRelease struct {
 type Recipe struct {
 	Version   string                `json:"version,omitempty"`
 	On        *On                   `json:"on"`
-	Component map[string]*Component `json:"component"`
-	Variable  Variable              `json:"variable"`
-	Output    Output                `json:"output"`
+	Component map[string]IComponent `json:"component"`
+	Variable  map[string]*Variable  `json:"variable"`
+	Secret    map[string]string     `json:"secret"`
+	Output    map[string]*Output    `json:"output"`
 }
 
-type Component struct {
-	Metadata datatypes.JSON `json:"metadata"`
-	// TODO: validate oneof
-	ConnectorComponent *ConnectorComponent `json:"connector_component,omitempty"`
-	OperatorComponent  *OperatorComponent  `json:"operator_component,omitempty"`
-	IteratorComponent  *IteratorComponent  `json:"iterator_component,omitempty"`
+type IComponent interface {
+	IsComponent()
+	GetCondition() *string
 }
 
-func (c *Component) IsConnectorComponent() bool {
-	return c.ConnectorComponent != nil
-}
-func (c *Component) IsOperatorComponent() bool {
-	return c.OperatorComponent != nil
-}
-func (c *Component) IsIteratorComponent() bool {
-	return c.IteratorComponent != nil
-}
-func (c *Component) GetCondition() *string {
-	if c.IsConnectorComponent() {
-		return c.ConnectorComponent.Condition
+func (r *Recipe) UnmarshalJSON(data []byte) error {
+	tmp := make(map[string]any)
+	err := json.Unmarshal(data, &tmp)
+	if err != nil {
+		return err
 	}
-	if c.IsOperatorComponent() {
-		return c.OperatorComponent.Condition
+	if v, ok := tmp["on"]; ok && v != nil {
+		b, _ := json.Marshal(tmp["on"])
+		_ = json.Unmarshal(b, &r.On)
 	}
-	if c.IsIteratorComponent() {
-		return c.IteratorComponent.Condition
+	if v, ok := tmp["variable"]; ok && v != nil {
+		b, _ := json.Marshal(tmp["variable"])
+		_ = json.Unmarshal(b, &r.Variable)
+
 	}
+	if v, ok := tmp["secret"]; ok && v != nil {
+		b, _ := json.Marshal(tmp["secret"])
+		_ = json.Unmarshal(b, &r.Secret)
+
+	}
+	if v, ok := tmp["output"]; ok && v != nil {
+		b, _ := json.Marshal(tmp["output"])
+		_ = json.Unmarshal(b, &r.Output)
+	}
+	if v, ok := tmp["component"]; ok && v != nil {
+		comps := v.(map[string]any)
+		r.Component = make(map[string]IComponent)
+		for id, comp := range comps {
+
+			if v, ok := comp.(map[string]any)["type"]; ok {
+				v := v.(string)
+				if v == "base64" || v == "text" || v == "image" || v == "json" || v == "3a836447-c211-4134-9cc5-ad45e1cc467e" || v == "e9eb8fc8-f249-4e11-ad50-5035d79ffc18" || v == "28f53d15-6150-46e6-99aa-f76b70a926c0" || v == "5b7aca5b-1ae3-477f-bf60-d34e1c993c87" {
+					b, _ := json.Marshal(comp)
+					c := componentbase.OperatorComponent{}
+					_ = json.Unmarshal(b, &c)
+					r.Component[id] = &c
+				} else {
+					b, _ := json.Marshal(comp)
+					c := componentbase.ConnectorComponent{}
+					_ = json.Unmarshal(b, &c)
+					r.Component[id] = &c
+
+				}
+			} else {
+				b, _ := json.Marshal(comp)
+				c := IteratorComponent{}
+				_ = json.Unmarshal(b, &c)
+				r.Component[id] = &c
+			}
+
+		}
+	}
+
 	return nil
 }
 
-type Variable map[string]struct {
-	Title              string `json:"title"`
-	Description        string `json:"description"`
-	InstillFormat      string `json:"instill_format"`
-	InstillUIOrder     int32  `json:"instill_ui_order"`
-	InstillUIMultiline bool   `json:"instill_ui_multiline"`
+func (i *IteratorComponent) IsComponent() {}
+
+func (i *IteratorComponent) GetCondition() *string {
+	return i.Condition
 }
 
-type Output map[string]struct {
+type Variable struct {
+	Title              string `json:"title"`
+	Description        string `json:"description"`
+	InstillFormat      string `json:"instillFormat"`
+	InstillUIOrder     int32  `json:"instillUiOrder"`
+	InstillUIMultiline bool   `json:"instillUiMultiline"`
+}
+
+type Output struct {
 	Title          string `json:"title"`
 	Description    string `json:"description"`
 	Value          string `json:"value"`
-	InstillUIOrder int32  `json:"instill_ui_order"`
+	InstillUIOrder int32  `json:"instillUiOrder"`
 }
 
 type On struct {
 }
 
-type ConnectorComponent struct {
-	DefinitionName string           `json:"definition_name"`
-	Task           string           `json:"task"`
-	Input          *structpb.Struct `json:"input"`
-	Condition      *string          `json:"condition,omitempty"`
-	Connection     *structpb.Struct `json:"connection"`
-}
-
-type OperatorComponent struct {
-	DefinitionName string           `json:"definition_name"`
-	Task           string           `json:"task"`
-	Input          *structpb.Struct `json:"input"`
-	Condition      *string          `json:"condition,omitempty"`
-}
-
 type IteratorComponent struct {
-	Input          string                `json:"input"`
-	OutputElements map[string]string     `json:"output_elements"`
-	Condition      *string               `json:"condition,omitempty"`
-	Component      map[string]*Component `json:"component"`
+	Input             string                `json:"input"`
+	OutputElements    map[string]string     `json:"outputElements"`
+	Condition         *string               `json:"condition,omitempty"`
+	Component         map[string]IComponent `json:"component"`
+	Metadata          datatypes.JSON        `json:"metadata"`
+	DataSpecification *pb.DataSpecification `json:"dataSpecification"`
+}
+
+func (i *IteratorComponent) UnmarshalJSON(data []byte) error {
+	tmp := make(map[string]any)
+	err := json.Unmarshal(data, &tmp)
+	if err != nil {
+		return err
+	}
+	if v, ok := tmp["input"]; ok && v != nil {
+		i.Input = tmp["input"].(string)
+	}
+	if v, ok := tmp["outputElements"]; ok && v != nil {
+		b, _ := json.Marshal(v)
+		c := map[string]string{}
+		_ = json.Unmarshal(b, &c)
+		i.OutputElements = c
+	}
+	if v, ok := tmp["condition"]; ok && v != nil {
+		i.Condition = tmp["condition"].(*string)
+	}
+	if v, ok := tmp["metadata"]; ok && v != nil {
+		i.Metadata = tmp["metadata"].(datatypes.JSON)
+	}
+	if v, ok := tmp["data_specification"]; ok && v != nil {
+		i.DataSpecification = tmp["data_specification"].(*pb.DataSpecification)
+	}
+	if v, ok := tmp["component"]; ok && v != nil {
+		comps := v.(map[string]any)
+		i.Component = make(map[string]IComponent)
+		for id, comp := range comps {
+
+			if v, ok := comp.(map[string]any)["type"]; ok {
+				if v == "base64" || v == "text" || v == "image" || v == "json" || v == "3a836447-c211-4134-9cc5-ad45e1cc467e" || v == "e9eb8fc8-f249-4e11-ad50-5035d79ffc18" || v == "28f53d15-6150-46e6-99aa-f76b70a926c0" || v == "5b7aca5b-1ae3-477f-bf60-d34e1c993c87" {
+					b, _ := json.Marshal(comp)
+					c := componentbase.OperatorComponent{}
+					_ = json.Unmarshal(b, &c)
+					i.Component[id] = &c
+				} else {
+					b, _ := json.Marshal(comp)
+					c := componentbase.ConnectorComponent{}
+					_ = json.Unmarshal(b, &c)
+					i.Component[id] = &c
+
+				}
+
+			}
+
+		}
+	}
+
+	return nil
 }
 
 type Sharing struct {

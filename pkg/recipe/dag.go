@@ -62,14 +62,14 @@ func (uf *unionFind) Count() int {
 }
 
 type dag struct {
-	compMap          map[string]*datamodel.Component
+	compMap          map[string]datamodel.IComponent
 	compsIdx         map[string]int
 	prerequisitesMap map[string][]string
 	uf               *unionFind
 	ancestorsMap     map[string][]string
 }
 
-func NewDAG(compMap map[string]*datamodel.Component) *dag {
+func NewDAG(compMap map[string]datamodel.IComponent) *dag {
 
 	uf := NewUnionFind(len(compMap))
 
@@ -103,10 +103,10 @@ type topologicalSortNode struct {
 // TopologicalSort returns the topological sorted components
 // the result is a list of list of components
 // each list is a group of components that can be executed in parallel
-func (d *dag) TopologicalSort() ([]map[string]*datamodel.Component, error) {
+func (d *dag) TopologicalSort() ([]map[string]datamodel.IComponent, error) {
 
 	if len(d.compMap) == 0 {
-		return []map[string]*datamodel.Component{}, nil
+		return []map[string]datamodel.IComponent{}, nil
 	}
 
 	indegreesMap := map[string]int{}
@@ -126,7 +126,7 @@ func (d *dag) TopologicalSort() ([]map[string]*datamodel.Component, error) {
 		}
 	}
 
-	ans := []map[string]*datamodel.Component{}
+	ans := []map[string]datamodel.IComponent{}
 
 	count := 0
 	taken := make(map[string]bool)
@@ -134,7 +134,7 @@ func (d *dag) TopologicalSort() ([]map[string]*datamodel.Component, error) {
 		from := q[0]
 		q = q[1:]
 		if len(ans) <= from.group {
-			ans = append(ans, map[string]*datamodel.Component{})
+			ans = append(ans, map[string]datamodel.IComponent{})
 		}
 		ans[from.group][from.compID] = d.compMap[from.compID]
 		count += 1
@@ -571,14 +571,15 @@ func SanitizeCondition(cond string) (string, map[string]string, map[string]strin
 	return cond, varMapping, revVarMapping
 }
 
-func GenerateDAG(componentMap map[string]*datamodel.Component) (*dag, error) {
+func GenerateDAG(componentMap map[string]datamodel.IComponent) (*dag, error) {
 
 	componentIDMap := make(map[string]bool)
 
 	for id := range componentMap {
 		componentIDMap[id] = true
-		if componentMap[id].IsIteratorComponent() {
-			for nestedID := range componentMap[id].IteratorComponent.Component {
+		switch comp := componentMap[id].(type) {
+		case *datamodel.IteratorComponent:
+			for nestedID := range comp.Component {
 				componentIDMap[nestedID] = true
 			}
 		}
@@ -590,41 +591,39 @@ func GenerateDAG(componentMap map[string]*datamodel.Component) (*dag, error) {
 
 		parents := []string{}
 
-		if component.IsConnectorComponent() || component.IsOperatorComponent() || component.IsIteratorComponent() {
-			if component.GetCondition() != nil && *component.GetCondition() != "" {
-				parents = append(parents, FindReferenceParent(*component.GetCondition())...)
-			}
+		if component.GetCondition() != nil && *component.GetCondition() != "" {
+			parents = append(parents, FindReferenceParent(*component.GetCondition())...)
+		}
 
-		}
-		if component.IsConnectorComponent() {
-			configuration := proto.Clone(component.ConnectorComponent.Input)
+		switch comp := component.(type) {
+		case *componentbase.ConnectorComponent:
+			configuration := proto.Clone(comp.Input)
 			template, _ := protojson.Marshal(configuration)
 			parents = append(parents, FindReferenceParent(string(template))...)
-		}
-		if component.IsOperatorComponent() {
-			configuration := proto.Clone(component.OperatorComponent.Input)
+		case *componentbase.OperatorComponent:
+			configuration := proto.Clone(comp.Input)
 			template, _ := protojson.Marshal(configuration)
 			parents = append(parents, FindReferenceParent(string(template))...)
-		}
-		if component.IsIteratorComponent() {
-			parents = append(parents, FindReferenceParent(component.IteratorComponent.Input)...)
+		case *datamodel.IteratorComponent:
+			parents = append(parents, FindReferenceParent(comp.Input)...)
 			nestedComponentIDs := []string{id}
-			for nestedID := range component.IteratorComponent.Component {
+			for nestedID := range comp.Component {
 				nestedComponentIDs = append(nestedComponentIDs, nestedID)
 			}
-			for _, nestedComponent := range component.IteratorComponent.Component {
-				if nestedComponent.IsConnectorComponent() || nestedComponent.IsOperatorComponent() {
-					if nestedComponent.GetCondition() != nil && *nestedComponent.GetCondition() != "" {
-						nestedParent := FindReferenceParent(*nestedComponent.GetCondition())
-						for idx := range nestedParent {
-							if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {
-								parents = append(parents, nestedParent[idx])
-							}
+			for _, nestedComponent := range comp.Component {
+
+				if nestedComponent.GetCondition() != nil && *nestedComponent.GetCondition() != "" {
+					nestedParent := FindReferenceParent(*nestedComponent.GetCondition())
+					for idx := range nestedParent {
+						if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {
+							parents = append(parents, nestedParent[idx])
 						}
 					}
 				}
-				if nestedComponent.IsConnectorComponent() {
-					configuration := proto.Clone(nestedComponent.ConnectorComponent.Input)
+
+				switch nestedComp := nestedComponent.(type) {
+				case *componentbase.ConnectorComponent:
+					configuration := proto.Clone(nestedComp.Input)
 					template, _ := protojson.Marshal(configuration)
 					nestedParent := FindReferenceParent(string(template))
 					for idx := range nestedParent {
@@ -632,9 +631,8 @@ func GenerateDAG(componentMap map[string]*datamodel.Component) (*dag, error) {
 							parents = append(parents, nestedParent[idx])
 						}
 					}
-				}
-				if nestedComponent.IsOperatorComponent() {
-					configuration := proto.Clone(nestedComponent.OperatorComponent.Input)
+				case *componentbase.OperatorComponent:
+					configuration := proto.Clone(nestedComp.Input)
 					template, _ := protojson.Marshal(configuration)
 					nestedParent := FindReferenceParent(string(template))
 					for idx := range nestedParent {
@@ -676,7 +674,7 @@ func FindReferenceParent(input string) []string {
 	return upstreams
 }
 
-func GenerateTraces(comps map[string]*datamodel.Component, memory []*Memory) (map[string]*pb.Trace, error) {
+func GenerateTraces(comps map[string]datamodel.IComponent, memory []*Memory) (map[string]*pb.Trace, error) {
 	trace := map[string]*pb.Trace{}
 
 	batchSize := len(memory)

@@ -14,6 +14,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/errmsg"
 
+	componentbase "github.com/instill-ai/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -135,19 +136,20 @@ func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, connecti
 func (s *service) checkSecret(ctx context.Context, recipe *datamodel.Recipe) error {
 
 	for _, comp := range recipe.Component {
-		if comp.IsConnectorComponent() {
-			defUID := uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1])
-			connection := comp.ConnectorComponent.Connection
+		switch c := comp.(type) {
+		case *componentbase.ConnectorComponent:
+			defUID := uuid.FromStringOrNil(c.Type)
+			connection := c.Connection
 			err := s.checkSecretFields(ctx, defUID, connection, "")
 			if err != nil {
 				return err
 			}
-		}
-		if comp.IsIteratorComponent() {
-			for _, nestedComp := range comp.IteratorComponent.Component {
-				if comp.IsConnectorComponent() {
-					defUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.DefinitionName, "/")[1])
-					connection := nestedComp.ConnectorComponent.Connection
+		case *datamodel.IteratorComponent:
+			for _, nestedComp := range c.Component {
+				switch nestedC := nestedComp.(type) {
+				case *componentbase.ConnectorComponent:
+					defUID := uuid.FromStringOrNil(nestedC.Type)
+					connection := nestedC.Connection
 					err := s.checkSecretFields(ctx, defUID, connection, "")
 					if err != nil {
 						return err

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/parser"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -25,6 +24,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/errmsg"
 
+	componentbase "github.com/instill-ai/component/base"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
@@ -155,8 +155,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	numComponents := len(r.Component)
 	for _, comp := range r.Component {
-		if comp.IsIteratorComponent() {
-			numComponents += len(comp.IteratorComponent.Component)
+		switch c := comp.(type) {
+		case *datamodel.IteratorComponent:
+			numComponents += len(c.Component)
 		}
 	}
 
@@ -192,42 +193,42 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 			upstreamIDs := dag.GetUpstreamCompIDs(compID)
 
-			switch {
-			case comp.IsConnectorComponent():
+			switch c := comp.(type) {
+			case *componentbase.ConnectorComponent:
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ConnectorActivityParam{
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
-					DefinitionUID:    uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1]),
-					Task:             comp.ConnectorComponent.Task,
-					Input:            comp.ConnectorComponent.Input,
-					Connection:       comp.ConnectorComponent.Connection,
-					Condition:        comp.ConnectorComponent.Condition,
+					DefinitionUID:    uuid.FromStringOrNil(c.Type),
+					Task:             c.Task,
+					Input:            c.Input,
+					Connection:       c.Connection,
+					Condition:        c.Condition,
 					MemoryStorageKey: param.MemoryStorageKey,
 					SystemVariables:  param.SystemVariables,
 				}))
 
-			case comp.IsOperatorComponent():
+			case *componentbase.OperatorComponent:
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.OperatorActivity, &OperatorActivityParam{
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
-					DefinitionUID:    uuid.FromStringOrNil(strings.Split(comp.OperatorComponent.DefinitionName, "/")[1]),
-					Task:             comp.OperatorComponent.Task,
-					Input:            comp.OperatorComponent.Input,
-					Condition:        comp.OperatorComponent.Condition,
+					DefinitionUID:    uuid.FromStringOrNil(c.Type),
+					Task:             c.Task,
+					Input:            c.Input,
+					Condition:        c.Condition,
 					MemoryStorageKey: param.MemoryStorageKey,
 					SystemVariables:  param.SystemVariables,
 				}))
 
-			case comp.IsIteratorComponent():
+			case *datamodel.IteratorComponent:
 
 				preIteratorResult := &PreIteratorActivityResult{}
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
-					Input:            comp.IteratorComponent.Input,
+					Input:            c.Input,
 					SystemVariables:  param.SystemVariables,
 					MemoryStorageKey: param.MemoryStorageKey,
 				}).Get(ctx, &preIteratorResult); err != nil {
@@ -268,7 +269,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					WorkflowID:        workflowID,
 					ID:                compID,
 					MemoryStorageKeys: preIteratorResult.MemoryStorageKeys,
-					OutputElements:    comp.IteratorComponent.OutputElements,
+					OutputElements:    c.OutputElements,
 					SystemVariables:   param.SystemVariables,
 				}).Get(ctx, nil); err != nil {
 					return err
@@ -380,7 +381,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	execution, err := w.component.CreateExecution(param.DefinitionUID, sysVars, param.Task)
+	execution, err := w.component.CreateExecution(param.DefinitionUID, sysVars, nil, param.Task)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
@@ -421,7 +422,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 	}
 
 	iteratorRecipe := &datamodel.Recipe{
-		Component: r.Component[param.ID].IteratorComponent.Component,
+		Component: r.Component[param.ID].(*datamodel.IteratorComponent).Component,
 	}
 
 	result := &PreIteratorActivityResult{
