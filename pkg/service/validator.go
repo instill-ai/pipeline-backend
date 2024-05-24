@@ -12,7 +12,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 
-	componentbase "github.com/instill-ai/component/pkg/base"
+	componentbase "github.com/instill-ai/component/base"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -48,14 +48,14 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 		switch comp := comp.(type) {
 		case *componentbase.OperatorComponent:
 
-			def, err := s.operator.GetOperatorDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
+			def, err := s.component.GetOperatorDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
 			if err != nil {
 				return nil, err
 			}
 			checkTask(id, comp.Task, def.Spec.ComponentSpecification, compProperties, &validationErrors)
 
 		case *componentbase.ConnectorComponent:
-			def, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
+			def, err := s.component.GetConnectorDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -67,14 +67,14 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 				switch nestedComp := nestedComp.(type) {
 				case *componentbase.OperatorComponent:
 
-					def, err := s.operator.GetOperatorDefinitionByUID(uuid.FromStringOrNil(nestedComp.Type), nil, nil)
+					def, err := s.component.GetOperatorDefinitionByUID(uuid.FromStringOrNil(nestedComp.Type), nil, nil)
 					if err != nil {
 						return nil, err
 					}
 					checkTask(nestedID, nestedComp.Task, def.Spec.ComponentSpecification, nestedCompProperties, &nestedValidationErrors)
 
 				case *componentbase.ConnectorComponent:
-					def, err := s.connector.GetConnectorDefinitionByUID(uuid.FromStringOrNil(nestedComp.Type), nil, nil)
+					def, err := s.component.GetConnectorDefinitionByUID(uuid.FromStringOrNil(nestedComp.Type), nil, nil)
 					if err != nil {
 						return nil, err
 					}

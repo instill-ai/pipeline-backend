@@ -24,7 +24,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	componentbase "github.com/instill-ai/component/base"
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -46,7 +46,7 @@ type Converter interface {
 }
 
 type converter struct {
-	mgmtPrivateServiceClient mgmtPB.MgmtPrivateServiceClient
+	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 	redisClient              *redis.Client
 	component                *component.Store
 	aclClient                *acl.ACLClient
@@ -54,7 +54,7 @@ type converter struct {
 
 // NewService initiates a service instance
 func NewConverter(
-	m mgmtPB.MgmtPrivateServiceClient,
+	m mgmtpb.MgmtPrivateServiceClient,
 	rc *redis.Client,
 	acl *acl.ACLClient,
 ) Converter {
@@ -78,20 +78,20 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 
 	switch rsc := rsc.(type) {
 	case *datamodel.Recipe:
-		for id := range rsc.Component {
-			if err := c.convertResourceNameToPermalink(ctx, rsc.Component[id]); err != nil {
+		for _, comp := range rsc.Component {
+			if err := c.convertResourceNameToPermalink(ctx, comp); err != nil {
 				return err
 			}
 		}
+
 	case *datamodel.IteratorComponent:
-		for id := range rsc.Component {
-			if err := c.convertResourceNameToPermalink(ctx, rsc.Component[id]); err != nil {
+		for _, comp := range rsc.Component {
+			if err := c.convertResourceNameToPermalink(ctx, comp); err != nil {
 				return err
 			}
 		}
 
 	case *componentbase.ConnectorComponent:
-
 		def, err := c.component.GetConnectorDefinitionByID(rsc.Type, nil, nil)
 		if err != nil {
 			return err
@@ -100,14 +100,12 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 		return nil
 
 	case *componentbase.OperatorComponent:
-
 		def, err := c.component.GetOperatorDefinitionByID(rsc.Type, nil, nil)
 		if err != nil {
 			return err
 		}
 		rsc.Type = def.Uid
 		return nil
-
 	}
 	return nil
 }
@@ -119,16 +117,18 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 	if rsc == nil {
 		return nil
 	}
+
 	switch rsc := rsc.(type) {
 	case *datamodel.Recipe:
-		for id := range rsc.Component {
-			if err := c.convertResourcePermalinkToName(ctx, rsc.Component[id]); err != nil {
+		for _, comp := range rsc.Component {
+			if err := c.convertResourcePermalinkToName(ctx, comp); err != nil {
 				return err
 			}
 		}
+
 	case *datamodel.IteratorComponent:
-		for id := range rsc.Component {
-			if err := c.convertResourcePermalinkToName(ctx, rsc.Component[id]); err != nil {
+		for _, comp := range rsc.Component {
+			if err := c.convertResourcePermalinkToName(ctx, comp); err != nil {
 				return err
 			}
 		}
@@ -138,7 +138,6 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 		if err != nil {
 			return err
 		}
-
 		rsc.Type = def.Id
 
 	case *componentbase.OperatorComponent:
@@ -147,6 +146,7 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 			return err
 		}
 		rsc.Type = def.Id
+
 	}
 	return nil
 }
@@ -183,13 +183,13 @@ func (c *converter) includeConnectorComponentDetail(ctx context.Context, comp *c
 
 func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *datamodel.IteratorComponent) error {
 
-	for nestID := range comp.Component {
+	for _, itComp := range comp.Component {
 		var err error
-		switch comp := comp.Component[nestID].(type) {
+		switch itComp := itComp.(type) {
 		case *componentbase.ConnectorComponent:
-			err = c.includeConnectorComponentDetail(ctx, comp)
+			err = c.includeConnectorComponentDetail(ctx, itComp)
 		case *componentbase.OperatorComponent:
-			err = c.includeOperatorComponentDetail(ctx, comp)
+			err = c.includeOperatorComponentDetail(ctx, itComp)
 		}
 		if err != nil {
 			return err
@@ -324,9 +324,9 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *da
 
 func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *datamodel.Recipe) error {
 
-	for id := range recipe.Component {
+	for _, comp := range recipe.Component {
 		var err error
-		switch comp := recipe.Component[id].(type) {
+		switch comp := comp.(type) {
 		case *componentbase.ConnectorComponent:
 			err = c.includeConnectorComponentDetail(ctx, comp)
 		case *componentbase.OperatorComponent:
@@ -512,7 +512,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 	wg.Add(5)
 	go func() {
 		defer wg.Done()
-		var owner *mgmtPB.Owner
+		var owner *mgmtpb.Owner
 		if view > pb.Pipeline_VIEW_BASIC {
 			owner, err = c.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
 			if err != nil {
@@ -1076,14 +1076,14 @@ func (c *converter) ConvertOwnerPermalinkToName(ctx context.Context, permalink s
 	}
 
 	if nsType == "users" {
-		userResp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
+		userResp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtpb.LookUpUserAdminRequest{Permalink: permalink})
 		if err != nil {
 			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
 		}
 		c.redisClient.Set(ctx, key, userResp.User.Id, 24*time.Hour)
 		return fmt.Sprintf("users/%s", userResp.User.Id), nil
 	} else {
-		orgResp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
+		orgResp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtpb.LookUpOrganizationAdminRequest{Permalink: permalink})
 		if err != nil {
 			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
 		}
@@ -1092,32 +1092,32 @@ func (c *converter) ConvertOwnerPermalinkToName(ctx context.Context, permalink s
 	}
 }
 
-func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string) (*mgmtPB.Owner, error) {
+func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string) (*mgmtpb.Owner, error) {
 
 	key := fmt.Sprintf("owner_profile:%s", permalink)
 	if b, err := c.redisClient.Get(ctx, key).Bytes(); err == nil {
-		owner := &mgmtPB.Owner{}
+		owner := &mgmtpb.Owner{}
 		if protojson.Unmarshal(b, owner) == nil {
 			return owner, nil
 		}
 	}
 
 	if strings.HasPrefix(permalink, "users") {
-		resp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtPB.LookUpUserAdminRequest{Permalink: permalink})
+		resp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtpb.LookUpUserAdminRequest{Permalink: permalink})
 		if err != nil {
 			return nil, fmt.Errorf("fetchOwnerByPermalink error")
 		}
-		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_User{User: resp.User}}
+		owner := &mgmtpb.Owner{Owner: &mgmtpb.Owner_User{User: resp.User}}
 		if b, err := protojson.Marshal(owner); err == nil {
 			c.redisClient.Set(ctx, key, b, 5*time.Minute)
 		}
 		return owner, nil
 	} else {
-		resp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtPB.LookUpOrganizationAdminRequest{Permalink: permalink})
+		resp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtpb.LookUpOrganizationAdminRequest{Permalink: permalink})
 		if err != nil {
 			return nil, fmt.Errorf("fetchOwnerByPermalink error")
 		}
-		owner := &mgmtPB.Owner{Owner: &mgmtPB.Owner_Organization{Organization: resp.Organization}}
+		owner := &mgmtpb.Owner{Owner: &mgmtpb.Owner_Organization{Organization: resp.Organization}}
 		if b, err := protojson.Marshal(owner); err == nil {
 			c.redisClient.Set(ctx, key, b, 5*time.Minute)
 		}
@@ -1138,14 +1138,14 @@ func (c *converter) ConvertOwnerNameToPermalink(ctx context.Context, name string
 	}
 
 	if nsType == "users" {
-		userResp, err := c.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtPB.GetUserAdminRequest{Name: name})
+		userResp, err := c.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtpb.GetUserAdminRequest{Name: name})
 		if err != nil {
 			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
 		}
 		c.redisClient.Set(ctx, key, *userResp.User.Uid, 24*time.Hour)
 		return fmt.Sprintf("users/%s", *userResp.User.Uid), nil
 	} else {
-		orgResp, err := c.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtPB.GetOrganizationAdminRequest{Name: name})
+		orgResp, err := c.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtpb.GetOrganizationAdminRequest{Name: name})
 		if err != nil {
 			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
 		}
