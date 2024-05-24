@@ -20,7 +20,21 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 
 FROM alpine:3.16
 
-RUN apk add curl poppler-utils wv tidyhtml libc6-compat tesseract-ocr
+RUN apk add --no-cache \
+    curl \
+    poppler-utils \
+    wv \
+    tidyhtml \
+    libc6-compat \
+    tesseract-ocr \
+    python3 \
+    py3-pip \
+    build-base \
+    python3-dev \
+    libffi-dev \
+    && python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --upgrade pip \
+    && /opt/venv/bin/pip install pdfplumber
 
 ARG TARGETARCH
 ARG BUILDARCH

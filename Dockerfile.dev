@@ -9,6 +9,13 @@ WORKDIR /${SERVICE_NAME}
 
 ARG TARGETOS TARGETARCH K6_VERSION
 
+# Install Python, create virtual environment, and install pdfplumber
+RUN apt update && \
+    apt install -y python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev && \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install pdfplumber && \
+    rm -rf /var/lib/apt/lists/*
+
 # air
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@v1.49
 
@@ -25,8 +32,6 @@ COPY . .
 RUN chown -R nobody:nogroup /go
 ENV GOCACHE /go/.cache/go-build
 ENV GOENV /go/.config/go/env
-
-RUN apt update && apt install poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev -y
 
 USER nobody:nogroup
 
