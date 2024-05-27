@@ -116,7 +116,7 @@ func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, connecti
 
 	for k, v := range connection.GetFields() {
 		key := prefix + k
-		if ok, err := s.connector.IsSecretField(uid, key); err == nil && ok {
+		if ok, err := s.component.IsSecretField(uid, key); err == nil && ok {
 			if v.GetStringValue() != "" {
 				if !strings.HasPrefix(v.GetStringValue(), "${") || !strings.HasSuffix(v.GetStringValue(), "}") {
 					return errCanNotUsePlaintextSecret

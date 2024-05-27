@@ -13,7 +13,6 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	component "github.com/instill-ai/component/pkg/base"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
@@ -22,6 +21,7 @@ import (
 	"github.com/instill-ai/x/zapadapter"
 	"github.com/redis/go-redis/v9"
 
+	componentbase "github.com/instill-ai/component/base"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineWorker "github.com/instill-ai/pipeline-backend/pkg/worker"
@@ -155,7 +155,7 @@ func main() {
 		redisClient,
 		influxDBWriteClient,
 		config.Config.Connector.Secrets,
-		map[string]component.UsageHandlerCreator{},
+		map[string]componentbase.UsageHandlerCreator{},
 		nil,
 	)
 

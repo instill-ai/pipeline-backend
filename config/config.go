@@ -7,13 +7,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/instill-ai/component/pkg/connector"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/instill-ai/component"
 )
 
 // Config - Global variable to export
@@ -74,7 +75,7 @@ type ConnectorConfig struct {
 		UseStaticModelList bool `koanf:"usestaticmodellist"`
 	} `koanf:"instill"`
 
-	Secrets connector.ConnectionSecrets
+	Secrets component.ConnectionSecrets
 }
 
 // DatabaseConfig related to database

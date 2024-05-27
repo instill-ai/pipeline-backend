@@ -16,8 +16,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/instill-ai/component/pkg/connector"
-	"github.com/instill-ai/component/pkg/operator"
+	"github.com/instill-ai/component"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -49,8 +48,7 @@ type Converter interface {
 type converter struct {
 	mgmtPrivateServiceClient mgmtPB.MgmtPrivateServiceClient
 	redisClient              *redis.Client
-	operator                 *operator.Store
-	connector                *connector.Store
+	component                *component.Store
 	aclClient                *acl.ACLClient
 }
 
@@ -65,8 +63,7 @@ func NewConverter(
 	return &converter{
 		mgmtPrivateServiceClient: m,
 		redisClient:              rc,
-		operator:                 operator.Init(logger),
-		connector:                connector.Init(logger, nil, nil),
+		component:                component.Init(logger, nil, nil),
 		aclClient:                acl,
 	}
 }
@@ -99,7 +96,7 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 			return err
 		}
 
-		def, err := c.connector.GetConnectorDefinitionByID(id, nil, nil)
+		def, err := c.component.GetConnectorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -111,7 +108,7 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 		if err != nil {
 			return err
 		}
-		def, err := c.connector.GetConnectorDefinitionByID(id, nil, nil)
+		def, err := c.component.GetConnectorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -123,7 +120,7 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 		if err != nil {
 			return err
 		}
-		def, err := c.operator.GetOperatorDefinitionByID(id, nil, nil)
+		def, err := c.component.GetOperatorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -135,7 +132,7 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 		if err != nil {
 			return err
 		}
-		def, err := c.operator.GetOperatorDefinitionByID(id, nil, nil)
+		def, err := c.component.GetOperatorDefinitionByID(id, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -172,7 +169,7 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 		if err != nil {
 			return err
 		}
-		def, err := c.connector.GetConnectorDefinitionByUID(uid, nil, nil)
+		def, err := c.component.GetConnectorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -183,7 +180,7 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 		if err != nil {
 			return err
 		}
-		def, err := c.connector.GetConnectorDefinitionByUID(uid, nil, nil)
+		def, err := c.component.GetConnectorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -194,7 +191,7 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 		if err != nil {
 			return err
 		}
-		def, err := c.operator.GetOperatorDefinitionByUID(uid, nil, nil)
+		def, err := c.component.GetOperatorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -205,7 +202,7 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 		if err != nil {
 			return err
 		}
-		def, err := c.operator.GetOperatorDefinitionByUID(uid, nil, nil)
+		def, err := c.component.GetOperatorDefinitionByUID(uid, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -223,7 +220,7 @@ func (c *converter) includeOperatorComponentDetail(ctx context.Context, comp *pb
 	if err != nil {
 		return err
 	}
-	def, err := c.operator.GetOperatorDefinitionByUID(uid, vars, comp)
+	def, err := c.component.GetOperatorDefinitionByUID(uid, vars, comp)
 	if err != nil {
 		return err
 	}
@@ -241,7 +238,7 @@ func (c *converter) includeConnectorComponentDetail(ctx context.Context, comp *p
 	if err != nil {
 		return err
 	}
-	def, err := c.connector.GetConnectorDefinitionByUID(uid, vars, comp)
+	def, err := c.component.GetConnectorDefinitionByUID(uid, vars, comp)
 	if err != nil {
 		return err
 	}

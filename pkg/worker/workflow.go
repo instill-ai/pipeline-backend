@@ -332,7 +332,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivity
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	execution, err := w.connector.CreateExecution(param.DefinitionUID, vars, con, param.Task)
+	execution, err := w.component.CreateExecution(param.DefinitionUID, vars, con, param.Task)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
@@ -376,7 +376,7 @@ func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityPa
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}
 
-	execution, err := w.operator.CreateExecution(param.DefinitionUID, vars, param.Task)
+	execution, err := w.component.CreateExecution(param.DefinitionUID, vars, nil, param.Task)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, OperatorActivityError)
 	}

@@ -8,14 +8,13 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/launchdarkly/go-semver"
 
+	"github.com/instill-ai/component"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 
-	connector "github.com/instill-ai/component/pkg/connector"
-	operator "github.com/instill-ai/component/pkg/operator"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 type definition interface {
@@ -31,7 +30,7 @@ type definition interface {
 func UpdateComponentDefinitionIndex(ctx context.Context, repo repository.Repository) error {
 	logger, _ := logger.GetZapLogger(ctx)
 
-	connDefs := connector.Init(logger, nil, nil).ListConnectorDefinitions(nil, true)
+	connDefs := component.Init(logger, nil, nil).ListConnectorDefinitions(nil, true)
 	for _, connDef := range connDefs {
 		cd := &pb.ComponentDefinition{
 			Type: service.ConnectorTypeToComponentType[connDef.Type],
@@ -45,7 +44,7 @@ func UpdateComponentDefinitionIndex(ctx context.Context, repo repository.Reposit
 		}
 	}
 
-	opDefs := operator.Init(logger).ListOperatorDefinitions(nil, true)
+	opDefs := component.Init(logger, nil, nil).ListOperatorDefinitions(nil, true)
 	for _, opDef := range opDefs {
 		cd := &pb.ComponentDefinition{
 			Type: pb.ComponentType_COMPONENT_TYPE_OPERATOR,
