@@ -22,7 +22,7 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 		return nil, err
 	}
 
-	return s.operator.GetOperatorDefinitionByID(defID, vars, nil)
+	return s.component.GetOperatorDefinitionByID(defID, vars, nil)
 }
 
 func (s *service) implementedOperatorDefinitions(ctx context.Context) ([]*pb.OperatorDefinition, error) {
@@ -30,7 +30,7 @@ func (s *service) implementedOperatorDefinitions(ctx context.Context) ([]*pb.Ope
 	if err != nil {
 		return nil, err
 	}
-	allDefs := s.operator.ListOperatorDefinitions(vars, false)
+	allDefs := s.component.ListOperatorDefinitions(vars, false)
 
 	implemented := make([]*pb.OperatorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -216,7 +216,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
 			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA:
 
-			cd, err := s.connector.GetConnectorDefinitionByUID(uid.UID, vars, nil)
+			cd, err := s.component.GetConnectorDefinitionByUID(uid.UID, vars, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -227,7 +227,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 				ConnectorDefinition: cd,
 			}
 		case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
-			od, err := s.operator.GetOperatorDefinitionByUID(uid.UID, vars, nil)
+			od, err := s.component.GetOperatorDefinitionByUID(uid.UID, vars, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -265,7 +265,7 @@ func (s *service) implementedConnectorDefinitions(ctx context.Context) ([]*pb.Co
 	if err != nil {
 		return nil, err
 	}
-	allDefs := s.connector.ListConnectorDefinitions(vars, false)
+	allDefs := s.component.ListConnectorDefinitions(vars, false)
 
 	implemented := make([]*pb.ConnectorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -350,5 +350,5 @@ func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*p
 	if err != nil {
 		return nil, err
 	}
-	return s.connector.GetConnectorDefinitionByID(id, vars, nil)
+	return s.component.GetConnectorDefinitionByID(id, vars, nil)
 }

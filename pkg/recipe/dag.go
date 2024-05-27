@@ -16,9 +16,10 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	component "github.com/instill-ai/component/pkg/base"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+
+	componentbase "github.com/instill-ai/component/base"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -221,7 +222,7 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
 			if input == SegSecrets+"."+constant.GlobalSecretKey {
-				return component.SecretKeyword, nil
+				return componentbase.SecretKeyword, nil
 			}
 
 			val, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, input, dataIndex)

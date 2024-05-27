@@ -36,7 +36,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 	"github.com/instill-ai/x/errmsg"
 
-	component "github.com/instill-ai/component/pkg/base"
+	componentbase "github.com/instill-ai/component/base"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -506,11 +506,11 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	for k, v := range r.Trigger.TriggerByRequest.RequestFields {
 		instillFormatMap[k] = v.InstillFormat
 	}
-	err := component.CompileInstillAcceptFormats(schStruct)
+	err := componentbase.CompileInstillAcceptFormats(schStruct)
 	if err != nil {
 		return nil, err
 	}
-	err = component.CompileInstillFormat(schStruct)
+	err = componentbase.CompileInstillFormat(schStruct)
 	if err != nil {
 		return nil, err
 	}
@@ -520,8 +520,8 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	}
 
 	c := jsonschema.NewCompiler()
-	c.RegisterExtension("instillAcceptFormats", component.InstillAcceptFormatsMeta, component.InstillAcceptFormatsCompiler{})
-	c.RegisterExtension("instillFormat", component.InstillFormatMeta, component.InstillFormatCompiler{})
+	c.RegisterExtension("instillAcceptFormats", componentbase.InstillAcceptFormatsMeta, componentbase.InstillAcceptFormatsCompiler{})
+	c.RegisterExtension("instillFormat", componentbase.InstillFormatMeta, componentbase.InstillFormatCompiler{})
 
 	if err := c.AddResource("schema.json", strings.NewReader(string(metadata))); err != nil {
 		return nil, err
@@ -584,9 +584,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 			for _, valErr := range e.DetailedOutput().Errors {
 				inputPath := fmt.Sprintf("%s/%d", "inputs", idx)
-				component.FormatErrors(inputPath, valErr, &errors)
+				componentbase.FormatErrors(inputPath, valErr, &errors)
 				for _, subValErr := range valErr.Errors {
-					component.FormatErrors(inputPath, subValErr, &errors)
+					componentbase.FormatErrors(inputPath, subValErr, &errors)
 				}
 			}
 		}
