@@ -2,7 +2,7 @@ module github.com/instill-ai/pipeline-backend
 
 go 1.21.3
 
-toolchain go1.22.0
+toolchain go1.22.3
 
 require (
 	cloud.google.com/go/longrunning v0.5.4
@@ -146,7 +146,7 @@ require (
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.4.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect

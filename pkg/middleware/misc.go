@@ -2,12 +2,15 @@ package middleware
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"net/textproto"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.opentelemetry.io/otel"
@@ -162,4 +165,42 @@ func CustomMatcher(key string) (string, bool) {
 	default:
 		return runtime.DefaultHeaderMatcher(key)
 	}
+}
+
+// generateSecureSessionID generated a cryptographic secure session token to be used
+// to the url of the sse handler.
+func generateSecureSessionID() string {
+	generatedUUID := uuid.New().String()
+	hash := sha256.Sum256([]byte(generatedUUID))
+	return fmt.Sprintf("%x", hash)
+}
+
+type captureResponseWriter struct {
+	http.ResponseWriter
+	DataChan chan []byte
+}
+
+func (mw *captureResponseWriter) Write(b []byte) (int, error) {
+	if len(b) > 1 { // TODO tillknuesting: Verify why there are []bytes with len <2
+		mw.DataChan <- b
+	}
+	return mw.ResponseWriter.Write(b)
+}
+
+// Unwrap is used by the ResponseController in the grpc-gateway runtime to flush
+// if method is not present there would be a server error.
+func (mw *captureResponseWriter) Unwrap() http.ResponseWriter {
+	return mw.ResponseWriter
+}
+
+// TODO: Refactor to not use global
+var DataChanMap sync.Map // Map to store data channels by session UUID.
+
+// SessionMetadata holds the session ID and source instance ID.
+type SessionMetadata struct {
+	SessionUUID string `json:"session_uuid"`
+	// Source instance identifier is used for network routing scenarios
+	// for example could be included as header in the SSE request to make sure
+	// it is getting routed to the initiating server e.g. running a pod
+	SourceInstanceID string `json:"source_instance_id"`
 }
