@@ -214,7 +214,13 @@ func (i *IteratorComponent) UnmarshalJSON(data []byte) error {
 		i.Condition = tmp["condition"].(*string)
 	}
 	if v, ok := tmp["metadata"]; ok && v != nil {
-		i.Metadata = tmp["metadata"].(datatypes.JSON)
+		b, _ := json.Marshal(tmp["metadata"])
+		m := datatypes.JSON{}
+		err = json.Unmarshal(b, &m)
+		if err != nil {
+			return err
+		}
+		i.Metadata = m
 	}
 	if v, ok := tmp["data_specification"]; ok && v != nil {
 		i.DataSpecification = tmp["data_specification"].(*pb.DataSpecification)
