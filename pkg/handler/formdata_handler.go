@@ -38,7 +38,7 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 	maxVarIdx := 0
 
 	for k, v := range req.MultipartForm.Value {
-		if strings.HasPrefix(k, "variables[") {
+		if strings.HasPrefix(k, "variables[") || strings.HasPrefix(k, "inputs[") {
 			k = k[7:]
 
 			varIdx, err := strconv.Atoi(k[:strings.Index(k, "]")])
@@ -93,7 +93,7 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 	}
 
 	for k, v := range req.MultipartForm.File {
-		if strings.HasPrefix(k, "variables[") {
+		if strings.HasPrefix(k, "variables[") || strings.HasPrefix(k, "inputs[") {
 			k = k[7:]
 
 			varIdx, err := strconv.Atoi(k[:strings.Index(k, "]")])

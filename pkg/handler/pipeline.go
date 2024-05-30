@@ -880,6 +880,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 
 type TriggerNamespacePipelineRequestInterface interface {
 	GetName() string
+	GetInputs() []*structpb.Struct // deprecated
 	GetData() []*pb.TriggerData
 }
 
@@ -913,7 +914,7 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 		return nil, nil, err
 	}
 
-	outputs, metadata, err = h.service.TriggerNamespacePipelineByID(ctx, ns, id, req.GetData(), logUUID.String(), returnTraces)
+	outputs, metadata, err = h.service.TriggerNamespacePipelineByID(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, nil, err
@@ -932,6 +933,7 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 
 type TriggerAsyncNamespacePipelineRequestInterface interface {
 	GetName() string
+	GetInputs() []*structpb.Struct // deprecated
 	GetData() []*pb.TriggerData
 }
 
@@ -965,7 +967,7 @@ func (h *PublicHandler) triggerAsyncNamespacePipeline(ctx context.Context, req T
 		return nil, err
 	}
 
-	operation, err = h.service.TriggerAsyncNamespacePipelineByID(ctx, ns, id, req.GetData(), logUUID.String(), returnTraces)
+	operation, err = h.service.TriggerAsyncNamespacePipelineByID(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1569,6 +1571,7 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 
 type TriggerNamespacePipelineReleaseRequestInterface interface {
 	GetName() string
+	GetInputs() []*structpb.Struct // deprecated
 	GetData() []*pb.TriggerData
 }
 
@@ -1602,7 +1605,7 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 		return nil, nil, err
 	}
 
-	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetData(), logUUID.String(), returnTraces)
+	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, nil, err
@@ -1621,6 +1624,7 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 
 type TriggerAsyncNamespacePipelineReleaseRequestInterface interface {
 	GetName() string
+	GetInputs() []*structpb.Struct // deprecated
 	GetData() []*pb.TriggerData
 }
 
@@ -1654,7 +1658,7 @@ func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context
 		return nil, err
 	}
 
-	operation, err = h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetData(), logUUID.String(), returnTraces)
+	operation, err = h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1685,4 +1689,20 @@ func (h *PublicHandler) GetOperation(ctx context.Context, req *pb.GetOperationRe
 	return &pb.GetOperationResponse{
 		Operation: operation,
 	}, nil
+}
+
+func mergeInputsIntoData(inputs []*structpb.Struct, data []*pb.TriggerData) []*pb.TriggerData {
+	// Backward compatibility for `inputs``
+	var merged []*pb.TriggerData
+	if inputs != nil {
+		merged = make([]*pb.TriggerData, len(inputs))
+		for idx, input := range inputs {
+			merged[idx] = &pb.TriggerData{
+				Variable: input,
+			}
+		}
+	} else {
+		merged = data
+	}
+	return merged
 }
