@@ -35,28 +35,15 @@ type TriggerPipelineWorkflowParam struct {
 	Mode             mgmtPB.Mode
 }
 
-// ConnectorActivityParam represents the parameters for TriggerActivity
-type ConnectorActivityParam struct {
+// ComponentActivityParam represents the parameters for TriggerActivity
+type ComponentActivityParam struct {
 	WorkflowID       string
 	MemoryStorageKey *recipe.BatchMemoryKey
 	ID               string
 	UpstreamIDs      []string
 	Condition        *string
-	Input            *structpb.Struct
-	Connection       *structpb.Struct
-	DefinitionUID    uuid.UUID
-	Task             string
-	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-}
-
-// OperatorActivityParam represents the parameters for TriggerActivity
-type OperatorActivityParam struct {
-	WorkflowID       string
-	MemoryStorageKey *recipe.BatchMemoryKey
-	ID               string
-	UpstreamIDs      []string
-	Condition        *string
-	Input            *structpb.Struct
+	Input            map[string]any
+	Setup            map[string]any
 	DefinitionUID    uuid.UUID
 	Task             string
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
@@ -194,28 +181,15 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			upstreamIDs := dag.GetUpstreamCompIDs(compID)
 
 			switch c := comp.(type) {
-			case *componentbase.ConnectorComponent:
-				futures = append(futures, workflow.ExecuteActivity(ctx, w.ConnectorActivity, &ConnectorActivityParam{
+			case *componentbase.ComponentConfig:
+				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, &ComponentActivityParam{
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
 					DefinitionUID:    uuid.FromStringOrNil(c.Type),
 					Task:             c.Task,
 					Input:            c.Input,
-					Connection:       c.Connection,
-					Condition:        c.Condition,
-					MemoryStorageKey: param.MemoryStorageKey,
-					SystemVariables:  param.SystemVariables,
-				}))
-
-			case *componentbase.OperatorComponent:
-				futures = append(futures, workflow.ExecuteActivity(ctx, w.OperatorActivity, &OperatorActivityParam{
-					WorkflowID:       workflowID,
-					ID:               compID,
-					UpstreamIDs:      upstreamIDs,
-					DefinitionUID:    uuid.FromStringOrNil(c.Type),
-					Task:             c.Task,
-					Input:            c.Input,
+					Setup:            c.Setup,
 					Condition:        c.Condition,
 					MemoryStorageKey: param.MemoryStorageKey,
 					SystemVariables:  param.SystemVariables,
@@ -312,9 +286,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	return nil
 }
 
-func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivityParam) error {
+func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) error {
 	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("ConnectorActivity started")
+	logger.Info("ComponentActivity started")
 
 	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
 	if err != nil {
@@ -326,17 +300,16 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivity
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	cons, err := w.processConnection(batchMemory, param.Connection)
+	cons, err := w.processSetup(batchMemory, param.Setup)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
-
 	sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	// TODO: we assume that connection in the batch are all the same
+	// TODO: we assume that setup in the batch are all the same
 	execution, err := w.component.CreateExecution(param.DefinitionUID, sysVars, cons[0], param.Task)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
@@ -357,51 +330,7 @@ func (w *worker) ConnectorActivity(ctx context.Context, param *ConnectorActivity
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	logger.Info("ConnectorActivity completed")
-	return nil
-}
-
-func (w *worker) OperatorActivity(ctx context.Context, param *OperatorActivityParam) error {
-
-	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("OperatorActivity started " + param.ID)
-
-	memory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
-	if err != nil {
-		return w.toApplicationError(err, param.ID, OperatorActivityError)
-	}
-
-	compInputs, idxMap, err := w.processInput(memory, param.ID, param.UpstreamIDs, param.Condition, param.Input)
-	if err != nil {
-		return w.toApplicationError(err, param.ID, OperatorActivityError)
-	}
-
-	sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
-	if err != nil {
-		return w.toApplicationError(err, param.ID, OperatorActivityError)
-	}
-
-	execution, err := w.component.CreateExecution(param.DefinitionUID, sysVars, nil, param.Task)
-	if err != nil {
-		return w.toApplicationError(err, param.ID, OperatorActivityError)
-	}
-
-	compOutputs, err := execution.Execute(ctx, compInputs)
-	if err != nil {
-		return w.toApplicationError(err, param.ID, OperatorActivityError)
-	}
-
-	compMem, err := w.processOutput(memory, param.ID, compOutputs, idxMap)
-	if err != nil {
-		return w.toApplicationError(err, param.ID, OperatorActivityError)
-	}
-
-	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.WorkflowID, param.ID, compMem)
-	if err != nil {
-		return w.toApplicationError(err, param.ID, OperatorActivityError)
-	}
-
-	logger.Info("OperatorActivity completed")
+	logger.Info("ComponentActivity completed")
 	return nil
 }
 
@@ -585,7 +514,7 @@ func (w *worker) UsageCollectActivity(ctx context.Context, param *UsageCollectAc
 	return nil
 }
 
-func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamIDs []string, condition *string, input *structpb.Struct) ([]*structpb.Struct, map[int]int, error) {
+func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamIDs []string, condition *string, input any) ([]*structpb.Struct, map[int]int, error) {
 	var compInputs []*structpb.Struct
 	idxMap := map[int]int{}
 
@@ -643,7 +572,7 @@ func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamI
 			var compInputTemplateJSON []byte
 			compInputTemplate := input
 
-			compInputTemplateJSON, err := protojson.Marshal(compInputTemplate)
+			compInputTemplateJSON, err := json.Marshal(compInputTemplate)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -698,8 +627,13 @@ func (w *worker) processOutput(batchMemory []*recipe.Memory, id string, compOutp
 	return compMem, nil
 }
 
-func (w *worker) processConnection(batchMemory []*recipe.Memory, connection *structpb.Struct) ([]*structpb.Struct, error) {
-	conTemplateJSON, err := protojson.Marshal(connection)
+func (w *worker) processSetup(batchMemory []*recipe.Memory, setup map[string]any) ([]*structpb.Struct, error) {
+
+	if setup == nil {
+		setup = map[string]any{}
+	}
+
+	conTemplateJSON, err := json.Marshal(setup)
 	if err != nil {
 		return nil, err
 	}
@@ -761,7 +695,6 @@ func (w *worker) toApplicationError(err error, componentID, errType string) erro
 const (
 	PipelineWorkflowError     = "PipelineWorkflowError"
 	ConnectorActivityError    = "ConnectorActivityError"
-	OperatorActivityError     = "OperatorActivityError"
 	PreIteratorActivityError  = "PreIteratorActivityError"
 	PostIteratorActivityError = "PostIteratorActivityError"
 	UsageCheckActivityError   = "UsageCheckActivityError"

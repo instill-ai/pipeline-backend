@@ -3,13 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"go.einride.tech/aip/filtering"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
 
@@ -17,25 +17,30 @@ import (
 )
 
 func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error) {
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+
+	compDef, err := s.component.GetDefinitionByID(defID, nil, nil)
 	if err != nil {
 		return nil, err
 	}
+	switch compDef.Type {
+	case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
+		return convertComponentDefToOperatorDef(compDef), nil
 
-	return s.component.GetOperatorDefinitionByID(defID, vars, nil)
+	default:
+		return nil, repository.ErrNotFound
+	}
 }
 
 func (s *service) implementedOperatorDefinitions(ctx context.Context) ([]*pb.OperatorDefinition, error) {
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
-	if err != nil {
-		return nil, err
-	}
-	allDefs := s.component.ListOperatorDefinitions(vars, false)
+
+	allDefs := s.component.ListDefinitions(nil, false)
 
 	implemented := make([]*pb.OperatorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
-		if implementedReleaseStages[def.GetReleaseStage()] {
-			implemented = append(implemented, def)
+		if def.Type == pb.ComponentType_COMPONENT_TYPE_OPERATOR {
+			if implementedReleaseStages[def.GetReleaseStage()] {
+				implemented = append(implemented, convertComponentDefToOperatorDef(def))
+			}
 		}
 	}
 
@@ -200,48 +205,19 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 		return nil, err
 	}
 
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
-	if err != nil {
-		return nil, err
-	}
-
 	defs := make([]*pb.ComponentDefinition, len(uids))
 
 	for i, uid := range uids {
-		d := &pb.ComponentDefinition{
-			Type: pb.ComponentType(uid.ComponentType),
+
+		def, err := s.component.GetDefinitionByUID(uid.UID, nil, nil)
+		if err != nil {
+			return nil, err
 		}
-		switch d.Type {
-		case pb.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
-			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
-			pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA:
-
-			cd, err := s.component.GetConnectorDefinitionByUID(uid.UID, vars, nil)
-			if err != nil {
-				return nil, err
-			}
-
-			cd = proto.Clone(cd).(*pb.ConnectorDefinition)
-			s.applyViewToConnectorDefinition(cd, req.GetView())
-			d.Definition = &pb.ComponentDefinition_ConnectorDefinition{
-				ConnectorDefinition: cd,
-			}
-		case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
-			od, err := s.component.GetOperatorDefinitionByUID(uid.UID, vars, nil)
-			if err != nil {
-				return nil, err
-			}
-
-			od = proto.Clone(od).(*pb.OperatorDefinition)
-			s.applyViewToOperatorDefinition(od, req.GetView())
-			d.Definition = &pb.ComponentDefinition_OperatorDefinition{
-				OperatorDefinition: od,
-			}
-		default:
-			return nil, fmt.Errorf("invalid component definition type in database")
+		if req.GetView() != pb.ComponentDefinition_VIEW_FULL {
+			def.Spec = nil
 		}
+		defs[i] = def
 
-		defs[i] = d
 	}
 
 	resp := &pb.ListComponentDefinitionsResponse{
@@ -261,16 +237,15 @@ var implementedReleaseStages = map[pb.ComponentDefinition_ReleaseStage]bool{
 }
 
 func (s *service) implementedConnectorDefinitions(ctx context.Context) ([]*pb.ConnectorDefinition, error) {
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
-	if err != nil {
-		return nil, err
-	}
-	allDefs := s.component.ListConnectorDefinitions(vars, false)
+
+	allDefs := s.component.ListDefinitions(nil, false)
 
 	implemented := make([]*pb.ConnectorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
-		if implementedReleaseStages[def.GetReleaseStage()] {
-			implemented = append(implemented, def)
+		if def.Type == pb.ComponentType_COMPONENT_TYPE_AI || def.Type == pb.ComponentType_COMPONENT_TYPE_DATA || def.Type == pb.ComponentType_COMPONENT_TYPE_APPLICATION {
+			if implementedReleaseStages[def.GetReleaseStage()] {
+				implemented = append(implemented, convertComponentDefToConnectorDef(def))
+			}
 		}
 	}
 
@@ -346,9 +321,77 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 }
 
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error) {
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+
+	compDef, err := s.component.GetDefinitionByID(id, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return s.component.GetConnectorDefinitionByID(id, vars, nil)
+	switch compDef.Type {
+	case pb.ComponentType_COMPONENT_TYPE_AI,
+		pb.ComponentType_COMPONENT_TYPE_DATA,
+		pb.ComponentType_COMPONENT_TYPE_APPLICATION:
+		return convertComponentDefToConnectorDef(compDef), nil
+
+	default:
+		return nil, repository.ErrNotFound
+	}
+
+}
+
+func convertComponentDefToConnectorDef(compDef *pb.ComponentDefinition) *pb.ConnectorDefinition {
+
+	return &pb.ConnectorDefinition{
+		Id:               compDef.Id,
+		Uid:              compDef.Uid,
+		Name:             fmt.Sprintf("connector-definitions/%s", strings.Split(compDef.Name, "/")[1]),
+		Title:            compDef.Title,
+		DocumentationUrl: compDef.DocumentationUrl,
+		Icon:             compDef.Icon,
+		Spec:             (*pb.ConnectorSpec)(compDef.Spec),
+		Type: func(c *pb.ComponentDefinition) pb.ConnectorType {
+			switch c.Type {
+			case pb.ComponentType_COMPONENT_TYPE_AI:
+				return pb.ConnectorType_CONNECTOR_TYPE_AI
+			case pb.ComponentType_COMPONENT_TYPE_DATA:
+				return pb.ConnectorType_CONNECTOR_TYPE_DATA
+			case pb.ComponentType_COMPONENT_TYPE_APPLICATION:
+				return pb.ConnectorType_CONNECTOR_TYPE_APPLICATION
+			}
+			return pb.ConnectorType_CONNECTOR_TYPE_UNSPECIFIED
+
+		}(compDef),
+		Tombstone:        compDef.Tombstone,
+		Public:           compDef.Public,
+		Custom:           compDef.Custom,
+		SourceUrl:        compDef.SourceUrl,
+		Version:          compDef.Version,
+		Tasks:            compDef.Tasks,
+		Description:      compDef.Description,
+		ReleaseStage:     compDef.ReleaseStage,
+		Vendor:           compDef.Vendor,
+		VendorAttributes: compDef.VendorAttributes,
+	}
+
+}
+
+func convertComponentDefToOperatorDef(compDef *pb.ComponentDefinition) *pb.OperatorDefinition {
+
+	return &pb.OperatorDefinition{
+		Id:               compDef.Id,
+		Uid:              compDef.Uid,
+		Name:             fmt.Sprintf("operator-definitions/%s", strings.Split(compDef.Name, "/")[1]),
+		Title:            compDef.Title,
+		DocumentationUrl: compDef.DocumentationUrl,
+		Icon:             compDef.Icon,
+		Spec:             (*pb.OperatorSpec)(compDef.Spec),
+		Tombstone:        compDef.Tombstone,
+		Public:           compDef.Public,
+		Custom:           compDef.Custom,
+		SourceUrl:        compDef.SourceUrl,
+		Version:          compDef.Version,
+		Tasks:            compDef.Tasks,
+		Description:      compDef.Description,
+		ReleaseStage:     compDef.ReleaseStage,
+	}
+
 }

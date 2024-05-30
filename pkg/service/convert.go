@@ -15,7 +15,6 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/instill-ai/component"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -24,6 +23,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	componentbase "github.com/instill-ai/component/base"
+	componentstore "github.com/instill-ai/component/store"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -48,7 +48,7 @@ type Converter interface {
 type converter struct {
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 	redisClient              *redis.Client
-	component                *component.Store
+	component                *componentstore.Store
 	aclClient                *acl.ACLClient
 }
 
@@ -63,7 +63,7 @@ func NewConverter(
 	return &converter{
 		mgmtPrivateServiceClient: m,
 		redisClient:              rc,
-		component:                component.Init(logger, nil, nil),
+		component:                componentstore.Init(logger, nil, nil),
 		aclClient:                acl,
 	}
 }
@@ -91,21 +91,14 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 			}
 		}
 
-	case *componentbase.ConnectorComponent:
-		def, err := c.component.GetConnectorDefinitionByID(rsc.Type, nil, nil)
+	case *componentbase.ComponentConfig:
+		def, err := c.component.GetDefinitionByID(rsc.Type, nil, nil)
 		if err != nil {
 			return err
 		}
 		rsc.Type = def.Uid
 		return nil
 
-	case *componentbase.OperatorComponent:
-		def, err := c.component.GetOperatorDefinitionByID(rsc.Type, nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.Type = def.Uid
-		return nil
 	}
 	return nil
 }
@@ -133,15 +126,8 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 			}
 		}
 
-	case *componentbase.ConnectorComponent:
-		def, err := c.component.GetConnectorDefinitionByUID(uuid.FromStringOrNil(rsc.Type), nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.Type = def.Id
-
-	case *componentbase.OperatorComponent:
-		def, err := c.component.GetOperatorDefinitionByUID(uuid.FromStringOrNil(rsc.Type), nil, nil)
+	case *componentbase.ComponentConfig:
+		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(rsc.Type), nil, nil)
 		if err != nil {
 			return err
 		}
@@ -151,33 +137,17 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 	return nil
 }
 
-func (c *converter) includeOperatorComponentDetail(ctx context.Context, comp *componentbase.OperatorComponent) error {
+func (c *converter) includeComponentDetail(ctx context.Context, compConfig *componentbase.ComponentConfig) error {
 
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return err
 	}
-	def, err := c.component.GetOperatorDefinitionByUID(uuid.FromStringOrNil(comp.Type), vars, comp)
+	def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(compConfig.Type), vars, compConfig)
 	if err != nil {
 		return err
 	}
-
-	comp.Definition = def
-	return nil
-}
-
-func (c *converter) includeConnectorComponentDetail(ctx context.Context, comp *componentbase.ConnectorComponent) error {
-
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
-	if err != nil {
-		return err
-	}
-	def, err := c.component.GetConnectorDefinitionByUID(uuid.FromStringOrNil(comp.Type), vars, comp)
-	if err != nil {
-		return err
-	}
-
-	comp.Definition = def
+	compConfig.Definition = def
 	return nil
 }
 
@@ -186,10 +156,8 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *da
 	for _, itComp := range comp.Component {
 		var err error
 		switch itComp := itComp.(type) {
-		case *componentbase.ConnectorComponent:
-			err = c.includeConnectorComponentDetail(ctx, itComp)
-		case *componentbase.OperatorComponent:
-			err = c.includeOperatorComponentDetail(ctx, itComp)
+		case *componentbase.ComponentConfig:
+			err = c.includeComponentDetail(ctx, itComp)
 		}
 		if err != nil {
 			return err
@@ -225,14 +193,7 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *da
 				input := &structpb.Struct{}
 				output := &structpb.Struct{}
 				switch nestedC := nestedComp.(type) {
-				case *componentbase.ConnectorComponent:
-					task = nestedC.Task
-					if _, ok := nestedC.Definition.Spec.DataSpecifications[task]; ok {
-						input = nestedC.Definition.Spec.DataSpecifications[task].Input
-						output = nestedC.Definition.Spec.DataSpecifications[task].Output
-					}
-
-				case *componentbase.OperatorComponent:
+				case *componentbase.ComponentConfig:
 					task = nestedC.Task
 					if _, ok := nestedC.Definition.Spec.DataSpecifications[task]; ok {
 						input = nestedC.Definition.Spec.DataSpecifications[task].Input
@@ -327,10 +288,8 @@ func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *datamodel
 	for _, comp := range recipe.Component {
 		var err error
 		switch comp := comp.(type) {
-		case *componentbase.ConnectorComponent:
-			err = c.includeConnectorComponentDetail(ctx, comp)
-		case *componentbase.OperatorComponent:
-			err = c.includeOperatorComponentDetail(ctx, comp)
+		case *componentbase.ComponentConfig:
+			err = c.includeComponentDetail(ctx, comp)
 		case *datamodel.IteratorComponent:
 			err = c.includeIteratorComponentDetail(ctx, comp)
 		}
@@ -424,15 +383,27 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 
 // ConnectorTypeToComponentType ...
 var ConnectorTypeToComponentType = map[pb.ConnectorType]pb.ComponentType{
-	pb.ConnectorType_CONNECTOR_TYPE_AI:          pb.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
-	pb.ConnectorType_CONNECTOR_TYPE_APPLICATION: pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION,
-	pb.ConnectorType_CONNECTOR_TYPE_DATA:        pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
+	pb.ConnectorType_CONNECTOR_TYPE_AI:          pb.ComponentType_COMPONENT_TYPE_AI,
+	pb.ConnectorType_CONNECTOR_TYPE_APPLICATION: pb.ComponentType_COMPONENT_TYPE_APPLICATION,
+	pb.ConnectorType_CONNECTOR_TYPE_DATA:        pb.ComponentType_COMPONENT_TYPE_DATA,
 }
 
 // ConvertPipelineToPB converts db data model to protobuf data model
-func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error) {
+func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (*pb.Pipeline, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
+
+	// Clone the pipeline to avoid share memory write
+	dbPipelineByte, err := json.Marshal(dbPipelineOrigin)
+	if err != nil {
+		return nil, err
+	}
+	dbPipeline := &datamodel.Pipeline{}
+
+	err = json.Unmarshal(dbPipelineByte, dbPipeline)
+	if err != nil {
+		return nil, err
+	}
 
 	ownerName, err := c.ConvertOwnerPermalinkToName(ctx, dbPipeline.Owner)
 	if err != nil {
@@ -474,13 +445,14 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 		tags = append(tags, t.TagName)
 	}
 
-	pbRecipe := &structpb.Struct{}
+	var pbRecipe *structpb.Struct
 	if dbPipeline.Recipe != nil {
 		b, err = json.Marshal(dbPipeline.Recipe)
 		if err != nil {
 			return nil, err
 		}
 
+		pbRecipe = &structpb.Struct{}
 		err = protojson.Unmarshal(b, pbRecipe)
 		if err != nil {
 			return nil, err
@@ -508,53 +480,36 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 		Tags:        tags,
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(5)
-	go func() {
-		defer wg.Done()
-		var owner *mgmtpb.Owner
-		if view > pb.Pipeline_VIEW_BASIC {
-			owner, err = c.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
-			if err != nil {
-				return
-			}
-			pbPipeline.Owner = owner
+	var owner *mgmtpb.Owner
+	if view > pb.Pipeline_VIEW_BASIC {
+		owner, err = c.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
+		if err != nil {
+			return nil, err
 		}
-	}()
+		pbPipeline.Owner = owner
+	}
 	pbPipeline.Permission = &pb.Permission{}
-	go func() {
-		defer wg.Done()
-		if !checkPermission {
-			return
-		}
+	if checkPermission {
 		if strings.Split(dbPipeline.Owner, "/")[1] == ctxUserUID {
 			pbPipeline.Permission.CanEdit = true
-			return
-		}
-
-		canEdit, err := c.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
-		if err != nil {
-			return
-		}
-		pbPipeline.Permission.CanEdit = canEdit
-		pbPipeline.Permission.CanRelease = canEdit
-	}()
-	go func() {
-		defer wg.Done()
-		if !checkPermission {
-			return
-		}
-		if strings.Split(dbPipeline.Owner, "/")[1] == ctxUserUID {
+			pbPipeline.Permission.CanRelease = true
 			pbPipeline.Permission.CanTrigger = true
-			return
+		} else {
+			canEdit, err := c.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "writer")
+			if err != nil {
+				return nil, err
+			}
+			pbPipeline.Permission.CanEdit = canEdit
+			pbPipeline.Permission.CanRelease = canEdit
+
+			canTrigger, err := c.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
+			if err != nil {
+				return nil, err
+			}
+			pbPipeline.Permission.CanTrigger = canTrigger
 		}
 
-		canTrigger, err := c.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor")
-		if err != nil {
-			return
-		}
-		pbPipeline.Permission.CanTrigger = canTrigger
-	}()
+	}
 
 	if view > pb.Pipeline_VIEW_BASIC {
 		if dbPipeline.Metadata != nil {
@@ -567,27 +522,18 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamod
 		}
 	}
 
-	go func() {
-		defer wg.Done()
-		if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && dbPipeline.Recipe.Variable != nil {
-			spec, err := c.generatePipelineDataSpec(dbPipeline.Recipe.Variable, dbPipeline.Recipe.Output, dbPipeline.Recipe.Component)
-			if err != nil {
-				return
-			}
+	if pbRecipe != nil && view == pb.Pipeline_VIEW_FULL && dbPipeline.Recipe.Variable != nil {
+		spec, err := c.generatePipelineDataSpec(dbPipeline.Recipe.Variable, dbPipeline.Recipe.Output, dbPipeline.Recipe.Component)
+		if err == nil {
 			pbPipeline.DataSpecification = spec
 		}
-	}()
+	}
 
-	go func() {
-		defer wg.Done()
-		pbReleases, err := c.ConvertPipelineReleasesToPB(ctx, dbPipeline, dbPipeline.Releases, view)
-		if err != nil {
-			return
-		}
-		pbPipeline.Releases = pbReleases
-	}()
-
-	wg.Wait()
+	pbReleases, err := c.ConvertPipelineReleasesToPB(ctx, dbPipeline, dbPipeline.Releases, view)
+	if err != nil {
+		return nil, err
+	}
+	pbPipeline.Releases = pbReleases
 
 	pbPipeline.Visibility = pb.Pipeline_VISIBILITY_PRIVATE
 	if u, ok := pbPipeline.Sharing.Users["*/*"]; ok {
@@ -709,9 +655,21 @@ func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID 
 }
 
 // ConvertPipelineReleaseToPB converts db data model to protobuf data model
-func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
+func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipelineOrigin *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
+
+	// Clone the pipeline to avoid share memory write
+	dbPipelineByte, err := json.Marshal(dbPipelineOrigin)
+	if err != nil {
+		return nil, err
+	}
+	dbPipeline := &datamodel.Pipeline{}
+
+	err = json.Unmarshal(dbPipelineByte, dbPipeline)
+	if err != nil {
+		return nil, err
+	}
 
 	owner, err := c.ConvertOwnerPermalinkToName(ctx, dbPipeline.Owner)
 	if err != nil {
@@ -731,13 +689,14 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		}
 	}
 
-	pbRecipe := &structpb.Struct{}
+	var pbRecipe *structpb.Struct
 	if dbPipelineRelease.Recipe != nil {
 		b, err := json.Marshal(dbPipelineRelease.Recipe)
 		if err != nil {
 			return nil, err
 		}
 
+		pbRecipe = &structpb.Struct{}
 		err = protojson.Unmarshal(b, pbRecipe)
 		if err != nil {
 			return nil, err
@@ -881,23 +840,15 @@ func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Var
 							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 						str = str[len(splits[1])+1:]
-					case *componentbase.ConnectorComponent, *componentbase.OperatorComponent:
+					case *componentbase.ComponentConfig:
 						task := ""
 						input := &structpb.Struct{}
 						output := &structpb.Struct{}
-						switch c := comp.(type) {
-						case *componentbase.ConnectorComponent:
-							task = c.Task
-							if _, ok := c.Definition.Spec.DataSpecifications[task]; ok {
-								input = c.Definition.Spec.DataSpecifications[task].Input
-								output = c.Definition.Spec.DataSpecifications[task].Output
-							}
-						case *componentbase.OperatorComponent:
-							task = c.Task
-							if _, ok := c.Definition.Spec.DataSpecifications[task]; ok {
-								input = c.Definition.Spec.DataSpecifications[task].Input
-								output = c.Definition.Spec.DataSpecifications[task].Output
-							}
+
+						task = c.Task
+						if _, ok := c.Definition.Spec.DataSpecifications[task]; ok {
+							input = c.Definition.Spec.DataSpecifications[task].Input
+							output = c.Definition.Spec.DataSpecifications[task].Output
 						}
 
 						if task == "" {

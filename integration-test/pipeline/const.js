@@ -81,85 +81,37 @@ export const paramsHTTPWithJwt = {
 export const simpleRecipe = {
   recipe: {
     version:  "v1beta",
-    trigger: {
-      trigger_by_request: {
-        request_fields: {
-          input: {
-            title: "Input",
-            instill_format: "string"
-          }
-        },
-        response_fields: {
-          answer: {
-            title: "Answer",
-            value: "${b01.output.data}"
-          }
-        }
-      },
+    variable: {
+      input: {
+        title: "Input",
+        instillFormat: "string"
+      }
     },
-    components: [
-      {
-        id: "b01",
-        operator_component: {
-          definition_name: "operator-definitions/base64",
-          task: "TASK_ENCODE",
-          input: {
-            data: "${trigger.input}"
-          }
+    output: {
+      answer: {
+        title: "Answer",
+        value: "${b01.output.data}"
+      }
+    },
+    component: {
+      b01: {
+        type: "base64",
+        task: "TASK_ENCODE",
+        input: {
+          data: "${variable.input}"
         }
-      },
-    ],
+      }
+    },
   },
 };
 
-export const simpleRecipeDupId = {
-  recipe: {
-    version: "v1beta",
-    trigger: {
-      trigger_by_request: {
-        request_fields: {
-          input: {
-            title: "Input",
-            instill_format: "string"
-          }
-        },
-        response_fields: {
-          answer: {
-            title: "Answer",
-            value: "${trigger.input}"
-          }
-        }
-      },
-    },
-    components: [
-      {
-        id: "b01",
-        operator_component: {
-          definition_name: "operator-definitions/base64",
-          task: "TASK_ENCODE",
-          input: {
-            data: "${trigger.input}"
-          }
-        }
-      },
-      {
-        id: "b01",
-        operator_component: {
-          definition_name: "operator-definitions/base64",
-          task: "TASK_ENCODE",
-          input: {
-            data: "${trigger.input}"
-          }
-        }
-      },
-    ],
-  },
-};
 
 export const simplePayload = {
-  inputs: [
+  data: [
     {
-      input: "a",
+      variable: {
+        input: "a",
+      }
     },
   ],
 };

@@ -14,7 +14,7 @@ export function CheckList() {
       "GET /v1beta/component-definitions response page 0": (r) => r.json().page === 0,
       [`GET /v1beta/component-definitions response default page size ${defaultPageSize}`]: (r) => r.json().component_definitions.length === defaultPageSize,
       [`GET /v1beta/component-definitions response page size in response ${defaultPageSize}`]: (r) => r.json().page_size === defaultPageSize,
-      "GET /v1beta/component-definitions response features Instill Model on top": (r) => r.json().component_definitions[0].connector_definition.id === "instill-model",
+      "GET /v1beta/component-definitions response features Instill Model on top": (r) => r.json().component_definitions[0].id === "instill-model",
     });
 
     var limitedRecords = http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions`, null, null)
@@ -49,7 +49,7 @@ export function CheckList() {
       "GET /v1beta/component-definitions?page_size=2&page=2 response status is 200": (r) => r.status === 200,
       "GET /v1beta/component-definitions?page_size=2&page=2 response component_definitions size 3": (r) => r.json().component_definitions.length === 2,
       "GET /v1beta/component-definitions?page_size=2&page=2 response page 0": (r) => r.json().page === 2,
-      "GET /v1beta/component-definitions?page_size=2&page=2 receives a different page": (r) => r.json().component_definitions[0].connector_definition.id != limitedRecords.json().component_definitions[0].connector_definition.id,
+      "GET /v1beta/component-definitions?page_size=2&page=2 receives a different page": (r) => r.json().component_definitions[0].id != limitedRecords.json().component_definitions[0].id,
     });
 
     // Negative page index yields page 0.
@@ -69,25 +69,25 @@ export function CheckList() {
     // Default view is BASIC, i.e. no spec property.
     check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1`, null, null), {
       "GET /v1beta/component-definitions?page_size=1 response status 200": (r) => r.status === 200,
-      "GET /v1beta/component-definitions?page_size=1 response component_definitions[0].connector_definition.spec is null": (r) => r.json().component_definitions[0].connector_definition.spec === null,
+      "GET /v1beta/component-definitions?page_size=1 response component_definitions[0].spec is null": (r) => r.json().component_definitions[0].spec === null,
     });
 
     check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1&view=VIEW_BASIC`, null, null), {
       "GET /v1beta/component-definitions?page_size=1&view=VIEW_BASIC response status 200": (r) => r.status === 200,
-      "GET /v1beta/component-definitions?page_size=1&view=VIEW_BASIC response component_definitions[0].connector_definition.spec is null": (r) => r.json().component_definitions[0].connector_definition.spec === null,
+      "GET /v1beta/component-definitions?page_size=1&view=VIEW_BASIC response component_definitions[0].spec is null": (r) => r.json().component_definitions[0].spec === null,
     });
 
     // FULL view.
     check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1&view=VIEW_FULL`, null, null), {
       "GET /v1beta/component-definitions?page_size=1&view=VIEW_FULL response status 200": (r) => r.status === 200,
-      "GET /v1beta/component-definitions?page_size=1&view=VIEW_FULL response component_definitions[0].connector_definition.spec is not null": (r) => r.json().component_definitions[0].connector_definition.spec !== null,
+      "GET /v1beta/component-definitions?page_size=1&view=VIEW_FULL response component_definitions[0].spec is not null": (r) => r.json().component_definitions[0].spec !== null,
     });
 
     // Filter (fuzzy) title
     check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?page_size=1&filter=q_title="JSO"`, null, null), {
       [`GET /v1beta/component-definitions?page_size=1&filter=q_title="JSO" response status 200`]: (r) => r.status === 200,
       [`GET /v1beta/component-definitions?page_size=1&filter=q_title="JSO" single result`]: (r) => r.json().total_size === 1,
-      [`GET /v1beta/component-definitions?page_size=1&filter=q_title="JSO" title is JSON`]: (r) => r.json().component_definitions[0].operator_definition.title === "JSON",
+      [`GET /v1beta/component-definitions?page_size=1&filter=q_title="JSO" title is JSON`]: (r) => r.json().component_definitions[0].title === "JSON",
     });
 
     // Filter component type
@@ -102,7 +102,7 @@ export function CheckList() {
       [`GET /v1beta/component-definitions?page_size=1&filter=release_stage=RELEASE_STAGE_ALPHA response status 200`]: (r) => r.status === 200,
       // TODO when there are non-alpha components, update expectations.
       [`GET /v1beta/component-definitions?page_size=1&filter=release_stage=RELEASE_STAGE_ALPHA number of results`]: (r) => r.json().total_size === limitedRecords.json().total_size,
-      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage=RELEASE_STAGE_ALPHA release_stage is alpha`]: (r) => r.json().component_definitions[0].connector_definition.release_stage === "RELEASE_STAGE_ALPHA",
+      [`GET /v1beta/component-definitions?page_size=1&filter=release_stage=RELEASE_STAGE_ALPHA release_stage is alpha`]: (r) => r.json().component_definitions[0].release_stage === "RELEASE_STAGE_ALPHA",
     });
   });
 }

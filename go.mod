@@ -14,10 +14,11 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/iancoleman/strcase v0.2.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.18.0-beta.0.20240527143538-1febc2db485c
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240522141150-f26cf18f7375
+	github.com/instill-ai/component v0.18.0-beta.0.20240530140913-53be22cf3207
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240530065422-d384f728a1e2
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
+	github.com/jackc/pgx/v5 v5.4.3
 	github.com/knadh/koanf v1.5.0
 	github.com/launchdarkly/go-semver v1.0.2
 	github.com/mennanov/fieldmask-utils v1.0.0
@@ -43,8 +44,8 @@ require (
 	google.golang.org/grpc v1.61.1
 	google.golang.org/protobuf v1.33.0
 	gorm.io/datatypes v1.2.0
-	gorm.io/driver/postgres v1.5.0
-	gorm.io/gorm v1.25.2
+	gorm.io/driver/postgres v1.5.7
+	gorm.io/gorm v1.25.7-0.20240204074919-46816ad31dde
 	gorm.io/plugin/dbresolver v1.5.1
 )
 
@@ -84,7 +85,6 @@ require (
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/itchyny/gojq v0.12.14 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
-	github.com/jackc/pgx/v5 v5.3.0 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/klauspost/asmfmt v1.3.2 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect

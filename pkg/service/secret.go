@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"go.einride.tech/aip/filtering"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -113,19 +112,19 @@ func (s *service) DeleteNamespaceSecretByID(ctx context.Context, ns resource.Nam
 	return s.repository.DeleteNamespaceSecretByID(ctx, ownerPermalink, id)
 }
 
-func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, connection *structpb.Struct, prefix string) error {
+func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, setup map[string]any, prefix string) error {
 
-	for k, v := range connection.GetFields() {
+	for k, v := range setup {
 		key := prefix + k
 		if ok, err := s.component.IsSecretField(uid, key); err == nil && ok {
-			if v.GetStringValue() != "" {
-				if !strings.HasPrefix(v.GetStringValue(), "${") || !strings.HasSuffix(v.GetStringValue(), "}") {
+			if s, ok := v.(string); ok {
+				if !strings.HasPrefix(s, "${") || !strings.HasSuffix(s, "}") {
 					return errCanNotUsePlaintextSecret
 				}
 			}
 		}
-		if v.GetStructValue() != nil {
-			err := s.checkSecretFields(ctx, uid, v.GetStructValue(), fmt.Sprintf("%s.", key))
+		if str, ok := v.(map[string]any); ok {
+			err := s.checkSecretFields(ctx, uid, str, fmt.Sprintf("%s.", key))
 			if err != nil {
 				return err
 			}
@@ -137,20 +136,20 @@ func (s *service) checkSecret(ctx context.Context, recipe *datamodel.Recipe) err
 
 	for _, comp := range recipe.Component {
 		switch c := comp.(type) {
-		case *componentbase.ConnectorComponent:
+		case *componentbase.ComponentConfig:
 			defUID := uuid.FromStringOrNil(c.Type)
-			connection := c.Connection
-			err := s.checkSecretFields(ctx, defUID, connection, "")
+			setup := c.Setup
+			err := s.checkSecretFields(ctx, defUID, setup, "")
 			if err != nil {
 				return err
 			}
 		case *datamodel.IteratorComponent:
 			for _, nestedComp := range c.Component {
 				switch nestedC := nestedComp.(type) {
-				case *componentbase.ConnectorComponent:
+				case *componentbase.ComponentConfig:
 					defUID := uuid.FromStringOrNil(nestedC.Type)
-					connection := nestedC.Connection
-					err := s.checkSecretFields(ctx, defUID, connection, "")
+					setup := nestedC.Setup
+					err := s.checkSecretFields(ctx, defUID, setup, "")
 					if err != nil {
 						return err
 					}

@@ -8,12 +8,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/launchdarkly/go-semver"
 
-	"github.com/instill-ai/component"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
 
+	componentstore "github.com/instill-ai/component/store"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -30,30 +29,10 @@ type definition interface {
 func UpdateComponentDefinitionIndex(ctx context.Context, repo repository.Repository) error {
 	logger, _ := logger.GetZapLogger(ctx)
 
-	connDefs := component.Init(logger, nil, nil).ListConnectorDefinitions(nil, true)
-	for _, connDef := range connDefs {
-		cd := &pb.ComponentDefinition{
-			Type: service.ConnectorTypeToComponentType[connDef.Type],
-			Definition: &pb.ComponentDefinition_ConnectorDefinition{
-				ConnectorDefinition: connDef,
-			},
-		}
+	defs := componentstore.Init(logger, nil, nil).ListDefinitions(nil, true)
+	for _, def := range defs {
 
-		if err := updateComponentDefinition(ctx, cd, repo); err != nil {
-			return err
-		}
-	}
-
-	opDefs := component.Init(logger, nil, nil).ListOperatorDefinitions(nil, true)
-	for _, opDef := range opDefs {
-		cd := &pb.ComponentDefinition{
-			Type: pb.ComponentType_COMPONENT_TYPE_OPERATOR,
-			Definition: &pb.ComponentDefinition_OperatorDefinition{
-				OperatorDefinition: opDef,
-			},
-		}
-
-		if err := updateComponentDefinition(ctx, cd, repo); err != nil {
+		if err := updateComponentDefinition(ctx, def, repo); err != nil {
 			return err
 		}
 	}
@@ -62,31 +41,18 @@ func UpdateComponentDefinitionIndex(ctx context.Context, repo repository.Reposit
 }
 
 func updateComponentDefinition(ctx context.Context, cd *pb.ComponentDefinition, repo repository.Repository) error {
-	var def definition
-	switch cd.Type {
-	case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
-		def = cd.GetOperatorDefinition()
 
-	case pb.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
-		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
-		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION:
-
-		def = cd.GetConnectorDefinition()
-	default:
-		return fmt.Errorf("unsupported component definition type")
-	}
-
-	uid, err := uuid.FromString(def.GetUid())
+	uid, err := uuid.FromString(cd.GetUid())
 	if err != nil {
-		return fmt.Errorf("invalid UID in component definition %s: %w", def.GetId(), err)
+		return fmt.Errorf("invalid UID in component definition %s: %w", cd.GetId(), err)
 	}
 
-	inDB, err := repo.GetComponentDefinitionByUID(ctx, uid)
+	inDB, err := repo.GetDefinitionByUID(ctx, uid)
 	if err != nil && !errors.Is(err, repository.ErrNotFound) {
-		return fmt.Errorf("error fetching component definition %s from DB: %w", def.GetId(), err)
+		return fmt.Errorf("error fetching component definition %s from DB: %w", cd.GetId(), err)
 	}
 
-	shouldSkip, err := shouldSkipUpsert(def, inDB)
+	shouldSkip, err := shouldSkipUpsert(cd, inDB)
 	if err != nil {
 		return err
 	}
@@ -95,7 +61,7 @@ func updateComponentDefinition(ctx context.Context, cd *pb.ComponentDefinition, 
 	}
 
 	if err := repo.UpsertComponentDefinition(ctx, cd); err != nil {
-		return fmt.Errorf("failed to upsert component definition %s: %w", def.GetId(), err)
+		return fmt.Errorf("failed to upsert component definition %s: %w", cd.GetId(), err)
 	}
 
 	return nil

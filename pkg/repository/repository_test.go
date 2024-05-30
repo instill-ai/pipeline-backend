@@ -44,7 +44,7 @@ func TestRepository_ComponentDefinitionUIDs(t *testing.T) {
 	err = repo.UpsertComponentDefinition(ctx, cd)
 	c.Check(err, qt.IsNil)
 
-	dbDef, err := repo.GetComponentDefinitionByUID(ctx, uid)
+	dbDef, err := repo.GetDefinitionByUID(ctx, uid)
 	c.Check(err, qt.IsNil)
 	c.Check(dbDef.ID, qt.Equals, id)
 

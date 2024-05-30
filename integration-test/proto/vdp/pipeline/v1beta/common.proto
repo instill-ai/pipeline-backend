@@ -55,12 +55,14 @@ message Sharing {
   ShareCode share_code = 2;
 }
 
-// Permission defines how a resource can be used.
+// Permission defines how a pipeline can be used.
 message Permission {
-  // Defines whether the resource can be modified.
+  // Defines whether the pipeline can be modified.
   bool can_edit = 1;
-  // Defines whether the resource can be executed.
+  // Defines whether the pipeline can be executed.
   bool can_trigger = 2;
+  // Defines whether the pipeline can be released.
+  bool can_release = 3;
 }
 
 // CheckNameRequest represents a request to verify if a name is
@@ -107,14 +109,14 @@ enum ComponentType {
   // Unspecified.
   COMPONENT_TYPE_UNSPECIFIED = 0;
   // Connect with an AI model.
-  COMPONENT_TYPE_CONNECTOR_AI = 1;
+  COMPONENT_TYPE_AI = 1;
   // Connect with a remote data source.
-  COMPONENT_TYPE_CONNECTOR_DATA = 2;
+  COMPONENT_TYPE_DATA = 2;
   // 3 Is reserved for the connector blockchain type, deprecated by
   // COMPONENT_TYPE_CONNECTOR_APPLICATION.
   reserved 3;
   // Manipulate data.
   COMPONENT_TYPE_OPERATOR = 4;
   // Connect with an external application.
-  COMPONENT_TYPE_CONNECTOR_APPLICATION = 5;
+  COMPONENT_TYPE_APPLICATION = 5;
 }

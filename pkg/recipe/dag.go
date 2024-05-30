@@ -13,7 +13,6 @@ import (
 
 	"github.com/PaesslerAG/jsonpath"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
@@ -596,13 +595,8 @@ func GenerateDAG(componentMap map[string]datamodel.IComponent) (*dag, error) {
 		}
 
 		switch comp := component.(type) {
-		case *componentbase.ConnectorComponent:
-			configuration := proto.Clone(comp.Input)
-			template, _ := protojson.Marshal(configuration)
-			parents = append(parents, FindReferenceParent(string(template))...)
-		case *componentbase.OperatorComponent:
-			configuration := proto.Clone(comp.Input)
-			template, _ := protojson.Marshal(configuration)
+		case *componentbase.ComponentConfig:
+			template, _ := json.Marshal(comp.Input)
 			parents = append(parents, FindReferenceParent(string(template))...)
 		case *datamodel.IteratorComponent:
 			parents = append(parents, FindReferenceParent(comp.Input)...)
@@ -622,18 +616,8 @@ func GenerateDAG(componentMap map[string]datamodel.IComponent) (*dag, error) {
 				}
 
 				switch nestedComp := nestedComponent.(type) {
-				case *componentbase.ConnectorComponent:
-					configuration := proto.Clone(nestedComp.Input)
-					template, _ := protojson.Marshal(configuration)
-					nestedParent := FindReferenceParent(string(template))
-					for idx := range nestedParent {
-						if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {
-							parents = append(parents, nestedParent[idx])
-						}
-					}
-				case *componentbase.OperatorComponent:
-					configuration := proto.Clone(nestedComp.Input)
-					template, _ := protojson.Marshal(configuration)
+				case *componentbase.ComponentConfig:
+					template, _ := json.Marshal(nestedComp.Input)
 					nestedParent := FindReferenceParent(string(template))
 					for idx := range nestedParent {
 						if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {

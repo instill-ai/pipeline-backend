@@ -44,7 +44,7 @@ export function CheckTrigger(data) {
           "vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline",
           {
             name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
-            inputs: constant.simplePayload.inputs,
+            data: constant.simplePayload.data,
           },
           data.metadata
         ),

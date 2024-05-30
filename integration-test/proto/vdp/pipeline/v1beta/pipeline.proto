@@ -43,174 +43,6 @@ message ReadinessResponse {
   common.healthcheck.v1beta.HealthCheckResponse health_check_response = 1;
 }
 
-// TriggerByRequest
-// Configures the payload format of request when triggered by a request.
-message TriggerByRequest {
-  // Represents a field within the reqeuest.
-  message RequestField {
-    // Title of the field.
-    string title = 1 [(google.api.field_behavior) = OPTIONAL];
-    // Description of the field.
-    string description = 2 [(google.api.field_behavior) = OPTIONAL];
-    // Instill format.
-    string instill_format = 3 [(google.api.field_behavior) = OPTIONAL];
-    // Instill UI order.
-    int32 instill_ui_order = 4 [(google.api.field_behavior) = OPTIONAL];
-    // Instill UI Multiline.
-    bool instill_ui_multiline = 5 [(google.api.field_behavior) = OPTIONAL];
-  }
-  // Represents a field within the response.
-  message ResponseField {
-    // Title of the field.
-    string title = 1 [(google.api.field_behavior) = OPTIONAL];
-    // Description of the field.
-    string description = 2 [(google.api.field_behavior) = OPTIONAL];
-    // Value of the field.
-    string value = 3 [(google.api.field_behavior) = OPTIONAL];
-    // Instill UI order.
-    int32 instill_ui_order = 4 [(google.api.field_behavior) = OPTIONAL];
-  }
-
-  // Fields configuration of request.
-  // Key: Key of the input data.
-  // Field: Field settings of the value.
-  map<string, RequestField> request_fields = 1 [(google.api.field_behavior) = OPTIONAL];
-
-  // Fields configuration of response.
-  // Key: Key of the input data.
-  // Field: Field settings of the value.
-  map<string, ResponseField> response_fields = 2 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// ConnectorComponent
-// Configures a connector component. Requires the creation of a connector resource first.
-message ConnectorComponent {
-  // Definition name.
-  string definition_name = 1 [(google.api.field_behavior) = OPTIONAL];
-  // Connector definition.
-  ConnectorDefinition definition = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Deleted fields
-  reserved 3, 4;
-  // Task.
-  string task = 5 [(google.api.field_behavior) = OPTIONAL];
-  // Input configuration of the component. JSON schema described in the connector definition.
-  google.protobuf.Struct input = 6 [(google.api.field_behavior) = OPTIONAL];
-  // Condition statement determining whether the component is executed or not.
-  string condition = 7 [(google.api.field_behavior) = OPTIONAL];
-  // Connection configuration of the component. JSON schema described in the connector definition.
-  google.protobuf.Struct connection = 8 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// OperatorComponent
-// Configures an operator component.
-message OperatorComponent {
-  // Definition name.
-  string definition_name = 1 [(google.api.field_behavior) = OPTIONAL];
-  // Operator definition.
-  OperatorDefinition definition = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Task.
-  string task = 3 [(google.api.field_behavior) = OPTIONAL];
-  // Input configuration of the component. JSON schema described in the operator definition.
-  google.protobuf.Struct input = 4 [(google.api.field_behavior) = OPTIONAL];
-  // Condition statement determining whether the component is executed or not.
-  string condition = 5 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// IteratorComponent
-// Configures an iterator component. An iterator takes an array and executes an
-// operation (defined by a set of nested components) on each of its elements.
-// It can be regarded as triggering a sub-pipeline using the elements of an
-// array as input.
-message IteratorComponent {
-  // Input: The iterator will iterate over the elements of the input (must be an array).
-  string input = 1 [(google.api.field_behavior) = OPTIONAL];
-
-  // Output elements: Configure the output arrays of the iterator.
-  // The key is the output element variable name, and the value is the data reference of the template.
-  // Example:
-  // output_elements: {
-  //   "key1": "${element.output.a}",
-  //   "key2": "${element.output.b}",
-  // }
-  // This will create the results:
-  // output: {
-  //   "key1": [ ${element1.output.a},  ${element2.output.a} ... ],
-  //   "key2": [ ${element1.output.b},  ${element2.output.b} ... ],
-  // }
-  map<string, string> output_elements = 2 [(google.api.field_behavior) = OPTIONAL];
-
-  // Components: These components will be executed for each input element.
-  repeated NestedComponent components = 3 [(google.api.field_behavior) = OPTIONAL];
-
-  // Condition statement determining whether the component is executed or not.
-  string condition = 4 [(google.api.field_behavior) = OPTIONAL];
-
-  // DataSpecification returns the JSON schema for the iterator input and output.
-  DataSpecification data_specification = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-}
-
-// Component
-// Fundamental building block in pipelines.
-//
-// For more information, see [Pipeline
-// Component](https://www.instill.tech/docs/latest/core/concepts/pipeline#pipeline-component)
-message Component {
-  // Component ID, provided by the user on creation.
-  string id = 1 [(google.api.field_behavior) = REQUIRED];
-  // Deleted fields
-  reserved 2 to 9;
-  // Metadata of the component.
-  google.protobuf.Struct metadata = 10 [(google.api.field_behavior) = OPTIONAL];
-  // Deleted fields
-  reserved 11, 12;
-  // The component configuration.
-  oneof component {
-    // ConnectorComponent
-    ConnectorComponent connector_component = 13;
-    // OperatorComponent
-    OperatorComponent operator_component = 14;
-    // IteratorComponent
-    IteratorComponent iterator_component = 15;
-  }
-}
-
-// NestedComponent
-// Fundamental building block in iterator component.
-message NestedComponent {
-  // Component ID, provided by the user on creation.
-  string id = 1 [(google.api.field_behavior) = REQUIRED];
-  // Metadata of the component.
-  google.protobuf.Struct metadata = 2 [(google.api.field_behavior) = OPTIONAL];
-  // The component configuration.
-  oneof component {
-    // ConnectorConfiguration
-    ConnectorComponent connector_component = 3;
-    // OperatorConfiguration
-    OperatorComponent operator_component = 4;
-  }
-}
-
-// Trigger
-message Trigger {
-  // Trigger Method
-  oneof trigger {
-    // Triggered by reqeust.
-    TriggerByRequest trigger_by_request = 1;
-  }
-}
-
-// Recipe describes the components of a Pipeline and how they are connected.
-message Recipe {
-  // Recipe schema version.
-  string version = 1;
-  // List of pipeline components.
-  repeated Component components = 2;
-  // The component trigger method.
-  Trigger trigger = 3;
-  // Local secrets
-  map<string, string> secrets = 4;
-}
-
 // State describes the state of a pipeline.
 enum State {
   // Unspecified.
@@ -277,7 +109,7 @@ message Pipeline {
   // Pipeline description.
   optional string description = 4 [(google.api.field_behavior) = OPTIONAL];
   // Recipe describes the components of a Pipeline and how they are connected.
-  Recipe recipe = 5 [(google.api.field_behavior) = IMMUTABLE];
+  google.protobuf.Struct recipe = 5 [(google.api.field_behavior) = IMMUTABLE];
   // Pipeline creation time.
   google.protobuf.Timestamp create_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline update time.
@@ -309,6 +141,8 @@ message Pipeline {
   ];
   // Data specifications.
   DataSpecification data_specification = 24 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Tags.
+  repeated string tags = 25 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // TriggerMetadata contains the traces of the pipeline inference.
@@ -343,6 +177,17 @@ message Trace {
   float compute_time_in_seconds = 5;
 }
 
+// GetHubStatsRequest represents a request to get hub stats.
+message GetHubStatsRequest {}
+
+// GetHubStatsResponse represents a response to get hub stats.
+message GetHubStatsResponse {
+  // Total number of public pipelines.
+  int32 number_of_public_pipelines = 1;
+  // Total number of featured pipelines.
+  int32 number_of_featured_pipelines = 2;
+}
+
 // Pipeline releases contain the version control information of a pipeline.
 // This allows users to track changes in the pipeline over time.
 message PipelineRelease {
@@ -367,7 +212,7 @@ message PipelineRelease {
   // Release description.
   optional string description = 4 [(google.api.field_behavior) = OPTIONAL];
   // Recipe of the versioned pipeline.
-  Recipe recipe = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Struct recipe = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline creation time.
   google.protobuf.Timestamp create_time = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Pipeline update time.
@@ -407,6 +252,9 @@ message ListPipelinesRequest {
   optional bool show_deleted = 5 [(google.api.field_behavior) = OPTIONAL];
   // Limit results to pipelines with the specified visibility.
   optional Pipeline.Visibility visibility = 6 [(google.api.field_behavior) = OPTIONAL];
+  // Order by field, with options for ordering by `id`, `create_time` or `update_time`.
+  // Format: `order_by=id` or `order_by=create_time desc`, default is `asc`.
+  optional string order_by = 7 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListPipelinesResponse contains a list of pipelines.
@@ -486,6 +334,9 @@ message ListUserPipelinesRequest {
   optional bool show_deleted = 6 [(google.api.field_behavior) = OPTIONAL];
   // Limit results to pipelines with the specified visibility.
   optional Pipeline.Visibility visibility = 7 [(google.api.field_behavior) = OPTIONAL];
+  // Order by field, with options for ordering by `id`, `create_time` or `update_time`.
+  // Format: `order_by=id` or `order_by=create_time desc`, default is `asc`.
+  optional string order_by = 8 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListUserPipelinesResponse contains a list of pipelines.
@@ -557,6 +408,14 @@ message DeleteUserPipelineRequest {
 // DeleteUserPipelineResponse is an empty response.
 message DeleteUserPipelineResponse {}
 
+// PipelineValidation
+message PipelineValidationError {
+  // Location
+  string location = 1;
+  // error
+  string error = 2;
+}
+
 // ValidateUserPipelineRequest represents a request to validate a pipeline
 // owned by a user.
 message ValidateUserPipelineRequest {
@@ -574,8 +433,10 @@ message ValidateUserPipelineRequest {
 
 // ValidateUserPipelineResponse contains a validated pipeline.
 message ValidateUserPipelineResponse {
+  // Success
+  bool success = 1;
   // The validated pipeline resource.
-  Pipeline pipeline = 1;
+  repeated PipelineValidationError errors = 2;
 }
 
 // RenameUserPipelineRequest represents a request to rename the name of a
@@ -641,10 +502,10 @@ message TriggerUserPipelineRequest {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
   ];
-  // Pipeline input parameters.
-  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
-  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
 }
 
 // TriggerUserPipelineResponse contains the pipeline execution results, i.e.,
@@ -654,6 +515,42 @@ message TriggerUserPipelineResponse {
   repeated google.protobuf.Struct outputs = 1;
   // Traces of the pipeline inference.
   TriggerMetadata metadata = 2;
+}
+
+// TriggerUserPipelineWithStreamRequest represents a request to trigger a user-owned
+// pipeline synchronously and streams back the results.
+message TriggerUserPipelineWithStreamRequest {
+  // The resource name of the pipeline, which allows its access by parent user
+  // and ID.
+  // - Format: `users/{user.id}/pipelines/{pipeline.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "user_pipeline_name"}
+    }
+  ];
+  // Pipeline input parameters.
+  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
+  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
+  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// TriggerUserPipelineWithStreamResponse contains the pipeline execution results, i.e.,
+// the multiple model inference outputs.
+message TriggerUserPipelineWithStreamResponse {
+  // Model inference outputs.
+  repeated google.protobuf.Struct outputs = 1;
+  // Traces of the pipeline inference.
+  TriggerMetadata metadata = 2;
+}
+
+// Data
+message TriggerData {
+  // Variables
+  google.protobuf.Struct variable = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Variables
+  map<string, string> secret = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // TriggerUserPipelineRequest represents a request to trigger a user-owned
@@ -669,10 +566,11 @@ message TriggerAsyncUserPipelineRequest {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
   ];
-  // Pipeline input parameters.
-  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
-  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
 }
 
 // TriggerAsyncUserPipelineResponse contains the information to access the
@@ -860,10 +758,11 @@ message TriggerUserPipelineReleaseRequest {
       field_configuration: {path_param_name: "user_pipeline_release_name"}
     }
   ];
-  // Pipeline input parameters.
-  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
-  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
 }
 
 // TriggerUserPipelineReleaseResponse contains the pipeline execution results,
@@ -888,10 +787,10 @@ message TriggerAsyncUserPipelineReleaseRequest {
       field_configuration: {path_param_name: "user_pipeline_release_name"}
     }
   ];
-  // Pipeline input parameters.
-  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
-  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
 }
 
 // TriggerAsyncUserPipelineReleaseResponse contains the information to access
@@ -953,6 +852,9 @@ message ListOrganizationPipelinesRequest {
   optional bool show_deleted = 6 [(google.api.field_behavior) = OPTIONAL];
   // Limit results to pipelines with the specified visibility.
   optional Pipeline.Visibility visibility = 7 [(google.api.field_behavior) = OPTIONAL];
+  // Order by field, with options for ordering by `id`, `create_time` or `update_time`.
+  // Format: `order_by=id` or `order_by=create_time desc`, default is `asc`.
+  optional string order_by = 8 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListOrganizationPipelinesResponse contains a list of pipelines.
@@ -1041,8 +943,10 @@ message ValidateOrganizationPipelineRequest {
 
 // ValidateOrganizationPipelineResponse contains a validated pipeline.
 message ValidateOrganizationPipelineResponse {
+  // Success
+  bool success = 1;
   // The validated pipeline resource.
-  Pipeline pipeline = 1;
+  repeated PipelineValidationError errors = 2;
 }
 
 // RenameOrganizationPipelineRequest represents a request to rename the name of
@@ -1108,10 +1012,10 @@ message TriggerOrganizationPipelineRequest {
       field_configuration: {path_param_name: "organization_pipeline_name"}
     }
   ];
-  // Pipeline input parameters.
-  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
-  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
 }
 
 // TriggerOrganizationPipelineResponse contains the pipeline execution results,
@@ -1136,10 +1040,10 @@ message TriggerAsyncOrganizationPipelineRequest {
       field_configuration: {path_param_name: "organization_pipeline_name"}
     }
   ];
-  // Pipeline input parameters.
-  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
-  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
 }
 
 // TriggerAsyncOrganizationPipelineResponse contains the information to access
@@ -1334,10 +1238,10 @@ message TriggerOrganizationPipelineReleaseRequest {
       field_configuration: {path_param_name: "organization_pipeline_release_name"}
     }
   ];
-  // Pipeline input parameters.
-  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
-  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
 }
 
 // TriggerOrganizationPipelineReleaseResponse contains the pipeline execution
@@ -1363,10 +1267,10 @@ message TriggerAsyncOrganizationPipelineReleaseRequest {
       field_configuration: {path_param_name: "organization_pipeline_release_name"}
     }
   ];
-  // Pipeline input parameters.
-  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
-  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
 }
 
 // TriggerAsyncOrganizationPipelineReleaseResponse contains the information to

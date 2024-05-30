@@ -135,20 +135,13 @@ func (r *Recipe) UnmarshalJSON(data []byte) error {
 		r.Component = make(map[string]IComponent)
 		for id, comp := range comps {
 
-			if v, ok := comp.(map[string]any)["type"]; ok {
-				v := v.(string)
-				if v == "base64" || v == "text" || v == "image" || v == "json" || v == "3a836447-c211-4134-9cc5-ad45e1cc467e" || v == "e9eb8fc8-f249-4e11-ad50-5035d79ffc18" || v == "28f53d15-6150-46e6-99aa-f76b70a926c0" || v == "5b7aca5b-1ae3-477f-bf60-d34e1c993c87" {
-					b, _ := json.Marshal(comp)
-					c := componentbase.OperatorComponent{}
-					_ = json.Unmarshal(b, &c)
-					r.Component[id] = &c
-				} else {
-					b, _ := json.Marshal(comp)
-					c := componentbase.ConnectorComponent{}
-					_ = json.Unmarshal(b, &c)
-					r.Component[id] = &c
+			if _, ok := comp.(map[string]any)["type"]; ok {
 
-				}
+				b, _ := json.Marshal(comp)
+				c := componentbase.ComponentConfig{}
+				_ = json.Unmarshal(b, &c)
+				r.Component[id] = &c
+
 			} else {
 				b, _ := json.Marshal(comp)
 				c := IteratorComponent{}
@@ -161,9 +154,7 @@ func (r *Recipe) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
-
 func (i *IteratorComponent) IsComponent() {}
-
 func (i *IteratorComponent) GetCondition() *string {
 	return i.Condition
 }
@@ -230,19 +221,12 @@ func (i *IteratorComponent) UnmarshalJSON(data []byte) error {
 		i.Component = make(map[string]IComponent)
 		for id, comp := range comps {
 
-			if v, ok := comp.(map[string]any)["type"]; ok {
-				if v == "base64" || v == "text" || v == "image" || v == "json" || v == "3a836447-c211-4134-9cc5-ad45e1cc467e" || v == "e9eb8fc8-f249-4e11-ad50-5035d79ffc18" || v == "28f53d15-6150-46e6-99aa-f76b70a926c0" || v == "5b7aca5b-1ae3-477f-bf60-d34e1c993c87" {
-					b, _ := json.Marshal(comp)
-					c := componentbase.OperatorComponent{}
-					_ = json.Unmarshal(b, &c)
-					i.Component[id] = &c
-				} else {
-					b, _ := json.Marshal(comp)
-					c := componentbase.ConnectorComponent{}
-					_ = json.Unmarshal(b, &c)
-					i.Component[id] = &c
+			if _, ok := comp.(map[string]any)["type"]; ok {
 
-				}
+				b, _ := json.Marshal(comp)
+				c := componentbase.ComponentConfig{}
+				_ = json.Unmarshal(b, &c)
+				i.Component[id] = &c
 
 			}
 
@@ -254,7 +238,7 @@ func (i *IteratorComponent) UnmarshalJSON(data []byte) error {
 
 type Sharing struct {
 	Users     map[string]*SharingUser `json:"users,omitempty"`
-	ShareCode *SharingCode            `json:"share_code,omitempty"`
+	ShareCode *SharingCode            `json:"shareCode,omitempty"`
 }
 
 // Sharing
@@ -401,16 +385,6 @@ func (ComponentDefinition) TableName() string {
 	return "component_definition_index"
 }
 
-type pbDefinition interface {
-	GetUid() string
-	GetId() string
-	GetTitle() string
-	GetTombstone() bool
-	GetPublic() bool
-	GetVersion() string
-	GetReleaseStage() pb.ComponentDefinition_ReleaseStage
-}
-
 // FeatureScores holds the feature score of each component definition. If a
 // component definition is not present in the map, the score will be 0.
 //
@@ -439,29 +413,17 @@ var FeatureScores = map[string]int{
 // ComponentDefinitionFromProto parses a ComponentDefinition from the proto
 // structure.
 func ComponentDefinitionFromProto(cdpb *pb.ComponentDefinition) *ComponentDefinition {
-	var def pbDefinition
-	switch cdpb.Type {
-	case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
-		def = cdpb.GetOperatorDefinition()
-	case pb.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
-		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
-		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION:
-
-		def = cdpb.GetConnectorDefinition()
-	default:
-		return nil
-	}
 
 	cd := &ComponentDefinition{
 		ComponentType: ComponentType(cdpb.Type),
 
-		UID:          uuid.FromStringOrNil(def.GetUid()),
-		ID:           def.GetId(),
-		Title:        def.GetTitle(),
-		Version:      def.GetVersion(),
-		IsVisible:    def.GetPublic() && !def.GetTombstone(),
-		FeatureScore: FeatureScores[def.GetId()],
-		ReleaseStage: ReleaseStage(def.GetReleaseStage()),
+		UID:          uuid.FromStringOrNil(cdpb.GetUid()),
+		ID:           cdpb.GetId(),
+		Title:        cdpb.GetTitle(),
+		Version:      cdpb.GetVersion(),
+		IsVisible:    cdpb.GetPublic() && !cdpb.GetTombstone(),
+		FeatureScore: FeatureScores[cdpb.GetId()],
+		ReleaseStage: ReleaseStage(cdpb.GetReleaseStage()),
 	}
 
 	return cd

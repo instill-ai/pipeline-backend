@@ -46,35 +46,22 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 
 	for id, comp := range recipePermalink.Component {
 		switch comp := comp.(type) {
-		case *componentbase.OperatorComponent:
+		case *componentbase.ComponentConfig:
 
-			def, err := s.component.GetOperatorDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
+			def, err := s.component.GetDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
 			if err != nil {
 				return nil, err
 			}
 			checkTask(id, comp.Task, def.Spec.ComponentSpecification, compProperties, &validationErrors)
 
-		case *componentbase.ConnectorComponent:
-			def, err := s.component.GetConnectorDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
-			if err != nil {
-				return nil, err
-			}
-			checkTask(id, comp.Task, def.Spec.ComponentSpecification, compProperties, &validationErrors)
 		case *datamodel.IteratorComponent:
 			nestedCompProperties := map[string]any{}
 			nestedValidationErrors := []*pb.PipelineValidationError{}
 			for nestedID, nestedComp := range comp.Component {
 				switch nestedComp := nestedComp.(type) {
-				case *componentbase.OperatorComponent:
 
-					def, err := s.component.GetOperatorDefinitionByUID(uuid.FromStringOrNil(nestedComp.Type), nil, nil)
-					if err != nil {
-						return nil, err
-					}
-					checkTask(nestedID, nestedComp.Task, def.Spec.ComponentSpecification, nestedCompProperties, &nestedValidationErrors)
-
-				case *componentbase.ConnectorComponent:
-					def, err := s.component.GetConnectorDefinitionByUID(uuid.FromStringOrNil(nestedComp.Type), nil, nil)
+				case *componentbase.ComponentConfig:
+					def, err := s.component.GetDefinitionByUID(uuid.FromStringOrNil(nestedComp.Type), nil, nil)
 					if err != nil {
 						return nil, err
 					}

@@ -12,13 +12,13 @@ import (
 	"go.temporal.io/sdk/client"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/component"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
+	componentstore "github.com/instill-ai/component/store"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -83,7 +83,7 @@ type service struct {
 	redisClient         *redis.Client
 	temporalClient      client.Client
 	influxDBWriteClient api.WriteAPI
-	component           *component.Store
+	component           *componentstore.Store
 	aclClient           *acl.ACLClient
 	converter           Converter
 }
@@ -104,7 +104,7 @@ func NewService(
 		redisClient:         rc,
 		temporalClient:      t,
 		influxDBWriteClient: i,
-		component:           component.Init(logger, nil, nil),
+		component:           componentstore.Init(logger, nil, nil),
 		aclClient:           acl,
 		converter:           c,
 	}

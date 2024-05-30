@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/redis/go-redis/v9"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
@@ -61,7 +61,7 @@ type Repository interface {
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
 	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
-	GetComponentDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
+	GetDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
 	UpsertComponentDefinition(context.Context, *pb.ComponentDefinition) error
 
 	CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error
@@ -714,7 +714,7 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 // definition fields that the clients need to filter by and that the source of
 // truth for component definition info is always the definitions.json
 // configuration in each component.
-func (r *repository) GetComponentDefinitionByUID(_ context.Context, uid uuid.UUID) (*datamodel.ComponentDefinition, error) {
+func (r *repository) GetDefinitionByUID(_ context.Context, uid uuid.UUID) (*datamodel.ComponentDefinition, error) {
 	record := new(datamodel.ComponentDefinition)
 
 	if result := r.db.Model(record).Where("uid = ?", uid.String()).First(record); result.Error != nil {

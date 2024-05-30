@@ -7,12 +7,12 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/workflow"
 
-	"github.com/instill-ai/component"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
 
 	componentbase "github.com/instill-ai/component/base"
+	componentstore "github.com/instill-ai/component/store"
 )
 
 // TaskQueue is the Temporal task queue name for pipeline-backend
@@ -21,8 +21,7 @@ const TaskQueue = "pipeline-backend"
 // Worker interface
 type Worker interface {
 	TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error
-	ConnectorActivity(ctx context.Context, param *ConnectorActivityParam) error
-	OperatorActivity(ctx context.Context, param *OperatorActivityParam) error
+	ComponentActivity(ctx context.Context, param *ComponentActivityParam) error
 	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 	UsageCollectActivity(ctx context.Context, param *UsageCollectActivityParam) error
@@ -34,7 +33,7 @@ type worker struct {
 	repository           repository.Repository
 	redisClient          *redis.Client
 	influxDBWriteClient  api.WriteAPI
-	component            *component.Store
+	component            *componentstore.Store
 	pipelineUsageHandler usage.PipelineUsageHandler
 }
 
@@ -43,7 +42,7 @@ func NewWorker(
 	r repository.Repository,
 	rd *redis.Client,
 	i api.WriteAPI,
-	cs component.ConnectionSecrets,
+	cs componentstore.ComponentSecrets,
 	uh map[string]componentbase.UsageHandlerCreator,
 	pipelineUsageHandler usage.PipelineUsageHandler,
 ) Worker {
@@ -55,7 +54,7 @@ func NewWorker(
 		repository:           r,
 		redisClient:          rd,
 		influxDBWriteClient:  i,
-		component:            component.Init(logger, cs, uh),
+		component:            componentstore.Init(logger, cs, uh),
 		pipelineUsageHandler: pipelineUsageHandler,
 	}
 }

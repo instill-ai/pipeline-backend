@@ -45,7 +45,7 @@ export function CheckTrigger(data) {
         "vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline",
         {
           name: `${constant.namespace}/pipelines/${reqBody.id}`,
-          inputs: constant.simplePayload.inputs,
+          data: constant.simplePayload.data,
         },
         data.metadata
       ),
