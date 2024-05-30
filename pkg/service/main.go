@@ -86,7 +86,7 @@ type service struct {
 	temporalClient           client.Client
 	component                *componentstore.Store
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
-	aclClient                *acl.ACLClient
+	aclClient                acl.ACLClientInterface
 	converter                Converter
 }
 
@@ -95,7 +95,7 @@ func NewService(
 	r repository.Repository,
 	rc *redis.Client,
 	t client.Client,
-	acl *acl.ACLClient,
+	acl acl.ACLClientInterface,
 	c Converter,
 	m mgmtpb.MgmtPrivateServiceClient,
 ) Service {

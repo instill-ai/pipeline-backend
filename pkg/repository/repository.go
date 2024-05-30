@@ -76,7 +76,7 @@ type Repository interface {
 	DeleteNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) error
 	CreatePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error
 	DeletePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error
-	ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]*datamodel.Tag, error)
+	ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]datamodel.Tag, error)
 
 	// TODO this function can remain unexported once connector and operator
 	// definition lists are removed.
@@ -919,13 +919,13 @@ func (r *repository) DeletePipelineTags(ctx context.Context, pipelineUID uuid.UU
 
 }
 
-func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]*datamodel.Tag, error) {
+func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]datamodel.Tag, error) {
 
 	db := r.db
 
-	var tags []*datamodel.Tag
+	var tags []datamodel.Tag
 
-	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipelineUID).Find(tags)
+	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipelineUID).Find(&tags)
 
 	if result.Error != nil {
 

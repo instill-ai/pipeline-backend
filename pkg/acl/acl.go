@@ -20,6 +20,18 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 )
 
+type ACLClientInterface interface {
+	CheckPermission(ctx context.Context, objectType string, objectUID uuid.UUID, role string) (bool, error)
+	CheckPublicExecutable(ctx context.Context, objectType string, objectUID uuid.UUID) (bool, error)
+	DeletePipelinePermission(ctx context.Context, pipelineUID uuid.UUID, user string) error
+	ListPermissions(ctx context.Context, objectType string, role string, isPublic bool) ([]uuid.UUID, error)
+	Purge(ctx context.Context, objectType string, objectUID uuid.UUID) error
+	SetOwner(ctx context.Context, objectType string, objectUID uuid.UUID, ownerType string, ownerUID uuid.UUID) error
+	SetPipelinePermission(ctx context.Context, pipelineUID uuid.UUID, user string, role string, enable bool) error
+	SetPipelinePermissionMap(ctx context.Context, pipeline *datamodel.Pipeline) error
+	CheckLinkPermission(ctx context.Context, objectType string, objectUID uuid.UUID, role string) (bool, error)
+}
+
 type ACLClient struct {
 	writeClient          openfga.OpenFGAServiceClient
 	readClient           openfga.OpenFGAServiceClient
