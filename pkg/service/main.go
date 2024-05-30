@@ -84,7 +84,7 @@ type service struct {
 	temporalClient      client.Client
 	influxDBWriteClient api.WriteAPI
 	component           *componentstore.Store
-	aclClient           *acl.ACLClient
+	aclClient           acl.ACLClientInterface
 	converter           Converter
 }
 
@@ -94,7 +94,7 @@ func NewService(
 	rc *redis.Client,
 	t client.Client,
 	i api.WriteAPI,
-	acl *acl.ACLClient,
+	acl acl.ACLClientInterface,
 	c Converter,
 ) Service {
 	logger, _ := logger.GetZapLogger(context.Background())

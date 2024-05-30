@@ -71,9 +71,9 @@ type Repository interface {
 	GetNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) (*datamodel.Secret, error)
 	UpdateNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string, secret *datamodel.Secret) error
 	DeleteNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) error
-	CreatePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error 
+	CreatePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error
 	DeletePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error
-	ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]*datamodel.Tag, error)
+	ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]datamodel.Tag, error)
 }
 
 type repository struct {
@@ -876,9 +876,9 @@ func (r *repository) CreatePipelineTags(ctx context.Context, pipelineUID uuid.UU
 	for _, tagName := range tagNames {
 		tag := datamodel.Tag{
 			PipelineUID: pipelineUID,
-			TagName: tagName,
-			CreateTime: time.Now(),
-			UpdateTime: time.Now(),
+			TagName:     tagName,
+			CreateTime:  time.Now(),
+			UpdateTime:  time.Now(),
 		}
 		tags = append(tags, tag)
 	}
@@ -925,13 +925,13 @@ func (r *repository) DeletePipelineTags(ctx context.Context, pipelineUID uuid.UU
 
 }
 
-func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]*datamodel.Tag, error) {
+func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]datamodel.Tag, error) {
 
 	db := r.db
 
-	var tags []*datamodel.Tag
+	var tags []datamodel.Tag
 
-	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipelineUID).Find(tags)
+	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipelineUID).Find(&tags)
 
 	if result.Error != nil {
 
