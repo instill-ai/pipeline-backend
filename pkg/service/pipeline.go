@@ -322,6 +322,29 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 		return nil, err
 	}
 
+	toUpdTags := toUpdPipeline.GetTags()
+	
+	// We will need to revert it after the frontend is ready.
+	if toUpdTags != nil {
+		currentTags := existingPipeline.TagNames()
+		
+		toBeCreatedTagNames := []string{}
+		for _, tag := range toUpdTags {
+			if !slices.Contains(currentTags, tag) {
+				toBeCreatedTagNames = append(toBeCreatedTagNames, tag)
+			}
+		}
+
+		toBeDeletedTagNames := []string{}
+		for _, tag := range currentTags {
+			if !slices.Contains(toUpdTags, tag) {
+				toBeDeletedTagNames = append(toBeDeletedTagNames, tag)
+			}
+		}
+		s.repository.DeletePipelineTags(ctx, existingPipeline.UID, toBeDeletedTagNames)
+		s.repository.CreatePipelineTags(ctx, existingPipeline.UID, toBeCreatedTagNames)
+	}
+
 	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, toUpdPipeline.Id, false, true)
 	if err != nil {
 		return nil, err
