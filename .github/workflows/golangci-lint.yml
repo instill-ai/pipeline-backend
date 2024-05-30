@@ -13,9 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Load .env file
+        uses: cardinalby/export-env-action@v2
+        with:
+          envFile: .env
       - uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: ${{ env.GOLANG_VERSION }}
           cache: false
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3

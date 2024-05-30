@@ -1,5 +1,4 @@
-ARG GOLANG_VERSION
-FROM --platform=$TARGETPLATFORM golang:${GOLANG_VERSION} AS build
+FROM --platform=$TARGETPLATFORM golang:1.22.3 AS build
 
 RUN apt update && apt install libtesseract-dev -y
 
