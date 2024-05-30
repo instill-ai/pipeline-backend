@@ -38,9 +38,11 @@ func TestRepository_CreatePipelineTags(t *testing.T) {
 	c := qt.New(t)
 
 	mock, sqldb, repository, err := mockDBRepository()
-	defer sqldb.Close()
 	c.Assert(err, qt.IsNil)
-	uid, _ := uuid.NewV4()
+	defer sqldb.Close()
+
+	uid, err := uuid.NewV4()
+	c.Assert(err, qt.IsNil)
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "tags" \("pipeline_uid","tag_name","create_time","update_time"\) VALUES \(\$1,\$2,\$3,\$4\),\(\$5,\$6,\$7,\$8\)`).
@@ -56,9 +58,11 @@ func TestRepository_DeletePipelineTags(t *testing.T) {
 	c := qt.New(t)
 
 	mock, sqldb, repository, err := mockDBRepository()
-	defer sqldb.Close()
 	c.Assert(err, qt.IsNil)
-	uid, _ := uuid.NewV4()
+	defer sqldb.Close()
+
+	uid, err := uuid.NewV4()
+	c.Assert(err, qt.IsNil)
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`DELETE FROM "tags" WHERE pipeline_uid = \$1 and tag_name in \(\$2,\$3\)`).
@@ -74,9 +78,11 @@ func TestRepository_ListPipelineTags(t *testing.T) {
 	c := qt.New(t)
 
 	mock, sqldb, repository, err := mockDBRepository()
-	defer sqldb.Close()
 	c.Assert(err, qt.IsNil)
-	uid, _ := uuid.NewV4()
+	defer sqldb.Close()
+
+	uid, err := uuid.NewV4()
+	c.Assert(err, qt.IsNil)
 
 	now := time.Now()
 	mock.ExpectQuery(`SELECT \* FROM "tags" WHERE pipeline_uid = \$1`).

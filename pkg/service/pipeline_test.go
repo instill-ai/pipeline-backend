@@ -69,7 +69,8 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	)
 
 	aclClient.CheckPermissionMock.Return(true, nil)
-	uid, _ := uuid.NewV4()
+	uid, err := uuid.NewV4()
+	c.Assert(err, quicktest.IsNil)
 	dataPipeline := newDataPipeline(uid, [2]string{"tag1", "tag3"})
 	newDataPipeline := newDataPipeline(uid, [2]string{"tag1", "tag2"})
 
