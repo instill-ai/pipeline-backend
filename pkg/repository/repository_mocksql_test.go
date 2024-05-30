@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func mockDbRepository() (sqlmock.Sqlmock, *sql.DB, Repository, error) {
+func mockDBRepository() (sqlmock.Sqlmock, *sql.DB, Repository, error) {
 	sqldb, mock, err := sqlmock.New()
 	if err != nil {
 		return nil, nil, nil, err
@@ -37,10 +37,12 @@ func mockDbRepository() (sqlmock.Sqlmock, *sql.DB, Repository, error) {
 func TestRepository_CreatePipelineTags(t *testing.T) {
 	c := qt.New(t)
 
-	mock, sqldb, repository, err := mockDbRepository()
-	defer sqldb.Close()
+	mock, sqldb, repository, err := mockDBRepository()
 	c.Assert(err, qt.IsNil)
+	defer sqldb.Close()
+
 	uid, err := uuid.NewV4()
+	c.Assert(err, qt.IsNil)
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "tags" \("pipeline_uid","tag_name","create_time","update_time"\) VALUES \(\$1,\$2,\$3,\$4\),\(\$5,\$6,\$7,\$8\)`).
@@ -55,10 +57,12 @@ func TestRepository_CreatePipelineTags(t *testing.T) {
 func TestRepository_DeletePipelineTags(t *testing.T) {
 	c := qt.New(t)
 
-	mock, sqldb, repository, err := mockDbRepository()
-	defer sqldb.Close()
+	mock, sqldb, repository, err := mockDBRepository()
 	c.Assert(err, qt.IsNil)
+	defer sqldb.Close()
+
 	uid, err := uuid.NewV4()
+	c.Assert(err, qt.IsNil)
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`DELETE FROM "tags" WHERE pipeline_uid = \$1 and tag_name in \(\$2,\$3\)`).
@@ -73,18 +77,20 @@ func TestRepository_DeletePipelineTags(t *testing.T) {
 func TestRepository_ListPipelineTags(t *testing.T) {
 	c := qt.New(t)
 
-	mock, sqldb, repository, err := mockDbRepository()
-	defer sqldb.Close()
+	mock, sqldb, repository, err := mockDBRepository()
 	c.Assert(err, qt.IsNil)
+	defer sqldb.Close()
+
 	uid, err := uuid.NewV4()
+	c.Assert(err, qt.IsNil)
 
 	now := time.Now()
 	mock.ExpectQuery(`SELECT \* FROM "tags" WHERE pipeline_uid = \$1`).
 		WithArgs(uid).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"pipeline_uid", "tag_name", "create_time", "update_time"}).
-			AddRow(uid, "tag1", now, now).
-			AddRow(uid, "tag2", now, now))
+				AddRow(uid, "tag1", now, now).
+				AddRow(uid, "tag2", now, now))
 
 	tags, err := repository.ListPipelineTags(context.Background(), uid)
 	c.Assert(err, qt.IsNil)
