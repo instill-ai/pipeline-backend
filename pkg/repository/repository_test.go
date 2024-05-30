@@ -31,14 +31,10 @@ func TestRepository_ComponentDefinitionUIDs(t *testing.T) {
 	uid := uuid.Must(uuid.NewV4())
 	id := "json"
 	cd := &pipelinepb.ComponentDefinition{
-		Type: pipelinepb.ComponentType_COMPONENT_TYPE_OPERATOR,
-		Definition: &pipelinepb.ComponentDefinition_OperatorDefinition{
-			OperatorDefinition: &pipelinepb.OperatorDefinition{
-				Uid:    uid.String(),
-				Id:     id,
-				Public: true,
-			},
-		},
+		Type:   pipelinepb.ComponentType_COMPONENT_TYPE_OPERATOR,
+		Uid:    uid.String(),
+		Id:     id,
+		Public: true,
 	}
 
 	err = repo.UpsertComponentDefinition(ctx, cd)
