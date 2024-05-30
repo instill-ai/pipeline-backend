@@ -905,7 +905,7 @@ func (s *service) triggerPipeline(
 	if err != nil {
 		return nil, nil, err
 	}
-	// defer recipe.Purge(ctx, s.redisClient, pipelineTriggerID)
+	defer recipe.Purge(ctx, s.redisClient, pipelineTriggerID)
 
 	workflowOptions := client.StartWorkflowOptions{
 		ID:                       pipelineTriggerID,
