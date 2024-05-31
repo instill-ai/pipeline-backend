@@ -33,6 +33,7 @@ type TriggerPipelineWorkflowParam struct {
 	MemoryStorageKey *recipe.BatchMemoryKey
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Mode             mgmtPB.Mode
+	IsIterator       bool
 }
 
 // ComponentActivityParam represents the parameters for TriggerActivity
@@ -148,14 +149,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	if err := workflow.ExecuteActivity(ctx, w.UsageCheckActivity, &UsageCheckActivityParam{
-		SystemVariables: param.SystemVariables,
-		NumComponents:   numComponents,
-	}).Get(ctx, nil); err != nil {
-		details := EndUserErrorDetails{
-			Message: fmt.Sprintf("Pipeline %s failed to execute. %s", param.SystemVariables.PipelineUID, errmsg.MessageOrErr(err)),
+	if !param.IsIterator {
+		if err := workflow.ExecuteActivity(ctx, w.UsageCheckActivity, &UsageCheckActivityParam{
+			SystemVariables: param.SystemVariables,
+			NumComponents:   numComponents,
+		}).Get(ctx, nil); err != nil {
+			details := EndUserErrorDetails{
+				Message: fmt.Sprintf("Pipeline %s failed to execute. %s", param.SystemVariables.PipelineUID, errmsg.MessageOrErr(err)),
+			}
+			return temporal.NewApplicationErrorWithCause("pipeline failed to trigger", PipelineWorkflowError, err, details)
 		}
-		return temporal.NewApplicationErrorWithCause("pipeline failed to trigger", PipelineWorkflowError, err, details)
 	}
 
 	orderedComp, err := dag.TopologicalSort()
@@ -224,6 +227,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						workflow.WithChildOptions(ctx, childWorkflowOptions),
 						"TriggerPipelineWorkflow",
 						&TriggerPipelineWorkflowParam{
+							IsIterator:       true,
 							BatchSize:        preIteratorResult.ElementSize[iter],
 							MemoryStorageKey: preIteratorResult.MemoryStorageKeys[iter],
 							SystemVariables:  param.SystemVariables,
@@ -272,17 +276,23 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
 
-	// TODO: we should check whether to collect failed component or not
-	if err := workflow.ExecuteActivity(ctx, w.UsageCollectActivity, &UsageCollectActivityParam{
-		SystemVariables: param.SystemVariables,
-		NumComponents:   numComponents,
-	}).Get(ctx, nil); err != nil {
-		return err
+	fmt.Println("param.IsIterator", param.IsIterator)
+	if !param.IsIterator {
+		// TODO: we should check whether to collect failed component or not
+		if err := workflow.ExecuteActivity(ctx, w.UsageCollectActivity, &UsageCollectActivityParam{
+			SystemVariables: param.SystemVariables,
+			NumComponents:   numComponents,
+		}).Get(ctx, nil); err != nil {
+			return err
+		}
+
+		if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
+			logger.Warn(err.Error())
+		}
 	}
-	if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
-		logger.Warn(err.Error())
-	}
+
 	logger.Info("TriggerPipelineWorkflow completed")
+
 	return nil
 }
 
@@ -510,6 +520,9 @@ func (w *worker) UsageCollectActivity(ctx context.Context, param *UsageCollectAc
 	if err != nil {
 		return w.toApplicationError(err, "usage_collect", UsageCollectActivityError)
 	}
+	// We ignore the error check for pipeline run stats for now.
+	_ = w.repository.UpdatePipelineRunStats(ctx, param.SystemVariables.PipelineUID)
+
 	logger.Info("UsageCollectActivity completed")
 	return nil
 }

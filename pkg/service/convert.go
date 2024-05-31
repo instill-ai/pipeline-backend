@@ -491,6 +491,10 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		Sharing:     pbSharing,
 		OwnerName:   ownerName,
 		Tags:        tags,
+		Stats: &pb.Pipeline_Stats{
+			NumberOfRuns: int32(dbPipeline.NumberOfRuns),
+			LastRunTime:  timestamppb.New(dbPipeline.LastRunTime),
+		},
 	}
 
 	var owner *mgmtpb.Owner

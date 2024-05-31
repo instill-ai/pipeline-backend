@@ -71,6 +71,13 @@ type Pipeline struct {
 	Readme            string
 	Releases          []*PipelineRelease
 	Tags              []*Tag
+
+	// Note:
+	// We store the NumberOfRuns and LastRunTime in this table to
+	// make it easier to sort the pipelines. We should develop an approach
+	// to sync the data between InfluxDB and here.
+	NumberOfRuns int
+	LastRunTime  time.Time
 }
 
 type Tag struct {
