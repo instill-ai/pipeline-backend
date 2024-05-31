@@ -12,6 +12,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000013"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000015"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/legacy"
 )
 
@@ -146,8 +147,13 @@ func main() {
 		if step, _, err = m.Version(); err != nil {
 			panic(err)
 		}
-		if step == 13 {
+		switch step {
+		case 13:
 			if err := convert000013.Migrate(); err != nil {
+				panic(err)
+			}
+		case 15:
+			if err := convert000015.Migrate(); err != nil {
 				panic(err)
 			}
 		}
