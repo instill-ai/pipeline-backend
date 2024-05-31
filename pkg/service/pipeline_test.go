@@ -42,9 +42,7 @@ func newDataPipeline(uid uuid.UUID, tagNames [2]string) datamodel.Pipeline {
 }
 
 func fakeRecipe() datamodel.Recipe {
-	return datamodel.Recipe{
-		Version: "1.0",
-	}
+	return datamodel.Recipe{}
 }
 
 func TestService_UpdateNamespacePipelineByID(t *testing.T) {
