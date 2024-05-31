@@ -72,6 +72,8 @@ func NewConverter(
 // The `convertResourceNameToPermalink` function converts all resources that use ID to UUID.
 func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any) error {
 
+	// TODO: we should remove the permalink conversion to simplify the recipe validation
+
 	if rsc == nil {
 		return nil
 	}
@@ -106,6 +108,8 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 // In the API, we expose the human-readable ID to the user. But in the database, we store it with UUID as the permanent identifier.
 // The `convertResourceNameToPermalink` function converts all resources that use UUID to ID.
 func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any) error {
+
+	// TODO: we should remove the permalink conversion to simplify the recipe validation
 
 	if rsc == nil {
 		return nil
