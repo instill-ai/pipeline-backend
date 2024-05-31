@@ -70,11 +70,11 @@ type RepositoryMock struct {
 	beforeDeletePipelineTagsCounter uint64
 	DeletePipelineTagsMock          mRepositoryMockDeletePipelineTags
 
-	funcGetComponentDefinitionByUID          func(ctx context.Context, u1 uuid.UUID) (cp1 *datamodel.ComponentDefinition, err error)
-	inspectFuncGetComponentDefinitionByUID   func(ctx context.Context, u1 uuid.UUID)
-	afterGetComponentDefinitionByUIDCounter  uint64
-	beforeGetComponentDefinitionByUIDCounter uint64
-	GetComponentDefinitionByUIDMock          mRepositoryMockGetComponentDefinitionByUID
+	funcGetDefinitionByUID          func(ctx context.Context, u1 uuid.UUID) (cp1 *datamodel.ComponentDefinition, err error)
+	inspectFuncGetDefinitionByUID   func(ctx context.Context, u1 uuid.UUID)
+	afterGetDefinitionByUIDCounter  uint64
+	beforeGetDefinitionByUIDCounter uint64
+	GetDefinitionByUIDMock          mRepositoryMockGetDefinitionByUID
 
 	funcGetHubStats          func(uidAllowList []uuid.UUID) (hp1 *datamodel.HubStats, err error)
 	inspectFuncGetHubStats   func(uidAllowList []uuid.UUID)
@@ -235,8 +235,8 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 	m.DeletePipelineTagsMock = mRepositoryMockDeletePipelineTags{mock: m}
 	m.DeletePipelineTagsMock.callArgs = []*RepositoryMockDeletePipelineTagsParams{}
 
-	m.GetComponentDefinitionByUIDMock = mRepositoryMockGetComponentDefinitionByUID{mock: m}
-	m.GetComponentDefinitionByUIDMock.callArgs = []*RepositoryMockGetComponentDefinitionByUIDParams{}
+	m.GetDefinitionByUIDMock = mRepositoryMockGetDefinitionByUID{mock: m}
+	m.GetDefinitionByUIDMock.callArgs = []*RepositoryMockGetDefinitionByUIDParams{}
 
 	m.GetHubStatsMock = mRepositoryMockGetHubStats{mock: m}
 	m.GetHubStatsMock.callArgs = []*RepositoryMockGetHubStatsParams{}
@@ -2044,220 +2044,220 @@ func (m *RepositoryMock) MinimockDeletePipelineTagsInspect() {
 	}
 }
 
-type mRepositoryMockGetComponentDefinitionByUID struct {
+type mRepositoryMockGetDefinitionByUID struct {
 	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockGetComponentDefinitionByUIDExpectation
-	expectations       []*RepositoryMockGetComponentDefinitionByUIDExpectation
+	defaultExpectation *RepositoryMockGetDefinitionByUIDExpectation
+	expectations       []*RepositoryMockGetDefinitionByUIDExpectation
 
-	callArgs []*RepositoryMockGetComponentDefinitionByUIDParams
+	callArgs []*RepositoryMockGetDefinitionByUIDParams
 	mutex    sync.RWMutex
 }
 
-// RepositoryMockGetComponentDefinitionByUIDExpectation specifies expectation struct of the Repository.GetComponentDefinitionByUID
-type RepositoryMockGetComponentDefinitionByUIDExpectation struct {
+// RepositoryMockGetDefinitionByUIDExpectation specifies expectation struct of the Repository.GetDefinitionByUID
+type RepositoryMockGetDefinitionByUIDExpectation struct {
 	mock    *RepositoryMock
-	params  *RepositoryMockGetComponentDefinitionByUIDParams
-	results *RepositoryMockGetComponentDefinitionByUIDResults
+	params  *RepositoryMockGetDefinitionByUIDParams
+	results *RepositoryMockGetDefinitionByUIDResults
 	Counter uint64
 }
 
-// RepositoryMockGetComponentDefinitionByUIDParams contains parameters of the Repository.GetComponentDefinitionByUID
-type RepositoryMockGetComponentDefinitionByUIDParams struct {
+// RepositoryMockGetDefinitionByUIDParams contains parameters of the Repository.GetDefinitionByUID
+type RepositoryMockGetDefinitionByUIDParams struct {
 	ctx context.Context
 	u1  uuid.UUID
 }
 
-// RepositoryMockGetComponentDefinitionByUIDResults contains results of the Repository.GetComponentDefinitionByUID
-type RepositoryMockGetComponentDefinitionByUIDResults struct {
+// RepositoryMockGetDefinitionByUIDResults contains results of the Repository.GetDefinitionByUID
+type RepositoryMockGetDefinitionByUIDResults struct {
 	cp1 *datamodel.ComponentDefinition
 	err error
 }
 
-// Expect sets up expected params for Repository.GetComponentDefinitionByUID
-func (mmGetComponentDefinitionByUID *mRepositoryMockGetComponentDefinitionByUID) Expect(ctx context.Context, u1 uuid.UUID) *mRepositoryMockGetComponentDefinitionByUID {
-	if mmGetComponentDefinitionByUID.mock.funcGetComponentDefinitionByUID != nil {
-		mmGetComponentDefinitionByUID.mock.t.Fatalf("RepositoryMock.GetComponentDefinitionByUID mock is already set by Set")
+// Expect sets up expected params for Repository.GetDefinitionByUID
+func (mmGetDefinitionByUID *mRepositoryMockGetDefinitionByUID) Expect(ctx context.Context, u1 uuid.UUID) *mRepositoryMockGetDefinitionByUID {
+	if mmGetDefinitionByUID.mock.funcGetDefinitionByUID != nil {
+		mmGetDefinitionByUID.mock.t.Fatalf("RepositoryMock.GetDefinitionByUID mock is already set by Set")
 	}
 
-	if mmGetComponentDefinitionByUID.defaultExpectation == nil {
-		mmGetComponentDefinitionByUID.defaultExpectation = &RepositoryMockGetComponentDefinitionByUIDExpectation{}
+	if mmGetDefinitionByUID.defaultExpectation == nil {
+		mmGetDefinitionByUID.defaultExpectation = &RepositoryMockGetDefinitionByUIDExpectation{}
 	}
 
-	mmGetComponentDefinitionByUID.defaultExpectation.params = &RepositoryMockGetComponentDefinitionByUIDParams{ctx, u1}
-	for _, e := range mmGetComponentDefinitionByUID.expectations {
-		if minimock.Equal(e.params, mmGetComponentDefinitionByUID.defaultExpectation.params) {
-			mmGetComponentDefinitionByUID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetComponentDefinitionByUID.defaultExpectation.params)
+	mmGetDefinitionByUID.defaultExpectation.params = &RepositoryMockGetDefinitionByUIDParams{ctx, u1}
+	for _, e := range mmGetDefinitionByUID.expectations {
+		if minimock.Equal(e.params, mmGetDefinitionByUID.defaultExpectation.params) {
+			mmGetDefinitionByUID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetDefinitionByUID.defaultExpectation.params)
 		}
 	}
 
-	return mmGetComponentDefinitionByUID
+	return mmGetDefinitionByUID
 }
 
-// Inspect accepts an inspector function that has same arguments as the Repository.GetComponentDefinitionByUID
-func (mmGetComponentDefinitionByUID *mRepositoryMockGetComponentDefinitionByUID) Inspect(f func(ctx context.Context, u1 uuid.UUID)) *mRepositoryMockGetComponentDefinitionByUID {
-	if mmGetComponentDefinitionByUID.mock.inspectFuncGetComponentDefinitionByUID != nil {
-		mmGetComponentDefinitionByUID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetComponentDefinitionByUID")
+// Inspect accepts an inspector function that has same arguments as the Repository.GetDefinitionByUID
+func (mmGetDefinitionByUID *mRepositoryMockGetDefinitionByUID) Inspect(f func(ctx context.Context, u1 uuid.UUID)) *mRepositoryMockGetDefinitionByUID {
+	if mmGetDefinitionByUID.mock.inspectFuncGetDefinitionByUID != nil {
+		mmGetDefinitionByUID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetDefinitionByUID")
 	}
 
-	mmGetComponentDefinitionByUID.mock.inspectFuncGetComponentDefinitionByUID = f
+	mmGetDefinitionByUID.mock.inspectFuncGetDefinitionByUID = f
 
-	return mmGetComponentDefinitionByUID
+	return mmGetDefinitionByUID
 }
 
-// Return sets up results that will be returned by Repository.GetComponentDefinitionByUID
-func (mmGetComponentDefinitionByUID *mRepositoryMockGetComponentDefinitionByUID) Return(cp1 *datamodel.ComponentDefinition, err error) *RepositoryMock {
-	if mmGetComponentDefinitionByUID.mock.funcGetComponentDefinitionByUID != nil {
-		mmGetComponentDefinitionByUID.mock.t.Fatalf("RepositoryMock.GetComponentDefinitionByUID mock is already set by Set")
+// Return sets up results that will be returned by Repository.GetDefinitionByUID
+func (mmGetDefinitionByUID *mRepositoryMockGetDefinitionByUID) Return(cp1 *datamodel.ComponentDefinition, err error) *RepositoryMock {
+	if mmGetDefinitionByUID.mock.funcGetDefinitionByUID != nil {
+		mmGetDefinitionByUID.mock.t.Fatalf("RepositoryMock.GetDefinitionByUID mock is already set by Set")
 	}
 
-	if mmGetComponentDefinitionByUID.defaultExpectation == nil {
-		mmGetComponentDefinitionByUID.defaultExpectation = &RepositoryMockGetComponentDefinitionByUIDExpectation{mock: mmGetComponentDefinitionByUID.mock}
+	if mmGetDefinitionByUID.defaultExpectation == nil {
+		mmGetDefinitionByUID.defaultExpectation = &RepositoryMockGetDefinitionByUIDExpectation{mock: mmGetDefinitionByUID.mock}
 	}
-	mmGetComponentDefinitionByUID.defaultExpectation.results = &RepositoryMockGetComponentDefinitionByUIDResults{cp1, err}
-	return mmGetComponentDefinitionByUID.mock
+	mmGetDefinitionByUID.defaultExpectation.results = &RepositoryMockGetDefinitionByUIDResults{cp1, err}
+	return mmGetDefinitionByUID.mock
 }
 
-// Set uses given function f to mock the Repository.GetComponentDefinitionByUID method
-func (mmGetComponentDefinitionByUID *mRepositoryMockGetComponentDefinitionByUID) Set(f func(ctx context.Context, u1 uuid.UUID) (cp1 *datamodel.ComponentDefinition, err error)) *RepositoryMock {
-	if mmGetComponentDefinitionByUID.defaultExpectation != nil {
-		mmGetComponentDefinitionByUID.mock.t.Fatalf("Default expectation is already set for the Repository.GetComponentDefinitionByUID method")
+// Set uses given function f to mock the Repository.GetDefinitionByUID method
+func (mmGetDefinitionByUID *mRepositoryMockGetDefinitionByUID) Set(f func(ctx context.Context, u1 uuid.UUID) (cp1 *datamodel.ComponentDefinition, err error)) *RepositoryMock {
+	if mmGetDefinitionByUID.defaultExpectation != nil {
+		mmGetDefinitionByUID.mock.t.Fatalf("Default expectation is already set for the Repository.GetDefinitionByUID method")
 	}
 
-	if len(mmGetComponentDefinitionByUID.expectations) > 0 {
-		mmGetComponentDefinitionByUID.mock.t.Fatalf("Some expectations are already set for the Repository.GetComponentDefinitionByUID method")
+	if len(mmGetDefinitionByUID.expectations) > 0 {
+		mmGetDefinitionByUID.mock.t.Fatalf("Some expectations are already set for the Repository.GetDefinitionByUID method")
 	}
 
-	mmGetComponentDefinitionByUID.mock.funcGetComponentDefinitionByUID = f
-	return mmGetComponentDefinitionByUID.mock
+	mmGetDefinitionByUID.mock.funcGetDefinitionByUID = f
+	return mmGetDefinitionByUID.mock
 }
 
-// When sets expectation for the Repository.GetComponentDefinitionByUID which will trigger the result defined by the following
+// When sets expectation for the Repository.GetDefinitionByUID which will trigger the result defined by the following
 // Then helper
-func (mmGetComponentDefinitionByUID *mRepositoryMockGetComponentDefinitionByUID) When(ctx context.Context, u1 uuid.UUID) *RepositoryMockGetComponentDefinitionByUIDExpectation {
-	if mmGetComponentDefinitionByUID.mock.funcGetComponentDefinitionByUID != nil {
-		mmGetComponentDefinitionByUID.mock.t.Fatalf("RepositoryMock.GetComponentDefinitionByUID mock is already set by Set")
+func (mmGetDefinitionByUID *mRepositoryMockGetDefinitionByUID) When(ctx context.Context, u1 uuid.UUID) *RepositoryMockGetDefinitionByUIDExpectation {
+	if mmGetDefinitionByUID.mock.funcGetDefinitionByUID != nil {
+		mmGetDefinitionByUID.mock.t.Fatalf("RepositoryMock.GetDefinitionByUID mock is already set by Set")
 	}
 
-	expectation := &RepositoryMockGetComponentDefinitionByUIDExpectation{
-		mock:   mmGetComponentDefinitionByUID.mock,
-		params: &RepositoryMockGetComponentDefinitionByUIDParams{ctx, u1},
+	expectation := &RepositoryMockGetDefinitionByUIDExpectation{
+		mock:   mmGetDefinitionByUID.mock,
+		params: &RepositoryMockGetDefinitionByUIDParams{ctx, u1},
 	}
-	mmGetComponentDefinitionByUID.expectations = append(mmGetComponentDefinitionByUID.expectations, expectation)
+	mmGetDefinitionByUID.expectations = append(mmGetDefinitionByUID.expectations, expectation)
 	return expectation
 }
 
-// Then sets up Repository.GetComponentDefinitionByUID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockGetComponentDefinitionByUIDExpectation) Then(cp1 *datamodel.ComponentDefinition, err error) *RepositoryMock {
-	e.results = &RepositoryMockGetComponentDefinitionByUIDResults{cp1, err}
+// Then sets up Repository.GetDefinitionByUID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockGetDefinitionByUIDExpectation) Then(cp1 *datamodel.ComponentDefinition, err error) *RepositoryMock {
+	e.results = &RepositoryMockGetDefinitionByUIDResults{cp1, err}
 	return e.mock
 }
 
-// GetComponentDefinitionByUID implements repository.Repository
-func (mmGetComponentDefinitionByUID *RepositoryMock) GetComponentDefinitionByUID(ctx context.Context, u1 uuid.UUID) (cp1 *datamodel.ComponentDefinition, err error) {
-	mm_atomic.AddUint64(&mmGetComponentDefinitionByUID.beforeGetComponentDefinitionByUIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmGetComponentDefinitionByUID.afterGetComponentDefinitionByUIDCounter, 1)
+// GetDefinitionByUID implements repository.Repository
+func (mmGetDefinitionByUID *RepositoryMock) GetDefinitionByUID(ctx context.Context, u1 uuid.UUID) (cp1 *datamodel.ComponentDefinition, err error) {
+	mm_atomic.AddUint64(&mmGetDefinitionByUID.beforeGetDefinitionByUIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetDefinitionByUID.afterGetDefinitionByUIDCounter, 1)
 
-	if mmGetComponentDefinitionByUID.inspectFuncGetComponentDefinitionByUID != nil {
-		mmGetComponentDefinitionByUID.inspectFuncGetComponentDefinitionByUID(ctx, u1)
+	if mmGetDefinitionByUID.inspectFuncGetDefinitionByUID != nil {
+		mmGetDefinitionByUID.inspectFuncGetDefinitionByUID(ctx, u1)
 	}
 
-	mm_params := RepositoryMockGetComponentDefinitionByUIDParams{ctx, u1}
+	mm_params := RepositoryMockGetDefinitionByUIDParams{ctx, u1}
 
 	// Record call args
-	mmGetComponentDefinitionByUID.GetComponentDefinitionByUIDMock.mutex.Lock()
-	mmGetComponentDefinitionByUID.GetComponentDefinitionByUIDMock.callArgs = append(mmGetComponentDefinitionByUID.GetComponentDefinitionByUIDMock.callArgs, &mm_params)
-	mmGetComponentDefinitionByUID.GetComponentDefinitionByUIDMock.mutex.Unlock()
+	mmGetDefinitionByUID.GetDefinitionByUIDMock.mutex.Lock()
+	mmGetDefinitionByUID.GetDefinitionByUIDMock.callArgs = append(mmGetDefinitionByUID.GetDefinitionByUIDMock.callArgs, &mm_params)
+	mmGetDefinitionByUID.GetDefinitionByUIDMock.mutex.Unlock()
 
-	for _, e := range mmGetComponentDefinitionByUID.GetComponentDefinitionByUIDMock.expectations {
+	for _, e := range mmGetDefinitionByUID.GetDefinitionByUIDMock.expectations {
 		if minimock.Equal(*e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
 			return e.results.cp1, e.results.err
 		}
 	}
 
-	if mmGetComponentDefinitionByUID.GetComponentDefinitionByUIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmGetComponentDefinitionByUID.GetComponentDefinitionByUIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmGetComponentDefinitionByUID.GetComponentDefinitionByUIDMock.defaultExpectation.params
-		mm_got := RepositoryMockGetComponentDefinitionByUIDParams{ctx, u1}
+	if mmGetDefinitionByUID.GetDefinitionByUIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetDefinitionByUID.GetDefinitionByUIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetDefinitionByUID.GetDefinitionByUIDMock.defaultExpectation.params
+		mm_got := RepositoryMockGetDefinitionByUIDParams{ctx, u1}
 		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmGetComponentDefinitionByUID.t.Errorf("RepositoryMock.GetComponentDefinitionByUID got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+			mmGetDefinitionByUID.t.Errorf("RepositoryMock.GetDefinitionByUID got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
 
-		mm_results := mmGetComponentDefinitionByUID.GetComponentDefinitionByUIDMock.defaultExpectation.results
+		mm_results := mmGetDefinitionByUID.GetDefinitionByUIDMock.defaultExpectation.results
 		if mm_results == nil {
-			mmGetComponentDefinitionByUID.t.Fatal("No results are set for the RepositoryMock.GetComponentDefinitionByUID")
+			mmGetDefinitionByUID.t.Fatal("No results are set for the RepositoryMock.GetDefinitionByUID")
 		}
 		return (*mm_results).cp1, (*mm_results).err
 	}
-	if mmGetComponentDefinitionByUID.funcGetComponentDefinitionByUID != nil {
-		return mmGetComponentDefinitionByUID.funcGetComponentDefinitionByUID(ctx, u1)
+	if mmGetDefinitionByUID.funcGetDefinitionByUID != nil {
+		return mmGetDefinitionByUID.funcGetDefinitionByUID(ctx, u1)
 	}
-	mmGetComponentDefinitionByUID.t.Fatalf("Unexpected call to RepositoryMock.GetComponentDefinitionByUID. %v %v", ctx, u1)
+	mmGetDefinitionByUID.t.Fatalf("Unexpected call to RepositoryMock.GetDefinitionByUID. %v %v", ctx, u1)
 	return
 }
 
-// GetComponentDefinitionByUIDAfterCounter returns a count of finished RepositoryMock.GetComponentDefinitionByUID invocations
-func (mmGetComponentDefinitionByUID *RepositoryMock) GetComponentDefinitionByUIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetComponentDefinitionByUID.afterGetComponentDefinitionByUIDCounter)
+// GetDefinitionByUIDAfterCounter returns a count of finished RepositoryMock.GetDefinitionByUID invocations
+func (mmGetDefinitionByUID *RepositoryMock) GetDefinitionByUIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetDefinitionByUID.afterGetDefinitionByUIDCounter)
 }
 
-// GetComponentDefinitionByUIDBeforeCounter returns a count of RepositoryMock.GetComponentDefinitionByUID invocations
-func (mmGetComponentDefinitionByUID *RepositoryMock) GetComponentDefinitionByUIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetComponentDefinitionByUID.beforeGetComponentDefinitionByUIDCounter)
+// GetDefinitionByUIDBeforeCounter returns a count of RepositoryMock.GetDefinitionByUID invocations
+func (mmGetDefinitionByUID *RepositoryMock) GetDefinitionByUIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetDefinitionByUID.beforeGetDefinitionByUIDCounter)
 }
 
-// Calls returns a list of arguments used in each call to RepositoryMock.GetComponentDefinitionByUID.
+// Calls returns a list of arguments used in each call to RepositoryMock.GetDefinitionByUID.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmGetComponentDefinitionByUID *mRepositoryMockGetComponentDefinitionByUID) Calls() []*RepositoryMockGetComponentDefinitionByUIDParams {
-	mmGetComponentDefinitionByUID.mutex.RLock()
+func (mmGetDefinitionByUID *mRepositoryMockGetDefinitionByUID) Calls() []*RepositoryMockGetDefinitionByUIDParams {
+	mmGetDefinitionByUID.mutex.RLock()
 
-	argCopy := make([]*RepositoryMockGetComponentDefinitionByUIDParams, len(mmGetComponentDefinitionByUID.callArgs))
-	copy(argCopy, mmGetComponentDefinitionByUID.callArgs)
+	argCopy := make([]*RepositoryMockGetDefinitionByUIDParams, len(mmGetDefinitionByUID.callArgs))
+	copy(argCopy, mmGetDefinitionByUID.callArgs)
 
-	mmGetComponentDefinitionByUID.mutex.RUnlock()
+	mmGetDefinitionByUID.mutex.RUnlock()
 
 	return argCopy
 }
 
-// MinimockGetComponentDefinitionByUIDDone returns true if the count of the GetComponentDefinitionByUID invocations corresponds
+// MinimockGetDefinitionByUIDDone returns true if the count of the GetDefinitionByUID invocations corresponds
 // the number of defined expectations
-func (m *RepositoryMock) MinimockGetComponentDefinitionByUIDDone() bool {
-	for _, e := range m.GetComponentDefinitionByUIDMock.expectations {
+func (m *RepositoryMock) MinimockGetDefinitionByUIDDone() bool {
+	for _, e := range m.GetDefinitionByUIDMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
 			return false
 		}
 	}
 
 	// if default expectation was set then invocations count should be greater than zero
-	if m.GetComponentDefinitionByUIDMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetComponentDefinitionByUIDCounter) < 1 {
+	if m.GetDefinitionByUIDMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetDefinitionByUIDCounter) < 1 {
 		return false
 	}
 	// if func was set then invocations count should be greater than zero
-	if m.funcGetComponentDefinitionByUID != nil && mm_atomic.LoadUint64(&m.afterGetComponentDefinitionByUIDCounter) < 1 {
+	if m.funcGetDefinitionByUID != nil && mm_atomic.LoadUint64(&m.afterGetDefinitionByUIDCounter) < 1 {
 		return false
 	}
 	return true
 }
 
-// MinimockGetComponentDefinitionByUIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockGetComponentDefinitionByUIDInspect() {
-	for _, e := range m.GetComponentDefinitionByUIDMock.expectations {
+// MinimockGetDefinitionByUIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockGetDefinitionByUIDInspect() {
+	for _, e := range m.GetDefinitionByUIDMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.GetComponentDefinitionByUID with params: %#v", *e.params)
+			m.t.Errorf("Expected call to RepositoryMock.GetDefinitionByUID with params: %#v", *e.params)
 		}
 	}
 
 	// if default expectation was set then invocations count should be greater than zero
-	if m.GetComponentDefinitionByUIDMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetComponentDefinitionByUIDCounter) < 1 {
-		if m.GetComponentDefinitionByUIDMock.defaultExpectation.params == nil {
-			m.t.Error("Expected call to RepositoryMock.GetComponentDefinitionByUID")
+	if m.GetDefinitionByUIDMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterGetDefinitionByUIDCounter) < 1 {
+		if m.GetDefinitionByUIDMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.GetDefinitionByUID")
 		} else {
-			m.t.Errorf("Expected call to RepositoryMock.GetComponentDefinitionByUID with params: %#v", *m.GetComponentDefinitionByUIDMock.defaultExpectation.params)
+			m.t.Errorf("Expected call to RepositoryMock.GetDefinitionByUID with params: %#v", *m.GetDefinitionByUIDMock.defaultExpectation.params)
 		}
 	}
 	// if func was set then invocations count should be greater than zero
-	if m.funcGetComponentDefinitionByUID != nil && mm_atomic.LoadUint64(&m.afterGetComponentDefinitionByUIDCounter) < 1 {
-		m.t.Error("Expected call to RepositoryMock.GetComponentDefinitionByUID")
+	if m.funcGetDefinitionByUID != nil && mm_atomic.LoadUint64(&m.afterGetDefinitionByUIDCounter) < 1 {
+		m.t.Error("Expected call to RepositoryMock.GetDefinitionByUID")
 	}
 }
 
@@ -6898,7 +6898,7 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockDeletePipelineTagsInspect()
 
-			m.MinimockGetComponentDefinitionByUIDInspect()
+			m.MinimockGetDefinitionByUIDInspect()
 
 			m.MinimockGetHubStatsInspect()
 
@@ -6973,7 +6973,7 @@ func (m *RepositoryMock) minimockDone() bool {
 		m.MinimockDeleteNamespacePipelineReleaseByIDDone() &&
 		m.MinimockDeleteNamespaceSecretByIDDone() &&
 		m.MinimockDeletePipelineTagsDone() &&
-		m.MinimockGetComponentDefinitionByUIDDone() &&
+		m.MinimockGetDefinitionByUIDDone() &&
 		m.MinimockGetHubStatsDone() &&
 		m.MinimockGetLatestNamespacePipelineReleaseDone() &&
 		m.MinimockGetNamespacePipelineByIDDone() &&

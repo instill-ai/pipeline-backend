@@ -56,8 +56,8 @@ type ConverterMock struct {
 	beforeConvertPipelineToDBCounter uint64
 	ConvertPipelineToDBMock          mConverterMockConvertPipelineToDB
 
-	funcConvertPipelineToPB          func(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (pp1 *pb.Pipeline, err error)
-	inspectFuncConvertPipelineToPB   func(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool)
+	funcConvertPipelineToPB          func(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) (pp1 *pb.Pipeline, err error)
+	inspectFuncConvertPipelineToPB   func(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool)
 	afterConvertPipelineToPBCounter  uint64
 	beforeConvertPipelineToPBCounter uint64
 	ConvertPipelineToPBMock          mConverterMockConvertPipelineToPB
@@ -1464,6 +1464,7 @@ type ConverterMockConvertPipelineToPBParams struct {
 	dbPipeline      *datamodel.Pipeline
 	view            pb.Pipeline_View
 	checkPermission bool
+	useDynamicDef   bool
 }
 
 // ConverterMockConvertPipelineToPBResults contains results of the Converter.ConvertPipelineToPB
@@ -1473,7 +1474,7 @@ type ConverterMockConvertPipelineToPBResults struct {
 }
 
 // Expect sets up expected params for Converter.ConvertPipelineToPB
-func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Expect(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) *mConverterMockConvertPipelineToPB {
+func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Expect(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) *mConverterMockConvertPipelineToPB {
 	if mmConvertPipelineToPB.mock.funcConvertPipelineToPB != nil {
 		mmConvertPipelineToPB.mock.t.Fatalf("ConverterMock.ConvertPipelineToPB mock is already set by Set")
 	}
@@ -1482,7 +1483,7 @@ func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Expect(ctx conte
 		mmConvertPipelineToPB.defaultExpectation = &ConverterMockConvertPipelineToPBExpectation{}
 	}
 
-	mmConvertPipelineToPB.defaultExpectation.params = &ConverterMockConvertPipelineToPBParams{ctx, dbPipeline, view, checkPermission}
+	mmConvertPipelineToPB.defaultExpectation.params = &ConverterMockConvertPipelineToPBParams{ctx, dbPipeline, view, checkPermission, useDynamicDef}
 	for _, e := range mmConvertPipelineToPB.expectations {
 		if minimock.Equal(e.params, mmConvertPipelineToPB.defaultExpectation.params) {
 			mmConvertPipelineToPB.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmConvertPipelineToPB.defaultExpectation.params)
@@ -1493,7 +1494,7 @@ func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Expect(ctx conte
 }
 
 // Inspect accepts an inspector function that has same arguments as the Converter.ConvertPipelineToPB
-func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Inspect(f func(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool)) *mConverterMockConvertPipelineToPB {
+func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Inspect(f func(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool)) *mConverterMockConvertPipelineToPB {
 	if mmConvertPipelineToPB.mock.inspectFuncConvertPipelineToPB != nil {
 		mmConvertPipelineToPB.mock.t.Fatalf("Inspect function is already set for ConverterMock.ConvertPipelineToPB")
 	}
@@ -1517,7 +1518,7 @@ func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Return(pp1 *pb.P
 }
 
 // Set uses given function f to mock the Converter.ConvertPipelineToPB method
-func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Set(f func(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (pp1 *pb.Pipeline, err error)) *ConverterMock {
+func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Set(f func(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) (pp1 *pb.Pipeline, err error)) *ConverterMock {
 	if mmConvertPipelineToPB.defaultExpectation != nil {
 		mmConvertPipelineToPB.mock.t.Fatalf("Default expectation is already set for the Converter.ConvertPipelineToPB method")
 	}
@@ -1532,14 +1533,14 @@ func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) Set(f func(ctx c
 
 // When sets expectation for the Converter.ConvertPipelineToPB which will trigger the result defined by the following
 // Then helper
-func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) When(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) *ConverterMockConvertPipelineToPBExpectation {
+func (mmConvertPipelineToPB *mConverterMockConvertPipelineToPB) When(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) *ConverterMockConvertPipelineToPBExpectation {
 	if mmConvertPipelineToPB.mock.funcConvertPipelineToPB != nil {
 		mmConvertPipelineToPB.mock.t.Fatalf("ConverterMock.ConvertPipelineToPB mock is already set by Set")
 	}
 
 	expectation := &ConverterMockConvertPipelineToPBExpectation{
 		mock:   mmConvertPipelineToPB.mock,
-		params: &ConverterMockConvertPipelineToPBParams{ctx, dbPipeline, view, checkPermission},
+		params: &ConverterMockConvertPipelineToPBParams{ctx, dbPipeline, view, checkPermission, useDynamicDef},
 	}
 	mmConvertPipelineToPB.expectations = append(mmConvertPipelineToPB.expectations, expectation)
 	return expectation
@@ -1552,15 +1553,15 @@ func (e *ConverterMockConvertPipelineToPBExpectation) Then(pp1 *pb.Pipeline, err
 }
 
 // ConvertPipelineToPB implements service.Converter
-func (mmConvertPipelineToPB *ConverterMock) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) (pp1 *pb.Pipeline, err error) {
+func (mmConvertPipelineToPB *ConverterMock) ConvertPipelineToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool, useDynamicDef bool) (pp1 *pb.Pipeline, err error) {
 	mm_atomic.AddUint64(&mmConvertPipelineToPB.beforeConvertPipelineToPBCounter, 1)
 	defer mm_atomic.AddUint64(&mmConvertPipelineToPB.afterConvertPipelineToPBCounter, 1)
 
 	if mmConvertPipelineToPB.inspectFuncConvertPipelineToPB != nil {
-		mmConvertPipelineToPB.inspectFuncConvertPipelineToPB(ctx, dbPipeline, view, checkPermission)
+		mmConvertPipelineToPB.inspectFuncConvertPipelineToPB(ctx, dbPipeline, view, checkPermission, useDynamicDef)
 	}
 
-	mm_params := ConverterMockConvertPipelineToPBParams{ctx, dbPipeline, view, checkPermission}
+	mm_params := ConverterMockConvertPipelineToPBParams{ctx, dbPipeline, view, checkPermission, useDynamicDef}
 
 	// Record call args
 	mmConvertPipelineToPB.ConvertPipelineToPBMock.mutex.Lock()
@@ -1577,7 +1578,7 @@ func (mmConvertPipelineToPB *ConverterMock) ConvertPipelineToPB(ctx context.Cont
 	if mmConvertPipelineToPB.ConvertPipelineToPBMock.defaultExpectation != nil {
 		mm_atomic.AddUint64(&mmConvertPipelineToPB.ConvertPipelineToPBMock.defaultExpectation.Counter, 1)
 		mm_want := mmConvertPipelineToPB.ConvertPipelineToPBMock.defaultExpectation.params
-		mm_got := ConverterMockConvertPipelineToPBParams{ctx, dbPipeline, view, checkPermission}
+		mm_got := ConverterMockConvertPipelineToPBParams{ctx, dbPipeline, view, checkPermission, useDynamicDef}
 		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
 			mmConvertPipelineToPB.t.Errorf("ConverterMock.ConvertPipelineToPB got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
@@ -1589,9 +1590,9 @@ func (mmConvertPipelineToPB *ConverterMock) ConvertPipelineToPB(ctx context.Cont
 		return (*mm_results).pp1, (*mm_results).err
 	}
 	if mmConvertPipelineToPB.funcConvertPipelineToPB != nil {
-		return mmConvertPipelineToPB.funcConvertPipelineToPB(ctx, dbPipeline, view, checkPermission)
+		return mmConvertPipelineToPB.funcConvertPipelineToPB(ctx, dbPipeline, view, checkPermission, useDynamicDef)
 	}
-	mmConvertPipelineToPB.t.Fatalf("Unexpected call to ConverterMock.ConvertPipelineToPB. %v %v %v %v", ctx, dbPipeline, view, checkPermission)
+	mmConvertPipelineToPB.t.Fatalf("Unexpected call to ConverterMock.ConvertPipelineToPB. %v %v %v %v %v", ctx, dbPipeline, view, checkPermission, useDynamicDef)
 	return
 }
 
