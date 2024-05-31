@@ -4,7 +4,7 @@ package handler
 var createPipelineRequiredFields = []string{}
 var lookUpPipelineRequiredFields = []string{"permalink"}
 var renamePipelineRequiredFields = []string{"name", "new_pipeline_id"}
-var triggerPipelineRequiredFields = []string{"name", "inputs"}
+var triggerPipelineRequiredFields = []string{"name", "data"}
 
 // immutableFields are Protobuf message fields with IMMUTABLE field_behavior annotation
 var immutablePipelineFields = []string{"id"}

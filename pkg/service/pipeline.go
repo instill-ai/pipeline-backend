@@ -417,7 +417,7 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 	return targetPipeline, nil
 }
 
-func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) (*pb.Pipeline, error) {
+func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) ([]*pb.PipelineValidationError, error) {
 
 	ownerPermalink := ns.Permalink()
 
@@ -438,18 +438,12 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 		return nil, ErrNoPermission
 	}
 
-	recipeErr := s.checkRecipe(ownerPermalink, dbPipeline.Recipe)
-
-	if recipeErr != nil {
-		return nil, recipeErr
-	}
-
-	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
+	validateErrs, err := s.checkRecipe(dbPipeline.Recipe)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
+	return validateErrs, nil
 
 }
 
@@ -486,9 +480,9 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, pb.Pipeline_VIEW_FULL, true)
 }
 
-func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineInputs []*structpb.Struct, pipelineSecrets map[string]string) (*recipe.TriggerMemoryKey, error) {
+func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineData []*pb.TriggerData) (*recipe.BatchMemoryKey, error) {
 
-	batchSize := len(pipelineInputs)
+	batchSize := len(pipelineData)
 	if batchSize > constant.MaxBatchSize {
 		return nil, ErrExceedMaxBatchSize
 	}
@@ -499,11 +493,11 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 	schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	schStruct.Fields["type"] = structpb.NewStringValue("object")
-	b, _ := json.Marshal(r.Trigger.TriggerByRequest.RequestFields)
+	b, _ := json.Marshal(r.Variable)
 	properties := &structpb.Struct{}
 	_ = protojson.Unmarshal(b, properties)
 	schStruct.Fields["properties"] = structpb.NewStructValue(properties)
-	for k, v := range r.Trigger.TriggerByRequest.RequestFields {
+	for k, v := range r.Variable {
 		instillFormatMap[k] = v.InstillFormat
 	}
 	err := componentbase.CompileInstillAcceptFormats(schStruct)
@@ -535,8 +529,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 	errors := []string{}
 
-	for idx, pipelineInput := range pipelineInputs {
-		b, err := protojson.Marshal(pipelineInput)
+	for idx, data := range pipelineData {
+		vars := data.Variable
+		b, err := protojson.Marshal(vars)
 		if err != nil {
 			errors = append(errors, fmt.Sprintf("inputs[%d]: data error", idx))
 			continue
@@ -559,7 +554,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 							return nil, fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
 						}
 						mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
-						pipelineInput.Fields[k] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s))
+						vars.Fields[k] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s))
 					}
 				}
 			case []string:
@@ -571,7 +566,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 								return nil, fmt.Errorf("can not decode file %s, %s", instillFormatMap[k], s)
 							}
 							mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
-							pipelineInput.Fields[k].GetListValue().GetValues()[idx] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s[idx]))
+							vars.Fields[k].GetListValue().GetValues()[idx] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s[idx]))
 						}
 
 					}
@@ -596,21 +591,41 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		return nil, fmt.Errorf("[Pipeline Trigger Data Error] %s", strings.Join(errors, "; "))
 	}
 
-	inputs := make([]recipe.InputsMemory, len(pipelineInputs))
-	for idx, input := range pipelineInputs {
-		inputJSONBytes, err := protojson.Marshal(input)
-		if err != nil {
-			return nil, err
+	memory := make([]*recipe.Memory, len(pipelineData))
+	for idx := range pipelineData {
+		memory[idx] = &recipe.Memory{
+			Variable:  make(recipe.VariableMemory),
+			Secret:    make(recipe.SecretMemory),
+			Component: make(map[string]*recipe.ComponentMemory),
 		}
-		request := recipe.InputsMemory{}
-		err = json.Unmarshal(inputJSONBytes, &request)
-		if err != nil {
-			return nil, err
-		}
-		inputs[idx] = request
 	}
 
-	secrets := map[string]string{}
+	for idx, data := range pipelineData {
+		varJSONBytes, err := protojson.Marshal(data.Variable)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(varJSONBytes, &memory[idx].Variable)
+		if err != nil {
+			return nil, err
+		}
+		if memory[idx].Variable == nil {
+			memory[idx].Variable = make(recipe.VariableMemory)
+		}
+
+		secretJSONBytes, err := json.Marshal(data.Secret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(secretJSONBytes, &memory[idx].Secret)
+		if err != nil {
+			return nil, err
+		}
+		if memory[idx].Secret == nil {
+			memory[idx].Secret = make(recipe.SecretMemory)
+		}
+	}
 	pt := ""
 	// TODO: We should only query the needed key.
 	for {
@@ -623,7 +638,11 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 
 		for _, nsSecret := range nsSecrets {
 			if nsSecret.Value != nil {
-				secrets[nsSecret.ID] = *nsSecret.Value
+				for idx := range pipelineData {
+					if _, ok := memory[idx].Secret[nsSecret.ID]; !ok {
+						memory[idx].Secret[nsSecret.ID] = *nsSecret.Value
+					}
+				}
 			}
 		}
 
@@ -632,17 +651,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		}
 	}
 
-	// Override the namespace secrets
-	for k, v := range pipelineSecrets {
-		secrets[k] = v
-	}
-
-	mem := &recipe.TriggerMemory{
-		Inputs:  inputs,
-		Secrets: secrets,
-	}
-
-	k, err := recipe.Write(ctx, s.redisClient, pipelineTriggerID, r, mem, ns.Permalink())
+	k, err := recipe.Write(ctx, s.redisClient, pipelineTriggerID, r, memory, ns.Permalink())
 	if err != nil {
 		return nil, err
 	}
@@ -886,14 +895,13 @@ func (s *service) triggerPipeline(
 	pipelineUID uuid.UUID,
 	pipelineReleaseID string,
 	pipelineReleaseUID uuid.UUID,
-	pipelineInputs []*structpb.Struct,
-	pipelineSecrets map[string]string,
+	pipelineData []*pb.TriggerData,
 	pipelineTriggerID string,
 	returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	memoryKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineInputs, pipelineSecrets)
+	memoryKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineData)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -915,7 +923,7 @@ func (s *service) triggerPipeline(
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{
-			BatchSize:        len(pipelineInputs),
+			BatchSize:        len(pipelineData),
 			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
 				PipelineID:          pipelineID,
@@ -962,12 +970,11 @@ func (s *service) triggerAsyncPipeline(
 	pipelineUID uuid.UUID,
 	pipelineReleaseID string,
 	pipelineReleaseUID uuid.UUID,
-	pipelineInputs []*structpb.Struct,
-	pipelineSecrets map[string]string,
+	pipelineData []*pb.TriggerData,
 	pipelineTriggerID string,
 	returnTraces bool) (*longrunningpb.Operation, error) {
 
-	memoryKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineInputs, pipelineSecrets)
+	memoryKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineData)
 	if err != nil {
 		return nil, err
 	}
@@ -989,7 +996,7 @@ func (s *service) triggerAsyncPipeline(
 		workflowOptions,
 		"TriggerPipelineWorkflow",
 		&worker.TriggerPipelineWorkflowParam{
-			BatchSize:        len(pipelineInputs),
+			BatchSize:        len(pipelineData),
 			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
 				PipelineID:          pipelineID,
@@ -1025,12 +1032,12 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID s
 		return nil, nil, err
 	}
 
-	pipelineOutputs := make([]*structpb.Struct, len(memory.Inputs))
+	pipelineOutputs := make([]*structpb.Struct, len(memory))
 
-	for idx := range memory.Inputs {
+	for idx := range memory {
 		pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
-		for k, v := range r.Trigger.TriggerByRequest.ResponseFields {
-			o, err := recipe.RenderInput(v.Value, idx, memory.Components, memory.Inputs, memory.Secrets)
+		for k, v := range r.Output {
+			o, err := recipe.RenderInput(v.Value, idx, memory[idx])
 			if err != nil {
 				return nil, nil, err
 			}
@@ -1046,7 +1053,7 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID s
 
 	var metadata *pb.TriggerMetadata
 	if returnTraces {
-		traces, err := recipe.GenerateTraces(r.Components, memory)
+		traces, err := recipe.GenerateTraces(r.Component, memory)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1077,7 +1084,7 @@ func (s *service) checkTriggerPermission(ctx context.Context, pipelineUID uuid.U
 	return isAdmin, nil
 }
 
-func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
+func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
 
 	ownerPermalink := ns.Permalink()
 
@@ -1091,10 +1098,10 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		return nil, nil, err
 	}
 
-	return s.triggerPipeline(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, secrets, pipelineTriggerID, returnTraces)
+	return s.triggerPipeline(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
 }
 
-func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
+func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
 
 	ownerPermalink := ns.Permalink()
 
@@ -1107,11 +1114,11 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 		return nil, err
 	}
 
-	return s.triggerAsyncPipeline(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, inputs, secrets, pipelineTriggerID, returnTraces)
+	return s.triggerAsyncPipeline(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
 
 }
 
-func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
+func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
 
 	ownerPermalink := ns.Permalink()
 
@@ -1130,10 +1137,10 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, err
 	}
 
-	return s.triggerPipeline(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, secrets, pipelineTriggerID, returnTraces)
+	return s.triggerPipeline(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces)
 }
 
-func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, inputs []*structpb.Struct, secrets map[string]string, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
+func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
 
 	ownerPermalink := ns.Permalink()
 
@@ -1152,7 +1159,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, err
 	}
 
-	return s.triggerAsyncPipeline(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, inputs, secrets, pipelineTriggerID, returnTraces)
+	return s.triggerAsyncPipeline(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces)
 }
 
 func (s *service) GetOperation(ctx context.Context, workflowID string) (*longrunningpb.Operation, error) {

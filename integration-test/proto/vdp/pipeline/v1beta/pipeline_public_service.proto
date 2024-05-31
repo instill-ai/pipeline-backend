@@ -41,11 +41,20 @@ service PipelinePublicService {
     option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
+  // Get hub status
+  //
+  // Return the stats of the hub
+  rpc GetHubStats(GetHubStatsRequest) returns (GetHubStatsResponse) {
+    option (google.api.http) = {get: "/v1beta/hub-stats"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
+  }
+
   // List accessible pipelines
   //
   // Returns a paginated list of pipelines that are visible to the requester.
   rpc ListPipelines(ListPipelinesRequest) returns (ListPipelinesResponse) {
     option (google.api.http) = {get: "/v1beta/pipelines"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Get a pipeline by UID
@@ -55,6 +64,7 @@ service PipelinePublicService {
   rpc LookUpPipeline(LookUpPipelineRequest) returns (LookUpPipelineResponse) {
     option (google.api.http) = {get: "/v1beta/{permalink=pipelines/*}/lookUp"};
     option (google.api.method_signature) = "permalink";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Create a new user pipeline
@@ -68,6 +78,7 @@ service PipelinePublicService {
       body: "pipeline"
     };
     option (google.api.method_signature) = "parent,pipeline";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // List user pipelines
@@ -79,6 +90,7 @@ service PipelinePublicService {
   rpc ListUserPipelines(ListUserPipelinesRequest) returns (ListUserPipelinesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=users/*}/pipelines"};
     option (google.api.method_signature) = "parent";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Get a pipeline owned by a user
@@ -88,6 +100,7 @@ service PipelinePublicService {
   rpc GetUserPipeline(GetUserPipelineRequest) returns (GetUserPipelineResponse) {
     option (google.api.http) = {get: "/v1beta/{name=users/*/pipelines/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Update a pipeline owned by a user
@@ -104,6 +117,7 @@ service PipelinePublicService {
       body: "pipeline"
     };
     option (google.api.method_signature) = "pipeline,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Delete a pipeline owned by a user
@@ -114,6 +128,7 @@ service PipelinePublicService {
   rpc DeleteUserPipeline(DeleteUserPipelineRequest) returns (DeleteUserPipelineResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=users/*/pipelines/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Validate a pipeline a pipeline owned by a user
@@ -128,6 +143,7 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Rename a pipeline owned by a user
@@ -147,6 +163,7 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name,new_pipeline_id";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Clone a pipeline owned by a user
@@ -159,6 +176,7 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name,target";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Trigger a pipeline owned by a user
@@ -177,7 +195,25 @@ service PipelinePublicService {
       post: "/v1beta/{name=users/*/pipelines/*}/trigger"
       body: "*"
     };
+    option (google.api.method_signature) = "name,data";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
+  }
+
+  // Trigger a pipeline owned by a user and stream back the response
+  //
+  // Triggers the execution of a pipeline asynchronously and streams back the response.
+  // This method is intended for real-time inference when low latency is of concern
+  // and the response needs to be processed incrementally.
+  //
+  // The pipeline is identified by its resource name, formed by the parent user
+  // and ID of the pipeline.
+  rpc TriggerUserPipelineWithStream(TriggerUserPipelineWithStreamRequest) returns (stream TriggerUserPipelineWithStreamResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=users/*/pipelines/*}/trigger:stream"
+      body: "*"
+    };
     option (google.api.method_signature) = "name,inputs";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // Trigger a pipeline owned by a user asynchronously
@@ -197,7 +233,8 @@ service PipelinePublicService {
       post: "/v1beta/{name=users/*/pipelines/*}/triggerAsync"
       body: "*"
     };
-    option (google.api.method_signature) = "name,inputs";
+    option (google.api.method_signature) = "name,data";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // Release a version of a pipeline owned by a user
@@ -213,6 +250,7 @@ service PipelinePublicService {
       body: "release"
     };
     option (google.api.method_signature) = "parent,release";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // List the releases in a pipeline owned by a user
@@ -222,6 +260,7 @@ service PipelinePublicService {
   rpc ListUserPipelineReleases(ListUserPipelineReleasesRequest) returns (ListUserPipelineReleasesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=users/*/pipelines/*}/releases"};
     option (google.api.method_signature) = "pipelines";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Get a release in a pipeline owned by a user
@@ -231,6 +270,7 @@ service PipelinePublicService {
   rpc GetUserPipelineRelease(GetUserPipelineReleaseRequest) returns (GetUserPipelineReleaseResponse) {
     option (google.api.http) = {get: "/v1beta/{name=users/*/pipelines/*/releases/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Update a release in a pipeline owned by a user
@@ -246,6 +286,7 @@ service PipelinePublicService {
       body: "release"
     };
     option (google.api.method_signature) = "release,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Delete a release in a pipeline owned by a user
@@ -258,6 +299,7 @@ service PipelinePublicService {
   rpc DeleteUserPipelineRelease(DeleteUserPipelineReleaseRequest) returns (DeleteUserPipelineReleaseResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=users/*/pipelines/*/releases/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Set the version of a pipeline owned by a user to a pinned release
@@ -272,6 +314,7 @@ service PipelinePublicService {
   rpc RestoreUserPipelineRelease(RestoreUserPipelineReleaseRequest) returns (RestoreUserPipelineReleaseResponse) {
     option (google.api.http) = {post: "/v1beta/{name=users/*/pipelines/*/releases/*}/restore"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Rename a release in a pipeline owned by a user
@@ -292,6 +335,7 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name,new_pipeline_release_id";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Trigger a version of a pipeline owned by a user
@@ -308,7 +352,8 @@ service PipelinePublicService {
       post: "/v1beta/{name=users/*/pipelines/*/releases/*}/trigger"
       body: "*"
     };
-    option (google.api.method_signature) = "name,inputs";
+    option (google.api.method_signature) = "name,data";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // Trigger a version of a pipeline owned by a user asynchronously
@@ -325,7 +370,8 @@ service PipelinePublicService {
       post: "/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync"
       body: "*"
     };
-    option (google.api.method_signature) = "name,inputs";
+    option (google.api.method_signature) = "name,data";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // Create a new organization pipeline
@@ -337,6 +383,7 @@ service PipelinePublicService {
       body: "pipeline"
     };
     option (google.api.method_signature) = "parent,pipeline";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // List organization pipelines
@@ -346,6 +393,7 @@ service PipelinePublicService {
   rpc ListOrganizationPipelines(ListOrganizationPipelinesRequest) returns (ListOrganizationPipelinesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/pipelines"};
     option (google.api.method_signature) = "parent";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Get a pipeline owned by an organization
@@ -355,6 +403,7 @@ service PipelinePublicService {
   rpc GetOrganizationPipeline(GetOrganizationPipelineRequest) returns (GetOrganizationPipelineResponse) {
     option (google.api.http) = {get: "/v1beta/{name=organizations/*/pipelines/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Update a pipeline owned by an organization
@@ -369,6 +418,7 @@ service PipelinePublicService {
       body: "pipeline"
     };
     option (google.api.method_signature) = "pipeline,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Delete a pipeline owned by an organization
@@ -378,6 +428,7 @@ service PipelinePublicService {
   rpc DeleteOrganizationPipeline(DeleteOrganizationPipelineRequest) returns (DeleteOrganizationPipelineResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=organizations/*/pipelines/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Validate a pipeline a pipeline owned by an organization
@@ -393,6 +444,7 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Rename a pipeline owned by an organization
@@ -409,6 +461,7 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name,new_pipeline_id";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Clone a pipeline owned by an organization
@@ -421,6 +474,7 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name,target";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
   }
 
   // Trigger a pipeline owned by an organization
@@ -439,7 +493,8 @@ service PipelinePublicService {
       post: "/v1beta/{name=organizations/*/pipelines/*}/trigger"
       body: "*"
     };
-    option (google.api.method_signature) = "name,inputs";
+    option (google.api.method_signature) = "name,data";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // Trigger a pipeline owned by an organization asynchronously
@@ -459,7 +514,8 @@ service PipelinePublicService {
       post: "/v1beta/{name=organizations/*/pipelines/*}/triggerAsync"
       body: "*"
     };
-    option (google.api.method_signature) = "name,inputs";
+    option (google.api.method_signature) = "name,data";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // Release a version of a pipeline owned by an organization
@@ -472,6 +528,7 @@ service PipelinePublicService {
       body: "release"
     };
     option (google.api.method_signature) = "parent,release";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // List the releases in a pipeline owned by an organization
@@ -481,6 +538,7 @@ service PipelinePublicService {
   rpc ListOrganizationPipelineReleases(ListOrganizationPipelineReleasesRequest) returns (ListOrganizationPipelineReleasesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=organizations/*/pipelines/*}/releases"};
     option (google.api.method_signature) = "pipelines";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Get a release in a pipeline owned by an organization
@@ -490,6 +548,7 @@ service PipelinePublicService {
   rpc GetOrganizationPipelineRelease(GetOrganizationPipelineReleaseRequest) returns (GetOrganizationPipelineReleaseResponse) {
     option (google.api.http) = {get: "/v1beta/{name=organizations/*/pipelines/*/releases/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Update a release in a pipeline owned by an organization
@@ -502,6 +561,7 @@ service PipelinePublicService {
       body: "release"
     };
     option (google.api.method_signature) = "release,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Delete a release in a pipeline owned by an organization
@@ -511,6 +571,7 @@ service PipelinePublicService {
   rpc DeleteOrganizationPipelineRelease(DeleteOrganizationPipelineReleaseRequest) returns (DeleteOrganizationPipelineReleaseResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=organizations/*/pipelines/*/releases/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Set the version of a pipeline owned by an organization to a pinned release
@@ -522,6 +583,7 @@ service PipelinePublicService {
   rpc RestoreOrganizationPipelineRelease(RestoreOrganizationPipelineReleaseRequest) returns (RestoreOrganizationPipelineReleaseResponse) {
     option (google.api.http) = {post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/restore"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Rename a release in a pipeline owned by an organization
@@ -539,6 +601,7 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name,new_pipeline_release_id";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release"};
   }
 
   // Trigger a version of a pipeline owned by an organization
@@ -555,7 +618,8 @@ service PipelinePublicService {
       post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/trigger"
       body: "*"
     };
-    option (google.api.method_signature) = "name,inputs";
+    option (google.api.method_signature) = "name,data";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // Trigger a version of a pipeline owned by an organization asynchronously
@@ -572,7 +636,8 @@ service PipelinePublicService {
       post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/triggerAsync"
       body: "*"
     };
-    option (google.api.method_signature) = "name,inputs";
+    option (google.api.method_signature) = "name,data";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // Get the details of a long-running operation
@@ -582,6 +647,7 @@ service PipelinePublicService {
   rpc GetOperation(GetOperationRequest) returns (GetOperationResponse) {
     option (google.api.http) = {get: "/v1beta/{name=operations/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // List connector definitions
@@ -589,6 +655,8 @@ service PipelinePublicService {
   // Returns a paginated list of connector definitions.
   rpc ListConnectorDefinitions(ListConnectorDefinitionsRequest) returns (ListConnectorDefinitionsResponse) {
     option (google.api.http) = {get: "/v1beta/connector-definitions"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Component"};
+    option deprecated = true;
   }
 
   // Get connector definition
@@ -597,6 +665,8 @@ service PipelinePublicService {
   rpc GetConnectorDefinition(GetConnectorDefinitionRequest) returns (GetConnectorDefinitionResponse) {
     option (google.api.http) = {get: "/v1beta/{name=connector-definitions/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Component"};
+    option deprecated = true;
   }
 
   // List operator definitions
@@ -604,6 +674,8 @@ service PipelinePublicService {
   // Returns a paginated list of operator definitions.
   rpc ListOperatorDefinitions(ListOperatorDefinitionsRequest) returns (ListOperatorDefinitionsResponse) {
     option (google.api.http) = {get: "/v1beta/operator-definitions"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Component"};
+    option deprecated = true;
   }
 
   // List component definitions
@@ -613,6 +685,7 @@ service PipelinePublicService {
   // capabilities, for the components that might be used in a VDP pipeline.
   rpc ListComponentDefinitions(ListComponentDefinitionsRequest) returns (ListComponentDefinitionsResponse) {
     option (google.api.http) = {get: "/v1beta/component-definitions"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Component"};
   }
 
   // Get operator definition
@@ -621,6 +694,8 @@ service PipelinePublicService {
   rpc GetOperatorDefinition(GetOperatorDefinitionRequest) returns (GetOperatorDefinitionResponse) {
     option (google.api.http) = {get: "/v1beta/{name=operator-definitions/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Component"};
+    option deprecated = true;
   }
 
   // Check the availibity of a resource name
@@ -633,6 +708,7 @@ service PipelinePublicService {
       body: "*"
     };
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Utils"};
   }
 
   // Create a new user secret
@@ -640,10 +716,11 @@ service PipelinePublicService {
   // Creates a new secret under the parenthood of an user.
   rpc CreateUserSecret(CreateUserSecretRequest) returns (CreateUserSecretResponse) {
     option (google.api.http) = {
-      post: "/v1beta/user/secrets"
+      post: "/v1beta/{parent=users/*}/secrets"
       body: "secret"
     };
-    option (google.api.method_signature) = "secret";
+    option (google.api.method_signature) = "parent,secret";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 
   // List user secrets
@@ -651,7 +728,9 @@ service PipelinePublicService {
   // Returns a paginated list of secrets that belong to the specified
   // user.
   rpc ListUserSecrets(ListUserSecretsRequest) returns (ListUserSecretsResponse) {
-    option (google.api.http) = {get: "/v1beta/user/secrets"};
+    option (google.api.http) = {get: "/v1beta/{parent=users/*}/secrets"};
+    option (google.api.method_signature) = "parent";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 
   // Get a secret owned by an user
@@ -659,8 +738,9 @@ service PipelinePublicService {
   // Returns the details of an user-owned secret by its resource name,
   // which is defined by the parent user and the ID of the secret.
   rpc GetUserSecret(GetUserSecretRequest) returns (GetUserSecretResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=user/secrets/*}"};
+    option (google.api.http) = {get: "/v1beta/{name=users/*/secrets/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 
   // Update a secret owned by an user
@@ -671,10 +751,11 @@ service PipelinePublicService {
   // account when updating the resource.
   rpc UpdateUserSecret(UpdateUserSecretRequest) returns (UpdateUserSecretResponse) {
     option (google.api.http) = {
-      patch: "/v1beta/{secret.name=user/secrets/*}"
+      patch: "/v1beta/{secret.name=users/*/secrets/*}"
       body: "secret"
     };
     option (google.api.method_signature) = "secret,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 
   // Delete a secret owned by an user
@@ -682,8 +763,9 @@ service PipelinePublicService {
   // Deletes a secret, accesing it by its resource name, which is defined by
   // the parent user and the ID of the secret.
   rpc DeleteUserSecret(DeleteUserSecretRequest) returns (DeleteUserSecretResponse) {
-    option (google.api.http) = {delete: "/v1beta/{name=user/secrets/*}"};
+    option (google.api.http) = {delete: "/v1beta/{name=users/*/secrets/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 
   // Create a new organization secret
@@ -695,6 +777,7 @@ service PipelinePublicService {
       body: "secret"
     };
     option (google.api.method_signature) = "parent,secret";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 
   // List organization secrets
@@ -704,6 +787,7 @@ service PipelinePublicService {
   rpc ListOrganizationSecrets(ListOrganizationSecretsRequest) returns (ListOrganizationSecretsResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/secrets"};
     option (google.api.method_signature) = "parent";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 
   // Get a secret owned by an organization
@@ -713,6 +797,7 @@ service PipelinePublicService {
   rpc GetOrganizationSecret(GetOrganizationSecretRequest) returns (GetOrganizationSecretResponse) {
     option (google.api.http) = {get: "/v1beta/{name=organizations/*/secrets/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 
   // Update a secret owned by an organization
@@ -727,6 +812,7 @@ service PipelinePublicService {
       body: "secret"
     };
     option (google.api.method_signature) = "secret,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 
   // Delete a secret owned by an organization
@@ -736,5 +822,6 @@ service PipelinePublicService {
   rpc DeleteOrganizationSecret(DeleteOrganizationSecretRequest) returns (DeleteOrganizationSecretResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=organizations/*/secrets/*}"};
     option (google.api.method_signature) = "name";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
 }

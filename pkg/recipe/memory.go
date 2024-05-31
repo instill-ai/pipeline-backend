@@ -15,14 +15,12 @@ import (
 
 const (
 	SegMemory    = "memory"
-	SegTrigger   = "trigger"
-	SegSecrets   = "secrets"
+	SegVariable  = "variable"
+	SegSecret    = "secret"
 	SegRecipe    = "recipe"
 	SegOwner     = "owner_permalink"
-	SegVars      = "vars"
-	SegComponent = "components"
+	SegComponent = "component"
 	SegIteration = "iterations"
-	SegInputs    = "inputs"
 
 	redisKeyPrefix = "pipeline_trigger"
 )
@@ -31,40 +29,35 @@ const (
 
 // For regular components:
 // pipeline_trigger:<workflowID>:recipe
-// pipeline_trigger:<workflowID>:vars
-// pipeline_trigger:<workflowID>:secrets
-// pipeline_trigger:<workflowID>:inputs:<batchIdx>
-// pipeline_trigger:<workflowID>:components:<compID>:<batchIdx>
+// pipeline_trigger:<workflowID>:<batchIdx>:variable
+// pipeline_trigger:<workflowID>:<batchIdx>:secret
+// pipeline_trigger:<workflowID>:<batchIdx>:components:<compID>
 
 // For the child pipeline in the iterator:
 // pipeline_trigger:<workflowID>:components:<compID>:recipe
 // pipeline_trigger:<workflowID>:components:<compID>:iterations:<iter>:components:<iterCompID>
 
-type TriggerMemory struct {
-	Components      map[string]ComponentsMemory `json:"components"`
-	Inputs          []InputsMemory              `json:"inputs"`
-	Secrets         map[string]string           `json:"secrets"`
-	Vars            map[string]any              `json:"vars"`
-	SystemVariables SystemVariables             `json:"sys_vars"`
+type Memory struct {
+	Variable  VariableMemory              `json:"variable"`
+	Secret    SecretMemory                `json:"secret"`
+	Component map[string]*ComponentMemory `json:"component"`
 }
 
-type TriggerMemoryKey struct {
-	Components     map[string][]string
-	Inputs         []string
-	Secrets        string
-	Vars           string
-	Recipe         string
-	OwnerPermalink string
-}
-
-type ComponentsMemory []*ComponentItemMemory
-type InputsMemory map[string]any
-
-type ComponentItemMemory struct {
+type VariableMemory map[string]any
+type SecretMemory map[string]string
+type ComponentMemory struct {
 	Input   *ComponentIO     `json:"input"`
 	Output  *ComponentIO     `json:"output"`
 	Element any              `json:"element"` // for iterator
 	Status  *ComponentStatus `json:"status"`
+}
+
+type BatchMemoryKey struct {
+	Components     []map[string]string
+	Secrets        []string
+	Variables      []string
+	Recipe         string
+	OwnerPermalink string
 }
 
 type ComponentIO map[string]any
@@ -75,19 +68,21 @@ type ComponentStatus struct {
 	Skipped   bool `json:"skipped"`
 }
 
-func Write(ctx context.Context, rc *redis.Client, triggerID string, recipe *datamodel.Recipe, memory *TriggerMemory, ownerPermalink string) (*TriggerMemoryKey, error) {
+func Write(ctx context.Context, rc *redis.Client, triggerID string, recipe *datamodel.Recipe, batchMemory []*Memory, ownerPermalink string) (*BatchMemoryKey, error) {
 
-	batchSize := len(memory.Inputs)
-	inputStorageKeys := make([]string, batchSize)
+	batchSize := len(batchMemory)
+	varKeys := make([]string, batchSize)
+	secretKeys := make([]string, batchSize)
 	for i := 0; i < batchSize; i++ {
-		inputStorageKeys[i] = fmt.Sprintf("%s:%s:%d", triggerID, SegInputs, i)
+		varKeys[i] = fmt.Sprintf("%s:%d:%s", triggerID, i, SegVariable)
+		secretKeys[i] = fmt.Sprintf("%s:%d:%s", triggerID, i, SegSecret)
 	}
-	triggerStorageKey := &TriggerMemoryKey{
+	triggerStorageKey := &BatchMemoryKey{
 		Recipe:         fmt.Sprintf("%s:%s", triggerID, SegRecipe),
 		OwnerPermalink: fmt.Sprintf("%s:%s", triggerID, SegOwner),
-		Secrets:        fmt.Sprintf("%s:%s", triggerID, SegSecrets),
-		Vars:           fmt.Sprintf("%s:%s", triggerID, SegVars),
-		Inputs:         inputStorageKeys,
+		Secrets:        secretKeys,
+		Variables:      varKeys,
+		Components:     []map[string]string{},
 	}
 
 	var b []byte
@@ -107,39 +102,32 @@ func Write(ctx context.Context, rc *redis.Client, triggerID string, recipe *data
 		}
 	}
 
-	if memory.Secrets == nil {
-		memory.Secrets = map[string]string{}
-	}
+	for idx, memory := range batchMemory {
+		if memory.Secret == nil {
+			memory.Secret = map[string]string{}
+		}
 
-	b, err = json.Marshal(memory.Secrets)
-	if err != nil {
-		return nil, err
-	}
-	if err := writeData(ctx, rc, triggerStorageKey.Secrets, b); err != nil {
-		return nil, err
-	}
-
-	if memory.Vars == nil {
-		memory.Vars = map[string]any{}
-	}
-
-	b, err = json.Marshal(memory.Vars)
-	if err != nil {
-		return nil, err
-	}
-	if err := writeData(ctx, rc, triggerStorageKey.Vars, b); err != nil {
-		return nil, err
-	}
-
-	for idx, input := range memory.Inputs {
-		b, err = json.Marshal(input)
+		b, err = json.Marshal(memory.Secret)
 		if err != nil {
 			return nil, err
 		}
-		if err := writeData(ctx, rc, triggerStorageKey.Inputs[idx], b); err != nil {
+		if err := writeData(ctx, rc, triggerStorageKey.Secrets[idx], b); err != nil {
+			return nil, err
+		}
+
+		if memory.Variable == nil {
+			memory.Variable = map[string]any{}
+		}
+		b, err = json.Marshal(memory.Variable)
+		if err != nil {
+			return nil, err
+		}
+		if err := writeData(ctx, rc, triggerStorageKey.Variables[idx], b); err != nil {
 			return nil, err
 		}
 	}
+
+	triggerStorageKey.Components = make([]map[string]string, batchSize)
 
 	return triggerStorageKey, nil
 }
@@ -165,80 +153,59 @@ func WriteRecipe(ctx context.Context, rc *redis.Client, key string, recipe *data
 func LoadMemory(
 	ctx context.Context,
 	rc *redis.Client,
-	key *TriggerMemoryKey,
-) (*TriggerMemory, error) {
-	memory := &TriggerMemory{
-		Secrets:    map[string]string{},
-		Vars:       map[string]any{},
-		Inputs:     []InputsMemory{},
-		Components: map[string]ComponentsMemory{},
-	}
+	key *BatchMemoryKey,
+) ([]*Memory, error) {
 
-	if err := loadData(ctx, rc, key.Secrets, &memory.Secrets); err != nil {
-		return nil, err
-	}
+	batchSize := len(key.Variables)
+	memory := make([]*Memory, batchSize)
 
-	if err := loadData(ctx, rc, key.Vars, &memory.Vars); err != nil {
-		return nil, err
-	}
-
-	memory.Inputs = make([]InputsMemory, len(key.Inputs))
-	cacheInputs := map[string]*InputsMemory{}
-	for idx, k := range key.Inputs {
-		// Note: In an iterator, the same key might exist. We can use a local map to reduce Redis requests.
-		if v, ok := cacheInputs[k]; ok {
-			memory.Inputs[idx] = *v
-			continue
+	for idx := range batchSize {
+		memory[idx] = &Memory{
+			Variable:  make(VariableMemory),
+			Secret:    make(SecretMemory),
+			Component: make(map[string]*ComponentMemory),
 		}
-		if err := loadData(ctx, rc, k, &memory.Inputs[idx]); err != nil {
+		if err := loadData(ctx, rc, key.Variables[idx], &memory[idx].Variable); err != nil {
 			return nil, err
 		}
-		cacheInputs[k] = &memory.Inputs[idx]
-	}
-
-	for compID, ks := range key.Components {
-		memory.Components[compID] = make(ComponentsMemory, len(ks))
-		cacheComps := map[string]*ComponentItemMemory{}
-		for idx, k := range ks {
-			// Note: In an iterator, the same key might exist. We can use a local map to reduce Redis requests.
-			if v, ok := cacheComps[k]; ok {
-				memory.Components[compID][idx] = v
-				continue
-			}
-			var result ComponentItemMemory
-			if err := loadData(ctx, rc, k, &result); err != nil {
+		if err := loadData(ctx, rc, key.Secrets[idx], &memory[idx].Secret); err != nil {
+			return nil, err
+		}
+		for compID := range key.Components[idx] {
+			m := ComponentMemory{}
+			if err := loadData(ctx, rc, key.Components[idx][compID], &m); err != nil {
 				return nil, err
 			}
-			memory.Components[compID][idx] = &result
-			cacheComps[k] = &result
+			memory[idx].Component[compID] = &m
 		}
 	}
+
 	return memory, nil
 }
 
-func LoadMemoryByTriggerID(ctx context.Context, rc *redis.Client, triggerID string) (*TriggerMemory, error) {
+func LoadMemoryByTriggerID(ctx context.Context, rc *redis.Client, triggerID string) ([]*Memory, error) {
 	batchSize := getBatchSize(ctx, rc, triggerID)
 	compIDs := getCompIDs(ctx, rc, triggerID)
-	keyInputs := make([]string, batchSize)
-	for i := 0; i < batchSize; i++ {
-		keyInputs[i] = fmt.Sprintf("%s:%s:%d", triggerID, SegInputs, i)
-	}
-	keyComps := map[string][]string{}
-	for _, compID := range compIDs {
-		keyComps[compID] = make([]string, batchSize)
-		for i := 0; i < batchSize; i++ {
-			keyComps[compID][i] = fmt.Sprintf("%s:%s:%s:%d", triggerID, SegComponent, compID, i)
+	varKeys := make([]string, batchSize)
+	compKeys := make([]map[string]string, batchSize)
+	secretKeys := make([]string, batchSize)
+
+	for i := range batchSize {
+		varKeys[i] = fmt.Sprintf("%s:%d:%s", triggerID, i, SegVariable)
+		secretKeys[i] = fmt.Sprintf("%s:%d:%s", triggerID, i, SegSecret)
+		compKeys[i] = map[string]string{}
+		for _, compID := range compIDs {
+			compKeys[i][compID] = fmt.Sprintf("%s:%d:%s:%s", triggerID, i, SegComponent, compID)
 		}
 	}
 
 	return LoadMemory(
 		ctx,
 		rc,
-		&TriggerMemoryKey{
-			Components: keyComps,
-			Inputs:     keyInputs,
-			Secrets:    fmt.Sprintf("%s:%s", triggerID, SegSecrets),
-			Vars:       fmt.Sprintf("%s:%s", triggerID, SegVars),
+		&BatchMemoryKey{
+			Variables:  varKeys,
+			Secrets:    secretKeys,
+			Components: compKeys,
 		},
 	)
 }
@@ -264,14 +231,14 @@ func Purge(ctx context.Context, rc *redis.Client, pipelineTriggerID string) {
 	}
 }
 
-func WriteComponentMemory(ctx context.Context, rc *redis.Client, key string, compsMem []*ComponentItemMemory) error {
+func WriteComponentMemory(ctx context.Context, rc *redis.Client, key string, compID string, compsMem []*ComponentMemory) error {
 
-	for idx, itemMem := range compsMem {
-		b, err := json.Marshal(itemMem)
+	for idx, compMem := range compsMem {
+		b, err := json.Marshal(compMem)
 		if err != nil {
 			return err
 		}
-		if err := writeData(ctx, rc, fmt.Sprintf("%s:%d", key, idx), b); err != nil {
+		if err := writeData(ctx, rc, fmt.Sprintf("%s:%d:%s:%s", key, idx, SegComponent, compID), b); err != nil {
 			return err
 		}
 	}
@@ -304,7 +271,7 @@ func loadData(ctx context.Context, rc *redis.Client, key string, target any) err
 }
 
 func getBatchSize(ctx context.Context, rc *redis.Client, key string) int {
-	iter := rc.Scan(ctx, 0, fmt.Sprintf("%s:%s:%s:*", redisKeyPrefix, key, SegInputs), 0).Iterator()
+	iter := rc.Scan(ctx, 0, fmt.Sprintf("%s:%s:*:%s", redisKeyPrefix, key, SegVariable), 0).Iterator()
 	batchSize := 0
 	for iter.Next(ctx) {
 		batchSize += 1
@@ -313,12 +280,12 @@ func getBatchSize(ctx context.Context, rc *redis.Client, key string) int {
 }
 
 func getCompIDs(ctx context.Context, rc *redis.Client, key string) []string {
-	iter := rc.Scan(ctx, 0, fmt.Sprintf("%s:%s:%s:*", redisKeyPrefix, key, SegComponent), 0).Iterator()
+	iter := rc.Scan(ctx, 0, fmt.Sprintf("%s:%s:*:%s:*", redisKeyPrefix, key, SegComponent), 0).Iterator()
 	compIDMap := map[string]bool{}
 	for iter.Next(ctx) {
 		key := iter.Val()
 		keySplits := strings.Split(key, ":")
-		compID := keySplits[3]
+		compID := keySplits[4]
 		compIDMap[compID] = true
 	}
 	compIDs := []string{}

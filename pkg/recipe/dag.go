@@ -13,7 +13,6 @@ import (
 
 	"github.com/PaesslerAG/jsonpath"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
@@ -62,38 +61,33 @@ func (uf *unionFind) Count() int {
 }
 
 type dag struct {
-	comps            []*datamodel.Component
+	compMap          map[string]datamodel.IComponent
 	compsIdx         map[string]int
-	prerequisitesMap map[*datamodel.Component][]*datamodel.Component
+	prerequisitesMap map[string][]string
 	uf               *unionFind
 	ancestorsMap     map[string][]string
 }
 
-func NewDAG(comps []*datamodel.Component) *dag {
-	prerequisitesMap := map[*datamodel.Component][]*datamodel.Component{}
-	compsIdx := map[string]int{}
-	uf := NewUnionFind(len(comps))
-	for idx := range comps {
-		compsIdx[comps[idx].ID] = idx
-	}
+func NewDAG(compMap map[string]datamodel.IComponent) *dag {
+
+	uf := NewUnionFind(len(compMap))
 
 	return &dag{
-		comps:            comps,
-		compsIdx:         compsIdx,
+		compMap:          compMap,
 		uf:               uf,
-		prerequisitesMap: prerequisitesMap,
+		prerequisitesMap: map[string][]string{},
 		ancestorsMap:     map[string][]string{},
 	}
 }
 
-func (d *dag) AddEdge(from *datamodel.Component, to *datamodel.Component) {
+func (d *dag) AddEdge(from string, to string) {
 	d.prerequisitesMap[from] = append(d.prerequisitesMap[from], to)
-	d.uf.Union(d.compsIdx[from.ID], d.compsIdx[to.ID])
-	if d.ancestorsMap[to.ID] == nil {
-		d.ancestorsMap[to.ID] = []string{}
+	d.uf.Union(d.compsIdx[from], d.compsIdx[to])
+	if d.ancestorsMap[to] == nil {
+		d.ancestorsMap[to] = []string{}
 	}
-	d.ancestorsMap[to.ID] = append(d.ancestorsMap[to.ID], from.ID)
-	d.ancestorsMap[to.ID] = append(d.ancestorsMap[to.ID], d.ancestorsMap[from.ID]...)
+	d.ancestorsMap[to] = append(d.ancestorsMap[to], from)
+	d.ancestorsMap[to] = append(d.ancestorsMap[to], d.ancestorsMap[from]...)
 }
 
 func (d *dag) GetUpstreamCompIDs(id string) []string {
@@ -101,20 +95,20 @@ func (d *dag) GetUpstreamCompIDs(id string) []string {
 }
 
 type topologicalSortNode struct {
-	comp  *datamodel.Component
-	group int // the group order
+	compID string
+	group  int // the group order
 }
 
 // TopologicalSort returns the topological sorted components
 // the result is a list of list of components
 // each list is a group of components that can be executed in parallel
-func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
+func (d *dag) TopologicalSort() ([]map[string]datamodel.IComponent, error) {
 
-	if len(d.comps) == 0 {
-		return [][]*datamodel.Component{}, nil
+	if len(d.compMap) == 0 {
+		return []map[string]datamodel.IComponent{}, nil
 	}
 
-	indegreesMap := map[*datamodel.Component]int{}
+	indegreesMap := map[string]int{}
 	for _, tos := range d.prerequisitesMap {
 		for _, to := range tos {
 			indegreesMap[to]++
@@ -122,42 +116,41 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 
 	}
 	q := []*topologicalSortNode{}
-	for _, comp := range d.comps {
-		if indegreesMap[comp] == 0 {
+	for id := range d.compMap {
+		if indegreesMap[id] == 0 {
 			q = append(q, &topologicalSortNode{
-				comp:  comp,
-				group: 0,
+				compID: id,
+				group:  0,
 			})
 		}
 	}
 
-	ans := [][]*datamodel.Component{}
+	ans := []map[string]datamodel.IComponent{}
 
 	count := 0
-	taken := make(map[*datamodel.Component]bool)
+	taken := make(map[string]bool)
 	for len(q) > 0 {
 		from := q[0]
 		q = q[1:]
 		if len(ans) <= from.group {
-			ans = append(ans, []*datamodel.Component{})
+			ans = append(ans, map[string]datamodel.IComponent{})
 		}
-		ans[from.group] = append(ans[from.group], from.comp)
+		ans[from.group][from.compID] = d.compMap[from.compID]
 		count += 1
-		taken[from.comp] = true
+		taken[from.compID] = true
 
-		for _, to := range d.prerequisitesMap[from.comp] {
+		for _, to := range d.prerequisitesMap[from.compID] {
 			indegreesMap[to]--
 			if indegreesMap[to] == 0 {
 				q = append(q, &topologicalSortNode{
-					comp:  to,
-					group: from.group + 1,
+					compID: to,
+					group:  from.group + 1,
 				})
 			}
 		}
-
 	}
 
-	if count < len(d.comps) {
+	if count < len(d.compMap) {
 		return nil, fmt.Errorf("not a valid dag")
 	}
 
@@ -167,7 +160,11 @@ func (d *dag) TopologicalSort() ([][]*datamodel.Component, error) {
 func splitFunc(s rune) bool {
 	return s == '.' || s == '['
 }
-func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string, path string, dataIndex int) (any, error) {
+func traverseBinding(memory *Memory, path string) (any, error) {
+
+	compsMemory := memory.Component
+	varsMemory := memory.Variable
+	secretsMemory := memory.Secret
 
 	splits := strings.FieldsFunc(path, splitFunc)
 
@@ -184,14 +181,14 @@ func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []Inp
 		SegMemory: map[string]any{},
 	}
 	for k := range compsMemory {
-		m[SegMemory].(map[string]any)[k] = compsMemory[k][dataIndex]
+		m[SegMemory].(map[string]any)[k] = compsMemory[k]
 	}
 
-	if inputsMemory != nil {
-		m[SegMemory].(map[string]any)[SegTrigger] = inputsMemory[dataIndex]
+	if varsMemory != nil {
+		m[SegMemory].(map[string]any)[SegVariable] = varsMemory
 	}
 	if secretsMemory != nil {
-		m[SegMemory].(map[string]any)[SegSecrets] = secretsMemory
+		m[SegMemory].(map[string]any)[SegSecret] = secretsMemory
 	}
 
 	b, _ := json.Marshal(m)
@@ -213,7 +210,7 @@ func traverseBinding(compsMemory map[string]ComponentsMemory, inputsMemory []Inp
 	}
 }
 
-func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]ComponentsMemory, inputsMemory []InputsMemory, secretsMemory map[string]string) (any, error) {
+func RenderInput(inputTemplate any, dataIndex int, memory *Memory) (any, error) {
 
 	switch input := inputTemplate.(type) {
 	case string:
@@ -221,11 +218,11 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 			input = input[2:]
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
-			if input == SegSecrets+"."+constant.GlobalSecretKey {
+			if input == SegSecret+"."+constant.GlobalSecretKey {
 				return componentbase.SecretKeyword, nil
 			}
 
-			val, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, input, dataIndex)
+			val, err := traverseBinding(memory, input)
 			if err != nil {
 				return nil, err
 			}
@@ -248,7 +245,7 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 			}
 
 			ref := strings.TrimSpace(input[2:endIdx])
-			v, err := traverseBinding(compsMemory, inputsMemory, secretsMemory, ref, dataIndex)
+			v, err := traverseBinding(memory, ref)
 			if err != nil {
 				return nil, err
 			}
@@ -270,7 +267,7 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 	case map[string]any:
 		val := map[string]any{}
 		for k, v := range input {
-			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory)
+			converted, err := RenderInput(v, dataIndex, memory)
 			if err != nil {
 				return "", err
 			}
@@ -281,7 +278,7 @@ func RenderInput(inputTemplate any, dataIndex int, compsMemory map[string]Compon
 	case []any:
 		val := []any{}
 		for _, v := range input {
-			converted, err := RenderInput(v, dataIndex, compsMemory, inputsMemory, secretsMemory)
+			converted, err := RenderInput(v, dataIndex, memory)
 			if err != nil {
 				return "", err
 			}
@@ -573,69 +570,54 @@ func SanitizeCondition(cond string) (string, map[string]string, map[string]strin
 	return cond, varMapping, revVarMapping
 }
 
-func GenerateDAG(components []*datamodel.Component) (*dag, error) {
-	componentIDMap := make(map[string]*datamodel.Component)
+func GenerateDAG(componentMap map[string]datamodel.IComponent) (*dag, error) {
 
-	for idx := range components {
-		componentIDMap[components[idx].ID] = components[idx]
-		if components[idx].IsIteratorComponent() {
-			for idx2 := range components[idx].IteratorComponent.Components {
-				componentIDMap[components[idx].IteratorComponent.Components[idx2].ID] = components[idx].IteratorComponent.Components[idx2]
+	componentIDMap := make(map[string]bool)
+
+	for id := range componentMap {
+		componentIDMap[id] = true
+		switch comp := componentMap[id].(type) {
+		case *datamodel.IteratorComponent:
+			for nestedID := range comp.Component {
+				componentIDMap[nestedID] = true
 			}
 		}
 	}
-	graph := NewDAG(components)
 
-	for _, component := range components {
+	graph := NewDAG(componentMap)
+
+	for id, component := range componentMap {
 
 		parents := []string{}
 
-		if component.IsConnectorComponent() || component.IsOperatorComponent() || component.IsIteratorComponent() {
-			if component.GetCondition() != nil && *component.GetCondition() != "" {
-				parents = append(parents, FindReferenceParent(*component.GetCondition())...)
-			}
+		if component.GetCondition() != nil && *component.GetCondition() != "" {
+			parents = append(parents, FindReferenceParent(*component.GetCondition())...)
+		}
 
-		}
-		if component.IsConnectorComponent() {
-			configuration := proto.Clone(component.ConnectorComponent.Input)
-			template, _ := protojson.Marshal(configuration)
+		switch comp := component.(type) {
+		case *componentbase.ComponentConfig:
+			template, _ := json.Marshal(comp.Input)
 			parents = append(parents, FindReferenceParent(string(template))...)
-		}
-		if component.IsOperatorComponent() {
-			configuration := proto.Clone(component.OperatorComponent.Input)
-			template, _ := protojson.Marshal(configuration)
-			parents = append(parents, FindReferenceParent(string(template))...)
-		}
-		if component.IsIteratorComponent() {
-			parents = append(parents, FindReferenceParent(component.IteratorComponent.Input)...)
-			nestedComponentIDs := []string{component.ID}
-			for _, nestedComponent := range component.IteratorComponent.Components {
-				nestedComponentIDs = append(nestedComponentIDs, nestedComponent.ID)
+		case *datamodel.IteratorComponent:
+			parents = append(parents, FindReferenceParent(comp.Input)...)
+			nestedComponentIDs := []string{id}
+			for nestedID := range comp.Component {
+				nestedComponentIDs = append(nestedComponentIDs, nestedID)
 			}
-			for _, nestedComponent := range component.IteratorComponent.Components {
-				if nestedComponent.IsConnectorComponent() || nestedComponent.IsOperatorComponent() {
-					if nestedComponent.GetCondition() != nil && *nestedComponent.GetCondition() != "" {
-						nestedParent := FindReferenceParent(*nestedComponent.GetCondition())
-						for idx := range nestedParent {
-							if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {
-								parents = append(parents, nestedParent[idx])
-							}
-						}
-					}
-				}
-				if nestedComponent.IsConnectorComponent() {
-					configuration := proto.Clone(nestedComponent.ConnectorComponent.Input)
-					template, _ := protojson.Marshal(configuration)
-					nestedParent := FindReferenceParent(string(template))
+			for _, nestedComponent := range comp.Component {
+
+				if nestedComponent.GetCondition() != nil && *nestedComponent.GetCondition() != "" {
+					nestedParent := FindReferenceParent(*nestedComponent.GetCondition())
 					for idx := range nestedParent {
 						if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {
 							parents = append(parents, nestedParent[idx])
 						}
 					}
 				}
-				if nestedComponent.IsOperatorComponent() {
-					configuration := proto.Clone(nestedComponent.OperatorComponent.Input)
-					template, _ := protojson.Marshal(configuration)
+
+				switch nestedComp := nestedComponent.(type) {
+				case *componentbase.ComponentConfig:
+					template, _ := json.Marshal(nestedComp.Input)
 					nestedParent := FindReferenceParent(string(template))
 					for idx := range nestedParent {
 						if !slices.Contains(nestedComponentIDs, nestedParent[idx]) {
@@ -646,10 +628,11 @@ func GenerateDAG(components []*datamodel.Component) (*dag, error) {
 			}
 		}
 
-		for idx := range parents {
-			if upstream, ok := componentIDMap[parents[idx]]; ok {
-				graph.AddEdge(upstream, component)
+		for _, upstreamID := range parents {
+			if _, ok := componentIDMap[upstreamID]; ok {
+				graph.AddEdge(upstreamID, id)
 			}
+
 		}
 	}
 
@@ -675,19 +658,19 @@ func FindReferenceParent(input string) []string {
 	return upstreams
 }
 
-func GenerateTraces(comps []*datamodel.Component, memory *TriggerMemory) (map[string]*pb.Trace, error) {
+func GenerateTraces(comps map[string]datamodel.IComponent, memory []*Memory) (map[string]*pb.Trace, error) {
 	trace := map[string]*pb.Trace{}
 
-	batchSize := len(memory.Inputs)
+	batchSize := len(memory)
 
-	for compIdx := range comps {
+	for compID := range comps {
 
 		inputs := make([]*structpb.Struct, batchSize)
 		outputs := make([]*structpb.Struct, batchSize)
 		traceStatuses := make([]pb.Trace_Status, batchSize)
 
-		for dataIdx := range memory.Components[comps[compIdx].ID] {
-			m := memory.Components[comps[compIdx].ID][dataIdx]
+		for dataIdx := range batchSize {
+			m := memory[dataIdx].Component[compID]
 			if m.Status.Completed {
 				traceStatuses[dataIdx] = pb.Trace_STATUS_COMPLETED
 			} else if m.Status.Skipped {
@@ -725,7 +708,7 @@ func GenerateTraces(comps []*datamodel.Component, memory *TriggerMemory) (map[st
 			}
 		}
 
-		trace[comps[compIdx].ID] = &pb.Trace{
+		trace[compID] = &pb.Trace{
 			Statuses: traceStatuses,
 			Inputs:   inputs,
 			Outputs:  outputs,

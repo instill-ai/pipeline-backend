@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"google.golang.org/protobuf/types/known/structpb"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
+	componentbase "github.com/instill-ai/component/base"
 	taskPB "github.com/instill-ai/protogen-go/common/task/v1alpha"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -53,7 +53,7 @@ func (base *BaseDynamicHardDelete) BeforeCreate(db *gorm.DB) error {
 }
 
 type HubStats struct {
-	NumberOfPublicPipelines int32
+	NumberOfPublicPipelines   int32
 	NumberOfFeaturedPipelines int32
 }
 
@@ -93,91 +93,152 @@ type PipelineRelease struct {
 
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
-	Version    string       `json:"version,omitempty"`
-	Trigger    *Trigger     `json:"trigger,omitempty"`
-	Components []*Component `json:"components,omitempty"`
+	Version   string                `json:"version,omitempty"`
+	On        *On                   `json:"on,omitempty"`
+	Component map[string]IComponent `json:"component,omitempty"`
+	Variable  map[string]*Variable  `json:"variable,omitempty"`
+	Secret    map[string]string     `json:"secret,omitempty"`
+	Output    map[string]*Output    `json:"output,omitempty"`
 }
 
-type Trigger struct {
-	TriggerByRequest *TriggerByRequest `json:"trigger_by_request,omitempty"`
+type IComponent interface {
+	IsComponent()
+	GetCondition() *string
 }
 
-type Component struct {
-	ID       string         `json:"id"`
-	Metadata datatypes.JSON `json:"metadata"`
-	// TODO: validate oneof
-	ConnectorComponent *ConnectorComponent `json:"connector_component,omitempty"`
-	OperatorComponent  *OperatorComponent  `json:"operator_component,omitempty"`
-	IteratorComponent  *IteratorComponent  `json:"iterator_component,omitempty"`
-}
+func (r *Recipe) UnmarshalJSON(data []byte) error {
+	tmp := make(map[string]any)
+	err := json.Unmarshal(data, &tmp)
+	if err != nil {
+		return err
+	}
+	if v, ok := tmp["on"]; ok && v != nil {
+		b, _ := json.Marshal(tmp["on"])
+		_ = json.Unmarshal(b, &r.On)
+	}
+	if v, ok := tmp["variable"]; ok && v != nil {
+		b, _ := json.Marshal(tmp["variable"])
+		_ = json.Unmarshal(b, &r.Variable)
 
-func (c *Component) IsConnectorComponent() bool {
-	return c.ConnectorComponent != nil
-}
-func (c *Component) IsOperatorComponent() bool {
-	return c.OperatorComponent != nil
-}
-func (c *Component) IsIteratorComponent() bool {
-	return c.IteratorComponent != nil
-}
-func (c *Component) GetCondition() *string {
-	if c.IsConnectorComponent() {
-		return c.ConnectorComponent.Condition
 	}
-	if c.IsOperatorComponent() {
-		return c.OperatorComponent.Condition
+	if v, ok := tmp["secret"]; ok && v != nil {
+		b, _ := json.Marshal(tmp["secret"])
+		_ = json.Unmarshal(b, &r.Secret)
+
 	}
-	if c.IsIteratorComponent() {
-		return c.IteratorComponent.Condition
+	if v, ok := tmp["output"]; ok && v != nil {
+		b, _ := json.Marshal(tmp["output"])
+		_ = json.Unmarshal(b, &r.Output)
 	}
+	if v, ok := tmp["component"]; ok && v != nil {
+		comps := v.(map[string]any)
+		r.Component = make(map[string]IComponent)
+		for id, comp := range comps {
+
+			if _, ok := comp.(map[string]any)["type"]; ok {
+
+				b, _ := json.Marshal(comp)
+				c := componentbase.ComponentConfig{}
+				_ = json.Unmarshal(b, &c)
+				r.Component[id] = &c
+
+			} else {
+				b, _ := json.Marshal(comp)
+				c := IteratorComponent{}
+				_ = json.Unmarshal(b, &c)
+				r.Component[id] = &c
+			}
+
+		}
+	}
+
 	return nil
 }
-
-type TriggerByRequestRequestFields map[string]struct {
-	Title              string `json:"title"`
-	Description        string `json:"description"`
-	InstillFormat      string `json:"instill_format"`
-	InstillUIOrder     int32  `json:"instill_ui_order"`
-	InstillUIMultiline bool   `json:"instill_ui_multiline"`
+func (i *IteratorComponent) IsComponent() {}
+func (i *IteratorComponent) GetCondition() *string {
+	return i.Condition
 }
 
-type TriggerByRequestResponseFields map[string]struct {
-	Title          string `json:"title"`
-	Description    string `json:"description"`
-	Value          string `json:"value"`
-	InstillUIOrder int32  `json:"instill_ui_order"`
+type Variable struct {
+	Title              string `json:"title,omitempty"`
+	Description        string `json:"description,omitempty"`
+	InstillFormat      string `json:"instillFormat,omitempty"`
+	InstillUIOrder     int32  `json:"instillUiOrder,omitempty"`
+	InstillUIMultiline bool   `json:"instillUiMultiline,omitempty"`
 }
 
-type TriggerByRequest struct {
-	RequestFields  TriggerByRequestRequestFields  `json:"request_fields"`
-	ResponseFields TriggerByRequestResponseFields `json:"response_fields"`
+type Output struct {
+	Title          string `json:"title,omitempty"`
+	Description    string `json:"description,omitempty"`
+	Value          string `json:"value,omitempty"`
+	InstillUIOrder int32  `json:"instillUiOrder,omitempty"`
 }
 
-type ConnectorComponent struct {
-	DefinitionName string           `json:"definition_name"`
-	Task           string           `json:"task"`
-	Input          *structpb.Struct `json:"input"`
-	Condition      *string          `json:"condition,omitempty"`
-	Connection     *structpb.Struct `json:"connection"`
-}
-
-type OperatorComponent struct {
-	DefinitionName string           `json:"definition_name"`
-	Task           string           `json:"task"`
-	Input          *structpb.Struct `json:"input"`
-	Condition      *string          `json:"condition,omitempty"`
+type On struct {
 }
 
 type IteratorComponent struct {
-	Input          string            `json:"input"`
-	OutputElements map[string]string `json:"output_elements"`
-	Condition      *string           `json:"condition,omitempty"`
-	Components     []*Component      `json:"components"`
+	Input             string                `json:"input,omitempty"`
+	OutputElements    map[string]string     `json:"outputElements,omitempty"`
+	Condition         *string               `json:"condition,omitempty"`
+	Component         map[string]IComponent `json:"component,omitempty"`
+	Metadata          datatypes.JSON        `json:"metadata,omitempty"`
+	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty"`
+}
+
+func (i *IteratorComponent) UnmarshalJSON(data []byte) error {
+	tmp := make(map[string]any)
+	err := json.Unmarshal(data, &tmp)
+	if err != nil {
+		return err
+	}
+	if v, ok := tmp["input"]; ok && v != nil {
+		i.Input = tmp["input"].(string)
+	}
+	if v, ok := tmp["outputElements"]; ok && v != nil {
+		b, _ := json.Marshal(v)
+		c := map[string]string{}
+		_ = json.Unmarshal(b, &c)
+		i.OutputElements = c
+	}
+	if v, ok := tmp["condition"]; ok && v != nil {
+		i.Condition = tmp["condition"].(*string)
+	}
+	if v, ok := tmp["metadata"]; ok && v != nil {
+		b, _ := json.Marshal(tmp["metadata"])
+		m := datatypes.JSON{}
+		err = json.Unmarshal(b, &m)
+		if err != nil {
+			return err
+		}
+		i.Metadata = m
+	}
+	if v, ok := tmp["data_specification"]; ok && v != nil {
+		i.DataSpecification = tmp["data_specification"].(*pb.DataSpecification)
+	}
+	if v, ok := tmp["component"]; ok && v != nil {
+		comps := v.(map[string]any)
+		i.Component = make(map[string]IComponent)
+		for id, comp := range comps {
+
+			if _, ok := comp.(map[string]any)["type"]; ok {
+
+				b, _ := json.Marshal(comp)
+				c := componentbase.ComponentConfig{}
+				_ = json.Unmarshal(b, &c)
+				i.Component[id] = &c
+
+			}
+
+		}
+	}
+
+	return nil
 }
 
 type Sharing struct {
 	Users     map[string]*SharingUser `json:"users,omitempty"`
-	ShareCode *SharingCode            `json:"share_code,omitempty"`
+	ShareCode *SharingCode            `json:"shareCode,omitempty"`
 }
 
 // Sharing
@@ -324,16 +385,6 @@ func (ComponentDefinition) TableName() string {
 	return "component_definition_index"
 }
 
-type pbDefinition interface {
-	GetUid() string
-	GetId() string
-	GetTitle() string
-	GetTombstone() bool
-	GetPublic() bool
-	GetVersion() string
-	GetReleaseStage() pb.ComponentDefinition_ReleaseStage
-}
-
 // FeatureScores holds the feature score of each component definition. If a
 // component definition is not present in the map, the score will be 0.
 //
@@ -362,29 +413,17 @@ var FeatureScores = map[string]int{
 // ComponentDefinitionFromProto parses a ComponentDefinition from the proto
 // structure.
 func ComponentDefinitionFromProto(cdpb *pb.ComponentDefinition) *ComponentDefinition {
-	var def pbDefinition
-	switch cdpb.Type {
-	case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
-		def = cdpb.GetOperatorDefinition()
-	case pb.ComponentType_COMPONENT_TYPE_CONNECTOR_AI,
-		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_DATA,
-		pb.ComponentType_COMPONENT_TYPE_CONNECTOR_APPLICATION:
-
-		def = cdpb.GetConnectorDefinition()
-	default:
-		return nil
-	}
 
 	cd := &ComponentDefinition{
 		ComponentType: ComponentType(cdpb.Type),
 
-		UID:          uuid.FromStringOrNil(def.GetUid()),
-		ID:           def.GetId(),
-		Title:        def.GetTitle(),
-		Version:      def.GetVersion(),
-		IsVisible:    def.GetPublic() && !def.GetTombstone(),
-		FeatureScore: FeatureScores[def.GetId()],
-		ReleaseStage: ReleaseStage(def.GetReleaseStage()),
+		UID:          uuid.FromStringOrNil(cdpb.GetUid()),
+		ID:           cdpb.GetId(),
+		Title:        cdpb.GetTitle(),
+		Version:      cdpb.GetVersion(),
+		IsVisible:    cdpb.GetPublic() && !cdpb.GetTombstone(),
+		FeatureScore: FeatureScores[cdpb.GetId()],
+		ReleaseStage: ReleaseStage(cdpb.GetReleaseStage()),
 	}
 
 	return cd

@@ -26,28 +26,28 @@ import (
 var forward_PipelinePublicService_TriggerUserPipeline_0 = runtime.ForwardResponseMessage
 var forward_PipelinePublicService_TriggerUserPipelineRelease_0 = runtime.ForwardResponseMessage
 
-func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Request) ([]*structpb.Struct, error) {
+func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Request) ([]*pb.TriggerData, error) {
 
 	err := req.ParseMultipartForm(4 << 20)
 	if err != nil {
 		return nil, err
 	}
 
-	inputsMap := map[int]map[string]interface{}{}
+	varMap := map[int]map[string]interface{}{}
 
-	maxInputIdx := 0
+	maxVarIdx := 0
 
 	for k, v := range req.MultipartForm.Value {
-		if strings.HasPrefix(k, "inputs[") {
+		if strings.HasPrefix(k, "variables[") || strings.HasPrefix(k, "inputs[") {
 			k = k[7:]
 
-			inputIdx, err := strconv.Atoi(k[:strings.Index(k, "]")])
+			varIdx, err := strconv.Atoi(k[:strings.Index(k, "]")])
 			if err != nil {
 				return nil, err
 			}
 
-			if inputIdx > maxInputIdx {
-				maxInputIdx = inputIdx
+			if varIdx > maxVarIdx {
+				maxVarIdx = varIdx
 			}
 
 			k = k[strings.Index(k, "]")+2:]
@@ -66,43 +66,43 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 				key = k
 			}
 
-			if _, ok := inputsMap[inputIdx]; !ok {
-				inputsMap[inputIdx] = map[string]interface{}{}
+			if _, ok := varMap[varIdx]; !ok {
+				varMap[varIdx] = map[string]interface{}{}
 			}
 
 			if isArray {
-				if _, ok := inputsMap[inputIdx][key]; !ok {
-					inputsMap[inputIdx][key] = map[int]interface{}{}
+				if _, ok := varMap[varIdx][key]; !ok {
+					varMap[varIdx][key] = map[int]interface{}{}
 				}
 				var b interface{}
 				unmarshalErr := json.Unmarshal([]byte(v[0]), &b)
 				if unmarshalErr != nil {
 					return nil, unmarshalErr
 				}
-				inputsMap[inputIdx][key].(map[int]interface{})[keyIdx] = b
+				varMap[varIdx][key].(map[int]interface{})[keyIdx] = b
 			} else {
 				var b interface{}
 				unmarshalErr := json.Unmarshal([]byte(v[0]), &b)
 				if unmarshalErr != nil {
 					return nil, unmarshalErr
 				}
-				inputsMap[inputIdx][key] = b
+				varMap[varIdx][key] = b
 			}
 
 		}
 	}
 
 	for k, v := range req.MultipartForm.File {
-		if strings.HasPrefix(k, "inputs[") {
+		if strings.HasPrefix(k, "variables[") || strings.HasPrefix(k, "inputs[") {
 			k = k[7:]
 
-			inputIdx, err := strconv.Atoi(k[:strings.Index(k, "]")])
+			varIdx, err := strconv.Atoi(k[:strings.Index(k, "]")])
 			if err != nil {
 				return nil, err
 			}
 
-			if inputIdx > maxInputIdx {
-				maxInputIdx = inputIdx
+			if varIdx > maxVarIdx {
+				maxVarIdx = varIdx
 			}
 
 			k = k[strings.Index(k, "]")+2:]
@@ -121,8 +121,8 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 				key = k
 			}
 
-			if _, ok := inputsMap[inputIdx]; !ok {
-				inputsMap[inputIdx] = map[string]interface{}{}
+			if _, ok := varMap[varIdx]; !ok {
+				varMap[varIdx] = map[string]interface{}{}
 			}
 
 			file, err := v[0].Open()
@@ -136,21 +136,21 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 			}
 			v := fmt.Sprintf("data:%s;base64,%s", v[0].Header.Get("Content-Type"), base64.StdEncoding.EncodeToString(byteContainer))
 			if isArray {
-				if _, ok := inputsMap[inputIdx][key]; !ok {
-					inputsMap[inputIdx][key] = map[int]interface{}{}
+				if _, ok := varMap[varIdx][key]; !ok {
+					varMap[varIdx][key] = map[int]interface{}{}
 				}
 
-				inputsMap[inputIdx][key].(map[int]interface{})[keyIdx] = v
+				varMap[varIdx][key].(map[int]interface{})[keyIdx] = v
 			} else {
-				inputsMap[inputIdx][key] = v
+				varMap[varIdx][key] = v
 			}
 
 		}
 	}
 
-	inputs := make([]*structpb.Struct, maxInputIdx+1)
-	for inputIdx, inputValue := range inputsMap {
-		inputs[inputIdx] = &structpb.Struct{
+	data := make([]*pb.TriggerData, maxVarIdx+1)
+	for varIdx, inputValue := range varMap {
+		data[varIdx].Variable = &structpb.Struct{
 			Fields: map[string]*structpb.Value{},
 		}
 		for key, value := range inputValue {
@@ -173,19 +173,19 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 					return nil, err
 				}
 
-				inputs[inputIdx].GetFields()[key] = structpb.NewListValue(structVal)
+				data[varIdx].Variable.GetFields()[key] = structpb.NewListValue(structVal)
 
 			default:
 				structVal, err := structpb.NewValue(value)
 				if err != nil {
 					return nil, err
 				}
-				inputs[inputIdx].GetFields()[key] = structVal
+				data[varIdx].Variable.GetFields()[key] = structVal
 			}
 
 		}
 	}
-	return inputs, nil
+	return data, nil
 }
 
 // HandleTrigger
@@ -208,13 +208,13 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 
 	contentType := req.Header.Get("Content-Type")
 	if strings.Contains(contentType, "multipart/form-data") {
-		inputs, err := convertFormData(ctx, mux, req)
+		data, err := convertFormData(ctx, mux, req)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 		resp, md, err = request_PipelinePublicService_TriggerUserPipeline_0_form(annotatedContext, inboundMarshaler, client, &pb.TriggerUserPipelineRequest{
-			Inputs: inputs,
+			Data: data,
 		}, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
@@ -255,13 +255,13 @@ func HandleTriggerAsync(mux *runtime.ServeMux, client pb.PipelinePublicServiceCl
 
 	contentType := req.Header.Get("Content-Type")
 	if strings.Contains(contentType, "multipart/form-data") {
-		inputs, err := convertFormData(ctx, mux, req)
+		data, err := convertFormData(ctx, mux, req)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 		resp, md, err = request_PipelinePublicService_TriggerAsyncUserPipeline_0_form(annotatedContext, inboundMarshaler, client, &pb.TriggerAsyncUserPipelineRequest{
-			Inputs: inputs,
+			Data: data,
 		}, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
@@ -423,13 +423,13 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 
 	contentType := req.Header.Get("Content-Type")
 	if strings.Contains(contentType, "multipart/form-data") {
-		inputs, err := convertFormData(ctx, mux, req)
+		data, err := convertFormData(ctx, mux, req)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 		resp, md, err = request_PipelinePublicService_TriggerUserPipelineRelease_0_form(annotatedContext, inboundMarshaler, client, &pb.TriggerUserPipelineReleaseRequest{
-			Inputs: inputs,
+			Data: data,
 		}, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
@@ -470,13 +470,13 @@ func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pb.PipelinePublicSe
 
 	contentType := req.Header.Get("Content-Type")
 	if strings.Contains(contentType, "multipart/form-data") {
-		inputs, err := convertFormData(ctx, mux, req)
+		data, err := convertFormData(ctx, mux, req)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 		resp, md, err = request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0_form(annotatedContext, inboundMarshaler, client, &pb.TriggerAsyncUserPipelineReleaseRequest{
-			Inputs: inputs,
+			Data: data,
 		}, pathParams)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)

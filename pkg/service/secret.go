@@ -7,13 +7,13 @@ import (
 
 	"github.com/gofrs/uuid"
 	"go.einride.tech/aip/filtering"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/errmsg"
 
+	componentbase "github.com/instill-ai/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -112,19 +112,19 @@ func (s *service) DeleteNamespaceSecretByID(ctx context.Context, ns resource.Nam
 	return s.repository.DeleteNamespaceSecretByID(ctx, ownerPermalink, id)
 }
 
-func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, connection *structpb.Struct, prefix string) error {
+func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, setup map[string]any, prefix string) error {
 
-	for k, v := range connection.GetFields() {
+	for k, v := range setup {
 		key := prefix + k
 		if ok, err := s.component.IsSecretField(uid, key); err == nil && ok {
-			if v.GetStringValue() != "" {
-				if !strings.HasPrefix(v.GetStringValue(), "${") || !strings.HasSuffix(v.GetStringValue(), "}") {
+			if s, ok := v.(string); ok {
+				if !strings.HasPrefix(s, "${") || !strings.HasSuffix(s, "}") {
 					return errCanNotUsePlaintextSecret
 				}
 			}
 		}
-		if v.GetStructValue() != nil {
-			err := s.checkSecretFields(ctx, uid, v.GetStructValue(), fmt.Sprintf("%s.", key))
+		if str, ok := v.(map[string]any); ok {
+			err := s.checkSecretFields(ctx, uid, str, fmt.Sprintf("%s.", key))
 			if err != nil {
 				return err
 			}
@@ -134,21 +134,22 @@ func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, connecti
 }
 func (s *service) checkSecret(ctx context.Context, recipe *datamodel.Recipe) error {
 
-	for _, comp := range recipe.Components {
-		if comp.IsConnectorComponent() {
-			defUID := uuid.FromStringOrNil(strings.Split(comp.ConnectorComponent.DefinitionName, "/")[1])
-			connection := comp.ConnectorComponent.Connection
-			err := s.checkSecretFields(ctx, defUID, connection, "")
+	for _, comp := range recipe.Component {
+		switch c := comp.(type) {
+		case *componentbase.ComponentConfig:
+			defUID := uuid.FromStringOrNil(c.Type)
+			setup := c.Setup
+			err := s.checkSecretFields(ctx, defUID, setup, "")
 			if err != nil {
 				return err
 			}
-		}
-		if comp.IsIteratorComponent() {
-			for _, nestedComp := range comp.IteratorComponent.Components {
-				if comp.IsConnectorComponent() {
-					defUID := uuid.FromStringOrNil(strings.Split(nestedComp.ConnectorComponent.DefinitionName, "/")[1])
-					connection := nestedComp.ConnectorComponent.Connection
-					err := s.checkSecretFields(ctx, defUID, connection, "")
+		case *datamodel.IteratorComponent:
+			for _, nestedComp := range c.Component {
+				switch nestedC := nestedComp.(type) {
+				case *componentbase.ComponentConfig:
+					defUID := uuid.FromStringOrNil(nestedC.Type)
+					setup := nestedC.Setup
+					err := s.checkSecretFields(ctx, defUID, setup, "")
 					if err != nil {
 						return err
 					}

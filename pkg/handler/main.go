@@ -19,7 +19,7 @@ var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
 
 // PublicHandler handles public API
 type PublicHandler struct {
-	// pb.UnimplementedPipelinePublicServiceServer
+	pb.UnimplementedPipelinePublicServiceServer
 	service service.Service
 }
 

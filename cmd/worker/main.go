@@ -165,8 +165,7 @@ func main() {
 	})
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
-	w.RegisterActivity(cw.ConnectorActivity)
-	w.RegisterActivity(cw.OperatorActivity)
+	w.RegisterActivity(cw.ComponentActivity)
 	w.RegisterActivity(cw.PreIteratorActivity)
 	w.RegisterActivity(cw.PostIteratorActivity)
 	w.RegisterActivity(cw.UsageCollectActivity)

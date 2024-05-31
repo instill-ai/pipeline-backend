@@ -678,27 +678,25 @@ type ValidateNamespacePipelineRequest interface {
 
 func (h *PublicHandler) ValidateUserPipeline(ctx context.Context, req *pb.ValidateUserPipelineRequest) (resp *pb.ValidateUserPipelineResponse, err error) {
 	resp = &pb.ValidateUserPipelineResponse{}
-	resp.Pipeline, err = h.validateNamespacePipeline(ctx, req)
+	resp.Errors, err = h.validateNamespacePipeline(ctx, req)
+	resp.Success = len(resp.Errors) == 0
 	return resp, err
 }
 
 func (h *PublicHandler) ValidateOrganizationPipeline(ctx context.Context, req *pb.ValidateOrganizationPipelineRequest) (resp *pb.ValidateOrganizationPipelineResponse, err error) {
 	resp = &pb.ValidateOrganizationPipelineResponse{}
-	resp.Pipeline, err = h.validateNamespacePipeline(ctx, req)
+	resp.Errors, err = h.validateNamespacePipeline(ctx, req)
+	resp.Success = len(resp.Errors) == 0
 	return resp, err
 }
 
-func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req ValidateNamespacePipelineRequest) (*pb.Pipeline, error) {
+func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req ValidateNamespacePipelineRequest) ([]*pb.PipelineValidationError, error) {
 
 	eventName := "ValidateNamespacePipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
-
-	logUUID, _ := uuid.NewV4()
-
-	logger, _ := logger.GetZapLogger(ctx)
 
 	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
 	if err != nil {
@@ -710,21 +708,13 @@ func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req Valid
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.ValidateNamespacePipelineByID(ctx, ns, id)
+	validationErrors, err := h.service.ValidateNamespacePipelineByID(ctx, ns, id)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	}
 
-	logger.Info(string(customotel.NewLogMessage(
-		ctx,
-		span,
-		logUUID.String(),
-		eventName,
-		customotel.SetEventResource(pbPipeline),
-	)))
-
-	return pbPipeline, nil
+	return validationErrors, nil
 }
 
 type RenameNamespacePipelineRequestInterface interface {
@@ -890,8 +880,8 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 
 type TriggerNamespacePipelineRequestInterface interface {
 	GetName() string
-	GetInputs() []*structpb.Struct
-	GetSecrets() map[string]string
+	GetInputs() []*structpb.Struct // deprecated
+	GetData() []*pb.TriggerData
 }
 
 func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.TriggerUserPipelineRequest) (resp *pb.TriggerUserPipelineResponse, err error) {
@@ -924,7 +914,7 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 		return nil, nil, err
 	}
 
-	outputs, metadata, err = h.service.TriggerNamespacePipelineByID(ctx, ns, id, req.GetInputs(), req.GetSecrets(), logUUID.String(), returnTraces)
+	outputs, metadata, err = h.service.TriggerNamespacePipelineByID(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, nil, err
@@ -943,8 +933,8 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 
 type TriggerAsyncNamespacePipelineRequestInterface interface {
 	GetName() string
-	GetInputs() []*structpb.Struct
-	GetSecrets() map[string]string
+	GetInputs() []*structpb.Struct // deprecated
+	GetData() []*pb.TriggerData
 }
 
 func (h *PublicHandler) TriggerAsyncUserPipeline(ctx context.Context, req *pb.TriggerAsyncUserPipelineRequest) (resp *pb.TriggerAsyncUserPipelineResponse, err error) {
@@ -977,7 +967,7 @@ func (h *PublicHandler) triggerAsyncNamespacePipeline(ctx context.Context, req T
 		return nil, err
 	}
 
-	operation, err = h.service.TriggerAsyncNamespacePipelineByID(ctx, ns, id, req.GetInputs(), req.GetSecrets(), logUUID.String(), returnTraces)
+	operation, err = h.service.TriggerAsyncNamespacePipelineByID(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1581,8 +1571,8 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 
 type TriggerNamespacePipelineReleaseRequestInterface interface {
 	GetName() string
-	GetInputs() []*structpb.Struct
-	GetSecrets() map[string]string
+	GetInputs() []*structpb.Struct // deprecated
+	GetData() []*pb.TriggerData
 }
 
 func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pb.TriggerUserPipelineReleaseRequest) (resp *pb.TriggerUserPipelineReleaseResponse, err error) {
@@ -1615,7 +1605,7 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 		return nil, nil, err
 	}
 
-	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetInputs(), req.GetSecrets(), logUUID.String(), returnTraces)
+	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, nil, err
@@ -1634,8 +1624,8 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 
 type TriggerAsyncNamespacePipelineReleaseRequestInterface interface {
 	GetName() string
-	GetInputs() []*structpb.Struct
-	GetSecrets() map[string]string
+	GetInputs() []*structpb.Struct // deprecated
+	GetData() []*pb.TriggerData
 }
 
 func (h *PublicHandler) TriggerAsyncUserPipelineRelease(ctx context.Context, req *pb.TriggerAsyncUserPipelineReleaseRequest) (resp *pb.TriggerAsyncUserPipelineReleaseResponse, err error) {
@@ -1668,7 +1658,7 @@ func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context
 		return nil, err
 	}
 
-	operation, err = h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, req.GetInputs(), req.GetSecrets(), logUUID.String(), returnTraces)
+	operation, err = h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1699,4 +1689,20 @@ func (h *PublicHandler) GetOperation(ctx context.Context, req *pb.GetOperationRe
 	return &pb.GetOperationResponse{
 		Operation: operation,
 	}, nil
+}
+
+func mergeInputsIntoData(inputs []*structpb.Struct, data []*pb.TriggerData) []*pb.TriggerData {
+	// Backward compatibility for `inputs``
+	var merged []*pb.TriggerData
+	if inputs != nil {
+		merged = make([]*pb.TriggerData, len(inputs))
+		for idx, input := range inputs {
+			merged[idx] = &pb.TriggerData{
+				Variable: input,
+			}
+		}
+	} else {
+		merged = data
+	}
+	return merged
 }

@@ -56,7 +56,7 @@ message ComponentDefinition {
     // The `version` field in the definition must have `alpha` as its first
     // pre-release identifier, e.g., `0.1.0-alpha`, `0.1.3-alpha.1`.
     RELEASE_STAGE_ALPHA = 3;
-    // The connector has reached stability and no backwards incompatible
+    // The component has reached stability and no backwards incompatible
     // changes are expected. Before reaching general availability, it should be
     // validated by a broader group of users. Some fixes might be added during
     // this process.
@@ -69,15 +69,62 @@ message ComponentDefinition {
     RELEASE_STAGE_GA = 5;
   }
 
-  // Defines the type of task the component will perform.
-  ComponentType type = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // The component definition details.
-  oneof definition {
-    // operator definition detail
-    OperatorDefinition operator_definition = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-    // connector definition detail
-    ConnectorDefinition connector_definition = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Spec represents a specification data model.
+  message Spec {
+    // Component specification.
+    google.protobuf.Struct component_specification = 3 [(google.api.field_behavior) = REQUIRED];
+    // Data specifications.
+    // The key represents the task, and the value is the corresponding data_specification.
+    map<string, DataSpecification> data_specifications = 5 [(google.api.field_behavior) = REQUIRED];
   }
+
+  // The name of the component definition, defined by its ID.
+  // - Format: `component-definitions/{id}`
+  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition UUID.
+  string uid = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition resource ID (used in `name` as the last segment). This
+  // conforms to RFC-1034, which restricts to letters, numbers, and hyphen,
+  // with the first character a letter, the last a letter or a number, and a 63
+  // character maximum.
+  string id = 3 [(google.api.field_behavior) = IMMUTABLE];
+  // Component definition title.
+  string title = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition documentation URL.
+  string documentation_url = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition icon. This is a path that's relative to the root of
+  // the component implementation (see `source_url`) and that allows
+  // frontend applications to pull and locate the icons.
+  string icon = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition specification.
+  Spec spec = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition type.
+  ComponentType type = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition tombstone. If true, this configuration is permanently
+  // off. Otherwise, the configuration is active.
+  bool tombstone = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The public flag determines whether this connector definition is available
+  // to all workspaces.
+  bool public = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition custom flag, i.e., whether this is a custom
+  // component definition.
+  bool custom = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition vendor name.
+  string vendor = 12 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Vendor-specific attributes.
+  google.protobuf.Struct vendor_attributes = 13 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Source code URL. This points to the source code where the component is
+  // implemented.
+  string source_url = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Component definition version. This is a string that fulfills the SemVer
+  // specification (e.g. `1.0.0-beta`).
+  string version = 15 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // List of tasks that can be executed by the component.
+  repeated ComponentTask tasks = 16 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Short description of the component.
+  string description = 17 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release stage.
+  ComponentDefinition.ReleaseStage release_stage = 18 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // DataSpecification describes the JSON schema of component input and output.
@@ -90,8 +137,8 @@ message DataSpecification {
 
 // ConnectorSpec represents a specification data model.
 message ConnectorSpec {
-  // Resource specification.
-  google.protobuf.Struct resource_specification = 2 [(google.api.field_behavior) = REQUIRED];
+  // Deleted
+  reserved 2;
   // Component specification.
   google.protobuf.Struct component_specification = 3 [(google.api.field_behavior) = REQUIRED];
   // Deleted field.
@@ -277,7 +324,7 @@ message ListComponentDefinitionsRequest {
   optional ComponentDefinition.View view = 3 [(google.api.field_behavior) = OPTIONAL];
   // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
   // expression.
-  // - Example: `component_type="COMPONENT_TYPE_CONNECTOR_AI"`.
+  // - Example: `component_type="COMPONENT_TYPE_AI"`.
   // - Example: `tasks:"TASK_TEXT_GENERATION"`.
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
   // Page number.
@@ -291,7 +338,7 @@ message ListComponentDefinitionsResponse {
   // Field 2 is reserved for `next_page_token`, which stopped being served
   // after the endpoint switched to offset-based pagination.
   reserved 2;
-  // Total number of connector definitions.
+  // Total number of component definitions.
   int32 total_size = 3;
   // The requested page size.
   int32 page_size = 4;

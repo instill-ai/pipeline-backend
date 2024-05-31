@@ -23,7 +23,7 @@ database:
   host: pg-sql
   port: 5432
   name: pipeline
-  version: 14
+  version: 15
   timezone: Etc/UTC
   pool:
     idleconnections: 5
