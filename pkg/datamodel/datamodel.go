@@ -107,6 +107,7 @@ type IComponent interface {
 }
 
 func (r *Recipe) UnmarshalJSON(data []byte) error {
+	// TODO: we should catch the errors here and return to the user.
 	tmp := make(map[string]any)
 	err := json.Unmarshal(data, &tmp)
 	if err != nil {
@@ -135,20 +136,21 @@ func (r *Recipe) UnmarshalJSON(data []byte) error {
 		r.Component = make(map[string]IComponent)
 		for id, comp := range comps {
 
-			if _, ok := comp.(map[string]any)["type"]; ok {
-
-				b, _ := json.Marshal(comp)
-				c := componentbase.ComponentConfig{}
-				_ = json.Unmarshal(b, &c)
-				r.Component[id] = &c
-
+			if t, ok := comp.(map[string]any)["type"]; !ok {
+				return fmt.Errorf("component type error")
 			} else {
-				b, _ := json.Marshal(comp)
-				c := IteratorComponent{}
-				_ = json.Unmarshal(b, &c)
-				r.Component[id] = &c
+				if t == "iterator" {
+					b, _ := json.Marshal(comp)
+					c := IteratorComponent{}
+					_ = json.Unmarshal(b, &c)
+					r.Component[id] = &c
+				} else {
+					b, _ := json.Marshal(comp)
+					c := componentbase.ComponentConfig{}
+					_ = json.Unmarshal(b, &c)
+					r.Component[id] = &c
+				}
 			}
-
 		}
 	}
 
@@ -178,6 +180,7 @@ type On struct {
 }
 
 type IteratorComponent struct {
+	Type              string                `json:"type,omitempty"`
 	Input             string                `json:"input,omitempty"`
 	OutputElements    map[string]string     `json:"outputElements,omitempty"`
 	Condition         *string               `json:"condition,omitempty"`
@@ -191,6 +194,9 @@ func (i *IteratorComponent) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &tmp)
 	if err != nil {
 		return err
+	}
+	if v, ok := tmp["type"]; ok && v != nil {
+		i.Type = tmp["type"].(string)
 	}
 	if v, ok := tmp["input"]; ok && v != nil {
 		i.Input = tmp["input"].(string)
