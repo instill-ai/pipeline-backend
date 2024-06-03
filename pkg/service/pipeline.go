@@ -327,7 +327,6 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	toUpdTags := toUpdPipeline.GetTags()
 
-	// TODO: we will need to revert it after the frontend is ready.
 	if len(toUpdTags) > 0 {
 		currentTags := existingPipeline.TagNames()
 		toBeCreatedTagNames := make([]string, 0, len(toUpdTags))
