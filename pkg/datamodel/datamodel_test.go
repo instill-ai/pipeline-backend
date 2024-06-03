@@ -8,17 +8,32 @@ import (
 
 func TestDatamodel_TagNames(t *testing.T) {
 	c := quicktest.New(t)
-	testPipeline := &Pipeline{
-		Tags: []*Tag{
-			{
-				TagName: "tag1",
+
+	testCases := []struct {
+		pipeline *Pipeline
+		expected []string
+	}{
+		{
+			pipeline: &Pipeline{
+				Tags: []*Tag{
+					{
+						TagName: "tag1",
+					},
+					{
+						TagName: "tag2",
+					},
+				},
 			},
-			{
-				TagName: "tag2",
-			},
+			expected: []string{"tag1", "tag2"},
+		},
+		{
+			pipeline: &Pipeline{},
+			expected: []string{},
 		},
 	}
-	tagNames := testPipeline.TagNames()
-	c.Assert(tagNames, quicktest.DeepEquals, []string{"tag1", "tag2"})
 
+	for _, tc := range testCases {
+		tagNames := tc.pipeline.TagNames()
+		c.Assert(tagNames, quicktest.DeepEquals, tc.expected)
+	}
 }
