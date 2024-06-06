@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.29.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.28.1-beta...v0.29.0-beta) (2024-06-06)
+
+
+### Features
+
+* implement new recipe format ([#498](https://github.com/instill-ai/pipeline-backend/issues/498)) ([de0c2bc](https://github.com/instill-ai/pipeline-backend/commit/de0c2bc23fd44023f9449a9cc9997f243cdb9daf))
+* implement pipeline `number_of_runs` and `last_run_time` ([#501](https://github.com/instill-ai/pipeline-backend/issues/501)) ([0e6cd12](https://github.com/instill-ai/pipeline-backend/commit/0e6cd12236beaf10fd281ddabcf2a3f07371f43c))
+* support python code in components ([#492](https://github.com/instill-ai/pipeline-backend/issues/492)) ([5417e5f](https://github.com/instill-ai/pipeline-backend/commit/5417e5f3ed4e5a05a83aa614ccfca3700b9f3ad4))
+
 ## [0.28.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.28.0-beta...v0.28.1-beta) (2024-05-17)
 
 
