@@ -13,7 +13,11 @@ import (
 	"syscall"
 	"time"
 
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpczap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	openfga "github.com/openfga/api/proto/openfga/v1"
 	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
@@ -27,27 +31,21 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	openfga "github.com/openfga/api/proto/openfga/v1"
-
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/middleware"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 	"github.com/instill-ai/x/temporal"
 	"github.com/instill-ai/x/zapadapter"
-
-	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 var propagator propagation.TextMapPropagator
@@ -124,7 +122,7 @@ func main() {
 	}()
 
 	// verbosity 3 will avoid [transport] from emitting
-	grpc_zap.ReplaceGrpcLoggerV2WithVerbosity(logger, 3)
+	grpczap.ReplaceGrpcLoggerV2WithVerbosity(logger, 3)
 
 	db := database.GetSharedConnection()
 	defer database.Close(db)
@@ -160,8 +158,8 @@ func main() {
 	defer temporalClient.Close()
 
 	// Shared options for the logger, with a custom gRPC code to log level function.
-	opts := []grpc_zap.Option{
-		grpc_zap.WithDecider(func(fullMethodName string, err error) bool {
+	opts := []grpczap.Option{
+		grpczap.WithDecider(func(fullMethodName string, err error) bool {
 			// will not log gRPC calls if it was a call to liveness or readiness and no error was raised
 			if err == nil {
 				if match, _ := regexp.MatchString("vdp.pipeline.v1beta.PipelinePublicService/.*ness$", fullMethodName); match {
@@ -178,15 +176,15 @@ func main() {
 	}
 
 	grpcServerOpts := []grpc.ServerOption{
-		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+		grpc.StreamInterceptor(grpcmiddleware.ChainStreamServer(
 			middleware.StreamAppendMetadataInterceptor,
-			grpc_zap.StreamServerInterceptor(logger, opts...),
-			grpc_recovery.StreamServerInterceptor(middleware.RecoveryInterceptorOpt()),
+			grpczap.StreamServerInterceptor(logger, opts...),
+			grpcrecovery.StreamServerInterceptor(middleware.RecoveryInterceptorOpt()),
 		)),
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+		grpc.UnaryInterceptor(grpcmiddleware.ChainUnaryServer(
 			middleware.UnaryAppendMetadataInterceptor,
-			grpc_zap.UnaryServerInterceptor(logger, opts...),
-			grpc_recovery.UnaryServerInterceptor(middleware.RecoveryInterceptorOpt()),
+			grpczap.UnaryServerInterceptor(logger, opts...),
+			grpcrecovery.UnaryServerInterceptor(middleware.RecoveryInterceptorOpt()),
 		)),
 	}
 
@@ -235,23 +233,12 @@ func main() {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
 
-	influxDBClient, influxDBWriteClient := external.InitInfluxDBServiceClient(ctx)
-	defer influxDBClient.Close()
-
-	influxErrCh := influxDBWriteClient.Errors()
-	go func() {
-		for err := range influxErrCh {
-			logger.Error(fmt.Sprintf("write to bucket %s error: %s\n", config.Config.InfluxDB.Bucket, err.Error()))
-		}
-	}()
-
 	repository := repository.NewRepository(db, redisClient)
 
 	service := service.NewService(
 		repository,
 		redisClient,
 		temporalClient,
-		influxDBWriteClient,
 		&aclClient,
 		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient),
 	)
