@@ -88,7 +88,6 @@ var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 // The workflow is only responsible for orchestrating the DAG, not processing or reading/writing the data.
 // All data processing should be done in activities.
 func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error {
-
 	eventName := "TriggerPipelineWorkflow"
 
 	startTime := time.Now()
@@ -98,6 +97,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
+
+	status := "Started"
+	// Registering query handler for status
+	err := workflow.SetQueryHandler(ctx, "status", func() (string, error) {
+		return status, nil
+	})
+	if err != nil {
+		logger.Error(fmt.Sprintf("Unable to register query handler: %s", err.Error()))
+		return err
+	}
 
 	var ownerType mgmtPB.OwnerType
 	switch param.SystemVariables.PipelineOwnerType {
@@ -263,6 +272,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 				return err
 			}
+			status = "intermediate"
 		}
 
 		for batchIdx := range param.BatchSize {

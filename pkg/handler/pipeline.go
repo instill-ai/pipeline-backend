@@ -1,16 +1,12 @@
 package handler
 
 import (
+	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"context"
 	"fmt"
-	"net/http"
-	"strings"
-
-	"strconv"
-
-	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
+	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 	"go.opentelemetry.io/otel/trace"
@@ -21,8 +17,10 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/structpb"
-
-	fieldmask_utils "github.com/mennanov/fieldmask-utils"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
@@ -888,6 +886,110 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.Trigger
 	resp = &pb.TriggerUserPipelineResponse{}
 	resp.Outputs, resp.Metadata, err = h.triggerNamespacePipeline(ctx, req)
 	return resp, err
+}
+
+func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelineWithStreamRequest, server pb.PipelinePublicService_TriggerUserPipelineWithStreamServer) error {
+
+	//resultChan := make(chan PipelineResult)
+	//go func() {
+	//	err := h.triggerNamespacePipelineWithStream(context.TODO(), req, resultChan)
+	//	if err != nil {
+	//		fmt.Println("Error:", err)
+	//		close(resultChan)
+	//		return
+	//	}
+	//}()
+	//
+	//for result := range resultChan {
+	//	err := server.Send(&pb.TriggerUserPipelineWithStreamResponse{
+	//		Outputs:  []*structpb.Struct{result.Output},
+	//		Metadata: &pb.TriggerMetadata{}, // TODO: support metadata
+	//	})
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
+
+	for i := range 100 {
+		testkey := fmt.Sprintf("test-key-%d", i)
+		err := server.Send(&pb.TriggerUserPipelineWithStreamResponse{
+			Outputs:  []*structpb.Struct{{Fields: map[string]*structpb.Value{testkey: {Kind: &structpb.Value_StringValue{StringValue: "test-value"}}}}},
+			Metadata: &pb.TriggerMetadata{},
+		})
+		if err != nil {
+			return err
+		}
+		time.Sleep(time.Millisecond * 500) // TO simulate some delay
+	}
+	return nil
+}
+
+type PipelineResult struct {
+	Output   *structpb.Struct
+	Metadata *pb.TriggerMetadata
+}
+
+func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, req *pb.TriggerUserPipelineWithStreamRequest, resultChan chan<- PipelineResult) error {
+
+	eventName := "TriggerNamespacePipelineWithStream"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	//logUUID, _ := uuid.NewV4()
+	//
+	//ns, id, _, returnTraces, err := h.preTriggerUserPipelineWithStream(ctx, req)
+	//if err != nil {
+	//	span.SetStatus(1, err.Error())
+	//	return err
+	//}
+
+	// 	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
+
+	// TODO: work with updated protobuf  and fix TriggerNamespacePipelineReleaseByIDWithStream
+
+	//mergedInputs := mergeInputsIntoData(req.GetInputs(), req.GetData())
+	//
+	//err = h.service.TriggerNamespacePipelineReleaseByIDWithStream(ctx, ns, id, mergedInputs, logUUID.String(), returnTraces, resultChan)
+	//if err != nil {
+	//	span.SetStatus(1, err.Error())
+	//	return err
+	//}
+
+	return nil
+}
+
+func (h *PublicHandler) preTriggerUserPipelineWithStream(ctx context.Context, req *pb.TriggerUserPipelineWithStreamRequest) (resource.Namespace, string, *pb.Pipeline, bool, error) {
+
+	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
+	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
+		return resource.Namespace{}, "", nil, false, ErrCheckRequiredFields
+	}
+
+	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	if err != nil {
+		return ns, id, nil, false, err
+	}
+	if err := authenticateUser(ctx, false); err != nil {
+		return ns, id, nil, false, err
+	}
+
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, id, pb.Pipeline_VIEW_FULL)
+	if err != nil {
+		return ns, id, nil, false, err
+	}
+	// _, err = h.service.ValidateNamespacePipelineByID(ctx, ns,  id)
+	// if err != nil {
+	// 	return ns, nil, id, nil, false, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
+	// }
+	returnTraces := false
+	if resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true" {
+		returnTraces = true
+	}
+
+	return ns, id, pbPipeline, returnTraces, nil
+
 }
 
 func (h *PublicHandler) TriggerOrganizationPipeline(ctx context.Context, req *pb.TriggerOrganizationPipelineRequest) (resp *pb.TriggerOrganizationPipelineResponse, err error) {

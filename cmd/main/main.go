@@ -354,15 +354,26 @@ func main() {
 	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease)); err != nil {
 		logger.Fatal(err.Error())
 	}
+
 	privateHTTPServer := &http.Server{
 		Addr:      fmt.Sprintf(":%v", config.Config.Server.PrivatePort),
 		Handler:   grpcHandlerFunc(privateGrpcS, privateServeMux),
 		TLSConfig: tlsConfig,
 	}
 
+	// Create a new HTTP server mux to wrap the sse handler func
+	sseMux := http.NewServeMux()
+
+	// Register the SSE handler at the "/sse/" endpoint
+	sseMux.HandleFunc("/sse/", handler.HandleSSEStreamResponse)
+
+	sseMux.Handle("/", publicServeMux)
+
+	wrappedHandler := middleware.SSEStreamResponseMiddleware(sseMux)
+
 	publicHTTPServer := &http.Server{
 		Addr:      fmt.Sprintf(":%v", config.Config.Server.PublicPort),
-		Handler:   grpcHandlerFunc(publicGrpcS, publicServeMux),
+		Handler:   grpcHandlerFunc(publicGrpcS, wrappedHandler),
 		TLSConfig: tlsConfig,
 	}
 

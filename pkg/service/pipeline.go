@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"slices"
 	"strings"
 	"sync"
@@ -961,6 +962,121 @@ func (s *service) triggerPipeline(
 	return s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
 }
 
+func (s *service) triggerPipelineWithStream(
+	ctx context.Context,
+	ns resource.Namespace,
+	r *datamodel.Recipe,
+	isAdmin bool,
+	pipelineID string,
+	pipelineUID uuid.UUID,
+	pipelineReleaseID string,
+	pipelineReleaseUID uuid.UUID,
+	pipelineData []*pb.TriggerData,
+	pipelineTriggerID string,
+	returnTraces bool,
+	stream chan<- TriggerResult) error {
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	memoryKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineData)
+	if err != nil {
+		return err
+	}
+	defer recipe.Purge(ctx, s.redisClient, pipelineTriggerID)
+
+	workflowOptions := client.StartWorkflowOptions{
+		ID:                       pipelineTriggerID,
+		TaskQueue:                worker.TaskQueue,
+		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
+		},
+	}
+
+	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+
+	we, err := s.temporalClient.ExecuteWorkflow(
+		ctx,
+		workflowOptions,
+		"TriggerPipelineWorkflow",
+		&worker.TriggerPipelineWorkflowParam{
+			BatchSize:        len(pipelineData),
+			MemoryStorageKey: memoryKey,
+			SystemVariables: recipe.SystemVariables{
+				PipelineID:          pipelineID,
+				PipelineUID:         pipelineUID,
+				PipelineReleaseID:   pipelineReleaseID,
+				PipelineReleaseUID:  pipelineReleaseUID,
+				PipelineRecipe:      r,
+				PipelineOwnerType:   ns.NsType,
+				PipelineOwnerUID:    ns.NsUID,
+				PipelineUserUID:     userUID,
+				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+			},
+			Mode: mgmtPB.Mode_MODE_SYNC,
+		})
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+		return err
+	}
+
+	err = we.Get(ctx, nil)
+	if err != nil {
+		var applicationErr *temporal.ApplicationError
+		if errors.As(err, &applicationErr) {
+			var details worker.EndUserErrorDetails
+			if dErr := applicationErr.Details(&details); dErr == nil && details.Message != "" {
+				// Note: We categorize all pipeline trigger errors as ErrTriggerFail and mark the code as 400 InvalidArgument for now.
+				// We should further categorize them into InvalidArgument or PreconditionFailed or InternalError in the future.
+				err = errmsg.AddMessage(fmt.Errorf("%w %s", ErrTriggerFail, err), details.Message)
+			}
+		}
+		return err
+	}
+
+	go func() {
+		for {
+			// Add a delay to ensure the workflow has started and the query handler is registered
+			time.Sleep(time.Millisecond * 500)
+
+			// Query the SecondaryWorkflow status
+			queryResult, err := s.temporalClient.QueryWorkflow(context.Background(), "secondary_workflow", "", "status")
+			if err != nil {
+				log.Println("Unable to query workflow", err)
+				continue
+			}
+
+			var status string
+			if err := queryResult.Get(&status); err != nil {
+				log.Println("Unable to get query result", err)
+				continue
+			}
+
+			fmt.Println("SecondaryWorkflow status:", status)
+
+			if status == "intermediate" {
+				output, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
+				if err != nil {
+					log.Println("Unable to get outputs and metadata", err) //TODO: handle error
+					continue
+				}
+
+				stream <- TriggerResult{
+					Struct:   output,
+					Metadata: metadata,
+				}
+			}
+
+			// Break the loop if the workflow is completed
+			if status == "Completed" {
+				break
+			}
+		}
+	}()
+
+	return nil
+}
+
 func (s *service) triggerAsyncPipeline(
 	ctx context.Context,
 	ns resource.Namespace,
@@ -1138,6 +1254,32 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 	}
 
 	return s.triggerPipeline(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces)
+}
+
+func (s *service) TriggerNamespacePipelineReleaseByIDWithStream(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error {
+	ownerPermalink := ns.Permalink()
+
+	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false, true)
+	if err != nil {
+		return ErrNotFound
+	}
+
+	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
+	if err != nil {
+		return err
+	}
+
+	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, false)
+	if err != nil {
+		return err
+	}
+
+	err = s.triggerPipelineWithStream(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces, stream)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
