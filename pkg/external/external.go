@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"time"
 
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/log"
@@ -80,7 +79,9 @@ func InitInfluxDBServiceClient(ctx context.Context) (influxdb2.Client, api.Write
 	if config.Config.Server.Debug {
 		influxOptions = influxOptions.SetLogLevel(log.DebugLevel)
 	}
-	influxOptions = influxOptions.SetFlushInterval(uint(time.Duration(config.Config.InfluxDB.FlushInterval * int(time.Second)).Milliseconds()))
+
+	intervalMS := uint(config.Config.InfluxDB.FlushInterval.Milliseconds())
+	influxOptions = influxOptions.SetFlushInterval(intervalMS)
 
 	if config.Config.InfluxDB.HTTPS.Cert != "" && config.Config.InfluxDB.HTTPS.Key != "" {
 		// TODO: support TLS
