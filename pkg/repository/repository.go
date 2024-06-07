@@ -198,7 +198,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	if pageToken != "" {
 		tokens, err := DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", ErrPageTokenDecode
+			return nil, 0, "", newPageTokenErr(err)
 		}
 
 		for _, o := range order.Fields {
@@ -515,7 +515,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	if pageToken != "" {
 		createTime, uid, err := paginate.DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", ErrPageTokenDecode
+			return nil, 0, "", newPageTokenErr(err)
 		}
 		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
 	}

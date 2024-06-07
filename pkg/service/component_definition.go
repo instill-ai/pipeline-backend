@@ -133,7 +133,7 @@ func (s *service) lastUIDFromToken(token string) (string, error) {
 	}
 	_, id, err := paginate.DecodeToken(token)
 	if err != nil {
-		return "", repository.ErrPageTokenDecode
+		return "", fmt.Errorf("%w: invalid page token: %w", errdomain.ErrInvalidArgument, err)
 	}
 
 	return id, nil

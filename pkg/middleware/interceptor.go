@@ -98,7 +98,6 @@ func AsGRPCError(err error) error {
 	case
 		errors.Is(err, errdomain.ErrInvalidArgument),
 		errors.Is(err, repository.ErrOwnerTypeNotMatch),
-		errors.Is(err, repository.ErrPageTokenDecode),
 		errors.Is(err, bcrypt.ErrMismatchedHashAndPassword),
 		errors.Is(err, handler.ErrCheckUpdateImmutableFields),
 		errors.Is(err, handler.ErrCheckOutputOnlyFields),
