@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.29.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.29.0-beta...v0.29.1-beta) (2024-06-07)
+
+
+### Features
+
+* return the owner in pipeline response when using VIEW_BASIC ([#506](https://github.com/instill-ai/pipeline-backend/issues/506)) ([a4fea42](https://github.com/instill-ai/pipeline-backend/commit/a4fea42fbddcec95e9e1f5a876b844f0c99e1980))
+
+
+### Miscellaneous Chores
+
+* release v0.29.1-beta ([f89af80](https://github.com/instill-ai/pipeline-backend/commit/f89af80a49494adfadb09c2820e7220f131e6ad5))
+
 ## [0.29.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.28.1-beta...v0.29.0-beta) (2024-06-06)
 
 
