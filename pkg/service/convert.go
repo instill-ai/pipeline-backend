@@ -498,13 +498,12 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	}
 
 	var owner *mgmtpb.Owner
-	if view > pb.Pipeline_VIEW_BASIC {
-		owner, err = c.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
-		if err != nil {
-			return nil, err
-		}
-		pbPipeline.Owner = owner
+	owner, err = c.fetchOwnerByPermalink(ctx, dbPipeline.Owner)
+	if err != nil {
+		return nil, err
 	}
+	pbPipeline.Owner = owner
+
 	pbPipeline.Permission = &pb.Permission{}
 	if checkPermission {
 		if strings.Split(dbPipeline.Owner, "/")[1] == ctxUserUID {

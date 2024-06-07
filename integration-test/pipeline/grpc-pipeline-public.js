@@ -472,8 +472,6 @@ export function CheckGet(data) {
           (r) => r.message.pipeline.description === reqBody.description,
         [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline recipe is null`]:
           (r) => r.message.pipeline.recipe === null,
-        [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline owner is invalid`]:
-          (r) => r.message.pipeline.owner === undefined,
       }
     );
 

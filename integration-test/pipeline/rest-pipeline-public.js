@@ -430,8 +430,6 @@ export function CheckGet(data) {
           (r) => r.json().pipeline.description === reqBody.description,
         [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline recipe is null`]:
           (r) => r.json().pipeline.recipe === null,
-        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner is invalid`]:
-          (r) => r.json().pipeline.owner === undefined,
       }
     );
 
