@@ -4,10 +4,13 @@ go 1.22.3
 
 require (
 	cloud.google.com/go/longrunning v0.5.6
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/frankban/quicktest v1.14.6
 	github.com/gabriel-vasile/mimetype v1.4.3
+	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/gojuno/minimock/v3 v3.3.11
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/golang/mock v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0

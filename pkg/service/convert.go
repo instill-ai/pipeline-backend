@@ -49,14 +49,14 @@ type converter struct {
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 	redisClient              *redis.Client
 	component                *componentstore.Store
-	aclClient                *acl.ACLClient
+	aclClient                acl.ACLClientInterface
 }
 
 // NewService initiates a service instance
 func NewConverter(
 	m mgmtpb.MgmtPrivateServiceClient,
 	rc *redis.Client,
-	acl *acl.ACLClient,
+	acl acl.ACLClientInterface,
 ) Converter {
 	logger, _ := logger.GetZapLogger(context.Background())
 
