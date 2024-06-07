@@ -1037,7 +1037,7 @@ func (s *service) triggerPipelineWithStream(
 	go func() {
 		for {
 			// Add a delay to ensure the workflow has started and the query handler is registered
-			time.Sleep(time.Millisecond * 500)
+			time.Sleep(time.Millisecond * 500) // TODO: make this configurable
 
 			// Query the SecondaryWorkflow status
 			queryResult, err := s.temporalClient.QueryWorkflow(context.Background(), "secondary_workflow", "", "status")
@@ -1217,6 +1217,24 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 	return s.triggerPipeline(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
 }
 
+func (s *service) TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error {
+	ownerPermalink := ns.Permalink()
+
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
+	if err != nil {
+		return ErrNotFound
+	}
+
+	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
+	if err != nil {
+		return err
+	}
+
+	s.triggerPipelineWithStream(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces, stream)
+
+	return nil
+}
+
 func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
 
 	ownerPermalink := ns.Permalink()
@@ -1254,32 +1272,6 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 	}
 
 	return s.triggerPipeline(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces)
-}
-
-func (s *service) TriggerNamespacePipelineReleaseByIDWithStream(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error {
-	ownerPermalink := ns.Permalink()
-
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false, true)
-	if err != nil {
-		return ErrNotFound
-	}
-
-	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
-	if err != nil {
-		return err
-	}
-
-	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, false)
-	if err != nil {
-		return err
-	}
-
-	err = s.triggerPipelineWithStream(ctx, ns, dbPipelineRelease.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces, stream)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
