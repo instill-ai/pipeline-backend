@@ -15,11 +15,12 @@ import (
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/errmsg"
+
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 )
 
 // RecoveryInterceptorOpt - panic handler

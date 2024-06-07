@@ -7,11 +7,11 @@ import (
 
 	"go.opentelemetry.io/otel"
 
-	healthcheckpb "github.com/instill-ai/protogen-go/common/healthcheck/v1beta"
-	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
+	healthcheckpb "github.com/instill-ai/protogen-go/common/healthcheck/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // TODO: in the public_handler, we should convert all id to uuid when calling service

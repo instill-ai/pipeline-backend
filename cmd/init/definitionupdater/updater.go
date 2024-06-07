@@ -8,13 +8,13 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/launchdarkly/go-semver"
 
-	componentstore "github.com/instill-ai/component/store"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
-
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+
+	componentstore "github.com/instill-ai/component/store"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 type definition interface {

@@ -3,11 +3,12 @@ package repository
 import (
 	"context"
 
-	client "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/credentials"
+
+	client "github.com/influxdata/influxdb-client-go/v2"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"

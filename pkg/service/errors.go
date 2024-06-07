@@ -3,8 +3,9 @@ package service
 import (
 	"fmt"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/x/errmsg"
+
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 )
 
 var ErrNoPermission = fmt.Errorf("no permission")
