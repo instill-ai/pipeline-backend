@@ -1042,10 +1042,14 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 	if err != nil {
 		return nil, err
 	}
-	_, err = h.service.ValidateNamespacePipelineByID(ctx, ns, pipeline.Id)
-	if err != nil {
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
-	}
+
+	// TODO: We temporarily removed the release validation due to a malfunction
+	// in the validation function. We'll add it back after we fix the validation
+	// function.
+	// _, err = h.service.ValidateNamespacePipelineByID(ctx, ns, pipeline.Id)
+	// if err != nil {
+	// 	return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
+	// }
 
 	pbPipelineRelease, err := h.service.CreateNamespacePipelineRelease(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.GetRelease())
 	if err != nil {
