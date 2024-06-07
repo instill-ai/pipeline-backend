@@ -106,8 +106,7 @@ func (s *service) filterConnectorDefinitions(defs []*pb.ConnectorDefinition, fil
 	}
 
 	filtered := make([]*pb.ConnectorDefinition, 0, len(defs))
-	trans := repository.NewTranspiler(filter)
-	expr, _ := trans.Transpile()
+	expr, _ := s.repository.TranspileFilter(filter)
 	typeMap := map[string]bool{}
 	for i, v := range expr.Vars {
 		if i == 0 {
