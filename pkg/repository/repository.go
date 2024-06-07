@@ -18,6 +18,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/errmsg"
@@ -721,7 +722,7 @@ func (r *repository) GetDefinitionByUID(_ context.Context, uid uuid.UUID) (*data
 
 	if result := r.db.Model(record).Where("uid = ?", uid.String()).First(record); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			return nil, ErrNotFound
+			return nil, errdomain.ErrNotFound
 		}
 
 		return nil, result.Error

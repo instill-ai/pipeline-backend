@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
 
@@ -27,7 +28,7 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 		return convertComponentDefToOperatorDef(compDef), nil
 
 	default:
-		return nil, repository.ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 }
 
@@ -333,7 +334,7 @@ func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*p
 		return convertComponentDefToConnectorDef(compDef), nil
 
 	default:
-		return nil, repository.ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 }

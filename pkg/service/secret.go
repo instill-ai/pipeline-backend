@@ -74,7 +74,7 @@ func (s *service) GetNamespaceSecretByID(ctx context.Context, ns resource.Namesp
 
 	dbSecret, err := s.repository.GetNamespaceSecretByID(ctx, ownerPermalink, id)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 	return s.converter.ConvertSecretToPB(ctx, dbSecret)
 }
@@ -89,7 +89,7 @@ func (s *service) UpdateNamespaceSecretByID(ctx context.Context, ns resource.Nam
 
 	dbSecret, err := s.converter.ConvertSecretToDB(ctx, ns, updatedSecret)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if _, err = s.repository.GetNamespaceSecretByID(ctx, ownerPermalink, id); err != nil {

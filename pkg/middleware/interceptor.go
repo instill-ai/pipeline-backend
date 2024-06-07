@@ -88,10 +88,10 @@ func AsGRPCError(err error) error {
 
 		code = codes.AlreadyExists
 	case
+		errors.Is(err, errdomain.ErrNotFound),
 		errors.Is(err, gorm.ErrRecordNotFound),
 		errors.Is(err, repository.ErrNoDataDeleted),
 		errors.Is(err, repository.ErrNoDataUpdated),
-		errors.Is(err, service.ErrNotFound),
 		errors.Is(err, acl.ErrMembershipNotFound):
 
 		code = codes.NotFound

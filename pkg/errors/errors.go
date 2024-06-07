@@ -11,6 +11,10 @@ import (
 	"fmt"
 )
 
-// ErrInvalidArgument is used when the provided argument is incorrect (e.g.
-// format, reserved).
-var ErrInvalidArgument = fmt.Errorf("invalid resource ID")
+var (
+	// ErrInvalidArgument is used when the provided argument is incorrect (e.g.
+	// format, reserved).
+	ErrInvalidArgument = fmt.Errorf("invalid resource ID")
+	// ErrNotFound is used when a resource doesn't exist.
+	ErrNotFound = fmt.Errorf("not found")
+)

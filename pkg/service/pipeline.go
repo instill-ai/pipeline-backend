@@ -30,6 +30,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
@@ -106,7 +107,7 @@ func (s *service) GetPipelineByUID(ctx context.Context, uid uuid.UUID, view pb.P
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uid, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, uid, view <= pb.Pipeline_VIEW_BASIC, true)
@@ -244,13 +245,13 @@ func (s *service) GetNamespacePipelineByID(ctx context.Context, ns resource.Name
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, view <= pb.Pipeline_VIEW_BASIC, true)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	return s.converter.ConvertPipelineToPB(ctx, dbPipeline, view, true, true)
@@ -299,7 +300,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
@@ -358,13 +359,13 @@ func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
-		return ErrNotFound
+		return errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return err
 	} else if !granted {
-		return ErrNotFound
+		return errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
@@ -423,13 +424,13 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor"); err != nil {
@@ -454,12 +455,12 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	// Validation: Pipeline existence
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, true, true)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
@@ -665,13 +666,13 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false, false)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
@@ -706,12 +707,12 @@ func (s *service) ListNamespacePipelineReleases(ctx context.Context, ns resource
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return nil, 0, "", ErrNotFound
+		return nil, 0, "", errdomain.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, 0, "", err
 	} else if !granted {
-		return nil, 0, "", ErrNotFound
+		return nil, 0, "", errdomain.ErrNotFound
 	}
 
 	dbPipelineReleases, ps, pt, err := s.repository.ListNamespacePipelineReleases(ctx, ownerPermalink, pipelineUID, int64(pageSize), pageToken, view <= pb.Pipeline_VIEW_BASIC, filter, showDeleted, true)
@@ -729,12 +730,12 @@ func (s *service) GetNamespacePipelineReleaseByID(ctx context.Context, ns resour
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, view <= pb.Pipeline_VIEW_BASIC)
@@ -752,12 +753,12 @@ func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns res
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
@@ -792,12 +793,12 @@ func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns r
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
@@ -830,12 +831,12 @@ func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns res
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, true, false)
 	if err != nil {
-		return ErrNotFound
+		return errdomain.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {
 		return err
 	} else if !granted {
-		return ErrNotFound
+		return errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
@@ -852,12 +853,12 @@ func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns re
 
 	pipeline, err := s.GetPipelineByUID(ctx, pipelineUID, pb.Pipeline_VIEW_BASIC)
 	if err != nil {
-		return ErrNotFound
+		return errdomain.ErrNotFound
 	}
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
 		return err
 	} else if !granted {
-		return ErrNotFound
+		return errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
@@ -1069,7 +1070,7 @@ func (s *service) checkTriggerPermission(ctx context.Context, pipelineUID uuid.U
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipelineUID, "reader"); err != nil {
 		return false, err
 	} else if !granted {
-		return false, ErrNotFound
+		return false, errdomain.ErrNotFound
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipelineUID, "executor"); err != nil {
@@ -1090,7 +1091,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
-		return nil, nil, ErrNotFound
+		return nil, nil, errdomain.ErrNotFound
 	}
 
 	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
@@ -1107,7 +1108,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
 	if err != nil {
@@ -1124,7 +1125,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false, true)
 	if err != nil {
-		return nil, nil, ErrNotFound
+		return nil, nil, errdomain.ErrNotFound
 	}
 
 	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
@@ -1146,7 +1147,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 
 	dbPipeline, err := s.repository.GetPipelineByUID(ctx, pipelineUID, false, true)
 	if err != nil {
-		return nil, ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
