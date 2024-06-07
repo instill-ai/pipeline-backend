@@ -14,7 +14,6 @@ import (
 	"go.temporal.io/sdk/worker"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/temporal"
@@ -102,7 +101,7 @@ func main() {
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
-	repository := repository.NewRepository(db, redisClient)
+	repo := repository.NewRepository(db, redisClient)
 
 	var err error
 
@@ -140,20 +139,13 @@ func main() {
 		initTemporalNamespace(ctx, temporalClient)
 	}
 
-	influxDBClient, influxDBWriteClient := external.InitInfluxDBServiceClient(ctx)
-	defer influxDBClient.Close()
-
-	influxErrCh := influxDBWriteClient.Errors()
-	go func() {
-		for err := range influxErrCh {
-			logger.Error(fmt.Sprintf("write to bucket %s error: %s\n", config.Config.InfluxDB.Bucket, err.Error()))
-		}
-	}()
+	timeseries := repository.MustNewInfluxDB(ctx)
+	defer timeseries.Close()
 
 	cw := pipelineWorker.NewWorker(
-		repository,
+		repo,
 		redisClient,
-		influxDBWriteClient,
+		timeseries.WriteAPI(),
 		config.Config.Connector.Secrets,
 		map[string]componentbase.UsageHandlerCreator{},
 		nil,
