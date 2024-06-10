@@ -886,6 +886,7 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.Trigger
 }
 
 func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelineWithStreamRequest, server pb.PipelinePublicService_TriggerUserPipelineWithStreamServer) error {
+	fmt.Println("TriggerUserPipelineWithStream", req.GetName())
 	resultChan := make(chan service.TriggerResult)
 	go func() {
 		err := h.triggerNamespacePipelineWithStream(context.TODO(), req, resultChan)
