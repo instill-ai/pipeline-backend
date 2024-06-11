@@ -161,6 +161,8 @@ func (c *converter) processSetup(ctx context.Context, ownerPermalink string, set
 				// reference target might not exist. We ignore the error here.
 				s, _ := c.repository.GetNamespaceSecretByID(ctx, ownerPermalink, secretKey)
 				rendered[k] = *s.Value
+			} else {
+				rendered[k] = v
 			}
 		default:
 			rendered[k] = v
