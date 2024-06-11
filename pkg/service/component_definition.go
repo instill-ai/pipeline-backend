@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
+	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
 
@@ -18,7 +19,12 @@ import (
 
 func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error) {
 
-	compDef, err := s.component.GetDefinitionByID(defID, nil, nil)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+
+	compDef, err := s.component.GetDefinitionByID(defID, vars, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +39,11 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 
 func (s *service) implementedOperatorDefinitions(ctx context.Context) ([]*pb.OperatorDefinition, error) {
 
-	allDefs := s.component.ListDefinitions(nil, false)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+	allDefs := s.component.ListDefinitions(vars, false)
 
 	implemented := make([]*pb.OperatorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -207,9 +217,14 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 
 	defs := make([]*pb.ComponentDefinition, len(uids))
 
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+
 	for i, uid := range uids {
 
-		def, err := s.component.GetDefinitionByUID(uid.UID, nil, nil)
+		def, err := s.component.GetDefinitionByUID(uid.UID, vars, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -238,7 +253,12 @@ var implementedReleaseStages = map[pb.ComponentDefinition_ReleaseStage]bool{
 
 func (s *service) implementedConnectorDefinitions(ctx context.Context) ([]*pb.ConnectorDefinition, error) {
 
-	allDefs := s.component.ListDefinitions(nil, false)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+
+	allDefs := s.component.ListDefinitions(vars, false)
 
 	implemented := make([]*pb.ConnectorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -322,7 +342,11 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error) {
 
-	compDef, err := s.component.GetDefinitionByID(id, nil, nil)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+	compDef, err := s.component.GetDefinitionByID(id, vars, nil)
 	if err != nil {
 		return nil, err
 	}
