@@ -631,7 +631,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 	for {
 		var nsSecrets []*datamodel.Secret
 		// TODO: should use ctx user uid
-		nsSecrets, _, pt, err = s.repository.ListNamespaceSecrets(ctx, ns.Permalink(), 100, "", filtering.Filter{})
+		nsSecrets, _, pt, err = s.repository.ListNamespaceSecrets(ctx, ns.Permalink(), 100, pt, filtering.Filter{})
 		if err != nil {
 			return nil, err
 		}

@@ -20,6 +20,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	componentbase "github.com/instill-ai/component/base"
@@ -50,6 +51,7 @@ type converter struct {
 	redisClient              *redis.Client
 	component                *componentstore.Store
 	aclClient                *acl.ACLClient
+	repository               repository.Repository
 }
 
 // NewService initiates a service instance
@@ -57,6 +59,7 @@ func NewConverter(
 	m mgmtpb.MgmtPrivateServiceClient,
 	rc *redis.Client,
 	acl *acl.ACLClient,
+	r repository.Repository,
 ) Converter {
 	logger, _ := logger.GetZapLogger(context.Background())
 
@@ -65,6 +68,7 @@ func NewConverter(
 		redisClient:              rc,
 		component:                componentstore.Init(logger, nil, nil),
 		aclClient:                acl,
+		repository:               r,
 	}
 }
 
@@ -141,14 +145,43 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 	return nil
 }
 
-func (c *converter) includeComponentDetail(ctx context.Context, compConfig *componentbase.ComponentConfig, useDynamicDef bool) error {
+func (c *converter) processSetup(ctx context.Context, ownerPermalink string, setup map[string]any) map[string]any {
+	rendered := map[string]any{}
+	for k, v := range setup {
+		switch v := v.(type) {
+		case map[string]any:
+			rendered[k] = c.processSetup(ctx, ownerPermalink, v)
+		case string:
+			if strings.HasPrefix(v, "${"+recipe.SegSecret+".") && strings.HasSuffix(v, "}") {
+
+				// Remove the prefix and suffix
+				secretKey := v[9 : len(v)-1]
+
+				// Since we allow unfinished pipeline recipes, the secret
+				// reference target might not exist. We ignore the error here.
+				s, _ := c.repository.GetNamespaceSecretByID(ctx, ownerPermalink, secretKey)
+				rendered[k] = *s.Value
+			}
+		default:
+			rendered[k] = v
+		}
+
+	}
+	return rendered
+}
+
+func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink string, compConfig *componentbase.ComponentConfig, useDynamicDef bool) error {
 
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return err
 	}
 	if useDynamicDef {
-		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(compConfig.Type), vars, compConfig)
+
+		rendered := componentbase.ComponentConfig(*compConfig)
+		rendered.Setup = c.processSetup(ctx, ownerPermalink, compConfig.Setup)
+
+		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(compConfig.Type), vars, &rendered)
 		if err != nil {
 			return err
 		}
@@ -164,13 +197,13 @@ func (c *converter) includeComponentDetail(ctx context.Context, compConfig *comp
 	return nil
 }
 
-func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *datamodel.IteratorComponent, useDynamicDef bool) error {
+func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPermalink string, comp *datamodel.IteratorComponent, useDynamicDef bool) error {
 
 	for _, itComp := range comp.Component {
 		var err error
 		switch itComp := itComp.(type) {
 		case *componentbase.ComponentConfig:
-			err = c.includeComponentDetail(ctx, itComp, useDynamicDef)
+			err = c.includeComponentDetail(ctx, ownerPermalink, itComp, useDynamicDef)
 		}
 		if err != nil {
 			return err
@@ -296,15 +329,15 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, comp *da
 	return nil
 }
 
-func (c *converter) includeDetailInRecipe(ctx context.Context, recipe *datamodel.Recipe, useDynamicDef bool) error {
+func (c *converter) includeDetailInRecipe(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) error {
 
 	for _, comp := range recipe.Component {
 		var err error
 		switch comp := comp.(type) {
 		case *componentbase.ComponentConfig:
-			err = c.includeComponentDetail(ctx, comp, useDynamicDef)
+			err = c.includeComponentDetail(ctx, ownerPermalink, comp, useDynamicDef)
 		case *datamodel.IteratorComponent:
-			err = c.includeIteratorComponentDetail(ctx, comp, useDynamicDef)
+			err = c.includeIteratorComponentDetail(ctx, ownerPermalink, comp, useDynamicDef)
 		}
 		if err != nil {
 			return err
@@ -426,7 +459,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 
 	if view == pb.Pipeline_VIEW_FULL {
-		if err := c.includeDetailInRecipe(ctx, dbPipeline.Recipe, useDynamicDef); err != nil {
+		if err := c.includeDetailInRecipe(ctx, dbPipeline.Owner, dbPipeline.Recipe, useDynamicDef); err != nil {
 			return nil, err
 		}
 	}
@@ -694,7 +727,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipelineOr
 	}
 
 	if view == pb.Pipeline_VIEW_FULL {
-		if err := c.includeDetailInRecipe(ctx, dbPipelineRelease.Recipe, false); err != nil {
+		if err := c.includeDetailInRecipe(ctx, dbPipeline.Owner, dbPipelineRelease.Recipe, false); err != nil {
 			return nil, err
 		}
 	}

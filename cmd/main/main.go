@@ -253,7 +253,7 @@ func main() {
 		temporalClient,
 		influxDBWriteClient,
 		&aclClient,
-		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient),
+		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repository),
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)

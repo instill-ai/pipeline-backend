@@ -276,7 +276,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
 
-	fmt.Println("param.IsIterator", param.IsIterator)
 	if !param.IsIterator {
 		// TODO: we should check whether to collect failed component or not
 		if err := workflow.ExecuteActivity(ctx, w.UsageCollectActivity, &UsageCollectActivityParam{
