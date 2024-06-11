@@ -265,7 +265,6 @@ func main() {
 		runtime.WithIncomingHeaderMatcher(middleware.CustomMatcher),
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames:   true,
 				EmitUnpopulated: true,
 				UseEnumNumbers:  false,
 			},
@@ -281,7 +280,6 @@ func main() {
 		runtime.WithIncomingHeaderMatcher(middleware.CustomMatcher),
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames:   true,
 				EmitUnpopulated: true,
 				UseEnumNumbers:  false,
 			},
