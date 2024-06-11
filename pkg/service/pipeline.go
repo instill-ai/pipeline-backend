@@ -962,6 +962,22 @@ func (s *service) triggerPipeline(
 	return s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
 }
 
+func queryWorkflowStatus(ctx context.Context, temporalClient client.Client, workflowID string, runID string) (string, error) {
+	queryResult, err := temporalClient.QueryWorkflow(ctx, workflowID, runID, "workflowStatusQuery")
+	if err != nil {
+		log.Printf("Failed to query workflow status: %v", err)
+		return "", err
+	}
+
+	var status string
+	if err := queryResult.Get(&status); err != nil {
+		log.Printf("Failed to get query result: %v", err)
+		return "", err
+	}
+
+	return status, nil
+}
+
 func (s *service) triggerPipelineWithStream(
 	ctx context.Context,
 	ns resource.Namespace,
@@ -995,6 +1011,10 @@ func (s *service) triggerPipelineWithStream(
 
 	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
 
+	if userUID == uuid.Nil {
+		logger.Error("triggerPipelineWithStream: failed to get userUID from request header")
+	}
+
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1020,6 +1040,43 @@ func (s *service) triggerPipelineWithStream(
 		return err
 	}
 
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				status, err := queryWorkflowStatus(ctx, s.temporalClient, we.GetID(), we.GetRunID())
+				if err != nil {
+					log.Println("Error querying workflow status: %v", err)
+					continue
+				}
+
+				fmt.Printf("Workflow status: %s\n", status)
+
+				switch status {
+				case "step":
+					data, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
+					if err != nil {
+						log.Println("getOutputsAndMetadata:", err)
+						continue
+					}
+					fmt.Printf("Received data from step: %v\n", data)
+					stream <- TriggerResult{
+						Struct:   data,
+						Metadata: metadata,
+					}
+
+				case "completed":
+					return
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
 	err = we.Get(ctx, nil)
 	if err != nil {
 		var applicationErr *temporal.ApplicationError
@@ -1033,46 +1090,6 @@ func (s *service) triggerPipelineWithStream(
 		}
 		return err
 	}
-
-	go func() {
-		for {
-			// Add a delay to ensure the workflow has started and the query handler is registered
-			time.Sleep(time.Millisecond * 500) // TODO: make this configurable
-
-			// Query the SecondaryWorkflow status
-			queryResult, err := s.temporalClient.QueryWorkflow(context.Background(), "secondary_workflow", "", "status")
-			if err != nil {
-				log.Println("Unable to query workflow", err)
-				continue
-			}
-
-			var status string
-			if err := queryResult.Get(&status); err != nil {
-				log.Println("Unable to get query result", err)
-				continue
-			}
-
-			fmt.Println("SecondaryWorkflow status:", status)
-
-			if status == "intermediate" {
-				output, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
-				if err != nil {
-					log.Println("Unable to get outputs and metadata", err) //TODO: handle error
-					continue
-				}
-
-				stream <- TriggerResult{
-					Struct:   output,
-					Metadata: metadata,
-				}
-			}
-
-			// Break the loop if the workflow is completed
-			if status == "Completed" {
-				break
-			}
-		}
-	}()
 
 	return nil
 }
@@ -1204,6 +1221,8 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 	ownerPermalink := ns.Permalink()
 
+	fmt.Println("TriggerNamespacePipelineByID", ownerPermalink, id, ns, data, pipelineTriggerID, returnTraces)
+
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
 		return nil, nil, ErrNotFound
@@ -1211,7 +1230,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("check trigger permission error: %w", err)
 	}
 
 	return s.triggerPipeline(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
@@ -1219,6 +1238,8 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 func (s *service) TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error {
 	ownerPermalink := ns.Permalink()
+
+	fmt.Println("TriggerNamespacePipelineByIDWithStream", ownerPermalink, id, ns, data, pipelineTriggerID, returnTraces)
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {

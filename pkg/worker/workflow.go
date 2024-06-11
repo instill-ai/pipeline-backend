@@ -48,6 +48,7 @@ type ComponentActivityParam struct {
 	DefinitionUID    uuid.UUID
 	Task             string
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	QueryStatus      string
 }
 
 type PreIteratorActivityParam struct {
@@ -88,8 +89,17 @@ var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 // The workflow is only responsible for orchestrating the DAG, not processing or reading/writing the data.
 // All data processing should be done in activities.
 func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error {
-	eventName := "TriggerPipelineWorkflow"
+	status := "Started"
 
+	// Register query handler for workflow status
+	err := workflow.SetQueryHandler(ctx, "workflowStatusQuery", func() (string, error) {
+		return status, nil
+	})
+	if err != nil {
+		return err
+	}
+
+	eventName := "TriggerPipelineWorkflow"
 	startTime := time.Now()
 	sCtx, span := tracer.Start(context.Background(), eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -97,16 +107,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
-
-	status := "Started"
-	// Registering query handler for status
-	err := workflow.SetQueryHandler(ctx, "status", func() (string, error) {
-		return status, nil
-	})
-	if err != nil {
-		logger.Error(fmt.Sprintf("Unable to register query handler: %s", err.Error()))
-		return err
-	}
 
 	var ownerType mgmtPB.OwnerType
 	switch param.SystemVariables.PipelineOwnerType {
@@ -205,6 +205,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Condition:        c.Condition,
 					MemoryStorageKey: param.MemoryStorageKey,
 					SystemVariables:  param.SystemVariables,
+					QueryStatus:      status,
 				}))
 
 			case *datamodel.IteratorComponent:
@@ -261,18 +262,18 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}).Get(ctx, nil); err != nil {
 					return err
 				}
-
 			}
 
 		}
 
 		for idx := range futures {
 			err = futures[idx].Get(ctx, nil)
+			status = "step"
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 				return err
 			}
-			status = "intermediate"
+			workflow.Sleep(ctx, time.Second)
 		}
 
 		for batchIdx := range param.BatchSize {
@@ -280,13 +281,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				param.MemoryStorageKey.Components[batchIdx][compID] = fmt.Sprintf("%s:%d:%s:%s", workflowID, batchIdx, recipe.SegComponent, compID)
 			}
 		}
-
 	}
+
+	status = "completed"
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
 
-	fmt.Println("param.IsIterator", param.IsIterator)
 	if !param.IsIterator {
 		// TODO: we should check whether to collect failed component or not
 		if err := workflow.ExecuteActivity(ctx, w.UsageCollectActivity, &UsageCollectActivityParam{
@@ -351,6 +352,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	}
 
 	logger.Info("ComponentActivity completed")
+	param.QueryStatus = "step"
 	return nil
 }
 

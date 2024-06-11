@@ -45,11 +45,9 @@ func generateSecureSessionID() string {
 // endpoint and streams data to the SSE handler using the session ID token.
 func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("from middleware", r.Header.Get("X-Use-SSE"))
 		if r.Header.Get("X-Use-SSE") == "true" {
-
 			sessionUUID := generateSecureSessionID()
-			dataChan := make(chan []byte, 10) //TODO tillknuesting: Make the buffer configurable
+			dataChan := make(chan []byte, 100) //TODO tillknuesting: Make the buffer configurable
 			handler.DataChanMap.Store(sessionUUID, dataChan)
 
 			sessionData := SessionMetadata{

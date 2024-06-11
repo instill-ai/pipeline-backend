@@ -7,9 +7,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 	"github.com/instill-ai/x/checkfield"
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 	"go.einride.tech/aip/filtering"
@@ -25,10 +28,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pb.ListPipelinesAdminRequest) (*pb.ListPipelinesAdminResponse, error) {
@@ -879,6 +878,12 @@ type TriggerNamespacePipelineRequestInterface interface {
 	GetData() []*pb.TriggerData
 }
 
+func printCtxValues(ctx map[string]interface{}) {
+	for key, value := range ctx {
+		fmt.Printf("%s: %v\n", key, value)
+	}
+}
+
 func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.TriggerUserPipelineRequest) (resp *pb.TriggerUserPipelineResponse, err error) {
 	resp = &pb.TriggerUserPipelineResponse{}
 	resp.Outputs, resp.Metadata, err = h.triggerNamespacePipeline(ctx, req)
@@ -887,17 +892,38 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.Trigger
 
 func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelineWithStreamRequest, server pb.PipelinePublicService_TriggerUserPipelineWithStreamServer) error {
 	fmt.Println("TriggerUserPipelineWithStream", req.GetName())
+	//	fmt.Println(req.GetInputs())
+
+	// Access the context
+	ctx := server.Context()
+
+	uid := ctx.Value("Instill-User-Uid")
+	if uid != nil {
+		fmt.Println(uid)
+	} else {
+		fmt.Println("Instill-User-Uid not found in context")
+	}
+
 	resultChan := make(chan service.TriggerResult)
+	errorChan := make(chan error)
+
 	go func() {
-		err := h.triggerNamespacePipelineWithStream(context.TODO(), req, resultChan)
+		err := h.triggerNamespacePipelineWithStream(ctx, req, resultChan)
 		if err != nil {
-			fmt.Println("Error:", err)
+			errorChan <- err
 			close(resultChan)
 			return
 		}
 	}()
-	for result := range resultChan {
-		fmt.Println("Sending result", result.Struct)
+
+	select {
+	case err := <-errorChan:
+		if err != nil {
+			fmt.Println("error chan", err)
+			//return fmt.Errorf("triggerNamespacePipelineWithStream: %w", err)
+		}
+	case result := <-resultChan:
+		fmt.Println("Sending result", result.Struct, result.Metadata)
 		err := server.Send(&pb.TriggerUserPipelineWithStreamResponse{
 			Outputs:  result.Struct,
 			Metadata: result.Metadata,
@@ -906,18 +932,6 @@ func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelin
 			return err
 		}
 	}
-
-	//for i := range 100 {
-	//	testkey := fmt.Sprintf("test-key-%d", i)
-	//	err := server.Send(&pb.TriggerUserPipelineWithStreamResponse{
-	//		Outputs:  []*structpb.Struct{{Fields: map[string]*structpb.Value{testkey: {Kind: &structpb.Value_StringValue{StringValue: "test-value"}}}}},
-	//		Metadata: &pb.TriggerMetadata{},
-	//	})
-	//	if err != nil {
-	//		return err
-	//	}
-	//	time.Sleep(time.Millisecond * 500) // TO simulate some delay
-	//}
 	return nil
 }
 
@@ -934,7 +948,7 @@ func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, 
 	ns, id, _, returnTraces, err := h.preTriggerUserPipelineWithStream(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return fmt.Errorf("preTriggerUserPipelineWithStream: %w", err)
 	}
 
 	err = h.service.TriggerNamespacePipelineByIDWithStream(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces, resultChan)
@@ -956,23 +970,24 @@ func (h *PublicHandler) preTriggerUserPipelineWithStream(ctx context.Context, re
 
 	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
 	if err != nil {
-		return ns, id, nil, false, err
+		return ns, id, nil, false, fmt.Errorf("GetRscNamespaceAndNameID: %w", err)
 	}
+
 	if err := authenticateUser(ctx, false); err != nil {
 		return ns, id, nil, false, err
 	}
 
 	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, id, pb.Pipeline_VIEW_FULL)
 	if err != nil {
-		return ns, id, nil, false, err
+		return ns, id, nil, false, fmt.Errorf("GetNamespacePipelineByID: %w", err)
 	}
 	// _, err = h.service.ValidateNamespacePipelineByID(ctx, ns,  id)
 	// if err != nil {
 	// 	return ns, nil, id, nil, false, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	// }
-	returnTraces := false
-	if resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "true" {
-		returnTraces = true
+	returnTraces := true //
+	if resource.GetRequestSingleHeader(ctx, constant.HeaderReturnTracesKey) == "false" {
+		returnTraces = false
 	}
 
 	return ns, id, pbPipeline, returnTraces, nil

@@ -35,6 +35,7 @@ type worker struct {
 	influxDBWriteClient  api.WriteAPI
 	component            *componentstore.Store
 	pipelineUsageHandler usage.PipelineUsageHandler
+	componentStatus      string
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
