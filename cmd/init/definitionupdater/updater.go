@@ -13,6 +13,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
 	componentstore "github.com/instill-ai/component/store"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -48,7 +49,7 @@ func updateComponentDefinition(ctx context.Context, cd *pb.ComponentDefinition, 
 	}
 
 	inDB, err := repo.GetDefinitionByUID(ctx, uid)
-	if err != nil && !errors.Is(err, repository.ErrNotFound) {
+	if err != nil && !errors.Is(err, errdomain.ErrNotFound) {
 		return fmt.Errorf("error fetching component definition %s from DB: %w", cd.GetId(), err)
 	}
 

@@ -34,7 +34,7 @@ influxdb:
   token: i-love-instill-ai
   org: instill-ai
   bucket: instill-ai
-  flushinterval: 10 # In seconds for non-blocking batch mode
+  flushinterval: 10s
   https:
     cert:
     key:

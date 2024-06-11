@@ -7,9 +7,12 @@ import (
 	"context"
 	"testing"
 
-	qt "github.com/frankban/quicktest"
 	"github.com/gofrs/uuid"
+
+	qt "github.com/frankban/quicktest"
+
 	"github.com/instill-ai/pipeline-backend/config"
+
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )

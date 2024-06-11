@@ -23,6 +23,7 @@ import (
 	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/paginate"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -74,6 +75,10 @@ type Repository interface {
 	CreatePipelineTag(ctx context.Context, pipelineUID string, tagName string) error
 	DeletePipelineTag(ctx context.Context, pipelineUID string, tagName string) error
 	ListPipelineTags(ctx context.Context, pipelineUID string) ([]*datamodel.Tag, error)
+
+	// TODO this function can remain unexported once connector and operator
+	// definition lists are removed.
+	TranspileFilter(filtering.Filter) (*clause.Expr, error)
 }
 
 type repository struct {
@@ -147,7 +152,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	var expr *clause.Expr
-	if expr, err = r.transpileFilter(filter); err != nil {
+	if expr, err = r.TranspileFilter(filter); err != nil {
 		return nil, 0, "", err
 	}
 	if expr != nil {
@@ -197,7 +202,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	if pageToken != "" {
 		tokens, err := DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", ErrPageTokenDecode
+			return nil, 0, "", newPageTokenErr(err)
 		}
 
 		for _, o := range order.Fields {
@@ -465,11 +470,9 @@ func (r *repository) UpdateNamespacePipelineIDByID(ctx context.Context, ownerPer
 	return nil
 }
 
-// TranspileFilter transpiles a parsed AIP filter expression to GORM DB clauses
-func (r *repository) transpileFilter(filter filtering.Filter) (*clause.Expr, error) {
-	return (&Transpiler{
-		filter: filter,
-	}).Transpile()
+// TranspileFilter transpiles a parsed AIP filter expression to GORM DB clauses.
+func (r *repository) TranspileFilter(filter filtering.Filter) (*clause.Expr, error) {
+	return (&transpiler{filter: filter}).Transpile()
 }
 
 func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error {
@@ -514,7 +517,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	if pageToken != "" {
 		createTime, uid, err := paginate.DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", ErrPageTokenDecode
+			return nil, 0, "", newPageTokenErr(err)
 		}
 		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
 	}
@@ -523,7 +526,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 		queryBuilder.Omit("pipeline_release.recipe")
 	}
 
-	if expr, err := r.transpileFilter(filter); err != nil {
+	if expr, err := r.TranspileFilter(filter); err != nil {
 		return nil, 0, "", err
 	} else if expr != nil {
 		queryBuilder.Where("(?)", expr)
@@ -672,7 +675,7 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 	where := ""
 	whereArgs := []any{}
 
-	expr, err := r.transpileFilter(p.Filter)
+	expr, err := r.TranspileFilter(p.Filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -721,7 +724,7 @@ func (r *repository) GetDefinitionByUID(_ context.Context, uid uuid.UUID) (*data
 
 	if result := r.db.Model(record).Where("uid = ?", uid.String()).First(record); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			return nil, ErrNotFound
+			return nil, errdomain.ErrNotFound
 		}
 
 		return nil, result.Error

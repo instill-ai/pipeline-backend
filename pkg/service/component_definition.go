@@ -14,6 +14,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -33,7 +34,7 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 		return convertComponentDefToOperatorDef(compDef), nil
 
 	default:
-		return nil, repository.ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 }
 
@@ -115,8 +116,7 @@ func (s *service) filterConnectorDefinitions(defs []*pb.ConnectorDefinition, fil
 	}
 
 	filtered := make([]*pb.ConnectorDefinition, 0, len(defs))
-	trans := repository.NewTranspiler(filter)
-	expr, _ := trans.Transpile()
+	expr, _ := s.repository.TranspileFilter(filter)
 	typeMap := map[string]bool{}
 	for i, v := range expr.Vars {
 		if i == 0 {
@@ -142,7 +142,7 @@ func (s *service) lastUIDFromToken(token string) (string, error) {
 	}
 	_, id, err := paginate.DecodeToken(token)
 	if err != nil {
-		return "", repository.ErrPageTokenDecode
+		return "", fmt.Errorf("%w: invalid page token: %w", errdomain.ErrInvalidArgument, err)
 	}
 
 	return id, nil
@@ -357,7 +357,7 @@ func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*p
 		return convertComponentDefToConnectorDef(compDef), nil
 
 	default:
-		return nil, repository.ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 }
