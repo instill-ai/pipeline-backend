@@ -17,11 +17,11 @@ export function CheckList(data) {
       {
         [`GET /v1beta/admin/pipelines response status is 200`]: (r) =>
           r.status === 200,
-        [`GET /v1beta/admin/pipelines response next_page_token is empty`]: (
+        [`GET /v1beta/admin/pipelines response nextPageToken is empty`]: (
           r
-        ) => r.json().next_page_token === "",
-        [`GET /v1beta/admin/pipelines response total_size is 0`]: (r) =>
-          r.json().total_size == 0,
+        ) => r.json().nextPageToken === "",
+        [`GET /v1beta/admin/pipelines response totalSize is 0`]: (r) =>
+          r.json().totalSize == 0,
       }
     );
 
@@ -68,8 +68,8 @@ export function CheckList(data) {
         [`GET /v1beta/admin/pipelines response pipelines[0].recipe is null`]: (
           r
         ) => r.json().pipelines[0].recipe === null,
-        [`GET /v1beta/admin/pipelines response total_size == 200`]: (r) =>
-          r.json().total_size == 200,
+        [`GET /v1beta/admin/pipelines response totalSize == 200`]: (r) =>
+          r.json().totalSize == 200,
       }
     );
 
@@ -133,17 +133,17 @@ export function CheckList(data) {
     );
     var resSecond100 = http.request(
       "GET",
-      `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
       }`
     );
     check(resSecond100, {
-      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
         } response status 200`]: (r) => r.status == 200,
-      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
         } response return 100 results`]: (r) => r.json().pipelines.length == 100,
-      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
-        } response next_page_token is empty`]: (r) =>
-          r.json().next_page_token === "",
+      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+        } response nextPageToken is empty`]: (r) =>
+          r.json().nextPageToken === "",
     });
 
     // Filtering

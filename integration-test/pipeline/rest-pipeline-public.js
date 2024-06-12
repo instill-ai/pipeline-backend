@@ -39,11 +39,11 @@ export function CheckCreate(data) {
         helper.validateRecipe(r.json().pipeline.recipe, false),
       "POST /v1beta/${constant.namespace}/pipelines response pipeline owner isinvalid": (r) =>
         helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
-      "POST /v1beta/${constant.namespace}/pipelines response pipeline create_time": (r) =>
-        new Date(r.json().pipeline.create_time).getTime() >
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline createTime": (r) =>
+        new Date(r.json().pipeline.createTime).getTime() >
         new Date().setTime(0),
-      "POST /v1beta/${constant.namespace}/pipelines response pipeline update_time": (r) =>
-        new Date(r.json().pipeline.update_time).getTime() >
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline updateTime": (r) =>
+        new Date(r.json().pipeline.updateTime).getTime() >
         new Date().setTime(0),
     });
 
@@ -208,10 +208,10 @@ export function CheckList(data) {
     check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`, null, data.header), {
       [`GET /v1beta/${constant.namespace}/pipelines response status is 200`]: (r) =>
         r.status === 200,
-      [`GET /v1beta/${constant.namespace}/pipelines response next_page_token is empty`]: (r) =>
-        r.json().next_page_token === "",
-      [`GET /v1beta/${constant.namespace}/pipelines response total_size is 0`]: (r) =>
-        r.json().total_size == 0,
+      [`GET /v1beta/${constant.namespace}/pipelines response nextPageToken is empty`]: (r) =>
+        r.json().nextPageToken === "",
+      [`GET /v1beta/${constant.namespace}/pipelines response totalSize is 0`]: (r) =>
+        r.json().totalSize == 0,
     });
 
     const numPipelines = 200;
@@ -256,8 +256,8 @@ export function CheckList(data) {
           r.json().pipelines.length == 10,
         [`GET /v1beta/${constant.namespace}/pipelines response pipelines[0].recipe is null`]: (r) =>
           r.json().pipelines[0].recipe === null,
-        [`GET /v1beta/${constant.namespace}/pipelines response total_size == 200`]: (r) =>
-          r.json().total_size == 200,
+        [`GET /v1beta/${constant.namespace}/pipelines response totalSize == 200`]: (r) =>
+          r.json().totalSize == 200,
       }
     );
 
@@ -324,18 +324,18 @@ export function CheckList(data) {
     );
     var resSecond100 = http.request(
       "GET",
-      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
       }`,
       null, data.header
     );
     check(resSecond100, {
-      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
         } response status 200`]: (r) => r.status == 200,
-      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
         } response return 100 results`]: (r) => r.json().pipelines.length == 100,
-      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
-        } response next_page_token is empty`]: (r) =>
-          r.json().next_page_token === "",
+      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+        } response nextPageToken is empty`]: (r) =>
+          r.json().nextPageToken === "",
     });
 
     // Filtering
@@ -531,18 +531,18 @@ export function CheckUpdate(data) {
           (r) => r.json().pipeline.description === reqBodyUpdate.description,
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner isvalid`]:
           (r) => helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
-        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline create_time (OUTPUT_ONLY)`]:
+        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline createTime (OUTPUT_ONLY)`]:
           (r) =>
-            new Date(r.json().pipeline.create_time).getTime() >
+            new Date(r.json().pipeline.createTime).getTime() >
             new Date().setTime(0),
-        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline update_time (OUTPUT_ONLY)`]:
+        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline updateTime (OUTPUT_ONLY)`]:
           (r) =>
-            new Date(r.json().pipeline.update_time).getTime() >
+            new Date(r.json().pipeline.updateTime).getTime() >
             new Date().setTime(0),
-        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline update_time > create_time`]:
+        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline updateTime > createTime`]:
           (r) =>
-            new Date(r.json().pipeline.update_time).getTime() >
-            new Date(r.json().pipeline.create_time).getTime(),
+            new Date(r.json().pipeline.updateTime).getTime() >
+            new Date(r.json().pipeline.createTime).getTime(),
       }
     );
 
