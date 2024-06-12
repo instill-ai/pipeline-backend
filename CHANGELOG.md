@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.29.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.29.1-beta...v0.29.2-beta) (2024-06-12)
+
+
+### Features
+
+* return dynamic component definition in definition endpoints ([#510](https://github.com/instill-ai/pipeline-backend/issues/510)) ([1483148](https://github.com/instill-ai/pipeline-backend/commit/1483148518acab23180f1b3adfb0f80d92b80caf))
+
+
+### Miscellaneous Chores
+
+* release v0.29.2-beta ([0b7f613](https://github.com/instill-ai/pipeline-backend/commit/0b7f6138d1553ec226b2927fa2e939609a09ba6a))
+
 ## [0.29.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.29.0-beta...v0.29.1-beta) (2024-06-07)
 
 
