@@ -154,10 +154,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			SystemVariables: param.SystemVariables,
 			NumComponents:   numComponents,
 		}).Get(ctx, nil); err != nil {
-			details := EndUserErrorDetails{
-				Message: fmt.Sprintf("Pipeline %s failed to execute. %s", param.SystemVariables.PipelineUID, errmsg.MessageOrErr(err)),
-			}
-			return temporal.NewApplicationErrorWithCause("pipeline failed to trigger", PipelineWorkflowError, err, details)
+			return err
 		}
 	}
 
@@ -505,7 +502,10 @@ func (w *worker) UsageCheckActivity(ctx context.Context, param *UsageCheckActivi
 
 	err := w.pipelineUsageHandler.Check(ctx, param.SystemVariables, param.NumComponents)
 	if err != nil {
-		return w.toApplicationError(err, "usage_check", UsageCollectActivityError)
+		details := EndUserErrorDetails{
+			Message: fmt.Sprintf("Pipeline failed to execute. %s", errmsg.MessageOrErr(err)),
+		}
+		return temporal.NewNonRetryableApplicationError("pipeline failed to trigger", PipelineWorkflowError, err, details)
 	}
 	logger.Info("UsageCheckActivity completed")
 	return nil
@@ -518,7 +518,10 @@ func (w *worker) UsageCollectActivity(ctx context.Context, param *UsageCollectAc
 
 	err := w.pipelineUsageHandler.Collect(ctx, param.SystemVariables, param.NumComponents)
 	if err != nil {
-		return w.toApplicationError(err, "usage_collect", UsageCollectActivityError)
+		details := EndUserErrorDetails{
+			Message: fmt.Sprintf("Pipeline failed to execute. %s", errmsg.MessageOrErr(err)),
+		}
+		return temporal.NewNonRetryableApplicationError("pipeline failed to trigger", PipelineWorkflowError, err, details)
 	}
 	// We ignore the error check for pipeline run stats for now.
 	_ = w.repository.UpdatePipelineRunStats(ctx, param.SystemVariables.PipelineUID)
