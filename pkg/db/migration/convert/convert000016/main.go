@@ -21,7 +21,6 @@ type Pipeline struct {
 	ID     string
 	Owner  string
 	Recipe *Recipe `gorm:"type:jsonb"`
-	// RecipeYAML string  `gorm:"recipe_yaml"`
 }
 
 func (Pipeline) TableName() string {
@@ -34,7 +33,6 @@ type PipelineRelease struct {
 	ID          string
 	PipelineUID uuid.UUID
 	Recipe      *Recipe `gorm:"type:jsonb"`
-	// RecipeYAML  string  `gorm:"recipe_yaml"`
 }
 
 func (PipelineRelease) TableName() string {
@@ -268,17 +266,15 @@ func migratePipeline() error {
 		if recipe == nil {
 			continue
 		}
-		fmt.Println(p.ID, p.Owner)
+
 		yamlStr, err := convertToYAML(p.Recipe)
 		if err != nil {
 			return err
 		}
-
-		fmt.Println(string(yamlStr))
-		// result := db.Model(&Pipeline{}).Where("uid = ?", p.UID).Update("recipe_yaml", string(yamlStr))
-		// if result.Error != nil {
-		// 	return result.Error
-		// }
+		result := db.Model(&Pipeline{}).Where("uid = ?", p.UID).Update("recipe_yaml", string(yamlStr))
+		if result.Error != nil {
+			return result.Error
+		}
 	}
 	return nil
 }
@@ -317,11 +313,10 @@ func migratePipelineRelease() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(string(yamlStr))
-		// result := db.Model(&PipelineRelease{}).Where("uid = ?", r.UID).Update("recipe_yaml", string(yamlStr))
-		// if result.Error != nil {
-		// 	return result.Error
-		// }
+		result := db.Model(&PipelineRelease{}).Where("uid = ?", r.UID).Update("recipe_yaml", string(yamlStr))
+		if result.Error != nil {
+			return result.Error
+		}
 	}
 	return nil
 
