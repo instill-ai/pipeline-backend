@@ -145,7 +145,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	if err != nil {
 		return nil, err
 	}
-	if err := s.checkSecret(ctx, dbPipeline.Recipe); err != nil {
+	if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
 		return nil, err
 	}
 
@@ -293,7 +293,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	if err != nil {
 		return nil, err
 	}
-	if err := s.checkSecret(ctx, dbPipeline.Recipe); err != nil {
+	if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
 		return nil, err
 	}
 

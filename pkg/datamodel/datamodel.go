@@ -9,13 +9,15 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"gopkg.in/yaml.v3"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
-	componentbase "github.com/instill-ai/component/base"
 	taskPB "github.com/instill-ai/protogen-go/common/task/v1alpha"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
+
+const Iterator = "iterator"
 
 // BaseDynamicHardDelete contains common columns for all tables with static UUID as primary key
 type BaseDynamicHardDelete struct {
@@ -60,10 +62,17 @@ type HubStats struct {
 // Pipeline is the data model of the pipeline table
 type Pipeline struct {
 	BaseDynamic
-	ID                string
-	Owner             string
-	Description       sql.NullString
-	Recipe            *Recipe `gorm:"type:jsonb"`
+	ID          string
+	Owner       string
+	Description sql.NullString
+
+	// The Recipe field in the database is deprecated. It will only be used for
+	// the structural representation of the recipe instead of as data in the
+	// database. We'll use BeforeSave and AfterFind hooks to convert RecipeYAML
+	// to Recipe when reading and convert Recipe to RecipeYAML when writing.
+	Recipe     *Recipe `gorm:"-"`
+	RecipeYAML string  `gorm:"recipe_yaml"`
+
 	DefaultReleaseUID uuid.UUID
 	Sharing           *Sharing `gorm:"type:jsonb"`
 	ShareCode         string
@@ -93,160 +102,121 @@ type PipelineRelease struct {
 	ID          string
 	PipelineUID uuid.UUID
 	Description sql.NullString
-	Recipe      *Recipe        `gorm:"type:jsonb"`
-	Metadata    datatypes.JSON `gorm:"type:jsonb"`
-	Readme      string
+
+	// The Recipe field in the database is deprecated. It will only be used for
+	// the structural representation of the recipe instead of as data in the
+	// database. We'll use BeforeSave and AfterFind hooks to convert RecipeYAML
+	// to Recipe when reading and convert Recipe to RecipeYAML when writing.
+	Recipe     *Recipe `gorm:"-"`
+	RecipeYAML string  `gorm:"recipe_yaml"`
+
+	Metadata datatypes.JSON `gorm:"type:jsonb"`
+	Readme   string
 }
 
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
-	Version   string                `json:"version,omitempty"`
-	On        *On                   `json:"on,omitempty"`
-	Component map[string]IComponent `json:"component,omitempty"`
-	Variable  map[string]*Variable  `json:"variable,omitempty"`
-	Secret    map[string]string     `json:"secret,omitempty"`
-	Output    map[string]*Output    `json:"output,omitempty"`
+	Version   string                `json:"version,omitempty" yaml:"version,omitempty"`
+	RunOn     *RunOn                `json:"runOn,omitempty" yaml:"run-on,omitempty"`
+	Component map[string]*Component `json:"component,omitempty" yaml:"component"`
+	Variable  map[string]*Variable  `json:"variable,omitempty" yaml:"variable,omitempty"`
+	Secret    map[string]string     `json:"secret,omitempty" yaml:"secret,omitempty"`
+	Output    map[string]*Output    `json:"output,omitempty" yaml:"output,omitempty"`
 }
 
-type IComponent interface {
-	IsComponent()
-	GetCondition() *string
+func convertRecipeYAMLToRecipe(recipeYAML string) (*Recipe, error) {
+
+	recipe := &Recipe{}
+	err := yaml.Unmarshal([]byte(recipeYAML), recipe)
+	if err != nil {
+		return nil, err
+	}
+	return recipe, nil
 }
 
-func (r *Recipe) UnmarshalJSON(data []byte) error {
-	// TODO: we should catch the errors here and return to the user.
-	tmp := make(map[string]any)
-	err := json.Unmarshal(data, &tmp)
+func convertRecipeToRecipeYAML(recipe *Recipe) (string, error) {
+	recipeYAML, err := yaml.Marshal(recipe)
+	if err != nil {
+		return "", err
+	}
+	return string(recipeYAML), nil
+}
+
+func (p *Pipeline) BeforeSave(db *gorm.DB) (err error) {
+	p.RecipeYAML, err = convertRecipeToRecipeYAML(p.Recipe)
 	if err != nil {
 		return err
-	}
-	if v, ok := tmp["on"]; ok && v != nil {
-		b, _ := json.Marshal(tmp["on"])
-		_ = json.Unmarshal(b, &r.On)
-	}
-	if v, ok := tmp["variable"]; ok && v != nil {
-		b, _ := json.Marshal(tmp["variable"])
-		_ = json.Unmarshal(b, &r.Variable)
-
-	}
-	if v, ok := tmp["secret"]; ok && v != nil {
-		b, _ := json.Marshal(tmp["secret"])
-		_ = json.Unmarshal(b, &r.Secret)
-
-	}
-	if v, ok := tmp["output"]; ok && v != nil {
-		b, _ := json.Marshal(tmp["output"])
-		_ = json.Unmarshal(b, &r.Output)
-	}
-	if v, ok := tmp["component"]; ok && v != nil {
-		comps := v.(map[string]any)
-		r.Component = make(map[string]IComponent)
-		for id, comp := range comps {
-
-			if t, ok := comp.(map[string]any)["type"]; !ok {
-				return fmt.Errorf("component type error")
-			} else {
-				if t == "iterator" {
-					b, _ := json.Marshal(comp)
-					c := IteratorComponent{}
-					_ = json.Unmarshal(b, &c)
-					r.Component[id] = &c
-				} else {
-					b, _ := json.Marshal(comp)
-					c := componentbase.ComponentConfig{}
-					_ = json.Unmarshal(b, &c)
-					r.Component[id] = &c
-				}
-			}
-		}
 	}
 
 	return nil
 }
-func (i *IteratorComponent) IsComponent() {}
-func (i *IteratorComponent) GetCondition() *string {
-	return i.Condition
+
+func (p *PipelineRelease) BeforeSave(db *gorm.DB) (err error) {
+	p.RecipeYAML, err = convertRecipeToRecipeYAML(p.Recipe)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Pipeline) AfterFind(tx *gorm.DB) (err error) {
+	if p.RecipeYAML == "" {
+		return
+	}
+	recipe, err := convertRecipeYAMLToRecipe(p.RecipeYAML)
+	if err != nil {
+		return err
+	}
+	p.Recipe = recipe
+	return
+}
+
+func (p *PipelineRelease) AfterFind(tx *gorm.DB) (err error) {
+	if p.RecipeYAML == "" {
+		return
+	}
+	recipe, err := convertRecipeYAMLToRecipe(p.RecipeYAML)
+	if err != nil {
+		return err
+	}
+	p.Recipe = recipe
+	return
 }
 
 type Variable struct {
-	Title              string `json:"title,omitempty"`
-	Description        string `json:"description,omitempty"`
-	InstillFormat      string `json:"instillFormat,omitempty"`
-	InstillUIOrder     int32  `json:"instillUiOrder,omitempty"`
-	InstillUIMultiline bool   `json:"instillUiMultiline,omitempty"`
+	Title              string `json:"title,omitempty" yaml:"title,omitempty"`
+	Description        string `json:"description,omitempty" yaml:"description,omitempty"`
+	InstillFormat      string `json:"instillFormat,omitempty" yaml:"instill-format,omitempty"`
+	InstillUIOrder     int32  `json:"instillUiOrder,omitempty" yaml:"instill-ui-order,omitempty"`
+	InstillUIMultiline bool   `json:"instillUiMultiline,omitempty" yaml:"instill-ui-multiline,omitempty"`
 }
 
 type Output struct {
-	Title          string `json:"title,omitempty"`
-	Description    string `json:"description,omitempty"`
-	Value          string `json:"value,omitempty"`
-	InstillUIOrder int32  `json:"instillUiOrder,omitempty"`
+	Title          string `json:"title,omitempty" yaml:"title,omitempty"`
+	Description    string `json:"description,omitempty" yaml:"description,omitempty"`
+	Value          string `json:"value,omitempty" yaml:"value,omitempty"`
+	InstillUIOrder int32  `json:"instillUiOrder,omitempty" yaml:"instill-ui-order,omitempty"`
 }
 
-type On struct {
+type RunOn struct {
 }
 
-type IteratorComponent struct {
-	Type              string                `json:"type,omitempty"`
-	Input             string                `json:"input,omitempty"`
-	OutputElements    map[string]string     `json:"outputElements,omitempty"`
-	Condition         *string               `json:"condition,omitempty"`
-	Component         map[string]IComponent `json:"component,omitempty"`
-	Metadata          datatypes.JSON        `json:"metadata,omitempty"`
-	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty"`
-}
+type Component struct {
+	// Share fields
+	Type      string         `json:"type,omitempty" yaml:"type,omitempty"`
+	Task      string         `json:"task,omitempty" yaml:"task,omitempty"`
+	Input     any            `json:"input,omitempty" yaml:"input,omitempty"`
+	Condition string         `json:"condition,omitempty" yaml:"condition,omitempty"`
+	Metadata  map[string]any `json:"metadata,omitempty"  yaml:"metadata,omitempty"`
 
-func (i *IteratorComponent) UnmarshalJSON(data []byte) error {
-	tmp := make(map[string]any)
-	err := json.Unmarshal(data, &tmp)
-	if err != nil {
-		return err
-	}
-	if v, ok := tmp["type"]; ok && v != nil {
-		i.Type = tmp["type"].(string)
-	}
-	if v, ok := tmp["input"]; ok && v != nil {
-		i.Input = tmp["input"].(string)
-	}
-	if v, ok := tmp["outputElements"]; ok && v != nil {
-		b, _ := json.Marshal(v)
-		c := map[string]string{}
-		_ = json.Unmarshal(b, &c)
-		i.OutputElements = c
-	}
-	if v, ok := tmp["condition"]; ok && v != nil {
-		i.Condition = tmp["condition"].(*string)
-	}
-	if v, ok := tmp["metadata"]; ok && v != nil {
-		b, _ := json.Marshal(tmp["metadata"])
-		m := datatypes.JSON{}
-		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return err
-		}
-		i.Metadata = m
-	}
-	if v, ok := tmp["data_specification"]; ok && v != nil {
-		i.DataSpecification = tmp["data_specification"].(*pb.DataSpecification)
-	}
-	if v, ok := tmp["component"]; ok && v != nil {
-		comps := v.(map[string]any)
-		i.Component = make(map[string]IComponent)
-		for id, comp := range comps {
+	// Fields for regular components
+	Setup      map[string]any          `json:"setup,omitempty" yaml:"setup,omitempty"`
+	Definition *pb.ComponentDefinition `json:"definition,omitempty" yaml:"-"`
 
-			if _, ok := comp.(map[string]any)["type"]; ok {
-
-				b, _ := json.Marshal(comp)
-				c := componentbase.ComponentConfig{}
-				_ = json.Unmarshal(b, &c)
-				i.Component[id] = &c
-
-			}
-
-		}
-	}
-
-	return nil
+	// Fields for iterators
+	Component         map[string]*Component `json:"component,omitempty" yaml:"component,omitempty"`
+	OutputElements    map[string]string     `json:"outputElements,omitempty" yaml:"output-elements,omitempty"`
+	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty" yaml:"-"`
 }
 
 type Sharing struct {

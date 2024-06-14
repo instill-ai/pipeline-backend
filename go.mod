@@ -9,12 +9,11 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.15.2
-	github.com/golang/mock v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.19.0-beta
+	github.com/instill-ai/component v0.19.1-beta.0.20240614182950-f4afabd23ee9
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240531114421-d7be5dd350e5
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
@@ -72,6 +71,7 @@ require (
 	github.com/gogo/status v1.1.1 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/flatbuffers v23.5.26+incompatible // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
@@ -82,6 +82,7 @@ require (
 	github.com/itchyny/gojq v0.12.14 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
@@ -92,6 +93,8 @@ require (
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/lestrrat-go/pdebug v0.0.0-20210111095411-35b07dbf089b // indirect
 	github.com/lestrrat-go/structinfo v0.0.0-20210312050401-7f8bd69d6acb // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
@@ -183,6 +186,6 @@ require (
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240221002015-b0ce06bbee7c // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.4.7 // indirect
 )

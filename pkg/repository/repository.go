@@ -230,7 +230,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	if isBasicView {
-		queryBuilder.Omit("pipeline.recipe")
+		queryBuilder.Omit("pipeline.recipe_yaml")
 	}
 
 	result := queryBuilder.Preload("Tags").Find(&pipelines)
@@ -248,7 +248,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		releasesMap := map[uuid.UUID][]*datamodel.PipelineRelease{}
 		releaseDBQueryBuilder := releaseDB.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid in ?", pipelineUIDs).Order("create_time DESC, uid DESC")
 		if isBasicView {
-			releaseDBQueryBuilder.Omit("pipeline_release.recipe")
+			releaseDBQueryBuilder.Omit("pipeline_release.recipe_yaml")
 		}
 		releaseRows, err := releaseDBQueryBuilder.Rows()
 		if err != nil {
@@ -349,7 +349,7 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 	queryBuilder := db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...)
 
 	if isBasicView {
-		queryBuilder.Omit("pipeline.recipe")
+		queryBuilder.Omit("pipeline.recipe_yaml")
 	}
 
 	if result := queryBuilder.First(&pipeline); result.Error != nil {
@@ -362,7 +362,7 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 		releaseDB := r.checkPinnedUser(ctx, r.db, "pipeline")
 		releaseDBQueryBuilder := releaseDB.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipeline.UID).Order("create_time DESC, uid DESC")
 		if isBasicView {
-			releaseDBQueryBuilder.Omit("pipeline_release.recipe")
+			releaseDBQueryBuilder.Omit("pipeline_release.recipe_yaml")
 		}
 
 		releaseRows, err := releaseDBQueryBuilder.Rows()
@@ -425,7 +425,10 @@ func (r *repository) UpdateNamespacePipelineByUID(ctx context.Context, uid uuid.
 
 	r.pinUser(ctx, "pipeline")
 	db := r.checkPinnedUser(ctx, r.db, "pipeline")
-	if result := db.Unscoped().Model(&datamodel.Pipeline{}).
+
+	// Note: To make the BeforeUpdate hook work, we need to use
+	// `Model(pipeline)` instead of `Model(&datamodel.Pipeline{})`.
+	if result := db.Unscoped().Model(pipeline).
 		Where("(uid = ?)", uid).
 		Updates(pipeline); result.Error != nil {
 		return result.Error
@@ -523,7 +526,7 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	}
 
 	if isBasicView {
-		queryBuilder.Omit("pipeline_release.recipe")
+		queryBuilder.Omit("pipeline_release.recipe_yaml")
 	}
 
 	if expr, err := r.TranspileFilter(filter); err != nil {
@@ -574,7 +577,7 @@ func (r *repository) GetNamespacePipelineReleaseByID(ctx context.Context, ownerP
 
 	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Where("id = ? AND pipeline_uid = ?", id, pipelineUID)
 	if isBasicView {
-		queryBuilder.Omit("pipeline_release.recipe")
+		queryBuilder.Omit("pipeline_release.recipe_yaml")
 	}
 	var pipelineRelease datamodel.PipelineRelease
 	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
@@ -589,7 +592,7 @@ func (r *repository) UpdateNamespacePipelineReleaseByID(ctx context.Context, own
 	r.pinUser(ctx, "pipeline_release")
 	db := r.checkPinnedUser(ctx, r.db, "pipeline_release")
 
-	if result := db.Model(&datamodel.PipelineRelease{}).
+	if result := db.Model(pipelineRelease).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUID).
 		Updates(pipelineRelease); result.Error != nil {
 		return result.Error
@@ -640,7 +643,7 @@ func (r *repository) GetLatestNamespacePipelineRelease(ctx context.Context, owne
 
 	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUID).Order("id DESC")
 	if isBasicView {
-		queryBuilder.Omit("pipeline_release.recipe")
+		queryBuilder.Omit("pipeline_release.recipe_yaml")
 	}
 	var pipelineRelease datamodel.PipelineRelease
 	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
