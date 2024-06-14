@@ -13,7 +13,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/x/errmsg"
 
-	componentbase "github.com/instill-ai/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -132,28 +131,20 @@ func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, setup ma
 	}
 	return nil
 }
-func (s *service) checkSecret(ctx context.Context, recipe *datamodel.Recipe) error {
+func (s *service) checkSecret(ctx context.Context, components map[string]*datamodel.Component) error {
 
-	for _, comp := range recipe.Component {
-		switch c := comp.(type) {
-		case *componentbase.ComponentConfig:
-			defUID := uuid.FromStringOrNil(c.Type)
-			setup := c.Setup
-			err := s.checkSecretFields(ctx, defUID, setup, "")
+	for _, comp := range components {
+		switch comp.Type {
+		default:
+			defUID := uuid.FromStringOrNil(comp.Type)
+			err := s.checkSecretFields(ctx, defUID, comp.Setup, "")
 			if err != nil {
 				return err
 			}
-		case *datamodel.IteratorComponent:
-			for _, nestedComp := range c.Component {
-				switch nestedC := nestedComp.(type) {
-				case *componentbase.ComponentConfig:
-					defUID := uuid.FromStringOrNil(nestedC.Type)
-					setup := nestedC.Setup
-					err := s.checkSecretFields(ctx, defUID, setup, "")
-					if err != nil {
-						return err
-					}
-				}
+		case datamodel.Iterator:
+			err := s.checkSecret(ctx, comp.Component)
+			if err != nil {
+				return err
 			}
 		}
 	}

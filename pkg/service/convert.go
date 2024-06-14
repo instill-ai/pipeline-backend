@@ -90,21 +90,21 @@ func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any)
 			}
 		}
 
-	case *datamodel.IteratorComponent:
-		for _, comp := range rsc.Component {
-			if err := c.convertResourceNameToPermalink(ctx, comp); err != nil {
+	case *datamodel.Component:
+		if rsc.Type == datamodel.Iterator {
+			for _, comp := range rsc.Component {
+				if err := c.convertResourceNameToPermalink(ctx, comp); err != nil {
+					return err
+				}
+			}
+		} else {
+			def, err := c.component.GetDefinitionByID(rsc.Type, nil, nil)
+			if err != nil {
 				return err
 			}
+			rsc.Type = def.Uid
+			return nil
 		}
-
-	case *componentbase.ComponentConfig:
-		def, err := c.component.GetDefinitionByID(rsc.Type, nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.Type = def.Uid
-		return nil
-
 	}
 	return nil
 }
@@ -127,19 +127,20 @@ func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any)
 			}
 		}
 
-	case *datamodel.IteratorComponent:
-		for _, comp := range rsc.Component {
-			if err := c.convertResourcePermalinkToName(ctx, comp); err != nil {
+	case *datamodel.Component:
+		if rsc.Type == datamodel.Iterator {
+			for _, comp := range rsc.Component {
+				if err := c.convertResourcePermalinkToName(ctx, comp); err != nil {
+					return err
+				}
+			}
+		} else {
+			def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(rsc.Type), nil, nil)
+			if err != nil {
 				return err
 			}
+			rsc.Type = def.Id
 		}
-
-	case *componentbase.ComponentConfig:
-		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(rsc.Type), nil, nil)
-		if err != nil {
-			return err
-		}
-		rsc.Type = def.Id
 
 	}
 	return nil
@@ -172,43 +173,41 @@ func (c *converter) processSetup(ctx context.Context, ownerPermalink string, set
 	return rendered
 }
 
-func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink string, compConfig *componentbase.ComponentConfig, useDynamicDef bool) error {
+func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink string, comp *datamodel.Component, useDynamicDef bool) error {
 
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return err
 	}
 	if useDynamicDef {
-
-		rendered := componentbase.ComponentConfig(*compConfig)
-		rendered.Setup = c.processSetup(ctx, ownerPermalink, compConfig.Setup)
-
-		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(compConfig.Type), vars, &rendered)
+		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(comp.Type), vars, &componentbase.ComponentConfig{
+			Task:  comp.Task,
+			Input: comp.Input.(map[string]any),
+			Setup: c.processSetup(ctx, ownerPermalink, comp.Setup),
+		})
 		if err != nil {
 			return err
 		}
-		compConfig.Definition = def
+		comp.Definition = def
 	} else {
-		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(compConfig.Type), nil, nil)
+		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
 		if err != nil {
 			return err
 		}
-		compConfig.Definition = def
+		comp.Definition = def
 	}
 
 	return nil
 }
 
-func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPermalink string, comp *datamodel.IteratorComponent, useDynamicDef bool) error {
+func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPermalink string, comp *datamodel.Component, useDynamicDef bool) error {
 
 	for _, itComp := range comp.Component {
-		var err error
-		switch itComp := itComp.(type) {
-		case *componentbase.ComponentConfig:
-			err = c.includeComponentDetail(ctx, ownerPermalink, itComp, useDynamicDef)
-		}
-		if err != nil {
-			return err
+		if itComp.Type != datamodel.Iterator {
+			err := c.includeComponentDetail(ctx, ownerPermalink, itComp, useDynamicDef)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -240,12 +239,11 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPer
 				task := ""
 				input := &structpb.Struct{}
 				output := &structpb.Struct{}
-				switch nestedC := nestedComp.(type) {
-				case *componentbase.ComponentConfig:
-					task = nestedC.Task
-					if _, ok := nestedC.Definition.Spec.DataSpecifications[task]; ok {
-						input = nestedC.Definition.Spec.DataSpecifications[task].Input
-						output = nestedC.Definition.Spec.DataSpecifications[task].Output
+				if nestedComp.Type != datamodel.Iterator {
+					task = nestedComp.Task
+					if _, ok := nestedComp.Definition.Spec.DataSpecifications[task]; ok {
+						input = nestedComp.Definition.Spec.DataSpecifications[task].Input
+						output = nestedComp.Definition.Spec.DataSpecifications[task].Output
 					}
 				}
 				if task == "" {
@@ -335,10 +333,9 @@ func (c *converter) includeDetailInRecipe(ctx context.Context, ownerPermalink st
 
 	for _, comp := range recipe.Component {
 		var err error
-		switch comp := comp.(type) {
-		case *componentbase.ComponentConfig:
+		if comp.Type != datamodel.Iterator {
 			err = c.includeComponentDetail(ctx, ownerPermalink, comp, useDynamicDef)
-		case *datamodel.IteratorComponent:
+		} else {
 			err = c.includeIteratorComponentDetail(ctx, ownerPermalink, comp, useDynamicDef)
 		}
 		if err != nil {
@@ -836,7 +833,7 @@ func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline 
 }
 
 // TODO: refactor these codes
-func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin map[string]datamodel.IComponent) (*pb.DataSpecification, error) {
+func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin map[string]*datamodel.Component) (*pb.DataSpecification, error) {
 	success := true
 	pipelineDataSpec := &pb.DataSpecification{}
 
@@ -883,24 +880,25 @@ func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Var
 				} else {
 					comp := compsOrigin[upstreamCompID]
 
-					switch c := comp.(type) {
-					case *datamodel.IteratorComponent:
+					switch comp.Type {
+					case datamodel.Iterator:
+
 						splits := strings.Split(str, ".")
 						if splits[1] == "output" {
-							walk = structpb.NewStructValue(c.DataSpecification.Output)
+							walk = structpb.NewStructValue(comp.DataSpecification.Output)
 						} else {
 							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 						str = str[len(splits[1])+1:]
-					case *componentbase.ComponentConfig:
+					default:
 						task := ""
 						input := &structpb.Struct{}
 						output := &structpb.Struct{}
 
-						task = c.Task
-						if _, ok := c.Definition.Spec.DataSpecifications[task]; ok {
-							input = c.Definition.Spec.DataSpecifications[task].Input
-							output = c.Definition.Spec.DataSpecifications[task].Output
+						task = comp.Task
+						if _, ok := comp.Definition.Spec.DataSpecifications[task]; ok {
+							input = comp.Definition.Spec.DataSpecifications[task].Input
+							output = comp.Definition.Spec.DataSpecifications[task].Output
 						}
 
 						if task == "" {

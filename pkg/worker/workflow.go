@@ -24,7 +24,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/errmsg"
 
-	componentbase "github.com/instill-ai/component/base"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
@@ -42,7 +41,7 @@ type ComponentActivityParam struct {
 	MemoryStorageKey *recipe.BatchMemoryKey
 	ID               string
 	UpstreamIDs      []string
-	Condition        *string
+	Condition        string
 	Input            map[string]any
 	Setup            map[string]any
 	DefinitionUID    uuid.UUID
@@ -143,9 +142,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	numComponents := len(r.Component)
 	for _, comp := range r.Component {
-		switch c := comp.(type) {
-		case *datamodel.IteratorComponent:
-			numComponents += len(c.Component)
+		switch comp.Type {
+		case datamodel.Iterator:
+			numComponents += len(comp.Component)
 		}
 	}
 
@@ -180,29 +179,29 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 			upstreamIDs := dag.GetUpstreamCompIDs(compID)
 
-			switch c := comp.(type) {
-			case *componentbase.ComponentConfig:
+			switch comp.Type {
+			default:
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, &ComponentActivityParam{
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
-					DefinitionUID:    uuid.FromStringOrNil(c.Type),
-					Task:             c.Task,
-					Input:            c.Input,
-					Setup:            c.Setup,
-					Condition:        c.Condition,
+					DefinitionUID:    uuid.FromStringOrNil(comp.Type),
+					Task:             comp.Task,
+					Input:            comp.Input.(map[string]any),
+					Setup:            comp.Setup,
+					Condition:        comp.Condition,
 					MemoryStorageKey: param.MemoryStorageKey,
 					SystemVariables:  param.SystemVariables,
 				}))
 
-			case *datamodel.IteratorComponent:
+			case datamodel.Iterator:
 
 				preIteratorResult := &PreIteratorActivityResult{}
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
-					Input:            c.Input,
+					Input:            comp.Input.(string),
 					SystemVariables:  param.SystemVariables,
 					MemoryStorageKey: param.MemoryStorageKey,
 				}).Get(ctx, &preIteratorResult); err != nil {
@@ -244,7 +243,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					WorkflowID:        workflowID,
 					ID:                compID,
 					MemoryStorageKeys: preIteratorResult.MemoryStorageKeys,
-					OutputElements:    c.OutputElements,
+					OutputElements:    comp.OutputElements,
 					SystemVariables:   param.SystemVariables,
 				}).Get(ctx, nil); err != nil {
 					return err
@@ -357,7 +356,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 	}
 
 	iteratorRecipe := &datamodel.Recipe{
-		Component: r.Component[param.ID].(*datamodel.IteratorComponent).Component,
+		Component: r.Component[param.ID].Component,
 	}
 
 	result := &PreIteratorActivityResult{
@@ -529,7 +528,7 @@ func (w *worker) UsageCollectActivity(ctx context.Context, param *UsageCollectAc
 	return nil
 }
 
-func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamIDs []string, condition *string, input any) ([]*structpb.Struct, map[int]int, error) {
+func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamIDs []string, condition string, input any) ([]*structpb.Struct, map[int]int, error) {
 	var compInputs []*structpb.Struct
 	idxMap := map[int]int{}
 
@@ -549,10 +548,10 @@ func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamI
 		}
 
 		if !batchMemory[idx].Component[id].Status.Skipped {
-			if condition != nil && *condition != "" {
+			if condition != "" {
 
 				// TODO: these code should be refactored and shared some common functions with RenderInput
-				condStr := *condition
+				condStr := condition
 				var varMapping map[string]string
 				condStr, _, varMapping = recipe.SanitizeCondition(condStr)
 
