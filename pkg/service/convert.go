@@ -192,13 +192,13 @@ func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink s
 		if err != nil {
 			return err
 		}
-		comp.Definition = def
+		comp.Definition = &datamodel.Definition{ComponentDefinition: def}
 	} else {
 		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
 		if err != nil {
 			return err
 		}
-		comp.Definition = def
+		comp.Definition = &datamodel.Definition{ComponentDefinition: def}
 	}
 
 	return nil

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"google.golang.org/protobuf/encoding/protojson"
 	"gopkg.in/yaml.v3"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -210,13 +211,36 @@ type Component struct {
 	Metadata  map[string]any `json:"metadata,omitempty"  yaml:"metadata,omitempty"`
 
 	// Fields for regular components
-	Setup      map[string]any          `json:"setup,omitempty" yaml:"setup,omitempty"`
-	Definition *pb.ComponentDefinition `json:"definition,omitempty" yaml:"-"`
+	Setup      map[string]any `json:"setup,omitempty" yaml:"setup,omitempty"`
+	Definition *Definition    `json:"definition,omitempty" yaml:"-"`
 
 	// Fields for iterators
 	Component         map[string]*Component `json:"component,omitempty" yaml:"component,omitempty"`
 	OutputElements    map[string]string     `json:"outputElements,omitempty" yaml:"output-elements,omitempty"`
 	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty" yaml:"-"`
+}
+
+type Definition struct {
+	*pb.ComponentDefinition
+}
+type DataSpecification struct {
+	*pb.DataSpecification
+}
+
+func (c *Definition) MarshalJSON() ([]byte, error) {
+	defBytes, err := protojson.Marshal(c.ComponentDefinition)
+	if err != nil {
+		return nil, err
+	}
+	return defBytes, nil
+}
+
+func (c *DataSpecification) MarshalJSON() ([]byte, error) {
+	defBytes, err := protojson.Marshal(c.DataSpecification)
+	if err != nil {
+		return nil, err
+	}
+	return defBytes, nil
 }
 
 type Sharing struct {
