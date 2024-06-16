@@ -48,11 +48,11 @@ export function CheckCreate(data) {
         (r) => helper.validateRecipeGRPC(r.message.pipeline.recipe, false),
       "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline owner is valid":
         (r) => helper.isValidOwner(r.message.pipeline.owner, data.expectedOwner),
-      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline create_time":
+      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline createTime":
         (r) =>
           new Date(r.message.pipeline.createTime).getTime() >
           new Date().setTime(0),
-      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline update_time":
+      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline updateTime":
         (r) =>
           new Date(r.message.pipeline.updateTime).getTime() >
           new Date().setTime(0),
@@ -597,7 +597,7 @@ export function CheckUpdate(data) {
           (r) =>
             new Date(r.message.pipeline.updateTime).getTime() >
             new Date().setTime(0),
-        [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserPipeline response pipeline updateTime > create_time`]:
+        [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserPipeline response pipeline updateTime > createTime`]:
           (r) =>
             new Date(r.message.pipeline.updateTime).getTime() >
             new Date(r.message.pipeline.createTime).getTime(),
