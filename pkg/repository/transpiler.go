@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"go.einride.tech/aip/filtering"
 	"gorm.io/gorm/clause"
 
@@ -110,7 +111,7 @@ func (t *transpiler) transpileIdentExpr(e *expr.Expr) (*clause.Expr, error) {
 		}
 	}
 	return &clause.Expr{
-		SQL:                identExpr.Name,
+		SQL:                strcase.ToSnake(identExpr.Name),
 		Vars:               nil,
 		WithoutParentheses: true,
 	}, nil

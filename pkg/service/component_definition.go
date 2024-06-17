@@ -191,9 +191,9 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 	var releaseStage pb.ComponentDefinition_ReleaseStage
 	declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
-		filtering.DeclareIdent("q_title", filtering.TypeString),
-		filtering.DeclareEnumIdent("release_stage", releaseStage.Type()),
-		filtering.DeclareEnumIdent("component_type", compType.Type()),
+		filtering.DeclareIdent("qTitle", filtering.TypeString),
+		filtering.DeclareEnumIdent("releaseStage", releaseStage.Type()),
+		filtering.DeclareEnumIdent("componentType", compType.Type()),
 	)
 	if err != nil {
 		return nil, err
@@ -282,7 +282,7 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 	var connType pb.ConnectorType
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
-		filtering.DeclareEnumIdent("connector_type", connType.Type()),
+		filtering.DeclareEnumIdent("connectorType", connType.Type()),
 	}...)
 	if err != nil {
 		return nil, err

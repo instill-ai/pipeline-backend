@@ -13,40 +13,40 @@ export function CheckList() {
     });
 
     var limitedRecords = http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions`, null, null)
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?page_size=0`, null, null), {
-      "GET /v1beta/operator-definitions?page_size=0 response status is 200": (r) => r.status === 200,
-      "GET /v1beta/operator-definitions?page_size=0 response limited records for 10": (r) => r.json().operatorDefinitions.length === limitedRecords.json().operatorDefinitions.length,
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?pageSize=0`, null, null), {
+      "GET /v1beta/operator-definitions?pageSize=0 response status is 200": (r) => r.status === 200,
+      "GET /v1beta/operator-definitions?pageSize=0 response limited records for 10": (r) => r.json().operatorDefinitions.length === limitedRecords.json().operatorDefinitions.length,
     });
 
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?page_size=1`, null, null), {
-      "GET /v1beta/operator-definitions?page_size=1 response status is 200": (r) => r.status === 200,
-      "GET /v1beta/operator-definitions?page_size=1 response operatorDefinitions size 1": (r) => r.json().operatorDefinitions.length === 1,
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?pageSize=1`, null, null), {
+      "GET /v1beta/operator-definitions?pageSize=1 response status is 200": (r) => r.status === 200,
+      "GET /v1beta/operator-definitions?pageSize=1 response operatorDefinitions size 1": (r) => r.json().operatorDefinitions.length === 1,
     });
 
-    var pageRes = http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?page_size=1`, null, null)
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?page_size=1&page_token=${pageRes.json().nextPageToken}`, null, null), {
-      [`GET /v1beta/operator-definitions?page_size=1&page_token=${pageRes.json().nextPageToken} response status is 200`]: (r) => r.status === 200,
-      [`GET /v1beta/operator-definitions?page_size=1&page_token=${pageRes.json().nextPageToken} response operatorDefinitions size 1`]: (r) => r.json().operatorDefinitions.length === 1,
+    var pageRes = http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?pageSize=1`, null, null)
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?pageSize=1&pageToken=${pageRes.json().nextPageToken}`, null, null), {
+      [`GET /v1beta/operator-definitions?pageSize=1&pageToken=${pageRes.json().nextPageToken} response status is 200`]: (r) => r.status === 200,
+      [`GET /v1beta/operator-definitions?pageSize=1&pageToken=${pageRes.json().nextPageToken} response operatorDefinitions size 1`]: (r) => r.json().operatorDefinitions.length === 1,
     });
 
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?page_size=1&view=VIEW_BASIC`, null, null), {
-      "GET /v1beta/operator-definitions?page_size=1&view=VIEW_BASIC response status 200": (r) => r.status === 200,
-      "GET /v1beta/operator-definitions?page_size=1&view=VIEW_BASIC response operatorDefinitions[0].spec is null": (r) => r.json().operatorDefinitions[0].spec === null,
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?pageSize=1&view=VIEW_BASIC`, null, null), {
+      "GET /v1beta/operator-definitions?pageSize=1&view=VIEW_BASIC response status 200": (r) => r.status === 200,
+      "GET /v1beta/operator-definitions?pageSize=1&view=VIEW_BASIC response operatorDefinitions[0].spec is null": (r) => r.json().operatorDefinitions[0].spec === null,
     });
 
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?page_size=1&view=VIEW_FULL`, null, null), {
-      "GET /v1beta/operator-definitions?page_size=1&view=VIEW_FULL response status 200": (r) => r.status === 200,
-      "GET /v1beta/operator-definitions?page_size=1&view=VIEW_FULL response operatorDefinitions[0].spec is not null": (r) => r.json().operatorDefinitions[0].spec !== null,
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?pageSize=1&view=VIEW_FULL`, null, null), {
+      "GET /v1beta/operator-definitions?pageSize=1&view=VIEW_FULL response status 200": (r) => r.status === 200,
+      "GET /v1beta/operator-definitions?pageSize=1&view=VIEW_FULL response operatorDefinitions[0].spec is not null": (r) => r.json().operatorDefinitions[0].spec !== null,
     });
 
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?page_size=1`, null, null), {
-      "GET /v1beta/operator-definitions?page_size=1 response status 200": (r) => r.status === 200,
-      "GET /v1beta/operator-definitions?page_size=1 response operatorDefinitions[0].spec is null": (r) => r.json().operatorDefinitions[0].spec === null,
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?pageSize=1`, null, null), {
+      "GET /v1beta/operator-definitions?pageSize=1 response status 200": (r) => r.status === 200,
+      "GET /v1beta/operator-definitions?pageSize=1 response operatorDefinitions[0].spec is null": (r) => r.json().operatorDefinitions[0].spec === null,
     });
 
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?page_size=${limitedRecords.json().totalSize}`, null, null), {
-      [`GET /v1beta/operator-definitions?page_size=${limitedRecords.json().totalSize} response status 200`]: (r) => r.status === 200,
-      [`GET /v1beta/operator-definitions?page_size=${limitedRecords.json().totalSize} response nextPageToken is empty`]: (r) => r.json().nextPageToken === "",
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/operator-definitions?pageSize=${limitedRecords.json().totalSize}`, null, null), {
+      [`GET /v1beta/operator-definitions?pageSize=${limitedRecords.json().totalSize} response status 200`]: (r) => r.status === 200,
+      [`GET /v1beta/operator-definitions?pageSize=${limitedRecords.json().totalSize} response nextPageToken is empty`]: (r) => r.json().nextPageToken === "",
     });
   });
 }

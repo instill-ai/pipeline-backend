@@ -104,12 +104,12 @@ export function CheckList(data) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=3`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines?pageSize=3`,
         null,
         constant.params
       ),
       {
-        [`GET /v1beta/admin/pipelines?page_size=3 response pipelines.length == 3`]:
+        [`GET /v1beta/admin/pipelines?pageSize=3 response pipelines.length == 3`]:
           (r) => r.json().pipelines.length == 3,
       }
     );
@@ -117,31 +117,31 @@ export function CheckList(data) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=101`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines?pageSize=101`,
         null,
         constant.params
       ),
       {
-        [`GET /v1beta/admin/pipelines?page_size=101 response pipelines.length == 100`]:
+        [`GET /v1beta/admin/pipelines?pageSize=101 response pipelines.length == 100`]:
           (r) => r.json().pipelines.length == 100,
       }
     );
 
     var resFirst100 = http.request(
       "GET",
-      `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=100`
+      `${pipelinePrivateHost}/v1beta/admin/pipelines?pageSize=100`
     );
     var resSecond100 = http.request(
       "GET",
-      `${pipelinePrivateHost}/v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+      `${pipelinePrivateHost}/v1beta/admin/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
       }`
     );
     check(resSecond100, {
-      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+      [`GET /v1beta/admin/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
         } response status 200`]: (r) => r.status == 200,
-      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+      [`GET /v1beta/admin/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
         } response return 100 results`]: (r) => r.json().pipelines.length == 100,
-      [`GET /v1beta/admin/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+      [`GET /v1beta/admin/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
         } response nextPageToken is empty`]: (r) =>
           r.json().nextPageToken === "",
     });
@@ -164,14 +164,14 @@ export function CheckList(data) {
     check(
       http.request(
         "GET",
-        `${pipelinePrivateHost}/v1beta/admin/pipelines?filter=create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
+        `${pipelinePrivateHost}/v1beta/admin/pipelines?filter=createTime>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
         null,
         constant.params
       ),
       {
-        [`GET /v1beta/admin/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
+        [`GET /v1beta/admin/pipelines?filter=createTime%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
           (r) => r.status == 200,
-        [`GET /v1beta/admin/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
+        [`GET /v1beta/admin/pipelines?filter=createTime%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
           (r) => r.json().pipelines.length > 0,
       }
     );

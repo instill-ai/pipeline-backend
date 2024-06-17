@@ -292,12 +292,12 @@ export function CheckList(data) {
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=3`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?pageSize=3`,
         null,
         data.header
       ),
       {
-        [`GET /v1beta/${constant.namespace}/pipelines?page_size=3 response pipelines.length == 3`]: (
+        [`GET /v1beta/${constant.namespace}/pipelines?pageSize=3 response pipelines.length == 3`]: (
           r
         ) => r.json().pipelines.length == 3,
       }
@@ -306,34 +306,34 @@ export function CheckList(data) {
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=101`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?pageSize=101`,
         null,
         data.header
       ),
       {
-        [`GET /v1beta/${constant.namespace}/pipelines?page_size=101 response pipelines.length == 100`]:
+        [`GET /v1beta/${constant.namespace}/pipelines?pageSize=101 response pipelines.length == 100`]:
           (r) => r.json().pipelines.length == 100,
       }
     );
 
     var resFirst100 = http.request(
       "GET",
-      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100`,
+      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?pageSize=100`,
       null,
       data.header
     );
     var resSecond100 = http.request(
       "GET",
-      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
       }`,
       null, data.header
     );
     check(resSecond100, {
-      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+      [`GET /v1beta/${constant.namespace}/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
         } response status 200`]: (r) => r.status == 200,
-      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+      [`GET /v1beta/${constant.namespace}/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
         } response return 100 results`]: (r) => r.json().pipelines.length == 100,
-      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().nextPageToken
+      [`GET /v1beta/${constant.namespace}/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
         } response nextPageToken is empty`]: (r) =>
           r.json().nextPageToken === "",
     });
@@ -356,14 +356,14 @@ export function CheckList(data) {
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?filter=create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?filter=createTime>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
         null,
         data.header
       ),
       {
-        [`GET /v1beta/${constant.namespace}/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
+        [`GET /v1beta/${constant.namespace}/pipelines?filter=createTime%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
           (r) => r.status == 200,
-        [`GET /v1beta/${constant.namespace}/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
+        [`GET /v1beta/${constant.namespace}/pipelines?filter=createTime%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
           (r) => r.json().pipelines.length > 0,
       }
     );
