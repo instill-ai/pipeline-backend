@@ -581,7 +581,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		}
 	}
 
-	pbReleases, err := c.ConvertPipelineReleasesToPB(ctx, dbPipeline, dbPipeline.Releases, view)
+	pbReleases, err := c.ConvertPipelineReleasesToPB(ctx, dbPipelineOrigin, dbPipeline.Releases, view)
 	if err != nil {
 		return nil, err
 	}
@@ -708,21 +708,9 @@ func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID 
 }
 
 // ConvertPipelineReleaseToPB converts db data model to protobuf data model
-func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipelineOrigin *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
+func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease *datamodel.PipelineRelease, view pb.Pipeline_View) (*pb.PipelineRelease, error) {
 
 	logger, _ := logger.GetZapLogger(ctx)
-
-	// Clone the pipeline to avoid share memory write
-	dbPipelineByte, err := json.Marshal(dbPipelineOrigin)
-	if err != nil {
-		return nil, err
-	}
-	dbPipeline := &datamodel.Pipeline{}
-
-	err = json.Unmarshal(dbPipelineByte, dbPipeline)
-	if err != nil {
-		return nil, err
-	}
 
 	owner, err := c.ConvertOwnerPermalinkToName(ctx, dbPipeline.Owner)
 	if err != nil {
