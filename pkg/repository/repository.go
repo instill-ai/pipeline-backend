@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/iancoleman/strcase"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/redis/go-redis/v9"
 	"go.einride.tech/aip/filtering"
@@ -183,7 +184,8 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	for _, field := range order.Fields {
-		orderString := field.Path + transformBoolToDescString(field.Desc)
+		// TODO: We should implement a shared `orderBy` parser.
+		orderString := strcase.ToSnake(field.Path) + transformBoolToDescString(field.Desc)
 		queryBuilder.Order(orderString)
 	}
 	queryBuilder.Order("uid DESC")
@@ -286,9 +288,9 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		}
 
 		for _, field := range order.Fields {
-			orderString := field.Path + transformBoolToDescString(!field.Desc)
+			orderString := strcase.ToSnake(field.Path) + transformBoolToDescString(!field.Desc)
 			lastItemQueryBuilder.Order(orderString)
-			switch field.Path {
+			switch strcase.ToSnake(field.Path) {
 			case "id":
 				tokens[field.Path] = lastID
 			case "create_time":

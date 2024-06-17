@@ -389,14 +389,14 @@ export function CheckList(data) {
         {
           parent: `${constant.namespace}`,
           filter:
-            'create_time>timestamp("2000-06-19T23:31:08.657Z")',
+            'createTime>timestamp("2000-06-19T23:31:08.657Z")',
         },
         data.metadata
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: state=createTime>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
+        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: state=createTime>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
