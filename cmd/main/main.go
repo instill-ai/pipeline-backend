@@ -55,7 +55,6 @@ var propagator propagation.TextMapPropagator
 func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handler {
 	return h2c.NewHandler(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			propagator = b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader))
 			ctx := propagator.Extract(r.Context(), propagation.HeaderCarrier(r.Header))
 			r = r.WithContext(ctx)

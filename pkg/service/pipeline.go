@@ -962,22 +962,6 @@ func (s *service) triggerPipeline(
 	return s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
 }
 
-func queryWorkflowStatus(ctx context.Context, temporalClient client.Client, workflowID string, runID string) (string, error) {
-	queryResult, err := temporalClient.QueryWorkflow(ctx, workflowID, runID, "workflowStatusQuery")
-	if err != nil {
-		log.Printf("Failed to query workflow status: %v", err)
-		return "", err
-	}
-
-	var status string
-	if err := queryResult.Get(&status); err != nil {
-		log.Printf("Failed to get query result: %v", err)
-		return "", err
-	}
-
-	return status, nil
-}
-
 func (s *service) triggerPipelineWithStream(
 	ctx context.Context,
 	ns resource.Namespace,
@@ -1041,38 +1025,73 @@ func (s *service) triggerPipelineWithStream(
 	}
 
 	go func() {
-		ticker := time.NewTicker(1 * time.Second)
+		const interval = 300 * time.Millisecond
+		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
+
+		ctxQ, cancel := context.WithTimeout(context.Background(), time.Second*30)
+		defer cancel()
 
 		for {
 			select {
 			case <-ticker.C:
-				status, err := queryWorkflowStatus(ctx, s.temporalClient, we.GetID(), we.GetRunID())
+				queryResult, err := s.temporalClient.QueryWorkflow(ctxQ, we.GetID(), we.GetRunID(), "workflowStatusQuery")
 				if err != nil {
 					log.Println("Error querying workflow status: %v", err)
-					continue
+					return
 				}
 
-				fmt.Printf("Workflow status: %s\n", status)
+				var status worker.WorkFlowSignal
+				if err := queryResult.Get(&status); err != nil {
+					log.Println("Error querying workflow Get status: %v", err)
+					return
+				}
 
-				switch status {
+				fmt.Printf("DEBUG: Workflow status: %s\n", status.Status)
+
+				switch status.Status {
 				case "step":
-					data, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
+					//rJson, err := json.MarshalIndent(r, "", "  ")
+					//if err != nil {
+					//	log.Println("Error marshalling Recipe struct: %v", err)
+					//} else {
+					//	fmt.Println("DEBUG r:", string(rJson))
+					//}
+
+					fmt.Println("DEBUG: status Workflow step Param", status.ID)
+					//nn := make(map[string]*datamodel.Output)
+					//// Copy each key-value pair from r.Output to newMap
+					//for k, v := range r.Output {
+					//	nn[k] = v
+					//	fmt.Println("Copied:", k, v)
+					//}
+					////fmt.Println("New Map:", nn)
+					//
+					//fmt.Println(r.Output["response_1"])
+					path := status.ID
+					data, metadata, err := s.getOutputsAndMetadataStream(ctx, pipelineTriggerID, r, returnTraces, path)
 					if err != nil {
-						log.Println("getOutputsAndMetadata:", err)
-						continue
+						panic(err)
 					}
-					fmt.Printf("Received data from step: %v\n", data)
+
+					fmt.Println("DEBUG data and metadata from getOutputsAndMetadataStream:", data, metadata)
+
+					//data, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
+					//if err != nil {
+					//	log.Println("getOutputsAndMetadata:", err)
+					//	continue
+					//}
+
+					fmt.Println("DEBUG sending data from getOutputsAndMetadataStream:", data)
 					stream <- TriggerResult{
 						Struct:   data,
 						Metadata: metadata,
 					}
-
 				case "completed":
+					log.Println("DEBUG: status Workflow completed")
+					close(stream)
 					return
 				}
-			case <-ctx.Done():
-				return
 			}
 		}
 	}()
@@ -1159,7 +1178,6 @@ func (s *service) triggerAsyncPipeline(
 }
 
 func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID string, r *datamodel.Recipe, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
-
 	memory, err := recipe.LoadMemoryByTriggerID(ctx, s.redisClient, pipelineTriggerID)
 	if err != nil {
 		return nil, nil, err
@@ -1179,7 +1197,6 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID s
 				return nil, nil, err
 			}
 			pipelineOutput.Fields[k] = structVal
-
 		}
 		pipelineOutputs[idx] = pipelineOutput
 	}
@@ -1194,6 +1211,63 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID s
 			Traces: traces,
 		}
 	}
+	return pipelineOutputs, metadata, nil
+}
+
+func (s *service) getOutputsAndMetadataStream(ctx context.Context, pipelineTriggerID string, r *datamodel.Recipe, returnTraces bool, path string) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
+	memory, err := recipe.LoadMemoryByTriggerID(ctx, s.redisClient, pipelineTriggerID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("LoadMemoryByTriggerID: %w", err)
+	}
+
+	pipelineOutputs := make([]*structpb.Struct, len(memory))
+
+	for idx, mem := range memory {
+		fmt.Printf("Memory[%d]:\n", idx)
+		fmt.Printf("  Variable: %+v\n", mem.Variable)
+		fmt.Printf("  Secret: %+v\n", mem.Secret)
+		for key, component := range mem.Component {
+			fmt.Printf("  Component Key: %s\n", key)
+			fmt.Printf("  Component Value: %+v\n", component)
+			fmt.Printf("    Input: %+v\n", component.Input)
+			fmt.Printf("    Output: %+v\n", component.Output)
+			fmt.Printf("    Element: %+v\n", component.Element)
+			fmt.Printf("    Status: %+v\n", *component.Status)
+		}
+		pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+
+		for k, v := range r.Output {
+			input := v.Value[2:]
+			input = input[:len(input)-1]
+			input = strings.TrimSpace(input)
+			if strings.Contains(input, path) {
+				val, err := recipe.TraverseBinding(mem, input)
+				if err != nil {
+					fmt.Println("TraverseBinding error:", err)
+					continue
+				}
+
+				structVal, err := structpb.NewValue(val)
+				if err != nil {
+					return nil, nil, err
+				}
+				pipelineOutput.Fields[k] = structVal
+			}
+		}
+		pipelineOutputs[idx] = pipelineOutput
+	}
+
+	var metadata *pb.TriggerMetadata
+	if returnTraces {
+		traces, err := recipe.GenerateTraces(r.Component, memory)
+		if err != nil {
+			return nil, nil, err
+		}
+		metadata = &pb.TriggerMetadata{
+			Traces: traces,
+		}
+	}
+
 	return pipelineOutputs, metadata, nil
 }
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 	"go/parser"
 	"time"
 
@@ -48,7 +49,6 @@ type ComponentActivityParam struct {
 	DefinitionUID    uuid.UUID
 	Task             string
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-	QueryStatus      string
 }
 
 type PreIteratorActivityParam struct {
@@ -85,15 +85,35 @@ type UsageCheckActivityParam struct {
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
+// sChan is used to singal from the Workflow to the QueryHandler if a Activity is completed.
+// The QueryHandler will be called by the client to get the status of the Workflow in order
+// act accordingly e.g. signal partial completion of the Workflow. The buffer size is set to 1000 but
+// can be adjusted based on the expected number of components in the Workflow.
+var sChan = make(chan WorkFlowSignal, 1000)
+
+// WorkFlowSignal is used by sChan to signal the status of components in the Workflow.
+type WorkFlowSignal struct {
+	ID     string
+	Status string
+}
+
 // TriggerPipelineWorkflow is a pipeline trigger workflow definition.
 // The workflow is only responsible for orchestrating the DAG, not processing or reading/writing the data.
 // All data processing should be done in activities.
 func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error {
-	status := "Started"
-
+	sChan <- WorkFlowSignal{Status: "started"}
 	// Register query handler for workflow status
-	err := workflow.SetQueryHandler(ctx, "workflowStatusQuery", func() (string, error) {
-		return status, nil
+	err := workflow.SetQueryHandler(ctx, "workflowStatusQuery", func() (WorkFlowSignal, error) {
+		select {
+		case msg := <-sChan:
+			if len(msg.Status) == 0 {
+				return WorkFlowSignal{}, nil
+			}
+			fmt.Println("sChan channel received message:", msg)
+			return msg, nil
+		case <-time.After(time.Second * 3):
+			return WorkFlowSignal{Status: "timeout"}, nil
+		}
 	})
 	if err != nil {
 		return err
@@ -181,15 +201,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		if param.MemoryStorageKey.Components[i] == nil {
 			param.MemoryStorageKey.Components[i] = map[string]string{}
 		}
-
 	}
+
+	logger.Info("TriggerPipelineWorkflow number of components", zap.Int("numComponents", numComponents))
 
 	// The components in the same group can be executed in parallel
 	for group := range orderedComp {
-
 		futures := []workflow.Future{}
 		for compID, comp := range orderedComp[group] {
-
 			upstreamIDs := dag.GetUpstreamCompIDs(compID)
 
 			switch c := comp.(type) {
@@ -205,7 +224,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Condition:        c.Condition,
 					MemoryStorageKey: param.MemoryStorageKey,
 					SystemVariables:  param.SystemVariables,
-					QueryStatus:      status,
 				}))
 
 			case *datamodel.IteratorComponent:
@@ -267,13 +285,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 
 		for idx := range futures {
-			err = futures[idx].Get(ctx, nil)
-			status = "step"
+			var result ComponentActivityParam
+			err = futures[idx].Get(ctx, &result)
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
-				return err
+				return fmt.Errorf("futures.Get value: %w", err)
 			}
-			workflow.Sleep(ctx, time.Second)
+			sChan <- WorkFlowSignal{Status: "step", ID: result.ID}
 		}
 
 		for batchIdx := range param.BatchSize {
@@ -281,9 +299,12 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				param.MemoryStorageKey.Components[batchIdx][compID] = fmt.Sprintf("%s:%d:%s:%s", workflowID, batchIdx, recipe.SegComponent, compID)
 			}
 		}
+		workflow.Sleep(ctx, time.Millisecond*10) // if we don't sleep, the workflow will be too fast and the query handler will not be able to catch up
+
+		// workflow.Sleep(ctx, time.Duration(rand.Intn(5)+1)*time.Millisecond)
 	}
 
-	status = "completed"
+	sChan <- WorkFlowSignal{Status: "completed"}
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
@@ -302,58 +323,63 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	logger.Info("TriggerPipelineWorkflow completed")
+	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", time.Since(startTime)))
 
 	return nil
 }
 
-func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) error {
+func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
 
 	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	compInputs, idxMap, err := w.processInput(batchMemory, param.ID, param.UpstreamIDs, param.Condition, param.Input)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	cons, err := w.processSetup(batchMemory, param.Setup)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 	sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	// TODO: we assume that setup in the batch are all the same
 	execution, err := w.component.CreateExecution(param.DefinitionUID, sysVars, cons[0], param.Task)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	compOutputs, err := execution.Execute(ctx, compInputs)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	compMem, err := w.processOutput(batchMemory, param.ID, compOutputs, idxMap)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.WorkflowID, param.ID, compMem)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	logger.Info("ComponentActivity completed")
-	param.QueryStatus = "step"
-	return nil
+
+	p := &ComponentActivityParam{
+		WorkflowID:       param.WorkflowID,
+		MemoryStorageKey: param.MemoryStorageKey,
+		ID:               param.ID,
+	}
+	return p, nil
 }
 
 // TODO: complete iterator

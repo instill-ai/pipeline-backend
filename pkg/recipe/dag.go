@@ -160,8 +160,7 @@ func (d *dag) TopologicalSort() ([]map[string]datamodel.IComponent, error) {
 func splitFunc(s rune) bool {
 	return s == '.' || s == '['
 }
-func traverseBinding(memory *Memory, path string) (any, error) {
-
+func TraverseBinding(memory *Memory, path string) (any, error) {
 	compsMemory := memory.Component
 	varsMemory := memory.Variable
 	secretsMemory := memory.Secret
@@ -222,7 +221,7 @@ func RenderInput(inputTemplate any, dataIndex int, memory *Memory) (any, error) 
 				return componentbase.SecretKeyword, nil
 			}
 
-			val, err := traverseBinding(memory, input)
+			val, err := TraverseBinding(memory, input)
 			if err != nil {
 				return nil, err
 			}
@@ -245,7 +244,7 @@ func RenderInput(inputTemplate any, dataIndex int, memory *Memory) (any, error) 
 			}
 
 			ref := strings.TrimSpace(input[2:endIdx])
-			v, err := traverseBinding(memory, ref)
+			v, err := TraverseBinding(memory, ref)
 			if err != nil {
 				return nil, err
 			}
@@ -670,7 +669,11 @@ func GenerateTraces(comps map[string]datamodel.IComponent, memory []*Memory) (ma
 		traceStatuses := make([]pb.Trace_Status, batchSize)
 
 		for dataIdx := range batchSize {
-			m := memory[dataIdx].Component[compID]
+			m, ok := memory[dataIdx].Component[compID]
+			if !ok {
+				// Skip this iteration if compID is not present in memory
+				continue
+			}
 			if m.Status.Completed {
 				traceStatuses[dataIdx] = pb.Trace_STATUS_COMPLETED
 			} else if m.Status.Skipped {

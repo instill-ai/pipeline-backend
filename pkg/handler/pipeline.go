@@ -891,18 +891,25 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.Trigger
 }
 
 func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelineWithStreamRequest, server pb.PipelinePublicService_TriggerUserPipelineWithStreamServer) error {
+	//fmt.Println("from TriggerUserPipelineWithStream", req.GetName())
+	//for i := range 100 {
+	//	testkey := fmt.Sprintf("test-key-%d", i)
+	//	err := server.Send(&pb.TriggerUserPipelineWithStreamResponse{
+	//		Outputs:  []*structpb.Struct{{Fields: map[string]*structpb.Value{testkey: {Kind: &structpb.Value_StringValue{StringValue: "test-value"}}}}},
+	//		Metadata: &pb.TriggerMetadata{},
+	//	})
+	//	if err != nil {
+	//		return err
+	//	}
+	//	time.Sleep(time.Millisecond * 500) // TO simulate some delay
+	//}
+	//return nil
+
 	fmt.Println("TriggerUserPipelineWithStream", req.GetName())
 	//	fmt.Println(req.GetInputs())
 
 	// Access the context
 	ctx := server.Context()
-
-	uid := ctx.Value("Instill-User-Uid")
-	if uid != nil {
-		fmt.Println(uid)
-	} else {
-		fmt.Println("Instill-User-Uid not found in context")
-	}
 
 	resultChan := make(chan service.TriggerResult)
 	errorChan := make(chan error)
@@ -916,23 +923,27 @@ func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelin
 		}
 	}()
 
-	select {
-	case err := <-errorChan:
-		if err != nil {
-			fmt.Println("error chan", err)
-			//return fmt.Errorf("triggerNamespacePipelineWithStream: %w", err)
-		}
-	case result := <-resultChan:
-		fmt.Println("Sending result", result.Struct, result.Metadata)
-		err := server.Send(&pb.TriggerUserPipelineWithStreamResponse{
-			Outputs:  result.Struct,
-			Metadata: result.Metadata,
-		})
-		if err != nil {
-			return err
+	for {
+		select {
+		case err := <-errorChan:
+			if err != nil {
+				return fmt.Errorf("triggerNamespacePipelineWithStream: %w", err)
+			}
+		case result, ok := <-resultChan:
+			if !ok {
+				// resultChan is closed, exit the loop
+				return nil
+			}
+			fmt.Println("Sending result", result.Struct, result.Metadata)
+			err := server.Send(&pb.TriggerUserPipelineWithStreamResponse{
+				Outputs:  result.Struct,
+				Metadata: result.Metadata,
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
-	return nil
 }
 
 func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, req *pb.TriggerUserPipelineWithStreamRequest, resultChan chan<- service.TriggerResult) error {
