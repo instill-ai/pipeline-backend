@@ -250,27 +250,22 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		if isBasicView {
 			releaseDBQueryBuilder.Omit("pipeline_release.recipe_yaml")
 		}
-		releaseRows, err := releaseDBQueryBuilder.Rows()
-		if err != nil {
-			return nil, 0, "", err
+		pipelineReleases := []*datamodel.PipelineRelease{}
+		result := releaseDBQueryBuilder.Find(&pipelineReleases)
+		if result.Error != nil {
+			return nil, 0, "", result.Error
 		}
-		defer releaseRows.Close()
-		for releaseRows.Next() {
-			var item datamodel.PipelineRelease
-			if err = releaseDB.ScanRows(releaseRows, &item); err != nil {
-				return nil, 0, "", err
-			}
-			pipelineUID := item.PipelineUID
-			pipelineRelease := item
+		for idx := range pipelineReleases {
+
+			pipelineUID := pipelineReleases[idx].PipelineUID
 			if _, ok := releasesMap[pipelineUID]; !ok {
 				releasesMap[pipelineUID] = []*datamodel.PipelineRelease{}
 			}
-			releasesMap[pipelineUID] = append(releasesMap[pipelineUID], &pipelineRelease)
+			releasesMap[pipelineUID] = append(releasesMap[pipelineUID], pipelineReleases[idx])
 		}
 		for idx := range pipelines {
 			if releases, ok := releasesMap[pipelines[idx].UID]; ok {
 				pipelines[idx].Releases = releases
-
 			}
 		}
 	}
@@ -365,20 +360,12 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 			releaseDBQueryBuilder.Omit("pipeline_release.recipe_yaml")
 		}
 
-		releaseRows, err := releaseDBQueryBuilder.Rows()
-		if err != nil {
-			return nil, err
+		pipelineReleases := []*datamodel.PipelineRelease{}
+		result := releaseDBQueryBuilder.Find(&pipelineReleases)
+		if result.Error != nil {
+			return nil, result.Error
 		}
-		defer releaseRows.Close()
-		for releaseRows.Next() {
-			var item datamodel.PipelineRelease
-			if err = releaseDB.ScanRows(releaseRows, &item); err != nil {
-				return nil, err
-			}
-			pipelineRelease := item
-			pipeline.Releases = append(pipeline.Releases, &pipelineRelease)
-
-		}
+		pipeline.Releases = pipelineReleases
 	}
 
 	return &pipeline, nil
@@ -535,23 +522,19 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 		queryBuilder.Where("(?)", expr)
 	}
 
-	var createTime time.Time
 	rows, err := queryBuilder.Rows()
 	if err != nil {
 		return nil, 0, "", err
 	}
 	defer rows.Close()
 
-	for rows.Next() {
-		var item *datamodel.PipelineRelease
-		if err = db.ScanRows(rows, &item); err != nil {
-			return nil, 0, "", err
-		}
-		createTime = item.CreateTime
-		pipelineReleases = append(pipelineReleases, item)
+	result := queryBuilder.Find(&pipelineReleases)
+	if result.Error != nil {
+		return nil, 0, "", result.Error
 	}
 
 	if len(pipelineReleases) > 0 {
+		createTime := pipelineReleases[len(pipelineReleases)-1].CreateTime
 		lastUID := (pipelineReleases)[len(pipelineReleases)-1].UID
 		lastItem := &datamodel.PipelineRelease{}
 		db := r.checkPinnedUser(ctx, r.db, "pipeline_release")
