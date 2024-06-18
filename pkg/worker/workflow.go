@@ -565,7 +565,7 @@ func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamI
 				for k, v := range batchMemory[idx].Component {
 					condMemory[varMapping[k]] = v
 				}
-				condMemory[varMapping["vars"]] = batchMemory[idx].Variable
+				condMemory[varMapping["variable"]] = batchMemory[idx].Variable
 
 				cond, err := recipe.EvalCondition(expr, condMemory)
 				if err != nil {
@@ -622,8 +622,8 @@ func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamI
 }
 
 func (w *worker) processOutput(batchMemory []*recipe.Memory, id string, compOutputs []*structpb.Struct, idxMap map[int]int) ([]*recipe.ComponentMemory, error) {
-	compMem := make([]*recipe.ComponentMemory, len(batchMemory))
-	for idx := range batchMemory {
+
+	for idx := range compOutputs {
 
 		outputJSON, err := protojson.Marshal(compOutputs[idx])
 		if err != nil {
@@ -636,8 +636,13 @@ func (w *worker) processOutput(batchMemory []*recipe.Memory, id string, compOutp
 		}
 		*batchMemory[idxMap[idx]].Component[id].Output = outputStruct
 		batchMemory[idxMap[idx]].Component[id].Status.Completed = true
-		compMem[idxMap[idx]] = batchMemory[idxMap[idx]].Component[id]
 	}
+
+	compMem := make([]*recipe.ComponentMemory, len(batchMemory))
+	for idx, m := range batchMemory {
+		compMem[idx] = m.Component[id]
+	}
+
 	return compMem, nil
 }
 
