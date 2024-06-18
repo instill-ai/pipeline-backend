@@ -183,7 +183,7 @@ func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink s
 	if err != nil {
 		return err
 	}
-	if useDynamicDef {
+	if useDynamicDef && comp.Input != nil {
 		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(comp.Type), vars, &componentbase.ComponentConfig{
 			Task:  comp.Task,
 			Input: comp.Input.(map[string]any),
