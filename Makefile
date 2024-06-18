@@ -22,6 +22,11 @@ dev:							## Run dev container
 	@docker run -d --rm \
 		-v $(PWD):/${SERVICE_NAME} \
 		-p ${SERVICE_PORT}:${SERVICE_PORT} \
+		-v $(PWD)/../go.work:/go.work \
+		-v $(PWD)/../go.work.sum:/go.work.sum \
+		-v $(PWD)/../component:/component \
+		-v $(PWD)/../pipeline-backend-cloud:/pipeline-backend-cloud \
+		-v $(PWD)/../protogengo:/protogengo \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
 		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
@@ -46,6 +51,7 @@ top:							## Display all running service processes
 build:							## Build dev docker image
 	@docker build \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
+		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg K6_VERSION=${K6_VERSION} \
 		-f Dockerfile.dev  -t instill/${SERVICE_NAME}:dev .
 
