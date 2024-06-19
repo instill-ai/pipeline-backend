@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.30.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.29.2-beta...v0.30.0-beta) (2024-06-19)
+
+
+### Features
+
+* **endpoints:** use camelCase for `filter` and `orderBy` query strings ([#517](https://github.com/instill-ai/pipeline-backend/issues/517)) ([116467e](https://github.com/instill-ai/pipeline-backend/commit/116467eafbc9a7275664ace112df42b8b9d35357))
+* render secret value when using dynamic definition ([#509](https://github.com/instill-ai/pipeline-backend/issues/509)) ([44eaacb](https://github.com/instill-ai/pipeline-backend/commit/44eaacb5eebeaaa0c2f4f8e940f2677c92dce9de))
+* store recipe as YAML ([#515](https://github.com/instill-ai/pipeline-backend/issues/515)) ([4690835](https://github.com/instill-ai/pipeline-backend/commit/4690835732033c3c56662bc1372865d8a45951a8))
+* use camelCase for HTTP body ([#512](https://github.com/instill-ai/pipeline-backend/issues/512)) ([7cdce38](https://github.com/instill-ai/pipeline-backend/commit/7cdce388cb7818a4e2b0d0a5ffb03fd13c196da7))
+
+
+### Bug Fixes
+
+* improve pipeline usage error messages ([#513](https://github.com/instill-ai/pipeline-backend/issues/513)) ([ff4b631](https://github.com/instill-ai/pipeline-backend/commit/ff4b63174a438cf590a6e67b9e3697118ca02f29))
+* resolve the issue with the component condition not working ([#518](https://github.com/instill-ai/pipeline-backend/issues/518)) ([fa27de1](https://github.com/instill-ai/pipeline-backend/commit/fa27de1dca1444922176d850f8cb9b7e920c71b5))
+
 ## [0.29.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.29.1-beta...v0.29.2-beta) (2024-06-12)
 
 
