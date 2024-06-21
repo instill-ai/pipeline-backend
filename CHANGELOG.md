@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.30.0-beta...v0.30.1-beta) (2024-06-21)
+
+
+### Miscellaneous Chores
+
+* release v0.30.1-beta ([97431ae](https://github.com/instill-ai/pipeline-backend/commit/97431aeac094edb432c7693cc25665e82580a23d))
+
 ## [0.30.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.29.2-beta...v0.30.0-beta) (2024-06-19)
 
 
