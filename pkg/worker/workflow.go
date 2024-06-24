@@ -44,7 +44,7 @@ type ComponentActivityParam struct {
 	Condition        string
 	Input            map[string]any
 	Setup            map[string]any
-	DefinitionUID    uuid.UUID
+	Type             string
 	Task             string
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 }
@@ -185,7 +185,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
-					DefinitionUID:    uuid.FromStringOrNil(comp.Type),
+					Type:             comp.Type,
 					Task:             comp.Task,
 					Input:            comp.Input.(map[string]any),
 					Setup:            comp.Setup,
@@ -314,8 +314,13 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	// TODO: we assume that setup in the batch are all the same
-	execution, err := w.component.CreateExecution(param.DefinitionUID, sysVars, cons[0], param.Task)
+	comp, err := w.component.GetDefinitionByID(param.Type, nil, nil)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+	}
+
+	// Note: we assume that setup in the batch are all the same
+	execution, err := w.component.CreateExecution(uuid.FromStringOrNil(comp.Uid), sysVars, cons[0], param.Task)
 	if err != nil {
 		return w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/gofrs/uuid"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -47,7 +46,7 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 		switch comp.Type {
 		default:
 
-			def, err := s.component.GetDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
+			def, err := s.component.GetDefinitionByID(comp.Type, nil, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -58,7 +57,7 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 			nestedValidationErrors := []*pb.PipelineValidationError{}
 			for nestedID, nestedComp := range comp.Component {
 				if nestedComp.Type != datamodel.Iterator {
-					def, err := s.component.GetDefinitionByUID(uuid.FromStringOrNil(nestedComp.Type), nil, nil)
+					def, err := s.component.GetDefinitionByID(nestedComp.Type, nil, nil)
 					if err != nil {
 						return nil, err
 					}

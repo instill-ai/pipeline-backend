@@ -72,80 +72,6 @@ func NewConverter(
 	}
 }
 
-// In the API, we expose the human-readable ID to the user. But in the database, we store it with UUID as the permanent identifier.
-// The `convertResourceNameToPermalink` function converts all resources that use ID to UUID.
-func (c *converter) convertResourceNameToPermalink(ctx context.Context, rsc any) error {
-
-	// TODO: we should remove the permalink conversion to simplify the recipe validation
-
-	if rsc == nil {
-		return nil
-	}
-
-	switch rsc := rsc.(type) {
-	case *datamodel.Recipe:
-		for _, comp := range rsc.Component {
-			if err := c.convertResourceNameToPermalink(ctx, comp); err != nil {
-				return err
-			}
-		}
-
-	case *datamodel.Component:
-		if rsc.Type == datamodel.Iterator {
-			for _, comp := range rsc.Component {
-				if err := c.convertResourceNameToPermalink(ctx, comp); err != nil {
-					return err
-				}
-			}
-		} else {
-			def, err := c.component.GetDefinitionByID(rsc.Type, nil, nil)
-			if err != nil {
-				return err
-			}
-			rsc.Type = def.Uid
-			return nil
-		}
-	}
-	return nil
-}
-
-// In the API, we expose the human-readable ID to the user. But in the database, we store it with UUID as the permanent identifier.
-// The `convertResourceNameToPermalink` function converts all resources that use UUID to ID.
-func (c *converter) convertResourcePermalinkToName(ctx context.Context, rsc any) error {
-
-	// TODO: we should remove the permalink conversion to simplify the recipe validation
-
-	if rsc == nil {
-		return nil
-	}
-
-	switch rsc := rsc.(type) {
-	case *datamodel.Recipe:
-		for _, comp := range rsc.Component {
-			if err := c.convertResourcePermalinkToName(ctx, comp); err != nil {
-				return err
-			}
-		}
-
-	case *datamodel.Component:
-		if rsc.Type == datamodel.Iterator {
-			for _, comp := range rsc.Component {
-				if err := c.convertResourcePermalinkToName(ctx, comp); err != nil {
-					return err
-				}
-			}
-		} else {
-			def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(rsc.Type), nil, nil)
-			if err != nil {
-				return err
-			}
-			rsc.Type = def.Id
-		}
-
-	}
-	return nil
-}
-
 func (c *converter) processSetup(ctx context.Context, ownerPermalink string, setup map[string]any) map[string]any {
 	rendered := map[string]any{}
 	for k, v := range setup {
@@ -184,7 +110,7 @@ func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink s
 		return err
 	}
 	if useDynamicDef && comp.Input != nil {
-		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(comp.Type), vars, &componentbase.ComponentConfig{
+		def, err := c.component.GetDefinitionByID(comp.Type, vars, &componentbase.ComponentConfig{
 			Task:  comp.Task,
 			Input: comp.Input.(map[string]any),
 			Setup: c.processSetup(ctx, ownerPermalink, comp.Setup),
@@ -194,7 +120,7 @@ func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink s
 		}
 		comp.Definition = &datamodel.Definition{ComponentDefinition: def}
 	} else {
-		def, err := c.component.GetDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
+		def, err := c.component.GetDefinitionByID(comp.Type, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -362,11 +288,6 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 		return nil, err
 	}
 
-	err = c.convertResourceNameToPermalink(ctx, recipe)
-	if err != nil {
-		return nil, err
-	}
-
 	dbSharing := &datamodel.Sharing{}
 	if pbPipeline.GetSharing() != nil {
 		b, err := protojson.Marshal(pbPipeline.GetSharing())
@@ -414,9 +335,10 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 			String: pbPipeline.GetDescription(),
 			Valid:  true,
 		},
-		Readme:  pbPipeline.Readme,
-		Recipe:  recipe,
-		Sharing: dbSharing,
+		Readme:     pbPipeline.Readme,
+		Recipe:     recipe,
+		RecipeYAML: pbPipeline.RawRecipe,
+		Sharing:    dbSharing,
 		Metadata: func() []byte {
 			if pbPipeline.GetMetadata() != nil {
 				b, err := pbPipeline.GetMetadata().MarshalJSON()
@@ -463,13 +385,6 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 
 	if view == pb.Pipeline_VIEW_FULL {
 		if err := c.includeDetailInRecipe(ctx, dbPipeline.Owner, dbPipeline.Recipe, useDynamicDef); err != nil {
-			return nil, err
-		}
-	}
-
-	if dbPipeline.Recipe != nil {
-		err = c.convertResourcePermalinkToName(ctx, dbPipeline.Recipe)
-		if err != nil {
 			return nil, err
 		}
 	}
@@ -524,6 +439,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		Description: &dbPipeline.Description.String,
 		Readme:      dbPipeline.Readme,
 		Recipe:      pbRecipe,
+		RawRecipe:   dbPipeline.RecipeYAML,
 		Sharing:     pbSharing,
 		OwnerName:   ownerName,
 		Tags:        tags,
@@ -651,11 +567,6 @@ func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID 
 		return nil, err
 	}
 
-	err = c.convertResourceNameToPermalink(ctx, pbPipelineRelease.Recipe)
-	if err != nil {
-		return nil, err
-	}
-
 	return &datamodel.PipelineRelease{
 		ID: pbPipelineRelease.GetId(),
 
@@ -692,6 +603,7 @@ func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID 
 		},
 		Readme:      pbPipelineRelease.Readme,
 		Recipe:      recipe,
+		RecipeYAML:  pbPipelineRelease.RawRecipe,
 		PipelineUID: pipelineUID,
 
 		Metadata: func() []byte {
@@ -719,13 +631,6 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 
 	if view == pb.Pipeline_VIEW_FULL {
 		if err := c.includeDetailInRecipe(ctx, dbPipeline.Owner, dbPipelineRelease.Recipe, false); err != nil {
-			return nil, err
-		}
-	}
-
-	if dbPipelineRelease.Recipe != nil {
-		err = c.convertResourcePermalinkToName(ctx, dbPipelineRelease.Recipe)
-		if err != nil {
 			return nil, err
 		}
 	}
@@ -760,6 +665,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		Description: &dbPipelineRelease.Description.String,
 		Readme:      dbPipelineRelease.Readme,
 		Recipe:      pbRecipe,
+		RawRecipe:   dbPipeline.RecipeYAML,
 	}
 
 	if view > pb.Pipeline_VIEW_BASIC {
@@ -825,7 +731,7 @@ func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline 
 }
 
 // TODO: refactor these codes
-func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin map[string]*datamodel.Component) (*pb.DataSpecification, error) {
+func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin datamodel.ComponentMap) (*pb.DataSpecification, error) {
 	success := true
 	pipelineDataSpec := &pb.DataSpecification{}
 
