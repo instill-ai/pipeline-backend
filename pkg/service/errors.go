@@ -17,5 +17,5 @@ var ErrTriggerFail = fmt.Errorf("failed to trigger the pipeline")
 
 var errCanNotUsePlaintextSecret = errmsg.AddMessage(
 	fmt.Errorf("%w: plaintext value in credential field", errdomain.ErrInvalidArgument),
-	"Plaintext values are forbidden in credential fields. You can create a secret and reference it with the syntax ${secrets.my-secret}.",
+	"Plaintext values are forbidden in credential fields. You can create a secret and reference it with the syntax ${secret.my-secret}.",
 )
