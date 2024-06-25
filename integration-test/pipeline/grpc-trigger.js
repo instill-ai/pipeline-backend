@@ -21,7 +21,73 @@ export function CheckTrigger(data) {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
+      );
+
+      check(
+        client.invoke(
+          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+          {
+            parent: `${constant.namespace}`,
+            pipeline: reqGRPC,
+          },
+          data.metadata
+        ),
+        {
+          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline GRPC pipeline response StatusOK":
+            (r) => r.status === grpc.StatusOK,
+        }
+      );
+
+      check(
+        client.invoke(
+          "vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline",
+          {
+            name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
+            data: constant.simplePayload.data,
+          },
+          data.metadata
+        ),
+        {
+          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerUserPipeline response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+        }
+      );
+
+
+      check(
+        client.invoke(
+          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          {
+            name: `${constant.namespace}/pipelines/${reqGRPC.id}`,
+          },
+          data.metadata
+        ),
+        {
+          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline ${reqGRPC.id} response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+        }
+      );
+
+
+
+      client.close();
+    }
+  );
+
+  group(
+    "Pipelines API: Trigger a pipeline with YAML recipe",
+    () => {
+      client.connect(constant.pipelineGRPCPublicHost, {
+        plaintext: true,
+      });
+
+      var reqGRPC = Object.assign(
+        {
+          id: randomString(10),
+          description: randomString(50),
+        },
+        constant.simplePipelineWithYAMLRecipe
       );
 
       check(

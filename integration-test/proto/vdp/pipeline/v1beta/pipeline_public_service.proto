@@ -209,7 +209,7 @@ service PipelinePublicService {
   // and ID of the pipeline.
   rpc TriggerUserPipelineWithStream(TriggerUserPipelineWithStreamRequest) returns (stream TriggerUserPipelineWithStreamResponse) {
     option (google.api.http) = {
-      post: "/v1beta/{name=users/*/pipelines/*}/trigger:stream"
+      post: "/v1beta/{name=users/*/pipelines/*}/trigger-stream"
       body: "*"
     };
     option (google.api.method_signature) = "name,inputs";
@@ -475,6 +475,26 @@ service PipelinePublicService {
     };
     option (google.api.method_signature) = "name,target";
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
+  }
+
+  // Trigger a pipeline owned by an organization
+  //
+  // Triggers the execution of a pipeline synchronously, i.e., the result is sent
+  // back to the organization right after the data is processed. This method is
+  // intended for real-time inference when low latency is of concern.
+  //
+  // The pipeline is identified by its resource name, formed by the parent
+  // organization and ID of the pipeline.
+  //
+  // For more information, see [Trigger
+  // Pipeline](https://www.instill.tech/docs/latest/core/concepts/pipeline#trigger-pipeline).
+  rpc TriggerOrganizationPipelineStream(TriggerOrganizationPipelineStreamRequest) returns (stream TriggerOrganizationPipelineStreamResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/{name=organizations/*/pipelines/*}/trigger-stream"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name,data";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
   }
 
   // Trigger a pipeline owned by an organization

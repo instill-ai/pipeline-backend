@@ -20,7 +20,7 @@ export function CheckCreate(data) {
         id: randomString(32),
         description: randomString(50),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -246,7 +246,7 @@ export function CheckList(data) {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
       );
     }
 
@@ -433,7 +433,7 @@ export function CheckGet(data) {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     check(
@@ -538,7 +538,7 @@ export function CheckUpdate(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -698,7 +698,7 @@ export function CheckRename(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -769,7 +769,7 @@ export function CheckLookUp(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
