@@ -126,8 +126,6 @@ type Recipe struct {
 	Variable  map[string]*Variable `json:"variable,omitempty" yaml:"variable,omitempty"`
 	Secret    map[string]string    `json:"secret,omitempty" yaml:"secret,omitempty"`
 	Output    map[string]*Output   `json:"output,omitempty" yaml:"output,omitempty"`
-
-	UseJSON bool `json:"-,omitempty" yaml:"-,omitempty"`
 }
 
 func convertRecipeYAMLToRecipe(recipeYAML string) (*Recipe, error) {
