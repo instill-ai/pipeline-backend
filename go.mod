@@ -62,6 +62,7 @@ require (
 	github.com/antchfx/xpath v1.2.4 // indirect
 	github.com/apache/arrow/go/v14 v14.0.2 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
+	github.com/emersion/go-imap/v2 v2.0.0-beta.3 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
