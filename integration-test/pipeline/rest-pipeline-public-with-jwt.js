@@ -15,7 +15,7 @@ export function CheckCreate(data) {
           id: randomString(32),
           description: randomString(50),
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
       );
 
       // Cannot create a pipeline of a non-exist user
@@ -60,7 +60,7 @@ export function CheckGet(data) {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -115,7 +115,7 @@ export function CheckUpdate(data) {
         {
           id: randomString(10),
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
       );
 
       // Create a pipeline
@@ -178,7 +178,7 @@ export function CheckRename(data) {
         {
           id: id,
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
       );
 
       // Create a pipeline
@@ -238,7 +238,7 @@ export function CheckLookUp(data) {
         {
           id: randomString(10),
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
       );
 
       // Create a pipeline

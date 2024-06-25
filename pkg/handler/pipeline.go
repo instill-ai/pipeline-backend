@@ -493,10 +493,10 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 
 	// metadata field is type google.protobuf.Struct, which needs to be updated as a whole
 	for idx, path := range pbUpdateMask.Paths {
-		if strings.Contains(path, "metadata") {
+		if strings.Split(path, ".")[0] == "metadata" {
 			pbUpdateMask.Paths[idx] = "metadata"
 		}
-		if strings.Contains(path, "recipe") {
+		if strings.Split(path, ".")[0] == "recipe" {
 			pbUpdateMask.Paths[idx] = "recipe"
 		}
 	}
@@ -540,6 +540,14 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
+	}
+
+	// In the future, we'll make YAML the only input data type for pipeline
+	// recipes. Until then, if the YAML recipe is empty, we'll use the JSON
+	// recipe as the input data. Therefore, we set `RawRecipe` to an empty
+	// string here.
+	if req.GetPipeline().Recipe != nil {
+		pbPipelineToUpdate.RawRecipe = ""
 	}
 
 	pbPipeline, err := h.service.UpdateNamespacePipelineByID(ctx, ns, id, pbPipelineToUpdate)

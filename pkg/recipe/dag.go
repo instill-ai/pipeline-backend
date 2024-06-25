@@ -61,14 +61,14 @@ func (uf *unionFind) Count() int {
 }
 
 type dag struct {
-	compMap          map[string]*datamodel.Component
+	compMap          datamodel.ComponentMap
 	compsIdx         map[string]int
 	prerequisitesMap map[string][]string
 	uf               *unionFind
 	ancestorsMap     map[string][]string
 }
 
-func NewDAG(compMap map[string]*datamodel.Component) *dag {
+func NewDAG(compMap datamodel.ComponentMap) *dag {
 
 	uf := NewUnionFind(len(compMap))
 
@@ -102,10 +102,10 @@ type topologicalSortNode struct {
 // TopologicalSort returns the topological sorted components
 // the result is a list of list of components
 // each list is a group of components that can be executed in parallel
-func (d *dag) TopologicalSort() ([]map[string]*datamodel.Component, error) {
+func (d *dag) TopologicalSort() ([]datamodel.ComponentMap, error) {
 
 	if len(d.compMap) == 0 {
-		return []map[string]*datamodel.Component{}, nil
+		return []datamodel.ComponentMap{}, nil
 	}
 
 	indegreesMap := map[string]int{}
@@ -125,7 +125,7 @@ func (d *dag) TopologicalSort() ([]map[string]*datamodel.Component, error) {
 		}
 	}
 
-	ans := []map[string]*datamodel.Component{}
+	ans := []datamodel.ComponentMap{}
 
 	count := 0
 	taken := make(map[string]bool)
@@ -133,7 +133,7 @@ func (d *dag) TopologicalSort() ([]map[string]*datamodel.Component, error) {
 		from := q[0]
 		q = q[1:]
 		if len(ans) <= from.group {
-			ans = append(ans, map[string]*datamodel.Component{})
+			ans = append(ans, datamodel.ComponentMap{})
 		}
 		ans[from.group][from.compID] = d.compMap[from.compID]
 		count += 1
@@ -570,7 +570,7 @@ func SanitizeCondition(cond string) (string, map[string]string, map[string]strin
 	return cond, varMapping, revVarMapping
 }
 
-func GenerateDAG(componentMap map[string]*datamodel.Component) (*dag, error) {
+func GenerateDAG(componentMap datamodel.ComponentMap) (*dag, error) {
 
 	componentIDMap := make(map[string]bool)
 
@@ -659,7 +659,7 @@ func FindReferenceParent(input string) []string {
 	return upstreams
 }
 
-func GenerateTraces(comps map[string]*datamodel.Component, memory []*Memory) (map[string]*pb.Trace, error) {
+func GenerateTraces(comps datamodel.ComponentMap, memory []*Memory) (map[string]*pb.Trace, error) {
 	trace := map[string]*pb.Trace{}
 
 	batchSize := len(memory)

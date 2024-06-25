@@ -131,7 +131,7 @@ func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, setup ma
 	}
 	return nil
 }
-func (s *service) checkSecret(ctx context.Context, components map[string]*datamodel.Component) error {
+func (s *service) checkSecret(ctx context.Context, components datamodel.ComponentMap) error {
 
 	for _, comp := range components {
 		switch comp.Type {

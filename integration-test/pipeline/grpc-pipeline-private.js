@@ -51,7 +51,7 @@ export function CheckList(data) {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
       );
     }
 
@@ -231,7 +231,7 @@ export function CheckLookUp(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline

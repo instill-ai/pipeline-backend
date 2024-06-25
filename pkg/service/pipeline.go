@@ -343,7 +343,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	if err != nil {
 		return nil, err
 	}
-	pipeline, err := s.converter.ConvertPipelineToPB(ctx, dbPipelineUpdated, pipelinepb.Pipeline_VIEW_FULL, false, true)
+	pipeline, err := s.converter.ConvertPipelineToPB(ctx, dbPipelineUpdated, pipelinepb.Pipeline_VIEW_RECIPE, false, true)
 	if err != nil {
 		return nil, err
 	}
@@ -686,7 +686,7 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 		return nil, err
 	}
 
-	dbPipelineReleaseToCreate.Recipe = dbPipeline.Recipe
+	dbPipelineReleaseToCreate.RecipeYAML = dbPipeline.RecipeYAML
 	dbPipelineReleaseToCreate.Metadata = dbPipeline.Metadata
 
 	if err := s.repository.CreateNamespacePipelineRelease(ctx, ownerPermalink, pipelineUID, dbPipelineReleaseToCreate); err != nil {

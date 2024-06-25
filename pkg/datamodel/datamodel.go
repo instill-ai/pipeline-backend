@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -115,14 +116,16 @@ type PipelineRelease struct {
 	Readme   string
 }
 
+type ComponentMap map[string]*Component
+
 // Recipe is the data model of the pipeline recipe
 type Recipe struct {
-	Version   string                `json:"version,omitempty" yaml:"version,omitempty"`
-	RunOn     *RunOn                `json:"runOn,omitempty" yaml:"run-on,omitempty"`
-	Component map[string]*Component `json:"component,omitempty" yaml:"component"`
-	Variable  map[string]*Variable  `json:"variable,omitempty" yaml:"variable,omitempty"`
-	Secret    map[string]string     `json:"secret,omitempty" yaml:"secret,omitempty"`
-	Output    map[string]*Output    `json:"output,omitempty" yaml:"output,omitempty"`
+	Version   string               `json:"version,omitempty" yaml:"version,omitempty"`
+	RunOn     *RunOn               `json:"runOn,omitempty" yaml:"run-on,omitempty"`
+	Component ComponentMap         `json:"component,omitempty" yaml:"component,omitempty"`
+	Variable  map[string]*Variable `json:"variable,omitempty" yaml:"variable,omitempty"`
+	Secret    map[string]string    `json:"secret,omitempty" yaml:"secret,omitempty"`
+	Output    map[string]*Output   `json:"output,omitempty" yaml:"output,omitempty"`
 }
 
 func convertRecipeYAMLToRecipe(recipeYAML string) (*Recipe, error) {
@@ -135,6 +138,35 @@ func convertRecipeYAMLToRecipe(recipeYAML string) (*Recipe, error) {
 	return recipe, nil
 }
 
+func (c *ComponentMap) UnmarshalYAML(node *yaml.Node) error {
+
+	// In this function, we decode the YAML of ComponentMap and parse the YAML
+	// comments into `description` and `note`. To achieve this, we need to
+	// decode the original `ComponentMap` once and then add the `description`
+	// and `note` into the decoded struct. To prevent infinite recursion, we
+	// define an alias of `ComponentMap` called `LocalComponentMap`. We decode
+	// into `LocalComponentMap`, add the corresponding comments, and then
+	// convert it back to `ComponentMap`.
+	type LocalComponentMap ComponentMap
+	var result LocalComponentMap
+	if err := node.Decode(&result); err != nil {
+		return err
+	}
+
+	for _, content := range node.Content {
+		if _, ok := result[content.Value]; ok {
+			headCommentLines := strings.Split(content.HeadComment, "\n")
+			for i := range headCommentLines {
+				headCommentLines[i] = strings.TrimLeft(headCommentLines[i], "# ")
+			}
+			result[content.Value].Description = strings.Join(headCommentLines, "\n")
+		}
+
+	}
+	*c = ComponentMap(result)
+	return nil
+}
+
 func convertRecipeToRecipeYAML(recipe *Recipe) (string, error) {
 	recipeYAML, err := yaml.Marshal(recipe)
 	if err != nil {
@@ -144,19 +176,19 @@ func convertRecipeToRecipeYAML(recipe *Recipe) (string, error) {
 }
 
 func (p *Pipeline) BeforeSave(db *gorm.DB) (err error) {
-	p.RecipeYAML, err = convertRecipeToRecipeYAML(p.Recipe)
-	if err != nil {
-		return err
+
+	// In the future, we'll make YAML the only input data type for pipeline
+	// recipes. Until then, if the YAML recipe is empty, we'll use the JSON
+	// recipe as the input data. Once the JSON recipe becomes output-only, this
+	// condition will no longer be necessary.
+	if p.RecipeYAML == "" {
+		p.RecipeYAML, err = convertRecipeToRecipeYAML(p.Recipe)
+		if err != nil {
+			return err
+		}
+
 	}
 
-	return nil
-}
-
-func (p *PipelineRelease) BeforeSave(db *gorm.DB) (err error) {
-	p.RecipeYAML, err = convertRecipeToRecipeYAML(p.Recipe)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -203,19 +235,22 @@ type RunOn struct {
 }
 
 type Component struct {
-	// Share fields
+	// Common fields
 	Type      string         `json:"type,omitempty" yaml:"type,omitempty"`
 	Task      string         `json:"task,omitempty" yaml:"task,omitempty"`
 	Input     any            `json:"input,omitempty" yaml:"input,omitempty"`
 	Condition string         `json:"condition,omitempty" yaml:"condition,omitempty"`
 	Metadata  map[string]any `json:"metadata,omitempty"  yaml:"metadata,omitempty"`
 
+	// The YAML header comment will be parsed into the `Description` field.
+	Description string `json:"description,omitempty"  yaml:"-"`
+
 	// Fields for regular components
 	Setup      map[string]any `json:"setup,omitempty" yaml:"setup,omitempty"`
 	Definition *Definition    `json:"definition,omitempty" yaml:"-"`
 
 	// Fields for iterators
-	Component         map[string]*Component `json:"component,omitempty" yaml:"component,omitempty"`
+	Component         ComponentMap          `json:"component,omitempty" yaml:"component,omitempty"`
 	OutputElements    map[string]string     `json:"outputElements,omitempty" yaml:"output-elements,omitempty"`
 	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty" yaml:"-"`
 }
