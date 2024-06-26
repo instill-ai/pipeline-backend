@@ -265,16 +265,41 @@ func (c *ACLClient) Purge(ctx context.Context, objectType string, objectUID uuid
 	return nil
 }
 
-func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, objectUID uuid.UUID, role string) (bool, error) {
+// CheckLinkPermission checks the access over a resource through a shareable
+// link.
+func (c *ACLClient) CheckLinkPermission(ctx context.Context, objectType string, objectUID uuid.UUID, role string) (bool, error) {
+	code := resource.GetRequestSingleHeader(ctx, constant.HeaderInstillCodeKey)
+	if code == "" {
+		return false, nil
+	}
 
+	data, err := c.getClient(ctx, ReadMode).Check(ctx, &openfga.CheckRequest{
+		StoreId:              c.storeID,
+		AuthorizationModelId: c.authorizationModelID,
+		TupleKey: &openfga.CheckRequestTupleKey{
+			User:     fmt.Sprintf("code:%s", code),
+			Relation: role,
+			Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
+		},
+	})
+	if err != nil {
+		return false, fmt.Errorf("requesting permssions from ACL servier: %w", err)
+	}
+
+	return data.Allowed, nil
+}
+
+// CheckPermission returns the access of the context user over a resource.
+func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, objectUID uuid.UUID, role string) (bool, error) {
 	userType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
-	userUID := ""
-	if userType == "user" {
+
+	var userUID string
+	switch userType {
+	case "user":
 		userUID = resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
-	} else {
+	default:
 		userUID = resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey)
 	}
-	code := resource.GetRequestSingleHeader(ctx, constant.HeaderInstillCodeKey)
 
 	data, err := c.getClient(ctx, ReadMode).Check(ctx, &openfga.CheckRequest{
 		StoreId:              c.storeID,
@@ -286,28 +311,14 @@ func (c *ACLClient) CheckPermission(ctx context.Context, objectType string, obje
 		},
 	})
 	if err != nil {
-		return false, err
-	}
-	if data.Allowed {
-		return data.Allowed, nil
+		return false, fmt.Errorf("requesting permssions from ACL servier: %w", err)
 	}
 
-	if code == "" {
-		return false, nil
+	if !data.Allowed {
+		return c.CheckLinkPermission(ctx, objectType, objectUID, role)
 	}
-	data, err = c.getClient(ctx, ReadMode).Check(ctx, &openfga.CheckRequest{
-		StoreId:              c.storeID,
-		AuthorizationModelId: c.authorizationModelID,
-		TupleKey: &openfga.CheckRequestTupleKey{
-			User:     fmt.Sprintf("code:%s", code),
-			Relation: role,
-			Object:   fmt.Sprintf("%s:%s", objectType, objectUID.String()),
-		},
-	})
-	if err != nil {
-		return false, err
-	}
-	return data.Allowed, nil
+
+	return true, nil
 }
 
 // TODO refactor
