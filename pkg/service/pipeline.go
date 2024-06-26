@@ -996,6 +996,10 @@ func (s *service) triggerPipeline(
 	}
 
 	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+	requesterUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
+	if requesterUID.IsNil() {
+		requesterUID = userUID
+	}
 
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
@@ -1005,15 +1009,16 @@ func (s *service) triggerPipeline(
 			BatchSize:        len(pipelineData),
 			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
-				PipelineID:          pipelineID,
-				PipelineUID:         pipelineUID,
-				PipelineReleaseID:   pipelineReleaseID,
-				PipelineReleaseUID:  pipelineReleaseUID,
-				PipelineRecipe:      r,
-				PipelineOwnerType:   ns.NsType,
-				PipelineOwnerUID:    ns.NsUID,
-				PipelineUserUID:     userUID,
-				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+				PipelineID:           pipelineID,
+				PipelineUID:          pipelineUID,
+				PipelineReleaseID:    pipelineReleaseID,
+				PipelineReleaseUID:   pipelineReleaseUID,
+				PipelineRecipe:       r,
+				PipelineOwnerType:    ns.NsType,
+				PipelineOwnerUID:     ns.NsUID,
+				PipelineUserUID:      userUID,
+				PipelineRequesterUID: requesterUID,
+				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode: mgmtpb.Mode_MODE_SYNC,
 		})
@@ -1070,6 +1075,11 @@ func (s *service) triggerAsyncPipeline(
 	}
 
 	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+	requesterUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
+	if requesterUID.IsNil() {
+		requesterUID = userUID
+	}
+
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1078,15 +1088,16 @@ func (s *service) triggerAsyncPipeline(
 			BatchSize:        len(pipelineData),
 			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
-				PipelineID:          pipelineID,
-				PipelineUID:         pipelineUID,
-				PipelineReleaseID:   pipelineReleaseID,
-				PipelineReleaseUID:  pipelineReleaseUID,
-				PipelineRecipe:      r,
-				PipelineOwnerType:   ns.NsType,
-				PipelineOwnerUID:    ns.NsUID,
-				PipelineUserUID:     userUID,
-				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+				PipelineID:           pipelineID,
+				PipelineUID:          pipelineUID,
+				PipelineReleaseID:    pipelineReleaseID,
+				PipelineReleaseUID:   pipelineReleaseUID,
+				PipelineRecipe:       r,
+				PipelineOwnerType:    ns.NsType,
+				PipelineOwnerUID:     ns.NsUID,
+				PipelineUserUID:      userUID,
+				PipelineRequesterUID: requesterUID,
+				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode: mgmtpb.Mode_MODE_ASYNC,
 		})
