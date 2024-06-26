@@ -11,6 +11,8 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
+
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 )
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -38,11 +40,11 @@ func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Name
 			return err
 		}
 		if !granted {
-			return ErrNoPermission
+			return errdomain.ErrUnauthorized
 		}
 	} else {
 		if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
-			return ErrNoPermission
+			return errdomain.ErrUnauthorized
 		}
 	}
 	return nil

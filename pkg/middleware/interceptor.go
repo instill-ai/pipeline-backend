@@ -111,7 +111,7 @@ func AsGRPCError(err error) error {
 
 		code = codes.InvalidArgument
 	case
-		errors.Is(err, service.ErrNoPermission),
+		errors.Is(err, errdomain.ErrUnauthorized),
 		errors.Is(err, service.ErrCanNotTriggerNonLatestPipelineRelease):
 
 		code = codes.PermissionDenied

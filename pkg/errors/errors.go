@@ -21,4 +21,7 @@ var (
 	// valid. The format should be `<user-id>/<pipeline-id>` or
 	// `<org-id>/<pipeline-id>`.
 	ErrInvalidCloneTarget = fmt.Errorf("invalid target")
+	// ErrUnauthorized is used when a request can't be performed due to
+	// insufficient permissions.
+	ErrUnauthorized = fmt.Errorf("unauthorized")
 )
