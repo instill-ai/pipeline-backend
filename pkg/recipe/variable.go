@@ -14,6 +14,7 @@ import (
 
 // SystemVariables contain information about a pipeline trigger.
 type SystemVariables struct {
+	PipelineTriggerID  string                 `json:"__PIPELINE_TRIGGER_ID"`
 	PipelineID         string                 `json:"__PIPELINE_ID"`
 	PipelineUID        uuid.UUID              `json:"__PIPELINE_UID"`
 	PipelineReleaseID  string                 `json:"__PIPELINE_RELEASE_ID"`

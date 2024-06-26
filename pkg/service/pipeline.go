@@ -1009,6 +1009,7 @@ func (s *service) triggerPipeline(
 			BatchSize:        len(pipelineData),
 			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
+				PipelineTriggerID:    pipelineTriggerID,
 				PipelineID:           pipelineID,
 				PipelineUID:          pipelineUID,
 				PipelineReleaseID:    pipelineReleaseID,
@@ -1088,6 +1089,7 @@ func (s *service) triggerAsyncPipeline(
 			BatchSize:        len(pipelineData),
 			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
+				PipelineTriggerID:    pipelineTriggerID,
 				PipelineID:           pipelineID,
 				PipelineUID:          pipelineUID,
 				PipelineReleaseID:    pipelineReleaseID,
