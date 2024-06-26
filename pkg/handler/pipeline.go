@@ -891,24 +891,6 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.Trigger
 }
 
 func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelineWithStreamRequest, server pb.PipelinePublicService_TriggerUserPipelineWithStreamServer) error {
-	//fmt.Println("from TriggerUserPipelineWithStream", req.GetName())
-	//for i := range 100 {
-	//	testkey := fmt.Sprintf("test-key-%d", i)
-	//	err := server.Send(&pb.TriggerUserPipelineWithStreamResponse{
-	//		Outputs:  []*structpb.Struct{{Fields: map[string]*structpb.Value{testkey: {Kind: &structpb.Value_StringValue{StringValue: "test-value"}}}}},
-	//		Metadata: &pb.TriggerMetadata{},
-	//	})
-	//	if err != nil {
-	//		return err
-	//	}
-	//	time.Sleep(time.Millisecond * 500) // TO simulate some delay
-	//}
-	//return nil
-
-	fmt.Println("TriggerUserPipelineWithStream", req.GetName())
-	//	fmt.Println(req.GetInputs())
-
-	// Access the context
 	ctx := server.Context()
 
 	resultChan := make(chan service.TriggerResult)

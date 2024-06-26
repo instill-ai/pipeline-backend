@@ -2,12 +2,18 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"time"
 )
+
+type Response struct {
+	SessionUUID      string `json:"SessionUUID"`
+	SourceInstanceID string `json:"SourceInstanceID"`
+}
 
 func main() {
 	useSSE := true
@@ -58,6 +64,7 @@ func main() {
 	defer res.Body.Close()
 
 	buf := make([]byte, 1024)
+	var responseBody []byte
 	for {
 		n, err := res.Body.Read(buf)
 		if err != nil && err != io.EOF {
@@ -67,11 +74,51 @@ func main() {
 			break
 		}
 		fmt.Print(string(buf[:n]) + "\n\n")
+		responseBody = append(responseBody, buf[:n]...)
+		time.Sleep(time.Millisecond)
+	}
+	var response Response
+	err = json.Unmarshal(responseBody, &response)
+	if err != nil {
+		log.Fatalf("Error unmarshaling response: %v", err)
+	}
+
+	fmt.Printf("SessionUUID: %s\n", response.SessionUUID)
+	fmt.Printf("SourceInstanceID: %s\n", response.SourceInstanceID)
+
+	sseURL := fmt.Sprintf("http://localhost:8081/sse/%s", response.SessionUUID)
+	sseReq, err := http.NewRequest("GET", sseURL, nil)
+	if err != nil {
+		log.Fatalf("Error creating SSE request: %v", err)
+	}
+
+	sseReq.Header.Add("Accept", "text/event-stream")
+	sseReq.Header.Add("instill-user-uid", "8efcaa75-2522-4b06-9a5c-63df9fb7351c")
+	req.Header.Add("Access-Control-Allow-Headers", "instill-return-traces, instill-share-code")
+
+	sseRes, err := client.Do(sseReq)
+	if err != nil {
+		log.Fatalf("Error sending SSE request: %v", err)
+	}
+	defer sseRes.Body.Close()
+
+	buf = make([]byte, 1024)
+	for {
+		n, err := sseRes.Body.Read(buf)
+		if err != nil && err != io.EOF {
+			log.Fatalf("Error reading SSE response: %v", err)
+		}
+		if n == 0 {
+			break
+		}
+		fmt.Print(string(buf[:n]) + "\n\n")
 		time.Sleep(time.Millisecond)
 	}
 }
 
-// curl -X POST "http://localhost:8081/v1beta/users/admin/pipelines/test1/trigger:stream" -H "Accept: application/json, text/plain, */*" -H "Accept-Language: en-GB" -H "Access-Control-Allow-Headers: instill-return-traces, instill-share-code" -H "Connection: keep-alive" -H "instill-return-traces: true" -H "instill-user-uid: 8efcaa75-2522-4b06-9a5c-63df9fb7351c" -H "jwt-sub: 8efcaa75-2522-4b06-9a5c-63df9fb7351c" -H "x-b3-sampled: 1" -H "instill-auth-type: user" -H "X-Use-SSE: true" --no-buffer --header "Transfer-Encoding: chunked" --header "Content-Type: application/json" -d '{"inputs":[{"input":"test"}]}'
-
-// curl -X POST "http://localhost:8081/v1beta/users/admin/pipelines/test1/trigger:stream" -H "Accept: applic
-// ation/json, text/plain, */*" -H "Accept-Language: url -v -N -H "Accept: text/event-stream" http://localhost:8081/sse/a1cdea4e009a3b41811f9de19e6f952d5a9ce93bd198a0ef61eefa6f6e0f04e0
+//curl -X POST "http://localhost:8081/v1beta/users/admin/pipelines/test1/trigger:stream" -H "Accept: application/json, text/plain, */*" -H "Accept-Language: en-GB" -H "Access-Control-Allow-Headers: instill-return-traces, instill-share-code" -H "Connection: keep-alive" -H "instill-return-traces: true" -H "instill-user-uid: 8efcaa75-2522-4b06-9a5c-63df9fb7351c" -H "jwt-sub: 8efcaa75-2522-4b06-9a5c-63df9fb7351c" -H "x-b3-sampled: 1" -H "instill-auth-type: user" -H "X-Use-SSE: true" --no-buffer --header "Transfer-Encoding: chunked" --header "Content-Type: application/json" -d '{"inputs":[{"input":"test"}]}'
+//
+//curl -X POST "http://localhost:8081/v1beta/users/admin/pipelines/test1/trigger:stream" \
+//-H "Accept: application/json, text/plain, */*" \
+//-H "Accept: text/event-stream" \
+//http://localhost:8081/sse/336878eec294bb0fac404f096d878d2cda35f325b585f973e14d1c16243962be

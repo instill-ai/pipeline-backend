@@ -40,36 +40,9 @@ func generateSecureSessionID() string {
 	return fmt.Sprintf("%x", hash)
 }
 
-//// Marshal session metadata into JSON
-//responseData, err := json.Marshal(sessionData)
-//if err != nil {
-//	http.Error(w, "Failed to generate session", http.StatusInternalServerError)
-//	return
-//}
+type contextKey string
 
-//// Get the underlying connection using http.Hijacker
-//hijacker, ok := w.(http.Hijacker)
-//if !ok {
-//	http.Error(w, "Hijacking not supported", http.StatusInternalServerError)
-//	return
-//}
-//
-//conn, bufw, err := hijacker.Hijack()
-//if err != nil {
-//	http.Error(w, err.Error(), http.StatusInternalServerError)
-//	return
-//}
-//
-//// Set the response headers
-//bufw.WriteString("HTTP/1.1 200 OK\r\n")
-//bufw.WriteString("Content-Type: application/json\r\n")
-//bufw.WriteString("Connection: close\r\n\r\n")
-//
-//fmt.Println("SSE Middleware: Session UUID: ", sessionUUID)
-//// Write the initial response
-//bufw.WriteString(string(responseData) + "\n\n")
-//bufw.Flush()
-//conn.Close()
+const SessionUUIDKey = contextKey("sessionUUID")
 
 // SSEStreamResponseMiddleware intercepts requests with X-Use-SSE header present
 // and gives back immediately a session token. It continues calling the grpc-gateway
@@ -93,11 +66,14 @@ func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
 			w.Header().Set("X-Session-ID", sessionData.SessionUUID)
 			w.Header().Set("X-Session-InstanceID", sessionData.SourceInstanceID)
 			w.WriteHeader(http.StatusOK)
-			returnValue := "Session ID: " + sessionData.SessionUUID + " Session Instance ID: " + sessionData.SourceInstanceID
-			w.Write([]byte(returnValue))
+			w.Header().Set("Content-Type", "application/json")
+			jsonString := fmt.Sprintf(`{"SessionUUID": "%s", "SourceInstanceID": "%s"}`, sessionData.SessionUUID, sessionData.SourceInstanceID)
+			w.Write([]byte(jsonString))
+
+			ctx := context.WithValue(r.Context(), SessionUUIDKey, sessionUUID)
 
 			// Create a new request with a new context
-			newReq := r.Clone(context.Background())
+			newReq := r.Clone(ctx)
 
 			// Create a new response writer that captures the response
 			sw := &captureResponseWriter{

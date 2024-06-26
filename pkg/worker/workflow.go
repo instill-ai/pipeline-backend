@@ -301,7 +301,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 		workflow.Sleep(ctx, time.Millisecond*10) // if we don't sleep, the workflow will be too fast and the query handler will not be able to catch up
 
-		// workflow.Sleep(ctx, time.Duration(rand.Intn(5)+1)*time.Millisecond)
+		//workflow.Sleep(ctx, time.Duration(rand.Intn(1)+3)*time.Second)
 	}
 
 	sChan <- WorkFlowSignal{Status: "completed"}
