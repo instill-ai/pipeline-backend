@@ -349,7 +349,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 
 	comp, err := w.component.GetDefinitionByID(param.Type, nil, nil)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	// Note: we assume that setup in the batch are all the same

@@ -972,7 +972,7 @@ func (s *service) triggerPipelineWithStream(
 	pipelineUID uuid.UUID,
 	pipelineReleaseID string,
 	pipelineReleaseUID uuid.UUID,
-	pipelineData []*pb.TriggerData,
+	pipelineData []*pipelinepb.TriggerData,
 	pipelineTriggerID string,
 	returnTraces bool,
 	stream chan<- TriggerResult) error {
@@ -1018,7 +1018,7 @@ func (s *service) triggerPipelineWithStream(
 				PipelineUserUID:     userUID,
 				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
-			Mode: mgmtPB.Mode_MODE_SYNC,
+			Mode: mgmtpb.Mode_MODE_SYNC,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1179,6 +1179,7 @@ func (s *service) triggerAsyncPipeline(
 }
 
 func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID string, r *datamodel.Recipe, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
+
 	memory, err := recipe.LoadMemoryByTriggerID(ctx, s.redisClient, pipelineTriggerID)
 	if err != nil {
 		return nil, nil, err
@@ -1198,24 +1199,25 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID s
 				return nil, nil, err
 			}
 			pipelineOutput.Fields[k] = structVal
+
 		}
 		pipelineOutputs[idx] = pipelineOutput
 	}
 
-	var metadata *pb.TriggerMetadata
+	var metadata *pipelinepb.TriggerMetadata
 	if returnTraces {
 		traces, err := recipe.GenerateTraces(r.Component, memory)
 		if err != nil {
 			return nil, nil, err
 		}
-		metadata = &pb.TriggerMetadata{
+		metadata = &pipelinepb.TriggerMetadata{
 			Traces: traces,
 		}
 	}
 	return pipelineOutputs, metadata, nil
 }
 
-func (s *service) getOutputsAndMetadataStream(ctx context.Context, pipelineTriggerID string, r *datamodel.Recipe, returnTraces bool, path string) ([]*structpb.Struct, *pb.TriggerMetadata, error) {
+func (s *service) getOutputsAndMetadataStream(ctx context.Context, pipelineTriggerID string, r *datamodel.Recipe, returnTraces bool, path string) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
 	memory, err := recipe.LoadMemoryByTriggerID(ctx, s.redisClient, pipelineTriggerID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("LoadMemoryByTriggerID: %w", err)
@@ -1311,14 +1313,14 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 	return s.triggerPipeline(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
 }
 
-func (s *service) TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error {
+func (s *service) TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error {
 	ownerPermalink := ns.Permalink()
 
 	fmt.Println("TriggerNamespacePipelineByIDWithStream", ownerPermalink, id, ns, data, pipelineTriggerID, returnTraces)
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
-		return ErrNotFound
+		return errdomain.ErrNotFound
 	}
 
 	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
