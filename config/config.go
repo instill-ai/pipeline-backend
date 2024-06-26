@@ -99,11 +99,11 @@ type DatabaseConfig struct {
 
 // InfluxDBConfig related to influxDB database
 type InfluxDBConfig struct {
-	URL           string `koanf:"url"`
-	Token         string `koanf:"token"`
-	Org           string `koanf:"org"`
-	Bucket        string `koanf:"bucket"`
-	FlushInterval int    `koanf:"flushinterval"`
+	URL           string        `koanf:"url"`
+	Token         string        `koanf:"token"`
+	Org           string        `koanf:"org"`
+	Bucket        string        `koanf:"bucket"`
+	FlushInterval time.Duration `koanf:"flushinterval"`
 	HTTPS         struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`

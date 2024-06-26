@@ -1,6 +1,6 @@
 module github.com/instill-ai/pipeline-backend
 
-go 1.22.4
+go 1.22.3
 
 require (
 	cloud.google.com/go/longrunning v0.5.6
@@ -11,11 +11,11 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/golang/mock v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.19.0-beta
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240607070959-4cbb030399d8
+	github.com/instill-ai/component v0.20.2-beta
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240624123720-e67c66096d2d
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
 	github.com/jackc/pgx/v5 v5.5.5
@@ -182,6 +182,6 @@ require (
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240221002015-b0ce06bbee7c // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.4.7 // indirect
 )

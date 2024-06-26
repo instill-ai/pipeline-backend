@@ -15,11 +15,12 @@ import (
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/x/errmsg"
+
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 )
 
 // RecoveryInterceptorOpt - panic handler
@@ -88,17 +89,16 @@ func AsGRPCError(err error) error {
 
 		code = codes.AlreadyExists
 	case
+		errors.Is(err, errdomain.ErrNotFound),
 		errors.Is(err, gorm.ErrRecordNotFound),
 		errors.Is(err, repository.ErrNoDataDeleted),
 		errors.Is(err, repository.ErrNoDataUpdated),
-		errors.Is(err, service.ErrNotFound),
 		errors.Is(err, acl.ErrMembershipNotFound):
 
 		code = codes.NotFound
 	case
 		errors.Is(err, errdomain.ErrInvalidArgument),
 		errors.Is(err, repository.ErrOwnerTypeNotMatch),
-		errors.Is(err, repository.ErrPageTokenDecode),
 		errors.Is(err, bcrypt.ErrMismatchedHashAndPassword),
 		errors.Is(err, handler.ErrCheckUpdateImmutableFields),
 		errors.Is(err, handler.ErrCheckOutputOnlyFields),

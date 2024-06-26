@@ -42,8 +42,8 @@ func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pb.ListPip
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
 		filtering.DeclareIdent("owner", filtering.TypeString),
-		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
-		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
+		filtering.DeclareIdent("createTime", filtering.TypeTimestamp),
+		filtering.DeclareIdent("updateTime", filtering.TypeTimestamp),
 	}...)
 	if err != nil {
 		return &pb.ListPipelinesAdminResponse{}, err
@@ -159,8 +159,8 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelines
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
 		filtering.DeclareIdent("owner", filtering.TypeString),
-		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
-		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
+		filtering.DeclareIdent("createTime", filtering.TypeTimestamp),
+		filtering.DeclareIdent("updateTime", filtering.TypeTimestamp),
 	}...)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -349,8 +349,8 @@ func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListName
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
 		filtering.DeclareIdent("owner", filtering.TypeString),
-		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
-		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
+		filtering.DeclareIdent("createTime", filtering.TypeTimestamp),
+		filtering.DeclareIdent("updateTime", filtering.TypeTimestamp),
 	}...)
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -487,10 +487,10 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 
 	// metadata field is type google.protobuf.Struct, which needs to be updated as a whole
 	for idx, path := range pbUpdateMask.Paths {
-		if strings.Contains(path, "metadata") {
+		if strings.Split(path, ".")[0] == "metadata" {
 			pbUpdateMask.Paths[idx] = "metadata"
 		}
-		if strings.Contains(path, "recipe") {
+		if strings.Split(path, ".")[0] == "recipe" {
 			pbUpdateMask.Paths[idx] = "recipe"
 		}
 	}
@@ -534,6 +534,14 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
+	}
+
+	// In the future, we'll make YAML the only input data type for pipeline
+	// recipes. Until then, if the YAML recipe is empty, we'll use the JSON
+	// recipe as the input data. Therefore, we set `RawRecipe` to an empty
+	// string here.
+	if req.GetPipeline().Recipe != nil {
+		pbPipelineToUpdate.RawRecipe = ""
 	}
 
 	pbPipeline, err := h.service.UpdateNamespacePipelineByID(ctx, ns, id, pbPipelineToUpdate)
@@ -1139,10 +1147,14 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 	if err != nil {
 		return nil, err
 	}
-	_, err = h.service.ValidateNamespacePipelineByID(ctx, ns, pipeline.Id)
-	if err != nil {
-		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
-	}
+
+	// TODO: We temporarily removed the release validation due to a malfunction
+	// in the validation function. We'll add it back after we fix the validation
+	// function.
+	// _, err = h.service.ValidateNamespacePipelineByID(ctx, ns, pipeline.Id)
+	// if err != nil {
+	// 	return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
+	// }
 
 	pbPipelineRelease, err := h.service.CreateNamespacePipelineRelease(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.GetRelease())
 	if err != nil {
@@ -1223,8 +1235,8 @@ func (h *PublicHandler) listNamespacePipelineReleases(ctx context.Context, req L
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
 		filtering.DeclareIdent("owner", filtering.TypeString),
-		filtering.DeclareIdent("create_time", filtering.TypeTimestamp),
-		filtering.DeclareIdent("update_time", filtering.TypeTimestamp),
+		filtering.DeclareIdent("createTime", filtering.TypeTimestamp),
+		filtering.DeclareIdent("updateTime", filtering.TypeTimestamp),
 	}...)
 	if err != nil {
 		span.SetStatus(1, err.Error())

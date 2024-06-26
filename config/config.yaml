@@ -23,7 +23,7 @@ database:
   host: pg-sql
   port: 5432
   name: pipeline
-  version: 15
+  version: 16
   timezone: Etc/UTC
   pool:
     idleconnections: 5
@@ -34,7 +34,7 @@ influxdb:
   token: i-love-instill-ai
   org: instill-ai
   bucket: instill-ai
-  flushinterval: 10 # In seconds for non-blocking batch mode
+  flushinterval: 10s
   https:
     cert:
     key:

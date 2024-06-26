@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"go.einride.tech/aip/filtering"
 	"gorm.io/gorm/clause"
 
@@ -13,19 +14,12 @@ import (
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
-// Transpiler data
-type Transpiler struct {
+type transpiler struct {
 	filter filtering.Filter
 }
 
-func NewTranspiler(filter filtering.Filter) Transpiler {
-	return Transpiler{
-		filter: filter,
-	}
-}
-
 // Transpile executes the transpilation on the filter
-func (t *Transpiler) Transpile() (*clause.Expr, error) {
+func (t *transpiler) Transpile() (*clause.Expr, error) {
 	if t.filter.CheckedExpr == nil {
 		return nil, nil
 	}
@@ -36,7 +30,7 @@ func (t *Transpiler) Transpile() (*clause.Expr, error) {
 	return expr, nil
 }
 
-func (t *Transpiler) transpileExpr(e *expr.Expr) (*clause.Expr, error) {
+func (t *transpiler) transpileExpr(e *expr.Expr) (*clause.Expr, error) {
 	switch e.ExprKind.(type) {
 	case *expr.Expr_CallExpr:
 		return t.transpileCallExpr(e)
@@ -51,7 +45,7 @@ func (t *Transpiler) transpileExpr(e *expr.Expr) (*clause.Expr, error) {
 	}
 }
 
-func (t *Transpiler) transpileConstExpr(e *expr.Expr) (*clause.Expr, error) {
+func (t *transpiler) transpileConstExpr(e *expr.Expr) (*clause.Expr, error) {
 	switch kind := e.GetConstExpr().ConstantKind.(type) {
 	case *expr.Constant_BoolValue:
 		return &clause.Expr{Vars: []interface{}{kind.BoolValue}}, nil
@@ -69,7 +63,7 @@ func (t *Transpiler) transpileConstExpr(e *expr.Expr) (*clause.Expr, error) {
 	}
 }
 
-func (t *Transpiler) transpileCallExpr(e *expr.Expr) (*clause.Expr, error) {
+func (t *transpiler) transpileCallExpr(e *expr.Expr) (*clause.Expr, error) {
 	switch e.GetCallExpr().Function {
 	case filtering.FunctionHas:
 		return t.transpileHasCallExpr(e)
@@ -98,7 +92,7 @@ func (t *Transpiler) transpileCallExpr(e *expr.Expr) (*clause.Expr, error) {
 	}
 }
 
-func (t *Transpiler) transpileIdentExpr(e *expr.Expr) (*clause.Expr, error) {
+func (t *transpiler) transpileIdentExpr(e *expr.Expr) (*clause.Expr, error) {
 
 	identExpr := e.GetIdentExpr()
 	identType, ok := t.filter.CheckedExpr.TypeMap[e.Id]
@@ -117,13 +111,13 @@ func (t *Transpiler) transpileIdentExpr(e *expr.Expr) (*clause.Expr, error) {
 		}
 	}
 	return &clause.Expr{
-		SQL:                identExpr.Name,
+		SQL:                strcase.ToSnake(identExpr.Name),
 		Vars:               nil,
 		WithoutParentheses: true,
 	}, nil
 }
 
-func (t *Transpiler) transpileSelectExpr(e *expr.Expr) (*clause.Expr, error) {
+func (t *transpiler) transpileSelectExpr(e *expr.Expr) (*clause.Expr, error) {
 	selectExpr := e.GetSelectExpr()
 	operand, err := t.transpileExpr(selectExpr.Operand)
 	if err != nil {
@@ -136,7 +130,7 @@ func (t *Transpiler) transpileSelectExpr(e *expr.Expr) (*clause.Expr, error) {
 	}, nil
 }
 
-func (t *Transpiler) transpileNotCallExpr(e *expr.Expr) (*clause.Expr, error) {
+func (t *transpiler) transpileNotCallExpr(e *expr.Expr) (*clause.Expr, error) {
 	callExpr := e.GetCallExpr()
 	if len(callExpr.Args) != 1 {
 		return nil, fmt.Errorf(
@@ -155,7 +149,7 @@ func (t *Transpiler) transpileNotCallExpr(e *expr.Expr) (*clause.Expr, error) {
 	}, nil
 }
 
-func (t *Transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (*clause.Expr, error) {
+func (t *transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (*clause.Expr, error) {
 	callExpr := e.GetCallExpr()
 	if len(callExpr.Args) != 2 {
 		return nil, fmt.Errorf(
@@ -225,7 +219,7 @@ func (t *Transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (
 	}, nil
 }
 
-func (t *Transpiler) transpileBinaryLogicalCallExpr(e *expr.Expr, op clause.Expression) (*clause.Expr, error) {
+func (t *transpiler) transpileBinaryLogicalCallExpr(e *expr.Expr, op clause.Expression) (*clause.Expr, error) {
 	callExpr := e.GetCallExpr()
 	if len(callExpr.Args) != 2 {
 		return nil, fmt.Errorf(
@@ -258,7 +252,7 @@ func (t *Transpiler) transpileBinaryLogicalCallExpr(e *expr.Expr, op clause.Expr
 	}, nil
 }
 
-func (t *Transpiler) transpileHasCallExpr(e *expr.Expr) (*clause.Expr, error) {
+func (t *transpiler) transpileHasCallExpr(e *expr.Expr) (*clause.Expr, error) {
 	callExpr := e.GetCallExpr()
 	if len(callExpr.Args) != 2 {
 		return nil, fmt.Errorf("unexpected number of arguments to `in` expression: %d", len(callExpr.Args))
@@ -349,7 +343,7 @@ func (t *Transpiler) transpileHasCallExpr(e *expr.Expr) (*clause.Expr, error) {
 
 }
 
-func (t *Transpiler) transpileTimestampCallExpr(e *expr.Expr) (*clause.Expr, error) {
+func (t *transpiler) transpileTimestampCallExpr(e *expr.Expr) (*clause.Expr, error) {
 
 	callExpr := e.GetCallExpr()
 	if len(callExpr.Args) != 1 {

@@ -90,6 +90,14 @@ message Pipeline {
     VISIBILITY_PUBLIC = 2;
   }
 
+  // Statistic data
+  message Stats {
+    // Number of pipeline runs.
+    int32 number_of_runs = 1;
+    // Last run time.
+    google.protobuf.Timestamp last_run_time = 2;
+  }
+
   // The name of the pipeline, defined by its parent and ID.
   // - Format: `{parent_type}/{parent.id}/pipelines/{pipeline.id}`.
   string name = 1 [
@@ -143,6 +151,11 @@ message Pipeline {
   DataSpecification data_specification = 24 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Tags.
   repeated string tags = 25 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Statistic data.
+  Stats stats = 26;
+  // Recipe in YAML format describes the components of a pipeline and how they
+  // are connected.
+  string raw_recipe = 27 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // TriggerMetadata contains the traces of the pipeline inference.
@@ -230,6 +243,9 @@ message PipelineRelease {
   string readme = 13 [(google.api.field_behavior) = OPTIONAL];
   // Data specifications.
   DataSpecification data_specification = 14 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Recipe in YAML format describes the components of a pipeline and how they
+  // are connected.
+  string raw_recipe = 15 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // ListPipelinesRequest represents a request to list pipelines.
@@ -530,10 +546,10 @@ message TriggerUserPipelineWithStreamRequest {
       field_configuration: {path_param_name: "user_pipeline_name"}
     }
   ];
-  // Pipeline input parameters.
-  repeated google.protobuf.Struct inputs = 2 [(google.api.field_behavior) = REQUIRED];
-  // Pipeline secrets parameters that will override the pipeline's or owner's secrets.
-  map<string, string> secrets = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
 }
 
 // TriggerUserPipelineWithStreamResponse contains the pipeline execution results, i.e.,
@@ -1021,6 +1037,34 @@ message TriggerOrganizationPipelineRequest {
 // TriggerOrganizationPipelineResponse contains the pipeline execution results,
 // i.e., the multiple model inference outputs.
 message TriggerOrganizationPipelineResponse {
+  // Model inference outputs.
+  repeated google.protobuf.Struct outputs = 1;
+  // Traces of the pipeline inference.
+  TriggerMetadata metadata = 2;
+}
+
+// TriggerOrganizationPipelineRequest represents a request to trigger an
+// organization-owned pipeline synchronously.
+message TriggerOrganizationPipelineStreamRequest {
+  // The resource name of the pipeline, which allows its access by parent
+  // organization and ID.
+  // - Format: `organizations/{organization.id}/pipelines/{pipeline.id}`.
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "api.instill.tech/Pipeline"},
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      field_configuration: {path_param_name: "organization_pipeline_name"}
+    }
+  ];
+  // Pipeline input parameters, it will be deprecated soon.
+  repeated google.protobuf.Struct inputs = 2;
+  // Data
+  repeated TriggerData data = 3;
+}
+
+// TriggerOrganizationPipelineResponse contains the pipeline execution results,
+// i.e., the multiple model inference outputs.
+message TriggerOrganizationPipelineStreamResponse {
   // Model inference outputs.
   repeated google.protobuf.Struct outputs = 1;
   // Traces of the pipeline inference.

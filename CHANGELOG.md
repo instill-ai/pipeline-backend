@@ -1,5 +1,57 @@
 # Changelog
 
+## [0.30.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.30.0-beta...v0.30.1-beta) (2024-06-21)
+
+
+### Miscellaneous Chores
+
+* release v0.30.1-beta ([97431ae](https://github.com/instill-ai/pipeline-backend/commit/97431aeac094edb432c7693cc25665e82580a23d))
+
+## [0.30.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.29.2-beta...v0.30.0-beta) (2024-06-19)
+
+
+### Features
+
+* **endpoints:** use camelCase for `filter` and `orderBy` query strings ([#517](https://github.com/instill-ai/pipeline-backend/issues/517)) ([116467e](https://github.com/instill-ai/pipeline-backend/commit/116467eafbc9a7275664ace112df42b8b9d35357))
+* render secret value when using dynamic definition ([#509](https://github.com/instill-ai/pipeline-backend/issues/509)) ([44eaacb](https://github.com/instill-ai/pipeline-backend/commit/44eaacb5eebeaaa0c2f4f8e940f2677c92dce9de))
+* store recipe as YAML ([#515](https://github.com/instill-ai/pipeline-backend/issues/515)) ([4690835](https://github.com/instill-ai/pipeline-backend/commit/4690835732033c3c56662bc1372865d8a45951a8))
+* use camelCase for HTTP body ([#512](https://github.com/instill-ai/pipeline-backend/issues/512)) ([7cdce38](https://github.com/instill-ai/pipeline-backend/commit/7cdce388cb7818a4e2b0d0a5ffb03fd13c196da7))
+
+
+### Bug Fixes
+
+* improve pipeline usage error messages ([#513](https://github.com/instill-ai/pipeline-backend/issues/513)) ([ff4b631](https://github.com/instill-ai/pipeline-backend/commit/ff4b63174a438cf590a6e67b9e3697118ca02f29))
+* resolve the issue with the component condition not working ([#518](https://github.com/instill-ai/pipeline-backend/issues/518)) ([fa27de1](https://github.com/instill-ai/pipeline-backend/commit/fa27de1dca1444922176d850f8cb9b7e920c71b5))
+
+
+### Miscellaneous Chores
+
+* release v0.30.0-beta ([bc653a3](https://github.com/instill-ai/pipeline-backend/commit/bc653a39b64493798cf70af3cdfc697caffab69d))
+
+## [0.29.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.29.1-beta...v0.29.2-beta) (2024-06-12)
+
+
+### Features
+
+* return dynamic component definition in definition endpoints ([#510](https://github.com/instill-ai/pipeline-backend/issues/510)) ([1483148](https://github.com/instill-ai/pipeline-backend/commit/1483148518acab23180f1b3adfb0f80d92b80caf))
+
+
+### Miscellaneous Chores
+
+* release v0.29.2-beta ([0b7f613](https://github.com/instill-ai/pipeline-backend/commit/0b7f6138d1553ec226b2927fa2e939609a09ba6a))
+
+## [0.29.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.29.0-beta...v0.29.1-beta) (2024-06-07)
+
+
+### Features
+
+* return the owner in pipeline response when using VIEW_BASIC ([#506](https://github.com/instill-ai/pipeline-backend/issues/506)) ([a4fea42](https://github.com/instill-ai/pipeline-backend/commit/a4fea42fbddcec95e9e1f5a876b844f0c99e1980))
+
+
+### Miscellaneous Chores
+
+* release v0.29.1-beta ([f89af80](https://github.com/instill-ai/pipeline-backend/commit/f89af80a49494adfadb09c2820e7220f131e6ad5))
+
 ## [0.29.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.28.1-beta...v0.29.0-beta) (2024-06-06)
 
 

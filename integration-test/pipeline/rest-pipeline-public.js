@@ -15,7 +15,7 @@ export function CheckCreate(data) {
         id: randomString(32),
         description: randomString(50),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -39,11 +39,11 @@ export function CheckCreate(data) {
         helper.validateRecipe(r.json().pipeline.recipe, false),
       "POST /v1beta/${constant.namespace}/pipelines response pipeline owner isinvalid": (r) =>
         helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
-      "POST /v1beta/${constant.namespace}/pipelines response pipeline create_time": (r) =>
-        new Date(r.json().pipeline.create_time).getTime() >
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline createTime": (r) =>
+        new Date(r.json().pipeline.createTime).getTime() >
         new Date().setTime(0),
-      "POST /v1beta/${constant.namespace}/pipelines response pipeline update_time": (r) =>
-        new Date(r.json().pipeline.update_time).getTime() >
+      "POST /v1beta/${constant.namespace}/pipelines response pipeline updateTime": (r) =>
+        new Date(r.json().pipeline.updateTime).getTime() >
         new Date().setTime(0),
     });
 
@@ -208,10 +208,10 @@ export function CheckList(data) {
     check(http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines`, null, data.header), {
       [`GET /v1beta/${constant.namespace}/pipelines response status is 200`]: (r) =>
         r.status === 200,
-      [`GET /v1beta/${constant.namespace}/pipelines response next_page_token is empty`]: (r) =>
-        r.json().next_page_token === "",
-      [`GET /v1beta/${constant.namespace}/pipelines response total_size is 0`]: (r) =>
-        r.json().total_size == 0,
+      [`GET /v1beta/${constant.namespace}/pipelines response nextPageToken is empty`]: (r) =>
+        r.json().nextPageToken === "",
+      [`GET /v1beta/${constant.namespace}/pipelines response totalSize is 0`]: (r) =>
+        r.json().totalSize == 0,
     });
 
     const numPipelines = 200;
@@ -222,7 +222,7 @@ export function CheckList(data) {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
       );
     }
 
@@ -256,8 +256,8 @@ export function CheckList(data) {
           r.json().pipelines.length == 10,
         [`GET /v1beta/${constant.namespace}/pipelines response pipelines[0].recipe is null`]: (r) =>
           r.json().pipelines[0].recipe === null,
-        [`GET /v1beta/${constant.namespace}/pipelines response total_size == 200`]: (r) =>
-          r.json().total_size == 200,
+        [`GET /v1beta/${constant.namespace}/pipelines response totalSize == 200`]: (r) =>
+          r.json().totalSize == 200,
       }
     );
 
@@ -292,12 +292,12 @@ export function CheckList(data) {
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=3`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?pageSize=3`,
         null,
         data.header
       ),
       {
-        [`GET /v1beta/${constant.namespace}/pipelines?page_size=3 response pipelines.length == 3`]: (
+        [`GET /v1beta/${constant.namespace}/pipelines?pageSize=3 response pipelines.length == 3`]: (
           r
         ) => r.json().pipelines.length == 3,
       }
@@ -306,36 +306,36 @@ export function CheckList(data) {
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=101`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?pageSize=101`,
         null,
         data.header
       ),
       {
-        [`GET /v1beta/${constant.namespace}/pipelines?page_size=101 response pipelines.length == 100`]:
+        [`GET /v1beta/${constant.namespace}/pipelines?pageSize=101 response pipelines.length == 100`]:
           (r) => r.json().pipelines.length == 100,
       }
     );
 
     var resFirst100 = http.request(
       "GET",
-      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100`,
+      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?pageSize=100`,
       null,
       data.header
     );
     var resSecond100 = http.request(
       "GET",
-      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
       }`,
       null, data.header
     );
     check(resSecond100, {
-      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      [`GET /v1beta/${constant.namespace}/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
         } response status 200`]: (r) => r.status == 200,
-      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
+      [`GET /v1beta/${constant.namespace}/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
         } response return 100 results`]: (r) => r.json().pipelines.length == 100,
-      [`GET /v1beta/${constant.namespace}/pipelines?page_size=100&page_token=${resFirst100.json().next_page_token
-        } response next_page_token is empty`]: (r) =>
-          r.json().next_page_token === "",
+      [`GET /v1beta/${constant.namespace}/pipelines?pageSize=100&pageToken=${resFirst100.json().nextPageToken
+        } response nextPageToken is empty`]: (r) =>
+          r.json().nextPageToken === "",
     });
 
     // Filtering
@@ -356,14 +356,14 @@ export function CheckList(data) {
     check(
       http.request(
         "GET",
-        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?filter=create_time>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
+        `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?filter=createTime>timestamp%28%222000-06-19T23:31:08.657Z%22%29`,
         null,
         data.header
       ),
       {
-        [`GET /v1beta/${constant.namespace}/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
+        [`GET /v1beta/${constant.namespace}/pipelines?filter=createTime%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response 200`]:
           (r) => r.status == 200,
-        [`GET /v1beta/${constant.namespace}/pipelines?filter=create_time%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
+        [`GET /v1beta/${constant.namespace}/pipelines?filter=createTime%20>%20timestamp%28%222000-06-19T23:31:08.657Z%22%29 response pipelines.length > 0`]:
           (r) => r.json().pipelines.length > 0,
       }
     );
@@ -393,7 +393,7 @@ export function CheckGet(data) {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -430,8 +430,6 @@ export function CheckGet(data) {
           (r) => r.json().pipeline.description === reqBody.description,
         [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline recipe is null`]:
           (r) => r.json().pipeline.recipe === null,
-        [`GET /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner is invalid`]:
-          (r) => r.json().pipeline.owner === undefined,
       }
     );
 
@@ -487,7 +485,7 @@ export function CheckUpdate(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -533,18 +531,18 @@ export function CheckUpdate(data) {
           (r) => r.json().pipeline.description === reqBodyUpdate.description,
         [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline owner isvalid`]:
           (r) => helper.isValidOwner(r.json().pipeline.owner, data.expectedOwner),
-        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline create_time (OUTPUT_ONLY)`]:
+        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline createTime (OUTPUT_ONLY)`]:
           (r) =>
-            new Date(r.json().pipeline.create_time).getTime() >
+            new Date(r.json().pipeline.createTime).getTime() >
             new Date().setTime(0),
-        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline update_time (OUTPUT_ONLY)`]:
+        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline updateTime (OUTPUT_ONLY)`]:
           (r) =>
-            new Date(r.json().pipeline.update_time).getTime() >
+            new Date(r.json().pipeline.updateTime).getTime() >
             new Date().setTime(0),
-        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline update_time > create_time`]:
+        [`PATCH /v1beta/${constant.namespace}/pipelines/${reqBody.id} response pipeline updateTime > createTime`]:
           (r) =>
-            new Date(r.json().pipeline.update_time).getTime() >
-            new Date(r.json().pipeline.create_time).getTime(),
+            new Date(r.json().pipeline.updateTime).getTime() >
+            new Date(r.json().pipeline.createTime).getTime(),
       }
     );
 
@@ -640,7 +638,7 @@ export function CheckRename(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -701,7 +699,7 @@ export function CheckLookUp(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline

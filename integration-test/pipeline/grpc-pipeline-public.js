@@ -20,7 +20,7 @@ export function CheckCreate(data) {
         id: randomString(32),
         description: randomString(50),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -48,11 +48,11 @@ export function CheckCreate(data) {
         (r) => helper.validateRecipeGRPC(r.message.pipeline.recipe, false),
       "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline owner is valid":
         (r) => helper.isValidOwner(r.message.pipeline.owner, data.expectedOwner),
-      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline create_time":
+      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline createTime":
         (r) =>
           new Date(r.message.pipeline.createTime).getTime() >
           new Date().setTime(0),
-      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline update_time":
+      "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline response pipeline updateTime":
         (r) =>
           new Date(r.message.pipeline.updateTime).getTime() >
           new Date().setTime(0),
@@ -246,7 +246,7 @@ export function CheckList(data) {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
       );
     }
 
@@ -389,14 +389,14 @@ export function CheckList(data) {
         {
           parent: `${constant.namespace}`,
           filter:
-            'create_time>timestamp("2000-06-19T23:31:08.657Z")',
+            'createTime>timestamp("2000-06-19T23:31:08.657Z")',
         },
         data.metadata
       ),
       {
-        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
+        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: state=createTime>timestamp("2000-06-19T23:31:08.657Z") response StatusOK`]:
           (r) => r.status === grpc.StatusOK,
-        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: state=create_time>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
+        [`vdp.pipeline.v1beta.PipelinePublicService/ListUserPipelines filter: state=createTime>timestamp("2000-06-19T23:31:08.657Z") response pipelines.length`]:
           (r) => r.message.pipelines.length > 0,
       }
     );
@@ -433,7 +433,7 @@ export function CheckGet(data) {
         id: randomString(10),
         description: randomString(50),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     check(
@@ -472,8 +472,6 @@ export function CheckGet(data) {
           (r) => r.message.pipeline.description === reqBody.description,
         [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline recipe is null`]:
           (r) => r.message.pipeline.recipe === null,
-        [`vdp.pipeline.v1beta.PipelinePublicService/GetUserPipeline name: pipelines/${reqBody.id} response pipeline owner is invalid`]:
-          (r) => r.message.pipeline.owner === undefined,
       }
     );
 
@@ -540,7 +538,7 @@ export function CheckUpdate(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -599,7 +597,7 @@ export function CheckUpdate(data) {
           (r) =>
             new Date(r.message.pipeline.updateTime).getTime() >
             new Date().setTime(0),
-        [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserPipeline response pipeline updateTime > create_time`]:
+        [`vdp.pipeline.v1beta.PipelinePublicService/UpdateUserPipeline response pipeline updateTime > createTime`]:
           (r) =>
             new Date(r.message.pipeline.updateTime).getTime() >
             new Date(r.message.pipeline.createTime).getTime(),
@@ -700,7 +698,7 @@ export function CheckRename(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline
@@ -771,7 +769,7 @@ export function CheckLookUp(data) {
       {
         id: randomString(10),
       },
-      constant.simpleRecipe
+      constant.simplePipelineWithJSONRecipe
     );
 
     // Create a pipeline

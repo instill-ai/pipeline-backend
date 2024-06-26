@@ -5,14 +5,12 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/gofrs/uuid"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 
-	componentbase "github.com/instill-ai/component/base"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -45,23 +43,21 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 	compProperties := map[string]any{}
 
 	for id, comp := range recipePermalink.Component {
-		switch comp := comp.(type) {
-		case *componentbase.ComponentConfig:
+		switch comp.Type {
+		default:
 
-			def, err := s.component.GetDefinitionByUID(uuid.FromStringOrNil(comp.Type), nil, nil)
+			def, err := s.component.GetDefinitionByID(comp.Type, nil, nil)
 			if err != nil {
 				return nil, err
 			}
 			checkTask(id, comp.Task, def.Spec.ComponentSpecification, compProperties, &validationErrors)
 
-		case *datamodel.IteratorComponent:
+		case datamodel.Iterator:
 			nestedCompProperties := map[string]any{}
 			nestedValidationErrors := []*pb.PipelineValidationError{}
 			for nestedID, nestedComp := range comp.Component {
-				switch nestedComp := nestedComp.(type) {
-
-				case *componentbase.ComponentConfig:
-					def, err := s.component.GetDefinitionByUID(uuid.FromStringOrNil(nestedComp.Type), nil, nil)
+				if nestedComp.Type != datamodel.Iterator {
+					def, err := s.component.GetDefinitionByID(nestedComp.Type, nil, nil)
 					if err != nil {
 						return nil, err
 					}
@@ -88,7 +84,6 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 
 		}
 
-		// compProperties[id] = p
 	}
 
 	schema["properties"].(map[string]any)["component"].(map[string]any)["properties"] = compProperties

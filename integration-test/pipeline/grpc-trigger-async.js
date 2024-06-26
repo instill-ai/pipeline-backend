@@ -22,7 +22,73 @@ export function CheckTrigger(data) {
           id: randomString(10),
           description: randomString(50),
         },
-        constant.simpleRecipe
+        constant.simplePipelineWithJSONRecipe
+      );
+
+      check(
+        client.invoke(
+          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline",
+          {
+            parent: `${constant.namespace}`,
+            pipeline: reqBody,
+          },
+          data.metadata
+        ),
+        {
+          "vdp.pipeline.v1beta.PipelinePublicService/CreateUserPipeline Async GRPC pipeline response StatusOK":
+            (r) => r.status === grpc.StatusOK,
+        }
+      );
+
+
+      check(client.invoke(
+        "vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline",
+        {
+          name: `${constant.namespace}/pipelines/${reqBody.id}`,
+          data: constant.simplePayload.data,
+        },
+        data.metadata
+      ),
+        {
+          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+          [`vdp.pipeline.v1beta.PipelinePublicService/TriggerAsyncUserPipeline response has operation id`]:
+            (r) => r.message.operation.name.startsWith("operations/"),
+        }
+      );
+
+
+      check(
+        client.invoke(
+          `vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline`,
+          {
+            name: `${constant.namespace}/pipelines/${reqBody.id}`,
+          },
+          data.metadata
+        ),
+        {
+          [`vdp.pipeline.v1beta.PipelinePublicService/DeleteUserPipeline response StatusOK`]:
+            (r) => r.status === grpc.StatusOK,
+        }
+      );
+
+      client.close();
+    }
+  );
+
+  group(
+    "Pipelines API: Trigger an async pipeline with YAML recipe",
+    () => {
+      client.connect(constant.pipelineGRPCPublicHost, {
+        plaintext: true,
+      });
+
+      var reqBody = Object.assign(
+        {
+          id: randomString(10),
+          description: randomString(50),
+        },
+        constant.simplePipelineWithYAMLRecipe
       );
 
       check(

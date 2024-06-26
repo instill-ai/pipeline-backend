@@ -5,7 +5,6 @@ import (
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"github.com/gofrs/uuid"
-	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/redis/go-redis/v9"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
@@ -16,7 +15,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	componentstore "github.com/instill-ai/component/store"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -62,8 +60,6 @@ type Service interface {
 	TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error)
 	GetOperation(ctx context.Context, workflowID string) (*longrunningpb.Operation, error)
 
-	WriteNewPipelineDataPoint(ctx context.Context, data utils.PipelineUsageMetricData) error
-
 	GetCtxUserNamespace(ctx context.Context) (resource.Namespace, error)
 	GetRscNamespaceAndNameID(ctx context.Context, path string) (resource.Namespace, string, error)
 	GetRscNamespaceAndPermalinkUID(ctx context.Context, path string) (resource.Namespace, uuid.UUID, error)
@@ -74,9 +70,6 @@ type Service interface {
 	GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error)
 	ListConnectorDefinitions(context.Context, *pb.ListConnectorDefinitionsRequest) (*pb.ListConnectorDefinitionsResponse, error)
 	GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error)
-
-	// Influx API
-	WriteNewConnectorDataPoint(ctx context.Context, data utils.ConnectorUsageMetricData, pipelineMetadata *structpb.Value) error
 }
 
 // Define a new type to encapsulate the stream data
@@ -86,13 +79,12 @@ type TriggerResult struct {
 }
 
 type service struct {
-	repository          repository.Repository
-	redisClient         *redis.Client
-	temporalClient      client.Client
-	influxDBWriteClient api.WriteAPI
-	component           *componentstore.Store
-	aclClient           *acl.ACLClient
-	converter           Converter
+	repository     repository.Repository
+	redisClient    *redis.Client
+	temporalClient client.Client
+	component      *componentstore.Store
+	aclClient      *acl.ACLClient
+	converter      Converter
 }
 
 // NewService initiates a service instance
@@ -100,19 +92,17 @@ func NewService(
 	r repository.Repository,
 	rc *redis.Client,
 	t client.Client,
-	i api.WriteAPI,
 	acl *acl.ACLClient,
 	c Converter,
 ) Service {
 	logger, _ := logger.GetZapLogger(context.Background())
 
 	return &service{
-		repository:          r,
-		redisClient:         rc,
-		temporalClient:      t,
-		influxDBWriteClient: i,
-		component:           componentstore.Init(logger, nil, nil),
-		aclClient:           acl,
-		converter:           c,
+		repository:     r,
+		redisClient:    rc,
+		temporalClient: t,
+		component:      componentstore.Init(logger, nil, nil),
+		aclClient:      acl,
+		converter:      c,
 	}
 }

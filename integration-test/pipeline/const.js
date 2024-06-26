@@ -78,7 +78,7 @@ export const paramsHTTPWithJwt = {
 };
 
 
-export const simpleRecipe = {
+export const simplePipelineWithJSONRecipe = {
   recipe: {
     version:  "v1beta",
     variable: {
@@ -104,6 +104,32 @@ export const simpleRecipe = {
     },
   },
 };
+
+const yamlRecipe = `
+version: v1beta
+variable:
+  input:
+    title: Input
+    instill-format: string
+
+output:
+  answer:
+    title: Answer
+    value: \${b01.output.data}
+
+component:
+  b01:
+    type: base64
+    task: TASK_ENCODE
+    input:
+      data: \${variable.input}
+`;
+
+export const simplePipelineWithYAMLRecipe = {
+  rawRecipe: yamlRecipe,
+};
+
+
 
 
 export const simplePayload = {

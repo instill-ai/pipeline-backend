@@ -25,7 +25,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/errmsg"
 
-	componentbase "github.com/instill-ai/component/base"
 	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
@@ -43,10 +42,10 @@ type ComponentActivityParam struct {
 	MemoryStorageKey *recipe.BatchMemoryKey
 	ID               string
 	UpstreamIDs      []string
-	Condition        *string
+	Condition        string
 	Input            map[string]any
 	Setup            map[string]any
-	DefinitionUID    uuid.UUID
+	Type             string
 	Task             string
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 }
@@ -172,9 +171,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	numComponents := len(r.Component)
 	for _, comp := range r.Component {
-		switch c := comp.(type) {
-		case *datamodel.IteratorComponent:
-			numComponents += len(c.Component)
+		switch comp.Type {
+		case datamodel.Iterator:
+			numComponents += len(comp.Component)
 		}
 	}
 
@@ -183,10 +182,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			SystemVariables: param.SystemVariables,
 			NumComponents:   numComponents,
 		}).Get(ctx, nil); err != nil {
-			details := EndUserErrorDetails{
-				Message: fmt.Sprintf("Pipeline %s failed to execute. %s", param.SystemVariables.PipelineUID, errmsg.MessageOrErr(err)),
-			}
-			return temporal.NewApplicationErrorWithCause("pipeline failed to trigger", PipelineWorkflowError, err, details)
+			return err
 		}
 	}
 
@@ -211,29 +207,29 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		for compID, comp := range orderedComp[group] {
 			upstreamIDs := dag.GetUpstreamCompIDs(compID)
 
-			switch c := comp.(type) {
-			case *componentbase.ComponentConfig:
+			switch comp.Type {
+			default:
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, &ComponentActivityParam{
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
-					DefinitionUID:    uuid.FromStringOrNil(c.Type),
-					Task:             c.Task,
-					Input:            c.Input,
-					Setup:            c.Setup,
-					Condition:        c.Condition,
+					Type:             comp.Type,
+					Task:             comp.Task,
+					Input:            comp.Input.(map[string]any),
+					Setup:            comp.Setup,
+					Condition:        comp.Condition,
 					MemoryStorageKey: param.MemoryStorageKey,
 					SystemVariables:  param.SystemVariables,
 				}))
 
-			case *datamodel.IteratorComponent:
+			case datamodel.Iterator:
 
 				preIteratorResult := &PreIteratorActivityResult{}
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
-					Input:            c.Input,
+					Input:            comp.Input.(string),
 					SystemVariables:  param.SystemVariables,
 					MemoryStorageKey: param.MemoryStorageKey,
 				}).Get(ctx, &preIteratorResult); err != nil {
@@ -275,7 +271,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					WorkflowID:        workflowID,
 					ID:                compID,
 					MemoryStorageKeys: preIteratorResult.MemoryStorageKeys,
-					OutputElements:    c.OutputElements,
+					OutputElements:    comp.OutputElements,
 					SystemVariables:   param.SystemVariables,
 				}).Get(ctx, nil); err != nil {
 					return err
@@ -351,8 +347,13 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
-	// TODO: we assume that setup in the batch are all the same
-	execution, err := w.component.CreateExecution(param.DefinitionUID, sysVars, cons[0], param.Task)
+	comp, err := w.component.GetDefinitionByID(param.Type, nil, nil)
+	if err != nil {
+		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+	}
+
+	// Note: we assume that setup in the batch are all the same
+	execution, err := w.component.CreateExecution(uuid.FromStringOrNil(comp.Uid), sysVars, cons[0], param.Task)
 	if err != nil {
 		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
@@ -399,7 +400,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 	}
 
 	iteratorRecipe := &datamodel.Recipe{
-		Component: r.Component[param.ID].(*datamodel.IteratorComponent).Component,
+		Component: r.Component[param.ID].Component,
 	}
 
 	result := &PreIteratorActivityResult{
@@ -543,7 +544,10 @@ func (w *worker) UsageCheckActivity(ctx context.Context, param *UsageCheckActivi
 
 	err := w.pipelineUsageHandler.Check(ctx, param.SystemVariables, param.NumComponents)
 	if err != nil {
-		return w.toApplicationError(err, "usage_check", UsageCollectActivityError)
+		details := EndUserErrorDetails{
+			Message: fmt.Sprintf("Pipeline failed to execute. %s", errmsg.MessageOrErr(err)),
+		}
+		return temporal.NewNonRetryableApplicationError("pipeline failed to trigger", PipelineWorkflowError, err, details)
 	}
 	logger.Info("UsageCheckActivity completed")
 	return nil
@@ -556,7 +560,10 @@ func (w *worker) UsageCollectActivity(ctx context.Context, param *UsageCollectAc
 
 	err := w.pipelineUsageHandler.Collect(ctx, param.SystemVariables, param.NumComponents)
 	if err != nil {
-		return w.toApplicationError(err, "usage_collect", UsageCollectActivityError)
+		details := EndUserErrorDetails{
+			Message: fmt.Sprintf("Pipeline failed to execute. %s", errmsg.MessageOrErr(err)),
+		}
+		return temporal.NewNonRetryableApplicationError("pipeline failed to trigger", PipelineWorkflowError, err, details)
 	}
 	// We ignore the error check for pipeline run stats for now.
 	_ = w.repository.UpdatePipelineRunStats(ctx, param.SystemVariables.PipelineUID)
@@ -565,7 +572,7 @@ func (w *worker) UsageCollectActivity(ctx context.Context, param *UsageCollectAc
 	return nil
 }
 
-func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamIDs []string, condition *string, input any) ([]*structpb.Struct, map[int]int, error) {
+func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamIDs []string, condition string, input any) ([]*structpb.Struct, map[int]int, error) {
 	var compInputs []*structpb.Struct
 	idxMap := map[int]int{}
 
@@ -585,10 +592,10 @@ func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamI
 		}
 
 		if !batchMemory[idx].Component[id].Status.Skipped {
-			if condition != nil && *condition != "" {
+			if condition != "" {
 
 				// TODO: these code should be refactored and shared some common functions with RenderInput
-				condStr := *condition
+				condStr := condition
 				var varMapping map[string]string
 				condStr, _, varMapping = recipe.SanitizeCondition(condStr)
 
@@ -602,7 +609,7 @@ func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamI
 				for k, v := range batchMemory[idx].Component {
 					condMemory[varMapping[k]] = v
 				}
-				condMemory[varMapping["vars"]] = batchMemory[idx].Variable
+				condMemory[varMapping["variable"]] = batchMemory[idx].Variable
 
 				cond, err := recipe.EvalCondition(expr, condMemory)
 				if err != nil {
@@ -659,8 +666,8 @@ func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamI
 }
 
 func (w *worker) processOutput(batchMemory []*recipe.Memory, id string, compOutputs []*structpb.Struct, idxMap map[int]int) ([]*recipe.ComponentMemory, error) {
-	compMem := make([]*recipe.ComponentMemory, len(batchMemory))
-	for idx := range batchMemory {
+
+	for idx := range compOutputs {
 
 		outputJSON, err := protojson.Marshal(compOutputs[idx])
 		if err != nil {
@@ -673,8 +680,13 @@ func (w *worker) processOutput(batchMemory []*recipe.Memory, id string, compOutp
 		}
 		*batchMemory[idxMap[idx]].Component[id].Output = outputStruct
 		batchMemory[idxMap[idx]].Component[id].Status.Completed = true
-		compMem[idxMap[idx]] = batchMemory[idxMap[idx]].Component[id]
 	}
+
+	compMem := make([]*recipe.ComponentMemory, len(batchMemory))
+	for idx, m := range batchMemory {
+		compMem[idx] = m.Component[id]
+	}
+
 	return compMem, nil
 }
 

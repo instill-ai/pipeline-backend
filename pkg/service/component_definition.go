@@ -10,15 +10,22 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
+	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error) {
 
-	compDef, err := s.component.GetDefinitionByID(defID, nil, nil)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+
+	compDef, err := s.component.GetDefinitionByID(defID, vars, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -27,13 +34,17 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 		return convertComponentDefToOperatorDef(compDef), nil
 
 	default:
-		return nil, repository.ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 }
 
 func (s *service) implementedOperatorDefinitions(ctx context.Context) ([]*pb.OperatorDefinition, error) {
 
-	allDefs := s.component.ListDefinitions(nil, false)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+	allDefs := s.component.ListDefinitions(vars, false)
 
 	implemented := make([]*pb.OperatorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -105,8 +116,7 @@ func (s *service) filterConnectorDefinitions(defs []*pb.ConnectorDefinition, fil
 	}
 
 	filtered := make([]*pb.ConnectorDefinition, 0, len(defs))
-	trans := repository.NewTranspiler(filter)
-	expr, _ := trans.Transpile()
+	expr, _ := s.repository.TranspileFilter(filter)
 	typeMap := map[string]bool{}
 	for i, v := range expr.Vars {
 		if i == 0 {
@@ -132,7 +142,7 @@ func (s *service) lastUIDFromToken(token string) (string, error) {
 	}
 	_, id, err := paginate.DecodeToken(token)
 	if err != nil {
-		return "", repository.ErrPageTokenDecode
+		return "", fmt.Errorf("%w: invalid page token: %w", errdomain.ErrInvalidArgument, err)
 	}
 
 	return id, nil
@@ -181,9 +191,9 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 	var releaseStage pb.ComponentDefinition_ReleaseStage
 	declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
-		filtering.DeclareIdent("q_title", filtering.TypeString),
-		filtering.DeclareEnumIdent("release_stage", releaseStage.Type()),
-		filtering.DeclareEnumIdent("component_type", compType.Type()),
+		filtering.DeclareIdent("qTitle", filtering.TypeString),
+		filtering.DeclareEnumIdent("releaseStage", releaseStage.Type()),
+		filtering.DeclareEnumIdent("componentType", compType.Type()),
 	)
 	if err != nil {
 		return nil, err
@@ -207,9 +217,14 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 
 	defs := make([]*pb.ComponentDefinition, len(uids))
 
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+
 	for i, uid := range uids {
 
-		def, err := s.component.GetDefinitionByUID(uid.UID, nil, nil)
+		def, err := s.component.GetDefinitionByUID(uid.UID, vars, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -238,7 +253,12 @@ var implementedReleaseStages = map[pb.ComponentDefinition_ReleaseStage]bool{
 
 func (s *service) implementedConnectorDefinitions(ctx context.Context) ([]*pb.ConnectorDefinition, error) {
 
-	allDefs := s.component.ListDefinitions(nil, false)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+
+	allDefs := s.component.ListDefinitions(vars, false)
 
 	implemented := make([]*pb.ConnectorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -262,7 +282,7 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 	var connType pb.ConnectorType
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
-		filtering.DeclareEnumIdent("connector_type", connType.Type()),
+		filtering.DeclareEnumIdent("connectorType", connType.Type()),
 	}...)
 	if err != nil {
 		return nil, err
@@ -322,7 +342,11 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error) {
 
-	compDef, err := s.component.GetDefinitionByID(id, nil, nil)
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+	compDef, err := s.component.GetDefinitionByID(id, vars, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -333,7 +357,7 @@ func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*p
 		return convertComponentDefToConnectorDef(compDef), nil
 
 	default:
-		return nil, repository.ErrNotFound
+		return nil, errdomain.ErrNotFound
 	}
 
 }

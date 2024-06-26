@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/iancoleman/strcase"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/redis/go-redis/v9"
 	"go.einride.tech/aip/filtering"
@@ -23,6 +24,7 @@ import (
 	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/paginate"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -74,6 +76,10 @@ type Repository interface {
 	CreatePipelineTag(ctx context.Context, pipelineUID string, tagName string) error
 	DeletePipelineTag(ctx context.Context, pipelineUID string, tagName string) error
 	ListPipelineTags(ctx context.Context, pipelineUID string) ([]*datamodel.Tag, error)
+
+	// TODO this function can remain unexported once connector and operator
+	// definition lists are removed.
+	TranspileFilter(filtering.Filter) (*clause.Expr, error)
 }
 
 type repository struct {
@@ -147,7 +153,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	var expr *clause.Expr
-	if expr, err = r.transpileFilter(filter); err != nil {
+	if expr, err = r.TranspileFilter(filter); err != nil {
 		return nil, 0, "", err
 	}
 	if expr != nil {
@@ -178,7 +184,8 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	for _, field := range order.Fields {
-		orderString := field.Path + transformBoolToDescString(field.Desc)
+		// TODO: We should implement a shared `orderBy` parser.
+		orderString := strcase.ToSnake(field.Path) + transformBoolToDescString(field.Desc)
 		queryBuilder.Order(orderString)
 	}
 	queryBuilder.Order("uid DESC")
@@ -197,25 +204,27 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	if pageToken != "" {
 		tokens, err := DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", ErrPageTokenDecode
+			return nil, 0, "", newPageTokenErr(err)
 		}
 
 		for _, o := range order.Fields {
 
-			if v, ok := tokens[o.Path]; ok {
-				switch o.Path {
+			p := strcase.ToSnake(o.Path)
+			if v, ok := tokens[p]; ok {
+
+				switch p {
 				case "create_time", "update_time":
 					// Add "pipeline." prefix to prevent ambiguous since tag table also has the two columns.
 					if o.Desc {
-						queryBuilder = queryBuilder.Where("pipeline."+o.Path+" < ?::timestamp", v)
+						queryBuilder = queryBuilder.Where("pipeline."+p+" < ?::timestamp", v)
 					} else {
-						queryBuilder = queryBuilder.Where("pipeline."+o.Path+" > ?::timestamp", v)
+						queryBuilder = queryBuilder.Where("pipeline."+p+" > ?::timestamp", v)
 					}
 				default:
 					if o.Desc {
-						queryBuilder = queryBuilder.Where(o.Path+" < ?", v)
+						queryBuilder = queryBuilder.Where(p+" < ?", v)
 					} else {
-						queryBuilder = queryBuilder.Where(o.Path+" > ?", v)
+						queryBuilder = queryBuilder.Where(p+" > ?", v)
 					}
 				}
 
@@ -225,7 +234,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	if isBasicView {
-		queryBuilder.Omit("pipeline.recipe")
+		queryBuilder.Omit("pipeline.recipe_yaml")
 	}
 
 	result := queryBuilder.Preload("Tags").Find(&pipelines)
@@ -243,29 +252,24 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		releasesMap := map[uuid.UUID][]*datamodel.PipelineRelease{}
 		releaseDBQueryBuilder := releaseDB.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid in ?", pipelineUIDs).Order("create_time DESC, uid DESC")
 		if isBasicView {
-			releaseDBQueryBuilder.Omit("pipeline_release.recipe")
+			releaseDBQueryBuilder.Omit("pipeline_release.recipe_yaml")
 		}
-		releaseRows, err := releaseDBQueryBuilder.Rows()
-		if err != nil {
-			return nil, 0, "", err
+		pipelineReleases := []*datamodel.PipelineRelease{}
+		result := releaseDBQueryBuilder.Find(&pipelineReleases)
+		if result.Error != nil {
+			return nil, 0, "", result.Error
 		}
-		defer releaseRows.Close()
-		for releaseRows.Next() {
-			var item datamodel.PipelineRelease
-			if err = releaseDB.ScanRows(releaseRows, &item); err != nil {
-				return nil, 0, "", err
-			}
-			pipelineUID := item.PipelineUID
-			pipelineRelease := item
+		for idx := range pipelineReleases {
+
+			pipelineUID := pipelineReleases[idx].PipelineUID
 			if _, ok := releasesMap[pipelineUID]; !ok {
 				releasesMap[pipelineUID] = []*datamodel.PipelineRelease{}
 			}
-			releasesMap[pipelineUID] = append(releasesMap[pipelineUID], &pipelineRelease)
+			releasesMap[pipelineUID] = append(releasesMap[pipelineUID], pipelineReleases[idx])
 		}
 		for idx := range pipelines {
 			if releases, ok := releasesMap[pipelines[idx].UID]; ok {
 				pipelines[idx].Releases = releases
-
 			}
 		}
 	}
@@ -286,15 +290,15 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 		}
 
 		for _, field := range order.Fields {
-			orderString := field.Path + transformBoolToDescString(!field.Desc)
+			orderString := strcase.ToSnake(field.Path) + transformBoolToDescString(!field.Desc)
 			lastItemQueryBuilder.Order(orderString)
-			switch field.Path {
+			switch p := strcase.ToSnake(field.Path); p {
 			case "id":
-				tokens[field.Path] = lastID
+				tokens[p] = lastID
 			case "create_time":
-				tokens[field.Path] = lastCreateTime.Format(time.RFC3339Nano)
+				tokens[p] = lastCreateTime.Format(time.RFC3339Nano)
 			case "update_time":
-				tokens[field.Path] = lastUpdateTime.Format(time.RFC3339Nano)
+				tokens[p] = lastUpdateTime.Format(time.RFC3339Nano)
 			}
 
 		}
@@ -344,7 +348,7 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 	queryBuilder := db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...)
 
 	if isBasicView {
-		queryBuilder.Omit("pipeline.recipe")
+		queryBuilder.Omit("pipeline.recipe_yaml")
 	}
 
 	if result := queryBuilder.First(&pipeline); result.Error != nil {
@@ -357,23 +361,15 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 		releaseDB := r.checkPinnedUser(ctx, r.db, "pipeline")
 		releaseDBQueryBuilder := releaseDB.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipeline.UID).Order("create_time DESC, uid DESC")
 		if isBasicView {
-			releaseDBQueryBuilder.Omit("pipeline_release.recipe")
+			releaseDBQueryBuilder.Omit("pipeline_release.recipe_yaml")
 		}
 
-		releaseRows, err := releaseDBQueryBuilder.Rows()
-		if err != nil {
-			return nil, err
+		pipelineReleases := []*datamodel.PipelineRelease{}
+		result := releaseDBQueryBuilder.Find(&pipelineReleases)
+		if result.Error != nil {
+			return nil, result.Error
 		}
-		defer releaseRows.Close()
-		for releaseRows.Next() {
-			var item datamodel.PipelineRelease
-			if err = releaseDB.ScanRows(releaseRows, &item); err != nil {
-				return nil, err
-			}
-			pipelineRelease := item
-			pipeline.Releases = append(pipeline.Releases, &pipelineRelease)
-
-		}
+		pipeline.Releases = pipelineReleases
 	}
 
 	return &pipeline, nil
@@ -420,7 +416,10 @@ func (r *repository) UpdateNamespacePipelineByUID(ctx context.Context, uid uuid.
 
 	r.pinUser(ctx, "pipeline")
 	db := r.checkPinnedUser(ctx, r.db, "pipeline")
-	if result := db.Unscoped().Model(&datamodel.Pipeline{}).
+
+	// Note: To make the BeforeUpdate hook work, we need to use
+	// `Model(pipeline)` instead of `Model(&datamodel.Pipeline{})`.
+	if result := db.Unscoped().Model(pipeline).
 		Where("(uid = ?)", uid).
 		Updates(pipeline); result.Error != nil {
 		return result.Error
@@ -465,11 +464,9 @@ func (r *repository) UpdateNamespacePipelineIDByID(ctx context.Context, ownerPer
 	return nil
 }
 
-// TranspileFilter transpiles a parsed AIP filter expression to GORM DB clauses
-func (r *repository) transpileFilter(filter filtering.Filter) (*clause.Expr, error) {
-	return (&Transpiler{
-		filter: filter,
-	}).Transpile()
+// TranspileFilter transpiles a parsed AIP filter expression to GORM DB clauses.
+func (r *repository) TranspileFilter(filter filtering.Filter) (*clause.Expr, error) {
+	return (&transpiler{filter: filter}).Transpile()
 }
 
 func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error {
@@ -514,38 +511,34 @@ func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPer
 	if pageToken != "" {
 		createTime, uid, err := paginate.DecodeToken(pageToken)
 		if err != nil {
-			return nil, 0, "", ErrPageTokenDecode
+			return nil, 0, "", newPageTokenErr(err)
 		}
 		queryBuilder = queryBuilder.Where("(create_time,uid) < (?::timestamp, ?)", createTime, uid)
 	}
 
 	if isBasicView {
-		queryBuilder.Omit("pipeline_release.recipe")
+		queryBuilder.Omit("pipeline_release.recipe_yaml")
 	}
 
-	if expr, err := r.transpileFilter(filter); err != nil {
+	if expr, err := r.TranspileFilter(filter); err != nil {
 		return nil, 0, "", err
 	} else if expr != nil {
 		queryBuilder.Where("(?)", expr)
 	}
 
-	var createTime time.Time
 	rows, err := queryBuilder.Rows()
 	if err != nil {
 		return nil, 0, "", err
 	}
 	defer rows.Close()
 
-	for rows.Next() {
-		var item *datamodel.PipelineRelease
-		if err = db.ScanRows(rows, &item); err != nil {
-			return nil, 0, "", err
-		}
-		createTime = item.CreateTime
-		pipelineReleases = append(pipelineReleases, item)
+	result := queryBuilder.Find(&pipelineReleases)
+	if result.Error != nil {
+		return nil, 0, "", result.Error
 	}
 
 	if len(pipelineReleases) > 0 {
+		createTime := pipelineReleases[len(pipelineReleases)-1].CreateTime
 		lastUID := (pipelineReleases)[len(pipelineReleases)-1].UID
 		lastItem := &datamodel.PipelineRelease{}
 		db := r.checkPinnedUser(ctx, r.db, "pipeline_release")
@@ -571,7 +564,7 @@ func (r *repository) GetNamespacePipelineReleaseByID(ctx context.Context, ownerP
 
 	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Where("id = ? AND pipeline_uid = ?", id, pipelineUID)
 	if isBasicView {
-		queryBuilder.Omit("pipeline_release.recipe")
+		queryBuilder.Omit("pipeline_release.recipe_yaml")
 	}
 	var pipelineRelease datamodel.PipelineRelease
 	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
@@ -586,7 +579,7 @@ func (r *repository) UpdateNamespacePipelineReleaseByID(ctx context.Context, own
 	r.pinUser(ctx, "pipeline_release")
 	db := r.checkPinnedUser(ctx, r.db, "pipeline_release")
 
-	if result := db.Model(&datamodel.PipelineRelease{}).
+	if result := db.Model(pipelineRelease).
 		Where("id = ? AND pipeline_uid = ?", id, pipelineUID).
 		Updates(pipelineRelease); result.Error != nil {
 		return result.Error
@@ -637,7 +630,7 @@ func (r *repository) GetLatestNamespacePipelineRelease(ctx context.Context, owne
 
 	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Where("pipeline_uid = ?", pipelineUID).Order("id DESC")
 	if isBasicView {
-		queryBuilder.Omit("pipeline_release.recipe")
+		queryBuilder.Omit("pipeline_release.recipe_yaml")
 	}
 	var pipelineRelease datamodel.PipelineRelease
 	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
@@ -672,7 +665,7 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 	where := ""
 	whereArgs := []any{}
 
-	expr, err := r.transpileFilter(p.Filter)
+	expr, err := r.TranspileFilter(p.Filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -721,7 +714,7 @@ func (r *repository) GetDefinitionByUID(_ context.Context, uid uuid.UUID) (*data
 
 	if result := r.db.Model(record).Where("uid = ?", uid.String()).First(record); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			return nil, ErrNotFound
+			return nil, errdomain.ErrNotFound
 		}
 
 		return nil, result.Error
