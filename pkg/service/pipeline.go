@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"go.uber.org/zap"
 	"slices"
 	"strings"
 	"sync"
@@ -997,7 +997,7 @@ func (s *service) triggerPipelineWithStream(
 	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
 
 	if userUID == uuid.Nil {
-		logger.Error("triggerPipelineWithStream: failed to get userUID from request header")
+		logger.Debug("triggerPipelineWithStream: failed to get userUID from request header")
 	}
 
 	we, err := s.temporalClient.ExecuteWorkflow(
@@ -1026,11 +1026,11 @@ func (s *service) triggerPipelineWithStream(
 	}
 
 	go func() {
-		const interval = 300 * time.Millisecond
+		const interval = 1 * time.Millisecond
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 
-		ctxQ, cancel := context.WithTimeout(context.Background(), time.Second*30)
+		ctxQ, cancel := context.WithTimeout(context.Background(), time.Second*60)
 		defer cancel()
 
 		for {
@@ -1038,58 +1038,29 @@ func (s *service) triggerPipelineWithStream(
 			case <-ticker.C:
 				queryResult, err := s.temporalClient.QueryWorkflow(ctxQ, we.GetID(), we.GetRunID(), "workflowStatusQuery")
 				if err != nil {
-					log.Println("Error querying workflow status: %v", err)
+					logger.Error("Error querying workflow status: %v", zap.Error(err))
 					return
 				}
 
 				var status worker.WorkFlowSignal
 				if err := queryResult.Get(&status); err != nil {
-					log.Println("Error querying workflow Get status: %v", err)
+					logger.Error("Error querying workflow Get status: %v", zap.Error(err))
 					return
 				}
 
-				fmt.Printf("DEBUG: Workflow status: %s\n", status.Status)
-
 				switch status.Status {
 				case "step":
-					//rJson, err := json.MarshalIndent(r, "", "  ")
-					//if err != nil {
-					//	log.Println("Error marshalling Recipe struct: %v", err)
-					//} else {
-					//	fmt.Println("DEBUG r:", string(rJson))
-					//}
-
-					fmt.Println("DEBUG: status Workflow step Param", status.ID)
-					//nn := make(map[string]*datamodel.Output)
-					//// Copy each key-value pair from r.Output to newMap
-					//for k, v := range r.Output {
-					//	nn[k] = v
-					//	fmt.Println("Copied:", k, v)
-					//}
-					////fmt.Println("New Map:", nn)
-					//
-					//fmt.Println(r.Output["response_1"])
 					path := status.ID
 					data, metadata, err := s.getOutputsAndMetadataStream(ctx, pipelineTriggerID, r, returnTraces, path)
 					if err != nil {
 						panic(err)
 					}
 
-					fmt.Println("DEBUG data and metadata from getOutputsAndMetadataStream:", data, metadata)
-
-					//data, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
-					//if err != nil {
-					//	log.Println("getOutputsAndMetadata:", err)
-					//	continue
-					//}
-
-					fmt.Println("DEBUG sending data from getOutputsAndMetadataStream:", data)
 					stream <- TriggerResult{
 						Struct:   data,
 						Metadata: metadata,
 					}
 				case "completed":
-					log.Println("DEBUG: status Workflow completed")
 					close(stream)
 					return
 				}
@@ -1223,31 +1194,30 @@ func (s *service) getOutputsAndMetadataStream(ctx context.Context, pipelineTrigg
 		return nil, nil, fmt.Errorf("LoadMemoryByTriggerID: %w", err)
 	}
 
+	if memory == nil {
+		return nil, nil, fmt.Errorf("memory is nil")
+	}
+
 	pipelineOutputs := make([]*structpb.Struct, len(memory))
 
 	for idx, mem := range memory {
-		fmt.Printf("Memory[%d]:\n", idx)
-		fmt.Printf("  Variable: %+v\n", mem.Variable)
-		fmt.Printf("  Secret: %+v\n", mem.Secret)
-		for key, component := range mem.Component {
-			fmt.Printf("  Component Key: %s\n", key)
-			fmt.Printf("  Component Value: %+v\n", component)
-			fmt.Printf("    Input: %+v\n", component.Input)
-			fmt.Printf("    Output: %+v\n", component.Output)
-			fmt.Printf("    Element: %+v\n", component.Element)
-			fmt.Printf("    Status: %+v\n", *component.Status)
-		}
 		pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
 
 		for k, v := range r.Output {
 			input := v.Value[2:]
 			input = input[:len(input)-1]
 			input = strings.TrimSpace(input)
+
+			var val any
 			if strings.Contains(input, path) {
-				val, err := recipe.TraverseBinding(mem, input)
-				if err != nil {
-					fmt.Println("TraverseBinding error:", err)
-					continue
+				if input == recipe.SegSecret+"."+constant.GlobalSecretKey {
+					val = componentbase.SecretKeyword
+				} else {
+					val, err = recipe.TraverseBinding(mem, input)
+					if err != nil {
+						// If the path is not found, we should continue to the next output
+						continue
+					}
 				}
 
 				structVal, err := structpb.NewValue(val)
@@ -1266,8 +1236,15 @@ func (s *service) getOutputsAndMetadataStream(ctx context.Context, pipelineTrigg
 		if err != nil {
 			return nil, nil, err
 		}
-		metadata = &pipelinepb.TriggerMetadata{
-			Traces: traces,
+
+		// Find the trace that matches the component
+		for compID, trace := range traces {
+			if strings.Contains(compID, path) {
+				metadata = &pipelinepb.TriggerMetadata{
+					Traces: map[string]*pipelinepb.Trace{compID: trace},
+				}
+				break // We only want the first matching trace
+			}
 		}
 	}
 
@@ -1298,8 +1275,6 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 	ownerPermalink := ns.Permalink()
 
-	fmt.Println("TriggerNamespacePipelineByID", ownerPermalink, id, ns, data, pipelineTriggerID, returnTraces)
-
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
 		return nil, nil, errdomain.ErrNotFound
@@ -1315,8 +1290,6 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 func (s *service) TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error {
 	ownerPermalink := ns.Permalink()
-
-	fmt.Println("TriggerNamespacePipelineByIDWithStream", ownerPermalink, id, ns, data, pipelineTriggerID, returnTraces)
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {

@@ -108,7 +108,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			if len(msg.Status) == 0 {
 				return WorkFlowSignal{}, nil
 			}
-			fmt.Println("sChan channel received message:", msg)
 			return msg, nil
 		case <-time.After(time.Second * 3):
 			return WorkFlowSignal{Status: "timeout"}, nil
@@ -295,9 +294,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				param.MemoryStorageKey.Components[batchIdx][compID] = fmt.Sprintf("%s:%d:%s:%s", workflowID, batchIdx, recipe.SegComponent, compID)
 			}
 		}
-		workflow.Sleep(ctx, time.Millisecond*10) // if we don't sleep, the workflow will be too fast and the query handler will not be able to catch up
-
-		//workflow.Sleep(ctx, time.Duration(rand.Intn(1)+3)*time.Second)
+		workflow.Sleep(ctx, time.Millisecond) // if we don't sleep, there will be race condition between Redis write and read
 	}
 
 	sChan <- WorkFlowSignal{Status: "completed"}

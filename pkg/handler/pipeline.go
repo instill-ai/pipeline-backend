@@ -886,12 +886,6 @@ type TriggerNamespacePipelineRequestInterface interface {
 	GetData() []*pb.TriggerData
 }
 
-func printCtxValues(ctx map[string]interface{}) {
-	for key, value := range ctx {
-		fmt.Printf("%s: %v\n", key, value)
-	}
-}
-
 func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.TriggerUserPipelineRequest) (resp *pb.TriggerUserPipelineResponse, err error) {
 	resp = &pb.TriggerUserPipelineResponse{}
 	resp.Outputs, resp.Metadata, err = h.triggerNamespacePipeline(ctx, req)
@@ -924,7 +918,6 @@ func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelin
 				// resultChan is closed, exit the loop
 				return nil
 			}
-			fmt.Println("Sending result", result.Struct, result.Metadata)
 			err := server.Send(&pb.TriggerUserPipelineWithStreamResponse{
 				Outputs:  result.Struct,
 				Metadata: result.Metadata,
