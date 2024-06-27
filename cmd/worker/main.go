@@ -160,7 +160,6 @@ func main() {
 	w.RegisterActivity(cw.PreIteratorActivity)
 	w.RegisterActivity(cw.PostIteratorActivity)
 	w.RegisterActivity(cw.UsageCollectActivity)
-	w.RegisterActivity(cw.UsageCheckActivity)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())

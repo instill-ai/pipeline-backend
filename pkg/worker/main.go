@@ -25,7 +25,6 @@ type Worker interface {
 	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 	UsageCollectActivity(ctx context.Context, param *UsageCollectActivityParam) error
-	UsageCheckActivity(ctx context.Context, param *UsageCheckActivityParam) error
 }
 
 // worker represents resources required to run Temporal workflow and activity

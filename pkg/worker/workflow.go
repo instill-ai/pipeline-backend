@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"go.uber.org/zap"
 	"go/parser"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/gofrs/uuid"
 	"go.opentelemetry.io/otel"
@@ -25,14 +26,14 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/errmsg"
 
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
 type TriggerPipelineWorkflowParam struct {
 	BatchSize        int
 	MemoryStorageKey *recipe.BatchMemoryKey
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-	Mode             mgmtPB.Mode
+	Mode             mgmtpb.Mode
 	IsIterator       bool
 	IsStreaming      bool
 }
@@ -149,21 +150,21 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		defer close(sChan)
 	}
 
-	var ownerType mgmtPB.OwnerType
+	var ownerType mgmtpb.OwnerType
 	switch param.SystemVariables.PipelineOwnerType {
 	case resource.Organization:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
+		ownerType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	case resource.User:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
+		ownerType = mgmtpb.OwnerType_OWNER_TYPE_USER
 	default:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
+		ownerType = mgmtpb.OwnerType_OWNER_TYPE_UNSPECIFIED
 	}
 
 	dataPoint := utils.PipelineUsageMetricData{
 		OwnerUID:           param.SystemVariables.PipelineOwnerUID.String(),
 		OwnerType:          ownerType,
 		UserUID:            param.SystemVariables.PipelineUserUID.String(),
-		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
+		UserType:           mgmtpb.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		TriggerMode:        param.Mode,
 		PipelineID:         param.SystemVariables.PipelineID,
 		PipelineUID:        param.SystemVariables.PipelineUID.String(),
@@ -278,7 +279,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							BatchSize:        preIteratorResult.ElementSize[iter],
 							MemoryStorageKey: preIteratorResult.MemoryStorageKeys[iter],
 							SystemVariables:  param.SystemVariables,
-							Mode:             mgmtPB.Mode_MODE_SYNC,
+							Mode:             mgmtpb.Mode_MODE_SYNC,
 						}))
 
 				}
@@ -333,7 +334,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
+	dataPoint.Status = mgmtpb.Status_STATUS_COMPLETED
 
 	if !param.IsIterator {
 		// TODO: we should check whether to collect failed component or not
@@ -762,7 +763,7 @@ func (w *worker) processSetup(batchMemory []*recipe.Memory, setup map[string]any
 func (w *worker) writeErrorDataPoint(ctx context.Context, err error, span trace.Span, startTime time.Time, dataPoint *utils.PipelineUsageMetricData) {
 	span.SetStatus(1, err.Error())
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-	dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
+	dataPoint.Status = mgmtpb.Status_STATUS_ERRORED
 	_ = w.writeNewDataPoint(ctx, *dataPoint)
 }
 
@@ -790,7 +791,6 @@ const (
 	ConnectorActivityError    = "ConnectorActivityError"
 	PreIteratorActivityError  = "PreIteratorActivityError"
 	PostIteratorActivityError = "PostIteratorActivityError"
-	UsageCheckActivityError   = "UsageCheckActivityError"
 	UsageCollectActivityError = "UsageCollectActivityError"
 )
 
