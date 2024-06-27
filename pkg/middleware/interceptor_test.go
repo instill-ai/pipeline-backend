@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	qt "github.com/frankban/quicktest"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/x/errmsg"
 	"github.com/jackc/pgconn"
 	"google.golang.org/grpc/codes"
@@ -71,6 +72,12 @@ func TestAsGRPCError(t *testing.T) {
 			),
 			wantCode:    codes.FailedPrecondition,
 			wantMessage: "Invalid recipe in pipeline",
+		},
+		{
+			name:        "unauthorized",
+			in:          fmt.Errorf("checking requester permission: %w", errdomain.ErrUnauthorized),
+			wantCode:    codes.PermissionDenied,
+			wantMessage: "checking requester permission: unauthorized",
 		},
 	}
 

@@ -92,6 +92,22 @@ type Pipeline struct {
 	NumberOfClones int
 }
 
+// IsPublic returns the visibility of the pipeline based on its sharing
+// configuration.
+func (p Pipeline) IsPublic() bool {
+	publicSharing, hasPublicSharing := p.Sharing.Users["*/*"]
+	if !hasPublicSharing {
+		return false
+	}
+
+	return publicSharing.Enabled
+}
+
+// OwnerUID returns the UID of the pipeline owner.
+func (p Pipeline) OwnerUID() uuid.UUID {
+	return uuid.FromStringOrNil(strings.Split(p.Owner, "/")[1])
+}
+
 type Tag struct {
 	PipelineUID string
 	TagName     string

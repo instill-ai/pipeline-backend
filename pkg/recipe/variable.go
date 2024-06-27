@@ -12,25 +12,38 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 )
 
+// SystemVariables contain information about a pipeline trigger.
 type SystemVariables struct {
-	PipelineID          string                 `json:"__PIPELINE_ID"`
-	PipelineUID         uuid.UUID              `json:"__PIPELINE_UID"`
-	PipelineReleaseID   string                 `json:"__PIPELINE_RELEASE_ID"`
-	PipelineReleaseUID  uuid.UUID              `json:"__PIPELINE_RELEASE_UID"`
-	PipelineRecipe      *datamodel.Recipe      `json:"__PIPELINE_RECIPE"`
-	PipelineOwnerType   resource.NamespaceType `json:"__PIPELINE_OWNER_TYPE"`
-	PipelineOwnerUID    uuid.UUID              `json:"__PIPELINE_OWNER_UID"`
-	PipelineUserUID     uuid.UUID              `json:"__PIPELINE_USER_UID"`
-	HeaderAuthorization string                 `json:"__PIPELINE_HEADER_AUTHORIZATION"`
-	ModelBackend        string                 `json:"__MODEL_BACKEND"`
-	MgmtBackend         string                 `json:"__MGMT_BACKEND"`
+	PipelineTriggerID  string                 `json:"__PIPELINE_TRIGGER_ID"`
+	PipelineID         string                 `json:"__PIPELINE_ID"`
+	PipelineUID        uuid.UUID              `json:"__PIPELINE_UID"`
+	PipelineReleaseID  string                 `json:"__PIPELINE_RELEASE_ID"`
+	PipelineReleaseUID uuid.UUID              `json:"__PIPELINE_RELEASE_UID"`
+	PipelineRecipe     *datamodel.Recipe      `json:"__PIPELINE_RECIPE"`
+	PipelineOwnerType  resource.NamespaceType `json:"__PIPELINE_OWNER_TYPE"`
+	PipelineOwnerUID   uuid.UUID              `json:"__PIPELINE_OWNER_UID"`
+
+	// PipelineUserUID is the authenticated user executing a pipeline.
+	PipelineUserUID uuid.UUID `json:"__PIPELINE_USER_UID"`
+	// PipelineRequesterUID is the entity requesting the pipeline execution.
+	PipelineRequesterUID uuid.UUID `json:"__PIPELINE_REQUESTER_UID"`
+
+	HeaderAuthorization string `json:"__PIPELINE_HEADER_AUTHORIZATION"`
+	ModelBackend        string `json:"__MODEL_BACKEND"`
+	MgmtBackend         string `json:"__MGMT_BACKEND"`
 }
 
-// System variables are available to all component
+// GenerateSystemVariables fills SystemVariable fields with information from
+// the context and instance configuration.
 func GenerateSystemVariables(ctx context.Context, sysVar SystemVariables) (map[string]any, error) {
-
-	if sysVar.PipelineUserUID == uuid.Nil {
+	if sysVar.PipelineUserUID.IsNil() {
 		sysVar.PipelineUserUID = uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+	}
+	if sysVar.PipelineRequesterUID.IsNil() {
+		sysVar.PipelineRequesterUID = uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
+		if sysVar.PipelineRequesterUID.IsNil() {
+			sysVar.PipelineRequesterUID = sysVar.PipelineUserUID
+		}
 	}
 	if sysVar.HeaderAuthorization == "" {
 		sysVar.HeaderAuthorization = resource.GetRequestSingleHeader(ctx, "Authorization")

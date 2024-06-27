@@ -133,11 +133,11 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 			return nil, err
 		}
 		if !granted {
-			return nil, ErrNoPermission
+			return nil, errdomain.ErrUnauthorized
 		}
 	} else {
 		if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
-			return nil, ErrNoPermission
+			return nil, errdomain.ErrUnauthorized
 		}
 	}
 
@@ -306,7 +306,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNoPermission
+		return nil, errdomain.ErrUnauthorized
 	}
 
 	var existingPipeline *datamodel.Pipeline
@@ -371,7 +371,7 @@ func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.N
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return err
 	} else if !granted {
-		return ErrNoPermission
+		return errdomain.ErrUnauthorized
 	}
 
 	// TODO: pagination
@@ -514,7 +514,7 @@ func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "executor"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNoPermission
+		return nil, errdomain.ErrUnauthorized
 	}
 
 	validateErrs, err := s.checkRecipe(dbPipeline.Recipe)
@@ -544,7 +544,7 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNoPermission
+		return nil, errdomain.ErrUnauthorized
 	}
 
 	if err := s.repository.UpdateNamespacePipelineIDByID(ctx, ownerPermalink, id, newID); err != nil {
@@ -756,7 +756,7 @@ func (s *service) CreateNamespacePipelineRelease(ctx context.Context, ns resourc
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNoPermission
+		return nil, errdomain.ErrUnauthorized
 	}
 
 	dbPipelineReleaseToCreate, err := s.converter.ConvertPipelineReleaseToDB(ctx, pipelineUID, pipelineRelease)
@@ -842,7 +842,7 @@ func (s *service) UpdateNamespacePipelineReleaseByID(ctx context.Context, ns res
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNoPermission
+		return nil, errdomain.ErrUnauthorized
 	}
 
 	if _, err := s.GetNamespacePipelineReleaseByID(ctx, ns, pipelineUID, id, pipelinepb.Pipeline_VIEW_BASIC); err != nil {
@@ -882,7 +882,7 @@ func (s *service) UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns r
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return nil, err
 	} else if !granted {
-		return nil, ErrNoPermission
+		return nil, errdomain.ErrUnauthorized
 	}
 
 	// Validation: Pipeline existence
@@ -920,7 +920,7 @@ func (s *service) DeleteNamespacePipelineReleaseByID(ctx context.Context, ns res
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "admin"); err != nil {
 		return err
 	} else if !granted {
-		return ErrNoPermission
+		return errdomain.ErrUnauthorized
 	}
 
 	return s.repository.DeleteNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id)
@@ -942,7 +942,7 @@ func (s *service) RestoreNamespacePipelineReleaseByID(ctx context.Context, ns re
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", uuid.FromStringOrNil(pipeline.GetUid()), "admin"); err != nil {
 		return err
 	} else if !granted {
-		return ErrNoPermission
+		return errdomain.ErrUnauthorized
 	}
 
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, false)
@@ -996,6 +996,10 @@ func (s *service) triggerPipeline(
 	}
 
 	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+	requesterUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
+	if requesterUID.IsNil() {
+		requesterUID = userUID
+	}
 
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
@@ -1005,15 +1009,17 @@ func (s *service) triggerPipeline(
 			BatchSize:        len(pipelineData),
 			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
-				PipelineID:          pipelineID,
-				PipelineUID:         pipelineUID,
-				PipelineReleaseID:   pipelineReleaseID,
-				PipelineReleaseUID:  pipelineReleaseUID,
-				PipelineRecipe:      r,
-				PipelineOwnerType:   ns.NsType,
-				PipelineOwnerUID:    ns.NsUID,
-				PipelineUserUID:     userUID,
-				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+				PipelineTriggerID:    pipelineTriggerID,
+				PipelineID:           pipelineID,
+				PipelineUID:          pipelineUID,
+				PipelineReleaseID:    pipelineReleaseID,
+				PipelineReleaseUID:   pipelineReleaseUID,
+				PipelineRecipe:       r,
+				PipelineOwnerType:    ns.NsType,
+				PipelineOwnerUID:     ns.NsUID,
+				PipelineUserUID:      userUID,
+				PipelineRequesterUID: requesterUID,
+				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode: mgmtpb.Mode_MODE_SYNC,
 		})
@@ -1070,6 +1076,11 @@ func (s *service) triggerAsyncPipeline(
 	}
 
 	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+	requesterUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
+	if requesterUID.IsNil() {
+		requesterUID = userUID
+	}
+
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1078,15 +1089,17 @@ func (s *service) triggerAsyncPipeline(
 			BatchSize:        len(pipelineData),
 			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
-				PipelineID:          pipelineID,
-				PipelineUID:         pipelineUID,
-				PipelineReleaseID:   pipelineReleaseID,
-				PipelineReleaseUID:  pipelineReleaseUID,
-				PipelineRecipe:      r,
-				PipelineOwnerType:   ns.NsType,
-				PipelineOwnerUID:    ns.NsUID,
-				PipelineUserUID:     userUID,
-				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+				PipelineTriggerID:    pipelineTriggerID,
+				PipelineID:           pipelineID,
+				PipelineUID:          pipelineUID,
+				PipelineReleaseID:    pipelineReleaseID,
+				PipelineReleaseUID:   pipelineReleaseUID,
+				PipelineRecipe:       r,
+				PipelineOwnerType:    ns.NsType,
+				PipelineOwnerUID:     ns.NsUID,
+				PipelineUserUID:      userUID,
+				PipelineRequesterUID: requesterUID,
+				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode: mgmtpb.Mode_MODE_ASYNC,
 		})
@@ -1143,28 +1156,91 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID s
 	return pipelineOutputs, metadata, nil
 }
 
-func (s *service) checkTriggerPermission(ctx context.Context, pipelineUID uuid.UUID) (isAdmin bool, err error) {
+// checkRequesterPermission validates that the authenticated user can make
+// requests on behalf of the resource identified by the requester UID.
+func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamodel.Pipeline) error {
+	authType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
+	if authType != "user" {
+		// Only authenticated users can switch namespaces.
+		return errdomain.ErrUnauthorized
+	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipelineUID, "reader"); err != nil {
+	requester := resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey)
+	authenticatedUser := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	if requester == "" || authenticatedUser == requester {
+		// Request doesn't contain impersonation.
+		return nil
+	}
+
+	// The only impersonation that's currently implemented is switching to an
+	// organization namespace.
+	isMember, err := s.aclClient.CheckPermission(ctx, "organization", uuid.FromStringOrNil(requester), "member")
+	if err != nil {
+		return errmsg.AddMessage(
+			fmt.Errorf("checking organization membership: %w", err),
+			"Couldn't check organization membership.",
+		)
+	}
+
+	if !isMember {
+		return fmt.Errorf("authenticated user doesn't belong to requester organization: %s", errdomain.ErrUnauthorized)
+	}
+
+	if pipeline.IsPublic() {
+		// Public pipelines can be always be triggered as an organization.
+		return nil
+	}
+
+	if pipeline.OwnerUID().String() == requester {
+		// Organizations can trigger their private pipelines.
+		return nil
+	}
+
+	// Organizations can only trigger external private pipelines through a
+	// shareable link.
+	canTrigger, err := s.aclClient.CheckLinkPermission(ctx, "pipeline", pipeline.UID, "executor")
+	if err != nil {
+		return errmsg.AddMessage(
+			fmt.Errorf("checking shareable link permissions: %w", err),
+			"Couldn't validate shareable link.",
+		)
+	}
+
+	if !canTrigger {
+		return fmt.Errorf("organization can't trigger private external pipeline: %w", errdomain.ErrUnauthorized)
+	}
+
+	return nil
+}
+
+func (s *service) checkTriggerPermission(ctx context.Context, pipeline *datamodel.Pipeline) (isAdmin bool, err error) {
+	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipeline.UID, "reader"); err != nil {
 		return false, err
 	} else if !granted {
 		return false, errdomain.ErrNotFound
 	}
 
-	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipelineUID, "executor"); err != nil {
+	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", pipeline.UID, "executor"); err != nil {
 		return false, err
 	} else if !granted {
-		return false, ErrNoPermission
+		return false, errdomain.ErrUnauthorized
 	}
 
-	if isAdmin, err = s.aclClient.CheckPermission(ctx, "pipeline", pipelineUID, "admin"); err != nil {
+	// For now, impersonation is only implemented for pipeline triggers. When
+	// this is used in other entrypoints, the requester permission should be
+	// checked at a higher level (e.g. handler or middleware).
+	if err := s.checkRequesterPermission(ctx, pipeline); err != nil {
+		return false, fmt.Errorf("checking requester permission: %w", err)
+	}
+
+	if isAdmin, err = s.aclClient.CheckPermission(ctx, "pipeline", pipeline.UID, "admin"); err != nil {
 		return false, err
 	}
+
 	return isAdmin, nil
 }
 
 func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
-
 	ownerPermalink := ns.Permalink()
 
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
@@ -1172,7 +1248,7 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 		return nil, nil, errdomain.ErrNotFound
 	}
 
-	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
+	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1188,7 +1264,7 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 	if err != nil {
 		return nil, errdomain.ErrNotFound
 	}
-	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
+	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline)
 	if err != nil {
 		return nil, err
 	}
@@ -1206,7 +1282,7 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, errdomain.ErrNotFound
 	}
 
-	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
+	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1228,7 +1304,7 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, errdomain.ErrNotFound
 	}
 
-	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
+	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline)
 	if err != nil {
 		return nil, err
 	}

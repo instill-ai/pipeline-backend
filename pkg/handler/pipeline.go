@@ -954,7 +954,6 @@ func (h *PublicHandler) TriggerOrganizationPipeline(ctx context.Context, req *pb
 }
 
 func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req TriggerNamespacePipelineRequestInterface) (outputs []*structpb.Struct, metadata *pb.TriggerMetadata, err error) {
-
 	eventName := "TriggerNamespacePipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
