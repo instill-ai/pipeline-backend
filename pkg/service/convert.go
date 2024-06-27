@@ -444,8 +444,9 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		OwnerName:   ownerName,
 		Tags:        tags,
 		Stats: &pb.Pipeline_Stats{
-			NumberOfRuns: int32(dbPipeline.NumberOfRuns),
-			LastRunTime:  timestamppb.New(dbPipeline.LastRunTime),
+			NumberOfRuns:   int32(dbPipeline.NumberOfRuns),
+			NumberOfClones: int32(dbPipeline.NumberOfClones),
+			LastRunTime:    timestamppb.New(dbPipeline.LastRunTime),
 		},
 	}
 

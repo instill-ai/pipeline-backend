@@ -241,6 +241,7 @@ func main() {
 		temporalClient,
 		&aclClient,
 		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repository),
+		mgmtPrivateServiceClient,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)

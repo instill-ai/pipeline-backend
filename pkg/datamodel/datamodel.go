@@ -84,11 +84,12 @@ type Pipeline struct {
 	Tags              []*Tag
 
 	// Note:
-	// We store the NumberOfRuns and LastRunTime in this table to
-	// make it easier to sort the pipelines. We should develop an approach
-	// to sync the data between InfluxDB and here.
-	NumberOfRuns int
-	LastRunTime  time.Time
+	// We store the NumberOfRuns, NumberOfClones and LastRunTime in this table
+	// to make it easier to sort the pipelines. We should develop an approach to
+	// sync the data between InfluxDB and here.
+	LastRunTime    time.Time
+	NumberOfRuns   int
+	NumberOfClones int
 }
 
 type Tag struct {
