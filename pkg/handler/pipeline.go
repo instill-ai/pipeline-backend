@@ -796,21 +796,23 @@ func (h *PublicHandler) renameNamespacePipeline(ctx context.Context, req RenameN
 type CloneNamespacePipelineRequestInterface interface {
 	GetName() string
 	GetTarget() string
+	GetDescription() string
+	GetSharing() *pb.Sharing
 }
 
 func (h *PublicHandler) CloneUserPipeline(ctx context.Context, req *pb.CloneUserPipelineRequest) (resp *pb.CloneUserPipelineResponse, err error) {
 	resp = &pb.CloneUserPipelineResponse{}
-	resp.Pipeline, err = h.cloneNamespacePipeline(ctx, req)
+	err = h.cloneNamespacePipeline(ctx, req)
 	return resp, err
 }
 
 func (h *PublicHandler) CloneOrganizationPipeline(ctx context.Context, req *pb.CloneOrganizationPipelineRequest) (resp *pb.CloneOrganizationPipelineResponse, err error) {
 	resp = &pb.CloneOrganizationPipelineResponse{}
-	resp.Pipeline, err = h.cloneNamespacePipeline(ctx, req)
+	err = h.cloneNamespacePipeline(ctx, req)
 	return resp, err
 }
 
-func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNamespacePipelineRequestInterface) (*pb.Pipeline, error) {
+func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNamespacePipelineRequestInterface) error {
 
 	eventName := "CloneNamespacePipeline"
 
@@ -825,23 +827,17 @@ func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNam
 	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, err
+		return err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, err
+		return err
 	}
 
-	targetNS, targetID, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetTarget())
+	pbPipeline, err := h.service.CloneNamespacePipeline(ctx, ns, id, req.GetTarget(), req.GetDescription(), req.GetSharing())
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, err
-	}
-
-	pbPipeline, err := h.service.CloneNamespacePipeline(ctx, ns, id, targetNS, targetID)
-	if err != nil {
-		span.SetStatus(1, err.Error())
-		return nil, err
+		return err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -851,7 +847,60 @@ func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNam
 		eventName,
 		customotel.SetEventResource(pbPipeline),
 	)))
-	return pbPipeline, nil
+	return nil
+}
+
+func (h *PublicHandler) CloneUserPipelineRelease(ctx context.Context, req *pb.CloneUserPipelineReleaseRequest) (resp *pb.CloneUserPipelineReleaseResponse, err error) {
+	resp = &pb.CloneUserPipelineReleaseResponse{}
+	err = h.cloneNamespacePipelineRelease(ctx, req)
+	return resp, err
+}
+
+func (h *PublicHandler) CloneOrganizationPipelineRelease(ctx context.Context, req *pb.CloneOrganizationPipelineReleaseRequest) (resp *pb.CloneOrganizationPipelineReleaseResponse, err error) {
+	resp = &pb.CloneOrganizationPipelineReleaseResponse{}
+	err = h.cloneNamespacePipelineRelease(ctx, req)
+	return resp, err
+}
+
+func (h *PublicHandler) cloneNamespacePipelineRelease(ctx context.Context, req CloneNamespacePipelineRequestInterface) error {
+
+	eventName := "CloneNamespacePipeline"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(ctx, req.GetName())
+	if err != nil {
+		return err
+	}
+	if err := authenticateUser(ctx, false); err != nil {
+		span.SetStatus(1, err.Error())
+		return err
+	}
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pb.Pipeline_VIEW_BASIC)
+	if err != nil {
+		return err
+	}
+
+	pbPipeline, err := h.service.CloneNamespacePipelineRelease(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), releaseID, req.GetTarget(), req.GetDescription(), req.GetSharing())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return err
+	}
+
+	logger.Info(string(customotel.NewLogMessage(
+		ctx,
+		span,
+		logUUID.String(),
+		eventName,
+		customotel.SetEventResource(pbPipeline),
+	)))
+	return nil
 }
 
 func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (resource.Namespace, string, *pb.Pipeline, bool, error) {
