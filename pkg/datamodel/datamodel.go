@@ -38,21 +38,25 @@ type BaseDynamic struct {
 
 // BeforeCreate will set a UUID rather than numeric ID.
 func (base *BaseDynamic) BeforeCreate(db *gorm.DB) error {
-	uuid, err := uuid.NewV4()
-	if err != nil {
-		return err
+	if base.UID.IsNil() {
+		uuid, err := uuid.NewV4()
+		if err != nil {
+			return err
+		}
+		db.Statement.SetColumn("UID", uuid)
 	}
-	db.Statement.SetColumn("UID", uuid)
 	return nil
 }
 
 // BeforeCreate will set a UUID rather than numeric ID.
 func (base *BaseDynamicHardDelete) BeforeCreate(db *gorm.DB) error {
-	uuid, err := uuid.NewV4()
-	if err != nil {
-		return err
+	if base.UID.IsNil() {
+		uuid, err := uuid.NewV4()
+		if err != nil {
+			return err
+		}
+		db.Statement.SetColumn("UID", uuid)
 	}
-	db.Statement.SetColumn("UID", uuid)
 	return nil
 }
 
@@ -193,6 +197,23 @@ func convertRecipeToRecipeYAML(recipe *Recipe) (string, error) {
 }
 
 func (p *Pipeline) BeforeSave(db *gorm.DB) (err error) {
+
+	// In the future, we'll make YAML the only input data type for pipeline
+	// recipes. Until then, if the YAML recipe is empty, we'll use the JSON
+	// recipe as the input data. Once the JSON recipe becomes output-only, this
+	// condition will no longer be necessary.
+	if p.RecipeYAML == "" {
+		p.RecipeYAML, err = convertRecipeToRecipeYAML(p.Recipe)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (p *PipelineRelease) BeforeSave(db *gorm.DB) (err error) {
 
 	// In the future, we'll make YAML the only input data type for pipeline
 	// recipes. Until then, if the YAML recipe is empty, we'll use the JSON

@@ -8,9 +8,11 @@ import (
 	"go.opentelemetry.io/otel"
 
 	"github.com/instill-ai/pipeline-backend/cmd/init/definitionupdater"
+	"github.com/instill-ai/pipeline-backend/cmd/init/presetdownloader"
 	"github.com/instill-ai/pipeline-backend/config"
-	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+
+	database "github.com/instill-ai/pipeline-backend/pkg/db"
 )
 
 func main() {
@@ -37,4 +39,8 @@ func main() {
 	if err := definitionupdater.UpdateComponentDefinitionIndex(ctx, repo); err != nil {
 		log.Fatal(err)
 	}
+	if err := presetdownloader.DownloadPresetPipelines(ctx, repo); err != nil {
+		log.Fatal(err)
+	}
+
 }
