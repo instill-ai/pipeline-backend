@@ -32,6 +32,13 @@ type AppConfig struct {
 	MgmtBackend  MgmtBackendConfig  `koanf:"mgmtbackend"`
 	ModelBackend ModelBackendConfig `koanf:"modelbackend"`
 	OpenFGA      OpenFGAConfig      `koanf:"openfga"`
+	InstillCloud InstillCloudConfig `koanf:"instillcloud"`
+}
+
+// InstillCloud config
+type InstillCloudConfig struct {
+	Host string `koanf:"host"`
+	Port int    `koanf:"port"`
 }
 
 // OpenFGA config

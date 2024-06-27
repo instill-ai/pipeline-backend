@@ -71,3 +71,6 @@ modelbackend:
 openfga:
   host: openfga
   port: 8081
+instillcloud:
+  host: api.instill.tech
+  port: 443
