@@ -42,7 +42,7 @@ type Repository interface {
 	ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
-	CreateNamespacePipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error
+	CreateNamespacePipeline(ctx context.Context, pipeline *datamodel.Pipeline) error
 	ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error)
 	GetNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
@@ -121,7 +121,7 @@ func (r *repository) checkPinnedUser(ctx context.Context, db *gorm.DB, table str
 	if !errors.Is(r.redisClient.Get(ctx, fmt.Sprintf("db_pin_user:%s:%s", userUID, table)).Err(), redis.Nil) {
 		db = db.Clauses(dbresolver.Write)
 	}
-	return db
+	return db.WithContext(ctx)
 }
 
 func (r *repository) pinUser(ctx context.Context, table string) {
@@ -132,7 +132,7 @@ func (r *repository) pinUser(ctx context.Context, table string) {
 	_ = r.redisClient.Set(ctx, fmt.Sprintf("db_pin_user:%s:%s", userUID, table), time.Now(), time.Duration(config.Config.Database.Replica.ReplicationTimeFrame)*time.Second)
 }
 
-func (r *repository) CreateNamespacePipeline(ctx context.Context, ownerPermalink string, pipeline *datamodel.Pipeline) error {
+func (r *repository) CreateNamespacePipeline(ctx context.Context, pipeline *datamodel.Pipeline) error {
 	r.pinUser(ctx, "pipeline")
 	db := r.checkPinnedUser(ctx, r.db, "pipeline")
 
@@ -929,17 +929,15 @@ func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID string) (
 }
 
 func (r *repository) AddPipelineRuns(ctx context.Context, pipelineUID uuid.UUID) error {
+	db := r.db.WithContext(ctx)
 
-	db := r.db
-
-	if result := db.Model(&datamodel.Pipeline{}).
+	result := db.Model(&datamodel.Pipeline{}).
 		Where("uid = ?", pipelineUID).
-		UpdateColumn("last_run_time", time.Now()); result.Error != nil {
-		return result.Error
-	}
-	if result := db.Model(&datamodel.Pipeline{}).
-		Where("uid = ?", pipelineUID).
-		UpdateColumn("number_of_runs", gorm.Expr("number_of_runs + 1")); result.Error != nil {
+		UpdateColumns(map[string]any{
+			"last_run_time":  time.Now(),
+			"number_of_runs": gorm.Expr("number_of_runs + 1"),
+		})
+	if result.Error != nil {
 		return result.Error
 	}
 

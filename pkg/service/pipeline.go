@@ -154,7 +154,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		dbPipeline.ShareCode = generateShareCode()
 	}
 
-	if err := s.repository.CreateNamespacePipeline(ctx, ownerPermalink, dbPipeline); err != nil {
+	if err := s.repository.CreateNamespacePipeline(ctx, dbPipeline); err != nil {
 		return nil, err
 	}
 
