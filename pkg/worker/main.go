@@ -8,8 +8,8 @@ import (
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/pipeline-backend/pkg/usage"
 
 	componentbase "github.com/instill-ai/component/base"
 	componentstore "github.com/instill-ai/component/store"
@@ -24,16 +24,15 @@ type Worker interface {
 	ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error)
 	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
-	UsageCollectActivity(ctx context.Context, param *UsageCollectActivityParam) error
+	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 }
 
 // worker represents resources required to run Temporal workflow and activity
 type worker struct {
-	repository           repository.Repository
-	redisClient          *redis.Client
-	influxDBWriteClient  api.WriteAPI
-	component            *componentstore.Store
-	pipelineUsageHandler usage.PipelineUsageHandler
+	repository          repository.Repository
+	redisClient         *redis.Client
+	influxDBWriteClient api.WriteAPI
+	component           *componentstore.Store
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
@@ -43,17 +42,12 @@ func NewWorker(
 	i api.WriteAPI,
 	cs componentstore.ComponentSecrets,
 	uh map[string]componentbase.UsageHandlerCreator,
-	pipelineUsageHandler usage.PipelineUsageHandler,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
-	if pipelineUsageHandler == nil {
-		pipelineUsageHandler = usage.NewNoopPipelineUsageHandler()
-	}
 	return &worker{
-		repository:           r,
-		redisClient:          rd,
-		influxDBWriteClient:  i,
-		component:            componentstore.Init(logger, cs, uh),
-		pipelineUsageHandler: pipelineUsageHandler,
+		repository:          r,
+		redisClient:         rd,
+		influxDBWriteClient: i,
+		component:           componentstore.Init(logger, cs, uh),
 	}
 }

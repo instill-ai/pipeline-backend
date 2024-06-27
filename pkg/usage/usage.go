@@ -12,7 +12,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/repo"
@@ -420,23 +419,4 @@ func (u *usage) TriggerSingleReporter(ctx context.Context) {
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to trigger single reporter: %v\n", err))
 	}
-}
-
-type PipelineUsageHandler interface {
-	Check(ctx context.Context, vars recipe.SystemVariables, numComponents int) error
-	Collect(ctx context.Context, vars recipe.SystemVariables, numComponents int) error
-}
-
-type noopPipelineUsageHandler struct{}
-
-func (h *noopPipelineUsageHandler) Check(_ context.Context, _ recipe.SystemVariables, _ int) error {
-	return nil
-}
-func (h *noopPipelineUsageHandler) Collect(_ context.Context, _ recipe.SystemVariables, _ int) error {
-	return nil
-}
-
-// NewNoopPipelineUsageHandler is a no-op usage handler initializer.
-func NewNoopPipelineUsageHandler() PipelineUsageHandler {
-	return new(noopPipelineUsageHandler)
 }

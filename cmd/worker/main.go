@@ -148,7 +148,6 @@ func main() {
 		timeseries.WriteAPI(),
 		config.Config.Connector.Secrets,
 		map[string]componentbase.UsageHandlerCreator{},
-		nil,
 	)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
@@ -159,7 +158,7 @@ func main() {
 	w.RegisterActivity(cw.ComponentActivity)
 	w.RegisterActivity(cw.PreIteratorActivity)
 	w.RegisterActivity(cw.PostIteratorActivity)
-	w.RegisterActivity(cw.UsageCollectActivity)
+	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())
