@@ -122,7 +122,7 @@ func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinepb.CheckName
 }
 
 // Map to store data channels by session UUID.
-var DataChanMap sync.Map // TODO tillknuesting: Make this not a global
+var DataChanMap sync.Map
 
 func HandleSSEStreamResponse(w http.ResponseWriter, r *http.Request) {
 	// Get the session UUID from the request URL

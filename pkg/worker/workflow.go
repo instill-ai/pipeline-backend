@@ -294,7 +294,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				param.MemoryStorageKey.Components[batchIdx][compID] = fmt.Sprintf("%s:%d:%s:%s", workflowID, batchIdx, recipe.SegComponent, compID)
 			}
 		}
-		workflow.Sleep(ctx, time.Millisecond) // if we don't sleep, there will be race condition between Redis write and read
+		workflow.Sleep(ctx, time.Second) // if we don't sleep, there will be race condition between Redis write and read
 	}
 
 	sChan <- WorkFlowSignal{Status: "completed"}
