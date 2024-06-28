@@ -105,11 +105,17 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 
 	converter := service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo)
 
+	if config.Config.InstillCloud.Host == "" {
+		// Skip the download process if the Instill Cloud host is not set.
+		return nil
+	}
+
 	clientConn, err := grpc.Dial(fmt.Sprintf("%s:%d", config.Config.InstillCloud.Host, config.Config.InstillCloud.Port),
 		grpc.WithTransportCredentials(credentials.NewTLS((&tls.Config{}))),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
 	if err != nil {
-		return err
+		// Skip the download process if Instill Cloud is unreachable.
+		return nil
 	}
 	defer clientConn.Close()
 
