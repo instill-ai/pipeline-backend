@@ -198,7 +198,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	logger.Info("TriggerPipelineWorkflow number of components", zap.Int("numComponents", numComponents))
+	logger.Debug("TriggerPipelineWorkflow number of components", zap.Int("numComponents", numComponents))
 
 	// The components in the same group can be executed in parallel
 	for group := range orderedComp {
@@ -222,6 +222,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}))
 
 			case datamodel.Iterator:
+				//TODO tillknuesting: support intermediate result streaming for Iterator
 
 				preIteratorResult := &PreIteratorActivityResult{}
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
@@ -294,7 +295,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				param.MemoryStorageKey.Components[batchIdx][compID] = fmt.Sprintf("%s:%d:%s:%s", workflowID, batchIdx, recipe.SegComponent, compID)
 			}
 		}
-		workflow.Sleep(ctx, time.Second) // if we don't sleep, there will be race condition between Redis write and read
+		workflow.Sleep(ctx, time.Millisecond*10) // if we don't sleep, there will be race condition between Redis write and read
 	}
 
 	sChan <- WorkFlowSignal{Status: "completed"}
