@@ -214,7 +214,13 @@ func (p *Pipeline) BeforeSave(db *gorm.DB) (err error) {
 		if err != nil {
 			return err
 		}
+	}
 
+	// We need to verify that the YAML is a valid recipe. The current approach
+	// is to convert it to JSON format.
+	_, err = convertRecipeYAMLToRecipe(p.RecipeYAML)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -231,7 +237,13 @@ func (p *PipelineRelease) BeforeSave(db *gorm.DB) (err error) {
 		if err != nil {
 			return err
 		}
+	}
 
+	// We need to verify that the YAML is a valid recipe. The current approach
+	// is to convert it to JSON format.
+	_, err = convertRecipeYAMLToRecipe(p.RecipeYAML)
+	if err != nil {
+		return err
 	}
 
 	return nil
