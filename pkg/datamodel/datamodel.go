@@ -143,7 +143,7 @@ type ComponentMap map[string]*Component
 type Recipe struct {
 	Version   string               `json:"version,omitempty" yaml:"version,omitempty"`
 	RunOn     *RunOn               `json:"runOn,omitempty" yaml:"run-on,omitempty"`
-	Component ComponentMap         `json:"component,omitempty" yaml:"component,omitempty"`
+	Component ComponentMap         `json:"component" yaml:"component,omitempty"`
 	Variable  map[string]*Variable `json:"variable,omitempty" yaml:"variable,omitempty"`
 	Secret    map[string]string    `json:"secret,omitempty" yaml:"secret,omitempty"`
 	Output    map[string]*Output   `json:"output,omitempty" yaml:"output,omitempty"`
@@ -157,6 +157,13 @@ func convertRecipeYAMLToRecipe(recipeYAML string) (*Recipe, error) {
 		return nil, err
 	}
 	return recipe, nil
+}
+
+func (c *ComponentMap) MarshalJSON() ([]byte, error) {
+	if *c == nil {
+		c = &ComponentMap{}
+	}
+	return json.Marshal(*c)
 }
 
 func (c *ComponentMap) UnmarshalYAML(node *yaml.Node) error {
@@ -288,7 +295,7 @@ type Component struct {
 	Definition *Definition    `json:"definition,omitempty" yaml:"-"`
 
 	// Fields for iterators
-	Component         ComponentMap          `json:"component,omitempty" yaml:"component,omitempty"`
+	Component         ComponentMap          `json:"component" yaml:"component,omitempty"`
 	OutputElements    map[string]string     `json:"outputElements,omitempty" yaml:"output-elements,omitempty"`
 	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty" yaml:"-"`
 }
