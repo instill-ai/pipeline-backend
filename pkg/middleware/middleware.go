@@ -153,7 +153,7 @@ func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
 		if r.Header.Get("X-Use-SSE") == "true" {
 
 			sessionUUID := generateSecureSessionID()
-			dataChan := make(chan []byte, 1000)
+			dataChan := make(chan []byte, 100) //TODO tillknuesting: Make the buffer configurable
 			handler.DataChanMap.Store(sessionUUID, dataChan)
 
 			defer close(dataChan)

@@ -1018,8 +1018,7 @@ func (s *service) triggerPipelineWithStream(
 				PipelineUserUID:     userUID,
 				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
-			Mode:        mgmtpb.Mode_MODE_SYNC,
-			IsStreaming: true,
+			Mode: mgmtpb.Mode_MODE_SYNC,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
