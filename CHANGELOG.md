@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.31.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.30.1-beta...v0.31.0-beta) (2024-07-02)
+
+
+### Features
+
+* allow user to store recipe in YAML format ([#524](https://github.com/instill-ai/pipeline-backend/issues/524)) ([41bed7f](https://github.com/instill-ai/pipeline-backend/commit/41bed7f59947dcfa88d02dd482e402d8f265c9bf))
+* check trigger permissions when impersonating an organization ([#527](https://github.com/instill-ai/pipeline-backend/issues/527)) ([8da41fe](https://github.com/instill-ai/pipeline-backend/commit/8da41fe7cdee15650a1c64201c48daef30ae2e09))
+* download preset pipelines from Instill Cloud ([#531](https://github.com/instill-ai/pipeline-backend/issues/531)) ([0ec3026](https://github.com/instill-ai/pipeline-backend/commit/0ec30268afa970a990424c67b43b4c7c609b7ae4))
+* refactor pipeline clone endpoints ([#529](https://github.com/instill-ai/pipeline-backend/issues/529)) ([97d78b0](https://github.com/instill-ai/pipeline-backend/commit/97d78b0b20966693b8bae276c0853fefb3f541b5))
+* support case-insensitive search for pipelines and components ([#536](https://github.com/instill-ai/pipeline-backend/issues/536)) ([23cb39d](https://github.com/instill-ai/pipeline-backend/commit/23cb39db3822cf1c4c68fe20efeb426a032982d7))
+
+
+### Bug Fixes
+
+* block user saving secret fields as plaintext in pipeline ([#537](https://github.com/instill-ai/pipeline-backend/issues/537)) ([1e16d7f](https://github.com/instill-ai/pipeline-backend/commit/1e16d7ff51ef2c9168134b648a0da736b85ea0f6))
+* prevent a crash in Console caused by an empty map in iterator ([#533](https://github.com/instill-ai/pipeline-backend/issues/533)) ([3a645d4](https://github.com/instill-ai/pipeline-backend/commit/3a645d4c1ff86ca5e5271ea694a57146b49e5ed8))
+
 ## [0.30.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.30.0-beta...v0.30.1-beta) (2024-06-21)
 
 
