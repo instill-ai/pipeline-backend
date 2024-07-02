@@ -21,7 +21,7 @@ const TaskQueue = "pipeline-backend"
 // Worker interface
 type Worker interface {
 	TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error
-	ComponentActivity(ctx context.Context, param *ComponentActivityParam) error
+	ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error)
 	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 	UsageCollectActivity(ctx context.Context, param *UsageCollectActivityParam) error

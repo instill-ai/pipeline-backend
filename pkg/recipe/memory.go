@@ -232,7 +232,6 @@ func Purge(ctx context.Context, rc *redis.Client, pipelineTriggerID string) {
 }
 
 func WriteComponentMemory(ctx context.Context, rc *redis.Client, key string, compID string, compsMem []*ComponentMemory) error {
-
 	for idx, compMem := range compsMem {
 		b, err := json.Marshal(compMem)
 		if err != nil {
