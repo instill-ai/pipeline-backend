@@ -136,8 +136,12 @@ func (s *service) checkSecret(ctx context.Context, components datamodel.Componen
 	for _, comp := range components {
 		switch comp.Type {
 		default:
-			defUID := uuid.FromStringOrNil(comp.Type)
-			err := s.checkSecretFields(ctx, defUID, comp.Setup, "")
+
+			c, err := s.component.GetDefinitionByID(comp.Type, nil, nil)
+			if err != nil {
+				return err
+			}
+			err = s.checkSecretFields(ctx, uuid.FromStringOrNil(c.Uid), comp.Setup, "")
 			if err != nil {
 				return err
 			}
