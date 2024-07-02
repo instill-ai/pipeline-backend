@@ -152,8 +152,7 @@ func main() {
 	)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
-		MaxConcurrentActivityExecutionSize: 2,
-		WorkflowPanicPolicy:                worker.FailWorkflow,
+		WorkflowPanicPolicy: worker.FailWorkflow,
 	})
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
