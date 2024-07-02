@@ -1079,9 +1079,9 @@ func (s *service) triggerPipelineWithStream(
 	}
 
 	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-
-	if userUID == uuid.Nil {
-		logger.Debug("triggerPipelineWithStream: failed to get userUID from request header")
+	requesterUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
+	if requesterUID.IsNil() {
+		requesterUID = userUID
 	}
 
 	we, err := s.temporalClient.ExecuteWorkflow(
@@ -1092,15 +1092,17 @@ func (s *service) triggerPipelineWithStream(
 			BatchSize:        len(pipelineData),
 			MemoryStorageKey: memoryKey,
 			SystemVariables: recipe.SystemVariables{
-				PipelineID:          pipelineID,
-				PipelineUID:         pipelineUID,
-				PipelineReleaseID:   pipelineReleaseID,
-				PipelineReleaseUID:  pipelineReleaseUID,
-				PipelineRecipe:      r,
-				PipelineOwnerType:   ns.NsType,
-				PipelineOwnerUID:    ns.NsUID,
-				PipelineUserUID:     userUID,
-				HeaderAuthorization: resource.GetRequestSingleHeader(ctx, "authorization"),
+				PipelineTriggerID:    pipelineTriggerID,
+				PipelineID:           pipelineID,
+				PipelineUID:          pipelineUID,
+				PipelineReleaseID:    pipelineReleaseID,
+				PipelineReleaseUID:   pipelineReleaseUID,
+				PipelineRecipe:       r,
+				PipelineOwnerType:    ns.NsType,
+				PipelineOwnerUID:     ns.NsUID,
+				PipelineUserUID:      userUID,
+				PipelineRequesterUID: requesterUID,
+				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode: mgmtpb.Mode_MODE_SYNC,
 		})
@@ -1137,7 +1139,8 @@ func (s *service) triggerPipelineWithStream(
 					path := status.ID
 					data, metadata, err := s.getOutputsAndMetadataStream(ctx, pipelineTriggerID, r, returnTraces, path)
 					if err != nil {
-						panic(err)
+						logger.Error("could not get outputs and metadata", zap.Error(err))
+						continue
 					}
 
 					stream <- TriggerResult{
@@ -1450,7 +1453,7 @@ func (s *service) TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns
 		return errdomain.ErrNotFound
 	}
 
-	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline.UID)
+	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline)
 	if err != nil {
 		return err
 	}
