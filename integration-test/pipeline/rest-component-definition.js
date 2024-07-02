@@ -90,6 +90,13 @@ export function CheckList() {
       [`GET /v1beta/component-definitions?pageSize=1&filter=qTitle="JSO" title is JSON`]: (r) => r.json().componentDefinitions[0].title === "JSON",
     });
 
+    // Filter (fuzzy and case-insensitive) title
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?pageSize=1&filter=qTitle="jso"`, null, null), {
+      [`GET /v1beta/component-definitions?pageSize=1&filter=qTitle="jso" response status 200`]: (r) => r.status === 200,
+      [`GET /v1beta/component-definitions?pageSize=1&filter=qTitle="jso" single result`]: (r) => r.json().totalSize === 1,
+      [`GET /v1beta/component-definitions?pageSize=1&filter=qTitle="jso" title is JSON`]: (r) => r.json().componentDefinitions[0].title === "JSON",
+    });
+
     // Filter component type
     check(http.request("GET", `${pipelinePublicHost}/v1beta/component-definitions?pageSize=1&filter=componentType=COMPONENT_TYPE_OPERATOR`, null, null), {
       "GET /v1beta/component-definitions?pageSize=1&filter=componentType=COMPONENT_TYPE_OPERATOR response status 200": (r) => r.status === 200,
