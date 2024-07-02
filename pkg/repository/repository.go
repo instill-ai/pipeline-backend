@@ -50,7 +50,8 @@ type Repository interface {
 	DeleteNamespacePipelineByID(ctx context.Context, ownerPermalink string, id string) error
 	UpdateNamespacePipelineIDByID(ctx context.Context, ownerPermalink string, id string, newID string) error
 
-	UpdatePipelineRunStats(ctx context.Context, uid uuid.UUID) error
+	AddPipelineRuns(ctx context.Context, uid uuid.UUID) error
+	AddPipelineClones(ctx context.Context, uid uuid.UUID) error
 
 	CreateNamespacePipelineRelease(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pipelineRelease *datamodel.PipelineRelease) error
 	ListNamespacePipelineReleases(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) ([]*datamodel.PipelineRelease, int64, string, error)
@@ -927,7 +928,7 @@ func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID string) (
 
 }
 
-func (r *repository) UpdatePipelineRunStats(ctx context.Context, pipelineUID uuid.UUID) error {
+func (r *repository) AddPipelineRuns(ctx context.Context, pipelineUID uuid.UUID) error {
 
 	db := r.db
 
@@ -939,6 +940,19 @@ func (r *repository) UpdatePipelineRunStats(ctx context.Context, pipelineUID uui
 	if result := db.Model(&datamodel.Pipeline{}).
 		Where("uid = ?", pipelineUID).
 		UpdateColumn("number_of_runs", gorm.Expr("number_of_runs + 1")); result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (r *repository) AddPipelineClones(ctx context.Context, pipelineUID uuid.UUID) error {
+
+	db := r.db
+
+	if result := db.Model(&datamodel.Pipeline{}).
+		Where("uid = ?", pipelineUID).
+		UpdateColumn("number_of_clones", gorm.Expr("number_of_clones + 1")); result.Error != nil {
 		return result.Error
 	}
 

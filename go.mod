@@ -13,8 +13,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.20.2-beta
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240624123720-e67c66096d2d
+	github.com/instill-ai/component v0.20.2-beta.0.20240701163708-a36e876869b3
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240627022558-b70559ea17ce
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
 	github.com/jackc/pgx/v5 v5.5.5
@@ -36,7 +36,7 @@ require (
 	go.temporal.io/api v1.16.0
 	go.temporal.io/sdk v1.21.0
 	go.uber.org/zap v1.26.0
-	golang.org/x/mod v0.16.0
+	golang.org/x/mod v0.17.0
 	golang.org/x/net v0.25.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240513163218-0867130af1f8
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240513163218-0867130af1f8
@@ -61,6 +61,9 @@ require (
 	github.com/antchfx/xpath v1.2.4 // indirect
 	github.com/apache/arrow/go/v14 v14.0.2 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
+	github.com/emersion/go-imap/v2 v2.0.0-beta.3 // indirect
+	github.com/emersion/go-message v0.18.1 // indirect
+	github.com/emersion/go-sasl v0.0.0-20231106173351-e73c9f7bad43 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
@@ -112,10 +115,10 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
-	golang.org/x/image v0.15.0 // indirect
-	golang.org/x/oauth2 v0.20.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/tools v0.14.0 // indirect
+	golang.org/x/image v0.18.0 // indirect
+	golang.org/x/oauth2 v0.18.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.172.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
@@ -182,7 +185,7 @@ require (
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/crypto v0.23.0
 	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240221002015-b0ce06bbee7c // indirect
 	gopkg.in/yaml.v3 v3.0.1

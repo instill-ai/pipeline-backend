@@ -444,8 +444,9 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		OwnerName:   ownerName,
 		Tags:        tags,
 		Stats: &pb.Pipeline_Stats{
-			NumberOfRuns: int32(dbPipeline.NumberOfRuns),
-			LastRunTime:  timestamppb.New(dbPipeline.LastRunTime),
+			NumberOfRuns:   int32(dbPipeline.NumberOfRuns),
+			NumberOfClones: int32(dbPipeline.NumberOfClones),
+			LastRunTime:    timestamppb.New(dbPipeline.LastRunTime),
 		},
 	}
 
@@ -458,7 +459,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 
 	pbPipeline.Permission = &pb.Permission{}
 	if checkPermission {
-		if strings.Split(dbPipeline.Owner, "/")[1] == ctxUserUID {
+		if dbPipeline.OwnerUID().String() == ctxUserUID {
 			pbPipeline.Permission.CanEdit = true
 			pbPipeline.Permission.CanRelease = true
 			pbPipeline.Permission.CanTrigger = true
@@ -504,10 +505,8 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	pbPipeline.Releases = pbReleases
 
 	pbPipeline.Visibility = pb.Pipeline_VISIBILITY_PRIVATE
-	if u, ok := pbPipeline.Sharing.Users["*/*"]; ok {
-		if u.Enabled {
-			pbPipeline.Visibility = pb.Pipeline_VISIBILITY_PUBLIC
-		}
+	if dbPipeline.IsPublic() {
+		pbPipeline.Visibility = pb.Pipeline_VISIBILITY_PUBLIC
 	}
 	return &pbPipeline, nil
 }

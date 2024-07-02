@@ -16,8 +16,9 @@ import (
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpczap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	openfga "github.com/openfga/api/proto/openfga/v1"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
@@ -34,18 +35,19 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	"github.com/instill-ai/pipeline-backend/pkg/middleware"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 	"github.com/instill-ai/x/temporal"
 	"github.com/instill-ai/x/zapadapter"
+
+	database "github.com/instill-ai/pipeline-backend/pkg/db"
+	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 var propagator propagation.TextMapPropagator
@@ -240,6 +242,7 @@ func main() {
 		temporalClient,
 		&aclClient,
 		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repository),
+		mgmtPrivateServiceClient,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)

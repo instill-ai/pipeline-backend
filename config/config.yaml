@@ -23,7 +23,7 @@ database:
   host: pg-sql
   port: 5432
   name: pipeline
-  version: 16
+  version: 17
   timezone: Etc/UTC
   pool:
     idleconnections: 5
@@ -71,3 +71,6 @@ modelbackend:
 openfga:
   host: openfga
   port: 8081
+instillcloud:
+  host: api.instill.tech
+  port: 443

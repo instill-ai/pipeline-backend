@@ -17,6 +17,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	componentstore "github.com/instill-ai/component/store"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -33,7 +34,7 @@ type Service interface {
 	DeleteNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) error
 	ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) ([]*pb.PipelineValidationError, error)
 	GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns resource.Namespace, id string) (uuid.UUID, error)
-	CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id string, targetNS resource.Namespace, targetID string) (*pb.Pipeline, error)
+	CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id string, target string, description string, sharing *pb.Sharing) (*pb.Pipeline, error)
 
 	ListPipelinesAdmin(ctx context.Context, pageSize int32, pageToken string, view pb.Pipeline_View, filter filtering.Filter, showDeleted bool) ([]*pb.Pipeline, int32, string, error)
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view pb.Pipeline_View) (*pb.Pipeline, error)
@@ -45,6 +46,7 @@ type Service interface {
 	DeleteNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string) error
 	RestoreNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string) error
 	UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, newID string) (*pb.PipelineRelease, error)
+	CloneNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, target string, description string, sharing *pb.Sharing) (*pb.Pipeline, error)
 
 	CreateNamespaceSecret(ctx context.Context, ns resource.Namespace, secret *pb.Secret) (*pb.Secret, error)
 	ListNamespaceSecrets(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, filter filtering.Filter) ([]*pb.Secret, int32, string, error)
@@ -79,12 +81,13 @@ type TriggerResult struct {
 }
 
 type service struct {
-	repository     repository.Repository
-	redisClient    *redis.Client
-	temporalClient client.Client
-	component      *componentstore.Store
-	aclClient      *acl.ACLClient
-	converter      Converter
+	repository               repository.Repository
+	redisClient              *redis.Client
+	temporalClient           client.Client
+	component                *componentstore.Store
+	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
+	aclClient                *acl.ACLClient
+	converter                Converter
 }
 
 // NewService initiates a service instance
@@ -94,15 +97,17 @@ func NewService(
 	t client.Client,
 	acl *acl.ACLClient,
 	c Converter,
+	m mgmtpb.MgmtPrivateServiceClient,
 ) Service {
 	logger, _ := logger.GetZapLogger(context.Background())
 
 	return &service{
-		repository:     r,
-		redisClient:    rc,
-		temporalClient: t,
-		component:      componentstore.Init(logger, nil, nil),
-		aclClient:      acl,
-		converter:      c,
+		repository:               r,
+		redisClient:              rc,
+		temporalClient:           t,
+		mgmtPrivateServiceClient: m,
+		component:                componentstore.Init(logger, nil, nil),
+		aclClient:                acl,
+		converter:                c,
 	}
 }

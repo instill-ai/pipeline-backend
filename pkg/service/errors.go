@@ -8,7 +8,6 @@ import (
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 )
 
-var ErrNoPermission = fmt.Errorf("no permission")
 var ErrUnauthenticated = fmt.Errorf("unauthenticated")
 var ErrRateLimiting = fmt.Errorf("rate limiting")
 var ErrCanNotTriggerNonLatestPipelineRelease = fmt.Errorf("can not trigger non-latest pipeline release")

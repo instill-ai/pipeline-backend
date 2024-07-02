@@ -15,13 +15,15 @@ func authenticateUser(ctx context.Context, allowVisitor bool) error {
 			return service.ErrUnauthenticated
 		}
 		return nil
-	} else {
-		if !allowVisitor {
-			return service.ErrUnauthenticated
-		}
-		if resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey) == "" {
-			return service.ErrUnauthenticated
-		}
-		return nil
 	}
+
+	if !allowVisitor {
+		return service.ErrUnauthenticated
+	}
+
+	if resource.GetRequestSingleHeader(ctx, constant.HeaderVisitorUIDKey) == "" {
+		return service.ErrUnauthenticated
+	}
+
+	return nil
 }

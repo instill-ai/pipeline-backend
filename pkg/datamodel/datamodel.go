@@ -38,21 +38,25 @@ type BaseDynamic struct {
 
 // BeforeCreate will set a UUID rather than numeric ID.
 func (base *BaseDynamic) BeforeCreate(db *gorm.DB) error {
-	uuid, err := uuid.NewV4()
-	if err != nil {
-		return err
+	if base.UID.IsNil() {
+		uuid, err := uuid.NewV4()
+		if err != nil {
+			return err
+		}
+		db.Statement.SetColumn("UID", uuid)
 	}
-	db.Statement.SetColumn("UID", uuid)
 	return nil
 }
 
 // BeforeCreate will set a UUID rather than numeric ID.
 func (base *BaseDynamicHardDelete) BeforeCreate(db *gorm.DB) error {
-	uuid, err := uuid.NewV4()
-	if err != nil {
-		return err
+	if base.UID.IsNil() {
+		uuid, err := uuid.NewV4()
+		if err != nil {
+			return err
+		}
+		db.Statement.SetColumn("UID", uuid)
 	}
-	db.Statement.SetColumn("UID", uuid)
 	return nil
 }
 
@@ -84,11 +88,28 @@ type Pipeline struct {
 	Tags              []*Tag
 
 	// Note:
-	// We store the NumberOfRuns and LastRunTime in this table to
-	// make it easier to sort the pipelines. We should develop an approach
-	// to sync the data between InfluxDB and here.
-	NumberOfRuns int
-	LastRunTime  time.Time
+	// We store the NumberOfRuns, NumberOfClones and LastRunTime in this table
+	// to make it easier to sort the pipelines. We should develop an approach to
+	// sync the data between InfluxDB and here.
+	LastRunTime    time.Time
+	NumberOfRuns   int
+	NumberOfClones int
+}
+
+// IsPublic returns the visibility of the pipeline based on its sharing
+// configuration.
+func (p Pipeline) IsPublic() bool {
+	publicSharing, hasPublicSharing := p.Sharing.Users["*/*"]
+	if !hasPublicSharing {
+		return false
+	}
+
+	return publicSharing.Enabled
+}
+
+// OwnerUID returns the UID of the pipeline owner.
+func (p Pipeline) OwnerUID() uuid.UUID {
+	return uuid.FromStringOrNil(strings.Split(p.Owner, "/")[1])
 }
 
 type Tag struct {
@@ -122,7 +143,7 @@ type ComponentMap map[string]*Component
 type Recipe struct {
 	Version   string               `json:"version,omitempty" yaml:"version,omitempty"`
 	RunOn     *RunOn               `json:"runOn,omitempty" yaml:"run-on,omitempty"`
-	Component ComponentMap         `json:"component,omitempty" yaml:"component,omitempty"`
+	Component ComponentMap         `json:"component" yaml:"component,omitempty"`
 	Variable  map[string]*Variable `json:"variable,omitempty" yaml:"variable,omitempty"`
 	Secret    map[string]string    `json:"secret,omitempty" yaml:"secret,omitempty"`
 	Output    map[string]*Output   `json:"output,omitempty" yaml:"output,omitempty"`
@@ -136,6 +157,13 @@ func convertRecipeYAMLToRecipe(recipeYAML string) (*Recipe, error) {
 		return nil, err
 	}
 	return recipe, nil
+}
+
+func (c *ComponentMap) MarshalJSON() ([]byte, error) {
+	if *c == nil {
+		c = &ComponentMap{}
+	}
+	return json.Marshal(*c)
 }
 
 func (c *ComponentMap) UnmarshalYAML(node *yaml.Node) error {
@@ -186,7 +214,36 @@ func (p *Pipeline) BeforeSave(db *gorm.DB) (err error) {
 		if err != nil {
 			return err
 		}
+	}
 
+	// We need to verify that the YAML is a valid recipe. The current approach
+	// is to convert it to JSON format.
+	_, err = convertRecipeYAMLToRecipe(p.RecipeYAML)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *PipelineRelease) BeforeSave(db *gorm.DB) (err error) {
+
+	// In the future, we'll make YAML the only input data type for pipeline
+	// recipes. Until then, if the YAML recipe is empty, we'll use the JSON
+	// recipe as the input data. Once the JSON recipe becomes output-only, this
+	// condition will no longer be necessary.
+	if p.RecipeYAML == "" {
+		p.RecipeYAML, err = convertRecipeToRecipeYAML(p.Recipe)
+		if err != nil {
+			return err
+		}
+	}
+
+	// We need to verify that the YAML is a valid recipe. The current approach
+	// is to convert it to JSON format.
+	_, err = convertRecipeYAMLToRecipe(p.RecipeYAML)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -250,7 +307,7 @@ type Component struct {
 	Definition *Definition    `json:"definition,omitempty" yaml:"-"`
 
 	// Fields for iterators
-	Component         ComponentMap          `json:"component,omitempty" yaml:"component,omitempty"`
+	Component         ComponentMap          `json:"component" yaml:"component,omitempty"`
 	OutputElements    map[string]string     `json:"outputElements,omitempty" yaml:"output-elements,omitempty"`
 	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty" yaml:"-"`
 }

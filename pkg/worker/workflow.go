@@ -564,7 +564,7 @@ func (w *worker) UsageCollectActivity(ctx context.Context, param *UsageCollectAc
 		return temporal.NewNonRetryableApplicationError("pipeline failed to trigger", PipelineWorkflowError, err, details)
 	}
 	// We ignore the error check for pipeline run stats for now.
-	_ = w.repository.UpdatePipelineRunStats(ctx, param.SystemVariables.PipelineUID)
+	_ = w.repository.AddPipelineRuns(ctx, param.SystemVariables.PipelineUID)
 
 	logger.Info("UsageCollectActivity completed")
 	return nil

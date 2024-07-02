@@ -14,11 +14,23 @@ const MaxPayloadSize = 1024 * 1024 * 32
 // Constants for resource owner
 const DefaultUserID string = "admin"
 
-const HeaderUserUIDKey = "Instill-User-Uid"
-const HeaderVisitorUIDKey = "Instill-Visitor-Uid"
-const HeaderAuthTypeKey = "Instill-Auth-Type"
-const HeaderInstillCodeKey = "Instill-Share-Code"
-const HeaderReturnTracesKey = "Instill-Return-Traces"
+const (
+	// HeaderUserUIDKey is the context key for the authenticated user.
+	HeaderUserUIDKey = "Instill-User-Uid"
+	// HeaderRequesterUIDKey is the context key for the requester. An
+	// authenticated user can use different namespaces (e.g. an organization
+	// they belong to) to make requests, as long as they have permissions.
+	HeaderRequesterUIDKey = "Instill-Requester-Uid"
+	// HeaderVisitorUIDKey is the context key for the visitor UID when requests
+	// are made without authentication.
+	HeaderVisitorUIDKey = "Instill-Visitor-Uid"
+	// HeaderAuthTypeKey is the context key the authentication type (user or
+	// visitor).
+	HeaderAuthTypeKey = "Instill-Auth-Type"
+
+	HeaderInstillCodeKey  = "Instill-Share-Code"
+	HeaderReturnTracesKey = "Instill-Return-Traces"
+)
 
 // GlobalSecretKey can be used to reference a global secret in the
 // configuration of a component (i.e, ${secrets.INSTILL_SECRET}).

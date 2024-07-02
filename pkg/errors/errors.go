@@ -17,4 +17,11 @@ var (
 	ErrInvalidArgument = fmt.Errorf("invalid resource ID")
 	// ErrNotFound is used when a resource doesn't exist.
 	ErrNotFound = fmt.Errorf("not found")
+	// ErrInvalidCloneTarget is used when the pipeline clone target is not
+	// valid. The format should be `<user-id>/<pipeline-id>` or
+	// `<org-id>/<pipeline-id>`.
+	ErrInvalidCloneTarget = fmt.Errorf("invalid target")
+	// ErrUnauthorized is used when a request can't be performed due to
+	// insufficient permissions.
+	ErrUnauthorized = fmt.Errorf("unauthorized")
 )
