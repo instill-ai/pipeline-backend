@@ -6,7 +6,7 @@ server:
     key:
   edition: local-ce:dev
   usage:
-    enabled: false
+    enabled: true
     tlsenabled: true
     host: usage.instill.tech
     port: 443
