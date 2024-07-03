@@ -183,10 +183,10 @@ func (t *transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (
 		switch ident.SQL {
 		// TODO we should support wildcards without special filter names
 		case "q":
-			sql = fmt.Sprintf("%s LIKE ?", "id")
+			sql = fmt.Sprintf("LOWER(%s) LIKE LOWER(?)", "id")
 			vars = append(vars, fmt.Sprintf("%%%s%%", con.Vars[0]))
 		case "q_title":
-			sql = fmt.Sprintf("%s LIKE ?", "title")
+			sql = fmt.Sprintf("LOWER(%s) LIKE LOWER(?)", "title")
 			vars = append(vars, fmt.Sprintf("%%%s%%", con.Vars[0]))
 		case "tag":
 			sql = "tag.tag_name = ?"
