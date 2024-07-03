@@ -41,116 +41,12 @@ func generateSecureSessionID() string {
 	return fmt.Sprintf("%x", hash)
 }
 
-//func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		if r.Header.Get("X-Use-SSE") == "true" {
-//			fmt.Println("\"SSE Middleware:SSE request detected")
-//			sessionUUID := generateSecureSessionID()
-//			dataChan := make(chan []byte, 1000)
-//			handler.DataChanMap.Store(sessionUUID, dataChan)
-//
-//			sessionData := SessionMetadata{
-//				SessionUUID:      sessionUUID,
-//				SourceInstanceID: "test-server-1",
-//			}
-//
-//			fmt.Println("SessionDataID", sessionData.SessionUUID)
-//
-//			// Return the session ID to the caller
-//			w.Header().Set("X-Session-ID", sessionData.SessionUUID)
-//			w.WriteHeader(http.StatusOK)
-//			w.Write([]byte("Session ID: " + sessionData.SessionUUID))
-//
-//			// Create a new request with a new context
-//			newReq := r.Clone(context.Background())
-//
-//			// Create a new response writer that captures the response
-//			sw := &captureResponseWriter{
-//				ResponseWriter: httptest.NewRecorder(),
-//				DataChan:       dataChan,
-//			}
-//
-//			// Serve the new request with the new response writer
-//			next.ServeHTTP(sw, newReq)
-//			return
-//		}
-//
-//		next.ServeHTTP(w, r)
-//	})
-//}
-
-//// sseResponseStreamingMiddleware intercepts requests with X-Use-SSE header present
-//// and gives back immediately a session token. It continues calling the grpc-gateway
-//// endpoint and streams data to the SSE handler using the session ID token.
-//func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
-//	logger, _ := logger.GetZapLogger(context.Background())
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		if r.Header.Get("X-Use-SSE") == "true" {
-//			sessionUUID := generateSecureSessionID()
-//			dataChan := make(chan []byte, 1000)
-//			handler.DataChanMap.Store(sessionUUID, dataChan)
-//
-//			sessionData := SessionMetadata{
-//				SessionUUID:      sessionUUID,
-//				SourceInstanceID: "test-server-1", // TODO tillknuesting: This should be read from environment variables or a PodID
-//			}
-//
-//			// Marshal session metadata into JSON
-//			responseData, err := json.Marshal(sessionData)
-//			if err != nil {
-//				http.Error(w, "Failed to generate session", http.StatusInternalServerError)
-//				return
-//			}
-//
-//			logger.Debug("SSE Middleware: SSE request detected", zap.String("session_id that is starting with", sessionData.SessionUUID[0:5]),
-//				zap.String("source_instance_id", sessionData.SourceInstanceID))
-//
-//			// Set headers
-//			w.Header().Set("Content-Type", "application/json")
-//			w.Header().Set("Connection", "close")
-//			w.WriteHeader(http.StatusOK)
-//
-//			// Write the response data
-//			_, err = w.Write(responseData)
-//			if err != nil {
-//				logger.Error("SSE Middleware: Error writing response", zap.Error(err))
-//				return
-//			}
-//
-//			// Check if the response writer supports flushing
-//			if flusher, ok := w.(http.Flusher); ok {
-//				flusher.Flush()
-//			} else {
-//				logger.Error("SSE Middleware: Flush not supported")
-//			}
-//
-//			// Create a new context with a cancel function
-//			ctx, cancel := context.WithCancel(r.Context())
-//			defer cancel()
-//
-//			// Create a new request with the new context
-//			newReq := r.Clone(ctx)
-//			// Create a new response writer that captures the response
-//			sw := &captureResponseWriter{
-//				ResponseWriter: httptest.NewRecorder(),
-//				DataChan:       dataChan,
-//			}
-//
-//			// Serve the new request with the new response writer
-//			next.ServeHTTP(sw, newReq)
-//			return
-//		}
-//
-//		next.ServeHTTP(w, r)
-//	})
-//}
-
 // sseResponseStreamingMiddleware intercepts requests with X-Use-SSE header present
 // and gives back immediately a session token. It continues calling the grpc-gateway
 // endpoint and streams data to the SSE handler using the session ID token.
 func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("X-Use-SSE") == "true" {
+		if r.Header.Get("Instill-Use-SSE") == "true" {
 
 			sessionUUID := generateSecureSessionID()
 			dataChan := make(chan []byte, 100) //TODO tillknuesting: Make the buffer configurable
