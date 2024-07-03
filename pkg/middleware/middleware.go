@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 	"net/http"
@@ -52,6 +53,7 @@ func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
 			handler.DataChanMap.Store(sessionUUID, dataChan)
 
 			defer close(dataChan)
+			config.CacheConfi
 
 			sessionData := SessionMetadata{
 				SessionUUID:      sessionUUID,

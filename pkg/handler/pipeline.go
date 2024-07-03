@@ -978,7 +978,45 @@ func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelin
 	}
 }
 
-func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, req *pb.TriggerUserPipelineWithStreamRequest, resultChan chan<- service.TriggerResult) error {
+func (h *PublicHandler) TriggerPipelineWithStream(req *pb.TriggerOrganizationPipelineStreamRequest, server pb.PipelinePublicService_TriggerOrganizationPipelineStreamServer) error {
+	ctx := server.Context()
+
+	resultChan := make(chan service.TriggerResult)
+	errorChan := make(chan error)
+
+	go func() {
+		err := h.triggerNamespacePipelineWithStream(ctx, req, resultChan)
+		if err != nil {
+			errorChan <- err
+			close(resultChan)
+			return
+		}
+	}()
+
+	for {
+		select {
+		case err := <-errorChan:
+			if err != nil {
+				return fmt.Errorf("triggerNamespacePipelineWithStream: %w", err)
+			}
+		case result, ok := <-resultChan:
+			if !ok {
+				// resultChan is closed, exit the loop
+				return nil
+			}
+			err := server.Send(&pb.TriggerOrganizationPipelineStreamResponse{
+				Outputs:  result.Struct,
+				Metadata: result.Metadata,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+}
+
+func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, req TriggerNamespacePipelineRequestInterface, resultChan chan<- service.TriggerResult) error {
 
 	eventName := "TriggerNamespacePipelineWithStream"
 
@@ -1004,7 +1042,7 @@ func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, 
 	return nil
 }
 
-func (h *PublicHandler) preTriggerUserPipelineWithStream(ctx context.Context, req *pb.TriggerUserPipelineWithStreamRequest) (resource.Namespace, string, *pb.Pipeline, bool, error) {
+func (h *PublicHandler) preTriggerUserPipelineWithStream(ctx context.Context, req TriggerNamespacePipelineRequestInterface) (resource.Namespace, string, *pb.Pipeline, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
