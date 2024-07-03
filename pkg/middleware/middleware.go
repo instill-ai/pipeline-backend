@@ -11,7 +11,6 @@ import (
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 	"net/http"
 	"net/http/httptest"
-	"time"
 )
 
 type fn func(*runtime.ServeMux, pb.PipelinePublicServiceClient, http.ResponseWriter, *http.Request, map[string]string)
@@ -56,7 +55,7 @@ func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
 
 			sessionData := SessionMetadata{
 				SessionUUID:      sessionUUID,
-				SourceInstanceID: "test-server-1", // TODO tillknuesting: get with from env
+				SourceInstanceID: "test-server-1", // TODO tillknuesting: Make configurable
 			}
 
 			// Marshal session metadata into JSON
@@ -112,7 +111,6 @@ type captureResponseWriter struct {
 
 func (mw *captureResponseWriter) Write(b []byte) (int, error) {
 	if len(b) > 1 {
-		time.Sleep(time.Second * 5)
 		mw.DataChan <- b
 	}
 	return mw.ResponseWriter.Write(b)
