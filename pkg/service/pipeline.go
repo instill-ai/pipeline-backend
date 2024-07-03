@@ -1104,7 +1104,8 @@ func (s *service) triggerPipelineWithStream(
 				PipelineRequesterUID: requesterUID,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
-			Mode: mgmtpb.Mode_MODE_SYNC,
+			IsStreaming: true,
+			Mode:        mgmtpb.Mode_MODE_SYNC,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1134,8 +1135,10 @@ func (s *service) triggerPipelineWithStream(
 					return
 				}
 
+				const statusCompleted = "completed" // signals that the workflow has completed
+				const statusStep = "step"           // signals that a component has completed, but does not specify which
 				switch status.Status {
-				case "step":
+				case statusStep:
 					path := status.ID
 					data, metadata, err := s.getOutputsAndMetadataStream(ctx, pipelineTriggerID, r, returnTraces, path)
 					if err != nil {
@@ -1143,11 +1146,16 @@ func (s *service) triggerPipelineWithStream(
 						continue
 					}
 
+					if len(data) < 1 {
+						logger.Error("no data found to send to stream", zap.String("path", path))
+						continue
+					}
+
 					stream <- TriggerResult{
 						Struct:   data,
 						Metadata: metadata,
 					}
-				case "completed":
+				case statusCompleted:
 					close(stream)
 					return
 				}

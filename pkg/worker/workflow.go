@@ -34,6 +34,7 @@ type TriggerPipelineWorkflowParam struct {
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Mode             mgmtPB.Mode
 	IsIterator       bool
+	IsStreaming      bool
 }
 
 // ComponentActivityParam represents the parameters for TriggerActivity
@@ -84,12 +85,6 @@ type UsageCheckActivityParam struct {
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
-// sChan is used to singal from the Workflow to the QueryHandler if a Activity is completed.
-// The QueryHandler will be called by the client to get the status of the Workflow in order
-// act accordingly e.g. signal partial completion of the Workflow. The buffer size is set to 1000 but
-// can be adjusted based on the expected number of components in the Workflow.
-var sChan = make(chan WorkFlowSignal, 1000)
-
 // WorkFlowSignal is used by sChan to signal the status of components in the Workflow.
 type WorkFlowSignal struct {
 	ID     string
@@ -100,23 +95,6 @@ type WorkFlowSignal struct {
 // The workflow is only responsible for orchestrating the DAG, not processing or reading/writing the data.
 // All data processing should be done in activities.
 func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error {
-	sChan <- WorkFlowSignal{Status: "started"}
-	// Register query handler for workflow status
-	err := workflow.SetQueryHandler(ctx, "workflowStatusQuery", func() (WorkFlowSignal, error) {
-		select {
-		case msg := <-sChan:
-			if len(msg.Status) == 0 {
-				return WorkFlowSignal{}, nil
-			}
-			return msg, nil
-		case <-time.After(time.Second * 3):
-			return WorkFlowSignal{Status: "timeout"}, nil
-		}
-	})
-	if err != nil {
-		return err
-	}
-
 	eventName := "TriggerPipelineWorkflow"
 	startTime := time.Now()
 	sCtx, span := tracer.Start(context.Background(), eventName,
@@ -125,6 +103,51 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
+
+	// Inline function to initialize the channel only if streaming is active
+	initChan := func() chan WorkFlowSignal {
+		if param.IsStreaming {
+			return make(chan WorkFlowSignal, 100) // 100 is probably more than enough
+		}
+		return nil
+	}
+
+	// sChan is used to signal from the Workflow to the QueryHandler if an Activity is completed.
+	// The QueryHandler will be called by the client to get the status of the Workflow in order
+	// to act accordingly e.g. signal partial completion of the Workflow. The buffer size is set to 100 but
+	// can be adjusted based on the expected number of components in the Workflow.
+	var sChan = initChan()
+	const statusStep = "step"
+	const statusCompleted = "completed"
+
+	if param.IsStreaming {
+		logger.Debug("streaming is active")
+		// sChan is used to signal from the Workflow to the QueryHandler if an Activity is completed.
+		// The QueryHandler will be called by the client to get the status of the Workflow in order
+		// act accordingly e.g. signal partial completion of the Workflow. The buffer size is set to 100 but
+		// can be adjusted based on the expected number of components in the Workflow.
+		var sChan2 = make(chan WorkFlowSignal, 100)
+		sChan = sChan2
+
+		// Register query handler for workflow status
+		err := workflow.SetQueryHandler(ctx, "workflowStatusQuery", func() (WorkFlowSignal, error) {
+			select {
+			case msg := <-sChan:
+				if len(msg.Status) == 0 {
+					return WorkFlowSignal{}, nil
+				}
+				return msg, nil
+			case <-time.After(time.Second * 3):
+				return WorkFlowSignal{Status: "timeout"}, nil
+			}
+		})
+		if err != nil {
+			return err
+		}
+
+		sChan <- WorkFlowSignal{Status: "started"}
+		defer close(sChan)
+	}
 
 	var ownerType mgmtPB.OwnerType
 	switch param.SystemVariables.PipelineOwnerType {
@@ -287,7 +310,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 				return fmt.Errorf("futures.Get value: %w", err)
 			}
-			sChan <- WorkFlowSignal{Status: "step", ID: result.ID}
+			if param.IsStreaming {
+				sChan <- WorkFlowSignal{Status: statusStep, ID: result.ID}
+			}
 		}
 
 		for batchIdx := range param.BatchSize {
@@ -295,10 +320,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				param.MemoryStorageKey.Components[batchIdx][compID] = fmt.Sprintf("%s:%d:%s:%s", workflowID, batchIdx, recipe.SegComponent, compID)
 			}
 		}
-		workflow.Sleep(ctx, time.Millisecond*10) // if we don't sleep, there will be race condition between Redis write and read
+		if param.IsStreaming {
+			workflow.Sleep(ctx, time.Millisecond*10) // if we don't sleep, there will be race condition between Redis write and read
+		}
 	}
 
-	sChan <- WorkFlowSignal{Status: "completed"}
+	if param.IsStreaming {
+		sChan <- WorkFlowSignal{Status: statusCompleted}
+	}
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
@@ -373,10 +402,10 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 
 	logger.Info("ComponentActivity completed")
 
+	// the data is logged in temporal hence we should only return data that is needed
 	p := &ComponentActivityParam{
-		WorkflowID:       param.WorkflowID,
-		MemoryStorageKey: param.MemoryStorageKey,
-		ID:               param.ID,
+		WorkflowID: param.WorkflowID,
+		ID:         param.ID, // is used by the caller to identify the component
 	}
 	return p, nil
 }
