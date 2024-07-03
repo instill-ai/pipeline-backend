@@ -74,6 +74,8 @@ type ServerConfig struct {
 		MaxWorkflowRetry   int32 `koanf:"maxworkflowretry"`
 		MaxActivityRetry   int32 `koanf:"maxactivityretry"`
 	}
+	InstanceID         string `koanf:"instanceid"`
+	DataChanBufferSize int    `koanf:"datachanbuffersize"`
 }
 
 // ConnectorConfig defines the connector configurations

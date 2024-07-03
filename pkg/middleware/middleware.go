@@ -47,17 +47,21 @@ func generateSecureSessionID() string {
 func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Instill-Use-SSE") == "true" {
-
+			dataChanBufferSize := config.Config.Server.DataChanBufferSize
+			if dataChanBufferSize <= 0 {
+				dataChanBufferSize = 1
+			}
+			fmt.Println("DataChanBufferSize: ", dataChanBufferSize)
+			dataChan := make(chan []byte, dataChanBufferSize)
 			sessionUUID := generateSecureSessionID()
-			dataChan := make(chan []byte, 100) //TODO tillknuesting: Make the buffer configurable
 			handler.DataChanMap.Store(sessionUUID, dataChan)
 
 			defer close(dataChan)
-			config.CacheConfi
+			instanceID := config.Config.Server.InstanceID
 
 			sessionData := SessionMetadata{
 				SessionUUID:      sessionUUID,
-				SourceInstanceID: "test-server-1", // TODO tillknuesting: Make configurable
+				SourceInstanceID: instanceID,
 			}
 
 			// Marshal session metadata into JSON
