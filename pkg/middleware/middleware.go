@@ -51,30 +51,28 @@ func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
 			if dataChanBufferSize <= 0 {
 				dataChanBufferSize = 1
 			}
-			fmt.Println("DataChanBufferSize: ", dataChanBufferSize)
 			dataChan := make(chan []byte, dataChanBufferSize)
-			sessionUUID := generateSecureSessionID()
-			handler.DataChanMap.Store(sessionUUID, dataChan)
 
+			sessionUUID := generateSecureSessionID()
+
+			handler.DataChanMap.Store(sessionUUID, dataChan)
 			defer close(dataChan)
-			instanceID := config.Config.Server.InstanceID
 
 			sessionData := SessionMetadata{
 				SessionUUID:      sessionUUID,
-				SourceInstanceID: instanceID,
+				SourceInstanceID: config.Config.Server.InstanceID,
 			}
 
-			// Marshal session metadata into JSON
 			responseData, err := json.Marshal(sessionData)
 			if err != nil {
-				http.Error(w, "Failed to generate session", http.StatusInternalServerError)
+				http.Error(w, "failed to generate session", http.StatusInternalServerError)
 				return
 			}
 
 			// Get the underlying connection using http.Hijacker
 			hijacker, ok := w.(http.Hijacker)
 			if !ok {
-				http.Error(w, "Hijacking not supported", http.StatusInternalServerError)
+				http.Error(w, "hijacking not supported", http.StatusInternalServerError)
 				return
 			}
 

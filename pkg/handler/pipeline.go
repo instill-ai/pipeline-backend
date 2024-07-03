@@ -944,7 +944,7 @@ func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.Trigger
 func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelineWithStreamRequest, server pb.PipelinePublicService_TriggerUserPipelineWithStreamServer) error {
 	ctx := server.Context()
 
-	resultChan := make(chan service.TriggerResult)
+	resultChan := make(chan service.TriggerResult, 100) // if the client is slow, we can buffer up to 100 results
 	errorChan := make(chan error)
 
 	go func() {
@@ -978,10 +978,10 @@ func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelin
 	}
 }
 
-func (h *PublicHandler) TriggerPipelineWithStream(req *pb.TriggerOrganizationPipelineStreamRequest, server pb.PipelinePublicService_TriggerOrganizationPipelineStreamServer) error {
+func (h *PublicHandler) TriggerOrganizationPipelineStream(req *pb.TriggerOrganizationPipelineStreamRequest, server pb.PipelinePublicService_TriggerOrganizationPipelineStreamServer) error {
 	ctx := server.Context()
 
-	resultChan := make(chan service.TriggerResult)
+	resultChan := make(chan service.TriggerResult, 100) // if the client is slow, we can buffer up to 100 results
 	errorChan := make(chan error)
 
 	go func() {
@@ -997,7 +997,7 @@ func (h *PublicHandler) TriggerPipelineWithStream(req *pb.TriggerOrganizationPip
 		select {
 		case err := <-errorChan:
 			if err != nil {
-				return fmt.Errorf("triggerNamespacePipelineWithStream: %w", err)
+				return fmt.Errorf("TriggerOrganizationPipelineWithStream: %w", err)
 			}
 		case result, ok := <-resultChan:
 			if !ok {
