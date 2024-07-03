@@ -41,7 +41,7 @@ func NewWorker(
 	rd *redis.Client,
 	i api.WriteAPI,
 	cs componentstore.ComponentSecrets,
-	uh map[string]componentbase.UsageHandlerCreator,
+	uh componentbase.UsageHandlerCreator,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &worker{

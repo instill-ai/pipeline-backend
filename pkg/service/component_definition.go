@@ -223,7 +223,6 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 	}
 
 	for i, uid := range uids {
-
 		def, err := s.component.GetDefinitionByUID(uid.UID, vars, nil)
 		if err != nil {
 			return nil, err
@@ -232,7 +231,6 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 			def.Spec = nil
 		}
 		defs[i] = def
-
 	}
 
 	resp := &pb.ListComponentDefinitionsResponse{
