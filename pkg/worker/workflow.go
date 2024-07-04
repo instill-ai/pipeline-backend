@@ -321,7 +321,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			}
 		}
 		if param.IsStreaming {
-			workflow.Sleep(ctx, time.Millisecond*10) // if we don't sleep, there will be race condition between Redis write and read
+			// if we don't sleep, there will be race condition between Redis write and read
+			if err := workflow.Sleep(ctx, time.Millisecond*10); err != nil {
+				logger.Error(fmt.Sprintf(" workflow unable to sleep: %s", err.Error()))
+			}
 		}
 	}
 

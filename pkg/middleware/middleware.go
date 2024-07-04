@@ -83,14 +83,32 @@ func SSEStreamResponseMiddleware(next http.Handler) http.Handler {
 			}
 
 			// Set the response headers
-			bufw.WriteString("HTTP/1.1 200 OK\r\n")
-			bufw.WriteString("Content-Type: application/json\r\n")
-			bufw.WriteString("Connection: close\r\n\r\n")
+			if _, err := bufw.WriteString("HTTP/1.1 200 OK\r\n"); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if _, err := bufw.WriteString("Content-Type: application/json\r\n"); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if _, err := bufw.WriteString("Connection: close\r\n\r\n"); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 
 			// Write the initial response
-			bufw.WriteString(string(responseData) + "\n\n")
-			bufw.Flush()
-			conn.Close()
+			if _, err := bufw.WriteString(string(responseData) + "\n\n"); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if err := bufw.Flush(); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if err := conn.Close(); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 
 			// Create a new request with the new context
 			newReq := r.Clone(context.Background())

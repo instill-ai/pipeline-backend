@@ -1120,7 +1120,7 @@ func (s *service) triggerPipelineWithStream(
 		ctxQ, cancel := context.WithTimeout(context.Background(), time.Second*60)
 		defer cancel()
 
-		for {
+		for { // nolint:gosimple
 			select {
 			case <-ticker.C:
 				queryResult, err := s.temporalClient.QueryWorkflow(ctxQ, we.GetID(), we.GetRunID(), "workflowStatusQuery")
@@ -1466,7 +1466,9 @@ func (s *service) TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns
 		return err
 	}
 
-	s.triggerPipelineWithStream(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces, stream)
+	if err := s.triggerPipelineWithStream(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces, stream); err != nil {
+		return err
+	}
 
 	return nil
 }
