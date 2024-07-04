@@ -5,13 +5,14 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/google/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
-	"net/http"
-	"net/http/httptest"
 )
 
 type fn func(*runtime.ServeMux, pb.PipelinePublicServiceClient, http.ResponseWriter, *http.Request, map[string]string)
@@ -26,11 +27,11 @@ func AppendCustomHeaderMiddleware(mux *runtime.ServeMux, client pb.PipelinePubli
 
 // SessionMetadata holds the session ID and source instance ID.
 type SessionMetadata struct {
-	SessionUUID string `json:"session_uuid"`
+	SessionUUID string `json:"sessionUUID"`
 	// Source instance identifier is used for network routing scenarios
 	// for example could be included as header in the SSE request to make sure
 	// it is getting routed to the initiating server e.g. running a pod
-	SourceInstanceID string `json:"source_instance_id"`
+	SourceInstanceID string `json:"sourceInstanceID"`
 }
 
 // generateSecureSessionID generated a cryptographic secure session token to be used
