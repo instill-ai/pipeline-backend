@@ -121,7 +121,7 @@ func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinepb.CheckName
 	}, nil
 }
 
-// Map to store data channels by session UUID.
+// DataChanMap is used to store data channels by session UUID.
 var DataChanMap sync.Map //TODO tillknuesting: Cleanup mechanism when a chan is closed or not used
 
 func HandleSSEStreamResponse(w http.ResponseWriter, r *http.Request) {
