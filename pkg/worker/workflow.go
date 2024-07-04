@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 	"go/parser"
 	"time"
 
@@ -33,6 +34,7 @@ type TriggerPipelineWorkflowParam struct {
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Mode             mgmtPB.Mode
 	IsIterator       bool
+	IsStreaming      bool
 }
 
 // ComponentActivityParam represents the parameters for TriggerActivity
@@ -83,13 +85,17 @@ type UsageCheckActivityParam struct {
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
 
+// WorkFlowSignal is used by sChan to signal the status of components in the Workflow.
+type WorkFlowSignal struct {
+	ID     string
+	Status string
+}
+
 // TriggerPipelineWorkflow is a pipeline trigger workflow definition.
 // The workflow is only responsible for orchestrating the DAG, not processing or reading/writing the data.
 // All data processing should be done in activities.
 func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error {
-
 	eventName := "TriggerPipelineWorkflow"
-
 	startTime := time.Now()
 	sCtx, span := tracer.Start(context.Background(), eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -97,6 +103,51 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
+
+	// Inline function to initialize the channel only if streaming is active
+	initChan := func() chan WorkFlowSignal {
+		if param.IsStreaming {
+			return make(chan WorkFlowSignal, 100) // 100 is probably more than enough
+		}
+		return nil
+	}
+
+	// sChan is used to signal from the Workflow to the QueryHandler if an Activity is completed.
+	// The QueryHandler will be called by the client to get the status of the Workflow in order
+	// to act accordingly e.g. signal partial completion of the Workflow. The buffer size is set to 100 but
+	// can be adjusted based on the expected number of components in the Workflow.
+	var sChan = initChan()
+	const statusStep = "step"
+	const statusCompleted = "completed"
+
+	if param.IsStreaming {
+		logger.Debug("streaming is active")
+		// sChan is used to signal from the Workflow to the QueryHandler if an Activity is completed.
+		// The QueryHandler will be called by the client to get the status of the Workflow in order
+		// act accordingly e.g. signal partial completion of the Workflow. The buffer size is set to 100 but
+		// can be adjusted based on the expected number of components in the Workflow.
+		var sChan2 = make(chan WorkFlowSignal, 100)
+		sChan = sChan2
+
+		// Register query handler for workflow status
+		err := workflow.SetQueryHandler(ctx, "workflowStatusQuery", func() (WorkFlowSignal, error) {
+			select {
+			case msg := <-sChan:
+				if len(msg.Status) == 0 {
+					return WorkFlowSignal{}, nil
+				}
+				return msg, nil
+			case <-time.After(time.Second * 3):
+				return WorkFlowSignal{Status: "timeout"}, nil
+			}
+		})
+		if err != nil {
+			return err
+		}
+
+		sChan <- WorkFlowSignal{Status: "started"}
+		defer close(sChan)
+	}
 
 	var ownerType mgmtPB.OwnerType
 	switch param.SystemVariables.PipelineOwnerType {
@@ -168,15 +219,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		if param.MemoryStorageKey.Components[i] == nil {
 			param.MemoryStorageKey.Components[i] = map[string]string{}
 		}
-
 	}
+
+	logger.Debug("TriggerPipelineWorkflow number of components", zap.Int("numComponents", numComponents))
 
 	// The components in the same group can be executed in parallel
 	for group := range orderedComp {
-
 		futures := []workflow.Future{}
 		for compID, comp := range orderedComp[group] {
-
 			upstreamIDs := dag.GetUpstreamCompIDs(compID)
 
 			switch comp.Type {
@@ -195,6 +245,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}))
 
 			case datamodel.Iterator:
+				//TODO tillknuesting: support intermediate result streaming for Iterator
 
 				preIteratorResult := &PreIteratorActivityResult{}
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
@@ -248,16 +299,19 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}).Get(ctx, nil); err != nil {
 					return err
 				}
-
 			}
 
 		}
 
 		for idx := range futures {
-			err = futures[idx].Get(ctx, nil)
+			var result ComponentActivityParam
+			err = futures[idx].Get(ctx, &result)
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
-				return err
+				return fmt.Errorf("futures.Get value: %w", err)
+			}
+			if param.IsStreaming {
+				sChan <- WorkFlowSignal{Status: statusStep, ID: result.ID}
 			}
 		}
 
@@ -266,7 +320,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				param.MemoryStorageKey.Components[batchIdx][compID] = fmt.Sprintf("%s:%d:%s:%s", workflowID, batchIdx, recipe.SegComponent, compID)
 			}
 		}
+		if param.IsStreaming {
+			// if we don't sleep, there will be race condition between Redis write and read
+			if err := workflow.Sleep(ctx, time.Millisecond*10); err != nil {
+				logger.Error(fmt.Sprintf(" workflow unable to sleep: %s", err.Error()))
+			}
+		}
+	}
 
+	if param.IsStreaming {
+		sChan <- WorkFlowSignal{Status: statusCompleted}
 	}
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
@@ -286,62 +349,68 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	logger.Info("TriggerPipelineWorkflow completed")
+	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", time.Since(startTime)))
 
 	return nil
 }
 
-func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) error {
+func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
 
 	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	compInputs, idxMap, err := w.processInput(batchMemory, param.ID, param.UpstreamIDs, param.Condition, param.Input)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	cons, err := w.processSetup(batchMemory, param.Setup)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 	sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	comp, err := w.component.GetDefinitionByID(param.Type, nil, nil)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	// Note: we assume that setup in the batch are all the same
 	execution, err := w.component.CreateExecution(uuid.FromStringOrNil(comp.Uid), sysVars, cons[0], param.Task)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	compOutputs, err := execution.Execute(ctx, compInputs)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	compMem, err := w.processOutput(batchMemory, param.ID, compOutputs, idxMap)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.WorkflowID, param.ID, compMem)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
 	}
 
 	logger.Info("ComponentActivity completed")
-	return nil
+
+	// the data is logged in temporal hence we should only return data that is needed
+	p := &ComponentActivityParam{
+		WorkflowID: param.WorkflowID,
+		ID:         param.ID, // is used by the caller to identify the component
+	}
+	return p, nil
 }
 
 // TODO: complete iterator

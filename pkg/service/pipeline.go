@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"slices"
 	"strings"
 	"sync"
@@ -1046,6 +1047,139 @@ func (s *service) triggerPipeline(
 	return s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
 }
 
+func (s *service) triggerPipelineWithStream(
+	ctx context.Context,
+	ns resource.Namespace,
+	r *datamodel.Recipe,
+	isAdmin bool,
+	pipelineID string,
+	pipelineUID uuid.UUID,
+	pipelineReleaseID string,
+	pipelineReleaseUID uuid.UUID,
+	pipelineData []*pipelinepb.TriggerData,
+	pipelineTriggerID string,
+	returnTraces bool,
+	stream chan<- TriggerResult) error {
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	memoryKey, err := s.preTriggerPipeline(ctx, isAdmin, ns, r, pipelineTriggerID, pipelineData)
+	if err != nil {
+		return err
+	}
+	defer recipe.Purge(ctx, s.redisClient, pipelineTriggerID)
+
+	workflowOptions := client.StartWorkflowOptions{
+		ID:                       pipelineTriggerID,
+		TaskQueue:                worker.TaskQueue,
+		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
+		},
+	}
+
+	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
+	requesterUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
+	if requesterUID.IsNil() {
+		requesterUID = userUID
+	}
+
+	we, err := s.temporalClient.ExecuteWorkflow(
+		ctx,
+		workflowOptions,
+		"TriggerPipelineWorkflow",
+		&worker.TriggerPipelineWorkflowParam{
+			BatchSize:        len(pipelineData),
+			MemoryStorageKey: memoryKey,
+			SystemVariables: recipe.SystemVariables{
+				PipelineTriggerID:    pipelineTriggerID,
+				PipelineID:           pipelineID,
+				PipelineUID:          pipelineUID,
+				PipelineReleaseID:    pipelineReleaseID,
+				PipelineReleaseUID:   pipelineReleaseUID,
+				PipelineRecipe:       r,
+				PipelineOwnerType:    ns.NsType,
+				PipelineOwnerUID:     ns.NsUID,
+				PipelineUserUID:      userUID,
+				PipelineRequesterUID: requesterUID,
+				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
+			},
+			IsStreaming: true,
+			Mode:        mgmtpb.Mode_MODE_SYNC,
+		})
+	if err != nil {
+		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
+		return err
+	}
+
+	go func() {
+		const interval = 1 * time.Millisecond
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		ctxQ, cancel := context.WithTimeout(context.Background(), time.Second*60)
+		defer cancel()
+
+		for { // nolint:gosimple
+			select {
+			case <-ticker.C:
+				queryResult, err := s.temporalClient.QueryWorkflow(ctxQ, we.GetID(), we.GetRunID(), "workflowStatusQuery")
+				if err != nil {
+					logger.Error("Error querying workflow status: %v", zap.Error(err))
+					return
+				}
+
+				var status worker.WorkFlowSignal
+				if err := queryResult.Get(&status); err != nil {
+					logger.Error("Error querying workflow Get status: %v", zap.Error(err))
+					return
+				}
+
+				const statusCompleted = "completed" // signals that the workflow has completed
+				const statusStep = "step"           // signals that a component has completed, but does not specify which
+				switch status.Status {
+				case statusStep:
+					path := status.ID
+					data, metadata, err := s.getOutputsAndMetadataStream(ctx, pipelineTriggerID, r, returnTraces, path)
+					if err != nil {
+						logger.Error("could not get outputs and metadata", zap.Error(err))
+						continue
+					}
+
+					if len(data) < 1 {
+						logger.Error("no data found to send to stream", zap.String("path", path))
+						continue
+					}
+
+					stream <- TriggerResult{
+						Struct:   data,
+						Metadata: metadata,
+					}
+				case statusCompleted:
+					close(stream)
+					return
+				}
+			}
+		}
+	}()
+
+	err = we.Get(ctx, nil)
+	if err != nil {
+		var applicationErr *temporal.ApplicationError
+		if errors.As(err, &applicationErr) {
+			var details worker.EndUserErrorDetails
+			if dErr := applicationErr.Details(&details); dErr == nil && details.Message != "" {
+				// Note: We categorize all pipeline trigger errors as ErrTriggerFail and mark the code as 400 InvalidArgument for now.
+				// We should further categorize them into InvalidArgument or PreconditionFailed or InternalError in the future.
+				err = errmsg.AddMessage(fmt.Errorf("%w %s", ErrTriggerFail, err), details.Message)
+			}
+		}
+		return err
+	}
+
+	return nil
+}
+
 func (s *service) triggerAsyncPipeline(
 	ctx context.Context,
 	ns resource.Namespace,
@@ -1156,6 +1290,69 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID s
 	return pipelineOutputs, metadata, nil
 }
 
+func (s *service) getOutputsAndMetadataStream(ctx context.Context, pipelineTriggerID string, r *datamodel.Recipe, returnTraces bool, path string) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
+	memory, err := recipe.LoadMemoryByTriggerID(ctx, s.redisClient, pipelineTriggerID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("LoadMemoryByTriggerID: %w", err)
+	}
+
+	if memory == nil {
+		return nil, nil, fmt.Errorf("memory is nil")
+	}
+
+	pipelineOutputs := make([]*structpb.Struct, len(memory))
+
+	for idx, mem := range memory {
+		pipelineOutput := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+
+		for k, v := range r.Output {
+			input := v.Value[2:]
+			input = input[:len(input)-1]
+			input = strings.TrimSpace(input)
+
+			var val any
+			if strings.Contains(input, path) {
+				if input == recipe.SegSecret+"."+constant.GlobalSecretKey {
+					val = componentbase.SecretKeyword
+				} else {
+					val, err = recipe.TraverseBinding(mem, input)
+					if err != nil {
+						// If the path is not found, we should continue to the next output
+						continue
+					}
+				}
+
+				structVal, err := structpb.NewValue(val)
+				if err != nil {
+					return nil, nil, err
+				}
+				pipelineOutput.Fields[k] = structVal
+			}
+		}
+		pipelineOutputs[idx] = pipelineOutput
+	}
+
+	var metadata *pipelinepb.TriggerMetadata
+	if returnTraces {
+		traces, err := recipe.GenerateTraces(r.Component, memory)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		// Find the trace that matches the component
+		for compID, trace := range traces {
+			if strings.Contains(compID, path) {
+				metadata = &pipelinepb.TriggerMetadata{
+					Traces: map[string]*pipelinepb.Trace{compID: trace},
+				}
+				break // We only want the first matching trace
+			}
+		}
+	}
+
+	return pipelineOutputs, metadata, nil
+}
+
 // checkRequesterPermission validates that the authenticated user can make
 // requests on behalf of the resource identified by the requester UID.
 func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamodel.Pipeline) error {
@@ -1250,10 +1447,30 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 
 	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("check trigger permission error: %w", err)
 	}
 
 	return s.triggerPipeline(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
+}
+
+func (s *service) TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error {
+	ownerPermalink := ns.Permalink()
+
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
+	if err != nil {
+		return errdomain.ErrNotFound
+	}
+
+	isAdmin, err := s.checkTriggerPermission(ctx, dbPipeline)
+	if err != nil {
+		return err
+	}
+
+	if err := s.triggerPipelineWithStream(ctx, ns, dbPipeline.Recipe, isAdmin, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces, stream); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {

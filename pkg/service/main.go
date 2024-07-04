@@ -55,6 +55,7 @@ type Service interface {
 	DeleteNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string) error
 
 	TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error)
+	TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error
 	TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error)
 
 	TriggerNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error)
@@ -71,6 +72,12 @@ type Service interface {
 	GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error)
 	ListConnectorDefinitions(context.Context, *pb.ListConnectorDefinitionsRequest) (*pb.ListConnectorDefinitionsResponse, error)
 	GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error)
+}
+
+// Define a new type to encapsulate the stream data
+type TriggerResult struct {
+	Struct   []*structpb.Struct
+	Metadata *pb.TriggerMetadata
 }
 
 type service struct {

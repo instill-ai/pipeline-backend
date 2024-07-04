@@ -110,7 +110,7 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 		return nil
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%s:%d", config.Config.InstillCloud.Host, config.Config.InstillCloud.Port),
+	clientConn, err := grpc.Dial(fmt.Sprintf("%s:%d", config.Config.InstillCloud.Host, config.Config.InstillCloud.Port), // nolint: staticcheck
 		grpc.WithTransportCredentials(credentials.NewTLS((&tls.Config{}))),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
 	if err != nil {

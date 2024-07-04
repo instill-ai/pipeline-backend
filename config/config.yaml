@@ -16,6 +16,8 @@ server:
     maxworkflowtimeout: 3600 # in seconds
     maxworkflowretry: 1
     maxactivityretry: 1
+  instanceid: "pipeline-backend"
+  datachanbuffersize: 100
 connector:
 database:
   username: postgres
