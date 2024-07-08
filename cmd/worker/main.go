@@ -20,7 +20,6 @@ import (
 	"github.com/instill-ai/x/zapadapter"
 	"github.com/redis/go-redis/v9"
 
-	componentbase "github.com/instill-ai/component/base"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineWorker "github.com/instill-ai/pipeline-backend/pkg/worker"
@@ -147,7 +146,6 @@ func main() {
 		redisClient,
 		timeseries.WriteAPI(),
 		config.Config.Connector.Secrets,
-		map[string]componentbase.UsageHandlerCreator{},
 		nil,
 	)
 
@@ -159,8 +157,7 @@ func main() {
 	w.RegisterActivity(cw.ComponentActivity)
 	w.RegisterActivity(cw.PreIteratorActivity)
 	w.RegisterActivity(cw.PostIteratorActivity)
-	w.RegisterActivity(cw.UsageCollectActivity)
-	w.RegisterActivity(cw.UsageCheckActivity)
+	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())

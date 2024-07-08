@@ -7,13 +7,14 @@ require (
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/frankban/quicktest v1.14.6
 	github.com/gabriel-vasile/mimetype v1.4.3
+	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.21.0-beta
+	github.com/instill-ai/component v0.21.0-beta.0.20240708043833-e27e46c0876b
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240627022558-b70559ea17ce
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha

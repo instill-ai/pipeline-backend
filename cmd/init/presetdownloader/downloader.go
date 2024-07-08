@@ -160,7 +160,7 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 					return err
 				}
 			} else {
-				if err := repo.CreateNamespacePipeline(ctx, ns.Permalink(), dbPipeline); err != nil {
+				if err := repo.CreateNamespacePipeline(ctx, dbPipeline); err != nil {
 					return err
 				}
 				err = aclClient.SetOwner(ctx, "pipeline", dbPipeline.UID, "organization", ns.NsUID)

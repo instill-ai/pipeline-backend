@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"go.uber.org/zap"
 	"go/parser"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
@@ -25,14 +25,14 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/errmsg"
 
-	mgmtPB "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
 type TriggerPipelineWorkflowParam struct {
 	BatchSize        int
 	MemoryStorageKey *recipe.BatchMemoryKey
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-	Mode             mgmtPB.Mode
+	Mode             mgmtpb.Mode
 	IsIterator       bool
 	IsStreaming      bool
 }
@@ -72,15 +72,6 @@ type PostIteratorActivityParam struct {
 	ID                string
 	OutputElements    map[string]string
 	SystemVariables   recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-}
-
-type UsageCollectActivityParam struct {
-	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-	NumComponents   int
-}
-type UsageCheckActivityParam struct {
-	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-	NumComponents   int
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -149,21 +140,21 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		defer close(sChan)
 	}
 
-	var ownerType mgmtPB.OwnerType
+	var ownerType mgmtpb.OwnerType
 	switch param.SystemVariables.PipelineOwnerType {
 	case resource.Organization:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_ORGANIZATION
+		ownerType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	case resource.User:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_USER
+		ownerType = mgmtpb.OwnerType_OWNER_TYPE_USER
 	default:
-		ownerType = mgmtPB.OwnerType_OWNER_TYPE_UNSPECIFIED
+		ownerType = mgmtpb.OwnerType_OWNER_TYPE_UNSPECIFIED
 	}
 
 	dataPoint := utils.PipelineUsageMetricData{
 		OwnerUID:           param.SystemVariables.PipelineOwnerUID.String(),
 		OwnerType:          ownerType,
 		UserUID:            param.SystemVariables.PipelineUserUID.String(),
-		UserType:           mgmtPB.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
+		UserType:           mgmtpb.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
 		TriggerMode:        param.Mode,
 		PipelineID:         param.SystemVariables.PipelineID,
 		PipelineUID:        param.SystemVariables.PipelineUID.String(),
@@ -191,23 +182,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
-	numComponents := len(r.Component)
-	for _, comp := range r.Component {
-		switch comp.Type {
-		case datamodel.Iterator:
-			numComponents += len(comp.Component)
-		}
-	}
-
-	if !param.IsIterator {
-		if err := workflow.ExecuteActivity(ctx, w.UsageCheckActivity, &UsageCheckActivityParam{
-			SystemVariables: param.SystemVariables,
-			NumComponents:   numComponents,
-		}).Get(ctx, nil); err != nil {
-			return err
-		}
-	}
-
 	orderedComp, err := dag.TopologicalSort()
 	if err != nil {
 		return err
@@ -220,8 +194,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			param.MemoryStorageKey.Components[i] = map[string]string{}
 		}
 	}
-
-	logger.Debug("TriggerPipelineWorkflow number of components", zap.Int("numComponents", numComponents))
 
 	// The components in the same group can be executed in parallel
 	for group := range orderedComp {
@@ -278,7 +250,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							BatchSize:        preIteratorResult.ElementSize[iter],
 							MemoryStorageKey: preIteratorResult.MemoryStorageKeys[iter],
 							SystemVariables:  param.SystemVariables,
-							Mode:             mgmtPB.Mode_MODE_SYNC,
+							Mode:             mgmtpb.Mode_MODE_SYNC,
 						}))
 
 				}
@@ -333,15 +305,12 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-	dataPoint.Status = mgmtPB.Status_STATUS_COMPLETED
+	dataPoint.Status = mgmtpb.Status_STATUS_COMPLETED
 
 	if !param.IsIterator {
 		// TODO: we should check whether to collect failed component or not
-		if err := workflow.ExecuteActivity(ctx, w.UsageCollectActivity, &UsageCollectActivityParam{
-			SystemVariables: param.SystemVariables,
-			NumComponents:   numComponents,
-		}).Get(ctx, nil); err != nil {
-			return err
+		if err := workflow.ExecuteActivity(ctx, w.IncreasePipelineTriggerCountActivity, param.SystemVariables).Get(ctx, nil); err != nil {
+			return fmt.Errorf("updating pipeline trigger count: %w", err)
 		}
 
 		if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
@@ -567,38 +536,16 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 	return nil
 }
 
-func (w *worker) UsageCheckActivity(ctx context.Context, param *UsageCheckActivityParam) error {
+func (w *worker) IncreasePipelineTriggerCountActivity(ctx context.Context, sv recipe.SystemVariables) error {
+	l, _ := logger.GetZapLogger(ctx)
+	l = l.With(zap.Reflect("systemVariables", sv))
+	l.Info("IncreasePipelineTriggerCountActivity started")
 
-	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("UsageCheckActivity started")
-
-	err := w.pipelineUsageHandler.Check(ctx, param.SystemVariables, param.NumComponents)
-	if err != nil {
-		details := EndUserErrorDetails{
-			Message: fmt.Sprintf("Pipeline failed to execute. %s", errmsg.MessageOrErr(err)),
-		}
-		return temporal.NewNonRetryableApplicationError("pipeline failed to trigger", PipelineWorkflowError, err, details)
+	if err := w.repository.AddPipelineRuns(ctx, sv.PipelineUID); err != nil {
+		l.With(zap.Error(err)).Error("Couldn't update number of pipeline runs.")
 	}
-	logger.Info("UsageCheckActivity completed")
-	return nil
-}
 
-func (w *worker) UsageCollectActivity(ctx context.Context, param *UsageCollectActivityParam) error {
-
-	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("UsageCollectActivity started")
-
-	err := w.pipelineUsageHandler.Collect(ctx, param.SystemVariables, param.NumComponents)
-	if err != nil {
-		details := EndUserErrorDetails{
-			Message: fmt.Sprintf("Pipeline failed to execute. %s", errmsg.MessageOrErr(err)),
-		}
-		return temporal.NewNonRetryableApplicationError("pipeline failed to trigger", PipelineWorkflowError, err, details)
-	}
-	// We ignore the error check for pipeline run stats for now.
-	_ = w.repository.AddPipelineRuns(ctx, param.SystemVariables.PipelineUID)
-
-	logger.Info("UsageCollectActivity completed")
+	l.Info("IncreasePipelineTriggerCountActivity completed")
 	return nil
 }
 
@@ -762,7 +709,7 @@ func (w *worker) processSetup(batchMemory []*recipe.Memory, setup map[string]any
 func (w *worker) writeErrorDataPoint(ctx context.Context, err error, span trace.Span, startTime time.Time, dataPoint *utils.PipelineUsageMetricData) {
 	span.SetStatus(1, err.Error())
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
-	dataPoint.Status = mgmtPB.Status_STATUS_ERRORED
+	dataPoint.Status = mgmtpb.Status_STATUS_ERRORED
 	_ = w.writeNewDataPoint(ctx, *dataPoint)
 }
 
@@ -790,8 +737,6 @@ const (
 	ConnectorActivityError    = "ConnectorActivityError"
 	PreIteratorActivityError  = "PreIteratorActivityError"
 	PostIteratorActivityError = "PostIteratorActivityError"
-	UsageCheckActivityError   = "UsageCheckActivityError"
-	UsageCollectActivityError = "UsageCollectActivityError"
 )
 
 // EndUserErrorDetails provides a structured way to add an end-user error
