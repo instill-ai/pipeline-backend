@@ -280,7 +280,12 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			err = futures[idx].Get(ctx, &result)
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
-				return fmt.Errorf("futures.Get value: %w", err)
+
+				// ComponentActivity is responsible of returning a temporal
+				// application error with the relevant information. Wrapping
+				// the error here prevents the client from accessing the error
+				// message from the activity.
+				return err
 			}
 			if param.IsStreaming {
 				sChan <- WorkFlowSignal{Status: statusStep, ID: result.ID}
@@ -329,47 +334,47 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 
 	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
 	compInputs, idxMap, err := w.processInput(batchMemory, param.ID, param.UpstreamIDs, param.Condition, param.Input)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
 	cons, err := w.processSetup(batchMemory, param.Setup)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 	sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
 	comp, err := w.component.GetDefinitionByID(param.Type, nil, nil)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
 	// Note: we assume that setup in the batch are all the same
 	execution, err := w.component.CreateExecution(uuid.FromStringOrNil(comp.Uid), sysVars, cons[0], param.Task)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
 	compOutputs, err := execution.Execute(ctx, compInputs)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
 	compMem, err := w.processOutput(batchMemory, param.ID, compOutputs, idxMap)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
 	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.WorkflowID, param.ID, compMem)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, ConnectorActivityError)
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
 	logger.Info("ComponentActivity completed")
@@ -391,11 +396,11 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 
 	m, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, PreIteratorActivityError)
+		return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
 	}
 	r, err := recipe.LoadRecipe(ctx, w.redisClient, param.MemoryStorageKey.Recipe)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, PreIteratorActivityError)
+		return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
 	}
 
 	iteratorRecipe := &datamodel.Recipe{
@@ -409,7 +414,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 	recipeKey := fmt.Sprintf("%s:%s", param.WorkflowID, recipe.SegRecipe)
 	err = recipe.WriteRecipe(ctx, w.redisClient, recipeKey, iteratorRecipe)
 	if err != nil {
-		return nil, w.toApplicationError(err, param.ID, PreIteratorActivityError)
+		return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
 	}
 
 	batchSize := len(m)
@@ -422,7 +427,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 
 		input, err := recipe.RenderInput(param.Input, iter, m[iter])
 		if err != nil {
-			return nil, w.toApplicationError(err, param.ID, PreIteratorActivityError)
+			return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
 		}
 
 		elems := make([]*recipe.ComponentMemory, len(input.([]any)))
@@ -437,7 +442,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 
 		err = recipe.WriteComponentMemory(ctx, w.redisClient, childWorkflowIDs[iter], param.ID, elems)
 		if err != nil {
-			return nil, w.toApplicationError(err, param.ID, PreIteratorActivityError)
+			return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
 		}
 
 		varKeys := make([]string, elementSize)
@@ -485,7 +490,7 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 	// recipes for all iteration are the same
 	r, err := recipe.LoadRecipe(ctx, w.redisClient, param.MemoryStorageKeys[0].Recipe)
 	if err != nil {
-		return w.toApplicationError(err, param.ID, PreIteratorActivityError)
+		return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 	}
 
 	iterComp := []*recipe.ComponentMemory{}
@@ -500,7 +505,7 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 
 		m, err := recipe.LoadMemory(ctx, w.redisClient, k)
 		if err != nil {
-			return w.toApplicationError(err, param.ID, PostIteratorActivityError)
+			return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 		}
 
 		output := recipe.ComponentIO{}
@@ -510,7 +515,7 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 			for elemIdx := range len(m) {
 				elemVal, err := recipe.RenderInput(v, elemIdx, m[elemIdx])
 				if err != nil {
-					return w.toApplicationError(err, param.ID, PostIteratorActivityError)
+					return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 				}
 				elemVals = append(elemVals, elemVal)
 
@@ -529,7 +534,7 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.WorkflowID, param.ID, iterComp)
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
-		return w.toApplicationError(err, param.ID, PostIteratorActivityError)
+		return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 	}
 
 	logger.Info("PostIteratorActivity completed")
@@ -713,18 +718,15 @@ func (w *worker) writeErrorDataPoint(ctx context.Context, err error, span trace.
 	_ = w.writeNewDataPoint(ctx, *dataPoint)
 }
 
-// toApplicationError wraps a temporal task error in a temporal.Application
-// error, adding end-user information that can be extracted by the temporal
-// client.
-func (w *worker) toApplicationError(err error, componentID, errType string) error {
-	details := EndUserErrorDetails{
-		// If no end-user message is present in the error, MessageOrErr will
-		// return the string version of the error. For an end user, this extra
-		// information is more actionable than no information at all.
-		Message: fmt.Sprintf("Component %s failed to execute. %s", componentID, errmsg.MessageOrErr(err)),
-	}
-	// return fault.Wrap(err, fmsg.WithDesc("component failed to execute", issue))
-	return temporal.NewApplicationErrorWithCause("component failed to execute", errType, err, details)
+// componentActivityError transforms an error with (potentially) an end-user
+// message into a Temporal application error. Temporal clients can extract the
+// message and propagate it to the end user.
+func componentActivityError(err error, errType, componentID string) error {
+	// If no end-user message is present in the error, MessageOrErr will return
+	// the string version of the error. For an end user, this extra information
+	// is more actionable than no information at all.
+	msg := fmt.Sprintf("Component %s failed to execute. %s", componentID, errmsg.MessageOrErr(err))
+	return temporal.NewApplicationErrorWithCause(msg, errType, err)
 }
 
 // The following constants help temporal clients to trace the origin of an
@@ -733,10 +735,9 @@ func (w *worker) toApplicationError(err error, componentID, errType string) erro
 // business domain (e.g. VendorError (non billable), InputDataError (billable),
 // etc.).
 const (
-	PipelineWorkflowError     = "PipelineWorkflowError"
-	ConnectorActivityError    = "ConnectorActivityError"
-	PreIteratorActivityError  = "PreIteratorActivityError"
-	PostIteratorActivityError = "PostIteratorActivityError"
+	componentActivityErrorType    = "ComponentActivityError"
+	preIteratorActivityErrorType  = "PreIteratorActivityError"
+	postIteratorActivityErrorType = "PostIteratorActivityError"
 )
 
 // EndUserErrorDetails provides a structured way to add an end-user error
