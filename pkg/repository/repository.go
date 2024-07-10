@@ -169,14 +169,14 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 
 	joinStr := "left join tag on tag.pipeline_uid = pipeline.uid"
 
-	countBuilder := db.Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Joins(joinStr)
+	countBuilder := db.Distinct("pipeline.uid").Model(&datamodel.Pipeline{}).Where(where, whereArgs...).Joins(joinStr)
 	if uidAllowList != nil {
 		countBuilder = countBuilder.Where("uid in ?", uidAllowList).Count(&totalSize)
 	}
 
 	countBuilder.Count(&totalSize)
 
-	queryBuilder := db.Model(&datamodel.Pipeline{}).Joins(joinStr).Where(where, whereArgs...)
+	queryBuilder := db.Distinct().Model(&datamodel.Pipeline{}).Joins(joinStr).Where(where, whereArgs...)
 	if order.Fields == nil || len(order.Fields) == 0 {
 		order.Fields = append(order.Fields, ordering.Field{
 			Path: "create_time",
@@ -284,7 +284,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 
 		tokens := map[string]string{}
 
-		lastItemQueryBuilder := db.Model(&datamodel.Pipeline{}).Joins(joinStr).Where(where, whereArgs...)
+		lastItemQueryBuilder := db.Distinct().Model(&datamodel.Pipeline{}).Joins(joinStr).Where(where, whereArgs...)
 		if uidAllowList != nil {
 			lastItemQueryBuilder = lastItemQueryBuilder.Where("uid in ?", uidAllowList)
 
