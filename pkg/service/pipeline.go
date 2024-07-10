@@ -43,6 +43,8 @@ import (
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
+var preserveTags = []string{"featured", "feature"}
+
 func (s *service) GetHubStats(ctx context.Context) (*pipelinepb.GetHubStatsResponse, error) {
 
 	uidAllowList, err := s.aclClient.ListPermissions(ctx, "pipeline", "reader", true)
@@ -326,25 +328,27 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	toUpdTags := toUpdPipeline.GetTags()
 
-	if len(toUpdTags) > 0 {
-		currentTags := existingPipeline.TagNames()
-		toBeCreatedTagNames := make([]string, 0, len(toUpdTags))
-		for _, tag := range toUpdTags {
-			if !slices.Contains(currentTags, tag) {
-				toBeCreatedTagNames = append(toBeCreatedTagNames, tag)
-			}
+	currentTags := existingPipeline.TagNames()
+	toBeCreatedTagNames := make([]string, 0, len(toUpdTags))
+	for _, tag := range toUpdTags {
+		if !slices.Contains(currentTags, tag) && !slices.Contains(preserveTags, tag) {
+			toBeCreatedTagNames = append(toBeCreatedTagNames, tag)
 		}
+	}
 
-		toBeDeletedTagNames := make([]string, 0, len(toUpdTags))
-		for _, tag := range currentTags {
-			if !slices.Contains(toUpdTags, tag) {
-				toBeDeletedTagNames = append(toBeDeletedTagNames, tag)
-			}
+	toBeDeletedTagNames := make([]string, 0, len(toUpdTags))
+	for _, tag := range currentTags {
+		if !slices.Contains(toUpdTags, tag) && !slices.Contains(preserveTags, tag) {
+			toBeDeletedTagNames = append(toBeDeletedTagNames, tag)
 		}
+	}
+	if len(toBeDeletedTagNames) > 0 {
 		err = s.repository.DeletePipelineTags(ctx, existingPipeline.UID, toBeDeletedTagNames)
 		if err != nil {
 			return nil, err
 		}
+	}
+	if len(toBeCreatedTagNames) > 0 {
 		err = s.repository.CreatePipelineTags(ctx, existingPipeline.UID, toBeCreatedTagNames)
 		if err != nil {
 			return nil, err
