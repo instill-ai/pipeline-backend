@@ -82,7 +82,7 @@ func NewACLClient(wc openfga.OpenFGAServiceClient, rc openfga.OpenFGAServiceClie
 func InitOpenFGAClient(ctx context.Context, host string, port int) (openfga.OpenFGAServiceClient, *grpc.ClientConn) {
 	clientDialOpts := grpc.WithTransportCredentials(insecure.NewCredentials())
 
-	clientConn, err := grpc.Dial(fmt.Sprintf("%v:%v", host, port), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize))) // nolint: staticcheck
+	clientConn, err := grpc.NewClient(fmt.Sprintf("%v:%v", host, port), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
 	if err != nil {
 		panic(err)
 	}

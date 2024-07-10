@@ -84,6 +84,10 @@ type Pipeline struct {
 	ShareCode         string
 	Metadata          datatypes.JSON `gorm:"type:jsonb"`
 	Readme            string
+	SourceURL         sql.NullString
+	DocumentationURL  sql.NullString
+	License           sql.NullString
+	ProfileImage      sql.NullString
 	Releases          []*PipelineRelease
 	Tags              []*Tag
 

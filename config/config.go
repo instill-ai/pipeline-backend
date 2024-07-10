@@ -76,6 +76,7 @@ type ServerConfig struct {
 	}
 	InstanceID         string `koanf:"instanceid"`
 	DataChanBufferSize int    `koanf:"datachanbuffersize"`
+	InstillCoreHost    string `koanf:"instillcorehost"`
 }
 
 // ConnectorConfig defines the connector configurations

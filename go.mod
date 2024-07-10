@@ -10,6 +10,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3
 	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/gofrs/uuid v4.4.0+incompatible
+	github.com/gogo/status v1.1.1
 	github.com/gojuno/minimock/v3 v3.3.11
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -17,7 +18,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/component v0.21.0-beta.0.20240708043833-e27e46c0876b
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240627022558-b70559ea17ce
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240710034515-e4450d31ea05
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
 	github.com/jackc/pgx/v5 v5.5.5
@@ -39,6 +40,7 @@ require (
 	go.temporal.io/api v1.16.0
 	go.temporal.io/sdk v1.21.0
 	go.uber.org/zap v1.26.0
+	golang.org/x/image v0.18.0
 	golang.org/x/mod v0.17.0
 	golang.org/x/net v0.26.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240513163218-0867130af1f8
@@ -73,7 +75,6 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gocolly/colly/v2 v2.1.0 // indirect
-	github.com/gogo/status v1.1.1 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
@@ -118,7 +119,6 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
-	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/oauth2 v0.20.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
