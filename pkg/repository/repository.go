@@ -74,9 +74,9 @@ type Repository interface {
 	GetNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) (*datamodel.Secret, error)
 	UpdateNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string, secret *datamodel.Secret) error
 	DeleteNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) error
-	CreatePipelineTag(ctx context.Context, pipelineUID string, tagName string) error
-	DeletePipelineTag(ctx context.Context, pipelineUID string, tagName string) error
-	ListPipelineTags(ctx context.Context, pipelineUID string) ([]*datamodel.Tag, error)
+	CreatePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error
+	DeletePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error
+	ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]datamodel.Tag, error)
 
 	// TODO this function can remain unexported once connector and operator
 	// definition lists are removed.
@@ -372,6 +372,11 @@ func (r *repository) getNamespacePipeline(ctx context.Context, where string, whe
 		}
 		pipeline.Releases = pipelineReleases
 	}
+
+	pipeline.Tags = []*datamodel.Tag{}
+	tagDB := r.checkPinnedUser(ctx, r.db, "tag")
+	tagDBQueryBuilder := tagDB.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipeline.UID)
+	tagDBQueryBuilder.Find(&pipeline.Tags)
 
 	return &pipeline, nil
 }
@@ -855,20 +860,24 @@ func (r *repository) DeleteNamespaceSecretByID(ctx context.Context, ownerPermali
 	return nil
 }
 
-func (r *repository) CreatePipelineTag(ctx context.Context, pipelineUID string, tagName string) error {
+func (r *repository) CreatePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error {
 
 	r.pinUser(ctx, "tag")
 
 	db := r.checkPinnedUser(ctx, r.db, "tag")
 
-	tag := datamodel.Tag{
-
-		PipelineUID: pipelineUID,
-
-		TagName: tagName,
+	tags := []datamodel.Tag{}
+	for _, tagName := range tagNames {
+		tag := datamodel.Tag{
+			PipelineUID: pipelineUID,
+			TagName:     tagName,
+			CreateTime:  time.Now(),
+			UpdateTime:  time.Now(),
+		}
+		tags = append(tags, tag)
 	}
 
-	if result := db.Model(&datamodel.Tag{}).Create(&tag); result.Error != nil {
+	if result := db.Model(&datamodel.Tag{}).Create(&tags); result.Error != nil {
 
 		var pgErr *pgconn.PgError
 
@@ -886,13 +895,13 @@ func (r *repository) CreatePipelineTag(ctx context.Context, pipelineUID string, 
 
 }
 
-func (r *repository) DeletePipelineTag(ctx context.Context, pipelineUID string, tagName string) error {
+func (r *repository) DeletePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error {
 
 	r.pinUser(ctx, "tag")
 
 	db := r.checkPinnedUser(ctx, r.db, "tag")
 
-	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ? and tag_name = ?", pipelineUID, tagName).Delete(&datamodel.Tag{})
+	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ? and tag_name in ?", pipelineUID, tagNames).Delete(&datamodel.Tag{})
 
 	if result.Error != nil {
 
@@ -910,13 +919,13 @@ func (r *repository) DeletePipelineTag(ctx context.Context, pipelineUID string, 
 
 }
 
-func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID string) ([]*datamodel.Tag, error) {
+func (r *repository) ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]datamodel.Tag, error) {
 
 	db := r.db
 
-	var tags []*datamodel.Tag
+	var tags []datamodel.Tag
 
-	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipelineUID).Find(tags)
+	result := db.Model(&datamodel.Tag{}).Where("pipeline_uid = ?", pipelineUID).Find(&tags)
 
 	if result.Error != nil {
 

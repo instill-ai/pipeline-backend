@@ -113,7 +113,7 @@ func (p Pipeline) OwnerUID() uuid.UUID {
 }
 
 type Tag struct {
-	PipelineUID string
+	PipelineUID uuid.UUID
 	TagName     string
 	CreateTime  time.Time `gorm:"autoCreateTime:nano"`
 	UpdateTime  time.Time `gorm:"autoUpdateTime:nano"`
@@ -368,6 +368,14 @@ func (r *Recipe) Scan(value interface{}) error {
 	}
 
 	return nil
+}
+
+func (p *Pipeline) TagNames() []string {
+	tags := make([]string, len(p.Tags))
+	for i, t := range p.Tags {
+		tags[i] = t.TagName
+	}
+	return tags
 }
 
 // Value function for custom GORM type Recipe

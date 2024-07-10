@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"slices"
 	"strings"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"github.com/gabriel-vasile/mimetype"
@@ -322,6 +323,33 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	if err := s.repository.UpdateNamespacePipelineByUID(ctx, dbPipeline.UID, dbPipeline); err != nil {
 		return nil, err
+	}
+
+	toUpdTags := toUpdPipeline.GetTags()
+
+	if len(toUpdTags) > 0 {
+		currentTags := existingPipeline.TagNames()
+		toBeCreatedTagNames := make([]string, 0, len(toUpdTags))
+		for _, tag := range toUpdTags {
+			if !slices.Contains(currentTags, tag) {
+				toBeCreatedTagNames = append(toBeCreatedTagNames, tag)
+			}
+		}
+
+		toBeDeletedTagNames := make([]string, 0, len(toUpdTags))
+		for _, tag := range currentTags {
+			if !slices.Contains(toUpdTags, tag) {
+				toBeDeletedTagNames = append(toBeDeletedTagNames, tag)
+			}
+		}
+		err = s.repository.DeletePipelineTags(ctx, existingPipeline.UID, toBeDeletedTagNames)
+		if err != nil {
+			return nil, err
+		}
+		err = s.repository.CreatePipelineTags(ctx, existingPipeline.UID, toBeCreatedTagNames)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	dbPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, toUpdPipeline.Id, false, true)

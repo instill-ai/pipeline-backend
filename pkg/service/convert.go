@@ -50,7 +50,7 @@ type converter struct {
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 	redisClient              *redis.Client
 	component                *componentstore.Store
-	aclClient                *acl.ACLClient
+	aclClient                acl.ACLClientInterface
 	repository               repository.Repository
 }
 
@@ -58,7 +58,7 @@ type converter struct {
 func NewConverter(
 	m mgmtpb.MgmtPrivateServiceClient,
 	rc *redis.Client,
-	acl *acl.ACLClient,
+	acl acl.ACLClientInterface,
 	r repository.Repository,
 ) Converter {
 	logger, _ := logger.GetZapLogger(context.Background())
