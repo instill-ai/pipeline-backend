@@ -1,6 +1,6 @@
 module github.com/instill-ai/pipeline-backend
 
-go 1.22.3
+go 1.22.5
 
 require (
 	cloud.google.com/go/longrunning v0.5.6
