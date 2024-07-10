@@ -40,11 +40,7 @@ func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (
 
 func (s *service) implementedOperatorDefinitions(ctx context.Context) ([]*pb.OperatorDefinition, error) {
 
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
-	if err != nil {
-		return nil, err
-	}
-	allDefs := s.component.ListDefinitions(vars, false)
+	allDefs := s.component.ListDefinitions(nil, false)
 
 	implemented := make([]*pb.OperatorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -251,12 +247,7 @@ var implementedReleaseStages = map[pb.ComponentDefinition_ReleaseStage]bool{
 
 func (s *service) implementedConnectorDefinitions(ctx context.Context) ([]*pb.ConnectorDefinition, error) {
 
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
-	if err != nil {
-		return nil, err
-	}
-
-	allDefs := s.component.ListDefinitions(vars, false)
+	allDefs := s.component.ListDefinitions(nil, false)
 
 	implemented := make([]*pb.ConnectorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
@@ -327,6 +318,19 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 
 	pageDefs := make([]*pb.ConnectorDefinition, 0, len(page))
 	for _, def := range page {
+		// Due to the instill-model requiring dynamic definition, we need to set
+		// the definition with dynamic values by fetching it via system
+		// variables.
+		if def.Id == "instill-model" {
+			vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+			if err != nil {
+				return nil, err
+			}
+			updatedDef, err := s.component.GetDefinitionByID(def.Id, vars, nil)
+			if err == nil {
+				def = convertComponentDefToConnectorDef(updatedDef)
+			}
+		}
 		s.applyViewToConnectorDefinition(def, req.GetView())
 		pageDefs = append(pageDefs, def)
 	}
