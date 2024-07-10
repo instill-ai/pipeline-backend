@@ -86,7 +86,7 @@ func InitPipelinePublicServiceClient(ctx context.Context) (pb.PipelinePublicServ
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
-	clientConn, err := grpc.Dial(fmt.Sprintf(":%v", config.Config.Server.PublicPort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize))) // nolint: staticcheck
+	clientConn, err := grpc.NewClient(fmt.Sprintf(":%v", config.Config.Server.PublicPort), clientDialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, nil
@@ -241,7 +241,7 @@ func main() {
 		redisClient,
 		temporalClient,
 		&aclClient,
-		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repository),
+		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repository, config.Config.Server.InstillCoreHost),
 		mgmtPrivateServiceClient,
 	)
 
@@ -339,6 +339,12 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease)); err != nil {
+		logger.Fatal(err.Error())
+	}
+	if err := publicServeMux.HandlePath("GET", "/v1beta/{name=users/*/pipelines/*}/image", middleware.HandleProfileImage(service, repository)); err != nil {
+		logger.Fatal(err.Error())
+	}
+	if err := publicServeMux.HandlePath("GET", "/v1beta/{name=organizations/*/pipelines/*}/image", middleware.HandleProfileImage(service, repository)); err != nil {
 		logger.Fatal(err.Error())
 	}
 

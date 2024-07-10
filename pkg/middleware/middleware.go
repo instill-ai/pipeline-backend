@@ -3,15 +3,20 @@ package middleware
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -143,4 +148,48 @@ func (mw *captureResponseWriter) Write(b []byte) (int, error) {
 // if method is not present there would be a server error.
 func (mw *captureResponseWriter) Unwrap() http.ResponseWriter {
 	return mw.ResponseWriter
+}
+
+func HandleProfileImage(srv service.Service, repo repository.Repository) runtime.HandlerFunc {
+
+	return runtime.HandlerFunc(func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+		defer cancel()
+		if v, ok := pathParams["name"]; !ok || len(strings.Split(v, "/")) < 4 {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		ns, id, err := srv.GetRscNamespaceAndNameID(ctx, pathParams["name"])
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		profileImageBase64 := ""
+		dbModel, err := repo.GetNamespacePipelineByID(ctx, ns.Permalink(), id, true, true)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if dbModel.ProfileImage.String == "" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		profileImageBase64 = dbModel.ProfileImage.String
+
+		b, err := base64.StdEncoding.DecodeString(strings.Split(profileImageBase64, ",")[1])
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "image/png")
+		_, err = w.Write(b)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+	})
 }

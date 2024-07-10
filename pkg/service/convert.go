@@ -1,16 +1,26 @@
 package service
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/gofrs/uuid"
+	"github.com/gogo/status"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/image/draw"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -52,6 +62,7 @@ type converter struct {
 	component                *componentstore.Store
 	aclClient                acl.ACLClientInterface
 	repository               repository.Repository
+	instillCoreHost          string
 }
 
 // NewService initiates a service instance
@@ -60,6 +71,7 @@ func NewConverter(
 	rc *redis.Client,
 	acl acl.ACLClientInterface,
 	r repository.Repository,
+	ch string,
 ) Converter {
 	logger, _ := logger.GetZapLogger(context.Background())
 
@@ -69,7 +81,51 @@ func NewConverter(
 		component:                componentstore.Init(logger, nil, nil),
 		aclClient:                acl,
 		repository:               r,
+		instillCoreHost:          ch,
 	}
+}
+
+func (c *converter) compressProfileImage(profileImage string) (string, error) {
+
+	// Due to the local env, we don't set the `InstillCoreHost` config, the avatar path is not working.
+	// As a workaround, if the profileAvatar is not a base64 string, we ignore the avatar.
+	if !strings.HasPrefix(profileImage, "data:") {
+		return "", nil
+	}
+
+	profileImageStr := strings.Split(profileImage, ",")
+	b, err := base64.StdEncoding.DecodeString(profileImageStr[len(profileImageStr)-1])
+	if err != nil {
+		return "", err
+	}
+	if len(b) > 200*1024 {
+		mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
+
+		var src image.Image
+		switch mimeType {
+		case "image/png":
+			src, _ = png.Decode(bytes.NewReader(b))
+		case "image/jpeg":
+			src, _ = jpeg.Decode(bytes.NewReader(b))
+		default:
+			return "", status.Errorf(codes.InvalidArgument, "only support profile image in jpeg and png formats")
+		}
+
+		// Set the expected size that you want:
+		dst := image.NewRGBA(image.Rect(0, 0, 256, 256*src.Bounds().Max.Y/src.Bounds().Max.X))
+
+		// Resize:
+		draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+
+		var buf bytes.Buffer
+		encoder := png.Encoder{CompressionLevel: png.BestCompression}
+		err = encoder.Encode(bufio.NewWriter(&buf), dst)
+		if err != nil {
+			return "", status.Errorf(codes.InvalidArgument, "profile image error")
+		}
+		profileImage = fmt.Sprintf("data:%s;base64,%s", "image/png", base64.StdEncoding.EncodeToString(buf.Bytes()))
+	}
+	return profileImage, nil
 }
 
 func (c *converter) processSetup(ctx context.Context, ownerPermalink string, setup map[string]any) map[string]any {
@@ -287,6 +343,10 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 	if err := json.Unmarshal(b, &recipe); err != nil {
 		return nil, err
 	}
+	profileImage, err := c.compressProfileImage(pbPipeline.GetProfileImage())
+	if err != nil {
+		return nil, err
+	}
 
 	dbSharing := &datamodel.Sharing{}
 	if pbPipeline.GetSharing() != nil {
@@ -349,6 +409,22 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 			}
 			return []byte{}
 		}(),
+		SourceURL: sql.NullString{
+			String: pbPipeline.GetSourceUrl(),
+			Valid:  true,
+		},
+		DocumentationURL: sql.NullString{
+			String: pbPipeline.GetDocumentationUrl(),
+			Valid:  true,
+		},
+		License: sql.NullString{
+			String: pbPipeline.GetLicense(),
+			Valid:  true,
+		},
+		ProfileImage: sql.NullString{
+			String: profileImage,
+			Valid:  len(profileImage) > 0,
+		},
 	}, nil
 }
 
@@ -388,6 +464,8 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 			return nil, err
 		}
 	}
+
+	profileImage := fmt.Sprintf("%s/v1beta/%s/pipelines/%s/image", c.instillCoreHost, ownerName, dbPipeline.ID)
 
 	pbSharing := &pb.Sharing{}
 
@@ -448,6 +526,10 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 			NumberOfClones: int32(dbPipeline.NumberOfClones),
 			LastRunTime:    timestamppb.New(dbPipeline.LastRunTime),
 		},
+		SourceUrl:        &dbPipeline.SourceURL.String,
+		DocumentationUrl: &dbPipeline.DocumentationURL.String,
+		License:          &dbPipeline.License.String,
+		ProfileImage:     &profileImage,
 	}
 
 	var owner *mgmtpb.Owner
