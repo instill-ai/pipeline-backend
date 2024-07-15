@@ -11,9 +11,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000013"
-	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000015"
-	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000016"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/legacy"
 )
 
@@ -110,9 +108,9 @@ func main() {
 		panic(err)
 	}
 
-	ExpectedVersion := databaseConfig.Version
+	expectedVersion := databaseConfig.Version
 
-	fmt.Printf("Expected migration version is %d\n", ExpectedVersion)
+	fmt.Printf("Expected migration version is %d\n", expectedVersion)
 	fmt.Printf("The current schema version is %d, and dirty flag is %t\n", curVersion, dirty)
 	if dirty {
 		panic("The database has dirty flag, please fix it")
@@ -120,8 +118,8 @@ func main() {
 
 	step := curVersion
 	for {
-		if ExpectedVersion <= step {
-			fmt.Printf("Migration to version %d complete\n", ExpectedVersion)
+		if expectedVersion <= step {
+			fmt.Printf("Migration to version %d complete\n", expectedVersion)
 			break
 		}
 
@@ -148,20 +146,9 @@ func main() {
 		if step, _, err = m.Version(); err != nil {
 			panic(err)
 		}
-		switch step {
-		case 13:
-			if err := convert000013.Migrate(); err != nil {
-				panic(err)
-			}
-		case 15:
-			if err := convert000015.Migrate(); err != nil {
-				panic(err)
-			}
-		case 16:
-			if err := convert000016.Migrate(); err != nil {
-				panic(err)
-			}
-		}
 
+		if err := migration.Migrate(step); err != nil {
+			panic(err)
+		}
 	}
 }

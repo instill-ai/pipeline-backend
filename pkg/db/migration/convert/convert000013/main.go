@@ -491,18 +491,23 @@ func migratePipelineRelease(connectorMap map[uuid.UUID]Connector) error {
 	return nil
 }
 
-func Migrate() error {
+// Migrate runs the 13th revision migration.
+func (m *Migration) Migrate() error {
 	var connectorMap map[uuid.UUID]Connector
 	var err error
 	if connectorMap, err = migrateSecret(); err != nil {
 		return err
 	}
 
-	if err = migratePipeline(connectorMap); err != nil {
+	if err := migratePipeline(connectorMap); err != nil {
 		return err
 	}
-	if err = migratePipelineRelease(connectorMap); err != nil {
-		return err
-	}
-	return nil
+	return migratePipelineRelease(connectorMap)
 }
+
+// Migration executes code along with the 13th database schema revision.
+// NOTE: for new migrations, when possible, it is best to define a <version>.go
+// in the `migration` package, next to the <version>_init.up.sql script. In
+// that case, the migration struct can be unexported and have a descriptive
+// type name.
+type Migration struct{}

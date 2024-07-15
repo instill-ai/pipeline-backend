@@ -322,15 +322,18 @@ func migratePipelineRelease() error {
 
 }
 
-func Migrate() error {
-
-	var err error
-
-	if err = migratePipeline(); err != nil {
+// Migrate runs the 16th revision migration.
+func (m *Migration) Migrate() error {
+	if err := migratePipeline(); err != nil {
 		return err
 	}
-	if err = migratePipelineRelease(); err != nil {
-		return err
-	}
-	return nil
+
+	return migratePipelineRelease()
 }
+
+// Migration executes code along with the 16th database schema revision.
+// NOTE: for new migrations, when possible, it is best to define a <version>.go
+// in the `migration` package, next to the <version>_init.up.sql script. In
+// that case, the migration struct can be unexported and have a descriptive
+// type name.
+type Migration struct{}
