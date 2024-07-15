@@ -17,7 +17,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.21.0-beta.0.20240710144907-4c9281e4a8ba
+	github.com/instill-ai/component v0.21.0-beta.0.20240715135304-4cfc26315473
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240710034515-e4450d31ea05
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
@@ -65,6 +65,9 @@ require (
 	github.com/antchfx/xmlquery v1.3.17 // indirect
 	github.com/antchfx/xpath v1.2.4 // indirect
 	github.com/apache/arrow/go/v14 v14.0.2 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.30.1 // indirect
+	github.com/aws/smithy-go v1.20.3 // indirect
+	github.com/cohere-ai/cohere-go/v2 v2.8.5 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/emersion/go-imap/v2 v2.0.0-beta.3 // indirect
 	github.com/emersion/go-message v0.18.1 // indirect
@@ -72,6 +75,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
+	github.com/gage-technologies/mistral-go v1.1.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gocolly/colly/v2 v2.1.0 // indirect
@@ -80,6 +84,8 @@ require (
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/flatbuffers v23.5.26+incompatible // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/go-github/v62 v62.0.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.3 // indirect
