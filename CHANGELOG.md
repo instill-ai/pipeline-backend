@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.32.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.31.0-beta...v0.32.0-beta) (2024-07-16)
+
+
+### Features
+
+* add profile_image and several profile fields for pipeline ([#544](https://github.com/instill-ai/pipeline-backend/issues/544)) ([f628efd](https://github.com/instill-ai/pipeline-backend/commit/f628efdba7cd7549bd62edfdc4e083c2488bbadc))
+* inject single usage handler creator in components ([#541](https://github.com/instill-ai/pipeline-backend/issues/541)) ([ccfdfbe](https://github.com/instill-ai/pipeline-backend/commit/ccfdfbef27558f726fbcc6c61c88c0a2ef7194d2))
+* Intermediate Result Streaming for User Pipelines ([#534](https://github.com/instill-ai/pipeline-backend/issues/534)) ([c8be9a0](https://github.com/instill-ai/pipeline-backend/commit/c8be9a0c6fa14afd20b089405310f58fd7e4aafc))
+* prevent users from tagging pipelines with a reserved tag ([#545](https://github.com/instill-ai/pipeline-backend/issues/545)) ([29cdaed](https://github.com/instill-ai/pipeline-backend/commit/29cdaed142ba9df6e0d14e0d973b555b15993650))
+* users can create and update tags by updating pipeline ([#497](https://github.com/instill-ai/pipeline-backend/issues/497)) ([54aded8](https://github.com/instill-ai/pipeline-backend/commit/54aded83a510de7ab1ef68733b628b8eca5c0116))
+
+
+### Bug Fixes
+
+* return end-user error on component execution failure ([#543](https://github.com/instill-ai/pipeline-backend/issues/543)) ([a4afad0](https://github.com/instill-ai/pipeline-backend/commit/a4afad02e2677f39381c83a771448f5951d65ef9))
+
+
+### Miscellaneous Chores
+
+* release v0.32.0-beta ([6247a0b](https://github.com/instill-ai/pipeline-backend/commit/6247a0baa816a563ddbd4332e4ad2b9e2e039990))
+
 ## [0.31.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.30.1-beta...v0.31.0-beta) (2024-07-02)
 
 
