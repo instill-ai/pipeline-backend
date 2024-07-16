@@ -6,6 +6,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000013"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000015"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000016"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000019"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
@@ -38,7 +39,10 @@ func Migrate(version uint) error {
 	case 16:
 		m = new(convert000016.Migration)
 	case 19:
-		m = &jqInputToKebabCaseConverter{db: db, logger: l}
+		m = &convert000019.JQInputToKebabCaseConverter{
+			DB:     db,
+			Logger: l,
+		}
 	default:
 		return nil
 	}

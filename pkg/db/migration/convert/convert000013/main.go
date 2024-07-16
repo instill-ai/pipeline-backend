@@ -506,8 +506,4 @@ func (m *Migration) Migrate() error {
 }
 
 // Migration executes code along with the 13th database schema revision.
-// NOTE: for new migrations, when possible, it is best to define a <version>.go
-// in the `migration` package, next to the <version>_init.up.sql script. In
-// that case, the migration struct can be unexported and have a descriptive
-// type name.
 type Migration struct{}

@@ -1,4 +1,4 @@
-package migration
+package convert000019
 
 import (
 	"fmt"
@@ -12,12 +12,15 @@ import (
 
 const batchSize = 100
 
-type jqInputToKebabCaseConverter struct {
-	db     *gorm.DB
-	logger *zap.Logger
+// JQInputToKebabCaseConverter executes code along with the 19th database
+// schema revision.
+type JQInputToKebabCaseConverter struct {
+	DB     *gorm.DB
+	Logger *zap.Logger
 }
 
-func (c *jqInputToKebabCaseConverter) Migrate() error {
+// Migrate updates the `TASK_JQ` input in the JSON operator to kebab-case.
+func (c *JQInputToKebabCaseConverter) Migrate() error {
 	if err := c.migratePipeline(); err != nil {
 		return err
 	}
@@ -25,12 +28,12 @@ func (c *jqInputToKebabCaseConverter) Migrate() error {
 	return c.migratePipelineRelease()
 }
 
-func (c *jqInputToKebabCaseConverter) migratePipeline() error {
+func (c *JQInputToKebabCaseConverter) migratePipeline() error {
 	pipelines := make([]*datamodel.Pipeline, 0, batchSize)
-	return c.db.Select("uid", "recipe_yaml", "recipe").FindInBatches(&pipelines, batchSize, func(tx *gorm.DB, _ int) error {
+	return c.DB.Select("uid", "recipe_yaml", "recipe").FindInBatches(&pipelines, batchSize, func(tx *gorm.DB, _ int) error {
 		for _, p := range pipelines {
 			isRecipeUpdated := false
-			l := c.logger.With(zap.String("pipelineUID", p.UID.String()))
+			l := c.Logger.With(zap.String("pipelineUID", p.UID.String()))
 
 			for id, comp := range p.Recipe.Component {
 				isComponentUpdated, err := c.updateJQInput(comp)
@@ -61,12 +64,12 @@ func (c *jqInputToKebabCaseConverter) migratePipeline() error {
 	}).Error
 }
 
-func (c *jqInputToKebabCaseConverter) migratePipelineRelease() error {
+func (c *JQInputToKebabCaseConverter) migratePipelineRelease() error {
 	pipelineReleases := make([]*datamodel.PipelineRelease, 0, batchSize)
-	return c.db.Select("uid", "recipe_yaml", "recipe").FindInBatches(&pipelineReleases, batchSize, func(tx *gorm.DB, _ int) error {
+	return c.DB.Select("uid", "recipe_yaml", "recipe").FindInBatches(&pipelineReleases, batchSize, func(tx *gorm.DB, _ int) error {
 		for _, pr := range pipelineReleases {
 			isRecipeUpdated := false
-			l := c.logger.With(zap.String("pipelineReleaseUID", pr.UID.String()))
+			l := c.Logger.With(zap.String("pipelineReleaseUID", pr.UID.String()))
 
 			for id, comp := range pr.Recipe.Component {
 				isComponentUpdated, err := c.updateJQInput(comp)
@@ -98,7 +101,7 @@ func (c *jqInputToKebabCaseConverter) migratePipelineRelease() error {
 	}).Error
 }
 
-func (c *jqInputToKebabCaseConverter) updateJQInput(comp *datamodel.Component) (bool, error) {
+func (c *JQInputToKebabCaseConverter) updateJQInput(comp *datamodel.Component) (bool, error) {
 	if comp.Type == "iterator" {
 		isComponentUpdated := false
 		for _, comp := range comp.Component {
