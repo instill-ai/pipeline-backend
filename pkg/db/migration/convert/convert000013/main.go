@@ -491,18 +491,19 @@ func migratePipelineRelease(connectorMap map[uuid.UUID]Connector) error {
 	return nil
 }
 
-func Migrate() error {
+// Migrate runs the 13th revision migration.
+func (m *Migration) Migrate() error {
 	var connectorMap map[uuid.UUID]Connector
 	var err error
 	if connectorMap, err = migrateSecret(); err != nil {
 		return err
 	}
 
-	if err = migratePipeline(connectorMap); err != nil {
+	if err := migratePipeline(connectorMap); err != nil {
 		return err
 	}
-	if err = migratePipelineRelease(connectorMap); err != nil {
-		return err
-	}
-	return nil
+	return migratePipelineRelease(connectorMap)
 }
+
+// Migration executes code along with the 13th database schema revision.
+type Migration struct{}

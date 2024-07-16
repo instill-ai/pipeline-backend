@@ -541,15 +541,14 @@ func migratePipelineRelease() error {
 
 }
 
-func Migrate() error {
-
-	var err error
-
-	if err = migratePipeline(); err != nil {
+// Migrate runs the 15th revision migration.
+func (m *Migration) Migrate() error {
+	if err := migratePipeline(); err != nil {
 		return err
 	}
-	if err = migratePipelineRelease(); err != nil {
-		return err
-	}
-	return nil
+
+	return migratePipelineRelease()
 }
+
+// Migration executes code along with the 15th database schema revision.
+type Migration struct{}
