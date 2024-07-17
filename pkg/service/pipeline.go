@@ -1068,7 +1068,7 @@ func (s *service) triggerPipeline(
 		err = fmt.Errorf("%w:%w", ErrTriggerFail, err)
 
 		var applicationErr *temporal.ApplicationError
-		if errors.As(err, &applicationErr) {
+		if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
 			err = errmsg.AddMessage(err, applicationErr.Message())
 		}
 
@@ -1194,17 +1194,18 @@ func (s *service) triggerPipelineWithStream(
 		}
 	}()
 
-	err = we.Get(ctx, nil)
-	if err != nil {
+	if err := we.Get(ctx, nil); err != nil {
+		// Note: We categorize all pipeline trigger errors as ErrTriggerFail
+		// and mark the code as 400 InvalidArgument for now.
+		// We should further categorize them into InvalidArgument or
+		// PreconditionFailed or InternalError in the future.
+		err = fmt.Errorf("%w:%w", ErrTriggerFail, err)
+
 		var applicationErr *temporal.ApplicationError
-		if errors.As(err, &applicationErr) {
-			var details worker.EndUserErrorDetails
-			if dErr := applicationErr.Details(&details); dErr == nil && details.Message != "" {
-				// Note: We categorize all pipeline trigger errors as ErrTriggerFail and mark the code as 400 InvalidArgument for now.
-				// We should further categorize them into InvalidArgument or PreconditionFailed or InternalError in the future.
-				err = errmsg.AddMessage(fmt.Errorf("%w %s", ErrTriggerFail, err), details.Message)
-			}
+		if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
+			err = errmsg.AddMessage(err, applicationErr.Message())
 		}
+
 		return err
 	}
 
