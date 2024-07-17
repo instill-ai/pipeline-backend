@@ -15,12 +15,12 @@ func transformBoolToDescString(b bool) string {
 // TODO: we should refactor this to have a flexible format and merge it into x package.
 
 // DecodeToken decodes the token string into create_time and UUID
-func DecodeToken(encodedToken string) (map[string]string, error) {
+func DecodeToken(encodedToken string) (map[string]any, error) {
 	byt, err := base64.StdEncoding.DecodeString(encodedToken)
 	if err != nil {
 		return nil, err
 	}
-	tokens := map[string]string{}
+	tokens := map[string]any{}
 	err = json.Unmarshal(byt, &tokens)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func DecodeToken(encodedToken string) (map[string]string, error) {
 }
 
 // EncodeToken encodes create_time and UUID into a single string
-func EncodeToken(tokens map[string]string) (string, error) {
+func EncodeToken(tokens map[string]any) (string, error) {
 	b, err := json.Marshal(tokens)
 	if err != nil {
 		return "", err
