@@ -214,7 +214,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 			if v, ok := tokens[p]; ok {
 
 				switch p {
-				case "create_time", "update_time":
+				case "create_time", "update_time", "last_run_time":
 					// Add "pipeline." prefix to prevent ambiguous since tag table also has the two columns.
 					if o.Desc {
 						queryBuilder = queryBuilder.Where("pipeline."+p+" < ?::timestamp", v)
@@ -276,13 +276,10 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	}
 
 	if len(pipelines) > 0 {
-		lastID := (pipelines)[len(pipelines)-1].ID
 		lastUID := (pipelines)[len(pipelines)-1].UID
-		lastCreateTime := (pipelines)[len(pipelines)-1].CreateTime
-		lastUpdateTime := (pipelines)[len(pipelines)-1].UpdateTime
 		lastItem := &datamodel.Pipeline{}
 
-		tokens := map[string]string{}
+		tokens := map[string]any{}
 
 		lastItemQueryBuilder := db.Distinct().Model(&datamodel.Pipeline{}).Joins(joinStr).Where(where, whereArgs...)
 		if uidAllowList != nil {
@@ -295,11 +292,17 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 			lastItemQueryBuilder.Order(orderString)
 			switch p := strcase.ToSnake(field.Path); p {
 			case "id":
-				tokens[p] = lastID
+				tokens[p] = (pipelines)[len(pipelines)-1].ID
 			case "create_time":
-				tokens[p] = lastCreateTime.Format(time.RFC3339Nano)
+				tokens[p] = (pipelines)[len(pipelines)-1].CreateTime.Format(time.RFC3339Nano)
 			case "update_time":
-				tokens[p] = lastUpdateTime.Format(time.RFC3339Nano)
+				tokens[p] = (pipelines)[len(pipelines)-1].UpdateTime.Format(time.RFC3339Nano)
+			case "last_run_time":
+				tokens[p] = (pipelines)[len(pipelines)-1].LastRunTime.Format(time.RFC3339Nano)
+			case "number_of_runs":
+				tokens[p] = (pipelines)[len(pipelines)-1].NumberOfRuns
+			case "number_of_clones":
+				tokens[p] = (pipelines)[len(pipelines)-1].NumberOfClones
 			}
 
 		}
