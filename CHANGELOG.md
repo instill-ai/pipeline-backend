@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.32.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.32.0-beta...v0.32.1-beta) (2024-07-17)
+
+
+### Bug Fixes
+
+* fix pageToken not working when ordering by certain fields ([#552](https://github.com/instill-ai/pipeline-backend/issues/552)) ([c7821e5](https://github.com/instill-ai/pipeline-backend/commit/c7821e5d9800dcdcd3e4e1dd721cf2f288cae5f6))
+
 ## [0.32.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.31.0-beta...v0.32.0-beta) (2024-07-16)
 
 
