@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.33.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.32.1-beta...v0.33.0-beta) (2024-07-19)
+
+
+### Bug Fixes
+
+* parse end-user errors on stream trigger endpoint ([#551](https://github.com/instill-ai/pipeline-backend/issues/551)) ([3ae2432](https://github.com/instill-ai/pipeline-backend/commit/3ae2432a7a103517753a47b9ca73bd3f355d305e))
+
+
+### Miscellaneous Chores
+
+* release v0.33.0-beta ([e9c9275](https://github.com/instill-ai/pipeline-backend/commit/e9c927546161416a87095b01465056da934c2fe4))
+
 ## [0.32.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.32.0-beta...v0.32.1-beta) (2024-07-17)
 
 
