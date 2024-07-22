@@ -32,6 +32,11 @@ RUN apk add --no-cache \
     python3-dev \
     libffi-dev \
     libreoffice \
+    msttcorefonts-installer \
+    font-noto \
+    font-noto-cjk \
+    && update-ms-fonts \
+    && fc-cache -f \
     && python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
     && /opt/venv/bin/pip install pdfplumber
