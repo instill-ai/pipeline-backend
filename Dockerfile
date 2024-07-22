@@ -31,6 +31,7 @@ RUN apk add --no-cache \
     build-base \
     python3-dev \
     libffi-dev \
+    libreoffice \
     && python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
     && /opt/venv/bin/pip install pdfplumber
