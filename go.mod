@@ -92,6 +92,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.3 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
+	github.com/iFaceless/godub v0.0.0-20200728093528-a30bb4d1a0f1 // indirect
 	github.com/itchyny/gojq v0.12.14 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
@@ -115,6 +116,7 @@ require (
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/slack-go/slack v0.12.5 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
+	github.com/tink-ab/tempfile v0.0.0-20180226111222-33beb0518f1a // indirect
 	github.com/tmc/langchaingo v0.1.10 // indirect
 	github.com/u2takey/ffmpeg-go v0.5.0 // indirect
 	github.com/u2takey/go-utils v0.3.1 // indirect
