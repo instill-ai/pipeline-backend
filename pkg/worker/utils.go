@@ -10,9 +10,7 @@ import (
 )
 
 func (w *worker) writeNewDataPoint(ctx context.Context, data utils.PipelineUsageMetricData) error {
-
 	if config.Config.Server.Usage.Enabled {
-
 		bData, err := json.Marshal(data)
 		if err != nil {
 			return err
