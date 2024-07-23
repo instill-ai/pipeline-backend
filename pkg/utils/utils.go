@@ -25,6 +25,8 @@ const (
 	DisconnectEvent string = "Disconnect"
 	RenameEvent     string = "Rename"
 	ExecuteEvent    string = "Execute"
+
+	pipelineMeasurement = "pipeline.trigger"
 )
 
 func IsAuditEvent(eventName string) bool {
@@ -45,10 +47,20 @@ func IsBillableEvent(eventName string) bool {
 }
 
 type PipelineUsageMetricData struct {
-	OwnerUID            string
-	OwnerType           mgmtPB.OwnerType
-	UserUID             string
-	UserType            mgmtPB.OwnerType
+	OwnerUID  string
+	OwnerType mgmtPB.OwnerType
+
+	// User represents the authenticated user. Only user authentication is
+	// supported at the moment.
+	UserUID  string
+	UserType mgmtPB.OwnerType
+
+	// Requester will differ from User impersonates another namespace when
+	// triggering the pipeline. The only supported impersonation is from an
+	// authenticated user to an organization they belong to.
+	RequesterUID  string
+	RequesterType mgmtPB.OwnerType
+
 	TriggerMode         mgmtPB.Mode
 	Status              mgmtPB.Status
 	PipelineID          string
@@ -60,28 +72,36 @@ type PipelineUsageMetricData struct {
 	ComputeTimeDuration float64
 }
 
+// NewPipelineDataPoint transforms the information of a pipeline trigger into
+// an InfluxDB datapoint.
 func NewPipelineDataPoint(data PipelineUsageMetricData) *write.Point {
-	return influxdb2.NewPoint(
-		"pipeline.trigger",
-		map[string]string{
-			"status":       data.Status.String(),
-			"trigger_mode": data.TriggerMode.String(),
-		},
-		map[string]any{
-			"owner_uid":             data.OwnerUID,
-			"owner_type":            data.OwnerType,
-			"user_uid":              data.UserUID,
-			"user_type":             data.UserType,
-			"pipeline_id":           data.PipelineID,
-			"pipeline_uid":          data.PipelineUID,
-			"pipeline_release_id":   data.PipelineReleaseID,
-			"pipeline_release_uid":  data.PipelineReleaseUID,
-			"pipeline_trigger_id":   data.PipelineTriggerUID,
-			"trigger_time":          data.TriggerTime,
-			"compute_time_duration": data.ComputeTimeDuration,
-		},
-		time.Now(),
-	)
+	// The tags contain metadata, i.e. information we might filter or group by.
+	tags := map[string]string{
+		"status":         data.Status.String(),
+		"trigger_mode":   data.TriggerMode.String(),
+		"owner_uid":      data.OwnerUID,
+		"owner_type":     data.OwnerType.String(),
+		"user_uid":       data.UserUID,
+		"user_type":      data.UserType.String(),
+		"requester_uid":  data.RequesterUID,
+		"requester_type": data.RequesterType.String(),
+		"pipeline_id":    data.PipelineID,
+		"pipeline_uid":   data.PipelineUID,
+	}
+
+	// Optional tags
+	if data.PipelineReleaseID != "" {
+		tags["pipeline_release_id"] = data.PipelineReleaseID
+		tags["pipeline_release_uid"] = data.PipelineReleaseUID
+	}
+
+	fields := map[string]any{
+		"pipeline_trigger_id":   data.PipelineTriggerUID,
+		"trigger_time":          data.TriggerTime,
+		"compute_time_duration": data.ComputeTimeDuration,
+	}
+
+	return influxdb2.NewPoint(pipelineMeasurement, tags, fields, time.Now())
 }
 
 type ConnectorUsageMetricData struct {

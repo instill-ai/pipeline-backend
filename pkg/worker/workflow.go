@@ -154,7 +154,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		OwnerUID:           param.SystemVariables.PipelineOwnerUID.String(),
 		OwnerType:          ownerType,
 		UserUID:            param.SystemVariables.PipelineUserUID.String(),
-		UserType:           mgmtpb.OwnerType_OWNER_TYPE_USER, // TODO: currently only support /users type, will change after beta
+		UserType:           mgmtpb.OwnerType_OWNER_TYPE_USER,
+		RequesterUID:       param.SystemVariables.PipelineRequesterUID.String(),
+		RequesterType:      mgmtpb.OwnerType_OWNER_TYPE_USER,
 		TriggerMode:        param.Mode,
 		PipelineID:         param.SystemVariables.PipelineID,
 		PipelineUID:        param.SystemVariables.PipelineUID.String(),
@@ -162,6 +164,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		PipelineReleaseUID: param.SystemVariables.PipelineReleaseUID.String(),
 		PipelineTriggerUID: workflow.GetInfo(ctx).WorkflowExecution.ID,
 		TriggerTime:        startTime.Format(time.RFC3339Nano),
+	}
+
+	// This is a simplistic check that relies on the only supported
+	// namespace switch (user->organization). If other types of impersonation
+	// are supported, the requester type should be provided in the system
+	// variables.
+	if dataPoint.UserUID != dataPoint.RequesterUID {
+		dataPoint.RequesterType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	}
 
 	ao := workflow.ActivityOptions{
