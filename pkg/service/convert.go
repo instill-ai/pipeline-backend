@@ -1056,14 +1056,14 @@ func (c *converter) ConvertOwnerPermalinkToName(ctx context.Context, permalink s
 	}
 
 	if nsType == "users" {
-		userResp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtpb.LookUpUserAdminRequest{Permalink: permalink})
+		userResp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtpb.LookUpUserAdminRequest{UserUid: uid})
 		if err != nil {
 			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
 		}
 		c.redisClient.Set(ctx, key, userResp.User.Id, 24*time.Hour)
 		return fmt.Sprintf("users/%s", userResp.User.Id), nil
 	} else {
-		orgResp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtpb.LookUpOrganizationAdminRequest{Permalink: permalink})
+		orgResp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtpb.LookUpOrganizationAdminRequest{OrganizationUid: uid})
 		if err != nil {
 			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
 		}
@@ -1081,9 +1081,10 @@ func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string)
 			return owner, nil
 		}
 	}
+	uid := strings.Split(permalink, "/")[1]
 
 	if strings.HasPrefix(permalink, "users") {
-		resp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtpb.LookUpUserAdminRequest{Permalink: permalink})
+		resp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtpb.LookUpUserAdminRequest{UserUid: uid})
 		if err != nil {
 			return nil, fmt.Errorf("fetchOwnerByPermalink error")
 		}
@@ -1093,7 +1094,7 @@ func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string)
 		}
 		return owner, nil
 	} else {
-		resp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtpb.LookUpOrganizationAdminRequest{Permalink: permalink})
+		resp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtpb.LookUpOrganizationAdminRequest{OrganizationUid: uid})
 		if err != nil {
 			return nil, fmt.Errorf("fetchOwnerByPermalink error")
 		}
@@ -1118,14 +1119,14 @@ func (c *converter) ConvertOwnerNameToPermalink(ctx context.Context, name string
 	}
 
 	if nsType == "users" {
-		userResp, err := c.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtpb.GetUserAdminRequest{Name: name})
+		userResp, err := c.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtpb.GetUserAdminRequest{UserId: id})
 		if err != nil {
 			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
 		}
 		c.redisClient.Set(ctx, key, *userResp.User.Uid, 24*time.Hour)
 		return fmt.Sprintf("users/%s", *userResp.User.Uid), nil
 	} else {
-		orgResp, err := c.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtpb.GetOrganizationAdminRequest{Name: name})
+		orgResp, err := c.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtpb.GetOrganizationAdminRequest{OrganizationId: id})
 		if err != nil {
 			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
 		}

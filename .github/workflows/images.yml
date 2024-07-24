@@ -41,7 +41,6 @@ jobs:
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
-            GOLANG_VERSION=${{ env.GOLANG_VERSION }}
           tags: instill/pipeline-backend:latest
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max
@@ -66,7 +65,6 @@ jobs:
           push: true
           build-args: |
             SERVICE_NAME=pipeline-backend
-            GOLANG_VERSION=${{ env.GOLANG_VERSION }}
           tags: instill/pipeline-backend:${{steps.set_version.outputs.no_v_tag}}
           cache-from: type=registry,ref=instill/pipeline-backend:buildcache
           cache-to: type=registry,ref=instill/pipeline-backend:buildcache,mode=max

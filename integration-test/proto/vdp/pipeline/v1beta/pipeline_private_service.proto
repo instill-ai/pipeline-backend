@@ -2,10 +2,6 @@ syntax = "proto3";
 
 package vdp.pipeline.v1beta;
 
-// Google API
-import "google/api/annotations.proto";
-import "google/api/client.proto";
-import "google/api/visibility.proto";
 // OpenAPI definition
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "../../../vdp/pipeline/v1beta/pipeline.proto";
@@ -19,26 +15,17 @@ service PipelinePrivateService {
   //
   // This is a *private* method that allows admin users and internal clients to
   // list *all* pipeline resources.
-  rpc ListPipelinesAdmin(ListPipelinesAdminRequest) returns (ListPipelinesAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/pipelines"};
-  }
+  rpc ListPipelinesAdmin(ListPipelinesAdminRequest) returns (ListPipelinesAdminResponse) {}
 
   // Get a pipeline by UID (admin only)
   //
   // This is a *private* method that allows admin users to access any pipeline
   // resource by its UID.
-  rpc LookUpPipelineAdmin(LookUpPipelineAdminRequest) returns (LookUpPipelineAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/{permalink=pipelines/*}/lookUp"};
-    option (google.api.method_signature) = "permalink";
-  }
+  rpc LookUpPipelineAdmin(LookUpPipelineAdminRequest) returns (LookUpPipelineAdminResponse) {}
 
   // List pipeline releases (admin only)
   //
   // This is a *private* method that allows admin users to list *all* pipeline
   // releases.
-  rpc ListPipelineReleasesAdmin(ListPipelineReleasesAdminRequest) returns (ListPipelineReleasesAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/releases"};
-  }
-
-  option (google.api.api_visibility).restriction = "INTERNAL";
+  rpc ListPipelineReleasesAdmin(ListPipelineReleasesAdminRequest) returns (ListPipelineReleasesAdminResponse) {}
 }

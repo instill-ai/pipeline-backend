@@ -130,9 +130,9 @@ message ComponentDefinition {
 // DataSpecification describes the JSON schema of component input and output.
 message DataSpecification {
   // JSON schema describing the component input data.
-  google.protobuf.Struct input = 1;
+  google.protobuf.Struct input = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // JSON schema describing the component output data.
-  google.protobuf.Struct output = 2;
+  google.protobuf.Struct output = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ConnectorSpec represents a specification data model.
@@ -175,7 +175,7 @@ enum ConnectorType {
 // ConnectorDefinition describes a certain type of Connector.
 //
 // For more information, see
-// [Component](https://www.instill.tech/docs/latest/core/concepts/pipeline#pipeline-component)
+// [Component](https://www.instill.tech/docs/component/introduction)
 // in the official documentation.
 message ConnectorDefinition {
   option (google.api.resource) = {
@@ -250,7 +250,7 @@ message OperatorSpec {
 // manipulation. OperatorDefinition describes a certain type of operator.
 //
 // For more information, see
-// [Component](https://www.instill.tech/docs/latest/core/concepts/pipeline#pipeline-component)
+// [Component](https://www.instill.tech/docs/component/introduction)
 // in the official documentation.
 message OperatorDefinition {
   option (google.api.resource) = {
