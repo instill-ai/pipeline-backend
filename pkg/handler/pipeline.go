@@ -1,20 +1,14 @@
 package handler
 
 import (
-	"cloud.google.com/go/longrunning/autogen/longrunningpb"
 	"context"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
-	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"github.com/instill-ai/pipeline-backend/pkg/service"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
-	"github.com/instill-ai/x/checkfield"
-	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 	"go.opentelemetry.io/otel/trace"
@@ -23,11 +17,19 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/structpb"
-	"net/http"
-	"strconv"
-	"strings"
+
+	fieldmask_utils "github.com/mennanov/fieldmask-utils"
+
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/x/checkfield"
+
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pb.ListPipelinesAdminRequest) (*pb.ListPipelinesAdminResponse, error) {
@@ -202,24 +204,29 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelines
 	return &resp, nil
 }
 
-type CreateNamespacePipelineRequestInterface interface {
-	GetPipeline() *pb.Pipeline
-	GetParent() string
-}
-
 func (h *PublicHandler) CreateUserPipeline(ctx context.Context, req *pb.CreateUserPipelineRequest) (resp *pb.CreateUserPipelineResponse, err error) {
-	resp = &pb.CreateUserPipelineResponse{}
-	resp.Pipeline, err = h.createNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.CreateNamespacePipeline(ctx, &pb.CreateNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		Pipeline:    req.Pipeline,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreateUserPipelineResponse{Pipeline: r.Pipeline}, nil
 }
 
 func (h *PublicHandler) CreateOrganizationPipeline(ctx context.Context, req *pb.CreateOrganizationPipelineRequest) (resp *pb.CreateOrganizationPipelineResponse, err error) {
-	resp = &pb.CreateOrganizationPipelineResponse{}
-	resp.Pipeline, err = h.createNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.CreateNamespacePipeline(ctx, &pb.CreateNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		Pipeline:    req.Pipeline,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreateOrganizationPipelineResponse{Pipeline: r.Pipeline}, nil
 }
 
-func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateNamespacePipelineRequestInterface) (pipeline *pb.Pipeline, err error) {
+func (h *PublicHandler) CreateNamespacePipeline(ctx context.Context, req *pb.CreateNamespacePipelineRequest) (resp *pb.CreateNamespacePipelineResponse, err error) {
 	eventName := "CreateNamespacePipeline"
 	ctx, span := tracer.Start(ctx, eventName,
 		trace.WithSpanKind(trace.SpanKindServer))
@@ -228,12 +235,6 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 	logUUID, _ := uuid.NewV4()
 
 	logger, _ := logger.GetZapLogger(ctx)
-
-	// Validate JSON Schema
-	// if err := datamodel.ValidatePipelineJSONSchema(req.GetPipeline()); err != nil {
-	// 	span.SetStatus(1, err.Error())
-	// 	return nil, status.Error(codes.InvalidArgument, err.Error())
-	// }
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req.GetPipeline(), append(createPipelineRequiredFields, immutablePipelineFields...)); err != nil {
@@ -253,7 +254,7 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 		return nil, fmt.Errorf("%w: invalid secret ID: %w", errdomain.ErrInvalidArgument, err)
 	}
 
-	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -267,7 +268,7 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 
 	pipelineToCreate := req.GetPipeline()
 
-	pipeline, err = h.service.CreateNamespacePipeline(ctx, ns, pipelineToCreate)
+	pipeline, err := h.service.CreateNamespacePipeline(ctx, ns, pipelineToCreate)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -288,33 +289,52 @@ func (h *PublicHandler) createNamespacePipeline(ctx context.Context, req CreateN
 		customotel.SetEventResource(pipeline),
 	)))
 
-	return pipeline, nil
-}
-
-type ListNamespacePipelinesRequestInterface interface {
-	GetPageSize() int32
-	GetPageToken() string
-	GetView() pb.Pipeline_View
-	GetVisibility() pb.Pipeline_Visibility
-	GetFilter() string
-	GetOrderBy() string
-	GetParent() string
-	GetShowDeleted() bool
+	return &pb.CreateNamespacePipelineResponse{Pipeline: pipeline}, nil
 }
 
 func (h *PublicHandler) ListUserPipelines(ctx context.Context, req *pb.ListUserPipelinesRequest) (resp *pb.ListUserPipelinesResponse, err error) {
-	resp = &pb.ListUserPipelinesResponse{}
-	resp.Pipelines, resp.NextPageToken, resp.TotalSize, err = h.listNamespacePipelines(ctx, req)
-	return resp, err
+	r, err := h.ListNamespacePipelines(ctx, &pb.ListNamespacePipelinesRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		PageSize:    req.PageSize,
+		PageToken:   req.PageToken,
+		View:        req.View,
+		Visibility:  req.Visibility,
+		Filter:      req.Filter,
+		OrderBy:     req.OrderBy,
+		ShowDeleted: req.ShowDeleted,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ListUserPipelinesResponse{
+		Pipelines:     r.Pipelines,
+		NextPageToken: r.NextPageToken,
+		TotalSize:     r.TotalSize,
+	}, nil
 }
 
 func (h *PublicHandler) ListOrganizationPipelines(ctx context.Context, req *pb.ListOrganizationPipelinesRequest) (resp *pb.ListOrganizationPipelinesResponse, err error) {
-	resp = &pb.ListOrganizationPipelinesResponse{}
-	resp.Pipelines, resp.NextPageToken, resp.TotalSize, err = h.listNamespacePipelines(ctx, req)
-	return resp, err
+	r, err := h.ListNamespacePipelines(ctx, &pb.ListNamespacePipelinesRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		PageSize:    req.PageSize,
+		PageToken:   req.PageToken,
+		View:        req.View,
+		Visibility:  req.Visibility,
+		Filter:      req.Filter,
+		OrderBy:     req.OrderBy,
+		ShowDeleted: req.ShowDeleted,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ListOrganizationPipelinesResponse{
+		Pipelines:     r.Pipelines,
+		NextPageToken: r.NextPageToken,
+		TotalSize:     r.TotalSize,
+	}, nil
 }
 
-func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListNamespacePipelinesRequestInterface) (pipelines []*pb.Pipeline, nextPageToken string, totalSize int32, err error) {
+func (h *PublicHandler) ListNamespacePipelines(ctx context.Context, req *pb.ListNamespacePipelinesRequest) (resp *pb.ListNamespacePipelinesResponse, err error) {
 
 	eventName := "ListNamespacePipelines"
 
@@ -326,15 +346,15 @@ func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListName
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	if err := authenticateUser(ctx, true); err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
@@ -354,26 +374,26 @@ func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListName
 	}...)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 	visibility := req.GetVisibility()
 
 	orderBy, err := ordering.ParseOrderBy(req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	pbPipelines, totalSize, nextPageToken, err := h.service.ListNamespacePipelines(ctx, ns, req.GetPageSize(), req.GetPageToken(), req.GetView(), &visibility, filter, req.GetShowDeleted(), orderBy)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -383,27 +403,42 @@ func (h *PublicHandler) listNamespacePipelines(ctx context.Context, req ListName
 		eventName,
 	)))
 
-	return pbPipelines, nextPageToken, int32(totalSize), nil
-}
-
-type GetNamespacePipelineRequestInterface interface {
-	GetName() string
-	GetView() pb.Pipeline_View
+	return &pb.ListNamespacePipelinesResponse{
+		Pipelines:     pbPipelines,
+		NextPageToken: nextPageToken,
+		TotalSize:     totalSize,
+	}, nil
 }
 
 func (h *PublicHandler) GetUserPipeline(ctx context.Context, req *pb.GetUserPipelineRequest) (resp *pb.GetUserPipelineResponse, err error) {
-	resp = &pb.GetUserPipelineResponse{}
-	resp.Pipeline, err = h.getNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.GetNamespacePipeline(ctx, &pb.GetNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		View:        req.View,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetUserPipelineResponse{
+		Pipeline: r.Pipeline,
+	}, nil
 }
 
 func (h *PublicHandler) GetOrganizationPipeline(ctx context.Context, req *pb.GetOrganizationPipelineRequest) (resp *pb.GetOrganizationPipelineResponse, err error) {
-	resp = &pb.GetOrganizationPipelineResponse{}
-	resp.Pipeline, err = h.getNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.GetNamespacePipeline(ctx, &pb.GetNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		View:        req.View,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetOrganizationPipelineResponse{
+		Pipeline: r.Pipeline,
+	}, nil
 }
 
-func (h *PublicHandler) getNamespacePipeline(ctx context.Context, req GetNamespacePipelineRequestInterface) (*pb.Pipeline, error) {
+func (h *PublicHandler) GetNamespacePipeline(ctx context.Context, req *pb.GetNamespacePipelineRequest) (*pb.GetNamespacePipelineResponse, error) {
 
 	eventName := "GetNamespacePipeline"
 
@@ -415,7 +450,7 @@ func (h *PublicHandler) getNamespacePipeline(ctx context.Context, req GetNamespa
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -425,7 +460,7 @@ func (h *PublicHandler) getNamespacePipeline(ctx context.Context, req GetNamespa
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, id, req.GetView())
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.PipelineId, req.GetView())
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -440,27 +475,40 @@ func (h *PublicHandler) getNamespacePipeline(ctx context.Context, req GetNamespa
 		customotel.SetEventResource(pbPipeline),
 	)))
 
-	return pbPipeline, nil
-}
-
-type UpdateNamespacePipelineRequestInterface interface {
-	GetPipeline() *pb.Pipeline
-	GetUpdateMask() *fieldmaskpb.FieldMask
+	return &pb.GetNamespacePipelineResponse{Pipeline: pbPipeline}, nil
 }
 
 func (h *PublicHandler) UpdateUserPipeline(ctx context.Context, req *pb.UpdateUserPipelineRequest) (resp *pb.UpdateUserPipelineResponse, err error) {
-	resp = &pb.UpdateUserPipelineResponse{}
-	resp.Pipeline, err = h.updateNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.UpdateNamespacePipeline(ctx, &pb.UpdateNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Pipeline.Name, "/")[1],
+		PipelineId:  strings.Split(req.Pipeline.Name, "/")[3],
+		Pipeline:    req.Pipeline,
+		UpdateMask:  req.UpdateMask,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateUserPipelineResponse{
+		Pipeline: r.Pipeline,
+	}, nil
 }
 
 func (h *PublicHandler) UpdateOrganizationPipeline(ctx context.Context, req *pb.UpdateOrganizationPipelineRequest) (resp *pb.UpdateOrganizationPipelineResponse, err error) {
-	resp = &pb.UpdateOrganizationPipelineResponse{}
-	resp.Pipeline, err = h.updateNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.UpdateNamespacePipeline(ctx, &pb.UpdateNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Pipeline.Name, "/")[1],
+		PipelineId:  strings.Split(req.Pipeline.Name, "/")[3],
+		Pipeline:    req.Pipeline,
+		UpdateMask:  req.UpdateMask,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateOrganizationPipelineResponse{
+		Pipeline: r.Pipeline,
+	}, nil
 }
 
-func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateNamespacePipelineRequestInterface) (*pb.Pipeline, error) {
+func (h *PublicHandler) UpdateNamespacePipeline(ctx context.Context, req *pb.UpdateNamespacePipelineRequest) (*pb.UpdateNamespacePipelineResponse, error) {
 
 	eventName := "UpdateNamespacePipeline"
 
@@ -468,11 +516,7 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	// logUUID, _ := uuid.NewV4()
-
-	// logger, _ := logger.GetZapLogger(ctx)
-
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetPipeline().Name)
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -483,6 +527,9 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 	}
 
 	pbPipelineReq := req.GetPipeline()
+	if pbPipelineReq.Id == "" {
+		pbPipelineReq.Id = req.PipelineId
+	}
 	pbUpdateMask := req.GetUpdateMask()
 
 	// metadata field is type google.protobuf.Struct, which needs to be updated as a whole
@@ -499,7 +546,7 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 		return nil, ErrUpdateMask
 	}
 
-	getResp, err := h.GetUserPipeline(ctx, &pb.GetUserPipelineRequest{Name: pbPipelineReq.GetName(), View: pb.Pipeline_VIEW_RECIPE.Enum()})
+	getResp, err := h.GetNamespacePipeline(ctx, &pb.GetNamespacePipelineRequest{NamespaceId: req.NamespaceId, PipelineId: req.PipelineId, View: pb.Pipeline_VIEW_RECIPE.Enum()})
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -518,7 +565,7 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 	}
 
 	if mask.IsEmpty() {
-		return getResp.GetPipeline(), nil
+		return &pb.UpdateNamespacePipelineResponse{Pipeline: getResp.GetPipeline()}, nil
 	}
 
 	pbPipelineToUpdate := getResp.GetPipeline()
@@ -544,39 +591,37 @@ func (h *PublicHandler) updateNamespacePipeline(ctx context.Context, req UpdateN
 		pbPipelineToUpdate.RawRecipe = ""
 	}
 
-	pbPipeline, err := h.service.UpdateNamespacePipelineByID(ctx, ns, id, pbPipelineToUpdate)
+	pbPipeline, err := h.service.UpdateNamespacePipelineByID(ctx, ns, req.PipelineId, pbPipelineToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	// logger.Info(string(customotel.NewLogMessage(
-	// 	span,
-	// 	logUUID.String(),
-	// 	authUser.UID,
-	// 	eventName,
-	// 	customotel.SetEventResource(pbPipeline),
-	// )))
-
-	return pbPipeline, nil
-}
-
-type DeleteNamespacePipelineRequestInterface interface {
-	GetName() string
+	return &pb.UpdateNamespacePipelineResponse{Pipeline: pbPipeline}, nil
 }
 
 func (h *PublicHandler) DeleteUserPipeline(ctx context.Context, req *pb.DeleteUserPipelineRequest) (resp *pb.DeleteUserPipelineResponse, err error) {
-	resp = &pb.DeleteUserPipelineResponse{}
-	err = h.deleteNamespacePipeline(ctx, req)
-	return resp, err
+	_, err = h.DeleteNamespacePipeline(ctx, &pb.DeleteNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteUserPipelineResponse{}, nil
 }
 func (h *PublicHandler) DeleteOrganizationPipeline(ctx context.Context, req *pb.DeleteOrganizationPipelineRequest) (resp *pb.DeleteOrganizationPipelineResponse, err error) {
-	resp = &pb.DeleteOrganizationPipelineResponse{}
-	err = h.deleteNamespacePipeline(ctx, req)
-	return resp, err
+	_, err = h.DeleteNamespacePipeline(ctx, &pb.DeleteNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteOrganizationPipelineResponse{}, nil
 }
 
-func (h *PublicHandler) deleteNamespacePipeline(ctx context.Context, req DeleteNamespacePipelineRequestInterface) error {
+func (h *PublicHandler) DeleteNamespacePipeline(ctx context.Context, req *pb.DeleteNamespacePipelineRequest) (*pb.DeleteNamespacePipelineResponse, error) {
 
 	eventName := "DeleteNamespacePipeline"
 
@@ -588,30 +633,30 @@ func (h *PublicHandler) deleteNamespacePipeline(ctx context.Context, req DeleteN
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
-	existPipeline, err := h.GetUserPipeline(ctx, &pb.GetUserPipelineRequest{Name: req.GetName()})
+	existPipeline, err := h.GetNamespacePipeline(ctx, &pb.GetNamespacePipelineRequest{NamespaceId: req.NamespaceId, PipelineId: req.PipelineId})
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
-	if err := h.service.DeleteNamespacePipelineByID(ctx, ns, id); err != nil {
+	if err := h.service.DeleteNamespacePipelineByID(ctx, ns, req.PipelineId); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
 	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
 	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent))); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -622,7 +667,7 @@ func (h *PublicHandler) deleteNamespacePipeline(ctx context.Context, req DeleteN
 		customotel.SetEventResource(existPipeline.GetPipeline()),
 	)))
 
-	return nil
+	return &pb.DeleteNamespacePipelineResponse{}, nil
 }
 
 func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pb.LookUpPipelineRequest) (*pb.LookUpPipelineResponse, error) {
@@ -674,25 +719,29 @@ func (h *PublicHandler) LookUpPipeline(ctx context.Context, req *pb.LookUpPipeli
 	return &resp, nil
 }
 
-type ValidateNamespacePipelineRequest interface {
-	GetName() string
-}
-
 func (h *PublicHandler) ValidateUserPipeline(ctx context.Context, req *pb.ValidateUserPipelineRequest) (resp *pb.ValidateUserPipelineResponse, err error) {
-	resp = &pb.ValidateUserPipelineResponse{}
-	resp.Errors, err = h.validateNamespacePipeline(ctx, req)
-	resp.Success = len(resp.Errors) == 0
-	return resp, err
+	r, err := h.ValidateNamespacePipeline(ctx, &pb.ValidateNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ValidateUserPipelineResponse{Errors: r.Errors, Success: r.Success}, nil
 }
 
 func (h *PublicHandler) ValidateOrganizationPipeline(ctx context.Context, req *pb.ValidateOrganizationPipelineRequest) (resp *pb.ValidateOrganizationPipelineResponse, err error) {
-	resp = &pb.ValidateOrganizationPipelineResponse{}
-	resp.Errors, err = h.validateNamespacePipeline(ctx, req)
-	resp.Success = len(resp.Errors) == 0
-	return resp, err
+	r, err := h.ValidateNamespacePipeline(ctx, &pb.ValidateNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ValidateOrganizationPipelineResponse{Errors: r.Errors, Success: r.Success}, nil
 }
 
-func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req ValidateNamespacePipelineRequest) ([]*pb.PipelineValidationError, error) {
+func (h *PublicHandler) ValidateNamespacePipeline(ctx context.Context, req *pb.ValidateNamespacePipelineRequest) (*pb.ValidateNamespacePipelineResponse, error) {
 
 	eventName := "ValidateNamespacePipeline"
 
@@ -700,7 +749,7 @@ func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req Valid
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -710,33 +759,40 @@ func (h *PublicHandler) validateNamespacePipeline(ctx context.Context, req Valid
 		return nil, err
 	}
 
-	validationErrors, err := h.service.ValidateNamespacePipelineByID(ctx, ns, id)
+	validationErrors, err := h.service.ValidateNamespacePipelineByID(ctx, ns, req.PipelineId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("[Pipeline Recipe Error] %+v", err.Error()))
 	}
 
-	return validationErrors, nil
-}
-
-type RenameNamespacePipelineRequestInterface interface {
-	GetName() string
-	GetNewPipelineId() string
+	return &pb.ValidateNamespacePipelineResponse{Errors: validationErrors, Success: len(validationErrors) == 0}, nil
 }
 
 func (h *PublicHandler) RenameUserPipeline(ctx context.Context, req *pb.RenameUserPipelineRequest) (resp *pb.RenameUserPipelineResponse, err error) {
-	resp = &pb.RenameUserPipelineResponse{}
-	resp.Pipeline, err = h.renameNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.RenameNamespacePipeline(ctx, &pb.RenameNamespacePipelineRequest{
+		NamespaceId:   strings.Split(req.Name, "/")[1],
+		PipelineId:    strings.Split(req.Name, "/")[3],
+		NewPipelineId: req.NewPipelineId,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.RenameUserPipelineResponse{Pipeline: r.Pipeline}, nil
 }
 
 func (h *PublicHandler) RenameOrganizationPipeline(ctx context.Context, req *pb.RenameOrganizationPipelineRequest) (resp *pb.RenameOrganizationPipelineResponse, err error) {
-	resp = &pb.RenameOrganizationPipelineResponse{}
-	resp.Pipeline, err = h.renameNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.RenameNamespacePipeline(ctx, &pb.RenameNamespacePipelineRequest{
+		NamespaceId:   strings.Split(req.Name, "/")[1],
+		PipelineId:    strings.Split(req.Name, "/")[3],
+		NewPipelineId: req.NewPipelineId,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.RenameOrganizationPipelineResponse{Pipeline: r.Pipeline}, nil
 }
 
-func (h *PublicHandler) renameNamespacePipeline(ctx context.Context, req RenameNamespacePipelineRequestInterface) (*pb.Pipeline, error) {
+func (h *PublicHandler) RenameNamespacePipeline(ctx context.Context, req *pb.RenameNamespacePipelineRequest) (*pb.RenameNamespacePipelineResponse, error) {
 
 	eventName := "RenameNamespacePipeline"
 
@@ -754,7 +810,7 @@ func (h *PublicHandler) renameNamespacePipeline(ctx context.Context, req RenameN
 		return nil, ErrCheckRequiredFields
 	}
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -770,7 +826,7 @@ func (h *PublicHandler) renameNamespacePipeline(ctx context.Context, req RenameN
 		return nil, fmt.Errorf("%w: invalid pipeline ID: %w", errdomain.ErrInvalidArgument, err)
 	}
 
-	pbPipeline, err := h.service.UpdateNamespacePipelineIDByID(ctx, ns, id, newID)
+	pbPipeline, err := h.service.UpdateNamespacePipelineIDByID(ctx, ns, req.PipelineId, newID)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -784,29 +840,36 @@ func (h *PublicHandler) renameNamespacePipeline(ctx context.Context, req RenameN
 		customotel.SetEventResource(pbPipeline),
 	)))
 
-	return pbPipeline, nil
-}
-
-type CloneNamespacePipelineRequestInterface interface {
-	GetName() string
-	GetTarget() string
-	GetDescription() string
-	GetSharing() *pb.Sharing
+	return &pb.RenameNamespacePipelineResponse{Pipeline: pbPipeline}, nil
 }
 
 func (h *PublicHandler) CloneUserPipeline(ctx context.Context, req *pb.CloneUserPipelineRequest) (resp *pb.CloneUserPipelineResponse, err error) {
-	resp = &pb.CloneUserPipelineResponse{}
-	err = h.cloneNamespacePipeline(ctx, req)
-	return resp, err
+	_, err = h.CloneNamespacePipeline(ctx, &pb.CloneNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		Target:      req.Target,
+		Description: req.Description,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CloneUserPipelineResponse{}, nil
 }
 
 func (h *PublicHandler) CloneOrganizationPipeline(ctx context.Context, req *pb.CloneOrganizationPipelineRequest) (resp *pb.CloneOrganizationPipelineResponse, err error) {
-	resp = &pb.CloneOrganizationPipelineResponse{}
-	err = h.cloneNamespacePipeline(ctx, req)
-	return resp, err
+	_, err = h.CloneNamespacePipeline(ctx, &pb.CloneNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		Target:      req.Target,
+		Description: req.Description,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CloneOrganizationPipelineResponse{}, nil
 }
 
-func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNamespacePipelineRequestInterface) error {
+func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.CloneNamespacePipelineRequest) (*pb.CloneNamespacePipelineResponse, error) {
 
 	eventName := "CloneNamespacePipeline"
 
@@ -818,20 +881,20 @@ func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNam
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
-	pbPipeline, err := h.service.CloneNamespacePipeline(ctx, ns, id, req.GetTarget(), req.GetDescription(), req.GetSharing())
+	pbPipeline, err := h.service.CloneNamespacePipeline(ctx, ns, req.PipelineId, req.GetTarget(), req.GetDescription(), req.GetSharing())
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -841,22 +904,38 @@ func (h *PublicHandler) cloneNamespacePipeline(ctx context.Context, req CloneNam
 		eventName,
 		customotel.SetEventResource(pbPipeline),
 	)))
-	return nil
+	return &pb.CloneNamespacePipelineResponse{}, nil
 }
 
 func (h *PublicHandler) CloneUserPipelineRelease(ctx context.Context, req *pb.CloneUserPipelineReleaseRequest) (resp *pb.CloneUserPipelineReleaseResponse, err error) {
-	resp = &pb.CloneUserPipelineReleaseResponse{}
-	err = h.cloneNamespacePipelineRelease(ctx, req)
-	return resp, err
+	_, err = h.CloneNamespacePipelineRelease(ctx, &pb.CloneNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+		Target:      req.Target,
+		Description: req.Description,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CloneUserPipelineReleaseResponse{}, nil
 }
 
 func (h *PublicHandler) CloneOrganizationPipelineRelease(ctx context.Context, req *pb.CloneOrganizationPipelineReleaseRequest) (resp *pb.CloneOrganizationPipelineReleaseResponse, err error) {
-	resp = &pb.CloneOrganizationPipelineReleaseResponse{}
-	err = h.cloneNamespacePipelineRelease(ctx, req)
-	return resp, err
+	_, err = h.CloneNamespacePipelineRelease(ctx, &pb.CloneNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+		Target:      req.Target,
+		Description: req.Description,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CloneOrganizationPipelineReleaseResponse{}, nil
 }
 
-func (h *PublicHandler) cloneNamespacePipelineRelease(ctx context.Context, req CloneNamespacePipelineRequestInterface) error {
+func (h *PublicHandler) CloneNamespacePipelineRelease(ctx context.Context, req *pb.CloneNamespacePipelineReleaseRequest) (*pb.CloneNamespacePipelineReleaseResponse, error) {
 
 	eventName := "CloneNamespacePipeline"
 
@@ -868,23 +947,23 @@ func (h *PublicHandler) cloneNamespacePipelineRelease(ctx context.Context, req C
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pb.Pipeline_VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.PipelineId, pb.Pipeline_VIEW_BASIC)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	pbPipeline, err := h.service.CloneNamespacePipelineRelease(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), releaseID, req.GetTarget(), req.GetDescription(), req.GetSharing())
+	pbPipeline, err := h.service.CloneNamespacePipelineRelease(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.ReleaseId, req.GetTarget(), req.GetDescription(), req.GetSharing())
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -894,17 +973,18 @@ func (h *PublicHandler) cloneNamespacePipelineRelease(ctx context.Context, req C
 		eventName,
 		customotel.SetEventResource(pbPipeline),
 	)))
-	return nil
+	return &pb.CloneNamespacePipelineReleaseResponse{}, nil
 }
 
-func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerPipelineRequestInterface) (resource.Namespace, string, *pb.Pipeline, bool, error) {
+func (h *PublicHandler) preTriggerNamespacePipeline(ctx context.Context, req TriggerPipelineRequestInterface) (resource.Namespace, string, *pb.Pipeline, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
 		return resource.Namespace{}, "", nil, false, ErrCheckRequiredFields
 	}
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	id := req.GetPipelineId()
+	ns, err := h.service.GetRscNamespace(ctx, req.GetNamespaceId())
 	if err != nil {
 		return ns, id, nil, false, err
 	}
@@ -912,7 +992,7 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 		return ns, id, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, id, pb.Pipeline_VIEW_FULL)
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.GetPipelineId(), pb.Pipeline_VIEW_FULL)
 	if err != nil {
 		return ns, id, nil, false, err
 	}
@@ -929,16 +1009,17 @@ func (h *PublicHandler) preTriggerUserPipeline(ctx context.Context, req TriggerP
 
 }
 
-type TriggerNamespacePipelineRequestInterface interface {
-	GetName() string
-	GetInputs() []*structpb.Struct // deprecated
-	GetData() []*pb.TriggerData
-}
-
 func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.TriggerUserPipelineRequest) (resp *pb.TriggerUserPipelineResponse, err error) {
-	resp = &pb.TriggerUserPipelineResponse{}
-	resp.Outputs, resp.Metadata, err = h.triggerNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.TriggerNamespacePipeline(ctx, &pb.TriggerNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		Inputs:      req.Inputs,
+		Data:        req.Data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.TriggerUserPipelineResponse{Outputs: r.Outputs, Metadata: r.Metadata}, nil
 }
 
 func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelineWithStreamRequest, server pb.PipelinePublicService_TriggerUserPipelineWithStreamServer) error {
@@ -948,7 +1029,12 @@ func (h *PublicHandler) TriggerUserPipelineWithStream(req *pb.TriggerUserPipelin
 	errorChan := make(chan error)
 
 	go func() {
-		err := h.triggerNamespacePipelineWithStream(ctx, req, resultChan)
+		err := h.triggerNamespacePipelineWithStream(ctx, &pb.TriggerNamespacePipelineWithStreamRequest{
+			NamespaceId: strings.Split(req.Name, "/")[1],
+			PipelineId:  strings.Split(req.Name, "/")[3],
+			Inputs:      req.Inputs,
+			Data:        req.Data,
+		}, resultChan)
 		if err != nil {
 			errorChan <- err
 			close(resultChan)
@@ -985,7 +1071,12 @@ func (h *PublicHandler) TriggerOrganizationPipelineStream(req *pb.TriggerOrganiz
 	errorChan := make(chan error)
 
 	go func() {
-		err := h.triggerNamespacePipelineWithStream(ctx, req, resultChan)
+		err := h.triggerNamespacePipelineWithStream(ctx, &pb.TriggerNamespacePipelineWithStreamRequest{
+			NamespaceId: strings.Split(req.Name, "/")[1],
+			PipelineId:  strings.Split(req.Name, "/")[3],
+			Inputs:      req.Inputs,
+			Data:        req.Data,
+		}, resultChan)
 		if err != nil {
 			errorChan <- err
 			close(resultChan)
@@ -1016,7 +1107,7 @@ func (h *PublicHandler) TriggerOrganizationPipelineStream(req *pb.TriggerOrganiz
 
 }
 
-func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, req TriggerNamespacePipelineRequestInterface, resultChan chan<- service.TriggerResult) error {
+func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, req *pb.TriggerNamespacePipelineWithStreamRequest, resultChan chan<- service.TriggerResult) error {
 
 	eventName := "TriggerNamespacePipelineWithStream"
 
@@ -1026,10 +1117,10 @@ func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, 
 
 	logUUID, _ := uuid.NewV4()
 
-	ns, id, _, returnTraces, err := h.preTriggerUserPipelineWithStream(ctx, req)
+	ns, id, _, returnTraces, err := h.preTriggerNamespacePipelineWithStream(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return fmt.Errorf("preTriggerUserPipelineWithStream: %w", err)
+		return fmt.Errorf("preTriggerNamespacePipelineWithStream: %w", err)
 	}
 
 	err = h.service.TriggerNamespacePipelineByIDWithStream(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces, resultChan)
@@ -1042,16 +1133,17 @@ func (h *PublicHandler) triggerNamespacePipelineWithStream(ctx context.Context, 
 	return nil
 }
 
-func (h *PublicHandler) preTriggerUserPipelineWithStream(ctx context.Context, req TriggerNamespacePipelineRequestInterface) (resource.Namespace, string, *pb.Pipeline, bool, error) {
+func (h *PublicHandler) preTriggerNamespacePipelineWithStream(ctx context.Context, req *pb.TriggerNamespacePipelineWithStreamRequest) (resource.Namespace, string, *pb.Pipeline, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
 		return resource.Namespace{}, "", nil, false, ErrCheckRequiredFields
 	}
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	id := req.PipelineId
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
-		return ns, id, nil, false, fmt.Errorf("GetRscNamespaceAndNameID: %w", err)
+		return ns, id, nil, false, fmt.Errorf("GetRscNamespace: %w", err)
 	}
 
 	if err := authenticateUser(ctx, false); err != nil {
@@ -1076,12 +1168,19 @@ func (h *PublicHandler) preTriggerUserPipelineWithStream(ctx context.Context, re
 }
 
 func (h *PublicHandler) TriggerOrganizationPipeline(ctx context.Context, req *pb.TriggerOrganizationPipelineRequest) (resp *pb.TriggerOrganizationPipelineResponse, err error) {
-	resp = &pb.TriggerOrganizationPipelineResponse{}
-	resp.Outputs, resp.Metadata, err = h.triggerNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.TriggerNamespacePipeline(ctx, &pb.TriggerNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		Inputs:      req.Inputs,
+		Data:        req.Data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.TriggerOrganizationPipelineResponse{Outputs: r.Outputs, Metadata: r.Metadata}, nil
 }
 
-func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req TriggerNamespacePipelineRequestInterface) (outputs []*structpb.Struct, metadata *pb.TriggerMetadata, err error) {
+func (h *PublicHandler) TriggerNamespacePipeline(ctx context.Context, req *pb.TriggerNamespacePipelineRequest) (resp *pb.TriggerNamespacePipelineResponse, err error) {
 	eventName := "TriggerNamespacePipeline"
 
 	ctx, span := tracer.Start(ctx, eventName,
@@ -1090,50 +1189,48 @@ func (h *PublicHandler) triggerNamespacePipeline(ctx context.Context, req Trigge
 
 	logUUID, _ := uuid.NewV4()
 
-	// logger, _ := logger.GetZapLogger(ctx)
-
-	ns, id, _, returnTraces, err := h.preTriggerUserPipeline(ctx, req)
+	ns, id, _, returnTraces, err := h.preTriggerNamespacePipeline(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
-	outputs, metadata, err = h.service.TriggerNamespacePipelineByID(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
+	outputs, metadata, err := h.service.TriggerNamespacePipelineByID(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
-	// logger.Info(string(customotel.NewLogMessage(
-	// 	span,
-	// 	logUUID.String(),
-	// 	authUser.UID,
-	// 	eventName,
-	// 	customotel.SetEventResource(pbPipeline),
-	// )))
-
-	return outputs, metadata, nil
-}
-
-type TriggerAsyncNamespacePipelineRequestInterface interface {
-	GetName() string
-	GetInputs() []*structpb.Struct // deprecated
-	GetData() []*pb.TriggerData
+	return &pb.TriggerNamespacePipelineResponse{Outputs: outputs, Metadata: metadata}, nil
 }
 
 func (h *PublicHandler) TriggerAsyncUserPipeline(ctx context.Context, req *pb.TriggerAsyncUserPipelineRequest) (resp *pb.TriggerAsyncUserPipelineResponse, err error) {
-	resp = &pb.TriggerAsyncUserPipelineResponse{}
-	resp.Operation, err = h.triggerAsyncNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.TriggerAsyncNamespacePipeline(ctx, &pb.TriggerAsyncNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		Inputs:      req.Inputs,
+		Data:        req.Data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.TriggerAsyncUserPipelineResponse{Operation: r.Operation}, nil
 }
 
 func (h *PublicHandler) TriggerAsyncOrganizationPipeline(ctx context.Context, req *pb.TriggerAsyncOrganizationPipelineRequest) (resp *pb.TriggerAsyncOrganizationPipelineResponse, err error) {
-	resp = &pb.TriggerAsyncOrganizationPipelineResponse{}
-	resp.Operation, err = h.triggerAsyncNamespacePipeline(ctx, req)
-	return resp, err
+	r, err := h.TriggerAsyncNamespacePipeline(ctx, &pb.TriggerAsyncNamespacePipelineRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		Inputs:      req.Inputs,
+		Data:        req.Data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.TriggerAsyncOrganizationPipelineResponse{Operation: r.Operation}, nil
 }
 
-func (h *PublicHandler) triggerAsyncNamespacePipeline(ctx context.Context, req TriggerAsyncNamespacePipelineRequestInterface) (operation *longrunningpb.Operation, err error) {
+func (h *PublicHandler) TriggerAsyncNamespacePipeline(ctx context.Context, req *pb.TriggerAsyncNamespacePipelineRequest) (resp *pb.TriggerAsyncNamespacePipelineResponse, err error) {
 
 	eventName := "TriggerAsyncNamespacePipeline"
 
@@ -1145,13 +1242,13 @@ func (h *PublicHandler) triggerAsyncNamespacePipeline(ctx context.Context, req T
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, id, dbPipeline, returnTraces, err := h.preTriggerUserPipeline(ctx, req)
+	ns, id, dbPipeline, returnTraces, err := h.preTriggerNamespacePipeline(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	operation, err = h.service.TriggerAsyncNamespacePipelineByID(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
+	operation, err := h.service.TriggerAsyncNamespacePipelineByID(ctx, ns, id, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1165,27 +1262,34 @@ func (h *PublicHandler) triggerAsyncNamespacePipeline(ctx context.Context, req T
 		customotel.SetEventResource(dbPipeline),
 	)))
 
-	return operation, nil
-}
-
-type CreateNamespacePipelineReleaseRequestInterface interface {
-	GetRelease() *pb.PipelineRelease
-	GetParent() string
+	return &pb.TriggerAsyncNamespacePipelineResponse{Operation: operation}, nil
 }
 
 func (h *PublicHandler) CreateUserPipelineRelease(ctx context.Context, req *pb.CreateUserPipelineReleaseRequest) (resp *pb.CreateUserPipelineReleaseResponse, err error) {
-	resp = &pb.CreateUserPipelineReleaseResponse{}
-	resp.Release, err = h.createNamespacePipelineRelease(ctx, req)
-	return resp, err
+	r, err := h.CreateNamespacePipelineRelease(ctx, &pb.CreateNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		PipelineId:  strings.Split(req.Parent, "/")[3],
+		Release:     req.Release,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreateUserPipelineReleaseResponse{Release: r.Release}, nil
 }
 
 func (h *PublicHandler) CreateOrganizationPipelineRelease(ctx context.Context, req *pb.CreateOrganizationPipelineReleaseRequest) (resp *pb.CreateOrganizationPipelineReleaseResponse, err error) {
-	resp = &pb.CreateOrganizationPipelineReleaseResponse{}
-	resp.Release, err = h.createNamespacePipelineRelease(ctx, req)
-	return resp, err
+	r, err := h.CreateNamespacePipelineRelease(ctx, &pb.CreateNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		PipelineId:  strings.Split(req.Parent, "/")[3],
+		Release:     req.Release,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreateOrganizationPipelineReleaseResponse{Release: r.Release}, nil
 }
 
-func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req CreateNamespacePipelineReleaseRequestInterface) (*pb.PipelineRelease, error) {
+func (h *PublicHandler) CreateNamespacePipelineRelease(ctx context.Context, req *pb.CreateNamespacePipelineReleaseRequest) (*pb.CreateNamespacePipelineReleaseResponse, error) {
 	eventName := "CreateNamespacePipelineRelease"
 
 	ctx, span := tracer.Start(ctx, eventName,
@@ -1214,7 +1318,7 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 		return nil, ErrSematicVersion
 	}
 
-	ns, pipelineID, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -1222,7 +1326,7 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pb.Pipeline_VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.PipelineId, pb.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
@@ -1259,32 +1363,43 @@ func (h *PublicHandler) createNamespacePipelineRelease(ctx context.Context, req 
 		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
-	return pbPipelineRelease, nil
+	return &pb.CreateNamespacePipelineReleaseResponse{Release: pbPipelineRelease}, nil
 
-}
-
-type ListNamespacePipelineReleasesRequestInterface interface {
-	GetPageSize() int32
-	GetPageToken() string
-	GetView() pb.Pipeline_View
-	GetFilter() string
-	GetParent() string
-	GetShowDeleted() bool
 }
 
 func (h *PublicHandler) ListUserPipelineReleases(ctx context.Context, req *pb.ListUserPipelineReleasesRequest) (resp *pb.ListUserPipelineReleasesResponse, err error) {
-	resp = &pb.ListUserPipelineReleasesResponse{}
-	resp.Releases, resp.NextPageToken, resp.TotalSize, err = h.listNamespacePipelineReleases(ctx, req)
-	return resp, err
+	r, err := h.ListNamespacePipelineReleases(ctx, &pb.ListNamespacePipelineReleasesRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		PipelineId:  strings.Split(req.Parent, "/")[3],
+		PageSize:    req.PageSize,
+		PageToken:   req.PageToken,
+		View:        req.View,
+		Filter:      req.Filter,
+		ShowDeleted: req.ShowDeleted,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ListUserPipelineReleasesResponse{Releases: r.Releases, NextPageToken: r.NextPageToken, TotalSize: r.TotalSize}, nil
 }
 
 func (h *PublicHandler) ListOrganizationPipelineReleases(ctx context.Context, req *pb.ListOrganizationPipelineReleasesRequest) (resp *pb.ListOrganizationPipelineReleasesResponse, err error) {
-	resp = &pb.ListOrganizationPipelineReleasesResponse{}
-	resp.Releases, resp.NextPageToken, resp.TotalSize, err = h.listNamespacePipelineReleases(ctx, req)
-	return resp, err
+	r, err := h.ListNamespacePipelineReleases(ctx, &pb.ListNamespacePipelineReleasesRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		PipelineId:  strings.Split(req.Parent, "/")[3],
+		PageSize:    req.PageSize,
+		PageToken:   req.PageToken,
+		View:        req.View,
+		Filter:      req.Filter,
+		ShowDeleted: req.ShowDeleted,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ListOrganizationPipelineReleasesResponse{Releases: r.Releases, NextPageToken: r.NextPageToken, TotalSize: r.TotalSize}, nil
 }
 
-func (h *PublicHandler) listNamespacePipelineReleases(ctx context.Context, req ListNamespacePipelineReleasesRequestInterface) (releases []*pb.PipelineRelease, nextPageToken string, totalSize int32, err error) {
+func (h *PublicHandler) ListNamespacePipelineReleases(ctx context.Context, req *pb.ListNamespacePipelineReleasesRequest) (resp *pb.ListNamespacePipelineReleasesResponse, err error) {
 
 	eventName := "ListNamespacePipelineReleases"
 
@@ -1296,12 +1411,12 @@ func (h *PublicHandler) listNamespacePipelineReleases(ctx context.Context, req L
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineID, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
-		return nil, "", 0, err
+		return nil, err
 	}
 	if err := authenticateUser(ctx, true); err != nil {
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
@@ -1319,24 +1434,24 @@ func (h *PublicHandler) listNamespacePipelineReleases(ctx context.Context, req L
 	}...)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pb.Pipeline_VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.PipelineId, pb.Pipeline_VIEW_BASIC)
 	if err != nil {
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	pbPipelineReleases, totalSize, nextPageToken, err := h.service.ListNamespacePipelineReleases(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.GetPageSize(), req.GetPageToken(), req.GetView(), filter, req.GetShowDeleted())
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -1346,28 +1461,41 @@ func (h *PublicHandler) listNamespacePipelineReleases(ctx context.Context, req L
 		eventName,
 	)))
 
-	return pbPipelineReleases, nextPageToken, totalSize, nil
+	return &pb.ListNamespacePipelineReleasesResponse{
+		Releases:      pbPipelineReleases,
+		TotalSize:     totalSize,
+		NextPageToken: nextPageToken,
+	}, nil
 
-}
-
-type GetNamespacePipelineReleaseRequestInterface interface {
-	GetName() string
-	GetView() pb.Pipeline_View
 }
 
 func (h *PublicHandler) GetUserPipelineRelease(ctx context.Context, req *pb.GetUserPipelineReleaseRequest) (resp *pb.GetUserPipelineReleaseResponse, err error) {
-	resp = &pb.GetUserPipelineReleaseResponse{}
-	resp.Release, err = h.getNamespacePipelineRelease(ctx, req)
-	return resp, err
+	r, err := h.GetNamespacePipelineRelease(ctx, &pb.GetNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+		View:        req.View,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetUserPipelineReleaseResponse{Release: r.Release}, nil
 }
 
 func (h *PublicHandler) GetOrganizationPipelineRelease(ctx context.Context, req *pb.GetOrganizationPipelineReleaseRequest) (resp *pb.GetOrganizationPipelineReleaseResponse, err error) {
-	resp = &pb.GetOrganizationPipelineReleaseResponse{}
-	resp.Release, err = h.getNamespacePipelineRelease(ctx, req)
-	return resp, err
+	r, err := h.GetNamespacePipelineRelease(ctx, &pb.GetNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+		View:        req.View,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetOrganizationPipelineReleaseResponse{Release: r.Release}, nil
 }
 
-func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req GetNamespacePipelineReleaseRequestInterface) (release *pb.PipelineRelease, err error) {
+func (h *PublicHandler) GetNamespacePipelineRelease(ctx context.Context, req *pb.GetNamespacePipelineReleaseRequest) (resp *pb.GetNamespacePipelineReleaseResponse, err error) {
 
 	eventName := "GetNamespacePipelineRelease"
 
@@ -1379,7 +1507,7 @@ func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req Get
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -1387,12 +1515,12 @@ func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req Get
 		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pb.Pipeline_VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.PipelineId, pb.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), releaseID, req.GetView())
+	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.ReleaseId, req.GetView())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1406,28 +1534,39 @@ func (h *PublicHandler) getNamespacePipelineRelease(ctx context.Context, req Get
 		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
-	return pbPipelineRelease, nil
+	return &pb.GetNamespacePipelineReleaseResponse{Release: pbPipelineRelease}, nil
 
-}
-
-type UpdateNamespacePipelineReleaseRequestInterface interface {
-	GetRelease() *pb.PipelineRelease
-	GetUpdateMask() *fieldmaskpb.FieldMask
 }
 
 func (h *PublicHandler) UpdateUserPipelineRelease(ctx context.Context, req *pb.UpdateUserPipelineReleaseRequest) (resp *pb.UpdateUserPipelineReleaseResponse, err error) {
-	resp = &pb.UpdateUserPipelineReleaseResponse{}
-	resp.Release, err = h.updateNamespacePipelineRelease(ctx, req)
-	return resp, err
+	r, err := h.UpdateNamespacePipelineRelease(ctx, &pb.UpdateNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Release.Name, "/")[1],
+		PipelineId:  strings.Split(req.Release.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Release.Name, "/")[5],
+		Release:     req.Release,
+		UpdateMask:  req.UpdateMask,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateUserPipelineReleaseResponse{Release: r.Release}, nil
 }
 
 func (h *PublicHandler) UpdateOrganizationPipelineRelease(ctx context.Context, req *pb.UpdateOrganizationPipelineReleaseRequest) (resp *pb.UpdateOrganizationPipelineReleaseResponse, err error) {
-	resp = &pb.UpdateOrganizationPipelineReleaseResponse{}
-	resp.Release, err = h.updateNamespacePipelineRelease(ctx, req)
-	return resp, err
+	r, err := h.UpdateNamespacePipelineRelease(ctx, &pb.UpdateNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Release.Name, "/")[1],
+		PipelineId:  strings.Split(req.Release.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Release.Name, "/")[5],
+		Release:     req.Release,
+		UpdateMask:  req.UpdateMask,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateOrganizationPipelineReleaseResponse{Release: r.Release}, nil
 }
 
-func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req UpdateNamespacePipelineReleaseRequestInterface) (release *pb.PipelineRelease, err error) {
+func (h *PublicHandler) UpdateNamespacePipelineRelease(ctx context.Context, req *pb.UpdateNamespacePipelineReleaseRequest) (resp *pb.UpdateNamespacePipelineReleaseResponse, err error) {
 
 	eventName := "UpdateNamespacePipelineRelease"
 
@@ -1439,7 +1578,7 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(ctx, req.GetRelease().GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -1448,6 +1587,9 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 	}
 
 	pbPipelineReleaseReq := req.GetRelease()
+	if pbPipelineReleaseReq.Id == "" {
+		pbPipelineReleaseReq.Id = req.PipelineId
+	}
 	pbUpdateMask := req.GetUpdateMask()
 
 	// Validate the field mask
@@ -1455,12 +1597,12 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, ErrUpdateMask
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pb.Pipeline_VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.PipelineId, pb.Pipeline_VIEW_BASIC)
 	if err != nil {
 		return nil, err
 	}
 
-	getResp, err := h.GetUserPipelineRelease(ctx, &pb.GetUserPipelineReleaseRequest{Name: pbPipelineReleaseReq.GetName()})
+	getResp, err := h.GetNamespacePipelineRelease(ctx, &pb.GetNamespacePipelineReleaseRequest{NamespaceId: req.NamespaceId, PipelineId: req.PipelineId, ReleaseId: req.ReleaseId, View: pb.Pipeline_VIEW_FULL.Enum()})
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1479,7 +1621,7 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 	}
 
 	if mask.IsEmpty() {
-		return getResp.GetRelease(), nil
+		return &pb.UpdateNamespacePipelineReleaseResponse{Release: getResp.GetRelease()}, nil
 	}
 
 	pbPipelineReleaseToUpdate := getResp.GetRelease()
@@ -1497,7 +1639,7 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 		return nil, err
 	}
 
-	pbPipelineRelease, err := h.service.UpdateNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), releaseID, pbPipelineReleaseToUpdate)
+	pbPipelineRelease, err := h.service.UpdateNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.ReleaseId, pbPipelineReleaseToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1511,7 +1653,7 @@ func (h *PublicHandler) updateNamespacePipelineRelease(ctx context.Context, req 
 		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
-	return pbPipelineRelease, nil
+	return &pb.UpdateNamespacePipelineReleaseResponse{Release: pbPipelineRelease}, nil
 }
 
 type RenameNamespacePipelineReleaseRequestInterface interface {
@@ -1549,7 +1691,11 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 		return nil, ErrCheckRequiredFields
 	}
 
-	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(ctx, req.GetName())
+	splits := strings.Split(req.GetName(), "/")
+	namespaceID := splits[1]
+	pipelineID := splits[3]
+	releaseID := splits[5]
+	ns, err := h.service.GetRscNamespace(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -1587,22 +1733,30 @@ func (h *PublicHandler) renameNamespacePipelineRelease(ctx context.Context, req 
 	return pbPipelineRelease, nil
 }
 
-type DeleteNamespacePipelineReleaseRequestInterface interface {
-	GetName() string
-}
-
 func (h *PublicHandler) DeleteUserPipelineRelease(ctx context.Context, req *pb.DeleteUserPipelineReleaseRequest) (resp *pb.DeleteUserPipelineReleaseResponse, err error) {
-	resp = &pb.DeleteUserPipelineReleaseResponse{}
-	err = h.deleteNamespacePipelineRelease(ctx, req)
-	return resp, err
+	_, err = h.DeleteNamespacePipelineRelease(ctx, &pb.DeleteNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteUserPipelineReleaseResponse{}, nil
 }
 func (h *PublicHandler) DeleteOrganizationPipelineRelease(ctx context.Context, req *pb.DeleteOrganizationPipelineReleaseRequest) (resp *pb.DeleteOrganizationPipelineReleaseResponse, err error) {
-	resp = &pb.DeleteOrganizationPipelineReleaseResponse{}
-	err = h.deleteNamespacePipelineRelease(ctx, req)
-	return resp, err
+	_, err = h.DeleteNamespacePipelineRelease(ctx, &pb.DeleteNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteOrganizationPipelineReleaseResponse{}, nil
 }
 
-func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req DeleteNamespacePipelineReleaseRequestInterface) error {
+func (h *PublicHandler) DeleteNamespacePipelineRelease(ctx context.Context, req *pb.DeleteNamespacePipelineReleaseRequest) (*pb.DeleteNamespacePipelineReleaseResponse, error) {
 
 	eventName := "DeleteNamespacePipelineRelease"
 
@@ -1614,34 +1768,38 @@ func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req 
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
-		return err
+		return nil, err
 	}
 
-	existPipelineRelease, err := h.GetUserPipelineRelease(ctx, &pb.GetUserPipelineReleaseRequest{Name: req.GetName()})
+	existPipelineRelease, err := h.GetNamespacePipelineRelease(ctx, &pb.GetNamespacePipelineReleaseRequest{
+		NamespaceId: req.NamespaceId,
+		PipelineId:  req.PipelineId,
+		ReleaseId:   req.ReleaseId,
+	})
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
-	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pb.Pipeline_VIEW_BASIC)
+	pipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.PipelineId, pb.Pipeline_VIEW_BASIC)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := h.service.DeleteNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), releaseID); err != nil {
+	if err := h.service.DeleteNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.ReleaseId); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
 	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
 	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent))); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -1652,7 +1810,7 @@ func (h *PublicHandler) deleteNamespacePipelineRelease(ctx context.Context, req 
 		customotel.SetEventResource(existPipelineRelease.GetRelease()),
 	)))
 
-	return nil
+	return &pb.DeleteNamespacePipelineReleaseResponse{}, nil
 }
 
 type RestoreNamespacePipelineReleaseRequestInterface interface {
@@ -1683,7 +1841,11 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(ctx, req.GetName())
+	splits := strings.Split(req.GetName(), "/")
+	namespaceID := splits[1]
+	pipelineID := splits[3]
+	releaseID := splits[5]
+	ns, err := h.service.GetRscNamespace(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -1691,7 +1853,11 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 		return nil, err
 	}
 
-	existPipelineRelease, err := h.GetUserPipelineRelease(ctx, &pb.GetUserPipelineReleaseRequest{Name: req.GetName()})
+	existPipelineRelease, err := h.GetNamespacePipelineRelease(ctx, &pb.GetNamespacePipelineReleaseRequest{
+		NamespaceId: namespaceID,
+		PipelineId:  pipelineID,
+		ReleaseId:   releaseID,
+	})
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1724,14 +1890,14 @@ func (h *PublicHandler) restoreNamespacePipelineRelease(ctx context.Context, req
 	return pbPipelineRelease, nil
 }
 
-func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req TriggerPipelineRequestInterface) (resource.Namespace, string, *pb.Pipeline, *pb.PipelineRelease, bool, error) {
+func (h *PublicHandler) preTriggerNamespacePipelineRelease(ctx context.Context, req TriggerPipelineReleaseRequestInterface) (resource.Namespace, string, *pb.Pipeline, *pb.PipelineRelease, bool, error) {
 
 	// Return error if REQUIRED fields are not provided in the requested payload pipeline resource
 	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
 		return resource.Namespace{}, "", nil, nil, false, ErrCheckRequiredFields
 	}
 
-	ns, pipelineID, releaseID, err := h.service.GetRscNamespaceAndNameIDAndReleaseID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.GetNamespaceId())
 	if err != nil {
 		return ns, "", nil, nil, false, err
 	}
@@ -1739,12 +1905,12 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		return ns, "", nil, nil, false, err
 	}
 
-	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, pipelineID, pb.Pipeline_VIEW_FULL)
+	pbPipeline, err := h.service.GetNamespacePipelineByID(ctx, ns, req.GetPipelineId(), pb.Pipeline_VIEW_FULL)
 	if err != nil {
 		return ns, "", nil, nil, false, err
 	}
 
-	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, pb.Pipeline_VIEW_FULL)
+	pbPipelineRelease, err := h.service.GetNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), req.GetReleaseId(), pb.Pipeline_VIEW_FULL)
 	if err != nil {
 		return ns, "", nil, nil, false, err
 	}
@@ -1753,29 +1919,39 @@ func (h *PublicHandler) preTriggerUserPipelineRelease(ctx context.Context, req T
 		returnTraces = true
 	}
 
-	return ns, releaseID, pbPipeline, pbPipelineRelease, returnTraces, nil
+	return ns, req.GetReleaseId(), pbPipeline, pbPipelineRelease, returnTraces, nil
 
-}
-
-type TriggerNamespacePipelineReleaseRequestInterface interface {
-	GetName() string
-	GetInputs() []*structpb.Struct // deprecated
-	GetData() []*pb.TriggerData
 }
 
 func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pb.TriggerUserPipelineReleaseRequest) (resp *pb.TriggerUserPipelineReleaseResponse, err error) {
-	resp = &pb.TriggerUserPipelineReleaseResponse{}
-	resp.Outputs, resp.Metadata, err = h.triggerNamespacePipelineRelease(ctx, req)
-	return resp, err
+	_, err = h.TriggerNamespacePipelineRelease(ctx, &pb.TriggerNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+		Inputs:      req.Inputs,
+		Data:        req.Data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.TriggerUserPipelineReleaseResponse{}, nil
 }
 
 func (h *PublicHandler) TriggerOrganizationPipelineRelease(ctx context.Context, req *pb.TriggerOrganizationPipelineReleaseRequest) (resp *pb.TriggerOrganizationPipelineReleaseResponse, err error) {
-	resp = &pb.TriggerOrganizationPipelineReleaseResponse{}
-	resp.Outputs, resp.Metadata, err = h.triggerNamespacePipelineRelease(ctx, req)
-	return resp, err
+	_, err = h.TriggerNamespacePipelineRelease(ctx, &pb.TriggerNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+		Inputs:      req.Inputs,
+		Data:        req.Data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.TriggerOrganizationPipelineReleaseResponse{}, nil
 }
 
-func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req TriggerNamespacePipelineReleaseRequestInterface) (outputs []*structpb.Struct, metadata *pb.TriggerMetadata, err error) {
+func (h *PublicHandler) TriggerNamespacePipelineRelease(ctx context.Context, req *pb.TriggerNamespacePipelineReleaseRequest) (resp *pb.TriggerNamespacePipelineReleaseResponse, err error) {
 
 	eventName := "TriggerNamespacePipelineRelease"
 
@@ -1787,16 +1963,16 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, releaseID, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerUserPipelineRelease(ctx, req)
+	ns, releaseID, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerNamespacePipelineRelease(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
-	outputs, metadata, err = h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
+	outputs, metadata, err := h.service.TriggerNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, nil, err
+		return nil, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -1807,28 +1983,38 @@ func (h *PublicHandler) triggerNamespacePipelineRelease(ctx context.Context, req
 		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
-	return outputs, metadata, nil
-}
-
-type TriggerAsyncNamespacePipelineReleaseRequestInterface interface {
-	GetName() string
-	GetInputs() []*structpb.Struct // deprecated
-	GetData() []*pb.TriggerData
+	return &pb.TriggerNamespacePipelineReleaseResponse{Outputs: outputs, Metadata: metadata}, nil
 }
 
 func (h *PublicHandler) TriggerAsyncUserPipelineRelease(ctx context.Context, req *pb.TriggerAsyncUserPipelineReleaseRequest) (resp *pb.TriggerAsyncUserPipelineReleaseResponse, err error) {
-	resp = &pb.TriggerAsyncUserPipelineReleaseResponse{}
-	resp.Operation, err = h.triggerAsyncNamespacePipelineRelease(ctx, req)
-	return resp, err
+	r, err := h.TriggerAsyncNamespacePipelineRelease(ctx, &pb.TriggerAsyncNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+		Inputs:      req.Inputs,
+		Data:        req.Data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.TriggerAsyncUserPipelineReleaseResponse{Operation: r.Operation}, nil
 }
 
 func (h *PublicHandler) TriggerAsyncOrganizationPipelineRelease(ctx context.Context, req *pb.TriggerAsyncOrganizationPipelineReleaseRequest) (resp *pb.TriggerAsyncOrganizationPipelineReleaseResponse, err error) {
-	resp = &pb.TriggerAsyncOrganizationPipelineReleaseResponse{}
-	resp.Operation, err = h.triggerAsyncNamespacePipelineRelease(ctx, req)
-	return resp, err
+	r, err := h.TriggerAsyncNamespacePipelineRelease(ctx, &pb.TriggerAsyncNamespacePipelineReleaseRequest{
+		NamespaceId: strings.Split(req.Name, "/")[1],
+		PipelineId:  strings.Split(req.Name, "/")[3],
+		ReleaseId:   strings.Split(req.Name, "/")[5],
+		Inputs:      req.Inputs,
+		Data:        req.Data,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.TriggerAsyncOrganizationPipelineReleaseResponse{Operation: r.Operation}, nil
 }
 
-func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context, req TriggerAsyncNamespacePipelineReleaseRequestInterface) (operation *longrunningpb.Operation, err error) {
+func (h *PublicHandler) TriggerAsyncNamespacePipelineRelease(ctx context.Context, req *pb.TriggerAsyncNamespacePipelineReleaseRequest) (resp *pb.TriggerAsyncNamespacePipelineReleaseResponse, err error) {
 
 	eventName := "TriggerAsyncNamespacePipelineRelease"
 
@@ -1840,13 +2026,13 @@ func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, releaseID, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerUserPipelineRelease(ctx, req)
+	ns, releaseID, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerNamespacePipelineRelease(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	operation, err = h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
+	operation, err := h.service.TriggerAsyncNamespacePipelineReleaseByID(ctx, ns, uuid.FromStringOrNil(pbPipeline.Uid), releaseID, mergeInputsIntoData(req.GetInputs(), req.GetData()), logUUID.String(), returnTraces)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1860,7 +2046,7 @@ func (h *PublicHandler) triggerAsyncNamespacePipelineRelease(ctx context.Context
 		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
-	return operation, nil
+	return &pb.TriggerAsyncNamespacePipelineReleaseResponse{Operation: operation}, nil
 }
 
 func (h *PublicHandler) GetOperation(ctx context.Context, req *pb.GetOperationRequest) (*pb.GetOperationResponse, error) {

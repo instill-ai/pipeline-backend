@@ -63,9 +63,7 @@ type Service interface {
 	GetOperation(ctx context.Context, workflowID string) (*longrunningpb.Operation, error)
 
 	GetCtxUserNamespace(ctx context.Context) (resource.Namespace, error)
-	GetRscNamespaceAndNameID(ctx context.Context, path string) (resource.Namespace, string, error)
-	GetRscNamespaceAndPermalinkUID(ctx context.Context, path string) (resource.Namespace, uuid.UUID, error)
-	GetRscNamespaceAndNameIDAndReleaseID(ctx context.Context, path string) (resource.Namespace, string, string, error)
+	GetRscNamespace(ctx context.Context, namespaceID string) (resource.Namespace, error)
 
 	ListComponentDefinitions(context.Context, *pb.ListComponentDefinitionsRequest) (*pb.ListComponentDefinitionsResponse, error)
 	ListOperatorDefinitions(context.Context, *pb.ListOperatorDefinitionsRequest) (*pb.ListOperatorDefinitionsResponse, error)

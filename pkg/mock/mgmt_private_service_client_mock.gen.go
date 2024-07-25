@@ -24,6 +24,12 @@ type MgmtPrivateServiceClientMock struct {
 	beforeCheckNamespaceAdminCounter uint64
 	CheckNamespaceAdminMock          mMgmtPrivateServiceClientMockCheckNamespaceAdmin
 
+	funcCheckNamespaceByUIDAdmin          func(ctx context.Context, in *mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest, opts ...grpc.CallOption) (cp1 *mm_mgmtv1beta.CheckNamespaceByUIDAdminResponse, err error)
+	inspectFuncCheckNamespaceByUIDAdmin   func(ctx context.Context, in *mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest, opts ...grpc.CallOption)
+	afterCheckNamespaceByUIDAdminCounter  uint64
+	beforeCheckNamespaceByUIDAdminCounter uint64
+	CheckNamespaceByUIDAdminMock          mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin
+
 	funcGetOrganizationAdmin          func(ctx context.Context, in *mm_mgmtv1beta.GetOrganizationAdminRequest, opts ...grpc.CallOption) (gp1 *mm_mgmtv1beta.GetOrganizationAdminResponse, err error)
 	inspectFuncGetOrganizationAdmin   func(ctx context.Context, in *mm_mgmtv1beta.GetOrganizationAdminRequest, opts ...grpc.CallOption)
 	afterGetOrganizationAdminCounter  uint64
@@ -95,6 +101,9 @@ func NewMgmtPrivateServiceClientMock(t minimock.Tester) *MgmtPrivateServiceClien
 
 	m.CheckNamespaceAdminMock = mMgmtPrivateServiceClientMockCheckNamespaceAdmin{mock: m}
 	m.CheckNamespaceAdminMock.callArgs = []*MgmtPrivateServiceClientMockCheckNamespaceAdminParams{}
+
+	m.CheckNamespaceByUIDAdminMock = mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin{mock: m}
+	m.CheckNamespaceByUIDAdminMock.callArgs = []*MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams{}
 
 	m.GetOrganizationAdminMock = mMgmtPrivateServiceClientMockGetOrganizationAdmin{mock: m}
 	m.GetOrganizationAdminMock.callArgs = []*MgmtPrivateServiceClientMockGetOrganizationAdminParams{}
@@ -477,6 +486,355 @@ func (m *MgmtPrivateServiceClientMock) MinimockCheckNamespaceAdminInspect() {
 	if !m.CheckNamespaceAdminMock.invocationsDone() && afterCheckNamespaceAdminCounter > 0 {
 		m.t.Errorf("Expected %d calls to MgmtPrivateServiceClientMock.CheckNamespaceAdmin but found %d calls",
 			mm_atomic.LoadUint64(&m.CheckNamespaceAdminMock.expectedInvocations), afterCheckNamespaceAdminCounter)
+	}
+}
+
+type mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin struct {
+	optional           bool
+	mock               *MgmtPrivateServiceClientMock
+	defaultExpectation *MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation
+	expectations       []*MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation
+
+	callArgs []*MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation specifies expectation struct of the MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+type MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation struct {
+	mock      *MgmtPrivateServiceClientMock
+	params    *MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams
+	paramPtrs *MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParamPtrs
+	results   *MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminResults
+	Counter   uint64
+}
+
+// MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams contains parameters of the MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+type MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams struct {
+	ctx  context.Context
+	in   *mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest
+	opts []grpc.CallOption
+}
+
+// MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParamPtrs contains pointers to parameters of the MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+type MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest
+	opts *[]grpc.CallOption
+}
+
+// MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminResults contains results of the MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+type MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminResults struct {
+	cp1 *mm_mgmtv1beta.CheckNamespaceByUIDAdminResponse
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option by default unless you really need it, as it helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) Optional() *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin {
+	mmCheckNamespaceByUIDAdmin.optional = true
+	return mmCheckNamespaceByUIDAdmin
+}
+
+// Expect sets up expected params for MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) Expect(ctx context.Context, in *mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest, opts ...grpc.CallOption) *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin {
+	if mmCheckNamespaceByUIDAdmin.mock.funcCheckNamespaceByUIDAdmin != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by Set")
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation == nil {
+		mmCheckNamespaceByUIDAdmin.defaultExpectation = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation{}
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by ExpectParams functions")
+	}
+
+	mmCheckNamespaceByUIDAdmin.defaultExpectation.params = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams{ctx, in, opts}
+	for _, e := range mmCheckNamespaceByUIDAdmin.expectations {
+		if minimock.Equal(e.params, mmCheckNamespaceByUIDAdmin.defaultExpectation.params) {
+			mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCheckNamespaceByUIDAdmin.defaultExpectation.params)
+		}
+	}
+
+	return mmCheckNamespaceByUIDAdmin
+}
+
+// ExpectCtxParam1 sets up expected param ctx for MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) ExpectCtxParam1(ctx context.Context) *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin {
+	if mmCheckNamespaceByUIDAdmin.mock.funcCheckNamespaceByUIDAdmin != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by Set")
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation == nil {
+		mmCheckNamespaceByUIDAdmin.defaultExpectation = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation{}
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation.params != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by Expect")
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs == nil {
+		mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParamPtrs{}
+	}
+	mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmCheckNamespaceByUIDAdmin
+}
+
+// ExpectInParam2 sets up expected param in for MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) ExpectInParam2(in *mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest) *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin {
+	if mmCheckNamespaceByUIDAdmin.mock.funcCheckNamespaceByUIDAdmin != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by Set")
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation == nil {
+		mmCheckNamespaceByUIDAdmin.defaultExpectation = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation{}
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation.params != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by Expect")
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs == nil {
+		mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParamPtrs{}
+	}
+	mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs.in = &in
+
+	return mmCheckNamespaceByUIDAdmin
+}
+
+// ExpectOptsParam3 sets up expected param opts for MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) ExpectOptsParam3(opts ...grpc.CallOption) *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin {
+	if mmCheckNamespaceByUIDAdmin.mock.funcCheckNamespaceByUIDAdmin != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by Set")
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation == nil {
+		mmCheckNamespaceByUIDAdmin.defaultExpectation = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation{}
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation.params != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by Expect")
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs == nil {
+		mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParamPtrs{}
+	}
+	mmCheckNamespaceByUIDAdmin.defaultExpectation.paramPtrs.opts = &opts
+
+	return mmCheckNamespaceByUIDAdmin
+}
+
+// Inspect accepts an inspector function that has same arguments as the MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) Inspect(f func(ctx context.Context, in *mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest, opts ...grpc.CallOption)) *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin {
+	if mmCheckNamespaceByUIDAdmin.mock.inspectFuncCheckNamespaceByUIDAdmin != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("Inspect function is already set for MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin")
+	}
+
+	mmCheckNamespaceByUIDAdmin.mock.inspectFuncCheckNamespaceByUIDAdmin = f
+
+	return mmCheckNamespaceByUIDAdmin
+}
+
+// Return sets up results that will be returned by MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) Return(cp1 *mm_mgmtv1beta.CheckNamespaceByUIDAdminResponse, err error) *MgmtPrivateServiceClientMock {
+	if mmCheckNamespaceByUIDAdmin.mock.funcCheckNamespaceByUIDAdmin != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by Set")
+	}
+
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation == nil {
+		mmCheckNamespaceByUIDAdmin.defaultExpectation = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation{mock: mmCheckNamespaceByUIDAdmin.mock}
+	}
+	mmCheckNamespaceByUIDAdmin.defaultExpectation.results = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminResults{cp1, err}
+	return mmCheckNamespaceByUIDAdmin.mock
+}
+
+// Set uses given function f to mock the MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin method
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) Set(f func(ctx context.Context, in *mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest, opts ...grpc.CallOption) (cp1 *mm_mgmtv1beta.CheckNamespaceByUIDAdminResponse, err error)) *MgmtPrivateServiceClientMock {
+	if mmCheckNamespaceByUIDAdmin.defaultExpectation != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("Default expectation is already set for the MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin method")
+	}
+
+	if len(mmCheckNamespaceByUIDAdmin.expectations) > 0 {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("Some expectations are already set for the MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin method")
+	}
+
+	mmCheckNamespaceByUIDAdmin.mock.funcCheckNamespaceByUIDAdmin = f
+	return mmCheckNamespaceByUIDAdmin.mock
+}
+
+// When sets expectation for the MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin which will trigger the result defined by the following
+// Then helper
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) When(ctx context.Context, in *mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest, opts ...grpc.CallOption) *MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation {
+	if mmCheckNamespaceByUIDAdmin.mock.funcCheckNamespaceByUIDAdmin != nil {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock is already set by Set")
+	}
+
+	expectation := &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation{
+		mock:   mmCheckNamespaceByUIDAdmin.mock,
+		params: &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams{ctx, in, opts},
+	}
+	mmCheckNamespaceByUIDAdmin.expectations = append(mmCheckNamespaceByUIDAdmin.expectations, expectation)
+	return expectation
+}
+
+// Then sets up MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin return parameters for the expectation previously defined by the When method
+func (e *MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminExpectation) Then(cp1 *mm_mgmtv1beta.CheckNamespaceByUIDAdminResponse, err error) *MgmtPrivateServiceClientMock {
+	e.results = &MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminResults{cp1, err}
+	return e.mock
+}
+
+// Times sets number of times MgmtPrivateServiceClient.CheckNamespaceByUIDAdmin should be invoked
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) Times(n uint64) *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin {
+	if n == 0 {
+		mmCheckNamespaceByUIDAdmin.mock.t.Fatalf("Times of MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmCheckNamespaceByUIDAdmin.expectedInvocations, n)
+	return mmCheckNamespaceByUIDAdmin
+}
+
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) invocationsDone() bool {
+	if len(mmCheckNamespaceByUIDAdmin.expectations) == 0 && mmCheckNamespaceByUIDAdmin.defaultExpectation == nil && mmCheckNamespaceByUIDAdmin.mock.funcCheckNamespaceByUIDAdmin == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmCheckNamespaceByUIDAdmin.mock.afterCheckNamespaceByUIDAdminCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmCheckNamespaceByUIDAdmin.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// CheckNamespaceByUIDAdmin implements mgmtv1beta.MgmtPrivateServiceClient
+func (mmCheckNamespaceByUIDAdmin *MgmtPrivateServiceClientMock) CheckNamespaceByUIDAdmin(ctx context.Context, in *mm_mgmtv1beta.CheckNamespaceByUIDAdminRequest, opts ...grpc.CallOption) (cp1 *mm_mgmtv1beta.CheckNamespaceByUIDAdminResponse, err error) {
+	mm_atomic.AddUint64(&mmCheckNamespaceByUIDAdmin.beforeCheckNamespaceByUIDAdminCounter, 1)
+	defer mm_atomic.AddUint64(&mmCheckNamespaceByUIDAdmin.afterCheckNamespaceByUIDAdminCounter, 1)
+
+	if mmCheckNamespaceByUIDAdmin.inspectFuncCheckNamespaceByUIDAdmin != nil {
+		mmCheckNamespaceByUIDAdmin.inspectFuncCheckNamespaceByUIDAdmin(ctx, in, opts...)
+	}
+
+	mm_params := MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams{ctx, in, opts}
+
+	// Record call args
+	mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.mutex.Lock()
+	mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.callArgs = append(mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.callArgs, &mm_params)
+	mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.mutex.Unlock()
+
+	for _, e := range mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.cp1, e.results.err
+		}
+	}
+
+	if mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.defaultExpectation.Counter, 1)
+		mm_want := mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.defaultExpectation.params
+		mm_want_ptrs := mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.defaultExpectation.paramPtrs
+
+		mm_got := MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmCheckNamespaceByUIDAdmin.t.Errorf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmCheckNamespaceByUIDAdmin.t.Errorf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin got unexpected parameter in, want: %#v, got: %#v%s\n", *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmCheckNamespaceByUIDAdmin.t.Errorf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin got unexpected parameter opts, want: %#v, got: %#v%s\n", *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmCheckNamespaceByUIDAdmin.t.Errorf("MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmCheckNamespaceByUIDAdmin.CheckNamespaceByUIDAdminMock.defaultExpectation.results
+		if mm_results == nil {
+			mmCheckNamespaceByUIDAdmin.t.Fatal("No results are set for the MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin")
+		}
+		return (*mm_results).cp1, (*mm_results).err
+	}
+	if mmCheckNamespaceByUIDAdmin.funcCheckNamespaceByUIDAdmin != nil {
+		return mmCheckNamespaceByUIDAdmin.funcCheckNamespaceByUIDAdmin(ctx, in, opts...)
+	}
+	mmCheckNamespaceByUIDAdmin.t.Fatalf("Unexpected call to MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin. %v %v %v", ctx, in, opts)
+	return
+}
+
+// CheckNamespaceByUIDAdminAfterCounter returns a count of finished MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin invocations
+func (mmCheckNamespaceByUIDAdmin *MgmtPrivateServiceClientMock) CheckNamespaceByUIDAdminAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCheckNamespaceByUIDAdmin.afterCheckNamespaceByUIDAdminCounter)
+}
+
+// CheckNamespaceByUIDAdminBeforeCounter returns a count of MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin invocations
+func (mmCheckNamespaceByUIDAdmin *MgmtPrivateServiceClientMock) CheckNamespaceByUIDAdminBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCheckNamespaceByUIDAdmin.beforeCheckNamespaceByUIDAdminCounter)
+}
+
+// Calls returns a list of arguments used in each call to MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmCheckNamespaceByUIDAdmin *mMgmtPrivateServiceClientMockCheckNamespaceByUIDAdmin) Calls() []*MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams {
+	mmCheckNamespaceByUIDAdmin.mutex.RLock()
+
+	argCopy := make([]*MgmtPrivateServiceClientMockCheckNamespaceByUIDAdminParams, len(mmCheckNamespaceByUIDAdmin.callArgs))
+	copy(argCopy, mmCheckNamespaceByUIDAdmin.callArgs)
+
+	mmCheckNamespaceByUIDAdmin.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockCheckNamespaceByUIDAdminDone returns true if the count of the CheckNamespaceByUIDAdmin invocations corresponds
+// the number of defined expectations
+func (m *MgmtPrivateServiceClientMock) MinimockCheckNamespaceByUIDAdminDone() bool {
+	if m.CheckNamespaceByUIDAdminMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.CheckNamespaceByUIDAdminMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.CheckNamespaceByUIDAdminMock.invocationsDone()
+}
+
+// MinimockCheckNamespaceByUIDAdminInspect logs each unmet expectation
+func (m *MgmtPrivateServiceClientMock) MinimockCheckNamespaceByUIDAdminInspect() {
+	for _, e := range m.CheckNamespaceByUIDAdminMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin with params: %#v", *e.params)
+		}
+	}
+
+	afterCheckNamespaceByUIDAdminCounter := mm_atomic.LoadUint64(&m.afterCheckNamespaceByUIDAdminCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.CheckNamespaceByUIDAdminMock.defaultExpectation != nil && afterCheckNamespaceByUIDAdminCounter < 1 {
+		if m.CheckNamespaceByUIDAdminMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin")
+		} else {
+			m.t.Errorf("Expected call to MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin with params: %#v", *m.CheckNamespaceByUIDAdminMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcCheckNamespaceByUIDAdmin != nil && afterCheckNamespaceByUIDAdminCounter < 1 {
+		m.t.Error("Expected call to MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin")
+	}
+
+	if !m.CheckNamespaceByUIDAdminMock.invocationsDone() && afterCheckNamespaceByUIDAdminCounter > 0 {
+		m.t.Errorf("Expected %d calls to MgmtPrivateServiceClientMock.CheckNamespaceByUIDAdmin but found %d calls",
+			mm_atomic.LoadUint64(&m.CheckNamespaceByUIDAdminMock.expectedInvocations), afterCheckNamespaceByUIDAdminCounter)
 	}
 }
 
@@ -3976,6 +4334,8 @@ func (m *MgmtPrivateServiceClientMock) MinimockFinish() {
 		if !m.minimockDone() {
 			m.MinimockCheckNamespaceAdminInspect()
 
+			m.MinimockCheckNamespaceByUIDAdminInspect()
+
 			m.MinimockGetOrganizationAdminInspect()
 
 			m.MinimockGetOrganizationSubscriptionAdminInspect()
@@ -4020,6 +4380,7 @@ func (m *MgmtPrivateServiceClientMock) minimockDone() bool {
 	done := true
 	return done &&
 		m.MinimockCheckNamespaceAdminDone() &&
+		m.MinimockCheckNamespaceByUIDAdminDone() &&
 		m.MinimockGetOrganizationAdminDone() &&
 		m.MinimockGetOrganizationSubscriptionAdminDone() &&
 		m.MinimockGetRemainingCreditAdminDone() &&
