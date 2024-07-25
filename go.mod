@@ -17,7 +17,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.23.0-beta
+	github.com/instill-ai/component v0.23.0-beta.0.20240725091639-a6f0e9ce51ee
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240725080302-882cb706e504
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
@@ -65,6 +65,7 @@ require (
 	github.com/antchfx/xmlquery v1.3.17 // indirect
 	github.com/antchfx/xpath v1.2.4 // indirect
 	github.com/apache/arrow/go/v14 v14.0.2 // indirect
+	github.com/aws/aws-sdk-go v1.55.1 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.30.1 // indirect
 	github.com/aws/smithy-go v1.20.3 // indirect
 	github.com/cohere-ai/cohere-go/v2 v2.8.5 // indirect
@@ -94,6 +95,7 @@ require (
 	github.com/itchyny/gojq v0.12.14 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
@@ -114,6 +116,8 @@ require (
 	github.com/slack-go/slack v0.12.5 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/tmc/langchaingo v0.1.10 // indirect
+	github.com/u2takey/ffmpeg-go v0.5.0 // indirect
+	github.com/u2takey/go-utils v0.3.1 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	gitlab.com/golang-commonmark/html v0.0.0-20191124015941-a22733972181 // indirect
 	gitlab.com/golang-commonmark/linkify v0.0.0-20191026162114-a0c2df6c8f82 // indirect
