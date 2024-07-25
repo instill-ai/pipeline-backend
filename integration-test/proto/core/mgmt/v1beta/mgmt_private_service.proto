@@ -3,64 +3,38 @@ syntax = "proto3";
 package core.mgmt.v1beta;
 
 import "../../../core/mgmt/v1beta/mgmt.proto";
-// Google API
-import "google/api/annotations.proto";
-import "google/api/client.proto";
-import "google/api/visibility.proto";
 
 // Mgmt service responds to internal access
 service MgmtPrivateService {
   // ListUsersAdmin method receives a ListUsersAdminRequest message and returns
   // a ListUsersAdminResponse message.
-  rpc ListUsersAdmin(ListUsersAdminRequest) returns (ListUsersAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/users"};
-  }
+  rpc ListUsersAdmin(ListUsersAdminRequest) returns (ListUsersAdminResponse) {}
 
   // GetUserAdmin method receives a GetUserAdminRequest message and returns
   // a GetUserAdminResponse message.
-  rpc GetUserAdmin(GetUserAdminRequest) returns (GetUserAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/{name=users/*}"};
-    option (google.api.method_signature) = "name";
-  }
+  rpc GetUserAdmin(GetUserAdminRequest) returns (GetUserAdminResponse) {}
 
   // LookUpUserAdmin method receives a LookUpUserAdminRequest message and
   // returns a LookUpUserAdminResponse
-  rpc LookUpUserAdmin(LookUpUserAdminRequest) returns (LookUpUserAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/{permalink=users/*}/lookUp"};
-    option (google.api.method_signature) = "permalink";
-  }
+  rpc LookUpUserAdmin(LookUpUserAdminRequest) returns (LookUpUserAdminResponse) {}
 
   // ListOrganizationsAdmin method receives a ListOrganizationsAdminRequest message and returns
   // a ListOrganizationsAdminResponse message.
-  rpc ListOrganizationsAdmin(ListOrganizationsAdminRequest) returns (ListOrganizationsAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/organizations"};
-  }
+  rpc ListOrganizationsAdmin(ListOrganizationsAdminRequest) returns (ListOrganizationsAdminResponse) {}
 
   // GetOrganizationAdmin method receives a GetOrganizationAdminRequest message and returns
   // a GetOrganizationAdminResponse message.
-  rpc GetOrganizationAdmin(GetOrganizationAdminRequest) returns (GetOrganizationAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/{name=organizations/*}"};
-    option (google.api.method_signature) = "name";
-  }
+  rpc GetOrganizationAdmin(GetOrganizationAdminRequest) returns (GetOrganizationAdminResponse) {}
 
   // LookUpOrganizationAdmin method receives a LookUpOrganizationAdminRequest message and
   // returns a LookUpOrganizationAdminResponse
-  rpc LookUpOrganizationAdmin(LookUpOrganizationAdminRequest) returns (LookUpOrganizationAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/{permalink=organizations/*}/lookUp"};
-    option (google.api.method_signature) = "permalink";
-  }
+  rpc LookUpOrganizationAdmin(LookUpOrganizationAdminRequest) returns (LookUpOrganizationAdminResponse) {}
 
   // GetUserSubscriptionAdmin
-  rpc GetUserSubscriptionAdmin(GetUserSubscriptionAdminRequest) returns (GetUserSubscriptionAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/{parent=users/*}/subscription"};
-    option (google.api.method_signature) = "parent";
-  }
+  rpc GetUserSubscriptionAdmin(GetUserSubscriptionAdminRequest) returns (GetUserSubscriptionAdminResponse) {}
 
   // GetOrganizationSubscriptionAdmin
-  rpc GetOrganizationSubscriptionAdmin(GetOrganizationSubscriptionAdminRequest) returns (GetOrganizationSubscriptionAdminResponse) {
-    option (google.api.http) = {get: "/v1beta/admin/{parent=organizations/*}/subscription"};
-    option (google.api.method_signature) = "parent";
-  }
+  rpc GetOrganizationSubscriptionAdmin(GetOrganizationSubscriptionAdminRequest) returns (GetOrganizationSubscriptionAdminResponse) {}
 
   // Subtract Instill Credit from a user or organization account.
   //
@@ -71,10 +45,20 @@ service MgmtPrivateService {
   // requested amount, it will be subtracted anyways, leaving the account
   // credit at zero. A ResourceExhausted error will be returned in this case.
   //
-  // On Instill Core, this endpoint will return a 404 Not Found status.
-  rpc SubtractCredit(SubtractCreditRequest) returns (SubtractCreditResponse) {
-    option (google.api.method_signature) = "owner,amount";
-  }
+  // On Instill Core, this endpoint will return an Unimplemented status.
+  rpc SubtractCreditAdmin(SubtractCreditAdminRequest) returns (SubtractCreditAdminResponse) {}
 
-  option (google.api.api_visibility).restriction = "INTERNAL";
+  // Get the remaining Instill Credit by owner UID
+  //
+  // This endpoint fetches the remaining unexpired credit of a user or
+  // organization, referenced by UID.
+  //
+  // On Instill Core, this endpoint will return a 404 Not Found status.
+  rpc GetRemainingCreditAdmin(GetRemainingCreditAdminRequest) returns (GetRemainingCreditAdminResponse) {}
+
+  // Check if a namespace is in use
+  //
+  // Returns the availability of a namespace or, alternatively, the type of
+  // resource that is using it.
+  rpc CheckNamespaceAdmin(CheckNamespaceAdminRequest) returns (CheckNamespaceAdminResponse) {}
 }

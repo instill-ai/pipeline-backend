@@ -5,9 +5,8 @@ package core.mgmt.v1beta;
 // Core definitions
 import "../../../core/mgmt/v1beta/metric.proto";
 import "../../../core/mgmt/v1beta/mgmt.proto";
-// Google API
 import "google/api/annotations.proto";
-import "google/api/client.proto";
+// Google API
 import "google/api/visibility.proto";
 // OpenAPI definition
 import "protoc-gen-openapiv2/options/annotations.proto";
@@ -18,14 +17,6 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 // manage user resources.
 service MgmtPublicService {
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_tag) = {description: "Public Core endpoints"};
-
-  // Delete an organization membership
-  //
-  // Deletes a user membership within an organization.
-  rpc DeleteOrganizationMembership(DeleteOrganizationMembershipRequest) returns (DeleteOrganizationMembershipResponse) {
-    option (google.api.http) = {delete: "/v1beta/{name=organizations/*/memberships/*}"};
-    option (google.api.method_signature) = "name";
-  }
 
   // Check if the MGMT server is alive
   //
@@ -51,24 +42,12 @@ service MgmtPublicService {
     option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
-  // Check if a namespace is in use
-  //
-  // Returns the availability of a namespace or, alternatively, the type of
-  // resource that is using it.
-  rpc CheckNamespace(CheckNamespaceRequest) returns (CheckNamespaceResponse) {
-    option (google.api.http) = {
-      post: "/v1beta/check-namespace"
-      body: "*"
-    };
-    option (google.api.method_signature) = "namespace";
-  }
-
   // Get the authenticated user
   //
   // Returns the details of the authenticated user.
   rpc GetAuthenticatedUser(GetAuthenticatedUserRequest) returns (GetAuthenticatedUserResponse) {
     option (google.api.http) = {get: "/v1beta/user"};
-    option (google.api.method_signature) = "user,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "User"};
   }
 
   // Update the authenticated user
@@ -82,7 +61,7 @@ service MgmtPublicService {
       patch: "/v1beta/user"
       body: "user"
     };
-    option (google.api.method_signature) = "user,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "User"};
   }
 
   // List users
@@ -90,57 +69,15 @@ service MgmtPublicService {
   // Returns a paginated list of users.
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
     option (google.api.http) = {get: "/v1beta/users"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "User"};
   }
 
   // Get a user
   //
   // Returns the details of a user by their ID.
   rpc GetUser(GetUserRequest) returns (GetUserResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=users/*}"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // List user memberships
-  //
-  // Returns the memberships of a user.
-  rpc ListUserMemberships(ListUserMembershipsRequest) returns (ListUserMembershipsResponse) {
-    option (google.api.http) = {get: "/v1beta/{parent=users/*}/memberships"};
-    option (google.api.method_signature) = "parent";
-  }
-
-  // Get a user membership
-  //
-  // Returns the details of the relationship between a user and an
-  // organization. The authenticated must match the membership parent.
-  rpc GetUserMembership(GetUserMembershipRequest) returns (GetUserMembershipResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=users/*/memberships/*}"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // Update a user membership
-  //
-  // Accesses and updates a user membership by parent and membership IDs.
-  rpc UpdateUserMembership(UpdateUserMembershipRequest) returns (UpdateUserMembershipResponse) {
-    option (google.api.http) = {
-      put: "/v1beta/{membership.name=users/*/memberships/*}"
-      body: "membership"
-    };
-    option (google.api.method_signature) = "membership,update_mask";
-  }
-
-  // Delete a user membership
-  //
-  // Accesses and deletes a user membership by parent and membership IDs.
-  rpc DeleteUserMembership(DeleteUserMembershipRequest) returns (DeleteUserMembershipResponse) {
-    option (google.api.http) = {delete: "/v1beta/{name=users/*/memberships/*}"};
-    option (google.api.method_signature) = "name";
-  }
-
-  // List organizations
-  //
-  // Returns a paginated list of organizations.
-  rpc ListOrganizations(ListOrganizationsRequest) returns (ListOrganizationsResponse) {
-    option (google.api.http) = {get: "/v1beta/organizations"};
+    option (google.api.http) = {get: "/v1beta/users/{user_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "User"};
   }
 
   // Create an organization
@@ -151,15 +88,23 @@ service MgmtPublicService {
       post: "/v1beta/organizations"
       body: "organization"
     };
-    option (google.api.method_signature) = "organization";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Organization"};
+  }
+
+  // List organizations
+  //
+  // Returns a paginated list of organizations.
+  rpc ListOrganizations(ListOrganizationsRequest) returns (ListOrganizationsResponse) {
+    option (google.api.http) = {get: "/v1beta/organizations"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Organization"};
   }
 
   // Get an organization
   //
   // Returns the organization details by its ID.
   rpc GetOrganization(GetOrganizationRequest) returns (GetOrganizationResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=organizations/*}"};
-    option (google.api.method_signature) = "name";
+    option (google.api.http) = {get: "/v1beta/organizations/{organization_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Organization"};
   }
 
   // Update an organization
@@ -170,34 +115,70 @@ service MgmtPublicService {
   // account when updating the resource.
   rpc UpdateOrganization(UpdateOrganizationRequest) returns (UpdateOrganizationResponse) {
     option (google.api.http) = {
-      patch: "/v1beta/{organization.name=organizations/*}"
+      patch: "/v1beta/organizations/{organization_id}"
       body: "organization"
     };
-    option (google.api.method_signature) = "organization,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Organization"};
   }
 
   // Delete an organization
   //
   // Accesses and deletes an organization by ID.
   rpc DeleteOrganization(DeleteOrganizationRequest) returns (DeleteOrganizationResponse) {
-    option (google.api.http) = {delete: "/v1beta/{name=organizations/*}"};
-    option (google.api.method_signature) = "name";
+    option (google.api.http) = {delete: "/v1beta/organizations/{organization_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Organization"};
+  }
+
+  // List user memberships
+  //
+  // Returns the memberships of a user.
+  rpc ListUserMemberships(ListUserMembershipsRequest) returns (ListUserMembershipsResponse) {
+    option (google.api.http) = {get: "/v1beta/users/{user_id}/memberships"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Membership"};
+  }
+
+  // Get a user membership
+  //
+  // Returns the details of the relationship between a user and an
+  // organization. The authenticated must match the membership parent.
+  rpc GetUserMembership(GetUserMembershipRequest) returns (GetUserMembershipResponse) {
+    option (google.api.http) = {get: "/v1beta/users/{user_id}/memberships/{organization_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Membership"};
+  }
+
+  // Update a user membership
+  //
+  // Accesses and updates a user membership by parent and membership IDs.
+  rpc UpdateUserMembership(UpdateUserMembershipRequest) returns (UpdateUserMembershipResponse) {
+    option (google.api.http) = {
+      put: "/v1beta/users/{user_id}/memberships/{organization_id}"
+      body: "membership"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Membership"};
+  }
+
+  // Delete a user membership
+  //
+  // Accesses and deletes a user membership by parent and membership IDs.
+  rpc DeleteUserMembership(DeleteUserMembershipRequest) returns (DeleteUserMembershipResponse) {
+    option (google.api.http) = {delete: "/v1beta/users/{user_id}/memberships/{organization_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Membership"};
   }
 
   // List organization memberships
   //
   // Returns a paginated list of the user memberships in an organization.
   rpc ListOrganizationMemberships(ListOrganizationMembershipsRequest) returns (ListOrganizationMembershipsResponse) {
-    option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/memberships"};
-    option (google.api.method_signature) = "parent";
+    option (google.api.http) = {get: "/v1beta/organizations/{organization_id}/memberships"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Membership"};
   }
 
   // Get a an organization membership
   //
   // Returns the details of a user membership within an organization.
   rpc GetOrganizationMembership(GetOrganizationMembershipRequest) returns (GetOrganizationMembershipResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=organizations/*/memberships/*}"};
-    option (google.api.method_signature) = "name";
+    option (google.api.http) = {get: "/v1beta/organizations/{organization_id}/memberships/{user_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Membership"};
   }
 
   // Uppdate an organization membership
@@ -205,10 +186,18 @@ service MgmtPublicService {
   // Updates a user membership within an organization.
   rpc UpdateOrganizationMembership(UpdateOrganizationMembershipRequest) returns (UpdateOrganizationMembershipResponse) {
     option (google.api.http) = {
-      put: "/v1beta/{membership.name=organizations/*/memberships/*}"
+      put: "/v1beta/organizations/{organization_id}/memberships/{user_id}"
       body: "membership"
     };
-    option (google.api.method_signature) = "membership,update_mask";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Membership"};
+  }
+
+  // Delete an organization membership
+  //
+  // Deletes a user membership within an organization.
+  rpc DeleteOrganizationMembership(DeleteOrganizationMembershipRequest) returns (DeleteOrganizationMembershipResponse) {
+    option (google.api.http) = {delete: "/v1beta/organizations/{organization_id}/memberships/{user_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Membership"};
   }
 
   // Get the subscription of the authenticated user
@@ -216,14 +205,15 @@ service MgmtPublicService {
   // Returns the subscription details of the authenticated user.
   rpc GetAuthenticatedUserSubscription(GetAuthenticatedUserSubscriptionRequest) returns (GetAuthenticatedUserSubscriptionResponse) {
     option (google.api.http) = {get: "/v1beta/user/subscription"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Subscription"};
   }
 
-  // Get an organization subscription
+  // Get the subscription of an organization
   //
   // Returns the subscription details of an organization.
   rpc GetOrganizationSubscription(GetOrganizationSubscriptionRequest) returns (GetOrganizationSubscriptionResponse) {
-    option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/subscription"};
-    option (google.api.method_signature) = "parent";
+    option (google.api.http) = {get: "/v1beta/organizations/{organization_id}/subscription"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Subscription"};
   }
 
   // Create an API token
@@ -234,7 +224,7 @@ service MgmtPublicService {
       post: "/v1beta/tokens"
       body: "token"
     };
-    option (google.api.method_signature) = "token";
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Token"};
   }
 
   // List API tokens
@@ -242,68 +232,85 @@ service MgmtPublicService {
   // Returns a paginated list of the API tokens of the authenticated user.
   rpc ListTokens(ListTokensRequest) returns (ListTokensResponse) {
     option (google.api.http) = {get: "/v1beta/tokens"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Token"};
   }
 
   // Get an API token
   //
   // Returns the details of an API token.
   rpc GetToken(GetTokenRequest) returns (GetTokenResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=tokens/*}"};
-    option (google.api.method_signature) = "name";
+    option (google.api.http) = {get: "/v1beta/tokens/{token_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Token"};
   }
 
   // Delete an API token
   //
   // Deletes an API token.
   rpc DeleteToken(DeleteTokenRequest) returns (DeleteTokenResponse) {
-    option (google.api.http) = {delete: "/v1beta/{name=tokens/*}"};
-    option (google.api.method_signature) = "name";
+    option (google.api.http) = {delete: "/v1beta/tokens/{token_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Token"};
   }
 
-  // Validate an API token.
+  // Validate an API token
   //
   // Validates an API token.
   rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {
     option (google.api.http) = {post: "/v1beta/validate_token"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Token"};
   }
 
   // Get the remaining Instill Credit
   //
-  // On Instill Cloud, users can use Instill Credit to execute pre-configured
-  // AI connectors. This simplifies the pipeline setup, removing the need to
-  // subscribe to third-party AI services. This endpoint returns the remaining
-  // Instill Credit of a given user or organization. The requested credit owner
-  // must be either the authenticated user or an organization they belong to.
+  // This endpoint returns the remaining [Instill Credit](https://www.instill.tech/docs/vdp/credit) of a given user or
+  // organization. The requested credit owner must be either the authenticated
+  // user or an organization they belong to.
   //
   // On Instill Core, this endpoint will return a 404 Not Found status.
   rpc GetRemainingCredit(GetRemainingCreditRequest) returns (GetRemainingCreditResponse) {
-    option (google.api.http) = {get: "/v1beta/{owner=*/*}/credit"};
-    option (google.api.method_signature) = "owner";
-    // TODO we'll wait until the Credit feature is completed but this should be
-    // publicly available.
-    option (google.api.method_visibility).restriction = "INTERNAL";
+    option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/credit"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Credit"};
   }
 
-  // List pipeline triggers
+  // Check if a namespace is in use
   //
-  // Returns a paginated list of pipeline executions.
-  rpc ListPipelineTriggerRecords(ListPipelineTriggerRecordsRequest) returns (ListPipelineTriggerRecordsResponse) {
-    option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/triggers"};
+  // Returns the availability of a namespace or, alternatively, the type of
+  // resource that is using it.
+  rpc CheckNamespace(CheckNamespaceRequest) returns (CheckNamespaceResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/check-namespace"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Utils"};
   }
 
-  // List pipeline trigger metrics
+  // Get pipeline trigger count
   //
-  // Returns a paginated list of pipeline executions aggregated by pipeline ID.
-  rpc ListPipelineTriggerTableRecords(ListPipelineTriggerTableRecordsRequest) returns (ListPipelineTriggerTableRecordsResponse) {
-    option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/tables"};
+  // Returns the pipeline trigger count of a given requester within a timespan.
+  // Results are grouped by trigger status.
+  rpc GetPipelineTriggerCount(GetPipelineTriggerCountRequest) returns (GetPipelineTriggerCountResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/trigger-count"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Metric"};
   }
 
-  // List pipeline trigger computation time charts
+  // List pipeline trigger time charts
   //
-  // Returns a paginated list with pipeline trigger execution times, aggregated
-  // by pipeline and time frames.
+  // Returns a timeline of pipline trigger counts for a given requester. The
+  // response will contain one set of records (datapoints), representing the
+  // amount of triggers in a time bucket.
   rpc ListPipelineTriggerChartRecords(ListPipelineTriggerChartRecordsRequest) returns (ListPipelineTriggerChartRecordsResponse) {
     option (google.api.http) = {get: "/v1beta/metrics/vdp/pipeline/charts"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Metric"};
+  }
+
+  // List Instill Credit consumption time charts
+  //
+  // Returns a timeline of Instill Credit consumption for a given owner. The
+  // response will contain one set of records (datapoints) per consumption
+  // source (e.g. "pipeline", "model"). Each datapoint represents the amount
+  // consumed in a time bucket.
+  rpc ListCreditConsumptionChartRecords(ListCreditConsumptionChartRecordsRequest) returns (ListCreditConsumptionChartRecordsResponse) {
+    option (google.api.http) = {get: "/v1beta/metrics/credit/charts"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Metric"};
   }
 
   // Auth endpoints are only used in the community edition and the OpenAPI
@@ -315,7 +322,7 @@ service MgmtPublicService {
   // Returns the auth token issuer details. This operation requires admin permissions.
   rpc AuthTokenIssuer(AuthTokenIssuerRequest) returns (AuthTokenIssuerResponse) {
     option (google.api.http) = {
-      post: "/v1beta/auth/token_issuer",
+      post: "/v1beta/auth/token_issuer"
       body: "*"
     };
     option (google.api.method_visibility).restriction = "INTERNAL";
@@ -342,7 +349,7 @@ service MgmtPublicService {
   // Updates the password of a user.
   rpc AuthChangePassword(AuthChangePasswordRequest) returns (AuthChangePasswordResponse) {
     option (google.api.http) = {
-      post: "/v1beta/auth/change_password",
+      post: "/v1beta/auth/change_password"
       body: "*"
     };
     option (google.api.method_visibility).restriction = "INTERNAL";

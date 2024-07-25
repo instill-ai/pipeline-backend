@@ -312,6 +312,7 @@ func request_PipelinePublicService_TriggerUserPipeline_0(ctx context.Context, ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
+	//nolint:staticcheck
 	msg, err := client.TriggerUserPipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -338,6 +339,7 @@ func request_PipelinePublicService_TriggerUserPipeline_0_form(ctx context.Contex
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
+	//nolint:staticcheck
 	msg, err := client.TriggerUserPipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -372,6 +374,7 @@ func request_PipelinePublicService_TriggerAsyncUserPipeline_0(ctx context.Contex
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
+	//nolint:staticcheck
 	msg, err := client.TriggerAsyncUserPipeline(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -398,6 +401,7 @@ func request_PipelinePublicService_TriggerAsyncUserPipeline_0_form(ctx context.C
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
+	//nolint:staticcheck
 	msg, err := client.TriggerAsyncUserPipeline(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -527,6 +531,7 @@ func request_PipelinePublicService_TriggerUserPipelineRelease_0(ctx context.Cont
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
+	//nolint:staticcheck
 	msg, err := client.TriggerUserPipelineRelease(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -553,6 +558,7 @@ func request_PipelinePublicService_TriggerUserPipelineRelease_0_form(ctx context
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
+	//nolint:staticcheck
 	msg, err := client.TriggerUserPipelineRelease(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -587,6 +593,7 @@ func request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0(ctx context
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
+	//nolint:staticcheck
 	msg, err := client.TriggerAsyncUserPipelineRelease(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -613,6 +620,7 @@ func request_PipelinePublicService_TriggerAsyncUserPipelineRelease_0_form(ctx co
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "name", err)
 	}
 
+	//nolint:staticcheck
 	msg, err := client.TriggerAsyncUserPipelineRelease(ctx, protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 

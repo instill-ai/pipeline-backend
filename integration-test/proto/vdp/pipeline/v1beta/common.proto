@@ -16,7 +16,7 @@ enum Role {
 
 // Sharing contains the information to share a resource with other users.
 //
-// For more information, see [Share Pipelines](https://www.instill.tech/docs/latest/vdp/share).
+// For more information, see [Share Pipelines](https://www.instill.tech/docs/vdp/share).
 message Sharing {
   // Describes the sharing configuration with a given user.
   message User {

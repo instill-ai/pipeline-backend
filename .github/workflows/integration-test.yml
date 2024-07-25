@@ -65,7 +65,6 @@ jobs:
           load: true
           build-args: |
             SERVICE_NAME=pipeline-backend
-            GOLANG_VERSION=${{ env.GOLANG_VERSION }}
           tags: instill/pipeline-backend:latest
 
       - name: Checkout repo (instill-core)

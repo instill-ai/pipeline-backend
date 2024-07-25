@@ -128,6 +128,7 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 	}
 	pageToken := ""
 	for {
+		//nolint:staticcheck
 		resp, err := cloudPipelineClient.ListOrganizationPipelines(ctx, &pipelinepb.ListOrganizationPipelinesRequest{
 			Parent:    fmt.Sprintf("organizations/%s", PresetNamespaceID),
 			View:      pipelinepb.Pipeline_VIEW_RECIPE.Enum(),
@@ -176,6 +177,7 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 
 			releasePageToken := ""
 			for {
+				//nolint:staticcheck
 				releaseResp, err := cloudPipelineClient.ListOrganizationPipelineReleases(ctx, &pipelinepb.ListOrganizationPipelineReleasesRequest{
 					Parent:    fmt.Sprintf("organizations/%s/pipelines/%s", PresetNamespaceID, dbPipeline.ID),
 					View:      pipelinepb.Pipeline_VIEW_RECIPE.Enum(),
