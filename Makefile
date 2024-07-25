@@ -50,6 +50,30 @@ build:							## Build dev docker image
 		--build-arg K6_VERSION=${K6_VERSION} \
 		-f Dockerfile.dev  -t instill/${SERVICE_NAME}:dev .
 
+.PHONY: run-dev-services
+run-dev-services:							## Run test container with image built by Dockerfile
+	@docker compose ls -q | grep -q "instill-core" && true || \
+		(echo "Error: Run \"make latest PROFILE=pipeline\" in vdp repository (https://github.com/instill-ai/instill-core) in your local machine first." && exit 1)
+	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
+		echo "Run dev container ${SERVICE_NAME}. To stop it, run \"make stop\"."
+	@docker run --network=instill-network \
+		--name ${SERVICE_NAME} \
+		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}
+	@docker run --network=instill-network \
+		--name pipeline-backend-worker \
+		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
+
+.PHONY: rm-test-container
+rm-test-container:
+	@docker rm -f ${SERVICE_NAME} ${SERVICE_NAME}-worker
+
+.PHONY: build-dev-image
+build-dev-image:							## Build test docker image with Dockerfile
+	@docker buildx build \
+		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
+		--build-arg SERVICE_NAME=${SERVICE_NAME} \
+		-t pipeline-backend:latest .
+
 .PHONY: go-gen
 go-gen:       					## Generate codes
 	go generate ./...

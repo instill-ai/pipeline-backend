@@ -31,9 +31,18 @@ RUN apk add --no-cache \
     build-base \
     python3-dev \
     libffi-dev \
+    libreoffice-common \
+    libreoffice-writer \
+    libreoffice-impress \
+    msttcorefonts-installer \
+    font-noto \
+    font-noto-cjk \
+    && update-ms-fonts \
+    && fc-cache -f \
     && python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
-    && /opt/venv/bin/pip install pdfplumber
+    && /opt/venv/bin/pip install pdfplumber \
+    && rm -rf /var/cache/apk/* /var/cache/fontconfig/*
 
 ARG TARGETARCH
 ARG BUILDARCH
