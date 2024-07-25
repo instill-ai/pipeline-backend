@@ -56,6 +56,9 @@ const (
 	Organization NamespaceType = "organizations"
 )
 
+// TODO: We should neutralize the namespace type in the pipeline-backend, as it
+// doesn't matter whether the namespace belongs to a user or organization. This
+// refactor should be completed by August 2024.
 type Namespace struct {
 	NsType NamespaceType
 	NsID   string

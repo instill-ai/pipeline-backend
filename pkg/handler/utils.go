@@ -6,7 +6,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	// pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func authenticateUser(ctx context.Context, allowVisitor bool) error {

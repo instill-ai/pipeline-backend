@@ -1050,26 +1050,23 @@ func (c *converter) ConvertOwnerPermalinkToName(ctx context.Context, permalink s
 	splits := strings.Split(permalink, "/")
 	nsType := splits[0]
 	uid := splits[1]
-	key := fmt.Sprintf("user:%s:uid_to_id", uid)
+	key := fmt.Sprintf("namespace:%s:uid_to_id", uid)
 	if id, err := c.redisClient.Get(ctx, key).Result(); err != redis.Nil {
 		return fmt.Sprintf("%s/%s", nsType, id), nil
 	}
-
-	if nsType == "users" {
-		userResp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtpb.LookUpUserAdminRequest{UserUid: uid})
-		if err != nil {
-			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
-		}
-		c.redisClient.Set(ctx, key, userResp.User.Id, 24*time.Hour)
-		return fmt.Sprintf("users/%s", userResp.User.Id), nil
-	} else {
-		orgResp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtpb.LookUpOrganizationAdminRequest{OrganizationUid: uid})
-		if err != nil {
-			return "", fmt.Errorf("ConvertNamespaceToOwnerPath error")
-		}
-		c.redisClient.Set(ctx, key, orgResp.Organization.Id, 24*time.Hour)
-		return fmt.Sprintf("organizations/%s", orgResp.Organization.Id), nil
+	resp, err := c.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: uid})
+	if err != nil {
+		return "", fmt.Errorf("LookUpNamespaceAdmin error")
 	}
+	switch o := resp.Owner.(type) {
+	case *mgmtpb.CheckNamespaceByUIDAdminResponse_User:
+		c.redisClient.Set(ctx, key, o.User.Id, 24*time.Hour)
+		return fmt.Sprintf("users/%s", o.User.Id), nil
+	case *mgmtpb.CheckNamespaceByUIDAdminResponse_Organization:
+		c.redisClient.Set(ctx, key, o.Organization.Id, 24*time.Hour)
+		return fmt.Sprintf("organizations/%s", o.Organization.Id), nil
+	}
+	return "", fmt.Errorf("ConvertOwnerPermalinkToName error")
 }
 
 func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string) (*mgmtpb.Owner, error) {
@@ -1083,28 +1080,26 @@ func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string)
 	}
 	uid := strings.Split(permalink, "/")[1]
 
-	if strings.HasPrefix(permalink, "users") {
-		resp, err := c.mgmtPrivateServiceClient.LookUpUserAdmin(ctx, &mgmtpb.LookUpUserAdminRequest{UserUid: uid})
-		if err != nil {
-			return nil, fmt.Errorf("fetchOwnerByPermalink error")
-		}
-		owner := &mgmtpb.Owner{Owner: &mgmtpb.Owner_User{User: resp.User}}
-		if b, err := protojson.Marshal(owner); err == nil {
-			c.redisClient.Set(ctx, key, b, 5*time.Minute)
-		}
-		return owner, nil
-	} else {
-		resp, err := c.mgmtPrivateServiceClient.LookUpOrganizationAdmin(ctx, &mgmtpb.LookUpOrganizationAdminRequest{OrganizationUid: uid})
-		if err != nil {
-			return nil, fmt.Errorf("fetchOwnerByPermalink error")
-		}
-		owner := &mgmtpb.Owner{Owner: &mgmtpb.Owner_Organization{Organization: resp.Organization}}
-		if b, err := protojson.Marshal(owner); err == nil {
-			c.redisClient.Set(ctx, key, b, 5*time.Minute)
-		}
-		return owner, nil
-
+	resp, err := c.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: uid})
+	if err != nil {
+		return nil, fmt.Errorf("LookUpNamespaceAdmin error")
 	}
+	switch o := resp.Owner.(type) {
+	case *mgmtpb.CheckNamespaceByUIDAdminResponse_User:
+		owner := &mgmtpb.Owner{Owner: &mgmtpb.Owner_User{User: o.User}}
+		if b, err := protojson.Marshal(owner); err == nil {
+			c.redisClient.Set(ctx, key, b, 5*time.Minute)
+		}
+		return owner, nil
+	case *mgmtpb.CheckNamespaceByUIDAdminResponse_Organization:
+		owner := &mgmtpb.Owner{Owner: &mgmtpb.Owner_Organization{Organization: o.Organization}}
+		if b, err := protojson.Marshal(owner); err == nil {
+			c.redisClient.Set(ctx, key, b, 5*time.Minute)
+		}
+		return owner, nil
+	}
+
+	return nil, fmt.Errorf("fetchOwnerByPermalink error")
 }
 
 // Note: Currently, we don't allow changing the owner ID. We are safe to use a cache with a longer TTL for this function.
@@ -1113,24 +1108,23 @@ func (c *converter) ConvertOwnerNameToPermalink(ctx context.Context, name string
 	splits := strings.Split(name, "/")
 	nsType := splits[0]
 	id := splits[1]
-	key := fmt.Sprintf("user:%s:id_to_uid", id)
+	key := fmt.Sprintf("namespace:%s:id_to_uid", id)
 	if uid, err := c.redisClient.Get(ctx, key).Result(); err != redis.Nil {
 		return fmt.Sprintf("%s/%s", nsType, uid), nil
 	}
 
-	if nsType == "users" {
-		userResp, err := c.mgmtPrivateServiceClient.GetUserAdmin(ctx, &mgmtpb.GetUserAdminRequest{UserId: id})
-		if err != nil {
-			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
-		}
-		c.redisClient.Set(ctx, key, *userResp.User.Uid, 24*time.Hour)
-		return fmt.Sprintf("users/%s", *userResp.User.Uid), nil
-	} else {
-		orgResp, err := c.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtpb.GetOrganizationAdminRequest{OrganizationId: id})
-		if err != nil {
-			return "", fmt.Errorf("convertOwnerNameToPermalink error %w", err)
-		}
-		c.redisClient.Set(ctx, key, orgResp.Organization.Uid, 24*time.Hour)
-		return fmt.Sprintf("organizations/%s", orgResp.Organization.Uid), nil
+	resp, err := c.mgmtPrivateServiceClient.CheckNamespaceAdmin(ctx, &mgmtpb.CheckNamespaceAdminRequest{Id: id})
+	if err != nil {
+		return "", fmt.Errorf("ConvertOwnerNameToPermalink error")
 	}
+	switch o := resp.Owner.(type) {
+	case *mgmtpb.CheckNamespaceAdminResponse_User:
+		c.redisClient.Set(ctx, key, o.User.Uid, 24*time.Hour)
+		return fmt.Sprintf("users/%s", *o.User.Uid), nil
+	case *mgmtpb.CheckNamespaceAdminResponse_Organization:
+		c.redisClient.Set(ctx, key, o.Organization.Uid, 24*time.Hour)
+		return fmt.Sprintf("organizations/%s", o.Organization.Uid), nil
+	}
+	return "", fmt.Errorf("ConvertOwnerNameToPermalink error")
+
 }

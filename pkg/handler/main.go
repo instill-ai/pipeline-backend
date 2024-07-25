@@ -33,7 +33,13 @@ type Streamer interface {
 }
 
 type TriggerPipelineRequestInterface interface {
-	GetName() string
+	GetNamespaceId() string
+	GetPipelineId() string
+}
+type TriggerPipelineReleaseRequestInterface interface {
+	GetNamespaceId() string
+	GetPipelineId() string
+	GetReleaseId() string
 }
 
 // NewPublicHandler initiates a handler instance
@@ -95,7 +101,7 @@ func (h *PrivateHandler) SetService(s service.Service) {
 func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinepb.CheckNameRequest) (resp *pipelinepb.CheckNameResponse, err error) {
 	name := req.GetName()
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, name)
+	ns, err := h.service.GetRscNamespace(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +111,7 @@ func (h *PublicHandler) CheckName(ctx context.Context, req *pipelinepb.CheckName
 	rscType := strings.Split(name, "/")[2]
 
 	if rscType == "pipelines" {
-		_, err := h.service.GetNamespacePipelineByID(ctx, ns, id, pipelinepb.Pipeline_VIEW_BASIC)
+		_, err := h.service.GetNamespacePipelineByID(ctx, ns, name, pipelinepb.Pipeline_VIEW_BASIC)
 		if err != nil && errors.Is(err, errdomain.ErrNotFound) {
 			return &pipelinepb.CheckNameResponse{
 				Availability: pipelinepb.CheckNameResponse_NAME_AVAILABLE,

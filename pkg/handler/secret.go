@@ -13,36 +13,40 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/x/checkfield"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-type CreateNamespaceSecretRequestInterface interface {
-	GetSecret() *pb.Secret
-	GetParent() string
-}
-
 func (h *PublicHandler) CreateUserSecret(ctx context.Context, req *pb.CreateUserSecretRequest) (resp *pb.CreateUserSecretResponse, err error) {
-	resp = &pb.CreateUserSecretResponse{}
-	resp.Secret, err = h.createNamespaceSecret(ctx, req)
-	return resp, err
+	r, err := h.CreateNamespaceSecret(ctx, &pb.CreateNamespaceSecretRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		Secret:      req.Secret,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreateUserSecretResponse{Secret: r.Secret}, nil
 }
 
 func (h *PublicHandler) CreateOrganizationSecret(ctx context.Context, req *pb.CreateOrganizationSecretRequest) (resp *pb.CreateOrganizationSecretResponse, err error) {
-	resp = &pb.CreateOrganizationSecretResponse{}
-	resp.Secret, err = h.createNamespaceSecret(ctx, req)
-	return resp, err
+	r, err := h.CreateNamespaceSecret(ctx, &pb.CreateNamespaceSecretRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		Secret:      req.Secret,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreateOrganizationSecretResponse{Secret: r.Secret}, nil
 }
 
-func (h *PublicHandler) createNamespaceSecret(ctx context.Context, req CreateNamespaceSecretRequestInterface) (secret *pb.Secret, err error) {
+func (h *PublicHandler) CreateNamespaceSecret(ctx context.Context, req *pb.CreateNamespaceSecretRequest) (resp *pb.CreateNamespaceSecretResponse, err error) {
 
 	eventName := "CreateNamespaceSecret"
 
@@ -72,7 +76,7 @@ func (h *PublicHandler) createNamespaceSecret(ctx context.Context, req CreateNam
 		return nil, fmt.Errorf("%w: invalid pipeline ID: %w", errdomain.ErrInvalidArgument, err)
 	}
 
-	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
+	ns, err := h.service.GetRscNamespace(ctx, req.GetNamespaceId())
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -85,7 +89,7 @@ func (h *PublicHandler) createNamespaceSecret(ctx context.Context, req CreateNam
 
 	secretToCreate := req.GetSecret()
 
-	secret, err = h.service.CreateNamespaceSecret(ctx, ns, secretToCreate)
+	secret, err := h.service.CreateNamespaceSecret(ctx, ns, secretToCreate)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -105,28 +109,34 @@ func (h *PublicHandler) createNamespaceSecret(ctx context.Context, req CreateNam
 		eventName,
 	)))
 
-	return secret, nil
-}
-
-type ListNamespaceSecretsRequestInterface interface {
-	GetPageSize() int32
-	GetPageToken() string
-	GetParent() string
+	return &pb.CreateNamespaceSecretResponse{Secret: secret}, nil
 }
 
 func (h *PublicHandler) ListUserSecrets(ctx context.Context, req *pb.ListUserSecretsRequest) (resp *pb.ListUserSecretsResponse, err error) {
-	resp = &pb.ListUserSecretsResponse{}
-	resp.Secrets, resp.NextPageToken, resp.TotalSize, err = h.listNamespaceSecrets(ctx, req)
-	return resp, err
+	r, err := h.ListNamespaceSecrets(ctx, &pb.ListNamespaceSecretsRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		PageSize:    req.PageSize,
+		PageToken:   req.PageToken,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ListUserSecretsResponse{Secrets: r.Secrets, NextPageToken: r.NextPageToken, TotalSize: r.TotalSize}, nil
 }
 
 func (h *PublicHandler) ListOrganizationSecrets(ctx context.Context, req *pb.ListOrganizationSecretsRequest) (resp *pb.ListOrganizationSecretsResponse, err error) {
-	resp = &pb.ListOrganizationSecretsResponse{}
-	resp.Secrets, resp.NextPageToken, resp.TotalSize, err = h.listNamespaceSecrets(ctx, req)
-	return resp, err
+	r, err := h.ListNamespaceSecrets(ctx, &pb.ListNamespaceSecretsRequest{
+		NamespaceId: strings.Split(req.Parent, "/")[1],
+		PageSize:    req.PageSize,
+		PageToken:   req.PageToken,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ListOrganizationSecretsResponse{Secrets: r.Secrets, NextPageToken: r.NextPageToken, TotalSize: r.TotalSize}, nil
 }
 
-func (h *PublicHandler) listNamespaceSecrets(ctx context.Context, req ListNamespaceSecretsRequestInterface) (pbSecrets []*pb.Secret, nextPageToken string, totalSize int32, err error) {
+func (h *PublicHandler) ListNamespaceSecrets(ctx context.Context, req *pb.ListNamespaceSecretsRequest) (resp *pb.ListNamespaceSecretsResponse, err error) {
 
 	eventName := "ListNamespaceSecrets"
 
@@ -138,21 +148,21 @@ func (h *PublicHandler) listNamespaceSecrets(ctx context.Context, req ListNamesp
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, _, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetParent())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	if err := authenticateUser(ctx, true); err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
-	pbSecrets, totalSize, nextPageToken, err = h.service.ListNamespaceSecrets(ctx, ns, req.GetPageSize(), req.GetPageToken(), filtering.Filter{})
+	pbSecrets, totalSize, nextPageToken, err := h.service.ListNamespaceSecrets(ctx, ns, req.GetPageSize(), req.GetPageToken(), filtering.Filter{})
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return nil, "", 0, err
+		return nil, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -162,26 +172,32 @@ func (h *PublicHandler) listNamespaceSecrets(ctx context.Context, req ListNamesp
 		eventName,
 	)))
 
-	return pbSecrets, nextPageToken, int32(totalSize), nil
-}
-
-type GetNamespaceSecretRequestInterface interface {
-	GetName() string
+	return &pb.ListNamespaceSecretsResponse{
+		Secrets:       pbSecrets,
+		NextPageToken: nextPageToken,
+		TotalSize:     totalSize,
+	}, nil
 }
 
 func (h *PublicHandler) GetUserSecret(ctx context.Context, req *pb.GetUserSecretRequest) (resp *pb.GetUserSecretResponse, err error) {
-	resp = &pb.GetUserSecretResponse{}
-	resp.Secret, err = h.getNamespaceSecret(ctx, req)
-	return resp, err
+	splits := strings.Split(req.Name, "/")
+	r, err := h.GetNamespaceSecret(ctx, &pb.GetNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetUserSecretResponse{Secret: r.Secret}, nil
 }
 
 func (h *PublicHandler) GetOrganizationSecret(ctx context.Context, req *pb.GetOrganizationSecretRequest) (resp *pb.GetOrganizationSecretResponse, err error) {
-	resp = &pb.GetOrganizationSecretResponse{}
-	resp.Secret, err = h.getNamespaceSecret(ctx, req)
-	return resp, err
+	splits := strings.Split(req.Name, "/")
+	r, err := h.GetNamespaceSecret(ctx, &pb.GetNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetOrganizationSecretResponse{Secret: r.Secret}, nil
 }
 
-func (h *PublicHandler) getNamespaceSecret(ctx context.Context, req GetNamespaceSecretRequestInterface) (*pb.Secret, error) {
+func (h *PublicHandler) GetNamespaceSecret(ctx context.Context, req *pb.GetNamespaceSecretRequest) (*pb.GetNamespaceSecretResponse, error) {
 
 	eventName := "GetNamespaceSecret"
 
@@ -193,7 +209,7 @@ func (h *PublicHandler) getNamespaceSecret(ctx context.Context, req GetNamespace
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -203,7 +219,7 @@ func (h *PublicHandler) getNamespaceSecret(ctx context.Context, req GetNamespace
 		return nil, err
 	}
 
-	pbSecret, err := h.service.GetNamespaceSecretByID(ctx, ns, id)
+	pbSecret, err := h.service.GetNamespaceSecretByID(ctx, ns, req.SecretId)
 
 	if err != nil {
 		span.SetStatus(1, err.Error())
@@ -217,27 +233,38 @@ func (h *PublicHandler) getNamespaceSecret(ctx context.Context, req GetNamespace
 		eventName,
 	)))
 
-	return pbSecret, nil
-}
-
-type UpdateNamespaceSecretRequestInterface interface {
-	GetSecret() *pb.Secret
-	GetUpdateMask() *fieldmaskpb.FieldMask
+	return &pb.GetNamespaceSecretResponse{Secret: pbSecret}, nil
 }
 
 func (h *PublicHandler) UpdateUserSecret(ctx context.Context, req *pb.UpdateUserSecretRequest) (resp *pb.UpdateUserSecretResponse, err error) {
-	resp = &pb.UpdateUserSecretResponse{}
-	resp.Secret, err = h.updateNamespaceSecret(ctx, req)
-	return resp, err
+	splits := strings.Split(req.Secret.Name, "/")
+	r, err := h.UpdateNamespaceSecret(ctx, &pb.UpdateNamespaceSecretRequest{
+		NamespaceId: splits[1],
+		SecretId:    splits[3],
+		Secret:      req.Secret,
+		UpdateMask:  req.UpdateMask,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateUserSecretResponse{Secret: r.Secret}, nil
 }
 
 func (h *PublicHandler) UpdateOrganizationSecret(ctx context.Context, req *pb.UpdateOrganizationSecretRequest) (resp *pb.UpdateOrganizationSecretResponse, err error) {
-	resp = &pb.UpdateOrganizationSecretResponse{}
-	resp.Secret, err = h.updateNamespaceSecret(ctx, req)
-	return resp, err
+	splits := strings.Split(req.Secret.Name, "/")
+	r, err := h.UpdateNamespaceSecret(ctx, &pb.UpdateNamespaceSecretRequest{
+		NamespaceId: splits[1],
+		SecretId:    splits[3],
+		Secret:      req.Secret,
+		UpdateMask:  req.UpdateMask,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateOrganizationSecretResponse{Secret: r.Secret}, nil
 }
 
-func (h *PublicHandler) updateNamespaceSecret(ctx context.Context, req UpdateNamespaceSecretRequestInterface) (*pb.Secret, error) {
+func (h *PublicHandler) UpdateNamespaceSecret(ctx context.Context, req *pb.UpdateNamespaceSecretRequest) (*pb.UpdateNamespaceSecretResponse, error) {
 
 	eventName := "UpdateNamespaceSecret"
 
@@ -245,7 +272,7 @@ func (h *PublicHandler) updateNamespaceSecret(ctx context.Context, req UpdateNam
 		trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetSecret().Name)
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -256,6 +283,9 @@ func (h *PublicHandler) updateNamespaceSecret(ctx context.Context, req UpdateNam
 	}
 
 	pbSecretReq := req.GetSecret()
+	if pbSecretReq.Id == "" {
+		pbSecretReq.Id = req.SecretId
+	}
 	pbUpdateMask := req.GetUpdateMask()
 
 	// metadata field is type google.protobuf.Struct, which needs to be updated as a whole
@@ -272,7 +302,7 @@ func (h *PublicHandler) updateNamespaceSecret(ctx context.Context, req UpdateNam
 		return nil, ErrUpdateMask
 	}
 
-	getResp, err := h.GetUserSecret(ctx, &pb.GetUserSecretRequest{Name: pbSecretReq.GetName()})
+	getResp, err := h.GetNamespaceSecret(ctx, &pb.GetNamespaceSecretRequest{NamespaceId: req.NamespaceId, SecretId: req.SecretId})
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -291,7 +321,7 @@ func (h *PublicHandler) updateNamespaceSecret(ctx context.Context, req UpdateNam
 	}
 
 	if mask.IsEmpty() {
-		return getResp.GetSecret(), nil
+		return &pb.UpdateNamespaceSecretResponse{Secret: getResp.GetSecret()}, nil
 	}
 
 	pbSecretToUpdate := getResp.GetSecret()
@@ -309,32 +339,34 @@ func (h *PublicHandler) updateNamespaceSecret(ctx context.Context, req UpdateNam
 		return nil, err
 	}
 
-	pbSecret, err := h.service.UpdateNamespaceSecretByID(ctx, ns, id, pbSecretToUpdate)
+	pbSecret, err := h.service.UpdateNamespaceSecretByID(ctx, ns, req.SecretId, pbSecretToUpdate)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
 	}
 
-	return pbSecret, nil
-}
-
-type DeleteNamespaceSecretRequestInterface interface {
-	GetName() string
+	return &pb.UpdateNamespaceSecretResponse{Secret: pbSecret}, nil
 }
 
 func (h *PublicHandler) DeleteUserSecret(ctx context.Context, req *pb.DeleteUserSecretRequest) (resp *pb.DeleteUserSecretResponse, err error) {
-	resp = &pb.DeleteUserSecretResponse{}
-	err = h.deleteNamespaceSecret(ctx, req)
-	return resp, err
+	splits := strings.Split(req.Name, "/")
+	_, err = h.DeleteNamespaceSecret(ctx, &pb.DeleteNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteUserSecretResponse{}, nil
 }
 
 func (h *PublicHandler) DeleteOrganizationSecret(ctx context.Context, req *pb.DeleteOrganizationSecretRequest) (resp *pb.DeleteOrganizationSecretResponse, err error) {
-	resp = &pb.DeleteOrganizationSecretResponse{}
-	err = h.deleteNamespaceSecret(ctx, req)
-	return resp, err
+	splits := strings.Split(req.Name, "/")
+	_, err = h.DeleteNamespaceSecret(ctx, &pb.DeleteNamespaceSecretRequest{NamespaceId: splits[1], SecretId: splits[3]})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteOrganizationSecretResponse{}, nil
 }
 
-func (h *PublicHandler) deleteNamespaceSecret(ctx context.Context, req DeleteNamespaceSecretRequestInterface) error {
+func (h *PublicHandler) DeleteNamespaceSecret(ctx context.Context, req *pb.DeleteNamespaceSecretRequest) (*pb.DeleteNamespaceSecretResponse, error) {
 
 	eventName := "DeleteNamespaceSecret"
 
@@ -346,30 +378,30 @@ func (h *PublicHandler) deleteNamespaceSecret(ctx context.Context, req DeleteNam
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, id, err := h.service.GetRscNamespaceAndNameID(ctx, req.GetName())
+	ns, err := h.service.GetRscNamespace(ctx, req.NamespaceId)
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 	if err := authenticateUser(ctx, false); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
-	_, err = h.GetUserSecret(ctx, &pb.GetUserSecretRequest{Name: req.GetName()})
+	_, err = h.GetNamespaceSecret(ctx, &pb.GetNamespaceSecretRequest{NamespaceId: req.NamespaceId, SecretId: req.SecretId})
 	if err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
-	if err := h.service.DeleteNamespaceSecretByID(ctx, ns, id); err != nil {
+	if err := h.service.DeleteNamespaceSecretByID(ctx, ns, req.SecretId); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
 	// We need to manually set the custom header to have a StatusCreated http response for REST endpoint
 	if err := grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent))); err != nil {
 		span.SetStatus(1, err.Error())
-		return err
+		return nil, err
 	}
 
 	logger.Info(string(customotel.NewLogMessage(
@@ -379,5 +411,5 @@ func (h *PublicHandler) deleteNamespaceSecret(ctx context.Context, req DeleteNam
 		eventName,
 	)))
 
-	return nil
+	return &pb.DeleteNamespaceSecretResponse{}, nil
 }
