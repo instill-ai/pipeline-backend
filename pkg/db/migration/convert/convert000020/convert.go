@@ -24,6 +24,7 @@ type NamespaceIDMigrator struct {
 }
 
 func (c *NamespaceIDMigrator) Migrate() error {
+	c.Logger.Info("NamespaceIDMigrator start")
 	if err := c.migratePipeline(); err != nil {
 		return err
 	}
@@ -44,7 +45,6 @@ func (c *NamespaceIDMigrator) migratePipeline() error {
 			ns, err := c.MgmtClient.CheckNamespaceByUIDAdmin(context.Background(), &mgmtpb.CheckNamespaceByUIDAdminRequest{
 				Uid: ownerUID,
 			})
-			fmt.Println("ns", ownerUID, ns)
 			if err != nil {
 				return err
 			}
