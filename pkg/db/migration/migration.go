@@ -7,6 +7,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000015"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000016"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000019"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000020"
+	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
@@ -30,6 +32,10 @@ func Migrate(version uint) error {
 
 	db := database.GetConnection().WithContext(ctx)
 	defer database.Close(db)
+	mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient(ctx)
+	if mgmtPrivateServiceClientConn != nil {
+		defer mgmtPrivateServiceClientConn.Close()
+	}
 
 	switch version {
 	case 13:
@@ -42,6 +48,12 @@ func Migrate(version uint) error {
 		m = &convert000019.JQInputToKebabCaseConverter{
 			DB:     db,
 			Logger: l,
+		}
+	case 20:
+		m = &convert000020.NamespaceIDMigrator{
+			DB:         db,
+			Logger:     l,
+			MgmtClient: mgmtPrivateServiceClient,
 		}
 	default:
 		return nil

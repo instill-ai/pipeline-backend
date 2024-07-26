@@ -90,6 +90,8 @@ type Pipeline struct {
 	ProfileImage      sql.NullString
 	Releases          []*PipelineRelease
 	Tags              []*Tag
+	NamespaceID       string `gorm:"type:namespace_id"`
+	NamespaceType     string `gorm:"type:namespace_type"`
 
 	// Note:
 	// We store the NumberOfRuns, NumberOfClones and LastRunTime in this table
@@ -570,8 +572,10 @@ func (c ReleaseStage) Value() (driver.Value, error) {
 
 type Secret struct {
 	BaseDynamicHardDelete
-	ID          string
-	Owner       string
-	Description string
-	Value       *string
+	ID            string
+	Owner         string
+	Description   string
+	Value         *string
+	NamespaceID   string `gorm:"type:namespace_id"`
+	NamespaceType string `gorm:"type:namespace_type"`
 }

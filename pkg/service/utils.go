@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -54,14 +53,15 @@ func (s *service) checkNamespacePermission(ctx context.Context, ns resource.Name
 func (s *service) GetCtxUserNamespace(ctx context.Context) (resource.Namespace, error) {
 
 	uid := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-	name, err := s.converter.ConvertOwnerPermalinkToName(ctx, fmt.Sprintf("users/%s", uid))
-	if err != nil {
+	resp, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{
+		Uid: uid.String(),
+	})
+	if err != nil || resp.Type != mgmtpb.CheckNamespaceByUIDAdminResponse_NAMESPACE_USER {
 		return resource.Namespace{}, fmt.Errorf("namespace error")
 	}
-	// TODO: optimize the flow to get namespace
 	return resource.Namespace{
 		NsType: resource.NamespaceType("users"),
-		NsID:   strings.Split(name, "/")[1],
+		NsID:   resp.Id,
 		NsUID:  uid,
 	}, nil
 }

@@ -51,9 +51,6 @@ type Converter interface {
 	ConvertSecretToDB(ctx context.Context, ns resource.Namespace, pbSecret *pb.Secret) (*datamodel.Secret, error)
 	ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error)
 	ConvertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error)
-
-	ConvertOwnerPermalinkToName(ctx context.Context, permalink string) (string, error)
-	ConvertOwnerNameToPermalink(ctx context.Context, name string) (string, error)
 }
 
 type converter struct {
@@ -361,9 +358,10 @@ func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespa
 	}
 
 	return &datamodel.Pipeline{
-		Owner: ns.Permalink(),
-		ID:    pbPipeline.GetId(),
-
+		Owner:         ns.Permalink(),
+		ID:            pbPipeline.GetId(),
+		NamespaceID:   ns.NsID,
+		NamespaceType: string(ns.NsType),
 		BaseDynamic: datamodel.BaseDynamic{
 			UID: func() uuid.UUID {
 				if pbPipeline.GetUid() == "" {
@@ -452,10 +450,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		return nil, err
 	}
 
-	ownerName, err := c.ConvertOwnerPermalinkToName(ctx, dbPipeline.Owner)
-	if err != nil {
-		return nil, err
-	}
+	ownerName := fmt.Sprintf("%s/%s", dbPipeline.NamespaceType, dbPipeline.NamespaceID)
 
 	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 
@@ -705,10 +700,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	owner, err := c.ConvertOwnerPermalinkToName(ctx, dbPipeline.Owner)
-	if err != nil {
-		return nil, err
-	}
+	owner := fmt.Sprintf("%s/%s", dbPipeline.NamespaceType, dbPipeline.NamespaceID)
 
 	if view == pb.Pipeline_VIEW_FULL {
 		if err := c.includeDetailInRecipe(ctx, dbPipeline.Owner, dbPipelineRelease.Recipe, false); err != nil {
@@ -1006,19 +998,18 @@ func (c *converter) ConvertSecretToDB(ctx context.Context, ns resource.Namespace
 				return time.Time{}
 			}(),
 		},
-		Owner:       ns.Permalink(),
-		ID:          pbSecret.GetId(),
-		Value:       pbSecret.Value,
-		Description: pbSecret.Description,
+		Owner:         ns.Permalink(),
+		NamespaceID:   ns.NsID,
+		NamespaceType: string(ns.NsType),
+		ID:            pbSecret.GetId(),
+		Value:         pbSecret.Value,
+		Description:   pbSecret.Description,
 	}, nil
 }
 
 func (c *converter) ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error) {
 
-	ownerName, err := c.ConvertOwnerPermalinkToName(ctx, dbSecret.Owner)
-	if err != nil {
-		return nil, err
-	}
+	ownerName := fmt.Sprintf("%s/%s", dbSecret.NamespaceType, dbSecret.NamespaceID)
 
 	return &pb.Secret{
 		Name:        fmt.Sprintf("%s/secrets/%s", ownerName, dbSecret.ID),
@@ -1042,31 +1033,6 @@ func (c *converter) ConvertSecretsToPB(ctx context.Context, dbSecrets []*datamod
 		}
 	}
 	return pbSecrets, nil
-}
-
-// Note: Currently, we don't allow changing the owner ID. We are safe to use a cache with a longer TTL for this function.
-func (c *converter) ConvertOwnerPermalinkToName(ctx context.Context, permalink string) (string, error) {
-
-	splits := strings.Split(permalink, "/")
-	nsType := splits[0]
-	uid := splits[1]
-	key := fmt.Sprintf("namespace:%s:uid_to_id", uid)
-	if id, err := c.redisClient.Get(ctx, key).Result(); err != redis.Nil {
-		return fmt.Sprintf("%s/%s", nsType, id), nil
-	}
-	resp, err := c.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: uid})
-	if err != nil {
-		return "", fmt.Errorf("LookUpNamespaceAdmin error")
-	}
-	switch o := resp.Owner.(type) {
-	case *mgmtpb.CheckNamespaceByUIDAdminResponse_User:
-		c.redisClient.Set(ctx, key, o.User.Id, 24*time.Hour)
-		return fmt.Sprintf("users/%s", o.User.Id), nil
-	case *mgmtpb.CheckNamespaceByUIDAdminResponse_Organization:
-		c.redisClient.Set(ctx, key, o.Organization.Id, 24*time.Hour)
-		return fmt.Sprintf("organizations/%s", o.Organization.Id), nil
-	}
-	return "", fmt.Errorf("ConvertOwnerPermalinkToName error")
 }
 
 func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string) (*mgmtpb.Owner, error) {
@@ -1100,31 +1066,4 @@ func (c *converter) fetchOwnerByPermalink(ctx context.Context, permalink string)
 	}
 
 	return nil, fmt.Errorf("fetchOwnerByPermalink error")
-}
-
-// Note: Currently, we don't allow changing the owner ID. We are safe to use a cache with a longer TTL for this function.
-func (c *converter) ConvertOwnerNameToPermalink(ctx context.Context, name string) (string, error) {
-
-	splits := strings.Split(name, "/")
-	nsType := splits[0]
-	id := splits[1]
-	key := fmt.Sprintf("namespace:%s:id_to_uid", id)
-	if uid, err := c.redisClient.Get(ctx, key).Result(); err != redis.Nil {
-		return fmt.Sprintf("%s/%s", nsType, uid), nil
-	}
-
-	resp, err := c.mgmtPrivateServiceClient.CheckNamespaceAdmin(ctx, &mgmtpb.CheckNamespaceAdminRequest{Id: id})
-	if err != nil {
-		return "", fmt.Errorf("ConvertOwnerNameToPermalink error")
-	}
-	switch o := resp.Owner.(type) {
-	case *mgmtpb.CheckNamespaceAdminResponse_User:
-		c.redisClient.Set(ctx, key, o.User.Uid, 24*time.Hour)
-		return fmt.Sprintf("users/%s", *o.User.Uid), nil
-	case *mgmtpb.CheckNamespaceAdminResponse_Organization:
-		c.redisClient.Set(ctx, key, o.Organization.Uid, 24*time.Hour)
-		return fmt.Sprintf("organizations/%s", o.Organization.Uid), nil
-	}
-	return "", fmt.Errorf("ConvertOwnerNameToPermalink error")
-
 }
