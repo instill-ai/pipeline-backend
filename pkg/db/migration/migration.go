@@ -8,6 +8,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000016"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000019"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000020"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000021"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
@@ -54,6 +55,11 @@ func Migrate(version uint) error {
 			DB:         db,
 			Logger:     l,
 			MgmtClient: mgmtPrivateServiceClient,
+		}
+	case 21:
+		m = &convert000021.ConvertToTextTaskConverter{
+			DB:     db,
+			Logger: l,
 		}
 	default:
 		return nil
