@@ -251,7 +251,8 @@ func (s *service) implementedConnectorDefinitions(ctx context.Context) ([]*pb.Co
 
 	implemented := make([]*pb.ConnectorDefinition, 0, len(allDefs))
 	for _, def := range allDefs {
-		if def.Type == pb.ComponentType_COMPONENT_TYPE_AI || def.Type == pb.ComponentType_COMPONENT_TYPE_DATA || def.Type == pb.ComponentType_COMPONENT_TYPE_APPLICATION {
+		if def.Type == pb.ComponentType_COMPONENT_TYPE_AI || def.Type == pb.ComponentType_COMPONENT_TYPE_DATA ||
+			def.Type == pb.ComponentType_COMPONENT_TYPE_APPLICATION || def.Type == pb.ComponentType_COMPONENT_TYPE_GENERIC {
 			if implementedReleaseStages[def.GetReleaseStage()] {
 				implemented = append(implemented, convertComponentDefToConnectorDef(def))
 			}
@@ -355,7 +356,8 @@ func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*p
 	switch compDef.Type {
 	case pb.ComponentType_COMPONENT_TYPE_AI,
 		pb.ComponentType_COMPONENT_TYPE_DATA,
-		pb.ComponentType_COMPONENT_TYPE_APPLICATION:
+		pb.ComponentType_COMPONENT_TYPE_APPLICATION,
+		pb.ComponentType_COMPONENT_TYPE_GENERIC:
 		return convertComponentDefToConnectorDef(compDef), nil
 
 	default:
@@ -382,6 +384,8 @@ func convertComponentDefToConnectorDef(compDef *pb.ComponentDefinition) *pb.Conn
 				return pb.ConnectorType_CONNECTOR_TYPE_DATA
 			case pb.ComponentType_COMPONENT_TYPE_APPLICATION:
 				return pb.ConnectorType_CONNECTOR_TYPE_APPLICATION
+			case pb.ComponentType_COMPONENT_TYPE_GENERIC:
+				return pb.ConnectorType_CONNECTOR_TYPE_GENERIC
 			}
 			return pb.ConnectorType_CONNECTOR_TYPE_UNSPECIFIED
 
