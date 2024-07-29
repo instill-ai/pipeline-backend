@@ -37,9 +37,9 @@ RUN apk add --no-cache \
     msttcorefonts-installer \
     font-noto \
     font-noto-cjk \
+    ffmpeg \
     && update-ms-fonts \
     && fc-cache -f \
-    ffmpeg \
     && python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
     && /opt/venv/bin/pip install pdfplumber \
