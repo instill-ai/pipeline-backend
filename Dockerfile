@@ -31,9 +31,7 @@ RUN apk add --no-cache \
     build-base \
     python3-dev \
     libffi-dev \
-    libreoffice-common \
-    libreoffice-writer \
-    libreoffice-impress \
+    libreoffice \
     msttcorefonts-installer \
     font-noto \
     font-noto-cjk \
