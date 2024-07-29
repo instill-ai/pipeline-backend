@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/longrunning/autogen/longrunningpb"
+	"github.com/PaesslerAG/jsonpath"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gofrs/uuid"
 	"github.com/santhosh-tekuri/jsonschema/v5"
@@ -21,6 +22,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -152,8 +154,9 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		return nil, err
 	}
 
-	if dbPipeline.ShareCode == "" {
-		dbPipeline.ShareCode = generateShareCode()
+	dbPipeline.ShareCode = generateShareCode()
+	if err := s.setSchedulePipeline(ctx, ns, dbPipeline); err != nil {
+		return nil, err
 	}
 
 	if err := s.repository.CreateNamespacePipeline(ctx, dbPipeline); err != nil {
@@ -288,6 +291,76 @@ func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view
 
 }
 
+func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace, dbPipeline *datamodel.Pipeline) error {
+
+	if s.temporalClient == nil {
+		return nil
+	}
+	crons := []string{}
+	if dbPipeline.Recipe != nil && dbPipeline.Recipe.On != nil && dbPipeline.Recipe.On.Schedule != nil {
+		for _, v := range dbPipeline.Recipe.On.Schedule {
+			crons = append(crons, v.Cron)
+		}
+	}
+
+	scheduleID := fmt.Sprintf("%s_schedule", dbPipeline.UID)
+
+	handle := s.temporalClient.ScheduleClient().GetHandle(ctx, scheduleID)
+	_ = handle.Delete(ctx)
+
+	if len(crons) > 0 {
+		memory := make([]*recipe.Memory, 1)
+		memory[0] = &recipe.Memory{
+			Variable:  make(recipe.VariableMemory),
+			Secret:    make(recipe.SecretMemory),
+			Component: make(map[string]*recipe.ComponentMemory),
+		}
+		k, err := recipe.Write(ctx, s.redisClient, scheduleID, dbPipeline.Recipe, memory, ns.Permalink())
+		if err != nil {
+			return err
+		}
+		param := &worker.TriggerPipelineWorkflowParam{
+			BatchSize:        1,
+			MemoryStorageKey: k,
+			SystemVariables: recipe.SystemVariables{
+				PipelineTriggerID:    scheduleID,
+				PipelineID:           dbPipeline.ID,
+				PipelineUID:          dbPipeline.UID,
+				PipelineReleaseID:    "",
+				PipelineReleaseUID:   uuid.Nil,
+				PipelineRecipe:       dbPipeline.Recipe,
+				PipelineOwnerType:    ns.NsType,
+				PipelineOwnerUID:     ns.NsUID,
+				PipelineUserUID:      ns.NsUID,
+				PipelineRequesterUID: ns.NsUID,
+				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
+			},
+			Mode: mgmtpb.Mode_MODE_ASYNC,
+		}
+		_, err = s.temporalClient.ScheduleClient().Create(ctx, client.ScheduleOptions{
+			ID:                 scheduleID,
+			TriggerImmediately: true,
+			Spec: client.ScheduleSpec{
+				CronExpressions: crons,
+			},
+			Action: &client.ScheduleWorkflowAction{
+				Args:      []any{param},
+				ID:        scheduleID,
+				Workflow:  "TriggerPipelineWorkflow",
+				TaskQueue: worker.TaskQueue,
+				RetryPolicy: &temporal.RetryPolicy{
+					MaximumAttempts: 1,
+				},
+			},
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, toUpdPipeline *pipelinepb.Pipeline) (*pipelinepb.Pipeline, error) {
 
 	ownerPermalink := ns.Permalink()
@@ -318,8 +391,9 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 		return nil, err
 	}
 
-	if existingPipeline.ShareCode == "" {
-		dbPipeline.ShareCode = generateShareCode()
+	dbPipeline.ShareCode = generateShareCode()
+	if err := s.setSchedulePipeline(ctx, ns, dbPipeline); err != nil {
+		return nil, err
 	}
 
 	if err := s.repository.UpdateNamespacePipelineByUID(ctx, dbPipeline.UID, dbPipeline); err != nil {
@@ -1467,6 +1541,82 @@ func (s *service) checkTriggerPermission(ctx context.Context, pipeline *datamode
 	}
 
 	return isAdmin, nil
+}
+
+func (s *service) CheckPipelineEventCode(ctx context.Context, ns resource.Namespace, id string, code string) (bool, error) {
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ns.Permalink(), id, false, true)
+	if err != nil {
+		return false, errdomain.ErrNotFound
+	}
+
+	return dbPipeline.ShareCode == code, nil
+}
+
+func (s *service) HandleNamespacePipelineEventByID(ctx context.Context, ns resource.Namespace, id string, eventID string, data *structpb.Struct, pipelineTriggerID string) (*structpb.Struct, error) {
+
+	targetType := ""
+	ownerPermalink := ns.Permalink()
+	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
+	if err != nil {
+		return nil, errdomain.ErrNotFound
+	}
+	if e, ok := dbPipeline.Recipe.On.Event[eventID]; ok {
+
+		targetType = e.Type
+	} else {
+		return nil, fmt.Errorf("eventID not correct")
+	}
+
+	md, _ := metadata.FromIncomingContext(ctx)
+
+	isVerificationEvent, out, err := s.component.HandleVerificationEvent(targetType, md, data, nil)
+	if err != nil {
+		return nil, err
+	}
+	if isVerificationEvent {
+		return out, nil
+	}
+
+	d := pipelinepb.TriggerData{
+		Variable: &structpb.Struct{Fields: make(map[string]*structpb.Value)},
+	}
+
+	jsonInput := map[string]any{}
+	b, err := protojson.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(b, &jsonInput)
+	if err != nil {
+		return nil, err
+	}
+
+	for key, v := range dbPipeline.Recipe.Variable {
+		for _, l := range v.Listen {
+			l := l[2 : len(l)-1]
+			s := strings.Split(l, ".")
+			if eventID == s[1] {
+				path := strings.Join(s[3:], ".")
+				res, err := jsonpath.Get(fmt.Sprintf("$.%s", path), jsonInput)
+				if err != nil {
+					return nil, err
+				}
+				d.Variable.Fields[key], err = structpb.NewValue(res)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	triggerData := []*pipelinepb.TriggerData{&d}
+
+	_, err = s.triggerAsyncPipeline(ctx, ns, dbPipeline.Recipe, true, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, triggerData, pipelineTriggerID, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {

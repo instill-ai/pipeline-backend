@@ -1009,6 +1009,42 @@ func (h *PublicHandler) preTriggerNamespacePipeline(ctx context.Context, req Tri
 
 }
 
+func (h *PublicHandler) SendNamespacePipelineEvent(ctx context.Context, req *pb.SendNamespacePipelineEventRequest) (resp *pb.SendNamespacePipelineEventResponse, err error) {
+
+	eventName := "SendNamespacePipelineEvent"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logUUID, _ := uuid.NewV4()
+
+	if err := checkfield.CheckRequiredFields(req, triggerPipelineRequiredFields); err != nil {
+		return nil, ErrCheckRequiredFields
+	}
+
+	ns, err := h.service.GetRscNamespace(ctx, req.GetNamespaceId())
+	if err != nil {
+		return nil, err
+	}
+
+	ok, err := h.service.CheckPipelineEventCode(ctx, ns, req.GetPipelineId(), req.GetCode())
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, service.ErrUnauthenticated
+	}
+
+	output, err := h.service.HandleNamespacePipelineEventByID(ctx, ns, req.GetPipelineId(), req.GetEvent(), req.GetData(), logUUID.String())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	return &pb.SendNamespacePipelineEventResponse{Data: output}, nil
+}
+
 func (h *PublicHandler) TriggerUserPipeline(ctx context.Context, req *pb.TriggerUserPipelineRequest) (resp *pb.TriggerUserPipelineResponse, err error) {
 	r, err := h.TriggerNamespacePipeline(ctx, &pb.TriggerNamespacePipelineRequest{
 		NamespaceId: strings.Split(req.Name, "/")[1],
