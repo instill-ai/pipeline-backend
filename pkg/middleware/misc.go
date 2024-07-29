@@ -159,6 +159,11 @@ func CustomMatcher(key string) (string, bool) {
 		return key, true
 	case "X-B3-Traceid", "X-B3-Spanid", "X-B3-Sampled":
 		return key, true
+	// TODO: huitang
+	// We should avoid hard-coding the webhook header here.
+	// The header should be collected from the component package.
+	case "X-Github-Event", "x-github-event":
+		return key, true
 	default:
 		return runtime.DefaultHeaderMatcher(key)
 	}

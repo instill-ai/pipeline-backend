@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/frankban/quicktest"
@@ -11,8 +12,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 	"go.temporal.io/sdk/client"
+
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func fakeNamespace() resource.Namespace {
@@ -53,6 +55,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	repo := mock.NewRepositoryMock(mc)
 	redisClient, _ := redismock.NewClientMock()
 	var temporalClient client.Client
+
 	aclClient := mock.NewACLClientInterfaceMock(mc)
 	converter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
@@ -92,6 +95,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 		"pipelineID",
 		&pbPipeline,
 	)
+	fmt.Println(111, updatedPbPipeline, err)
 
 	c.Assert(err, quicktest.IsNil)
 	c.Assert(updatedPbPipeline, quicktest.IsNotNil)
