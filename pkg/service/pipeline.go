@@ -315,6 +315,28 @@ func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace
 			Secret:    make(recipe.SecretMemory),
 			Component: make(map[string]*recipe.ComponentMemory),
 		}
+		pt := ""
+		for {
+			var nsSecrets []*datamodel.Secret
+			// TODO: should use ctx user uid
+			nsSecrets, _, pt, err := s.repository.ListNamespaceSecrets(ctx, ns.Permalink(), 100, pt, filtering.Filter{})
+			if err != nil {
+				return err
+			}
+
+			for _, nsSecret := range nsSecrets {
+				if nsSecret.Value != nil {
+					if _, ok := memory[0].Secret[nsSecret.ID]; !ok {
+						memory[0].Secret[nsSecret.ID] = *nsSecret.Value
+					}
+				}
+			}
+
+			if pt == "" {
+				break
+			}
+		}
+
 		k, err := recipe.Write(ctx, s.redisClient, scheduleID, dbPipeline.Recipe, memory, ns.Permalink())
 		if err != nil {
 			return err
