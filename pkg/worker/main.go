@@ -21,10 +21,12 @@ const TaskQueue = "pipeline-backend"
 // Worker interface
 type Worker interface {
 	TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error
+	SchedulePipelineWorkflow(ctx workflow.Context, param *SchedulePipelineWorkflowParam) error
 	ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error)
 	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
+	SchedulePipelineLoaderActivity(ctx context.Context, param *SchedulePipelineLoaderActivityParam) (*SchedulePipelineLoaderActivityResult, error)
 }
 
 // worker represents resources required to run Temporal workflow and activity

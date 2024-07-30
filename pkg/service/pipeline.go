@@ -309,57 +309,12 @@ func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace
 	_ = handle.Delete(ctx)
 
 	if len(crons) > 0 {
-		memory := make([]*recipe.Memory, 1)
-		memory[0] = &recipe.Memory{
-			Variable:  make(recipe.VariableMemory),
-			Secret:    make(recipe.SecretMemory),
-			Component: make(map[string]*recipe.ComponentMemory),
-		}
-		pt := ""
-		for {
-			var nsSecrets []*datamodel.Secret
-			// TODO: should use ctx user uid
-			nsSecrets, _, pt, err := s.repository.ListNamespaceSecrets(ctx, ns.Permalink(), 100, pt, filtering.Filter{})
-			if err != nil {
-				return err
-			}
 
-			for _, nsSecret := range nsSecrets {
-				if nsSecret.Value != nil {
-					if _, ok := memory[0].Secret[nsSecret.ID]; !ok {
-						memory[0].Secret[nsSecret.ID] = *nsSecret.Value
-					}
-				}
-			}
-
-			if pt == "" {
-				break
-			}
+		param := &worker.SchedulePipelineWorkflowParam{
+			Namespace:  ns,
+			PipelineID: dbPipeline.ID,
 		}
-
-		k, err := recipe.Write(ctx, s.redisClient, scheduleID, dbPipeline.Recipe, memory, ns.Permalink())
-		if err != nil {
-			return err
-		}
-		param := &worker.TriggerPipelineWorkflowParam{
-			BatchSize:        1,
-			MemoryStorageKey: k,
-			SystemVariables: recipe.SystemVariables{
-				PipelineTriggerID:    scheduleID,
-				PipelineID:           dbPipeline.ID,
-				PipelineUID:          dbPipeline.UID,
-				PipelineReleaseID:    "",
-				PipelineReleaseUID:   uuid.Nil,
-				PipelineRecipe:       dbPipeline.Recipe,
-				PipelineOwnerType:    ns.NsType,
-				PipelineOwnerUID:     ns.NsUID,
-				PipelineUserUID:      ns.NsUID,
-				PipelineRequesterUID: ns.NsUID,
-				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
-			},
-			Mode: mgmtpb.Mode_MODE_ASYNC,
-		}
-		_, err = s.temporalClient.ScheduleClient().Create(ctx, client.ScheduleOptions{
+		_, err := s.temporalClient.ScheduleClient().Create(ctx, client.ScheduleOptions{
 			ID: scheduleID,
 			Spec: client.ScheduleSpec{
 				CronExpressions: crons,
@@ -367,7 +322,7 @@ func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace
 			Action: &client.ScheduleWorkflowAction{
 				Args:      []any{param},
 				ID:        scheduleID,
-				Workflow:  "TriggerPipelineWorkflow",
+				Workflow:  "SchedulePipelineWorkflow",
 				TaskQueue: worker.TaskQueue,
 				RetryPolicy: &temporal.RetryPolicy{
 					MaximumAttempts: 1,
