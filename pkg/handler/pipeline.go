@@ -1960,7 +1960,7 @@ func (h *PublicHandler) preTriggerNamespacePipelineRelease(ctx context.Context, 
 }
 
 func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pb.TriggerUserPipelineReleaseRequest) (resp *pb.TriggerUserPipelineReleaseResponse, err error) {
-	_, err = h.TriggerNamespacePipelineRelease(ctx, &pb.TriggerNamespacePipelineReleaseRequest{
+	r, err := h.TriggerNamespacePipelineRelease(ctx, &pb.TriggerNamespacePipelineReleaseRequest{
 		NamespaceId: strings.Split(req.Name, "/")[1],
 		PipelineId:  strings.Split(req.Name, "/")[3],
 		ReleaseId:   strings.Split(req.Name, "/")[5],
@@ -1970,11 +1970,11 @@ func (h *PublicHandler) TriggerUserPipelineRelease(ctx context.Context, req *pb.
 	if err != nil {
 		return nil, err
 	}
-	return &pb.TriggerUserPipelineReleaseResponse{}, nil
+	return &pb.TriggerUserPipelineReleaseResponse{Outputs: r.Outputs, Metadata: r.Metadata}, nil
 }
 
 func (h *PublicHandler) TriggerOrganizationPipelineRelease(ctx context.Context, req *pb.TriggerOrganizationPipelineReleaseRequest) (resp *pb.TriggerOrganizationPipelineReleaseResponse, err error) {
-	_, err = h.TriggerNamespacePipelineRelease(ctx, &pb.TriggerNamespacePipelineReleaseRequest{
+	r, err := h.TriggerNamespacePipelineRelease(ctx, &pb.TriggerNamespacePipelineReleaseRequest{
 		NamespaceId: strings.Split(req.Name, "/")[1],
 		PipelineId:  strings.Split(req.Name, "/")[3],
 		ReleaseId:   strings.Split(req.Name, "/")[5],
@@ -1984,7 +1984,7 @@ func (h *PublicHandler) TriggerOrganizationPipelineRelease(ctx context.Context, 
 	if err != nil {
 		return nil, err
 	}
-	return &pb.TriggerOrganizationPipelineReleaseResponse{}, nil
+	return &pb.TriggerOrganizationPipelineReleaseResponse{Outputs: r.Outputs, Metadata: r.Metadata}, nil
 }
 
 func (h *PublicHandler) TriggerNamespacePipelineRelease(ctx context.Context, req *pb.TriggerNamespacePipelineReleaseRequest) (resp *pb.TriggerNamespacePipelineReleaseResponse, err error) {
