@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"go.temporal.io/sdk/temporal"
@@ -35,6 +36,21 @@ type TriggerPipelineWorkflowParam struct {
 	Mode             mgmtpb.Mode
 	IsIterator       bool
 	IsStreaming      bool
+}
+
+type SchedulePipelineWorkflowParam struct {
+	Namespace  resource.Namespace
+	PipelineID string
+}
+
+type SchedulePipelineLoaderActivityParam struct {
+	Namespace  resource.Namespace
+	PipelineID string
+}
+type SchedulePipelineLoaderActivityResult struct {
+	Key        *recipe.BatchMemoryKey
+	ScheduleID string
+	Pipeline   *datamodel.Pipeline
 }
 
 // ComponentActivityParam represents the parameters for TriggerActivity
@@ -754,4 +770,102 @@ const (
 // message to a temporal.ApplicationError.
 type EndUserErrorDetails struct {
 	Message string
+}
+
+func (w *worker) SchedulePipelineLoaderActivity(ctx context.Context, param *SchedulePipelineLoaderActivityParam) (*SchedulePipelineLoaderActivityResult, error) {
+	dbPipeline, err := w.repository.GetNamespacePipelineByID(ctx, param.Namespace.Permalink(), param.PipelineID, true, false)
+	if err != nil {
+		return nil, err
+	}
+
+	scheduleID := fmt.Sprintf("%s_schedule", dbPipeline.UID)
+
+	memory := make([]*recipe.Memory, 1)
+	memory[0] = &recipe.Memory{
+		Variable:  make(recipe.VariableMemory),
+		Secret:    make(recipe.SecretMemory),
+		Component: make(map[string]*recipe.ComponentMemory),
+	}
+	pt := ""
+	for {
+		var nsSecrets []*datamodel.Secret
+		// TODO: should use ctx user uid
+		nsSecrets, _, pt, err := w.repository.ListNamespaceSecrets(ctx, param.Namespace.Permalink(), 100, pt, filtering.Filter{})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, nsSecret := range nsSecrets {
+			if nsSecret.Value != nil {
+				if _, ok := memory[0].Secret[nsSecret.ID]; !ok {
+					memory[0].Secret[nsSecret.ID] = *nsSecret.Value
+				}
+			}
+		}
+
+		if pt == "" {
+			break
+		}
+	}
+
+	k, err := recipe.Write(ctx, w.redisClient, scheduleID, dbPipeline.Recipe, memory, param.Namespace.Permalink())
+	if err != nil {
+		return nil, err
+	}
+	return &SchedulePipelineLoaderActivityResult{Key: k, ScheduleID: scheduleID, Pipeline: dbPipeline}, nil
+}
+
+func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *SchedulePipelineWorkflowParam) error {
+
+	r := SchedulePipelineLoaderActivityResult{}
+	ao := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
+		},
+	}
+	wfctx = workflow.WithActivityOptions(wfctx, ao)
+	if err := workflow.ExecuteActivity(wfctx, w.SchedulePipelineLoaderActivity, &SchedulePipelineLoaderActivityParam{
+		Namespace:  param.Namespace,
+		PipelineID: param.PipelineID,
+	}).Get(wfctx, &r); err != nil {
+		return err
+	}
+
+	// TODO: huitang - Handle pipeline release as well.
+	triggerParam := &TriggerPipelineWorkflowParam{
+		BatchSize:        1,
+		MemoryStorageKey: r.Key,
+		SystemVariables: recipe.SystemVariables{
+			PipelineTriggerID:    r.ScheduleID,
+			PipelineID:           r.Pipeline.ID,
+			PipelineUID:          r.Pipeline.UID,
+			PipelineReleaseID:    "",
+			PipelineReleaseUID:   uuid.Nil,
+			PipelineRecipe:       r.Pipeline.Recipe,
+			PipelineOwnerType:    param.Namespace.NsType,
+			PipelineOwnerUID:     param.Namespace.NsUID,
+			PipelineUserUID:      param.Namespace.NsUID,
+			PipelineRequesterUID: param.Namespace.NsUID,
+		},
+		Mode: mgmtpb.Mode_MODE_ASYNC,
+	}
+
+	wfUID, _ := uuid.NewV4()
+	childWorkflowOptions := workflow.ChildWorkflowOptions{
+		TaskQueue:                TaskQueue,
+		WorkflowID:               wfUID.String(),
+		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxWorkflowRetry,
+		},
+	}
+
+	_ = workflow.ExecuteChildWorkflow(
+		workflow.WithChildOptions(wfctx, childWorkflowOptions),
+		"TriggerPipelineWorkflow",
+		triggerParam,
+	).Get(wfctx, nil)
+
+	return nil
 }
