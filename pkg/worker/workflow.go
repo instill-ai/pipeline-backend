@@ -421,7 +421,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		MemoryStorageKeys: make([]*recipe.BatchMemoryKey, len(m)),
 		ElementSize:       make([]int, len(m)),
 	}
-	recipeKey := fmt.Sprintf("%s:%s", param.WorkflowID, recipe.SegRecipe)
+	recipeKey := fmt.Sprintf("%s:%s:%s", param.WorkflowID, param.ID, recipe.SegRecipe)
 	err = recipe.WriteRecipe(ctx, w.redisClient, recipeKey, iteratorRecipe)
 	if err != nil {
 		return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
