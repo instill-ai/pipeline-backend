@@ -102,10 +102,22 @@ func (c *ConvertToTextTaskConverter) migratePipelineRelease() error {
 }
 
 func (c *ConvertToTextTaskConverter) updateTask(comp *datamodel.Component) (bool, error) {
+	textConverted, err := c.updateConvertToTextTask(comp)
+	if err != nil {
+		return false, err
+	}
+	mdConverted, err := c.updateConvertToMarkdownTask(comp)
+	if err != nil {
+		return false, err
+	}
+
+	return textConverted || mdConverted, nil
+}
+func (c *ConvertToTextTaskConverter) updateConvertToTextTask(comp *datamodel.Component) (bool, error) {
 	if comp.Type == "iterator" {
 		isComponentUpdated := false
 		for _, comp := range comp.Component {
-			isSubComponentUpdated, err := c.updateTask(comp)
+			isSubComponentUpdated, err := c.updateConvertToTextTask(comp)
 			if err != nil {
 				return false, fmt.Errorf("updating iterator component: %w", err)
 			}
@@ -121,5 +133,37 @@ func (c *ConvertToTextTaskConverter) updateTask(comp *datamodel.Component) (bool
 	}
 
 	comp.Type = "document"
+	return true, nil
+}
+
+func (c *ConvertToTextTaskConverter) updateConvertToMarkdownTask(comp *datamodel.Component) (bool, error) {
+	if comp.Type == "iterator" {
+		isComponentUpdated := false
+		for _, comp := range comp.Component {
+			isSubComponentUpdated, err := c.updateConvertToMarkdownTask(comp)
+			if err != nil {
+				return false, fmt.Errorf("updating iterator component: %w", err)
+			}
+
+			isComponentUpdated = isSubComponentUpdated || isComponentUpdated
+		}
+
+		return isComponentUpdated, nil
+	}
+
+	if comp.Type != "document" || comp.Task != "TASK_CONVERT_TO_MARKDOWN" {
+		return false, nil
+	}
+
+	in, isMap := comp.Input.(map[string]any)
+	if !isMap {
+		return false, fmt.Errorf("invalid input type on TASK_CONVERT_TO_MARKDOWN")
+	}
+
+	in["document"] = in["pdf"]
+	delete(in, "pdf")
+
+	comp.Input = in
+
 	return true, nil
 }
