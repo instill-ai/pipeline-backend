@@ -360,8 +360,7 @@ func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace
 			Mode: mgmtpb.Mode_MODE_ASYNC,
 		}
 		_, err = s.temporalClient.ScheduleClient().Create(ctx, client.ScheduleOptions{
-			ID:                 scheduleID,
-			TriggerImmediately: true,
+			ID: scheduleID,
 			Spec: client.ScheduleSpec{
 				CronExpressions: crons,
 			},
