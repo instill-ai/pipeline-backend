@@ -39,7 +39,11 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 
 	for k, v := range req.MultipartForm.Value {
 		if strings.HasPrefix(k, "variables[") || strings.HasPrefix(k, "inputs[") {
-			k = k[7:]
+			if strings.HasPrefix(k, "variables[") {
+				k = k[10:]
+			} else {
+				k = k[7:]
+			}
 
 			varIdx, err := strconv.Atoi(k[:strings.Index(k, "]")])
 			if err != nil {
@@ -94,7 +98,11 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 
 	for k, v := range req.MultipartForm.File {
 		if strings.HasPrefix(k, "variables[") || strings.HasPrefix(k, "inputs[") {
-			k = k[7:]
+			if strings.HasPrefix(k, "variables[") {
+				k = k[10:]
+			} else {
+				k = k[7:]
+			}
 
 			varIdx, err := strconv.Atoi(k[:strings.Index(k, "]")])
 			if err != nil {
@@ -150,6 +158,7 @@ func convertFormData(ctx context.Context, mux *runtime.ServeMux, req *http.Reque
 
 	data := make([]*pb.TriggerData, maxVarIdx+1)
 	for varIdx, inputValue := range varMap {
+		data[varIdx] = &pb.TriggerData{}
 		data[varIdx].Variable = &structpb.Struct{
 			Fields: map[string]*structpb.Value{},
 		}
