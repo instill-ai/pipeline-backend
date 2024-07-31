@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.34.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.34.0-beta...v0.34.1-beta) (2024-07-31)
+
+
+### Bug Fixes
+
+* fix pipeline profile image ([9641b3c](https://github.com/instill-ai/pipeline-backend/commit/9641b3c83696ff358632c56c20f07affee61df21))
+
+
+### Miscellaneous Chores
+
+* release v0.34.1-beta ([d89e51b](https://github.com/instill-ai/pipeline-backend/commit/d89e51b8e2557198920756db366c240484a54f7d))
+
 ## [0.34.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.33.0-beta...v0.34.0-beta) (2024-07-31)
 
 
