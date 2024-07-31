@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.34.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.33.0-beta...v0.34.0-beta) (2024-07-31)
+
+
+### Features
+
+* add ffmpeg for audio operator ([#558](https://github.com/instill-ai/pipeline-backend/issues/558)) ([e1536fc](https://github.com/instill-ai/pipeline-backend/commit/e1536fc967c85bceef00f8d7902f2375a3f035a5))
+* add ffmpeg-go package for video operator ([#560](https://github.com/instill-ai/pipeline-backend/issues/560)) ([db98471](https://github.com/instill-ai/pipeline-backend/commit/db98471f0182383461d3671f077915ebabd1bcfc))
+* add requester information to pipeline metrics ([#556](https://github.com/instill-ai/pipeline-backend/issues/556)) ([7c3cc3c](https://github.com/instill-ai/pipeline-backend/commit/7c3cc3c8cddbc5bd6f347dbce02193dec2e7d41b))
+* implement fuzzy search for namespace and pipeline ID ([#563](https://github.com/instill-ai/pipeline-backend/issues/563)) ([9cf8fa5](https://github.com/instill-ai/pipeline-backend/commit/9cf8fa5b2bf87e79f1241b273f10aee0555fb08d))
+* implement namespace endpoints ([#561](https://github.com/instill-ai/pipeline-backend/issues/561)) ([5920f69](https://github.com/instill-ai/pipeline-backend/commit/5920f699f6e298f201241e8808f7e4bf03aa9753))
+* support run-on-event/schedule pipeline ([#571](https://github.com/instill-ai/pipeline-backend/issues/571)) ([19730cf](https://github.com/instill-ai/pipeline-backend/commit/19730cf30a8d0b222859ca5c982943fca64c291a))
+* **text:** add libreoffice to container ([#555](https://github.com/instill-ai/pipeline-backend/issues/555)) ([2410b4b](https://github.com/instill-ai/pipeline-backend/commit/2410b4b3d9305dbb50fc3281e6f5b1bf4e71895c))
+* use explicit `user_id` and `organization_id` in mgmt request ([#559](https://github.com/instill-ai/pipeline-backend/issues/559)) ([2b273b4](https://github.com/instill-ai/pipeline-backend/commit/2b273b4247575891555a325f71c0461129bd8a50))
+
+
+### Bug Fixes
+
+* change the dependency to fix bugs ([#570](https://github.com/instill-ai/pipeline-backend/issues/570)) ([175a566](https://github.com/instill-ai/pipeline-backend/commit/175a566261421a050ea85734000c8c203c9a4fe6))
+* fix form-data handler ([#578](https://github.com/instill-ai/pipeline-backend/issues/578)) ([33e0aab](https://github.com/instill-ai/pipeline-backend/commit/33e0aab58c6f367778c37ae91116c10023a95fa4))
+* fix pipeline could not have more than one iterator ([#575](https://github.com/instill-ai/pipeline-backend/issues/575)) ([9529d96](https://github.com/instill-ai/pipeline-backend/commit/9529d96b177b8f3e9ae2e44b10c854d56a1a551b))
+* fix SQL transpiler bug ([#579](https://github.com/instill-ai/pipeline-backend/issues/579)) ([eefedaa](https://github.com/instill-ai/pipeline-backend/commit/eefedaac830bfe0acf444f1332e2ec41f3c2a6a8))
+* send old and new pipeline trigger measurements ([#565](https://github.com/instill-ai/pipeline-backend/issues/565)) ([33cf3c7](https://github.com/instill-ai/pipeline-backend/commit/33cf3c78dcb3c0b3e62f09255959656691d418cc))
+
 ## [0.33.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.32.1-beta...v0.33.0-beta) (2024-07-19)
 
 
