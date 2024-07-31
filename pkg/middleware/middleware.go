@@ -155,10 +155,6 @@ func HandleProfileImage(srv service.Service, repo repository.Repository) runtime
 	return runtime.HandlerFunc(func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 		defer cancel()
-		if v, ok := pathParams["namespaceID"]; !ok || len(strings.Split(v, "/")) < 4 {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
 
 		ns, err := srv.GetRscNamespace(ctx, pathParams["namespaceID"])
 		if err != nil {
@@ -166,8 +162,9 @@ func HandleProfileImage(srv service.Service, repo repository.Repository) runtime
 			return
 		}
 
+		pipelineID := pathParams["pipelineID"]
 		profileImageBase64 := ""
-		dbModel, err := repo.GetNamespacePipelineByID(ctx, ns.Permalink(), ns.NsID, true, true)
+		dbModel, err := repo.GetNamespacePipelineByID(ctx, ns.Permalink(), pipelineID, true, true)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return

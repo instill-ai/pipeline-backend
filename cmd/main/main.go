@@ -341,10 +341,7 @@ func main() {
 	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("GET", "/v1beta/{name=users/*/pipelines/*}/image", middleware.HandleProfileImage(service, repository)); err != nil {
-		logger.Fatal(err.Error())
-	}
-	if err := publicServeMux.HandlePath("GET", "/v1beta/{name=organizations/*/pipelines/*}/image", middleware.HandleProfileImage(service, repository)); err != nil {
+	if err := publicServeMux.HandlePath("GET", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/image", middleware.HandleProfileImage(service, repository)); err != nil {
 		logger.Fatal(err.Error())
 	}
 
