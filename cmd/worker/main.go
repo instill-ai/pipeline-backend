@@ -147,6 +147,7 @@ func main() {
 		timeseries.WriteAPI(),
 		config.Config.Connector.Secrets,
 		nil,
+		db,
 	)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{

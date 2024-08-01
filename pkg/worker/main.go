@@ -2,6 +2,8 @@ package worker
 
 import (
 	"context"
+	"github.com/instill-ai/pipeline-backend/pkg/pipelinelogger"
+	"gorm.io/gorm"
 
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/redis/go-redis/v9"
@@ -35,6 +37,7 @@ type worker struct {
 	redisClient         *redis.Client
 	influxDBWriteClient api.WriteAPI
 	component           *componentstore.Store
+	pipelineLogger      *pipelinelogger.PipelineLogger
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
@@ -44,6 +47,7 @@ func NewWorker(
 	i api.WriteAPI,
 	cs componentstore.ComponentSecrets,
 	uh componentbase.UsageHandlerCreator,
+	db *gorm.DB,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &worker{
@@ -51,5 +55,6 @@ func NewWorker(
 		redisClient:         rd,
 		influxDBWriteClient: i,
 		component:           componentstore.Init(logger, cs, uh),
+		pipelineLogger:      pipelinelogger.NewPipelineLogger(db),
 	}
 }

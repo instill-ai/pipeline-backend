@@ -55,16 +55,17 @@ type SchedulePipelineLoaderActivityResult struct {
 
 // ComponentActivityParam represents the parameters for TriggerActivity
 type ComponentActivityParam struct {
-	WorkflowID       string
-	MemoryStorageKey *recipe.BatchMemoryKey
-	ID               string
-	UpstreamIDs      []string
-	Condition        string
-	Input            map[string]any
-	Setup            map[string]any
-	Type             string
-	Task             string
-	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	WorkflowID        string
+	MemoryStorageKey  *recipe.BatchMemoryKey
+	ID                string
+	UpstreamIDs       []string
+	Condition         string
+	Input             map[string]any
+	Setup             map[string]any
+	Type              string
+	Task              string
+	SystemVariables   recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	PipelineloggerUID uuid.UUID
 }
 
 type PreIteratorActivityParam struct {
@@ -110,6 +111,22 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
+
+	run := &datamodel.PipelineRun{
+		PipelineUID:     param.SystemVariables.PipelineUID,
+		PipelineVersion: param.SystemVariables.PipelineReleaseID,
+		Status:          "Running",
+		Source:          "WebUI", // TODO tillknuesting: implement mechanism to know how the pipeline was triggered
+		TriggeredBy:     param.SystemVariables.PipelineRequesterUID.String(),
+		TriggeredTime:   time.Now(),
+	}
+
+	PipelineRunUID, err := w.pipelineLogger.LogPipelineRun(context.TODO(), run)
+	if err != nil {
+		logger.Error("Failed to log pipeline run", zap.Error(err))
+	}
+
+	fmt.Println(PipelineRunUID)
 
 	// Inline function to initialize the channel only if streaming is active
 	initChan := func() chan WorkFlowSignal {
@@ -230,16 +247,17 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			switch comp.Type {
 			default:
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, &ComponentActivityParam{
-					WorkflowID:       workflowID,
-					ID:               compID,
-					UpstreamIDs:      upstreamIDs,
-					Type:             comp.Type,
-					Task:             comp.Task,
-					Input:            comp.Input.(map[string]any),
-					Setup:            comp.Setup,
-					Condition:        comp.Condition,
-					MemoryStorageKey: param.MemoryStorageKey,
-					SystemVariables:  param.SystemVariables,
+					WorkflowID:        workflowID,
+					ID:                compID,
+					UpstreamIDs:       upstreamIDs,
+					Type:              comp.Type,
+					Task:              comp.Task,
+					Input:             comp.Input.(map[string]any),
+					Setup:             comp.Setup,
+					Condition:         comp.Condition,
+					MemoryStorageKey:  param.MemoryStorageKey,
+					SystemVariables:   param.SystemVariables,
+					PipelineloggerUID: PipelineRunUID,
 				}))
 
 			case datamodel.Iterator:
@@ -358,6 +376,17 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
 
+	// Log the component run start
+	componentRun := &datamodel.RunComponent{
+		RunUID:      param.PipelineloggerUID,
+		ComponentID: param.ID,
+		Status:      "Running",
+		StartedTime: time.Now(),
+	}
+	if err := w.pipelineLogger.LogComponentRun(ctx, componentRun); err != nil {
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+	}
+
 	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
 	if err != nil {
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
@@ -367,6 +396,8 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	if err != nil {
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
+
+	// TODO tillknuesting: implement upload to S3 and pipelineLogger.LogComponentRun
 
 	cons, err := w.processSetup(batchMemory, param.Setup)
 	if err != nil {
@@ -404,6 +435,13 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	}
 
 	logger.Info("ComponentActivity completed")
+
+	componentRun.CompletedTime = time.Now()
+	componentRun.Status = "Completed"
+
+	if err := w.pipelineLogger.LogComponentRun(ctx, componentRun); err != nil {
+		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+	}
 
 	// the data is logged in temporal hence we should only return data that is needed
 	p := &ComponentActivityParam{
