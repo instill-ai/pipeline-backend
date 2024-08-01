@@ -11,13 +11,13 @@ require (
 	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
-	github.com/gojuno/minimock/v3 v3.3.11
+	github.com/gojuno/minimock/v3 v3.3.13
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.24.0-beta
+	github.com/instill-ai/component v0.24.0-beta.0.20240801091036-dd636560e9d8
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240729181905-96683859f44c
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
