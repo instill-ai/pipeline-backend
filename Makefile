@@ -101,6 +101,11 @@ integration-test:				## Run integration test
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} -e API_GATEWAY_URL=${API_GATEWAY_URL} \
 		integration-test/pipeline/rest.js --no-usage-report --quiet
 
+.PHONY: gen-mock
+gen-mock:
+	@go install github.com/gojuno/minimock/v3/cmd/minimock@v3.3.13
+	@go generate -run minimock ./...
+
 .PHONY: help
 help:       	 				## Show this help
 	@echo "\nMakefile for local development"

@@ -26,6 +26,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/x/errmsg"
 
+	componentstore "github.com/instill-ai/component/store"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
@@ -377,13 +378,15 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
-	comp, err := w.component.GetDefinitionByID(param.Type, nil, nil)
-	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
-	}
-
 	// Note: we assume that setup in the batch are all the same
-	execution, err := w.component.CreateExecution(uuid.FromStringOrNil(comp.Uid), sysVars, cons[0], param.Task)
+	executionParams := componentstore.ExecutionParams{
+		ComponentID:           param.ID,
+		ComponentDefinitionID: param.Type,
+		SystemVariables:       sysVars,
+		Setup:                 cons[0],
+		Task:                  param.Task,
+	}
+	execution, err := w.component.CreateExecution(executionParams)
 	if err != nil {
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
