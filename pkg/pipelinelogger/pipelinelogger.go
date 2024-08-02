@@ -60,7 +60,6 @@ func (l *PipelineLogger) ListPipelineRuns(ctx context.Context, pipelineUID uuid.
 		Limit(limit).
 		Offset(offset).
 		Find(&runs)
-
 	if result.Error != nil {
 		return nil, result.Error
 	}

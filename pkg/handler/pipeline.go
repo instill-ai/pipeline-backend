@@ -3,6 +3,10 @@ package handler
 import (
 	"context"
 	"fmt"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -130,6 +134,117 @@ func (h *PublicHandler) GetHubStats(ctx context.Context, req *pb.GetHubStatsRequ
 	)))
 
 	return resp, nil
+}
+
+func (h *PublicHandler) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest) (*pb.ListPipelineRunsResponse, error) {
+	eventName := "ListPipelineRuns"
+
+	ctx, span := tracer.Start(ctx, eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	// Authenticate user
+	if err := authenticateUser(ctx, true); err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	// TODO tillknuesting: verify permission according to spec
+
+	// Validate request parameters
+	if err := validateListPipelineRunsRequest(req); err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	// TODO: Implement actual data fetching logic
+	// For now, we'll create mock data
+	mockRuns, totalSize := createMockPipelineRuns(req)
+
+	// Apply pagination
+	pageSize := int(req.GetPageSize())
+	if pageSize == 0 {
+		pageSize = 10 // Default page size
+	}
+	startIndex := 0
+	if req.PageToken != "" {
+		startIndex, _ = strconv.Atoi(req.PageToken)
+	}
+	endIndex := startIndex + pageSize
+	if endIndex > len(mockRuns) {
+		endIndex = len(mockRuns)
+	}
+
+	paginatedRuns := mockRuns[startIndex:endIndex]
+
+	// Prepare next page token
+	var nextPageToken string
+	if endIndex < len(mockRuns) {
+		nextPageToken = strconv.Itoa(endIndex)
+	}
+
+	resp := &pb.ListPipelineRunsResponse{
+		Runs:          paginatedRuns,
+		NextPageToken: nextPageToken,
+		TotalSize:     int32(totalSize),
+	}
+
+	logger.Info("ListPipelineRuns completed",
+		zap.Int("returned_runs", len(paginatedRuns)),
+		zap.Int("total_size", totalSize))
+
+	return resp, nil
+}
+
+func validateListPipelineRunsRequest(req *pb.ListPipelineRunsRequest) error {
+	if req.PageSize < 0 {
+		return status.Error(codes.InvalidArgument, "page_size must be non-negative")
+	}
+	if req.StartTime != nil && req.EndTime != nil && req.StartTime.AsTime().After(req.EndTime.AsTime()) {
+		return status.Error(codes.InvalidArgument, "start_time must be before end_time")
+	}
+	// Add more validations as needed
+	return nil
+}
+
+func createMockPipelineRuns(req *pb.ListPipelineRunsRequest) ([]*pb.PipelineRun, int) {
+	// Create mock data based on request parameters
+	mockRuns := make([]*pb.PipelineRun, 0)
+	totalSize := 100 // Mock total size
+
+	for i := 0; i < totalSize; i++ {
+		run := &pb.PipelineRun{
+			RunId:      fmt.Sprintf("run-%d", i),
+			PipelineId: req.PipelineId,
+			Version:    "v1.0.0",
+			Status:     pb.RunStatus_RUN_STATUS_COMPLETED,
+			Source:     pb.RunSource_RUN_SOURCE_API,
+			TotalDuration: &durationpb.Duration{
+				Seconds: int64(rand.Intn(3600)), // Random duration up to 1 hour
+			},
+			CreatedAt: timestamppb.Now(),
+			Runner: &pb.Runner{
+				Id:   fmt.Sprintf("user-%d", i%10),
+				Type: pb.RunnerType_RUNNER_TYPE_SELF,
+			},
+			Credits: float64(rand.Intn(1000)),
+			// Add more fields as needed
+		}
+
+		// Apply mock filtering (example with start_time and end_time)
+		if req.StartTime != nil && run.CreatedAt.AsTime().Before(req.StartTime.AsTime()) {
+			continue
+		}
+		if req.EndTime != nil && run.CreatedAt.AsTime().After(req.EndTime.AsTime()) {
+			continue
+		}
+
+		mockRuns = append(mockRuns, run)
+	}
+
+	return mockRuns, len(mockRuns)
 }
 
 func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelinesRequest) (*pb.ListPipelinesResponse, error) {

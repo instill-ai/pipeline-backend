@@ -126,8 +126,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		logger.Error("Failed to log pipeline run", zap.Error(err))
 	}
 
-	fmt.Println(PipelineRunUID)
-
 	// Inline function to initialize the channel only if streaming is active
 	initChan := func() chan WorkFlowSignal {
 		if param.IsStreaming {
@@ -296,7 +294,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							SystemVariables:  param.SystemVariables,
 							Mode:             mgmtpb.Mode_MODE_SYNC,
 						}))
-
 				}
 				for iter := 0; iter < param.BatchSize; iter++ {
 					err = itFutures[iter].Get(ctx, nil)
@@ -365,6 +362,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
 			logger.Warn(err.Error())
 		}
+	}
+
+	run.Status = "Completed"
+	t := time.Now()
+	run.CompletedTime = &t
+	run.TotalDuration = time.Since(*run.StartedTime).Milliseconds()
+
+	_, err = w.pipelineLogger.LogPipelineRun(context.TODO(), run)
+	if err != nil {
+		logger.Error("Failed to log pipeline run", zap.Error(err))
 	}
 
 	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", time.Since(startTime)))
@@ -526,7 +533,6 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		}
 
 		for e := range elementSize {
-
 			compKeys[e][param.ID] = fmt.Sprintf("%s:%d:%s:%s", childWorkflowIDs[iter], e, recipe.SegComponent, param.ID)
 		}
 
