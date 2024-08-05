@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/minio/minio-go/v7"
 	"go/parser"
 	"time"
 
@@ -55,17 +56,16 @@ type SchedulePipelineLoaderActivityResult struct {
 
 // ComponentActivityParam represents the parameters for TriggerActivity
 type ComponentActivityParam struct {
-	WorkflowID        string
-	MemoryStorageKey  *recipe.BatchMemoryKey
-	ID                string
-	UpstreamIDs       []string
-	Condition         string
-	Input             map[string]any
-	Setup             map[string]any
-	Type              string
-	Task              string
-	SystemVariables   recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-	PipelineloggerUID uuid.UUID
+	WorkflowID       string
+	MemoryStorageKey *recipe.BatchMemoryKey
+	ID               string
+	UpstreamIDs      []string
+	Condition        string
+	Input            map[string]any
+	Setup            map[string]any
+	Type             string
+	Task             string
+	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 }
 
 type PreIteratorActivityParam struct {
@@ -112,18 +112,18 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
 
-	run := &datamodel.PipelineRun{
-		PipelineUID:     param.SystemVariables.PipelineUID,
-		PipelineVersion: param.SystemVariables.PipelineReleaseID,
-		Status:          "Running",
-		Source:          "WebUI", // TODO tillknuesting: implement mechanism to know how the pipeline was triggered
-		TriggeredBy:     param.SystemVariables.PipelineRequesterUID.String(),
-		TriggeredTime:   time.Now(),
+	pipelineRun := &datamodel.PipelineRun{
+		PipelineUID:        param.SystemVariables.PipelineUID,
+		PipelineTriggerUID: uuid.FromStringOrNil(workflow.GetInfo(ctx).WorkflowExecution.ID),
+		PipelineVersion:    param.SystemVariables.PipelineReleaseID,
+		Status:             "Running",
+		Source:             "WebUI", // TODO tillknuesting: implement mechanism to know how the pipeline was triggered
+		TriggeredBy:        param.SystemVariables.PipelineRequesterUID.String(),
+		TriggeredTime:      time.Now(),
 	}
 
-	PipelineRunUID, err := w.pipelineLogger.LogPipelineRun(context.TODO(), run)
-	if err != nil {
-		logger.Error("Failed to log pipeline run", zap.Error(err))
+	if err := w.pipelineLogger.LogPipelineRun(context.TODO(), pipelineRun); err != nil {
+		logger.Error("failed to log pipeline run: %s", zap.Error(err))
 	}
 
 	// Inline function to initialize the channel only if streaming is active
@@ -218,6 +218,24 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
+	var minioURL string
+	var minioObjectInfo minio.ObjectInfo
+	if r != nil {
+		b, err := json.Marshal(r)
+		if err != nil {
+			return err
+		}
+		minioURL, minioObjectInfo, err = w.pipelineLogger.UploadToMinio("recipe.json", b, "application/json", param.SystemVariables.PipelineRequesterUID.String())
+		if err != nil {
+			return err
+		}
+	}
+
+	pipelineRun.RecipeSnapshot = datamodel.JSONB{{Name: minioObjectInfo.Key, Type: minioObjectInfo.ContentType, Size: minioObjectInfo.Size, URL: minioURL}}
+	if err := w.pipelineLogger.LogPipelineRun(context.TODO(), pipelineRun); err != nil {
+		logger.Error("failed to log pipeline run: %s", zap.Error(err))
+	}
+
 	dag, err := recipe.GenerateDAG(r.Component)
 	if err != nil {
 		return err
@@ -245,17 +263,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			switch comp.Type {
 			default:
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, &ComponentActivityParam{
-					WorkflowID:        workflowID,
-					ID:                compID,
-					UpstreamIDs:       upstreamIDs,
-					Type:              comp.Type,
-					Task:              comp.Task,
-					Input:             comp.Input.(map[string]any),
-					Setup:             comp.Setup,
-					Condition:         comp.Condition,
-					MemoryStorageKey:  param.MemoryStorageKey,
-					SystemVariables:   param.SystemVariables,
-					PipelineloggerUID: PipelineRunUID,
+					WorkflowID:       workflowID,
+					ID:               compID,
+					UpstreamIDs:      upstreamIDs,
+					Type:             comp.Type,
+					Task:             comp.Task,
+					Input:            comp.Input.(map[string]any),
+					Setup:            comp.Setup,
+					Condition:        comp.Condition,
+					MemoryStorageKey: param.MemoryStorageKey,
+					SystemVariables:  param.SystemVariables,
 				}))
 
 			case datamodel.Iterator:
@@ -364,14 +381,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	run.Status = "Completed"
-	t := time.Now()
-	run.CompletedTime = &t
-	run.TotalDuration = time.Since(*run.StartedTime).Milliseconds()
+	now := time.Now()
+	pipelineRun.CompletedTime = &now
+	pipelineRun.Status = "Completed"
+	pipelineRun.TotalDuration = time.Since(startTime).Nanoseconds()
 
-	_, err = w.pipelineLogger.LogPipelineRun(context.TODO(), run)
-	if err != nil {
-		logger.Error("Failed to log pipeline run", zap.Error(err))
+	if err := w.pipelineLogger.LogPipelineRun(context.TODO(), pipelineRun); err != nil {
+		logger.Error("failed to log pipeline run: %s", zap.Error(err))
 	}
 
 	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", time.Since(startTime)))
@@ -382,17 +398,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
-
-	// Log the component run start
-	componentRun := &datamodel.RunComponent{
-		RunUID:      param.PipelineloggerUID,
-		ComponentID: param.ID,
-		Status:      "Running",
-		StartedTime: time.Now(),
-	}
-	if err := w.pipelineLogger.LogComponentRun(ctx, componentRun); err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
-	}
 
 	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
 	if err != nil {
@@ -442,13 +447,6 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	}
 
 	logger.Info("ComponentActivity completed")
-
-	componentRun.CompletedTime = time.Now()
-	componentRun.Status = "Completed"
-
-	if err := w.pipelineLogger.LogComponentRun(ctx, componentRun); err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
-	}
 
 	// the data is logged in temporal hence we should only return data that is needed
 	p := &ComponentActivityParam{

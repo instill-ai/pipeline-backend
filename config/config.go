@@ -33,6 +33,7 @@ type AppConfig struct {
 	ModelBackend ModelBackendConfig `koanf:"modelbackend"`
 	OpenFGA      OpenFGAConfig      `koanf:"openfga"`
 	InstillCloud InstillCloudConfig `koanf:"instillcloud"`
+	Minio        MinioConfig        `koanf:"minio"`
 }
 
 // InstillCloud config
@@ -166,6 +167,15 @@ type ModelBackendConfig struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
+}
+
+// MinioConfig is the MinIO configuration.
+type MinioConfig struct {
+	Host     string `koanf:"host"`
+	Port     string `koanf:"port"`
+	RootUser string `koanf:"rootuser"`
+	RootPwd  string `koanf:"rootpwd"`
+	Secure   bool   `koanf:"secure"` // Add this line for the Secure option
 }
 
 // Init - Assign global config to decoded config struct

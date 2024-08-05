@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"github.com/instill-ai/pipeline-backend/pkg/pipelinelogger"
+	"github.com/minio/minio-go/v7"
 	"gorm.io/gorm"
 
 	"github.com/influxdata/influxdb-client-go/v2/api"
@@ -48,6 +49,7 @@ func NewWorker(
 	cs componentstore.ComponentSecrets,
 	uh componentbase.UsageHandlerCreator,
 	db *gorm.DB,
+	minioClient *minio.Client,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &worker{
@@ -55,6 +57,6 @@ func NewWorker(
 		redisClient:         rd,
 		influxDBWriteClient: i,
 		component:           componentstore.Init(logger, cs, uh),
-		pipelineLogger:      pipelinelogger.NewPipelineLogger(db),
+		pipelineLogger:      pipelinelogger.NewPipelineLogger(db, minioClient),
 	}
 }

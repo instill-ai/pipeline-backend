@@ -25,6 +25,7 @@ require (
 	github.com/knadh/koanf v1.5.0
 	github.com/launchdarkly/go-semver v1.0.2
 	github.com/mennanov/fieldmask-utils v1.0.0
+	github.com/minio/minio-go/v7 v7.0.74
 	github.com/openfga/api/proto v0.0.0-20240318145204-66b9e5cb403c
 	github.com/redis/go-redis/v9 v9.5.1
 	go.einride.tech/aip v0.60.0
@@ -73,6 +74,7 @@ require (
 	github.com/cohere-ai/cohere-go/v2 v2.8.5 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.3 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/emersion/go-imap/v2 v2.0.0-beta.3 // indirect
 	github.com/emersion/go-message v0.18.1 // indirect
 	github.com/emersion/go-sasl v0.0.0-20231106173351-e73c9f7bad43 // indirect
@@ -81,8 +83,9 @@ require (
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/gage-technologies/mistral-go v1.1.0 // indirect
 	github.com/go-chi/chi/v5 v5.1.0 // indirect
+	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
-	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gocolly/colly/v2 v2.1.0 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
@@ -107,8 +110,8 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
-	github.com/klauspost/compress v1.17.2 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lestrrat-go/jspointer v0.0.0-20181205001929-82fadba7561c // indirect
@@ -116,6 +119,7 @@ require (
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/lestrrat-go/pdebug v0.0.0-20210111095411-35b07dbf089b // indirect
 	github.com/lestrrat-go/structinfo v0.0.0-20210312050401-7f8bd69d6acb // indirect
+	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nakagami/firebirdsql v0.9.10 // indirect
@@ -123,6 +127,7 @@ require (
 	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/rs/xid v1.5.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sijms/go-ora/v2 v2.8.19 // indirect

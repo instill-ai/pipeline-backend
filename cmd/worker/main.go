@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
 	"strconv"
 	"strings"
@@ -141,6 +143,28 @@ func main() {
 	timeseries := repository.MustNewInfluxDB(ctx)
 	defer timeseries.Close()
 
+	endpoint := config.Minio.Host + ":" + config.Minio.Port
+	accessKey := config.Minio.RootUser
+	secretKey := config.Minio.RootPwd
+	useSSL := config.Minio.Secure
+
+	client, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
+		Secure: useSSL,
+	})
+	if err != nil {
+		log.Fatalf("Failed to create MinIO client: %v", err)
+		return nil, err
+	}
+
+	minioClient, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
+		Secure: false,
+	})
+	if err != nil {
+		log.Fatalf("Failed to create MinIO client: %v", err)
+	}
+
 	cw := pipelineWorker.NewWorker(
 		repo,
 		redisClient,
@@ -148,6 +172,7 @@ func main() {
 		config.Config.Connector.Secrets,
 		nil,
 		db,
+		minio.Client,
 	)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{

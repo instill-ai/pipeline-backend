@@ -77,3 +77,9 @@ openfga:
 instillcloud:
   host: api.instill.tech
   port: 443
+minio:
+  host: minio
+  port: 9000
+  rootuser: minioadmin
+  rootpwd: minioadmin
+  secure: false
