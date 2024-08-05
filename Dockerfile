@@ -1,6 +1,6 @@
-FROM --platform=$TARGETPLATFORM golang:1.22.5 AS build
+FROM --platform=$TARGETPLATFORM golang:1.22.5-alpine3.19 AS build
 
-RUN apt update && apt install libtesseract-dev -y
+RUN apk add --no-cache build-base leptonica-dev tesseract-ocr-dev
 
 WORKDIR /src
 
@@ -17,7 +17,7 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-migrate ./cmd/migration
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /${SERVICE_NAME}-init ./cmd/init
 
-FROM alpine:3.16
+FROM node:22.5.1-alpine3.19
 
 RUN apk add --no-cache \
     curl \
@@ -36,6 +36,7 @@ RUN apk add --no-cache \
     font-noto \
     font-noto-cjk \
     ffmpeg \
+    leptonica \
     && update-ms-fonts \
     && fc-cache -f \
     && python3 -m venv /opt/venv \
@@ -46,6 +47,8 @@ RUN apk add --no-cache \
 ARG TARGETARCH
 ARG BUILDARCH
 RUN apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+
+RUN npm install -g @opendocsg/pdf2md
 
 USER nobody:nogroup
 
