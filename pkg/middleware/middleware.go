@@ -18,15 +18,16 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	"github.com/redis/go-redis/v9"
 )
 
-type fn func(*runtime.ServeMux, pb.PipelinePublicServiceClient, http.ResponseWriter, *http.Request, map[string]string)
+type fn func(*runtime.ServeMux, pb.PipelinePublicServiceClient, http.ResponseWriter, *http.Request, map[string]string, *redis.Client)
 
 // AppendCustomHeaderMiddleware appends custom headers
-func AppendCustomHeaderMiddleware(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, next fn) runtime.HandlerFunc {
+func AppendCustomHeaderMiddleware(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, next fn, rc *redis.Client) runtime.HandlerFunc {
 
 	return runtime.HandlerFunc(func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-		next(mux, client, w, r, pathParams)
+		next(mux, client, w, r, pathParams, rc)
 	})
 }
 

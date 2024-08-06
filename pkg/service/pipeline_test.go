@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/frankban/quicktest"
@@ -97,7 +96,6 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 		"pipelineID",
 		&pbPipeline,
 	)
-	fmt.Println(111, updatedPbPipeline, err)
 
 	c.Assert(err, quicktest.IsNil)
 	c.Assert(updatedPbPipeline, quicktest.IsNotNil)

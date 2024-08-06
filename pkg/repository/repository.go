@@ -70,6 +70,7 @@ type Repository interface {
 	ListPipelinesAdmin(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, embedReleases bool) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByIDAdmin(ctx context.Context, id string, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
+	GetPipelineReleaseByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error)
 
 	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
 	GetDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
@@ -447,6 +448,20 @@ func (r *repository) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, i
 		isBasicView,
 		embedReleases,
 	)
+}
+func (r *repository) GetPipelineReleaseByUIDAdmin(ctx context.Context, uid uuid.UUID, isBasicView bool) (*datamodel.PipelineRelease, error) {
+	db := r.CheckPinnedUser(ctx, r.db, "pipeline_release")
+
+	queryBuilder := db.Model(&datamodel.PipelineRelease{}).Where("uid = ?", uid)
+	if isBasicView {
+		queryBuilder.Omit("pipeline_release.recipe_yaml")
+	}
+	var pipelineRelease datamodel.PipelineRelease
+	if result := queryBuilder.First(&pipelineRelease); result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &pipelineRelease, nil
 }
 
 func (r *repository) UpdateNamespacePipelineByUID(ctx context.Context, uid uuid.UUID, pipeline *datamodel.Pipeline) error {

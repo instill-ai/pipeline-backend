@@ -31,7 +31,16 @@ const (
 	HeaderInstillCodeKey  = "Instill-Share-Code"
 	HeaderReturnTracesKey = "Instill-Return-Traces"
 
-	HeaderUserAgentKey = "Instill-User-Agent"
+	HeaderUserAgentKey  = "Instill-User-Agent"
+	HeaderInstillUseSSE = "Instill-Use-SSE"
+
+	SegMemory    = "memory"
+	SegVariable  = "variable"
+	SegSecret    = "secret"
+	SegComponent = "component"
+	SegIteration = "iterator"
+	SegInput     = "input"
+	SegOutput    = "output"
 )
 
 const ContentTypeJSON = "application/json"

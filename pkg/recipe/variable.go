@@ -20,7 +20,6 @@ type SystemVariables struct {
 	PipelineUID        uuid.UUID              `json:"__PIPELINE_UID"`
 	PipelineReleaseID  string                 `json:"__PIPELINE_RELEASE_ID"`
 	PipelineReleaseUID uuid.UUID              `json:"__PIPELINE_RELEASE_UID"`
-	PipelineRecipe     *datamodel.Recipe      `json:"__PIPELINE_RECIPE"`
 	PipelineOwnerType  resource.NamespaceType `json:"__PIPELINE_OWNER_TYPE"`
 	PipelineOwnerUID   uuid.UUID              `json:"__PIPELINE_OWNER_UID"`
 	PipelineRunSource  datamodel.RunSource    `json:"__PIPELINE_RUN_SOURCE"`
