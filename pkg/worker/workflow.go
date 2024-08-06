@@ -166,6 +166,12 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	default:
 		ownerType = mgmtpb.OwnerType_OWNER_TYPE_UNSPECIFIED
 	}
+	sessionOptions := &workflow.SessionOptions{
+		CreationTimeout:  time.Minute,
+		ExecutionTimeout: time.Minute,
+	}
+	ctx, _ = workflow.CreateSession(ctx, sessionOptions)
+	defer workflow.CompleteSession(ctx)
 
 	dataPoint := utils.PipelineUsageMetricData{
 		OwnerUID:           param.SystemVariables.PipelineOwnerUID.String(),
@@ -215,6 +221,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
+	_ = w.memoryStore.Set(sCtx, workflowID, "xxx")
 
 	for i := range param.BatchSize {
 		if param.MemoryStorageKey.Components[i] == nil {
@@ -350,6 +357,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
+	v, _ := w.memoryStore.Get(sCtx, workflowID)
+	fmt.Println()
+	fmt.Println("xxx", v)
 	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", time.Since(startTime)))
 
 	return nil
@@ -359,6 +369,8 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
 
+	fmt.Println("set")
+	_ = w.memoryStore.Set(ctx, param.WorkflowID, "aaaa")
 	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
 	if err != nil {
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)

@@ -22,7 +22,7 @@ import (
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pipelineWorker "github.com/instill-ai/pipeline-backend/pkg/worker"
+	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
 )
 
 func initTemporalNamespace(ctx context.Context, client client.Client) {
@@ -141,7 +141,7 @@ func main() {
 	timeseries := repository.MustNewInfluxDB(ctx)
 	defer timeseries.Close()
 
-	cw := pipelineWorker.NewWorker(
+	cw := pipelineworker.NewWorker(
 		repo,
 		redisClient,
 		timeseries.WriteAPI(),
@@ -149,8 +149,10 @@ func main() {
 		nil,
 	)
 
-	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
-		WorkflowPanicPolicy: worker.FailWorkflow,
+	w := worker.New(temporalClient, pipelineworker.TaskQueue, worker.Options{
+		EnableSessionWorker:               true,
+		WorkflowPanicPolicy:               worker.FailWorkflow,
+		MaxConcurrentSessionExecutionSize: 1000,
 	})
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)

@@ -8,6 +8,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/memorystore"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
@@ -35,6 +36,7 @@ type worker struct {
 	redisClient         *redis.Client
 	influxDBWriteClient api.WriteAPI
 	component           *componentstore.Store
+	memoryStore         memorystore.MemoryStore
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
@@ -46,9 +48,11 @@ func NewWorker(
 	uh componentbase.UsageHandlerCreator,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
+	m := memorystore.NewMemoryStore()
 	return &worker{
 		repository:          r,
 		redisClient:         rd,
+		memoryStore:         m,
 		influxDBWriteClient: i,
 		component:           componentstore.Init(logger, cs, uh),
 	}
