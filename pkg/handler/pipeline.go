@@ -2112,3 +2112,55 @@ func mergeInputsIntoData(inputs []*structpb.Struct, data []*pb.TriggerData) []*p
 	}
 	return merged
 }
+
+func (h *PublicHandler) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest) (*pb.ListPipelineRunsResponse, error) {
+	if err := validateListPipelineRunsRequest(req); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := h.service.ListPipelineRuns(ctx, "", req.Namespace, int(req.Page), int(req.PageSize))
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to list pipeline runs")
+	}
+
+	return resp, nil
+}
+
+func (h *PublicHandler) ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest) (*pb.ListComponentRunsResponse, error) {
+	if err := validateListComponentRunsRequest(req); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := h.service.ListComponentRuns(ctx, "", req, int(req.Page), int(req.PageSize))
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to list component runs")
+	}
+
+	return resp, nil
+}
+
+func validateListPipelineRunsRequest(req *pb.ListPipelineRunsRequest) error {
+	if req.Namespace == "" {
+		return fmt.Errorf("namespace is required")
+	}
+	if req.Page < 1 {
+		return fmt.Errorf("page must be greater than 0")
+	}
+	if req.PageSize < 1 {
+		return fmt.Errorf("page_size must be greater than 0")
+	}
+	return nil
+}
+
+func validateListComponentRunsRequest(req *pb.ListComponentRunsRequest) error {
+	if req.PipelineTriggerUid == "" {
+		return fmt.Errorf("pipeline_run_id is required")
+	}
+	if req.Page < 1 {
+		return fmt.Errorf("page must be greater than 0")
+	}
+	if req.PageSize < 1 {
+		return fmt.Errorf("page_size must be greater than 0")
+	}
+	return nil
+}

@@ -4,7 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/minio/minio-go/v7"
+	miniocreds "github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -234,7 +237,15 @@ func main() {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
 
-	repository := repository.NewRepository(db, redisClient)
+	minioClient, err := minio.New(net.JoinHostPort(config.Config.Minio.Host, config.Config.Minio.Port), &minio.Options{
+		Creds:  miniocreds.NewStaticV4(config.Config.Minio.RootUser, config.Config.Minio.RootPwd, ""),
+		Secure: config.Config.Minio.Secure,
+	})
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("Failed to create MinIO client: %v", err))
+	}
+
+	repository := repository.NewRepository(db, redisClient, minioClient)
 
 	service := service.NewService(
 		repository,

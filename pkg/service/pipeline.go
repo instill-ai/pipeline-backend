@@ -1103,7 +1103,8 @@ func (s *service) triggerPipeline(
 				PipelineRequesterUID: requesterUID,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
-			Mode: mgmtpb.Mode_MODE_SYNC,
+			Mode:          mgmtpb.Mode_MODE_SYNC,
+			TriggeredTime: time.Now(),
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1777,4 +1778,83 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 
 	operation.Name = fmt.Sprintf("operations/%s", workflowExecutionInfo.Execution.WorkflowId)
 	return &operation, nil
+}
+
+func (s *service) ListPipelineRuns(ctx context.Context, userID, namespace string, page, pageSize int) (*pipelinepb.ListPipelineRunsResponse, error) {
+	// Check permissions
+	ns, err := s.GetRscNamespace(ctx, namespace)
+	if err != nil {
+		return nil, fmt.Errorf("invalid namespace: %w", err)
+	}
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, fmt.Errorf("permission denied: %w", err)
+	}
+
+	// Call repository method
+	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, userID, namespace, page, pageSize)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get pipeline runs: %w", err)
+	}
+
+	// Convert datamodel.PipelineRun to pb.PipelineRun
+	pbPipelineRuns := make([]*pipelinepb.PipelineRun, len(pipelineRuns))
+	for i, run := range pipelineRuns {
+		pbRun, err := s.convertPipelineRunToPB(run)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert pipeline run: %w", err)
+		}
+		pbPipelineRuns[i] = pbRun
+	}
+
+	return &pipelinepb.ListPipelineRunsResponse{
+		PipelineRuns: pbPipelineRuns,
+		TotalCount:   totalCount,
+		Page:         int32(page),
+		PageSize:     int32(pageSize),
+	}, nil
+}
+
+func (s *service) ListComponentRuns(ctx context.Context, userID, pipelineRunID string, page, pageSize int) (*pipelinepb.ListComponentRunsResponse, error) {
+	// Call repository method
+	componentRuns, totalCount, err := s.repository.GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx, userID, pipelineRunID, page, pageSize)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get component runs: %w", err)
+	}
+
+	// Convert datamodel.ComponentRun to pb.ComponentRun
+	pbComponentRuns := make([]*pipelinepb.ComponentRun, len(componentRuns))
+	for i, run := range componentRuns {
+		pbRun, err := s.convertComponentRunToPB(run)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert component run: %w", err)
+		}
+		pbComponentRuns[i] = pbRun
+	}
+
+	return &pipelinepb.ListComponentRunsResponse{
+		ComponentRuns: pbComponentRuns,
+		TotalCount:    totalCount,
+		Page:          int32(page),
+		PageSize:      int32(pageSize),
+	}, nil
+}
+
+// Helper methods
+func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb.PipelineRun, error) {
+	return &pipelinepb.PipelineRun{
+		PipelineTriggerUid: run.PipelineTriggerUID.String(),
+		TriggeredBy:        run.TriggeredBy,
+		Namespace:          run.Namespace,
+		Status:             pipelinepb.PipelineRunStatus(run.Status),
+		// TODO: Addtional fields
+	}, nil
+}
+
+func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipelinepb.ComponentRun, error) {
+	return &pipelinepb.ComponentRun{
+		ComponentId:        run.ComponentID,
+		PipelineTriggerUid: run.PipelineTriggerUID,
+		Status:             pipelinepb.ComponentRunStatus(run.Status),
+		// TODO: Addtional fields
+	}, nil
 }

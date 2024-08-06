@@ -39,7 +39,7 @@ type PipelineRun struct {
 	PipelineUID        uuid.UUID      `gorm:"type:uuid;index" json:"pipeline-uid"`
 	PipelineTriggerUID uuid.UUID      `gorm:"primaryKey" json:"pipeline-trigger-uid"`                                        // Unique identifier for each run
 	PipelineVersion    string         `gorm:"type:varchar(255)" json:"pipeline-version"`                                     // Pipeline version used in the run
-	Status             string         `gorm:"type:varchar(50);index" json:"status"`                                          // Current status of the run (e.g., Completed, Errored, Failed)
+	Status             string         `gorm:"type:varchar(50);index" json:"status"`                                          // Current status of the run (e.g., Running, Completed, Failed)
 	Source             string         `gorm:"type:varchar(50)" json:"source"`                                                // Origin of the run (e.g., Web click, API)
 	TotalDuration      int64          `gorm:"type:bigint" json:"total-duration"`                                             // Time taken to complete the run in nanoseconds
 	TriggeredBy        string         `gorm:"type:varchar(255)" json:"triggered-by"`                                         // Identity of the user who initiated the run
@@ -52,6 +52,7 @@ type PipelineRun struct {
 	CompletedTime      *time.Time     `gorm:"type:timestamp with time zone;index" json:"completed-time,omitempty"`           // Time when the run completed
 	ErrorMsg           string         `gorm:"type:text" json:"error-msg"`                                                    // Error message if the run failed
 	Components         []ComponentRun `gorm:"foreignKey:PipelineTriggerUID;references:PipelineTriggerUID" json:"components"` // Execution details for each component in the pipeline
+	CreditsUsed        float64        `json:"credits-used"`                                                                  // Credits used of internal accounting metric
 }
 
 // ComponentRun represents the execution details of a single component within a pipeline run.
@@ -65,4 +66,5 @@ type ComponentRun struct {
 	ErrorMsg           string    `gorm:"type:text" json:"error-msg"`                                // Error message if the component failed
 	Inputs             JSONB     `gorm:"type:jsonb" json:"inputs"`                                  // Input files for the component
 	Outputs            JSONB     `gorm:"type:jsonb" json:"outputs"`                                 // Output files from the component
+	CreditsUsed        float64   `json:"credits-used"`                                              // Credits used of internal accounting metric
 }

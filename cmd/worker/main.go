@@ -6,6 +6,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
+	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -102,9 +103,15 @@ func main() {
 	redisClient := redis.NewClient(&config.Config.Cache.Redis.RedisOptions)
 	defer redisClient.Close()
 
-	repo := repository.NewRepository(db, redisClient)
+	minioClient, err := minio.New(net.JoinHostPort(config.Config.Minio.Host, config.Config.Minio.Port), &minio.Options{
+		Creds:  credentials.NewStaticV4(config.Config.Minio.RootUser, config.Config.Minio.RootPwd, ""),
+		Secure: config.Config.Minio.Secure,
+	})
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("Failed to create MinIO client: %v", err))
+	}
 
-	var err error
+	repo := repository.NewRepository(db, redisClient, minioClient)
 
 	var temporalClientOptions client.Options
 	if config.Config.Temporal.Ca != "" && config.Config.Temporal.Cert != "" && config.Config.Temporal.Key != "" {
@@ -143,36 +150,12 @@ func main() {
 	timeseries := repository.MustNewInfluxDB(ctx)
 	defer timeseries.Close()
 
-	endpoint := config.Minio.Host + ":" + config.Minio.Port
-	accessKey := config.Minio.RootUser
-	secretKey := config.Minio.RootPwd
-	useSSL := config.Minio.Secure
-
-	client, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
-		Secure: useSSL,
-	})
-	if err != nil {
-		log.Fatalf("Failed to create MinIO client: %v", err)
-		return nil, err
-	}
-
-	minioClient, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
-		Secure: false,
-	})
-	if err != nil {
-		log.Fatalf("Failed to create MinIO client: %v", err)
-	}
-
 	cw := pipelineWorker.NewWorker(
 		repo,
 		redisClient,
 		timeseries.WriteAPI(),
 		config.Config.Connector.Secrets,
 		nil,
-		db,
-		minio.Client,
 	)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
@@ -186,6 +169,9 @@ func main() {
 	w.RegisterActivity(cw.PostIteratorActivity)
 	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
 	w.RegisterActivity(cw.SchedulePipelineLoaderActivity)
+	w.RegisterActivity(cw.LogPipelineRunActivity)
+	w.RegisterActivity(cw.UploadToMinioActivity)
+	w.RegisterActivity(cw.LogComponentRunActivity)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())

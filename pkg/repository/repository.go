@@ -1,9 +1,12 @@
 package repository
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/lifecycle"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -78,6 +81,14 @@ type Repository interface {
 	DeletePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error
 	ListPipelineTags(ctx context.Context, pipelineUID uuid.UUID) ([]datamodel.Tag, error)
 
+	CreateOrUpdatePipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) error
+	GetPaginatedPipelineRunsWithPermissions(ctx context.Context, userID, namespace string, page, pageSize int) ([]datamodel.PipelineRun, int64, error)
+	CreateOrUpdateComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error
+	GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, userID, pipelineRunID string, page, pageSize int) ([]datamodel.ComponentRun, int64, error)
+
+	GeneratePresignedURL(ctx context.Context, bucketName, objectName string) (string, error)
+	UploadToMinio(ctx context.Context, objectName string, data []byte, contentType string, bucketName string) (string, minio.ObjectInfo, error)
+
 	// TODO this function can remain unexported once connector and operator
 	// definition lists are removed.
 	TranspileFilter(filtering.Filter) (*clause.Expr, error)
@@ -86,13 +97,15 @@ type Repository interface {
 type repository struct {
 	db          *gorm.DB
 	redisClient *redis.Client
+	minioClient *minio.Client
 }
 
 // NewRepository initiates a repository instance
-func NewRepository(db *gorm.DB, redisClient *redis.Client) Repository {
+func NewRepository(db *gorm.DB, redisClient *redis.Client, minioClient *minio.Client) Repository {
 	return &repository{
 		db:          db,
 		redisClient: redisClient,
+		minioClient: minioClient,
 	}
 }
 
@@ -964,6 +977,187 @@ func (r *repository) AddPipelineClones(ctx context.Context, pipelineUID uuid.UUI
 		Where("uid = ?", pipelineUID).
 		UpdateColumn("number_of_clones", gorm.Expr("number_of_clones + 1")); result.Error != nil {
 		return result.Error
+	}
+
+	return nil
+}
+
+func (r *repository) CreateOrUpdatePipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) error {
+	return r.db.Save(pipelineRun).Error
+}
+
+func (r *repository) CreateOrUpdateComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error {
+	return r.db.Save(componentRun).Error
+}
+
+func (r *repository) GetPaginatedPipelineRunsWithPermissions(ctx context.Context, userID, namespace string, page, pageSize int) ([]datamodel.PipelineRun, int64, error) {
+	var pipelineRuns []datamodel.PipelineRun
+	var totalRows int64
+
+	offset := (page - 1) * pageSize
+
+	// Count total rows with permissions
+	err := r.db.Model(&datamodel.PipelineRun{}).
+		Where("triggered_by = ? OR namespace = ?", userID, namespace).
+		Count(&totalRows).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Retrieve paginated results with permissions
+	err = r.db.Preload("Components").
+		Where("triggered_by = ? OR namespace = ?", userID, namespace).
+		Offset(offset).Limit(pageSize).
+		Find(&pipelineRuns).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Anonymize data for non-owners
+	for idx, run := range pipelineRuns {
+		if run.TriggeredBy != userID {
+			pipelineRuns[idx].TriggeredBy = "Anonymous"
+		}
+	}
+
+	return pipelineRuns, totalRows, nil
+}
+
+func (r *repository) GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, userID, pipelineRunID string, page, pageSize int) ([]datamodel.ComponentRun, int64, error) {
+	var componentRuns []datamodel.ComponentRun
+	var totalRows int64
+
+	offset := (page - 1) * pageSize
+
+	// Retrieve the parent pipeline run to check permissions
+	var pipelineRun datamodel.PipelineRun
+	err := r.db.First(&pipelineRun, "pipeline_trigger_uid = ?", pipelineRunID).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Check if the user has access to the pipeline run
+	if !r.checkPermission(userID, pipelineRunID) {
+		return nil, 0, fmt.Errorf("access denied")
+	}
+
+	// Count total rows
+	err = r.db.Model(&datamodel.ComponentRun{}).
+		Where("pipeline_trigger_uid = ?", pipelineRunID).
+		Count(&totalRows).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Retrieve paginated results
+	err = r.db.Where("pipeline_trigger_uid = ?", pipelineRunID).
+		Offset(offset).Limit(pageSize).
+		Find(&componentRuns).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return componentRuns, totalRows, nil
+}
+
+func (r *repository) checkPermission(userID, pipelineRunID string) bool {
+	// TODO tillknuesting: Implement check if the user has permission to access the pipeline run.
+	// Steps:
+
+	// 1. Get the user's accessible namespaces
+	//    - Query the user table to get the user's personal namespace
+	//    - Query the organization_member table to get organizations the user belongs to
+
+	// 2. Query the pipeline table to get all pipeline UIDs associated with these namespaces
+	//    - Use a WHERE clause like:
+	//      WHERE (namespace_type = 'users' AND namespace_id = [user's personal namespace])
+	//      OR (namespace_type = 'organizations' AND namespace_id IN [list of user's org namespaces])
+
+	// 3. Retrieve the pipeline run details using pipelineRunID
+	//    - This should include the associated pipeline UID
+
+	// 4. Check if the pipeline UID from the run is in the list of accessible pipeline UIDs
+	//    - If yes, the user has permission
+	//    - If no, check if the pipeline is public (may need an additional 'is_public' field in the pipeline table)
+
+	// 5. If the pipeline is private and not in the user's accessible list:
+	//    - Check for any sharing permissions (might need an additional table for this)
+
+	return true
+}
+
+func (r *repository) GeneratePresignedURL(ctx context.Context, bucketName, objectName string) (string, error) {
+	expiry := time.Duration(time.Hour * 24 * 7)
+	presignedURL, err := r.minioClient.PresignedGetObject(ctx, bucketName, objectName, expiry, nil)
+	if err != nil {
+		return "", err
+	}
+	return presignedURL.String(), nil
+}
+
+func (r *repository) UploadToMinio(ctx context.Context, objectName string, data []byte, contentType string, bucketName string) (string, minio.ObjectInfo, error) {
+	// Create the bucket if it doesn't exist
+	err := r.createBucketIfNotExists(ctx, bucketName)
+	if err != nil {
+		return "", minio.ObjectInfo{}, err
+	}
+
+	// Set lifecycle policy to expire objects after 7 days
+	err = r.setLifecyclePolicy(ctx, bucketName, 7)
+	if err != nil {
+		return "", minio.ObjectInfo{}, err
+	}
+
+	// Upload the data to MinIO
+	_, err = r.minioClient.PutObject(ctx, bucketName, objectName,
+		bytes.NewReader(data), int64(len(data)), minio.PutObjectOptions{ContentType: contentType})
+	if err != nil {
+		return "", minio.ObjectInfo{}, err
+	}
+
+	// Get the object stat (metadata)
+	stat, err := r.minioClient.StatObject(ctx, bucketName, objectName, minio.StatObjectOptions{})
+	if err != nil {
+		return "", minio.ObjectInfo{}, err
+	}
+
+	// Generate the presigned URL
+	presignedURL, err := r.GeneratePresignedURL(ctx, bucketName, objectName)
+	if err != nil {
+		return "", minio.ObjectInfo{}, err
+	}
+	return presignedURL, stat, nil
+}
+
+func (r *repository) createBucketIfNotExists(ctx context.Context, bucketName string) error {
+	exists, err := r.minioClient.BucketExists(ctx, bucketName)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		err = r.minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *repository) setLifecyclePolicy(ctx context.Context, bucketName string, days int) error {
+	newConfiguration := lifecycle.NewConfiguration()
+	newConfiguration.Rules = []lifecycle.Rule{
+		{
+			ID:     "expire-bucket-objects",
+			Status: "Enabled",
+			Expiration: lifecycle.Expiration{
+				Days: lifecycle.ExpirationDays(days),
+			},
+		},
+	}
+
+	err := r.minioClient.SetBucketLifecycle(ctx, bucketName, newConfiguration)
+	if err != nil {
+		return fmt.Errorf("failed to set bucket lifecycle: %v", err)
 	}
 
 	return nil
