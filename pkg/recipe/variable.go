@@ -31,6 +31,7 @@ type SystemVariables struct {
 	HeaderAuthorization string `json:"__PIPELINE_HEADER_AUTHORIZATION"`
 	ModelBackend        string `json:"__MODEL_BACKEND"`
 	MgmtBackend         string `json:"__MGMT_BACKEND"`
+	ArtifactBackend     string `json:"__ARTIFACT_BACKEND"`
 }
 
 // GenerateSystemVariables fills SystemVariable fields with information from
@@ -53,6 +54,9 @@ func GenerateSystemVariables(ctx context.Context, sysVar SystemVariables) (map[s
 	}
 	if sysVar.MgmtBackend == "" {
 		sysVar.MgmtBackend = fmt.Sprintf("%s:%d", config.Config.MgmtBackend.Host, config.Config.MgmtBackend.PublicPort)
+	}
+	if sysVar.ArtifactBackend == "" {
+		sysVar.ArtifactBackend = fmt.Sprintf("%s:%d", config.Config.ArtifactBackend.Host, config.Config.ArtifactBackend.PublicPort)
 	}
 
 	b, err := json.Marshal(sysVar)
