@@ -75,7 +75,7 @@ type Service interface {
 	GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error)
 
 	ListPipelineRuns(ctx context.Context, userID, namespace string, page, pageSize int) (*pb.ListPipelineRunsResponse, error)
-	ListComponentRuns(ctx context.Context, userID, pipelineRunID string, page, pageSize int) (*pb.ListComponentRunsResponse, error)
+	ListComponentRuns(ctx context.Context, userID, pipelineRunID string, page, pageSize int32) (*pb.ListComponentRunsResponse, error)
 }
 
 // Define a new type to encapsulate the stream data

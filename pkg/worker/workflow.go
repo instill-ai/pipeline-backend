@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/minio/minio-go/v7"
 	"go/parser"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/minio/minio-go/v7"
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
@@ -25,9 +25,11 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+
 	"github.com/instill-ai/x/errmsg"
 
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 type TriggerPipelineWorkflowParam struct {
@@ -112,6 +114,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
+
+	ao := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
+		},
+	}
+	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	pipelineRun := &datamodel.PipelineRun{
 		PipelineUID:        param.SystemVariables.PipelineUID,
@@ -207,13 +217,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		dataPoint.RequesterType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	}
 
-	ao := workflow.ActivityOptions{
-		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		RetryPolicy: &temporal.RetryPolicy{
-			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
-		},
-	}
-	ctx = workflow.WithActivityOptions(ctx, ao)
+	// ao := workflow.ActivityOptions{
+	// 	StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+	// 	RetryPolicy: &temporal.RetryPolicy{
+	// 		MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
+	// 	},
+	// }
+	// ctx = workflow.WithActivityOptions(ctx, ao)
 
 	r, err := recipe.LoadRecipe(sCtx, w.redisClient, param.MemoryStorageKey.Recipe)
 	if err != nil {
@@ -308,7 +318,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}))
 
 			case datamodel.Iterator:
-				//TODO tillknuesting: support intermediate result streaming for Iterator
+				// TODO tillknuesting: support intermediate result streaming for Iterator
 
 				preIteratorResult := &PreIteratorActivityResult{}
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
@@ -371,7 +381,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 
-				// ComponentActivity is responsible of returning a temporal
+				// ComponentActivity is responsible for returning a temporal
 				// application error with the relevant information. Wrapping
 				// the error here prevents the client from accessing the error
 				// message from the activity.
@@ -432,24 +442,6 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
 
-	// Define activity options
-	ao := workflow.ActivityOptions{
-		StartToCloseTimeout:    5 * time.Minute,
-		ScheduleToStartTimeout: 2 * time.Minute,
-		ScheduleToCloseTimeout: 7 * time.Minute,
-		HeartbeatTimeout:       1 * time.Minute,
-		WaitForCancellation:    false,
-		RetryPolicy: &temporal.RetryPolicy{
-			InitialInterval:    1 * time.Second,
-			BackoffCoefficient: 2.0,
-			MaximumInterval:    10 * time.Second,
-			MaximumAttempts:    5,
-		},
-	}
-
-	// Apply activity options to the workflow context
-	ctx = workflow.WithActivityOptions(ctx, ao)
-
 	startTime := time.Now()
 	componentRun := &datamodel.ComponentRun{
 		PipelineTriggerUID: uuid.FromStringOrNil(param.WorkflowID),
@@ -458,7 +450,8 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		StartedTime:        startTime,
 	}
 
-	if err := workflow.ExecuteActivity(ctx, w.LogComponentRunActivity, componentRun).Get(ctx, nil); err != nil {
+	err := w.repository.CreateOrUpdateComponentRun(ctx, componentRun)
+	if err != nil {
 		logger.Error("failed to log component run start", zap.Error(err))
 	}
 
@@ -499,19 +492,21 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
-	if err := workflow.ExecuteActivity(nil, w.LogComponentRunActivity, componentRun).Get(nil, nil); err != nil {
+	err = w.repository.CreateOrUpdateComponentRun(ctx, componentRun)
+	if err != nil {
 		logger.Error("failed to log component run inputs", zap.Error(err))
 	}
 
 	compOutputs, err := execution.Execute(ctx, compInputs)
 	if err != nil {
-		componentRun.Status = "Errored"
+		componentRun.Status = pb.RunStatus_RUN_STATUS_FAILED.String()
 		componentRun.ErrorMsg = err.Error()
 		componentRun.CompletedTime = time.Now()
 		componentRun.TotalDuration = time.Since(startTime).Nanoseconds()
 
-		if logErr := workflow.ExecuteActivity(nil, w.LogComponentRunActivity, componentRun).Get(nil, nil); logErr != nil {
-			logger.Error("failed to log errored component run", zap.Error(logErr))
+		err = w.repository.CreateOrUpdateComponentRun(ctx, componentRun)
+		if err != nil {
+			logger.Error("failed to log failed component run", zap.Error(err))
 		}
 
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
@@ -534,13 +529,17 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
-	componentRun.Status = "Completed"
+	componentRun.Status = pb.RunStatus_RUN_STATUS_COMPLETED.String()
 	componentRun.CompletedTime = time.Now()
-	componentRun.TotalDuration = time.Since(startTime).Nanoseconds()
-
-	if err := workflow.ExecuteActivity(ctx, w.LogComponentRunActivity, componentRun).Get(ctx, nil); err != nil {
+	componentRun.TotalDuration = time.Since(startTime).Milliseconds()
+	err = w.repository.CreateOrUpdateComponentRun(ctx, componentRun)
+	if err != nil {
 		logger.Error("failed to log completed component run", zap.Error(err))
 	}
+
+	// if err := workflow.ExecuteActivity(nil, w.LogComponentRunActivity, componentRun).Get(ctx, nil); err != nil {
+	// 	logger.Error("failed to log completed component run", zap.Error(err))
+	// }
 
 	logger.Info("ComponentActivity completed")
 

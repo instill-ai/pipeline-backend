@@ -21,15 +21,17 @@ import (
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
+	"github.com/instill-ai/x/checkfield"
+
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	"github.com/instill-ai/x/checkfield"
+
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pb.ListPipelinesAdminRequest) (*pb.ListPipelinesAdminResponse, error) {
@@ -2118,7 +2120,7 @@ func (h *PublicHandler) ListPipelineRuns(ctx context.Context, req *pb.ListPipeli
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := h.service.ListPipelineRuns(ctx, "", req.Namespace, int(req.Page), int(req.PageSize))
+	resp, err := h.service.ListPipelineRuns(ctx, "", req.NamespaceId, int(req.Page), int(req.PageSize))
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to list pipeline runs")
 	}
@@ -2131,7 +2133,7 @@ func (h *PublicHandler) ListComponentRuns(ctx context.Context, req *pb.ListCompo
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := h.service.ListComponentRuns(ctx, "", req, int(req.Page), int(req.PageSize))
+	resp, err := h.service.ListComponentRuns(ctx, "", req.PipelineRunId, req.GetPage(), req.GetPageSize())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to list component runs")
 	}
@@ -2140,7 +2142,7 @@ func (h *PublicHandler) ListComponentRuns(ctx context.Context, req *pb.ListCompo
 }
 
 func validateListPipelineRunsRequest(req *pb.ListPipelineRunsRequest) error {
-	if req.Namespace == "" {
+	if req.NamespaceId == "" {
 		return fmt.Errorf("namespace is required")
 	}
 	if req.Page < 1 {
@@ -2153,13 +2155,13 @@ func validateListPipelineRunsRequest(req *pb.ListPipelineRunsRequest) error {
 }
 
 func validateListComponentRunsRequest(req *pb.ListComponentRunsRequest) error {
-	if req.PipelineTriggerUid == "" {
+	if req.GetPipelineRunId() == "" {
 		return fmt.Errorf("pipeline_run_id is required")
 	}
-	if req.Page < 1 {
+	if req.GetPage() < 1 {
 		return fmt.Errorf("page must be greater than 0")
 	}
-	if req.PageSize < 1 {
+	if req.GetPageSize() < 1 {
 		return fmt.Errorf("page_size must be greater than 0")
 	}
 	return nil

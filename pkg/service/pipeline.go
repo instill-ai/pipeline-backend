@@ -30,6 +30,8 @@ import (
 	workflowpb "go.temporal.io/api/workflow/v1"
 	rpcStatus "google.golang.org/genproto/googleapis/rpc/status"
 
+	"github.com/instill-ai/x/errmsg"
+
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -37,12 +39,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
-	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/component/base"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 )
 
 var preserveTags = []string{"featured", "feature"}
@@ -1808,13 +1810,14 @@ func (s *service) ListPipelineRuns(ctx context.Context, userID, namespace string
 
 	return &pipelinepb.ListPipelineRunsResponse{
 		PipelineRuns: pbPipelineRuns,
-		TotalCount:   totalCount,
+		TotalSize:    totalCount,
 		Page:         int32(page),
 		PageSize:     int32(pageSize),
 	}, nil
 }
 
-func (s *service) ListComponentRuns(ctx context.Context, userID, pipelineRunID string, page, pageSize int) (*pipelinepb.ListComponentRunsResponse, error) {
+func (s *service) ListComponentRuns(ctx context.Context, userID, pipelineRunID string, page, pageSize int32) (*pipelinepb.ListComponentRunsResponse, error) {
+
 	// Call repository method
 	componentRuns, totalCount, err := s.repository.GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx, userID, pipelineRunID, page, pageSize)
 	if err != nil {
@@ -1833,7 +1836,7 @@ func (s *service) ListComponentRuns(ctx context.Context, userID, pipelineRunID s
 
 	return &pipelinepb.ListComponentRunsResponse{
 		ComponentRuns: pbComponentRuns,
-		TotalCount:    totalCount,
+		TotalSize:     totalCount,
 		Page:          int32(page),
 		PageSize:      int32(pageSize),
 	}, nil
@@ -1842,19 +1845,18 @@ func (s *service) ListComponentRuns(ctx context.Context, userID, pipelineRunID s
 // Helper methods
 func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb.PipelineRun, error) {
 	return &pipelinepb.PipelineRun{
-		PipelineTriggerUid: run.PipelineTriggerUID.String(),
-		TriggeredBy:        run.TriggeredBy,
-		Namespace:          run.Namespace,
-		Status:             pipelinepb.PipelineRunStatus(run.Status),
-		// TODO: Addtional fields
+		PipelineRunUid: run.PipelineTriggerUID.String(),
+		RequesterId:    run.TriggeredBy,
+		Status:         pipelinepb.RunStatus(pipelinepb.RunStatus_value[run.Status]),
+		// TODO: Additional fields
 	}, nil
 }
 
 func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipelinepb.ComponentRun, error) {
 	return &pipelinepb.ComponentRun{
-		ComponentId:        run.ComponentID,
-		PipelineTriggerUid: run.PipelineTriggerUID,
-		Status:             pipelinepb.ComponentRunStatus(run.Status),
-		// TODO: Addtional fields
+		ComponentId:    run.ComponentID,
+		PipelineRunUid: run.PipelineTriggerUID.String(),
+		Status:         pipelinepb.RunStatus(pipelinepb.RunStatus_value[run.Status]),
+		// TODO: Additional fields
 	}, nil
 }

@@ -29,7 +29,7 @@ func mockDBRepository() (sqlmock.Sqlmock, *sql.DB, Repository, error) {
 	}
 
 	redisClient, _ := redismock.NewClientMock()
-	repository := NewRepository(gormdb, redisClient)
+	repository := NewRepository(gormdb, redisClient, nil)
 
 	return mock, sqldb, repository, err
 }

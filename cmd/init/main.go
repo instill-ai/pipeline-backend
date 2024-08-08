@@ -35,7 +35,7 @@ func main() {
 	// This is a workaround solution for the Instill Model connector in Instill Cloud to improve response speed.
 	_ = redisClient.Del(ctx, "instill_model_connector_def")
 
-	repo := repository.NewRepository(db, redisClient)
+	repo := repository.NewRepository(db, redisClient, nil)
 	if err := definitionupdater.UpdateComponentDefinitionIndex(ctx, repo); err != nil {
 		log.Fatal(err)
 	}
