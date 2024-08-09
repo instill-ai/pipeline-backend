@@ -1,9 +1,3 @@
-FROM python:3.10-slim AS python-build
-
-RUN python3.10 -m venv /opt/venv && \
-    /opt/venv/bin/pip install --upgrade pip && \
-    /opt/venv/bin/pip install pdfplumber mistral-common tokenizers transformers torch
-
 FROM --platform=$TARGETPLATFORM golang:1.22.5 AS build
 
 RUN apt update && apt install libtesseract-dev -y
@@ -46,11 +40,8 @@ RUN apk add --no-cache \
     && fc-cache -f \
     && python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
-    && /opt/venv/bin/pip install pdfplumber tokenizers transformers \
-    # mistral-common torch \
+    && /opt/venv/bin/pip install pdfplumber tokenizers \
     && rm -rf /var/cache/apk/* /var/cache/fontconfig/*
-
-# COPY --from=python-build /opt/venv/lib/python3.10/site-packages /opt/venv/lib/python3.10/site-packages
 
 ARG TARGETARCH
 ARG BUILDARCH
