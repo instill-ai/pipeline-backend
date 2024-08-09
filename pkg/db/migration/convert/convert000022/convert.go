@@ -22,7 +22,7 @@ func (c *ConvertWebsiteToWebConverter) Migrate() error {
 		return err
 	}
 
-	return nil
+	return c.migratePipelineRelease()
 }
 
 func (c *ConvertWebsiteToWebConverter) migratePipeline() error {
@@ -60,7 +60,43 @@ func (c *ConvertWebsiteToWebConverter) migratePipeline() error {
 
 		return nil
 	}).Error
+}
 
+func (c *ConvertWebsiteToWebConverter) migratePipelineRelease() error {
+	pipelineReleases := make([]*datamodel.PipelineRelease, 0, batchSize)
+	return c.DB.Select("uid", "recipe_yaml", "recipe").FindInBatches(&pipelineReleases, batchSize, func(tx *gorm.DB, _ int) error {
+		for _, pr := range pipelineReleases {
+			isRecipeUpdated := false
+			l := c.Logger.With(zap.String("pipelineReleaseUID", pr.UID.String()))
+
+			for id, comp := range pr.Recipe.Component {
+				isComponentUpdated, err := c.updateTask(comp)
+				if err != nil {
+					l.With(zap.String("componentID", id), zap.Error(err)).
+						Error("Failed to update pipeline release.")
+
+					return fmt.Errorf("updating pipeline release component: %w", err)
+				}
+
+				isRecipeUpdated = isComponentUpdated || isRecipeUpdated
+			}
+
+			if isRecipeUpdated {
+				recipeYAML, err := yaml.Marshal(pr.Recipe)
+				if err != nil {
+					return fmt.Errorf("marshalling recipe: %w", err)
+				}
+
+				result := tx.Model(pr).Where("uid = ?", pr.UID).Update("recipe_yaml", string(recipeYAML))
+				if result.Error != nil {
+					l.Error("Failed to update pipeline release.")
+					return fmt.Errorf("updating pipeline release recipe: %w", result.Error)
+				}
+			}
+		}
+
+		return nil
+	}).Error
 }
 
 func (c *ConvertWebsiteToWebConverter) updateTask(comp *datamodel.Component) (bool, error) {
@@ -93,7 +129,7 @@ func (c *ConvertWebsiteToWebConverter) convertTypeAndTask(comp *datamodel.Compon
 	}
 
 	isTaskUpdated := false
-	if comp.Task == "TASK_SCRAPE_WEBSITE" {
+	if comp.Type == "web" && comp.Task == "TASK_SCRAPE_WEBSITE" {
 		isTaskUpdated = true
 		comp.Task = "TASK_CRAWL_WEBSITE"
 	}
