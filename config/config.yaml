@@ -71,6 +71,12 @@ modelbackend:
   https:
     cert:
     key:
+artifactbackend:
+  host: artifact-backend
+  publicport: 8082
+  https:
+    cert:
+    key:
 openfga:
   host: openfga
   port: 8081

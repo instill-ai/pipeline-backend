@@ -22,17 +22,18 @@ var Config AppConfig
 
 // AppConfig defines
 type AppConfig struct {
-	Server       ServerConfig       `koanf:"server"`
-	Connector    ConnectorConfig    `koanf:"connector"`
-	Database     DatabaseConfig     `koanf:"database"`
-	InfluxDB     InfluxDBConfig     `koanf:"influxdb"`
-	Temporal     TemporalConfig     `koanf:"temporal"`
-	Cache        CacheConfig        `koanf:"cache"`
-	Log          LogConfig          `koanf:"log"`
-	MgmtBackend  MgmtBackendConfig  `koanf:"mgmtbackend"`
-	ModelBackend ModelBackendConfig `koanf:"modelbackend"`
-	OpenFGA      OpenFGAConfig      `koanf:"openfga"`
-	InstillCloud InstillCloudConfig `koanf:"instillcloud"`
+	Server          ServerConfig          `koanf:"server"`
+	Connector       ConnectorConfig       `koanf:"connector"`
+	Database        DatabaseConfig        `koanf:"database"`
+	InfluxDB        InfluxDBConfig        `koanf:"influxdb"`
+	Temporal        TemporalConfig        `koanf:"temporal"`
+	Cache           CacheConfig           `koanf:"cache"`
+	Log             LogConfig             `koanf:"log"`
+	MgmtBackend     MgmtBackendConfig     `koanf:"mgmtbackend"`
+	ModelBackend    ModelBackendConfig    `koanf:"modelbackend"`
+	OpenFGA         OpenFGAConfig         `koanf:"openfga"`
+	InstillCloud    InstillCloudConfig    `koanf:"instillcloud"`
+	ArtifactBackend ArtifactBackendConfig `koanf:"artifactbackend"`
 }
 
 // InstillCloud config
@@ -160,6 +161,15 @@ type MgmtBackendConfig struct {
 
 // ModelBackendConfig related to mgmt-backend
 type ModelBackendConfig struct {
+	Host       string `koanf:"host"`
+	PublicPort int    `koanf:"publicport"`
+	HTTPS      struct {
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
+	}
+}
+
+type ArtifactBackendConfig struct {
 	Host       string `koanf:"host"`
 	PublicPort int    `koanf:"publicport"`
 	HTTPS      struct {
