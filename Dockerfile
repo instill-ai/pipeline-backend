@@ -40,7 +40,7 @@ RUN apk add --no-cache \
     && fc-cache -f \
     && python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
-    && /opt/venv/bin/pip install pdfplumber \
+    && /opt/venv/bin/pip install pdfplumber tokenizers \
     && rm -rf /var/cache/apk/* /var/cache/fontconfig/*
 
 ARG TARGETARCH
