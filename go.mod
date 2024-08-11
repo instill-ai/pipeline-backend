@@ -17,7 +17,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.24.0-beta.0.20240808151827-cb3e667bc127
+	github.com/instill-ai/component v0.24.0-beta.0.20240809090123-9c04c213dc3e
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240729181905-96683859f44c
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
@@ -63,23 +63,21 @@ require (
 	cloud.google.com/go/storage v1.41.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/JohannesKaufmann/html-to-markdown v1.5.0 // indirect
+	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/PaesslerAG/gval v1.0.0 // indirect
-	github.com/PuerkitoBio/purell v1.1.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/antchfx/htmlquery v1.3.0 // indirect
 	github.com/antchfx/xmlquery v1.3.17 // indirect
 	github.com/antchfx/xpath v1.2.4 // indirect
 	github.com/apache/arrow/go/v14 v14.0.2 // indirect
-	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/aws/aws-sdk-go v1.55.1 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.30.1 // indirect
 	github.com/aws/smithy-go v1.20.3 // indirect
 	github.com/belong-inc/go-hubspot v0.9.0 // indirect
 	github.com/cohere-ai/cohere-go/v2 v2.8.5 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.3 // indirect
+	github.com/distribution/reference v0.6.0 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
-	github.com/elastic/elastic-transport-go/v8 v8.6.0 // indirect
-	github.com/elastic/go-elasticsearch/v8 v8.14.0 // indirect
+	github.com/docker/docker v27.0.3+incompatible // indirect
 	github.com/emersion/go-imap/v2 v2.0.0-beta.3 // indirect
 	github.com/emersion/go-message v0.18.1 // indirect
 	github.com/emersion/go-sasl v0.0.0-20231106173351-e73c9f7bad43 // indirect
@@ -88,15 +86,6 @@ require (
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/gage-technologies/mistral-go v1.1.0 // indirect
 	github.com/go-chi/chi/v5 v5.1.0 // indirect
-	github.com/go-openapi/analysis v0.21.2 // indirect
-	github.com/go-openapi/errors v0.22.0 // indirect
-	github.com/go-openapi/jsonpointer v0.19.6 // indirect
-	github.com/go-openapi/jsonreference v0.19.6 // indirect
-	github.com/go-openapi/loads v0.21.1 // indirect
-	github.com/go-openapi/spec v0.20.4 // indirect
-	github.com/go-openapi/strfmt v0.23.0 // indirect
-	github.com/go-openapi/swag v0.22.4 // indirect
-	github.com/go-openapi/validate v0.21.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gocolly/colly/v2 v2.1.0 // indirect
@@ -105,7 +94,6 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v23.5.26+incompatible // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-github/v62 v62.0.0 // indirect
@@ -121,7 +109,6 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
-	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
@@ -134,14 +121,12 @@ require (
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/lestrrat-go/pdebug v0.0.0-20210111095411-35b07dbf089b // indirect
 	github.com/lestrrat-go/structinfo v0.0.0-20210312050401-7f8bd69d6acb // indirect
-	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/montanaflynn/stats v0.7.1 // indirect
 	github.com/nakagami/firebirdsql v0.9.10 // indirect
-	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
-	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
+	github.com/pkoukk/tiktoken-go v0.1.7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
@@ -153,13 +138,6 @@ require (
 	github.com/tmc/langchaingo v0.1.10 // indirect
 	github.com/u2takey/ffmpeg-go v0.5.0 // indirect
 	github.com/u2takey/go-utils v0.3.1 // indirect
-	github.com/weaviate/weaviate v1.26.0-rc.1 // indirect
-	github.com/weaviate/weaviate-go-client/v4 v4.15.0 // indirect
-	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
-	github.com/xdg-go/scram v1.1.2 // indirect
-	github.com/xdg-go/stringprep v1.0.4 // indirect
-	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2 // indirect
-	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	gitlab.com/golang-commonmark/html v0.0.0-20191124015941-a22733972181 // indirect
 	gitlab.com/golang-commonmark/linkify v0.0.0-20191026162114-a0c2df6c8f82 // indirect
@@ -167,7 +145,6 @@ require (
 	gitlab.com/golang-commonmark/mdurl v0.0.0-20191124015652-932350d1cb84 // indirect
 	gitlab.com/golang-commonmark/puny v0.0.0-20191124015043-9f83538fa04f // indirect
 	gitlab.com/nyarla/go-crypt v0.0.0-20160106005555-d9a5dc2b789b // indirect
-	go.mongodb.org/mongo-driver v1.16.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
