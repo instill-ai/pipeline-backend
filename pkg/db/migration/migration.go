@@ -9,6 +9,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000019"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000020"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000021"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000022"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
@@ -58,6 +59,11 @@ func Migrate(version uint) error {
 		}
 	case 21:
 		m = &convert000021.ConvertToTextTaskConverter{
+			DB:     db,
+			Logger: l,
+		}
+	case 22:
+		m = &convert000022.ConvertWebsiteToWebConverter{
 			DB:     db,
 			Logger: l,
 		}
