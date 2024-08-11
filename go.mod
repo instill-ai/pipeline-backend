@@ -77,7 +77,7 @@ require (
 	github.com/denisenkom/go-mssqldb v0.12.3 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
-	github.com/docker/docker v27.0.3+incompatible // indirect
+	github.com/docker/docker v27.1.1+incompatible // indirect
 	github.com/emersion/go-imap/v2 v2.0.0-beta.3 // indirect
 	github.com/emersion/go-message v0.18.1 // indirect
 	github.com/emersion/go-sasl v0.0.0-20231106173351-e73c9f7bad43 // indirect
