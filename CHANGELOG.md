@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.35.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.34.1-beta...v0.35.0-beta) (2024-08-13)
+
+
+### Features
+
+* pass component ID to execution ([#577](https://github.com/instill-ai/pipeline-backend/issues/577)) ([2757e7c](https://github.com/instill-ai/pipeline-backend/commit/2757e7c90c9db2ef2cc3d64e7939b1c94476b70f))
+* **text:** add dependency for vendors' tokenizer ([#586](https://github.com/instill-ai/pipeline-backend/issues/586)) ([ac40497](https://github.com/instill-ai/pipeline-backend/commit/ac40497ef2cb0afd434610b651727e707b36e4dd))
+* use pdf2md in document operator ([#589](https://github.com/instill-ai/pipeline-backend/issues/589)) ([f35f79e](https://github.com/instill-ai/pipeline-backend/commit/f35f79e070d801c9575e340ac1c8c6a163f6852a))
+
 ## [0.34.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.34.0-beta...v0.34.1-beta) (2024-07-31)
 
 
