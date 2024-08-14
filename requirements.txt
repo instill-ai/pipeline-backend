@@ -1,7 +1,7 @@
 # universal
 tokenizers==0.19.1
 torch==2.4.0
-transformer==4.44.0
+transformers==4.44.0
 
 
 # components/ai/ai21labs
