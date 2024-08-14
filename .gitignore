@@ -107,3 +107,4 @@ protogen-go
 # air related files and folders
 .air.toml
 tmp
+.idea
