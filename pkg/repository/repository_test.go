@@ -156,11 +156,10 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 		Components:         nil,
 	}
 
-	err = repo.UpsertPipelineRun(ctx, pipelineRun)
+	err = repo.UpsertPipelineRun(pipelineRun)
 	c.Assert(err, qt.IsNil)
 
-	got1 := &datamodel.PipelineRun{PipelineTriggerUID: pipelineRun.PipelineTriggerUID}
-	err = tx.First(got1).Error
+	got1, err := repo.GetPipelineRunByUID(pipelineRun.PipelineTriggerUID)
 	c.Assert(err, qt.IsNil)
 	c.Check(got1.PipelineUID, qt.Equals, p.UID)
 	c.Check(got1.Status, qt.Equals, pipelineRun.Status)
@@ -176,7 +175,7 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 		Outputs:            nil,
 	}
 
-	err = repo.UpsertComponentRun(ctx, componentRun)
+	err = repo.UpsertComponentRun(componentRun)
 	c.Assert(err, qt.IsNil)
 
 	got2 := &datamodel.ComponentRun{PipelineTriggerUID: pipelineRun.PipelineTriggerUID, ComponentID: componentRun.ComponentID}

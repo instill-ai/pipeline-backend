@@ -43,6 +43,7 @@ import (
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 
 	componentbase "github.com/instill-ai/component/base"
+	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -773,7 +774,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, isAdmin bool, ns resou
 		if err != nil {
 			return nil, err
 		}
-		if memory[idx].Variable == nil {
+		if memory[idx].Variable == nil { // todo: this is not needed?
 			memory[idx].Variable = make(recipe.VariableMemory)
 		}
 
@@ -1085,6 +1086,12 @@ func (s *service) triggerPipeline(
 		requesterUID = userUID
 	}
 
+	runSource := datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API)
+	userAgentValue, ok := runpb.RunSource_value[resource.GetRequestSingleHeader(ctx, constant.HeaderUserAgentKey)]
+	if ok {
+		runSource = datamodel.RunSource(userAgentValue)
+	}
+
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1103,6 +1110,7 @@ func (s *service) triggerPipeline(
 				PipelineOwnerUID:     ns.NsUID,
 				PipelineUserUID:      userUID,
 				PipelineRequesterUID: requesterUID,
+				PipelineRunSource:    runSource,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode: mgmtpb.Mode_MODE_SYNC,
@@ -1127,6 +1135,7 @@ func (s *service) triggerPipeline(
 		return nil, nil, err
 	}
 
+	// todo: upload outputs
 	return s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
 }
 
@@ -1261,6 +1270,7 @@ func (s *service) triggerPipelineWithStream(
 		return err
 	}
 
+	// todo: upload outputs
 	return nil
 }
 
@@ -1328,6 +1338,7 @@ func (s *service) triggerAsyncPipeline(
 
 	logger.Info(fmt.Sprintf("started workflow with workflowID %s and RunID %s", we.GetID(), we.GetRunID()))
 
+	// todo: upload outputs in goroutine and wait for trigger ends
 	return &longrunningpb.Operation{
 		Name: fmt.Sprintf("operations/%s", pipelineTriggerID),
 		Done: false,

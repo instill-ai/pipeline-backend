@@ -87,8 +87,9 @@ type Repository interface {
 	// definition lists are removed.
 	TranspileFilter(filtering.Filter) (*clause.Expr, error)
 
-	UpsertPipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) error
-	UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error
+	GetPipelineRunByUID(uuid.UUID) (*datamodel.PipelineRun, error)
+	UpsertPipelineRun(pipelineRun *datamodel.PipelineRun) error
+	UpsertComponentRun(componentRun *datamodel.ComponentRun) error
 }
 
 type repository struct {
@@ -990,10 +991,20 @@ func (r *repository) AddPipelineClones(ctx context.Context, pipelineUID uuid.UUI
 	return nil
 }
 
-func (r *repository) UpsertPipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) error {
+func (r *repository) GetPipelineRunByUID(pipelineTriggerUID uuid.UUID) (*datamodel.PipelineRun, error) {
+	pipelineRun := &datamodel.PipelineRun{PipelineTriggerUID: pipelineTriggerUID}
+	err := r.db.First(pipelineRun).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return pipelineRun, nil
+}
+
+func (r *repository) UpsertPipelineRun(pipelineRun *datamodel.PipelineRun) error {
 	return r.db.Save(pipelineRun).Error
 }
 
-func (r *repository) UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error {
+func (r *repository) UpsertComponentRun(componentRun *datamodel.ComponentRun) error {
 	return r.db.Save(componentRun).Error
 }
