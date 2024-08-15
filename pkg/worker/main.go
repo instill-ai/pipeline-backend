@@ -28,7 +28,10 @@ type Worker interface {
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 	SchedulePipelineLoaderActivity(ctx context.Context, param *SchedulePipelineLoaderActivityParam) (*SchedulePipelineLoaderActivityResult, error)
-	UploadToMinioActivity(ctx context.Context, param UploadToMinioActivityParam) (string, error)
+	UploadToMinioActivity(ctx context.Context, param *UploadToMinioActivityParam) (string, error)
+	UploadInputsToMinioActivity(ctx context.Context, param *UploadInputsToMinioActivityParam) error
+	UploadReceiptActivity(ctx context.Context, param *UploadReceiptActivityParam) error
+	UploadOutputsWorkflow(ctx context.Context, param *UploadInputsToMinioActivityParam) error
 }
 
 // worker represents resources required to run Temporal workflow and activity

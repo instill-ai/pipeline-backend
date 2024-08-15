@@ -234,6 +234,12 @@ type RepositoryMock struct {
 	beforeUpdateNamespaceSecretByIDCounter uint64
 	UpdateNamespaceSecretByIDMock          mRepositoryMockUpdateNamespaceSecretByID
 
+	funcUpdatePipelineRun          func(pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) (err error)
+	inspectFuncUpdatePipelineRun   func(pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun)
+	afterUpdatePipelineRunCounter  uint64
+	beforeUpdatePipelineRunCounter uint64
+	UpdatePipelineRunMock          mRepositoryMockUpdatePipelineRun
+
 	funcUpsertComponentDefinition          func(ctx context.Context, cp1 *pb.ComponentDefinition) (err error)
 	inspectFuncUpsertComponentDefinition   func(ctx context.Context, cp1 *pb.ComponentDefinition)
 	afterUpsertComponentDefinitionCounter  uint64
@@ -365,6 +371,9 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 
 	m.UpdateNamespaceSecretByIDMock = mRepositoryMockUpdateNamespaceSecretByID{mock: m}
 	m.UpdateNamespaceSecretByIDMock.callArgs = []*RepositoryMockUpdateNamespaceSecretByIDParams{}
+
+	m.UpdatePipelineRunMock = mRepositoryMockUpdatePipelineRun{mock: m}
+	m.UpdatePipelineRunMock.callArgs = []*RepositoryMockUpdatePipelineRunParams{}
 
 	m.UpsertComponentDefinitionMock = mRepositoryMockUpsertComponentDefinition{mock: m}
 	m.UpsertComponentDefinitionMock.callArgs = []*RepositoryMockUpsertComponentDefinitionParams{}
@@ -13345,6 +13354,326 @@ func (m *RepositoryMock) MinimockUpdateNamespaceSecretByIDInspect() {
 	}
 }
 
+type mRepositoryMockUpdatePipelineRun struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockUpdatePipelineRunExpectation
+	expectations       []*RepositoryMockUpdatePipelineRunExpectation
+
+	callArgs []*RepositoryMockUpdatePipelineRunParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// RepositoryMockUpdatePipelineRunExpectation specifies expectation struct of the Repository.UpdatePipelineRun
+type RepositoryMockUpdatePipelineRunExpectation struct {
+	mock      *RepositoryMock
+	params    *RepositoryMockUpdatePipelineRunParams
+	paramPtrs *RepositoryMockUpdatePipelineRunParamPtrs
+	results   *RepositoryMockUpdatePipelineRunResults
+	Counter   uint64
+}
+
+// RepositoryMockUpdatePipelineRunParams contains parameters of the Repository.UpdatePipelineRun
+type RepositoryMockUpdatePipelineRunParams struct {
+	pipelineTriggerUID string
+	pipelineRun        *datamodel.PipelineRun
+}
+
+// RepositoryMockUpdatePipelineRunParamPtrs contains pointers to parameters of the Repository.UpdatePipelineRun
+type RepositoryMockUpdatePipelineRunParamPtrs struct {
+	pipelineTriggerUID *string
+	pipelineRun        **datamodel.PipelineRun
+}
+
+// RepositoryMockUpdatePipelineRunResults contains results of the Repository.UpdatePipelineRun
+type RepositoryMockUpdatePipelineRunResults struct {
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) Optional() *mRepositoryMockUpdatePipelineRun {
+	mmUpdatePipelineRun.optional = true
+	return mmUpdatePipelineRun
+}
+
+// Expect sets up expected params for Repository.UpdatePipelineRun
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) Expect(pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) *mRepositoryMockUpdatePipelineRun {
+	if mmUpdatePipelineRun.mock.funcUpdatePipelineRun != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("RepositoryMock.UpdatePipelineRun mock is already set by Set")
+	}
+
+	if mmUpdatePipelineRun.defaultExpectation == nil {
+		mmUpdatePipelineRun.defaultExpectation = &RepositoryMockUpdatePipelineRunExpectation{}
+	}
+
+	if mmUpdatePipelineRun.defaultExpectation.paramPtrs != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("RepositoryMock.UpdatePipelineRun mock is already set by ExpectParams functions")
+	}
+
+	mmUpdatePipelineRun.defaultExpectation.params = &RepositoryMockUpdatePipelineRunParams{pipelineTriggerUID, pipelineRun}
+	for _, e := range mmUpdatePipelineRun.expectations {
+		if minimock.Equal(e.params, mmUpdatePipelineRun.defaultExpectation.params) {
+			mmUpdatePipelineRun.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdatePipelineRun.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdatePipelineRun
+}
+
+// ExpectPipelineTriggerUIDParam1 sets up expected param pipelineTriggerUID for Repository.UpdatePipelineRun
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) ExpectPipelineTriggerUIDParam1(pipelineTriggerUID string) *mRepositoryMockUpdatePipelineRun {
+	if mmUpdatePipelineRun.mock.funcUpdatePipelineRun != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("RepositoryMock.UpdatePipelineRun mock is already set by Set")
+	}
+
+	if mmUpdatePipelineRun.defaultExpectation == nil {
+		mmUpdatePipelineRun.defaultExpectation = &RepositoryMockUpdatePipelineRunExpectation{}
+	}
+
+	if mmUpdatePipelineRun.defaultExpectation.params != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("RepositoryMock.UpdatePipelineRun mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineRun.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineRun.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineRunParamPtrs{}
+	}
+	mmUpdatePipelineRun.defaultExpectation.paramPtrs.pipelineTriggerUID = &pipelineTriggerUID
+
+	return mmUpdatePipelineRun
+}
+
+// ExpectPipelineRunParam2 sets up expected param pipelineRun for Repository.UpdatePipelineRun
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) ExpectPipelineRunParam2(pipelineRun *datamodel.PipelineRun) *mRepositoryMockUpdatePipelineRun {
+	if mmUpdatePipelineRun.mock.funcUpdatePipelineRun != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("RepositoryMock.UpdatePipelineRun mock is already set by Set")
+	}
+
+	if mmUpdatePipelineRun.defaultExpectation == nil {
+		mmUpdatePipelineRun.defaultExpectation = &RepositoryMockUpdatePipelineRunExpectation{}
+	}
+
+	if mmUpdatePipelineRun.defaultExpectation.params != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("RepositoryMock.UpdatePipelineRun mock is already set by Expect")
+	}
+
+	if mmUpdatePipelineRun.defaultExpectation.paramPtrs == nil {
+		mmUpdatePipelineRun.defaultExpectation.paramPtrs = &RepositoryMockUpdatePipelineRunParamPtrs{}
+	}
+	mmUpdatePipelineRun.defaultExpectation.paramPtrs.pipelineRun = &pipelineRun
+
+	return mmUpdatePipelineRun
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.UpdatePipelineRun
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) Inspect(f func(pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun)) *mRepositoryMockUpdatePipelineRun {
+	if mmUpdatePipelineRun.mock.inspectFuncUpdatePipelineRun != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpdatePipelineRun")
+	}
+
+	mmUpdatePipelineRun.mock.inspectFuncUpdatePipelineRun = f
+
+	return mmUpdatePipelineRun
+}
+
+// Return sets up results that will be returned by Repository.UpdatePipelineRun
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) Return(err error) *RepositoryMock {
+	if mmUpdatePipelineRun.mock.funcUpdatePipelineRun != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("RepositoryMock.UpdatePipelineRun mock is already set by Set")
+	}
+
+	if mmUpdatePipelineRun.defaultExpectation == nil {
+		mmUpdatePipelineRun.defaultExpectation = &RepositoryMockUpdatePipelineRunExpectation{mock: mmUpdatePipelineRun.mock}
+	}
+	mmUpdatePipelineRun.defaultExpectation.results = &RepositoryMockUpdatePipelineRunResults{err}
+	return mmUpdatePipelineRun.mock
+}
+
+// Set uses given function f to mock the Repository.UpdatePipelineRun method
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) Set(f func(pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) (err error)) *RepositoryMock {
+	if mmUpdatePipelineRun.defaultExpectation != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("Default expectation is already set for the Repository.UpdatePipelineRun method")
+	}
+
+	if len(mmUpdatePipelineRun.expectations) > 0 {
+		mmUpdatePipelineRun.mock.t.Fatalf("Some expectations are already set for the Repository.UpdatePipelineRun method")
+	}
+
+	mmUpdatePipelineRun.mock.funcUpdatePipelineRun = f
+	return mmUpdatePipelineRun.mock
+}
+
+// When sets expectation for the Repository.UpdatePipelineRun which will trigger the result defined by the following
+// Then helper
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) When(pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) *RepositoryMockUpdatePipelineRunExpectation {
+	if mmUpdatePipelineRun.mock.funcUpdatePipelineRun != nil {
+		mmUpdatePipelineRun.mock.t.Fatalf("RepositoryMock.UpdatePipelineRun mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockUpdatePipelineRunExpectation{
+		mock:   mmUpdatePipelineRun.mock,
+		params: &RepositoryMockUpdatePipelineRunParams{pipelineTriggerUID, pipelineRun},
+	}
+	mmUpdatePipelineRun.expectations = append(mmUpdatePipelineRun.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.UpdatePipelineRun return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockUpdatePipelineRunExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockUpdatePipelineRunResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.UpdatePipelineRun should be invoked
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) Times(n uint64) *mRepositoryMockUpdatePipelineRun {
+	if n == 0 {
+		mmUpdatePipelineRun.mock.t.Fatalf("Times of RepositoryMock.UpdatePipelineRun mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdatePipelineRun.expectedInvocations, n)
+	return mmUpdatePipelineRun
+}
+
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) invocationsDone() bool {
+	if len(mmUpdatePipelineRun.expectations) == 0 && mmUpdatePipelineRun.defaultExpectation == nil && mmUpdatePipelineRun.mock.funcUpdatePipelineRun == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineRun.mock.afterUpdatePipelineRunCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdatePipelineRun.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdatePipelineRun implements repository.Repository
+func (mmUpdatePipelineRun *RepositoryMock) UpdatePipelineRun(pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) (err error) {
+	mm_atomic.AddUint64(&mmUpdatePipelineRun.beforeUpdatePipelineRunCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdatePipelineRun.afterUpdatePipelineRunCounter, 1)
+
+	if mmUpdatePipelineRun.inspectFuncUpdatePipelineRun != nil {
+		mmUpdatePipelineRun.inspectFuncUpdatePipelineRun(pipelineTriggerUID, pipelineRun)
+	}
+
+	mm_params := RepositoryMockUpdatePipelineRunParams{pipelineTriggerUID, pipelineRun}
+
+	// Record call args
+	mmUpdatePipelineRun.UpdatePipelineRunMock.mutex.Lock()
+	mmUpdatePipelineRun.UpdatePipelineRunMock.callArgs = append(mmUpdatePipelineRun.UpdatePipelineRunMock.callArgs, &mm_params)
+	mmUpdatePipelineRun.UpdatePipelineRunMock.mutex.Unlock()
+
+	for _, e := range mmUpdatePipelineRun.UpdatePipelineRunMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmUpdatePipelineRun.UpdatePipelineRunMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdatePipelineRun.UpdatePipelineRunMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdatePipelineRun.UpdatePipelineRunMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdatePipelineRun.UpdatePipelineRunMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockUpdatePipelineRunParams{pipelineTriggerUID, pipelineRun}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.pipelineTriggerUID != nil && !minimock.Equal(*mm_want_ptrs.pipelineTriggerUID, mm_got.pipelineTriggerUID) {
+				mmUpdatePipelineRun.t.Errorf("RepositoryMock.UpdatePipelineRun got unexpected parameter pipelineTriggerUID, want: %#v, got: %#v%s\n", *mm_want_ptrs.pipelineTriggerUID, mm_got.pipelineTriggerUID, minimock.Diff(*mm_want_ptrs.pipelineTriggerUID, mm_got.pipelineTriggerUID))
+			}
+
+			if mm_want_ptrs.pipelineRun != nil && !minimock.Equal(*mm_want_ptrs.pipelineRun, mm_got.pipelineRun) {
+				mmUpdatePipelineRun.t.Errorf("RepositoryMock.UpdatePipelineRun got unexpected parameter pipelineRun, want: %#v, got: %#v%s\n", *mm_want_ptrs.pipelineRun, mm_got.pipelineRun, minimock.Diff(*mm_want_ptrs.pipelineRun, mm_got.pipelineRun))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdatePipelineRun.t.Errorf("RepositoryMock.UpdatePipelineRun got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdatePipelineRun.UpdatePipelineRunMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdatePipelineRun.t.Fatal("No results are set for the RepositoryMock.UpdatePipelineRun")
+		}
+		return (*mm_results).err
+	}
+	if mmUpdatePipelineRun.funcUpdatePipelineRun != nil {
+		return mmUpdatePipelineRun.funcUpdatePipelineRun(pipelineTriggerUID, pipelineRun)
+	}
+	mmUpdatePipelineRun.t.Fatalf("Unexpected call to RepositoryMock.UpdatePipelineRun. %v %v", pipelineTriggerUID, pipelineRun)
+	return
+}
+
+// UpdatePipelineRunAfterCounter returns a count of finished RepositoryMock.UpdatePipelineRun invocations
+func (mmUpdatePipelineRun *RepositoryMock) UpdatePipelineRunAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineRun.afterUpdatePipelineRunCounter)
+}
+
+// UpdatePipelineRunBeforeCounter returns a count of RepositoryMock.UpdatePipelineRun invocations
+func (mmUpdatePipelineRun *RepositoryMock) UpdatePipelineRunBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdatePipelineRun.beforeUpdatePipelineRunCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.UpdatePipelineRun.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdatePipelineRun *mRepositoryMockUpdatePipelineRun) Calls() []*RepositoryMockUpdatePipelineRunParams {
+	mmUpdatePipelineRun.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockUpdatePipelineRunParams, len(mmUpdatePipelineRun.callArgs))
+	copy(argCopy, mmUpdatePipelineRun.callArgs)
+
+	mmUpdatePipelineRun.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdatePipelineRunDone returns true if the count of the UpdatePipelineRun invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockUpdatePipelineRunDone() bool {
+	if m.UpdatePipelineRunMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdatePipelineRunMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdatePipelineRunMock.invocationsDone()
+}
+
+// MinimockUpdatePipelineRunInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockUpdatePipelineRunInspect() {
+	for _, e := range m.UpdatePipelineRunMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineRun with params: %#v", *e.params)
+		}
+	}
+
+	afterUpdatePipelineRunCounter := mm_atomic.LoadUint64(&m.afterUpdatePipelineRunCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdatePipelineRunMock.defaultExpectation != nil && afterUpdatePipelineRunCounter < 1 {
+		if m.UpdatePipelineRunMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.UpdatePipelineRun")
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.UpdatePipelineRun with params: %#v", *m.UpdatePipelineRunMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdatePipelineRun != nil && afterUpdatePipelineRunCounter < 1 {
+		m.t.Error("Expected call to RepositoryMock.UpdatePipelineRun")
+	}
+
+	if !m.UpdatePipelineRunMock.invocationsDone() && afterUpdatePipelineRunCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.UpdatePipelineRun but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdatePipelineRunMock.expectedInvocations), afterUpdatePipelineRunCounter)
+	}
+}
+
 type mRepositoryMockUpsertComponentDefinition struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -14323,6 +14652,8 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockUpdateNamespaceSecretByIDInspect()
 
+			m.MinimockUpdatePipelineRunInspect()
+
 			m.MinimockUpsertComponentDefinitionInspect()
 
 			m.MinimockUpsertComponentRunInspect()
@@ -14386,6 +14717,7 @@ func (m *RepositoryMock) minimockDone() bool {
 		m.MinimockUpdateNamespacePipelineReleaseByIDDone() &&
 		m.MinimockUpdateNamespacePipelineReleaseIDByIDDone() &&
 		m.MinimockUpdateNamespaceSecretByIDDone() &&
+		m.MinimockUpdatePipelineRunDone() &&
 		m.MinimockUpsertComponentDefinitionDone() &&
 		m.MinimockUpsertComponentRunDone() &&
 		m.MinimockUpsertPipelineRunDone()

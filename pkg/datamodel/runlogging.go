@@ -49,7 +49,8 @@ type JSONB []FileReference
 
 // Value marshals the JSONB to a value.
 func (j JSONB) Value() (driver.Value, error) {
-	return json.Marshal(j)
+	value, err := json.Marshal(j)
+	return string(value), err
 }
 
 // Scan unmarshals a value into the JSONB.

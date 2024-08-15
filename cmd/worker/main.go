@@ -171,6 +171,9 @@ func main() {
 	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
 	w.RegisterActivity(cw.SchedulePipelineLoaderActivity)
 	w.RegisterActivity(cw.UploadToMinioActivity)
+	w.RegisterActivity(cw.UploadInputsToMinioActivity)
+	w.RegisterActivity(cw.UploadReceiptActivity)
+	w.RegisterActivity(cw.UploadOutputsWorkflow)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())
