@@ -19,6 +19,8 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 
 FROM node:22.5.1-alpine3.19
 
+COPY requirements.txt .
+
 RUN apk add --no-cache \
     curl \
     poppler-utils \
