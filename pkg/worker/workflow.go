@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/minio/minio-go/v7"
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
@@ -53,6 +52,7 @@ type SchedulePipelineLoaderActivityParam struct {
 	Namespace  resource.Namespace
 	PipelineID string
 }
+
 type SchedulePipelineLoaderActivityResult struct {
 	Key        *recipe.BatchMemoryKey
 	ScheduleID string
@@ -142,6 +142,22 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	// todo: mark pipeline run as failed if not succeeded
+	succeeded := false
+	defer func() {
+		if succeeded {
+			return
+		}
+		if err != nil {
+			pipelineRun.Error = null.StringFrom(err.Error())
+		} else {
+			pipelineRun.Error = null.StringFrom("trigger pipeline run failed due to unknown error")
+		}
+
+		err = w.repository.UpsertPipelineRun(pipelineRun)
+		if err != nil {
+			logger.Error("failed to log pipeline run", zap.Error(err))
+		}
+	}()
 
 	// Inline function to initialize the channel only if streaming is active
 	initChan := func() chan WorkFlowSignal {
@@ -229,63 +245,23 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
-	type MinioUploadResult struct {
-		URL        string
-		ObjectInfo minio.ObjectInfo
-	}
-
 	b, err := json.Marshal(r)
 	if err != nil {
 		return err
 	}
 
-	uploadReceiptActivity := workflow.ExecuteActivity(ctx, w.UploadToMinioActivity, UploadToMinioActivityParam{
-		ObjectName:  workflowID + ".recipe.json",
-		Data:        b,
-		ContentType: constant.ContentTypeJSON,
+	uploadReceiptActivity := workflow.ExecuteActivity(ctx, w.UploadReceiptActivity, &UploadReceiptActivityParam{
+		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+		UploadToMinioActivityParam: UploadToMinioActivityParam{
+			ObjectName:  fmt.Sprintf("%s.recipe.json", workflowID),
+			Data:        b,
+			ContentType: constant.ContentTypeJSON,
+		},
 	})
 
-	utils.GoSafe(func() {
-		var minioResult MinioUploadResult
-		err = uploadReceiptActivity.Get(ctx, &minioResult)
-		if err != nil {
-			logger.Error("failed to upload recipe to MinIO", zap.Error(err))
-			return
-		}
-
-		if minioResult.URL == "" {
-			logger.Error("received empty URL from MinIO upload")
-			return
-		}
-
-		minioObjectInfo := minioResult.ObjectInfo
-
-		// Update the pipelineRun with the new information
-		pipelineRun.RecipeSnapshot = datamodel.JSONB{{
-			Name: minioObjectInfo.Key,
-			Type: minioObjectInfo.ContentType,
-			Size: minioObjectInfo.Size,
-			URL:  minioResult.URL,
-		}}
-
-		// Log the updated pipeline run
-		err = w.repository.UpsertPipelineRun(pipelineRun)
-		if err != nil {
-			logger.Error("failed to log pipeline run with recipe snapshot", zap.Error(err))
-		}
-	})
-
-	uploadInputsActivity := workflow.ExecuteActivity(ctx, w.UploadInputsToMinioActivity, UploadInputsToMinioActivityParam{
+	uploadInputsActivity := workflow.ExecuteActivity(ctx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 		MemoryStorageKey:  param.MemoryStorageKey,
-	})
-
-	utils.GoSafe(func() {
-		err = uploadInputsActivity.Get(ctx, nil)
-		if err != nil {
-			logger.Error("failed to upload input to MinIO", zap.Error(err))
-			return
-		}
 	})
 
 	dag, err := recipe.GenerateDAG(r.Component)
@@ -398,6 +374,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			if param.IsStreaming {
 				sChan <- WorkFlowSignal{Status: statusStep, ID: result.ID}
 			}
+			// todo: upload component outputs
 		}
 
 		for batchIdx := range param.BatchSize {
@@ -432,15 +409,29 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	pipelineRun.CompletedTime = null.TimeFrom(time.Now())
-	pipelineRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED)
-	pipelineRun.TotalDuration = null.IntFrom(duration.Milliseconds())
-
-	err = w.repository.UpsertPipelineRun(pipelineRun)
+	err = w.repository.UpdatePipelineRun(param.SystemVariables.PipelineTriggerID, &datamodel.PipelineRun{
+		CompletedTime: null.TimeFrom(time.Now()),
+		Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED),
+		TotalDuration: null.IntFrom(duration.Milliseconds()),
+	})
 	if err != nil {
 		logger.Error("failed to log completed pipeline run", zap.Error(err))
 		// Note: We're not returning here because we want to complete the workflow even if logging fails
 	}
+
+	workflow.Go(ctx, func(ctx workflow.Context) {
+		err = uploadReceiptActivity.Get(ctx, nil)
+		if err != nil {
+			logger.Error("failed to upload recipe to MinIO", zap.Error(err))
+		}
+
+		err = uploadInputsActivity.Get(ctx, nil)
+		if err != nil {
+			logger.Error("failed to upload inputs to MinIO", zap.Error(err))
+		}
+	})
+
+	succeeded = true
 
 	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", duration))
 
@@ -475,11 +466,11 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	}
 
 	// Upload inputs to MinIO
-	inputsJSONB, err := w.uploadJSONToMinIO(ctx, compInputs, param.WorkflowID, param.ID, "inputs")
-	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
-	}
-	componentRun.Inputs = inputsJSONB
+	// inputsJSONB, err := w.uploadJSONToMinIO(ctx, compInputs, param.WorkflowID, param.ID, "inputs")
+	// if err != nil {
+	// 	return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+	// }
+	// componentRun.Inputs = inputsJSONB
 
 	cons, err := w.processSetup(batchMemory, param.Setup)
 	if err != nil {
@@ -524,11 +515,11 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	}
 
 	// Upload outputs to MinIO
-	outputsJSONB, err := w.uploadJSONToMinIO(ctx, compOutputs, param.WorkflowID, param.ID, "outputs")
-	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
-	}
-	componentRun.Outputs = outputsJSONB
+	// outputsJSONB, err := w.uploadJSONToMinIO(ctx, compOutputs, param.WorkflowID, param.ID, "outputs")
+	// if err != nil {
+	// 	return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+	// }
+	// componentRun.Outputs = outputsJSONB
 
 	compMem, err := w.processOutput(batchMemory, param.ID, compOutputs, idxMap)
 	if err != nil {
@@ -559,37 +550,37 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	return p, nil
 }
 
-func (w *worker) uploadJSONToMinIO(ctx context.Context, data interface{}, workflowID, componentID, prefix string) (datamodel.JSONB, error) {
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal data: %w", err)
-	}
-
-	objectName := fmt.Sprintf("%s-%s-%s.json", workflowID, componentID, prefix)
-
-	var uploadResult struct {
-		URL        string
-		ObjectInfo minio.ObjectInfo
-	}
-
-	// todo: fix this, should not call activity in activity
-	err = workflow.ExecuteActivity(nil, w.UploadToMinioActivity, UploadToMinioActivityParam{
-		ObjectName:  objectName,
-		Data:        jsonData,
-		ContentType: constant.ContentTypeJSON,
-	}).Get(nil, &uploadResult)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to upload to MinIO: %w", err)
-	}
-
-	return datamodel.JSONB{datamodel.FileReference{
-		Name: uploadResult.ObjectInfo.Key,
-		Type: uploadResult.ObjectInfo.ContentType,
-		Size: uploadResult.ObjectInfo.Size,
-		URL:  uploadResult.URL,
-	}}, nil
-}
+// func (w *worker) uploadJSONToMinIO(ctx context.Context, data interface{}, workflowID, componentID, prefix string) (datamodel.JSONB, error) {
+// 	jsonData, err := json.Marshal(data)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to marshal data: %w", err)
+// 	}
+//
+// 	objectName := fmt.Sprintf("%s-%s-%s.json", workflowID, componentID, prefix)
+//
+// 	var uploadResult struct {
+// 		URL        string
+// 		ObjectInfo minio.ObjectInfo
+// 	}
+//
+// 	// todo: fix this, should not call activity in activity
+// 	err = workflow.ExecuteActivity(nil, w.UploadToMinioActivity, UploadToMinioActivityParam{
+// 		ObjectName:  objectName,
+// 		Data:        jsonData,
+// 		ContentType: constant.ContentTypeJSON,
+// 	}).Get(nil, &uploadResult)
+//
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to upload to MinIO: %w", err)
+// 	}
+//
+// 	return datamodel.JSONB{datamodel.FileReference{
+// 		Name: uploadResult.ObjectInfo.Key,
+// 		Type: uploadResult.ObjectInfo.ContentType,
+// 		Size: uploadResult.ObjectInfo.Size,
+// 		URL:  uploadResult.URL,
+// 	}}, nil
+// }
 
 // TODO: complete iterator
 // PreIteratorActivity generate the trigger memory for each iteration.

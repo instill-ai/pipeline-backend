@@ -89,6 +89,7 @@ type Repository interface {
 
 	GetPipelineRunByUID(uuid.UUID) (*datamodel.PipelineRun, error)
 	UpsertPipelineRun(pipelineRun *datamodel.PipelineRun) error
+	UpdatePipelineRun(pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) error
 	UpsertComponentRun(componentRun *datamodel.ComponentRun) error
 }
 
@@ -1003,6 +1004,11 @@ func (r *repository) GetPipelineRunByUID(pipelineTriggerUID uuid.UUID) (*datamod
 
 func (r *repository) UpsertPipelineRun(pipelineRun *datamodel.PipelineRun) error {
 	return r.db.Save(pipelineRun).Error
+}
+
+func (r *repository) UpdatePipelineRun(pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) error {
+	uid := uuid.FromStringOrNil(pipelineTriggerUID)
+	return r.db.Model(&datamodel.PipelineRun{}).Where(&datamodel.PipelineRun{PipelineTriggerUID: uid}).Updates(&pipelineRun).Error
 }
 
 func (r *repository) UpsertComponentRun(componentRun *datamodel.ComponentRun) error {
