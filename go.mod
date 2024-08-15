@@ -18,13 +18,14 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/component v0.25.0-beta
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240808093014-75008c807ea7
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240815012837-dd1e03c7d89a
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/knadh/koanf v1.5.0
 	github.com/launchdarkly/go-semver v1.0.2
 	github.com/mennanov/fieldmask-utils v1.0.0
+	github.com/minio/minio-go/v7 v7.0.71
 	github.com/openfga/api/proto v0.0.0-20240318145204-66b9e5cb403c
 	github.com/redis/go-redis/v9 v9.5.1
 	go.einride.tech/aip v0.60.0
@@ -78,6 +79,7 @@ require (
 	github.com/cohere-ai/cohere-go/v2 v2.8.5 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.3 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.6.0 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.14.0 // indirect
 	github.com/emersion/go-imap/v2 v2.0.0-beta.3 // indirect
@@ -136,6 +138,7 @@ require (
 	github.com/lestrrat-go/pdebug v0.0.0-20210111095411-35b07dbf089b // indirect
 	github.com/lestrrat-go/structinfo v0.0.0-20210312050401-7f8bd69d6acb // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
@@ -145,6 +148,7 @@ require (
 	github.com/pkoukk/tiktoken-go v0.1.7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/rs/xid v1.5.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sijms/go-ora/v2 v2.8.19 // indirect
@@ -180,6 +184,7 @@ require (
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.178.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 )
 

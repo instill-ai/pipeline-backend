@@ -37,10 +37,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
+
 	"github.com/instill-ai/x/errmsg"
 
-	componentbase "github.com/instill-ai/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+
+	componentbase "github.com/instill-ai/component/base"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
