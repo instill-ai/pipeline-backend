@@ -8,6 +8,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
@@ -27,6 +28,7 @@ type Worker interface {
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 	SchedulePipelineLoaderActivity(ctx context.Context, param *SchedulePipelineLoaderActivityParam) (*SchedulePipelineLoaderActivityResult, error)
+	UploadToMinioActivity(ctx context.Context, param UploadToMinioActivityParam) (string, error)
 }
 
 // worker represents resources required to run Temporal workflow and activity
@@ -35,6 +37,7 @@ type worker struct {
 	redisClient         *redis.Client
 	influxDBWriteClient api.WriteAPI
 	component           *componentstore.Store
+	minioClient         minio.MinioI
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
@@ -44,6 +47,7 @@ func NewWorker(
 	i api.WriteAPI,
 	cs componentstore.ComponentSecrets,
 	uh componentbase.UsageHandlerCreator,
+	minioClient minio.MinioI,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
 	return &worker{
@@ -51,5 +55,6 @@ func NewWorker(
 		redisClient:         rd,
 		influxDBWriteClient: i,
 		component:           componentstore.Init(logger, cs, uh),
+		minioClient:         minioClient,
 	}
 }

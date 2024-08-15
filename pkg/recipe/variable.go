@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
+
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -22,6 +23,7 @@ type SystemVariables struct {
 	PipelineRecipe     *datamodel.Recipe      `json:"__PIPELINE_RECIPE"`
 	PipelineOwnerType  resource.NamespaceType `json:"__PIPELINE_OWNER_TYPE"`
 	PipelineOwnerUID   uuid.UUID              `json:"__PIPELINE_OWNER_UID"`
+	PipelineRunSource  datamodel.RunSource    `json:"__PIPELINE_RUN_SOURCE"`
 
 	// PipelineUserUID is the authenticated user executing a pipeline.
 	PipelineUserUID uuid.UUID `json:"__PIPELINE_USER_UID"`
