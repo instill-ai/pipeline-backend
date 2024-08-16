@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid"
+	"go.opentelemetry.io/otel/trace"
+	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -14,6 +15,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
+)
+
+const (
+	UploadOutputsWorkflow = "UploadOutputsWorkflow"
 )
 
 func (w *worker) UploadToMinioActivity(ctx context.Context, param *UploadToMinioActivityParam) (string, error) {
@@ -74,38 +79,56 @@ func (w *worker) UploadInputsToMinioActivity(ctx context.Context, param *UploadI
 }
 
 func (w *worker) UploadReceiptActivity(ctx context.Context, param *UploadReceiptActivityParam) error {
-	log, _ := logger.GetZapLogger(ctx)
-	log.Info("UploadReceiptActivity started", zap.String("PipelineTriggerID", param.PipelineTriggerID))
+	w.log.Info("UploadReceiptActivity started", zap.String("PipelineTriggerID", param.PipelineTriggerID))
 
 	url, minioObjectInfo, err := w.minioClient.UploadFile(ctx, param.ObjectName, param.Data, param.ContentType)
 	if err != nil {
-		log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
+		w.log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
 		return err
 	}
 
-	pipelineRun, err := w.repository.GetPipelineRunByUID(uuid.FromStringOrNil(param.PipelineTriggerID))
-	if err != nil {
-		log.Error("failed to fetch pipeline run for saving input data", zap.Error(err))
-		return err
-	}
-
-	// Update the pipelineRun with the new information
-	pipelineRun.RecipeSnapshot = datamodel.JSONB{{
+	err = w.repository.UpdatePipelineRun(param.PipelineTriggerID, &datamodel.PipelineRun{RecipeSnapshot: datamodel.JSONB{{
 		Name: minioObjectInfo.Key,
 		Type: minioObjectInfo.ContentType,
 		Size: minioObjectInfo.Size,
 		URL:  url,
-	}}
-
-	// Log the updated pipeline run
-	err = w.repository.UpsertPipelineRun(pipelineRun)
+	}}})
 	if err != nil {
-		log.Error("failed to log pipeline run with recipe snapshot", zap.Error(err))
+		w.log.Error("failed to log pipeline run with recipe snapshot", zap.Error(err))
+		return err
 	}
 	return nil
 }
 
-func (w *worker) UploadOutputsWorkflow(ctx context.Context, param *UploadInputsToMinioActivityParam) error {
+func (w *worker) UploadOutputsWorkflow(ctx workflow.Context, param *UploadOutputsWorkflowParam) error {
+	eventName := "UploadOutputsWorkflow"
+	w.log.Info(fmt.Sprintf("%s started", eventName), zap.String("PipelineTriggerID", param.PipelineTriggerID))
+
+	objectName := fmt.Sprintf("pipeline-runs/output/%s.json", param.PipelineTriggerID)
+	sCtx, span := tracer.Start(context.Background(), eventName,
+		trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	url, objectInfo, err := w.minioClient.UploadFile(sCtx, objectName, param.Outputs, constant.ContentTypeJSON)
+	if err != nil {
+		w.log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
+		return err
+	}
+
+	outputs := datamodel.JSONB{{
+		Name: objectInfo.Key,
+		Type: objectInfo.ContentType,
+		Size: objectInfo.Size,
+		URL:  url,
+	}}
+
+	err = w.repository.UpdatePipelineRun(param.PipelineTriggerID, &datamodel.PipelineRun{Outputs: outputs})
+	if err != nil {
+		w.log.Error("failed to save pipeline run output data", zap.Error(err))
+		return err
+	}
+
+	w.log.Info(fmt.Sprintf("%s finished", eventName), zap.String("PipelineTriggerID", param.PipelineTriggerID))
 	return nil
 }
 

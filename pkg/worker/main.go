@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/workflow"
+	"go.uber.org/zap"
 
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/minio"
@@ -31,7 +32,7 @@ type Worker interface {
 	UploadToMinioActivity(ctx context.Context, param *UploadToMinioActivityParam) (string, error)
 	UploadInputsToMinioActivity(ctx context.Context, param *UploadInputsToMinioActivityParam) error
 	UploadReceiptActivity(ctx context.Context, param *UploadReceiptActivityParam) error
-	UploadOutputsWorkflow(ctx context.Context, param *UploadInputsToMinioActivityParam) error
+	UploadOutputsWorkflow(ctx workflow.Context, param *UploadOutputsWorkflowParam) error
 }
 
 // worker represents resources required to run Temporal workflow and activity
@@ -41,6 +42,7 @@ type worker struct {
 	influxDBWriteClient api.WriteAPI
 	component           *componentstore.Store
 	minioClient         minio.MinioI
+	log                 *zap.Logger
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
@@ -59,5 +61,6 @@ func NewWorker(
 		influxDBWriteClient: i,
 		component:           componentstore.Init(logger, cs, uh),
 		minioClient:         minioClient,
+		log:                 logger,
 	}
 }

@@ -147,13 +147,15 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		if succeeded {
 			return
 		}
+
+		var errMsg string
 		if err != nil {
-			pipelineRun.Error = null.StringFrom(err.Error())
+			errMsg = err.Error()
 		} else {
-			pipelineRun.Error = null.StringFrom("trigger pipeline run failed due to unknown error")
+			errMsg = "trigger pipeline run failed due to unknown error"
 		}
 
-		err = w.repository.UpsertPipelineRun(pipelineRun)
+		err = w.repository.UpdatePipelineRun(param.SystemVariables.PipelineTriggerID, &datamodel.PipelineRun{Error: null.StringFrom(errMsg)})
 		if err != nil {
 			logger.Error("failed to log pipeline run", zap.Error(err))
 		}
