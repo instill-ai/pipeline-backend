@@ -28,7 +28,7 @@ type UploadOutputsWorkflowParam struct {
 	Outputs           []*structpb.Struct
 }
 
-type UploadReceiptToMinioActivityParam struct {
+type UploadRecipeToMinioActivityParam struct {
 	PipelineTriggerID string
 	UploadToMinioActivityParam
 }

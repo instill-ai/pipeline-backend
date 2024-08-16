@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -92,6 +93,9 @@ type Repository interface {
 	UpdatePipelineRun(ctx context.Context, pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) error
 	UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error
 	UpdateComponentRun(ctx context.Context, pipelineTriggerUID, componentID string, componentRun *datamodel.ComponentRun) error
+
+	GetPaginatedPipelineRunsWithPermissions(ctx context.Context, userID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, dbPipeline *datamodel.Pipeline) ([]datamodel.PipelineRun, int64, error)
+	GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, userID, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, dbPipeline *datamodel.Pipeline) ([]datamodel.ComponentRun, int64, error)
 }
 
 type repository struct {
@@ -1019,4 +1023,126 @@ func (r *repository) UpsertComponentRun(ctx context.Context, componentRun *datam
 func (r *repository) UpdateComponentRun(ctx context.Context, pipelineTriggerUID, componentID string, componentRun *datamodel.ComponentRun) error {
 	uid := uuid.FromStringOrNil(pipelineTriggerUID)
 	return r.db.Model(&datamodel.ComponentRun{}).Where(&datamodel.ComponentRun{PipelineTriggerUID: uid, ComponentID: componentID}).Updates(componentRun).Error
+}
+
+func (r *repository) GetPaginatedPipelineRunsWithPermissions(ctx context.Context, userUID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, dbPipeline *datamodel.Pipeline) ([]datamodel.PipelineRun, int64, error) {
+	var pipelineRuns []datamodel.PipelineRun
+	var totalRows int64
+
+	whereConditions := []string{"pipeline_uid = ?"}
+	whereArgs := []any{pipelineUID}
+
+	var expr *clause.Expr
+	var err error
+	if expr, err = r.TranspileFilter(filter); err != nil {
+		return nil, 0, err
+	}
+	if expr != nil {
+		whereConditions = append(whereConditions, "(?)")
+		whereArgs = append(whereArgs, expr)
+	}
+
+	if dbPipeline.OwnerUID().String() != userUID { // for a runner without ownership, they could only view their own logs
+		whereConditions = append(whereConditions, "triggered_by = ?")
+		whereArgs = append(whereArgs, userUID)
+	} else { // for owner viewing run logging
+		if !dbPipeline.IsPublic() {
+			// for a private pipeline, owner could view their own logs
+			whereConditions = append(whereConditions, "triggered_by = ?")
+			whereArgs = append(whereArgs, userUID)
+		}
+		// for a public pipeline, owner could view all logs
+	}
+
+	var where string
+	if len(whereConditions) > 0 {
+		where = strings.Join(whereConditions, " and ")
+	}
+
+	// Count total rows with permissions
+	err = r.db.Model(&datamodel.PipelineRun{}).
+		Where(where, whereArgs...).
+		Count(&totalRows).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	queryBuilder := r.db.Where(where, whereArgs...)
+
+	if order.Fields == nil || len(order.Fields) == 0 {
+		order.Fields = append(order.Fields, ordering.Field{
+			Path: "started_time",
+			Desc: true,
+		})
+	}
+
+	for _, field := range order.Fields {
+		orderString := strcase.ToSnake(field.Path) + transformBoolToDescString(field.Desc)
+		queryBuilder.Order(orderString)
+	}
+
+	// Retrieve paginated results with permissions
+	err = queryBuilder.
+		Offset(page * pageSize).Limit(pageSize).
+		Find(&pipelineRuns).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return pipelineRuns, totalRows, nil
+}
+
+func (r *repository) GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, userID, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, dbPipeline *datamodel.Pipeline) ([]datamodel.ComponentRun, int64, error) {
+	var componentRuns []datamodel.ComponentRun
+	var totalRows int64
+
+	whereConditions := []string{"pipeline_trigger_uid = ?"}
+	whereArgs := []any{pipelineRunID}
+
+	var expr *clause.Expr
+	var err error
+	if expr, err = r.TranspileFilter(filter); err != nil {
+		return nil, 0, err
+	}
+	if expr != nil {
+		whereConditions = append(whereConditions, "(?)")
+		whereArgs = append(whereArgs, expr)
+	}
+
+	var where string
+	if len(whereConditions) > 0 {
+		where = strings.Join(whereConditions, " and ")
+	}
+
+	// Count total rows
+	err = r.db.Model(&datamodel.ComponentRun{}).
+		Where(where, whereArgs...).
+		Count(&totalRows).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	queryBuilder := r.db.Where(where, whereArgs...)
+
+	if order.Fields == nil || len(order.Fields) == 0 {
+		order.Fields = append(order.Fields, ordering.Field{
+			Path: "started_time",
+			Desc: true,
+		})
+	}
+
+	for _, field := range order.Fields {
+		orderString := strcase.ToSnake(field.Path) + transformBoolToDescString(field.Desc)
+		queryBuilder.Order(orderString)
+	}
+
+	// Retrieve paginated results
+	err = queryBuilder.
+		Offset(page * pageSize).Limit(pageSize).
+		Find(&componentRuns).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return componentRuns, totalRows, nil
 }

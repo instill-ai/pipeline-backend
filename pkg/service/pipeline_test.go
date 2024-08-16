@@ -9,10 +9,11 @@ import (
 	"github.com/go-redis/redismock/v9"
 	"github.com/gofrs/uuid"
 	"github.com/gojuno/minimock/v3"
+	"go.temporal.io/sdk/client"
+
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	"go.temporal.io/sdk/client"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -67,6 +68,7 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 		aclClient,
 		converter,
 		mgmtPrivateClient,
+		nil,
 	)
 
 	aclClient.CheckPermissionMock.Return(true, nil)

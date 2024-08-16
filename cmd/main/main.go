@@ -17,6 +17,7 @@ import (
 	grpczap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	openfga "github.com/openfga/api/proto/openfga/v1"
+	"go.uber.org/zap"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/redis/go-redis/v9"
@@ -32,6 +33,9 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 
+	"github.com/instill-ai/x/temporal"
+	"github.com/instill-ai/x/zapadapter"
+
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
@@ -39,15 +43,15 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/middleware"
+	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
-	"github.com/instill-ai/x/temporal"
-	"github.com/instill-ai/x/zapadapter"
+
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 var propagator propagation.TextMapPropagator
@@ -236,6 +240,12 @@ func main() {
 
 	repository := repository.NewRepository(db, redisClient)
 
+	// Initialize Minio client
+	minioClient, err := minio.NewMinioClientAndInitBucket(ctx, &config.Config.Minio)
+	if err != nil {
+		logger.Fatal("failed to create minio client", zap.Error(err))
+	}
+
 	service := service.NewService(
 		repository,
 		redisClient,
@@ -243,6 +253,7 @@ func main() {
 		&aclClient,
 		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repository, config.Config.Server.InstillCoreHost),
 		mgmtPrivateServiceClient,
+		minioClient,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)

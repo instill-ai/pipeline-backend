@@ -13,6 +13,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
@@ -73,6 +74,9 @@ type Service interface {
 	GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error)
 	ListConnectorDefinitions(context.Context, *pb.ListConnectorDefinitionsRequest) (*pb.ListConnectorDefinitionsResponse, error)
 	GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error)
+
+	ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest, filter filtering.Filter) (*pb.ListPipelineRunsResponse, error)
+	ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error)
 }
 
 // Define a new type to encapsulate the stream data
@@ -89,6 +93,7 @@ type service struct {
 	mgmtPrivateServiceClient mgmtpb.MgmtPrivateServiceClient
 	aclClient                acl.ACLClientInterface
 	converter                Converter
+	minioClient              minio.MinioI
 }
 
 // NewService initiates a service instance
@@ -99,6 +104,7 @@ func NewService(
 	acl acl.ACLClientInterface,
 	c Converter,
 	m mgmtpb.MgmtPrivateServiceClient,
+	minioClient minio.MinioI,
 ) Service {
 	logger, _ := logger.GetZapLogger(context.Background())
 
@@ -110,5 +116,6 @@ func NewService(
 		component:                componentstore.Init(logger, nil, nil),
 		aclClient:                acl,
 		converter:                c,
+		minioClient:              minioClient,
 	}
 }

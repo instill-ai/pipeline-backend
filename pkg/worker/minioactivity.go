@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	UploadOutputsWorkflow = "UploadOutputsWorkflow"
+	UploadOutputsWorkflow = "UploadOutputsToMinioWorkflow"
 )
 
 func (w *worker) UploadToMinioActivity(ctx context.Context, param *UploadToMinioActivityParam) (string, error) {
@@ -78,11 +78,11 @@ func (w *worker) UploadInputsToMinioActivity(ctx context.Context, param *UploadI
 	return nil
 }
 
-func (w *worker) UploadReceiptToMinioActivity(ctx context.Context, param *UploadReceiptToMinioActivityParam) error {
+func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadRecipeToMinioActivityParam) error {
 	log, _ := logger.GetZapLogger(ctx)
 	log.Info("UploadReceiptToMinioActivity started", zap.String("PipelineTriggerID", param.PipelineTriggerID))
 
-	url, minioObjectInfo, err := w.minioClient.UploadFile(ctx, param.ObjectName, param.Data, param.ContentType)
+	url, minioObjectInfo, err := w.minioClient.UploadFileBytes(ctx, param.ObjectName, param.Data, param.ContentType)
 	if err != nil {
 		w.log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
 		return err
@@ -164,6 +164,33 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 	err = w.repository.UpdateComponentRun(ctx, pipelineTriggerID, param.ID, &datamodel.ComponentRun{Inputs: inputs})
 	if err != nil {
 		w.log.Error("failed to save pipeline run input data", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *ComponentActivityResult) error {
+	pipelineTriggerID := param.SystemVariables.PipelineTriggerID
+	w.log.Info("UploadComponentOutputsActivity started", zap.String("PipelineTriggerID", pipelineTriggerID))
+
+	objectName := fmt.Sprintf("component-runs/%s/output/%s.json", pipelineTriggerID, param.ID)
+
+	url, objectInfo, err := w.minioClient.UploadFile(ctx, objectName, param.Outputs, constant.ContentTypeJSON)
+	if err != nil {
+		w.log.Error("failed to upload component run outputs to minio", zap.Error(err))
+		return err
+	}
+
+	outputs := datamodel.JSONB{{
+		Name: objectInfo.Key,
+		Type: objectInfo.ContentType,
+		Size: objectInfo.Size,
+		URL:  url,
+	}}
+
+	err = w.repository.UpdateComponentRun(ctx, pipelineTriggerID, param.ID, &datamodel.ComponentRun{Outputs: outputs})
+	if err != nil {
+		w.log.Error("failed to save pipeline run output data", zap.Error(err))
 		return err
 	}
 	return nil

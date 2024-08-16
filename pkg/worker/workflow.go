@@ -73,6 +73,11 @@ type ComponentActivityParam struct {
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 }
 
+type ComponentActivityResult struct {
+	*ComponentActivityParam
+	Outputs []*structpb.Struct
+}
+
 type PreIteratorActivityParam struct {
 	WorkflowID       string
 	MemoryStorageKey *recipe.BatchMemoryKey
@@ -134,6 +139,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		Source:             param.SystemVariables.PipelineRunSource,
 		TriggeredBy:        param.SystemVariables.PipelineRequesterUID.String(),
 		StartedTime:        startTime,
+	}
+	if pipelineRun.PipelineVersion == "" {
+		pipelineRun.PipelineVersion = "latest"
 	}
 
 	err = w.repository.UpsertPipelineRun(sCtx, pipelineRun)
@@ -247,15 +255,22 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
-	b, err := json.Marshal(r)
+	recipeForUpload := &datamodel.Recipe{
+		Version:   r.Version,
+		On:        r.On,
+		Component: r.Component,
+		Variable:  r.Variable,
+		Output:    r.Output,
+	}
+	b, err := json.Marshal(recipeForUpload)
 	if err != nil {
 		return err
 	}
 
-	uploadReceiptActivity := workflow.ExecuteActivity(ctx, w.UploadReceiptToMinioActivity, &UploadReceiptToMinioActivityParam{
+	uploadRecipeActivity := workflow.ExecuteActivity(ctx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 		UploadToMinioActivityParam: UploadToMinioActivityParam{
-			ObjectName:  fmt.Sprintf("%s.recipe.json", workflowID),
+			ObjectName:  fmt.Sprintf("pipeline-runs/recipe/%s.json", param.SystemVariables.PipelineTriggerID),
 			Data:        b,
 			ContentType: constant.ContentTypeJSON,
 		},
@@ -379,7 +394,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 
 		for idx := range futures {
-			var result ComponentActivityParam
+			var result ComponentActivityResult
 			err = futures[idx].Get(ctx, &result)
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
@@ -394,6 +409,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				sChan <- WorkFlowSignal{Status: statusStep, ID: result.ID}
 			}
 			// todo: upload component outputs
+
+			workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, &result)
 		}
 
 		for batchIdx := range param.BatchSize {
@@ -439,7 +456,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	workflow.Go(ctx, func(ctx workflow.Context) {
-		err = uploadReceiptActivity.Get(ctx, nil)
+		err = uploadRecipeActivity.Get(ctx, nil)
 		if err != nil {
 			logger.Error("failed to upload recipe to MinIO", zap.Error(err))
 		}
@@ -457,7 +474,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	return nil
 }
 
-func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error) {
+func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityResult, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
 
@@ -529,6 +546,16 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	// }
 	// componentRun.Outputs = outputsJSONB
 
+	// test
+	key := fmt.Sprintf("%s:%s", param.SystemVariables.PipelineTriggerID, param.ID)
+	val := w.redisClient.Get(ctx, key).Val()
+	if val != "" {
+		logger.Error(fmt.Sprintf("test by jeremy: key [%s] exists", key))
+	}
+	if err = w.redisClient.Set(ctx, key, 1, time.Minute).Err(); err != nil {
+		logger.Error(fmt.Sprintf("test by jeremy: failed to set key [%s]", key))
+	}
+
 	compMem, err := w.processOutput(batchMemory, param.ID, compOutputs, idxMap)
 	if err != nil {
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
@@ -543,10 +570,14 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 
 	// the data is logged in temporal hence we should only return data that is needed
 	p := &ComponentActivityParam{
-		WorkflowID: param.WorkflowID,
-		ID:         param.ID, // is used by the caller to identify the component
+		WorkflowID:      param.WorkflowID,
+		ID:              param.ID, // is used by the caller to identify the component
+		SystemVariables: param.SystemVariables,
 	}
-	return p, nil
+	return &ComponentActivityResult{
+		ComponentActivityParam: p,
+		Outputs:                compOutputs,
+	}, nil
 }
 
 // func (w *worker) uploadJSONToMinIO(ctx context.Context, data interface{}, workflowID, componentID, prefix string) (datamodel.JSONB, error) {
