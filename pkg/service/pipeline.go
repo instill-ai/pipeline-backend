@@ -26,6 +26,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
+	"gopkg.in/guregu/null.v4"
 
 	workflowpb "go.temporal.io/api/workflow/v1"
 	rpcStatus "google.golang.org/genproto/googleapis/rpc/status"
@@ -36,6 +37,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 
 	"github.com/instill-ai/x/errmsg"
@@ -1132,11 +1134,28 @@ func (s *service) triggerPipeline(
 			err = errmsg.AddMessage(err, applicationErr.Message())
 		}
 
+		repoErr := s.repository.UpdatePipelineRun(ctx, pipelineTriggerID, &datamodel.PipelineRun{Error: null.StringFrom(err.Error())})
+		if repoErr != nil {
+			logger.Error("failed to log pipeline run error", zap.Error(repoErr))
+		}
+
 		return nil, nil, err
 	}
 
-	// todo: upload outputs
-	return s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
+	outputs, triggerMetadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, returnTraces)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	_, err = s.temporalClient.ExecuteWorkflow(ctx, workflowOptions, worker.UploadOutputsWorkflow, &worker.UploadOutputsWorkflowParam{
+		PipelineTriggerID: pipelineTriggerID,
+		Outputs:           outputs,
+	})
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to execute workflow %s", worker.UploadOutputsWorkflow), zap.Error(err))
+	}
+
+	return outputs, triggerMetadata, nil
 }
 
 func (s *service) triggerPipelineWithStream(
@@ -1176,6 +1195,12 @@ func (s *service) triggerPipelineWithStream(
 		requesterUID = userUID
 	}
 
+	runSource := datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API)
+	userAgentValue, ok := runpb.RunSource_value[resource.GetRequestSingleHeader(ctx, constant.HeaderUserAgentKey)]
+	if ok {
+		runSource = datamodel.RunSource(userAgentValue)
+	}
+
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1194,6 +1219,7 @@ func (s *service) triggerPipelineWithStream(
 				PipelineOwnerUID:     ns.NsUID,
 				PipelineUserUID:      userUID,
 				PipelineRequesterUID: requesterUID,
+				PipelineRunSource:    runSource,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			IsStreaming: true,
@@ -1205,7 +1231,8 @@ func (s *service) triggerPipelineWithStream(
 	}
 
 	go func() {
-		const interval = 1 * time.Millisecond
+		// todo: how about tick every 0.1s? do we need to query 1000 times each sec?
+		const interval = 100 * time.Millisecond
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 
@@ -1267,10 +1294,30 @@ func (s *service) triggerPipelineWithStream(
 			err = errmsg.AddMessage(err, applicationErr.Message())
 		}
 
+		repoErr := s.repository.UpdatePipelineRun(ctx, pipelineTriggerID, &datamodel.PipelineRun{Error: null.StringFrom(err.Error())})
+		if repoErr != nil {
+			logger.Error("failed to log pipeline run error", zap.Error(repoErr))
+		}
+
 		return err
 	}
 
-	// todo: upload outputs
+	// todo: should upload outputs here but it seems there is currently some issue with triggerPipelineWithStream.
+	//  TriggerPipelineWorkflow will be triggered repeatedly.
+	// outputs, _, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, r, false)
+	// if err != nil {
+	// 	logger.Error("failed to get stream pipeline run outputs", zap.Error(err))
+	// 	return nil
+	// }
+	//
+	// _, err = s.temporalClient.ExecuteWorkflow(ctx, workflowOptions, worker.UploadOutputsWorkflow, &worker.UploadOutputsWorkflowParam{
+	// 	PipelineTriggerID: pipelineTriggerID,
+	// 	Outputs:           outputs,
+	// })
+	// if err != nil {
+	// 	logger.Error(fmt.Sprintf("failed to execute workflow %s", worker.UploadOutputsWorkflow), zap.Error(err))
+	// }
+
 	return nil
 }
 
@@ -1309,6 +1356,12 @@ func (s *service) triggerAsyncPipeline(
 		requesterUID = userUID
 	}
 
+	runSource := datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API)
+	userAgentValue, ok := runpb.RunSource_value[resource.GetRequestSingleHeader(ctx, constant.HeaderUserAgentKey)]
+	if ok {
+		runSource = datamodel.RunSource(userAgentValue)
+	}
+
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1327,6 +1380,7 @@ func (s *service) triggerAsyncPipeline(
 				PipelineOwnerUID:     ns.NsUID,
 				PipelineUserUID:      userUID,
 				PipelineRequesterUID: requesterUID,
+				PipelineRunSource:    runSource,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode: mgmtpb.Mode_MODE_ASYNC,
@@ -1338,7 +1392,42 @@ func (s *service) triggerAsyncPipeline(
 
 	logger.Info(fmt.Sprintf("started workflow with workflowID %s and RunID %s", we.GetID(), we.GetRunID()))
 
-	// todo: upload outputs in goroutine and wait for trigger ends
+	// wait for trigger ends in goroutine and upload outputs
+	utils.GoSafe(func() {
+		subCtx := context.Background()
+
+		err = we.Get(subCtx, nil)
+		if err != nil {
+			err = fmt.Errorf("%w:%w", ErrTriggerFail, err)
+
+			var applicationErr *temporal.ApplicationError
+			if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
+				err = errmsg.AddMessage(err, applicationErr.Message())
+			}
+
+			repoErr := s.repository.UpdatePipelineRun(ctx, pipelineTriggerID, &datamodel.PipelineRun{Error: null.StringFrom(err.Error())})
+			if repoErr != nil {
+				logger.Error("failed to log async pipeline run error", zap.Error(repoErr))
+			}
+
+			return
+		}
+
+		outputs, _, err := s.getOutputsAndMetadata(subCtx, pipelineTriggerID, r, false)
+		if err != nil {
+			logger.Error("failed to get async pipeline run outputs", zap.Error(err))
+			return
+		}
+
+		_, err = s.temporalClient.ExecuteWorkflow(subCtx, workflowOptions, worker.UploadOutputsWorkflow, &worker.UploadOutputsWorkflowParam{
+			PipelineTriggerID: pipelineTriggerID,
+			Outputs:           outputs,
+		})
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to execute workflow %s", worker.UploadOutputsWorkflow), zap.Error(err))
+		}
+	})
+
 	return &longrunningpb.Operation{
 		Name: fmt.Sprintf("operations/%s", pipelineTriggerID),
 		Done: false,

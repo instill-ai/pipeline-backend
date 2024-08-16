@@ -165,6 +165,8 @@ func main() {
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
 	w.RegisterWorkflow(cw.SchedulePipelineWorkflow)
+	w.RegisterWorkflow(cw.UploadOutputsToMinioWorkflow)
+
 	w.RegisterActivity(cw.ComponentActivity)
 	w.RegisterActivity(cw.PreIteratorActivity)
 	w.RegisterActivity(cw.PostIteratorActivity)
@@ -173,7 +175,6 @@ func main() {
 	w.RegisterActivity(cw.UploadToMinioActivity)
 	w.RegisterActivity(cw.UploadInputsToMinioActivity)
 	w.RegisterActivity(cw.UploadReceiptToMinioActivity)
-	w.RegisterActivity(cw.UploadOutputsToMinioWorkflow)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())

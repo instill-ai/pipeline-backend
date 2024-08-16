@@ -91,6 +91,7 @@ type Repository interface {
 	UpsertPipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) error
 	UpdatePipelineRun(ctx context.Context, pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) error
 	UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error
+	UpdateComponentRun(ctx context.Context, pipelineTriggerUID, componentID string, componentRun *datamodel.ComponentRun) error
 }
 
 type repository struct {
@@ -1013,4 +1014,9 @@ func (r *repository) UpdatePipelineRun(ctx context.Context, pipelineTriggerUID s
 
 func (r *repository) UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error {
 	return r.db.Save(componentRun).Error
+}
+
+func (r *repository) UpdateComponentRun(ctx context.Context, pipelineTriggerUID, componentID string, componentRun *datamodel.ComponentRun) error {
+	uid := uuid.FromStringOrNil(pipelineTriggerUID)
+	return r.db.Model(&datamodel.ComponentRun{}).Where(&datamodel.ComponentRun{PipelineTriggerUID: uid, ComponentID: componentID}).Updates(componentRun).Error
 }
