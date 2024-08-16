@@ -24,6 +24,8 @@ const TaskQueue = "pipeline-backend"
 type Worker interface {
 	TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error
 	SchedulePipelineWorkflow(ctx workflow.Context, param *SchedulePipelineWorkflowParam) error
+	UploadOutputsWorkflow(ctx workflow.Context, param *UploadOutputsWorkflowParam) error
+
 	ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error)
 	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
@@ -32,7 +34,7 @@ type Worker interface {
 	UploadToMinioActivity(ctx context.Context, param *UploadToMinioActivityParam) (string, error)
 	UploadInputsToMinioActivity(ctx context.Context, param *UploadInputsToMinioActivityParam) error
 	UploadReceiptActivity(ctx context.Context, param *UploadReceiptActivityParam) error
-	UploadOutputsWorkflow(ctx workflow.Context, param *UploadOutputsWorkflowParam) error
+	UploadComponentInputsActivity(ctx context.Context, param *ComponentActivityParam) error
 }
 
 // worker represents resources required to run Temporal workflow and activity

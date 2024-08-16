@@ -28,12 +28,6 @@ type UploadOutputsWorkflowParam struct {
 	Outputs           []*structpb.Struct
 }
 
-type UploadComponentInputsParam struct {
-	PipelineTriggerID string
-	ComponentID       string
-	MemoryStorageKey  *recipe.BatchMemoryKey
-}
-
 type UploadReceiptActivityParam struct {
 	PipelineTriggerID string
 	UploadToMinioActivityParam

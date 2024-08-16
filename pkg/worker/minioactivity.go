@@ -132,7 +132,38 @@ func (w *worker) UploadOutputsWorkflow(ctx workflow.Context, param *UploadOutput
 	return nil
 }
 
-func (w *worker) UploadComponentInputsActivity(ctx context.Context, param UploadComponentInputsParam) error {
+func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *ComponentActivityParam) error {
+	pipelineTriggerID := param.SystemVariables.PipelineTriggerID
+	w.log.Info("UploadComponentInputsActivity started", zap.String("PipelineTriggerID", pipelineTriggerID))
 
+	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
+	if err != nil {
+		return err
+	}
+
+	compInputs, _, err := w.processInput(batchMemory, param.ID, param.UpstreamIDs, param.Condition, param.Input)
+	if err != nil {
+		return err
+	}
+	objectName := fmt.Sprintf("component-runs/%s/input/%s.json", param.ID, pipelineTriggerID)
+
+	url, objectInfo, err := w.minioClient.UploadFile(ctx, objectName, compInputs, constant.ContentTypeJSON)
+	if err != nil {
+		w.log.Error("failed to upload component run inputs to minio", zap.Error(err))
+		return err
+	}
+
+	inputs := datamodel.JSONB{{
+		Name: objectInfo.Key,
+		Type: objectInfo.ContentType,
+		Size: objectInfo.Size,
+		URL:  url,
+	}}
+
+	err = w.repository.UpdateComponentRun(pipelineTriggerID, param.ID, &datamodel.ComponentRun{Inputs: inputs})
+	if err != nil {
+		w.log.Error("failed to save pipeline run input data", zap.Error(err))
+		return err
+	}
 	return nil
 }
