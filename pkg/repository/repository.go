@@ -21,10 +21,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
+
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+
 	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/paginate"
 
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -84,6 +86,9 @@ type Repository interface {
 	// TODO this function can remain unexported once connector and operator
 	// definition lists are removed.
 	TranspileFilter(filtering.Filter) (*clause.Expr, error)
+
+	UpsertPipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) error
+	UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error
 }
 
 type repository struct {
@@ -983,4 +988,12 @@ func (r *repository) AddPipelineClones(ctx context.Context, pipelineUID uuid.UUI
 	}
 
 	return nil
+}
+
+func (r *repository) UpsertPipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) error {
+	return r.db.Save(pipelineRun).Error
+}
+
+func (r *repository) UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error {
+	return r.db.Save(componentRun).Error
 }

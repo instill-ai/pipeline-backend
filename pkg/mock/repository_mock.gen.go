@@ -233,6 +233,18 @@ type RepositoryMock struct {
 	afterUpsertComponentDefinitionCounter  uint64
 	beforeUpsertComponentDefinitionCounter uint64
 	UpsertComponentDefinitionMock          mRepositoryMockUpsertComponentDefinition
+
+	funcUpsertComponentRun          func(ctx context.Context, componentRun *datamodel.ComponentRun) (err error)
+	inspectFuncUpsertComponentRun   func(ctx context.Context, componentRun *datamodel.ComponentRun)
+	afterUpsertComponentRunCounter  uint64
+	beforeUpsertComponentRunCounter uint64
+	UpsertComponentRunMock          mRepositoryMockUpsertComponentRun
+
+	funcUpsertPipelineRun          func(ctx context.Context, pipelineRun *datamodel.PipelineRun) (err error)
+	inspectFuncUpsertPipelineRun   func(ctx context.Context, pipelineRun *datamodel.PipelineRun)
+	afterUpsertPipelineRunCounter  uint64
+	beforeUpsertPipelineRunCounter uint64
+	UpsertPipelineRunMock          mRepositoryMockUpsertPipelineRun
 }
 
 // NewRepositoryMock returns a mock for repository.Repository
@@ -347,6 +359,12 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 
 	m.UpsertComponentDefinitionMock = mRepositoryMockUpsertComponentDefinition{mock: m}
 	m.UpsertComponentDefinitionMock.callArgs = []*RepositoryMockUpsertComponentDefinitionParams{}
+
+	m.UpsertComponentRunMock = mRepositoryMockUpsertComponentRun{mock: m}
+	m.UpsertComponentRunMock.callArgs = []*RepositoryMockUpsertComponentRunParams{}
+
+	m.UpsertPipelineRunMock = mRepositoryMockUpsertPipelineRun{mock: m}
+	m.UpsertPipelineRunMock.callArgs = []*RepositoryMockUpsertPipelineRunParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
@@ -13345,6 +13363,646 @@ func (m *RepositoryMock) MinimockUpsertComponentDefinitionInspect() {
 	}
 }
 
+type mRepositoryMockUpsertComponentRun struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockUpsertComponentRunExpectation
+	expectations       []*RepositoryMockUpsertComponentRunExpectation
+
+	callArgs []*RepositoryMockUpsertComponentRunParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// RepositoryMockUpsertComponentRunExpectation specifies expectation struct of the Repository.UpsertComponentRun
+type RepositoryMockUpsertComponentRunExpectation struct {
+	mock      *RepositoryMock
+	params    *RepositoryMockUpsertComponentRunParams
+	paramPtrs *RepositoryMockUpsertComponentRunParamPtrs
+	results   *RepositoryMockUpsertComponentRunResults
+	Counter   uint64
+}
+
+// RepositoryMockUpsertComponentRunParams contains parameters of the Repository.UpsertComponentRun
+type RepositoryMockUpsertComponentRunParams struct {
+	ctx          context.Context
+	componentRun *datamodel.ComponentRun
+}
+
+// RepositoryMockUpsertComponentRunParamPtrs contains pointers to parameters of the Repository.UpsertComponentRun
+type RepositoryMockUpsertComponentRunParamPtrs struct {
+	ctx          *context.Context
+	componentRun **datamodel.ComponentRun
+}
+
+// RepositoryMockUpsertComponentRunResults contains results of the Repository.UpsertComponentRun
+type RepositoryMockUpsertComponentRunResults struct {
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) Optional() *mRepositoryMockUpsertComponentRun {
+	mmUpsertComponentRun.optional = true
+	return mmUpsertComponentRun
+}
+
+// Expect sets up expected params for Repository.UpsertComponentRun
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) Expect(ctx context.Context, componentRun *datamodel.ComponentRun) *mRepositoryMockUpsertComponentRun {
+	if mmUpsertComponentRun.mock.funcUpsertComponentRun != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("RepositoryMock.UpsertComponentRun mock is already set by Set")
+	}
+
+	if mmUpsertComponentRun.defaultExpectation == nil {
+		mmUpsertComponentRun.defaultExpectation = &RepositoryMockUpsertComponentRunExpectation{}
+	}
+
+	if mmUpsertComponentRun.defaultExpectation.paramPtrs != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("RepositoryMock.UpsertComponentRun mock is already set by ExpectParams functions")
+	}
+
+	mmUpsertComponentRun.defaultExpectation.params = &RepositoryMockUpsertComponentRunParams{ctx, componentRun}
+	for _, e := range mmUpsertComponentRun.expectations {
+		if minimock.Equal(e.params, mmUpsertComponentRun.defaultExpectation.params) {
+			mmUpsertComponentRun.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpsertComponentRun.defaultExpectation.params)
+		}
+	}
+
+	return mmUpsertComponentRun
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.UpsertComponentRun
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpsertComponentRun {
+	if mmUpsertComponentRun.mock.funcUpsertComponentRun != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("RepositoryMock.UpsertComponentRun mock is already set by Set")
+	}
+
+	if mmUpsertComponentRun.defaultExpectation == nil {
+		mmUpsertComponentRun.defaultExpectation = &RepositoryMockUpsertComponentRunExpectation{}
+	}
+
+	if mmUpsertComponentRun.defaultExpectation.params != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("RepositoryMock.UpsertComponentRun mock is already set by Expect")
+	}
+
+	if mmUpsertComponentRun.defaultExpectation.paramPtrs == nil {
+		mmUpsertComponentRun.defaultExpectation.paramPtrs = &RepositoryMockUpsertComponentRunParamPtrs{}
+	}
+	mmUpsertComponentRun.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmUpsertComponentRun
+}
+
+// ExpectComponentRunParam2 sets up expected param componentRun for Repository.UpsertComponentRun
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) ExpectComponentRunParam2(componentRun *datamodel.ComponentRun) *mRepositoryMockUpsertComponentRun {
+	if mmUpsertComponentRun.mock.funcUpsertComponentRun != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("RepositoryMock.UpsertComponentRun mock is already set by Set")
+	}
+
+	if mmUpsertComponentRun.defaultExpectation == nil {
+		mmUpsertComponentRun.defaultExpectation = &RepositoryMockUpsertComponentRunExpectation{}
+	}
+
+	if mmUpsertComponentRun.defaultExpectation.params != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("RepositoryMock.UpsertComponentRun mock is already set by Expect")
+	}
+
+	if mmUpsertComponentRun.defaultExpectation.paramPtrs == nil {
+		mmUpsertComponentRun.defaultExpectation.paramPtrs = &RepositoryMockUpsertComponentRunParamPtrs{}
+	}
+	mmUpsertComponentRun.defaultExpectation.paramPtrs.componentRun = &componentRun
+
+	return mmUpsertComponentRun
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.UpsertComponentRun
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) Inspect(f func(ctx context.Context, componentRun *datamodel.ComponentRun)) *mRepositoryMockUpsertComponentRun {
+	if mmUpsertComponentRun.mock.inspectFuncUpsertComponentRun != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpsertComponentRun")
+	}
+
+	mmUpsertComponentRun.mock.inspectFuncUpsertComponentRun = f
+
+	return mmUpsertComponentRun
+}
+
+// Return sets up results that will be returned by Repository.UpsertComponentRun
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) Return(err error) *RepositoryMock {
+	if mmUpsertComponentRun.mock.funcUpsertComponentRun != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("RepositoryMock.UpsertComponentRun mock is already set by Set")
+	}
+
+	if mmUpsertComponentRun.defaultExpectation == nil {
+		mmUpsertComponentRun.defaultExpectation = &RepositoryMockUpsertComponentRunExpectation{mock: mmUpsertComponentRun.mock}
+	}
+	mmUpsertComponentRun.defaultExpectation.results = &RepositoryMockUpsertComponentRunResults{err}
+	return mmUpsertComponentRun.mock
+}
+
+// Set uses given function f to mock the Repository.UpsertComponentRun method
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) Set(f func(ctx context.Context, componentRun *datamodel.ComponentRun) (err error)) *RepositoryMock {
+	if mmUpsertComponentRun.defaultExpectation != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("Default expectation is already set for the Repository.UpsertComponentRun method")
+	}
+
+	if len(mmUpsertComponentRun.expectations) > 0 {
+		mmUpsertComponentRun.mock.t.Fatalf("Some expectations are already set for the Repository.UpsertComponentRun method")
+	}
+
+	mmUpsertComponentRun.mock.funcUpsertComponentRun = f
+	return mmUpsertComponentRun.mock
+}
+
+// When sets expectation for the Repository.UpsertComponentRun which will trigger the result defined by the following
+// Then helper
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) When(ctx context.Context, componentRun *datamodel.ComponentRun) *RepositoryMockUpsertComponentRunExpectation {
+	if mmUpsertComponentRun.mock.funcUpsertComponentRun != nil {
+		mmUpsertComponentRun.mock.t.Fatalf("RepositoryMock.UpsertComponentRun mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockUpsertComponentRunExpectation{
+		mock:   mmUpsertComponentRun.mock,
+		params: &RepositoryMockUpsertComponentRunParams{ctx, componentRun},
+	}
+	mmUpsertComponentRun.expectations = append(mmUpsertComponentRun.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.UpsertComponentRun return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockUpsertComponentRunExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockUpsertComponentRunResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.UpsertComponentRun should be invoked
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) Times(n uint64) *mRepositoryMockUpsertComponentRun {
+	if n == 0 {
+		mmUpsertComponentRun.mock.t.Fatalf("Times of RepositoryMock.UpsertComponentRun mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpsertComponentRun.expectedInvocations, n)
+	return mmUpsertComponentRun
+}
+
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) invocationsDone() bool {
+	if len(mmUpsertComponentRun.expectations) == 0 && mmUpsertComponentRun.defaultExpectation == nil && mmUpsertComponentRun.mock.funcUpsertComponentRun == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpsertComponentRun.mock.afterUpsertComponentRunCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpsertComponentRun.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpsertComponentRun implements repository.Repository
+func (mmUpsertComponentRun *RepositoryMock) UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) (err error) {
+	mm_atomic.AddUint64(&mmUpsertComponentRun.beforeUpsertComponentRunCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpsertComponentRun.afterUpsertComponentRunCounter, 1)
+
+	if mmUpsertComponentRun.inspectFuncUpsertComponentRun != nil {
+		mmUpsertComponentRun.inspectFuncUpsertComponentRun(ctx, componentRun)
+	}
+
+	mm_params := RepositoryMockUpsertComponentRunParams{ctx, componentRun}
+
+	// Record call args
+	mmUpsertComponentRun.UpsertComponentRunMock.mutex.Lock()
+	mmUpsertComponentRun.UpsertComponentRunMock.callArgs = append(mmUpsertComponentRun.UpsertComponentRunMock.callArgs, &mm_params)
+	mmUpsertComponentRun.UpsertComponentRunMock.mutex.Unlock()
+
+	for _, e := range mmUpsertComponentRun.UpsertComponentRunMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmUpsertComponentRun.UpsertComponentRunMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpsertComponentRun.UpsertComponentRunMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpsertComponentRun.UpsertComponentRunMock.defaultExpectation.params
+		mm_want_ptrs := mmUpsertComponentRun.UpsertComponentRunMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockUpsertComponentRunParams{ctx, componentRun}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpsertComponentRun.t.Errorf("RepositoryMock.UpsertComponentRun got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.componentRun != nil && !minimock.Equal(*mm_want_ptrs.componentRun, mm_got.componentRun) {
+				mmUpsertComponentRun.t.Errorf("RepositoryMock.UpsertComponentRun got unexpected parameter componentRun, want: %#v, got: %#v%s\n", *mm_want_ptrs.componentRun, mm_got.componentRun, minimock.Diff(*mm_want_ptrs.componentRun, mm_got.componentRun))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpsertComponentRun.t.Errorf("RepositoryMock.UpsertComponentRun got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpsertComponentRun.UpsertComponentRunMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpsertComponentRun.t.Fatal("No results are set for the RepositoryMock.UpsertComponentRun")
+		}
+		return (*mm_results).err
+	}
+	if mmUpsertComponentRun.funcUpsertComponentRun != nil {
+		return mmUpsertComponentRun.funcUpsertComponentRun(ctx, componentRun)
+	}
+	mmUpsertComponentRun.t.Fatalf("Unexpected call to RepositoryMock.UpsertComponentRun. %v %v", ctx, componentRun)
+	return
+}
+
+// UpsertComponentRunAfterCounter returns a count of finished RepositoryMock.UpsertComponentRun invocations
+func (mmUpsertComponentRun *RepositoryMock) UpsertComponentRunAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpsertComponentRun.afterUpsertComponentRunCounter)
+}
+
+// UpsertComponentRunBeforeCounter returns a count of RepositoryMock.UpsertComponentRun invocations
+func (mmUpsertComponentRun *RepositoryMock) UpsertComponentRunBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpsertComponentRun.beforeUpsertComponentRunCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.UpsertComponentRun.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpsertComponentRun *mRepositoryMockUpsertComponentRun) Calls() []*RepositoryMockUpsertComponentRunParams {
+	mmUpsertComponentRun.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockUpsertComponentRunParams, len(mmUpsertComponentRun.callArgs))
+	copy(argCopy, mmUpsertComponentRun.callArgs)
+
+	mmUpsertComponentRun.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpsertComponentRunDone returns true if the count of the UpsertComponentRun invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockUpsertComponentRunDone() bool {
+	if m.UpsertComponentRunMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpsertComponentRunMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpsertComponentRunMock.invocationsDone()
+}
+
+// MinimockUpsertComponentRunInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockUpsertComponentRunInspect() {
+	for _, e := range m.UpsertComponentRunMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.UpsertComponentRun with params: %#v", *e.params)
+		}
+	}
+
+	afterUpsertComponentRunCounter := mm_atomic.LoadUint64(&m.afterUpsertComponentRunCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpsertComponentRunMock.defaultExpectation != nil && afterUpsertComponentRunCounter < 1 {
+		if m.UpsertComponentRunMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.UpsertComponentRun")
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.UpsertComponentRun with params: %#v", *m.UpsertComponentRunMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpsertComponentRun != nil && afterUpsertComponentRunCounter < 1 {
+		m.t.Error("Expected call to RepositoryMock.UpsertComponentRun")
+	}
+
+	if !m.UpsertComponentRunMock.invocationsDone() && afterUpsertComponentRunCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.UpsertComponentRun but found %d calls",
+			mm_atomic.LoadUint64(&m.UpsertComponentRunMock.expectedInvocations), afterUpsertComponentRunCounter)
+	}
+}
+
+type mRepositoryMockUpsertPipelineRun struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockUpsertPipelineRunExpectation
+	expectations       []*RepositoryMockUpsertPipelineRunExpectation
+
+	callArgs []*RepositoryMockUpsertPipelineRunParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// RepositoryMockUpsertPipelineRunExpectation specifies expectation struct of the Repository.UpsertPipelineRun
+type RepositoryMockUpsertPipelineRunExpectation struct {
+	mock      *RepositoryMock
+	params    *RepositoryMockUpsertPipelineRunParams
+	paramPtrs *RepositoryMockUpsertPipelineRunParamPtrs
+	results   *RepositoryMockUpsertPipelineRunResults
+	Counter   uint64
+}
+
+// RepositoryMockUpsertPipelineRunParams contains parameters of the Repository.UpsertPipelineRun
+type RepositoryMockUpsertPipelineRunParams struct {
+	ctx         context.Context
+	pipelineRun *datamodel.PipelineRun
+}
+
+// RepositoryMockUpsertPipelineRunParamPtrs contains pointers to parameters of the Repository.UpsertPipelineRun
+type RepositoryMockUpsertPipelineRunParamPtrs struct {
+	ctx         *context.Context
+	pipelineRun **datamodel.PipelineRun
+}
+
+// RepositoryMockUpsertPipelineRunResults contains results of the Repository.UpsertPipelineRun
+type RepositoryMockUpsertPipelineRunResults struct {
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) Optional() *mRepositoryMockUpsertPipelineRun {
+	mmUpsertPipelineRun.optional = true
+	return mmUpsertPipelineRun
+}
+
+// Expect sets up expected params for Repository.UpsertPipelineRun
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) Expect(ctx context.Context, pipelineRun *datamodel.PipelineRun) *mRepositoryMockUpsertPipelineRun {
+	if mmUpsertPipelineRun.mock.funcUpsertPipelineRun != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("RepositoryMock.UpsertPipelineRun mock is already set by Set")
+	}
+
+	if mmUpsertPipelineRun.defaultExpectation == nil {
+		mmUpsertPipelineRun.defaultExpectation = &RepositoryMockUpsertPipelineRunExpectation{}
+	}
+
+	if mmUpsertPipelineRun.defaultExpectation.paramPtrs != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("RepositoryMock.UpsertPipelineRun mock is already set by ExpectParams functions")
+	}
+
+	mmUpsertPipelineRun.defaultExpectation.params = &RepositoryMockUpsertPipelineRunParams{ctx, pipelineRun}
+	for _, e := range mmUpsertPipelineRun.expectations {
+		if minimock.Equal(e.params, mmUpsertPipelineRun.defaultExpectation.params) {
+			mmUpsertPipelineRun.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpsertPipelineRun.defaultExpectation.params)
+		}
+	}
+
+	return mmUpsertPipelineRun
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.UpsertPipelineRun
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) ExpectCtxParam1(ctx context.Context) *mRepositoryMockUpsertPipelineRun {
+	if mmUpsertPipelineRun.mock.funcUpsertPipelineRun != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("RepositoryMock.UpsertPipelineRun mock is already set by Set")
+	}
+
+	if mmUpsertPipelineRun.defaultExpectation == nil {
+		mmUpsertPipelineRun.defaultExpectation = &RepositoryMockUpsertPipelineRunExpectation{}
+	}
+
+	if mmUpsertPipelineRun.defaultExpectation.params != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("RepositoryMock.UpsertPipelineRun mock is already set by Expect")
+	}
+
+	if mmUpsertPipelineRun.defaultExpectation.paramPtrs == nil {
+		mmUpsertPipelineRun.defaultExpectation.paramPtrs = &RepositoryMockUpsertPipelineRunParamPtrs{}
+	}
+	mmUpsertPipelineRun.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmUpsertPipelineRun
+}
+
+// ExpectPipelineRunParam2 sets up expected param pipelineRun for Repository.UpsertPipelineRun
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) ExpectPipelineRunParam2(pipelineRun *datamodel.PipelineRun) *mRepositoryMockUpsertPipelineRun {
+	if mmUpsertPipelineRun.mock.funcUpsertPipelineRun != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("RepositoryMock.UpsertPipelineRun mock is already set by Set")
+	}
+
+	if mmUpsertPipelineRun.defaultExpectation == nil {
+		mmUpsertPipelineRun.defaultExpectation = &RepositoryMockUpsertPipelineRunExpectation{}
+	}
+
+	if mmUpsertPipelineRun.defaultExpectation.params != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("RepositoryMock.UpsertPipelineRun mock is already set by Expect")
+	}
+
+	if mmUpsertPipelineRun.defaultExpectation.paramPtrs == nil {
+		mmUpsertPipelineRun.defaultExpectation.paramPtrs = &RepositoryMockUpsertPipelineRunParamPtrs{}
+	}
+	mmUpsertPipelineRun.defaultExpectation.paramPtrs.pipelineRun = &pipelineRun
+
+	return mmUpsertPipelineRun
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.UpsertPipelineRun
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) Inspect(f func(ctx context.Context, pipelineRun *datamodel.PipelineRun)) *mRepositoryMockUpsertPipelineRun {
+	if mmUpsertPipelineRun.mock.inspectFuncUpsertPipelineRun != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("Inspect function is already set for RepositoryMock.UpsertPipelineRun")
+	}
+
+	mmUpsertPipelineRun.mock.inspectFuncUpsertPipelineRun = f
+
+	return mmUpsertPipelineRun
+}
+
+// Return sets up results that will be returned by Repository.UpsertPipelineRun
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) Return(err error) *RepositoryMock {
+	if mmUpsertPipelineRun.mock.funcUpsertPipelineRun != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("RepositoryMock.UpsertPipelineRun mock is already set by Set")
+	}
+
+	if mmUpsertPipelineRun.defaultExpectation == nil {
+		mmUpsertPipelineRun.defaultExpectation = &RepositoryMockUpsertPipelineRunExpectation{mock: mmUpsertPipelineRun.mock}
+	}
+	mmUpsertPipelineRun.defaultExpectation.results = &RepositoryMockUpsertPipelineRunResults{err}
+	return mmUpsertPipelineRun.mock
+}
+
+// Set uses given function f to mock the Repository.UpsertPipelineRun method
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) Set(f func(ctx context.Context, pipelineRun *datamodel.PipelineRun) (err error)) *RepositoryMock {
+	if mmUpsertPipelineRun.defaultExpectation != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("Default expectation is already set for the Repository.UpsertPipelineRun method")
+	}
+
+	if len(mmUpsertPipelineRun.expectations) > 0 {
+		mmUpsertPipelineRun.mock.t.Fatalf("Some expectations are already set for the Repository.UpsertPipelineRun method")
+	}
+
+	mmUpsertPipelineRun.mock.funcUpsertPipelineRun = f
+	return mmUpsertPipelineRun.mock
+}
+
+// When sets expectation for the Repository.UpsertPipelineRun which will trigger the result defined by the following
+// Then helper
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) When(ctx context.Context, pipelineRun *datamodel.PipelineRun) *RepositoryMockUpsertPipelineRunExpectation {
+	if mmUpsertPipelineRun.mock.funcUpsertPipelineRun != nil {
+		mmUpsertPipelineRun.mock.t.Fatalf("RepositoryMock.UpsertPipelineRun mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockUpsertPipelineRunExpectation{
+		mock:   mmUpsertPipelineRun.mock,
+		params: &RepositoryMockUpsertPipelineRunParams{ctx, pipelineRun},
+	}
+	mmUpsertPipelineRun.expectations = append(mmUpsertPipelineRun.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.UpsertPipelineRun return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockUpsertPipelineRunExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockUpsertPipelineRunResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.UpsertPipelineRun should be invoked
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) Times(n uint64) *mRepositoryMockUpsertPipelineRun {
+	if n == 0 {
+		mmUpsertPipelineRun.mock.t.Fatalf("Times of RepositoryMock.UpsertPipelineRun mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpsertPipelineRun.expectedInvocations, n)
+	return mmUpsertPipelineRun
+}
+
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) invocationsDone() bool {
+	if len(mmUpsertPipelineRun.expectations) == 0 && mmUpsertPipelineRun.defaultExpectation == nil && mmUpsertPipelineRun.mock.funcUpsertPipelineRun == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpsertPipelineRun.mock.afterUpsertPipelineRunCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpsertPipelineRun.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpsertPipelineRun implements repository.Repository
+func (mmUpsertPipelineRun *RepositoryMock) UpsertPipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) (err error) {
+	mm_atomic.AddUint64(&mmUpsertPipelineRun.beforeUpsertPipelineRunCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpsertPipelineRun.afterUpsertPipelineRunCounter, 1)
+
+	if mmUpsertPipelineRun.inspectFuncUpsertPipelineRun != nil {
+		mmUpsertPipelineRun.inspectFuncUpsertPipelineRun(ctx, pipelineRun)
+	}
+
+	mm_params := RepositoryMockUpsertPipelineRunParams{ctx, pipelineRun}
+
+	// Record call args
+	mmUpsertPipelineRun.UpsertPipelineRunMock.mutex.Lock()
+	mmUpsertPipelineRun.UpsertPipelineRunMock.callArgs = append(mmUpsertPipelineRun.UpsertPipelineRunMock.callArgs, &mm_params)
+	mmUpsertPipelineRun.UpsertPipelineRunMock.mutex.Unlock()
+
+	for _, e := range mmUpsertPipelineRun.UpsertPipelineRunMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmUpsertPipelineRun.UpsertPipelineRunMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpsertPipelineRun.UpsertPipelineRunMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpsertPipelineRun.UpsertPipelineRunMock.defaultExpectation.params
+		mm_want_ptrs := mmUpsertPipelineRun.UpsertPipelineRunMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockUpsertPipelineRunParams{ctx, pipelineRun}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpsertPipelineRun.t.Errorf("RepositoryMock.UpsertPipelineRun got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.pipelineRun != nil && !minimock.Equal(*mm_want_ptrs.pipelineRun, mm_got.pipelineRun) {
+				mmUpsertPipelineRun.t.Errorf("RepositoryMock.UpsertPipelineRun got unexpected parameter pipelineRun, want: %#v, got: %#v%s\n", *mm_want_ptrs.pipelineRun, mm_got.pipelineRun, minimock.Diff(*mm_want_ptrs.pipelineRun, mm_got.pipelineRun))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpsertPipelineRun.t.Errorf("RepositoryMock.UpsertPipelineRun got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpsertPipelineRun.UpsertPipelineRunMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpsertPipelineRun.t.Fatal("No results are set for the RepositoryMock.UpsertPipelineRun")
+		}
+		return (*mm_results).err
+	}
+	if mmUpsertPipelineRun.funcUpsertPipelineRun != nil {
+		return mmUpsertPipelineRun.funcUpsertPipelineRun(ctx, pipelineRun)
+	}
+	mmUpsertPipelineRun.t.Fatalf("Unexpected call to RepositoryMock.UpsertPipelineRun. %v %v", ctx, pipelineRun)
+	return
+}
+
+// UpsertPipelineRunAfterCounter returns a count of finished RepositoryMock.UpsertPipelineRun invocations
+func (mmUpsertPipelineRun *RepositoryMock) UpsertPipelineRunAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpsertPipelineRun.afterUpsertPipelineRunCounter)
+}
+
+// UpsertPipelineRunBeforeCounter returns a count of RepositoryMock.UpsertPipelineRun invocations
+func (mmUpsertPipelineRun *RepositoryMock) UpsertPipelineRunBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpsertPipelineRun.beforeUpsertPipelineRunCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.UpsertPipelineRun.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpsertPipelineRun *mRepositoryMockUpsertPipelineRun) Calls() []*RepositoryMockUpsertPipelineRunParams {
+	mmUpsertPipelineRun.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockUpsertPipelineRunParams, len(mmUpsertPipelineRun.callArgs))
+	copy(argCopy, mmUpsertPipelineRun.callArgs)
+
+	mmUpsertPipelineRun.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpsertPipelineRunDone returns true if the count of the UpsertPipelineRun invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockUpsertPipelineRunDone() bool {
+	if m.UpsertPipelineRunMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpsertPipelineRunMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpsertPipelineRunMock.invocationsDone()
+}
+
+// MinimockUpsertPipelineRunInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockUpsertPipelineRunInspect() {
+	for _, e := range m.UpsertPipelineRunMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.UpsertPipelineRun with params: %#v", *e.params)
+		}
+	}
+
+	afterUpsertPipelineRunCounter := mm_atomic.LoadUint64(&m.afterUpsertPipelineRunCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpsertPipelineRunMock.defaultExpectation != nil && afterUpsertPipelineRunCounter < 1 {
+		if m.UpsertPipelineRunMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.UpsertPipelineRun")
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.UpsertPipelineRun with params: %#v", *m.UpsertPipelineRunMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpsertPipelineRun != nil && afterUpsertPipelineRunCounter < 1 {
+		m.t.Error("Expected call to RepositoryMock.UpsertPipelineRun")
+	}
+
+	if !m.UpsertPipelineRunMock.invocationsDone() && afterUpsertPipelineRunCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.UpsertPipelineRun but found %d calls",
+			mm_atomic.LoadUint64(&m.UpsertPipelineRunMock.expectedInvocations), afterUpsertPipelineRunCounter)
+	}
+}
+
 // MinimockFinish checks that all mocked methods have been called the expected number of times
 func (m *RepositoryMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
@@ -13418,6 +14076,10 @@ func (m *RepositoryMock) MinimockFinish() {
 			m.MinimockUpdateNamespaceSecretByIDInspect()
 
 			m.MinimockUpsertComponentDefinitionInspect()
+
+			m.MinimockUpsertComponentRunInspect()
+
+			m.MinimockUpsertPipelineRunInspect()
 		}
 	})
 }
@@ -13475,5 +14137,7 @@ func (m *RepositoryMock) minimockDone() bool {
 		m.MinimockUpdateNamespacePipelineReleaseByIDDone() &&
 		m.MinimockUpdateNamespacePipelineReleaseIDByIDDone() &&
 		m.MinimockUpdateNamespaceSecretByIDDone() &&
-		m.MinimockUpsertComponentDefinitionDone()
+		m.MinimockUpsertComponentDefinitionDone() &&
+		m.MinimockUpsertComponentRunDone() &&
+		m.MinimockUpsertPipelineRunDone()
 }
