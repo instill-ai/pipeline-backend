@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.36.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.35.0-beta...v0.36.0-beta) (2024-08-16)
+
+
+### Features
+
+* **minio:** added minio connection ([#593](https://github.com/instill-ai/pipeline-backend/issues/593)) ([bf23217](https://github.com/instill-ai/pipeline-backend/commit/bf23217f3c950c9c5ac560d6f0b91ac204537f91))
+
+
+### Bug Fixes
+
+* fix go-fitz not being able to be built into a binary ([#597](https://github.com/instill-ai/pipeline-backend/issues/597)) ([a0a0d73](https://github.com/instill-ai/pipeline-backend/commit/a0a0d73bc7d9315c332c86581403269235202ae2))
+
 ## [0.35.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.34.1-beta...v0.35.0-beta) (2024-08-13)
 
 
