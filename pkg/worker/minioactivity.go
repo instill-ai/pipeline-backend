@@ -65,7 +65,7 @@ func (w *worker) UploadInputsToMinioActivity(ctx context.Context, param *UploadI
 		URL:  url,
 	}}
 
-	err = w.repository.UpdatePipelineRun(param.PipelineTriggerID, &datamodel.PipelineRun{Inputs: inputs})
+	err = w.repository.UpdatePipelineRun(ctx, param.PipelineTriggerID, &datamodel.PipelineRun{Inputs: inputs})
 	if err != nil {
 		log.Error("failed to save pipeline run input data", zap.Error(err))
 		return err
@@ -73,9 +73,9 @@ func (w *worker) UploadInputsToMinioActivity(ctx context.Context, param *UploadI
 	return nil
 }
 
-func (w *worker) UploadReceiptActivity(ctx context.Context, param *UploadReceiptActivityParam) error {
+func (w *worker) UploadReceiptToMinioActivity(ctx context.Context, param *UploadReceiptToMinioActivityParam) error {
 	log, _ := logger.GetZapLogger(ctx)
-	log.Info("UploadReceiptActivity started", zap.String("PipelineTriggerID", param.PipelineTriggerID))
+	log.Info("UploadReceiptToMinioActivity started", zap.String("PipelineTriggerID", param.PipelineTriggerID))
 
 	url, minioObjectInfo, err := w.minioClient.UploadFile(ctx, param.ObjectName, param.Data, param.ContentType)
 	if err != nil {
@@ -83,7 +83,7 @@ func (w *worker) UploadReceiptActivity(ctx context.Context, param *UploadReceipt
 		return err
 	}
 
-	pipelineRun, err := w.repository.GetPipelineRunByUID(uuid.FromStringOrNil(param.PipelineTriggerID))
+	pipelineRun, err := w.repository.GetPipelineRunByUID(ctx, uuid.FromStringOrNil(param.PipelineTriggerID))
 	if err != nil {
 		log.Error("failed to fetch pipeline run for saving input data", zap.Error(err))
 		return err
@@ -98,14 +98,14 @@ func (w *worker) UploadReceiptActivity(ctx context.Context, param *UploadReceipt
 	}}
 
 	// Log the updated pipeline run
-	err = w.repository.UpsertPipelineRun(pipelineRun)
+	err = w.repository.UpsertPipelineRun(ctx, pipelineRun)
 	if err != nil {
 		log.Error("failed to log pipeline run with recipe snapshot", zap.Error(err))
 	}
 	return nil
 }
 
-func (w *worker) UploadOutputsWorkflow(ctx context.Context, param *UploadInputsToMinioActivityParam) error {
+func (w *worker) UploadOutputsToMinioWorkflow(ctx context.Context, param *UploadInputsToMinioActivityParam) error {
 	return nil
 }
 

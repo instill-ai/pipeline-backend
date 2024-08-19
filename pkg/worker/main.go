@@ -30,8 +30,8 @@ type Worker interface {
 	SchedulePipelineLoaderActivity(ctx context.Context, param *SchedulePipelineLoaderActivityParam) (*SchedulePipelineLoaderActivityResult, error)
 	UploadToMinioActivity(ctx context.Context, param *UploadToMinioActivityParam) (string, error)
 	UploadInputsToMinioActivity(ctx context.Context, param *UploadInputsToMinioActivityParam) error
-	UploadReceiptActivity(ctx context.Context, param *UploadReceiptActivityParam) error
-	UploadOutputsWorkflow(ctx context.Context, param *UploadInputsToMinioActivityParam) error
+	UploadReceiptToMinioActivity(ctx context.Context, param *UploadReceiptToMinioActivityParam) error
+	UploadOutputsToMinioWorkflow(ctx context.Context, param *UploadInputsToMinioActivityParam) error
 }
 
 // worker represents resources required to run Temporal workflow and activity

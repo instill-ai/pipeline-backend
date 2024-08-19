@@ -172,8 +172,8 @@ func main() {
 	w.RegisterActivity(cw.SchedulePipelineLoaderActivity)
 	w.RegisterActivity(cw.UploadToMinioActivity)
 	w.RegisterActivity(cw.UploadInputsToMinioActivity)
-	w.RegisterActivity(cw.UploadReceiptActivity)
-	w.RegisterActivity(cw.UploadOutputsWorkflow)
+	w.RegisterActivity(cw.UploadReceiptToMinioActivity)
+	w.RegisterActivity(cw.UploadOutputsToMinioWorkflow)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())

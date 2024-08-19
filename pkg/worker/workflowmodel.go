@@ -28,7 +28,7 @@ type UploadComponentInputsParam struct {
 	MemoryStorageKey  *recipe.BatchMemoryKey
 }
 
-type UploadReceiptActivityParam struct {
+type UploadReceiptToMinioActivityParam struct {
 	PipelineTriggerID string
 	UploadToMinioActivityParam
 }

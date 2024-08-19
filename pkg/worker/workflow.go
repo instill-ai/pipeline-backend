@@ -136,7 +136,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		StartedTime:        startTime,
 	}
 
-	err = w.repository.UpsertPipelineRun(pipelineRun)
+	err = w.repository.UpsertPipelineRun(sCtx, pipelineRun)
 	if err != nil {
 		logger.Error("failed to log pipeline run", zap.Error(err))
 	}
@@ -153,7 +153,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			pipelineRun.Error = null.StringFrom("trigger pipeline run failed due to unknown error")
 		}
 
-		err = w.repository.UpsertPipelineRun(pipelineRun)
+		err = w.repository.UpsertPipelineRun(sCtx, pipelineRun)
 		if err != nil {
 			logger.Error("failed to log pipeline run", zap.Error(err))
 		}
@@ -250,7 +250,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
-	uploadReceiptActivity := workflow.ExecuteActivity(ctx, w.UploadReceiptActivity, &UploadReceiptActivityParam{
+	uploadReceiptActivity := workflow.ExecuteActivity(ctx, w.UploadReceiptToMinioActivity, &UploadReceiptToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 		UploadToMinioActivityParam: UploadToMinioActivityParam{
 			ObjectName:  fmt.Sprintf("%s.recipe.json", workflowID),
@@ -409,7 +409,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	err = w.repository.UpdatePipelineRun(param.SystemVariables.PipelineTriggerID, &datamodel.PipelineRun{
+	err = w.repository.UpdatePipelineRun(sCtx, param.SystemVariables.PipelineTriggerID, &datamodel.PipelineRun{
 		CompletedTime: null.TimeFrom(time.Now()),
 		Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED),
 		TotalDuration: null.IntFrom(duration.Milliseconds()),
@@ -450,7 +450,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		StartedTime:        startTime,
 	}
 
-	err := w.repository.UpsertComponentRun(componentRun)
+	err := w.repository.UpsertComponentRun(ctx, componentRun)
 	if err != nil {
 		logger.Error("failed to log component run start", zap.Error(err))
 	}
@@ -494,7 +494,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
-	err = w.repository.UpsertComponentRun(componentRun)
+	err = w.repository.UpsertComponentRun(ctx, componentRun)
 	if err != nil {
 		logger.Error("failed to log component run inputs", zap.Error(err))
 	}
@@ -506,7 +506,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		componentRun.CompletedTime = null.TimeFrom(time.Now())
 		componentRun.TotalDuration = null.IntFrom(time.Since(startTime).Milliseconds())
 
-		err = w.repository.UpsertComponentRun(componentRun)
+		err = w.repository.UpsertComponentRun(ctx, componentRun)
 		if err != nil {
 			logger.Error("failed to log failed component run", zap.Error(err))
 		}
@@ -535,7 +535,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	componentRun.CompletedTime = null.TimeFrom(time.Now())
 	componentRun.TotalDuration = null.IntFrom(time.Since(startTime).Milliseconds())
 
-	err = w.repository.UpsertComponentRun(componentRun)
+	err = w.repository.UpsertComponentRun(ctx, componentRun)
 	if err != nil {
 		logger.Error("failed to log completed component run", zap.Error(err))
 	}
