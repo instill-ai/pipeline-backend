@@ -5,6 +5,7 @@ package repository
 
 import (
 	"context"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -142,25 +143,28 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 	c.Check(got.NumberOfRuns, qt.Equals, 0)
 	c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
 
+	minioURL := `http://localhost:19000/instill-ai-vdp/e9ee5c7e-23a4-4910-b3be-afe1d3ca5254.recipe.json?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=minioadmin%2F20240816%2Fus-east-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240816T030849Z\u0026X-Amz-Expires=604800\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Signature=f25a30c82e067b8da32c01a17452977082309c873d4a3bd72767ffe1118d695c`
+	minioURL = url.QueryEscape(minioURL)
+	c.Assert(err, qt.IsNil)
+
 	pipelineRun := &datamodel.PipelineRun{
 		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
 		PipelineUID:        p.UID,
 		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
 		TriggeredBy:        ownerUID.String(),
-		Inputs:             nil,
-		Outputs:            nil,
-		RecipeSnapshot:     nil,
-		StartedTime:        time.Now(),
-		TotalDuration:      null.IntFrom(42),
-		Components:         nil,
+		RecipeSnapshot: datamodel.JSONB{{
+			URL: minioURL,
+		}},
+		StartedTime:   time.Now(),
+		TotalDuration: null.IntFrom(42),
+		Components:    nil,
 	}
 
 	err = repo.UpsertPipelineRun(ctx, pipelineRun)
 	c.Assert(err, qt.IsNil)
 
-	got1 := &datamodel.PipelineRun{PipelineTriggerUID: pipelineRun.PipelineTriggerUID}
-	err = tx.First(got1).Error
+	got1, err := repo.GetPipelineRunByUID(ctx, pipelineRun.PipelineTriggerUID)
 	c.Assert(err, qt.IsNil)
 	c.Check(got1.PipelineUID, qt.Equals, p.UID)
 	c.Check(got1.Status, qt.Equals, pipelineRun.Status)

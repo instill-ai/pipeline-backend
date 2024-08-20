@@ -87,7 +87,9 @@ type Repository interface {
 	// definition lists are removed.
 	TranspileFilter(filtering.Filter) (*clause.Expr, error)
 
+	GetPipelineRunByUID(context.Context, uuid.UUID) (*datamodel.PipelineRun, error)
 	UpsertPipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) error
+	UpdatePipelineRun(ctx context.Context, pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) error
 	UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error
 }
 
@@ -990,8 +992,23 @@ func (r *repository) AddPipelineClones(ctx context.Context, pipelineUID uuid.UUI
 	return nil
 }
 
+func (r *repository) GetPipelineRunByUID(ctx context.Context, pipelineTriggerUID uuid.UUID) (*datamodel.PipelineRun, error) {
+	pipelineRun := &datamodel.PipelineRun{PipelineTriggerUID: pipelineTriggerUID}
+	err := r.db.First(pipelineRun).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return pipelineRun, nil
+}
+
 func (r *repository) UpsertPipelineRun(ctx context.Context, pipelineRun *datamodel.PipelineRun) error {
 	return r.db.Save(pipelineRun).Error
+}
+
+func (r *repository) UpdatePipelineRun(ctx context.Context, pipelineTriggerUID string, pipelineRun *datamodel.PipelineRun) error {
+	uid := uuid.FromStringOrNil(pipelineTriggerUID)
+	return r.db.Model(&datamodel.PipelineRun{}).Where(&datamodel.PipelineRun{PipelineTriggerUID: uid}).Updates(&pipelineRun).Error
 }
 
 func (r *repository) UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error {

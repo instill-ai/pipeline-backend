@@ -17,16 +17,20 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
+
 	"github.com/instill-ai/x/errmsg"
 
 	componentstore "github.com/instill-ai/component/store"
+	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
@@ -48,6 +52,7 @@ type SchedulePipelineLoaderActivityParam struct {
 	Namespace  resource.Namespace
 	PipelineID string
 }
+
 type SchedulePipelineLoaderActivityResult struct {
 	Key        *recipe.BatchMemoryKey
 	ScheduleID string
@@ -111,6 +116,48 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
+	var err error
+
+	ao := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
+		},
+	}
+	ctx = workflow.WithActivityOptions(ctx, ao)
+
+	pipelineRun := &datamodel.PipelineRun{
+		PipelineTriggerUID: uuid.FromStringOrNil(param.SystemVariables.PipelineTriggerID), // should not be empty
+		PipelineUID:        param.SystemVariables.PipelineUID,
+		PipelineVersion:    param.SystemVariables.PipelineReleaseID,
+		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+		Source:             param.SystemVariables.PipelineRunSource,
+		TriggeredBy:        param.SystemVariables.PipelineRequesterUID.String(),
+		StartedTime:        startTime,
+	}
+
+	err = w.repository.UpsertPipelineRun(sCtx, pipelineRun)
+	if err != nil {
+		logger.Error("failed to log pipeline run", zap.Error(err))
+	}
+
+	// todo: mark pipeline run as failed if not succeeded
+	succeeded := false
+	defer func() {
+		if succeeded {
+			return
+		}
+		if err != nil {
+			pipelineRun.Error = null.StringFrom(err.Error())
+		} else {
+			pipelineRun.Error = null.StringFrom("trigger pipeline run failed due to unknown error")
+		}
+
+		err = w.repository.UpsertPipelineRun(sCtx, pipelineRun)
+		if err != nil {
+			logger.Error("failed to log pipeline run", zap.Error(err))
+		}
+	}()
 
 	// Inline function to initialize the channel only if streaming is active
 	initChan := func() chan WorkFlowSignal {
@@ -191,18 +238,31 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		dataPoint.RequesterType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	}
 
-	ao := workflow.ActivityOptions{
-		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		RetryPolicy: &temporal.RetryPolicy{
-			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
-		},
-	}
-	ctx = workflow.WithActivityOptions(ctx, ao)
-
 	r, err := recipe.LoadRecipe(sCtx, w.redisClient, param.MemoryStorageKey.Recipe)
 	if err != nil {
 		return err
 	}
+
+	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
+
+	b, err := json.Marshal(r)
+	if err != nil {
+		return err
+	}
+
+	uploadReceiptActivity := workflow.ExecuteActivity(ctx, w.UploadReceiptToMinioActivity, &UploadReceiptToMinioActivityParam{
+		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+		UploadToMinioActivityParam: UploadToMinioActivityParam{
+			ObjectName:  fmt.Sprintf("%s.recipe.json", workflowID),
+			Data:        b,
+			ContentType: constant.ContentTypeJSON,
+		},
+	})
+
+	uploadInputsActivity := workflow.ExecuteActivity(ctx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
+		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+		MemoryStorageKey:  param.MemoryStorageKey,
+	})
 
 	dag, err := recipe.GenerateDAG(r.Component)
 	if err != nil {
@@ -213,8 +273,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	if err != nil {
 		return err
 	}
-
-	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
 	for i := range param.BatchSize {
 		if param.MemoryStorageKey.Components[i] == nil {
@@ -244,7 +302,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}))
 
 			case datamodel.Iterator:
-				//TODO tillknuesting: support intermediate result streaming for Iterator
+				// TODO tillknuesting: support intermediate result streaming for Iterator
 
 				preIteratorResult := &PreIteratorActivityResult{}
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
@@ -279,7 +337,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 							SystemVariables:  param.SystemVariables,
 							Mode:             mgmtpb.Mode_MODE_SYNC,
 						}))
-
 				}
 				for iter := 0; iter < param.BatchSize; iter++ {
 					err = itFutures[iter].Get(ctx, nil)
@@ -308,7 +365,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 
-				// ComponentActivity is responsible of returning a temporal
+				// ComponentActivity is responsible for returning a temporal
 				// application error with the relevant information. Wrapping
 				// the error here prevents the client from accessing the error
 				// message from the activity.
@@ -317,6 +374,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			if param.IsStreaming {
 				sChan <- WorkFlowSignal{Status: statusStep, ID: result.ID}
 			}
+			// todo: upload component outputs
 		}
 
 		for batchIdx := range param.BatchSize {
@@ -336,7 +394,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		sChan <- WorkFlowSignal{Status: statusCompleted}
 	}
 
-	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
+	duration := time.Since(startTime)
+	dataPoint.ComputeTimeDuration = duration.Seconds()
 	dataPoint.Status = mgmtpb.Status_STATUS_COMPLETED
 
 	if !param.IsIterator {
@@ -350,7 +409,31 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", time.Since(startTime)))
+	err = w.repository.UpdatePipelineRun(sCtx, param.SystemVariables.PipelineTriggerID, &datamodel.PipelineRun{
+		CompletedTime: null.TimeFrom(time.Now()),
+		Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED),
+		TotalDuration: null.IntFrom(duration.Milliseconds()),
+	})
+	if err != nil {
+		logger.Error("failed to log completed pipeline run", zap.Error(err))
+		// Note: We're not returning here because we want to complete the workflow even if logging fails
+	}
+
+	workflow.Go(ctx, func(ctx workflow.Context) {
+		err = uploadReceiptActivity.Get(ctx, nil)
+		if err != nil {
+			logger.Error("failed to upload recipe to MinIO", zap.Error(err))
+		}
+
+		err = uploadInputsActivity.Get(ctx, nil)
+		if err != nil {
+			logger.Error("failed to upload inputs to MinIO", zap.Error(err))
+		}
+	})
+
+	succeeded = true
+
+	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", duration))
 
 	return nil
 }
@@ -358,6 +441,19 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
+
+	startTime := time.Now()
+	componentRun := &datamodel.ComponentRun{
+		PipelineTriggerUID: uuid.FromStringOrNil(param.WorkflowID),
+		ComponentID:        param.ID,
+		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+		StartedTime:        startTime,
+	}
+
+	err := w.repository.UpsertComponentRun(ctx, componentRun)
+	if err != nil {
+		logger.Error("failed to log component run start", zap.Error(err))
+	}
 
 	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
 	if err != nil {
@@ -368,6 +464,13 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	if err != nil {
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
+
+	// Upload inputs to MinIO
+	// inputsJSONB, err := w.uploadJSONToMinIO(ctx, compInputs, param.WorkflowID, param.ID, "inputs")
+	// if err != nil {
+	// 	return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+	// }
+	// componentRun.Inputs = inputsJSONB
 
 	cons, err := w.processSetup(batchMemory, param.Setup)
 	if err != nil {
@@ -391,10 +494,32 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
+	err = w.repository.UpsertComponentRun(ctx, componentRun)
+	if err != nil {
+		logger.Error("failed to log component run inputs", zap.Error(err))
+	}
+
 	compOutputs, err := execution.Execute(ctx, compInputs)
 	if err != nil {
+		componentRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED)
+		componentRun.Error = null.StringFrom(err.Error())
+		componentRun.CompletedTime = null.TimeFrom(time.Now())
+		componentRun.TotalDuration = null.IntFrom(time.Since(startTime).Milliseconds())
+
+		err = w.repository.UpsertComponentRun(ctx, componentRun)
+		if err != nil {
+			logger.Error("failed to log failed component run", zap.Error(err))
+		}
+
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
+
+	// Upload outputs to MinIO
+	// outputsJSONB, err := w.uploadJSONToMinIO(ctx, compOutputs, param.WorkflowID, param.ID, "outputs")
+	// if err != nil {
+	// 	return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+	// }
+	// componentRun.Outputs = outputsJSONB
 
 	compMem, err := w.processOutput(batchMemory, param.ID, compOutputs, idxMap)
 	if err != nil {
@@ -406,6 +531,15 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
+	componentRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED)
+	componentRun.CompletedTime = null.TimeFrom(time.Now())
+	componentRun.TotalDuration = null.IntFrom(time.Since(startTime).Milliseconds())
+
+	err = w.repository.UpsertComponentRun(ctx, componentRun)
+	if err != nil {
+		logger.Error("failed to log completed component run", zap.Error(err))
+	}
+
 	logger.Info("ComponentActivity completed")
 
 	// the data is logged in temporal hence we should only return data that is needed
@@ -415,6 +549,38 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	}
 	return p, nil
 }
+
+// func (w *worker) uploadJSONToMinIO(ctx context.Context, data interface{}, workflowID, componentID, prefix string) (datamodel.JSONB, error) {
+// 	jsonData, err := json.Marshal(data)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to marshal data: %w", err)
+// 	}
+//
+// 	objectName := fmt.Sprintf("%s-%s-%s.json", workflowID, componentID, prefix)
+//
+// 	var uploadResult struct {
+// 		URL        string
+// 		ObjectInfo minio.ObjectInfo
+// 	}
+//
+// 	// todo: fix this, should not call activity in activity
+// 	err = workflow.ExecuteActivity(nil, w.UploadToMinioActivity, UploadToMinioActivityParam{
+// 		ObjectName:  objectName,
+// 		Data:        jsonData,
+// 		ContentType: constant.ContentTypeJSON,
+// 	}).Get(nil, &uploadResult)
+//
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to upload to MinIO: %w", err)
+// 	}
+//
+// 	return datamodel.JSONB{datamodel.FileReference{
+// 		Name: uploadResult.ObjectInfo.Key,
+// 		Type: uploadResult.ObjectInfo.ContentType,
+// 		Size: uploadResult.ObjectInfo.Size,
+// 		URL:  uploadResult.URL,
+// 	}}, nil
+// }
 
 // TODO: complete iterator
 // PreIteratorActivity generate the trigger memory for each iteration.
@@ -491,7 +657,6 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		}
 
 		for e := range elementSize {
-
 			compKeys[e][param.ID] = fmt.Sprintf("%s:%d:%s:%s", childWorkflowIDs[iter], e, recipe.SegComponent, param.ID)
 		}
 
@@ -512,7 +677,6 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 
 // PostIteratorActivity merges the trigger memory from each iteration.
 func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error {
-
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("PostIteratorActivity started")
 

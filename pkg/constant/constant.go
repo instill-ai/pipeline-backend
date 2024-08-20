@@ -30,7 +30,11 @@ const (
 
 	HeaderInstillCodeKey  = "Instill-Share-Code"
 	HeaderReturnTracesKey = "Instill-Return-Traces"
+
+	HeaderUserAgentKey = "Instill-User-Agent"
 )
+
+const ContentTypeJSON = "application/json"
 
 // GlobalSecretKey can be used to reference a global secret in the
 // configuration of a component (i.e, ${secrets.INSTILL_SECRET}).

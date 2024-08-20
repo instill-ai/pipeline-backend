@@ -8,21 +8,24 @@ import (
 	"strings"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/otel"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"go.uber.org/zap"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/x/temporal"
-	"github.com/instill-ai/x/zapadapter"
-	"github.com/redis/go-redis/v9"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineWorker "github.com/instill-ai/pipeline-backend/pkg/worker"
+
+	"github.com/instill-ai/x/temporal"
+	"github.com/instill-ai/x/zapadapter"
 )
 
 func initTemporalNamespace(ctx context.Context, client client.Client) {
@@ -141,12 +144,19 @@ func main() {
 	timeseries := repository.MustNewInfluxDB(ctx)
 	defer timeseries.Close()
 
+	// Initialize Minio client
+	minioClient, err := minio.NewMinioClientAndInitBucket(ctx, &config.Config.Minio)
+	if err != nil {
+		logger.Fatal("failed to create minio client", zap.Error(err))
+	}
+
 	cw := pipelineWorker.NewWorker(
 		repo,
 		redisClient,
 		timeseries.WriteAPI(),
 		config.Config.Connector.Secrets,
 		nil,
+		minioClient,
 	)
 
 	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
@@ -160,6 +170,10 @@ func main() {
 	w.RegisterActivity(cw.PostIteratorActivity)
 	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
 	w.RegisterActivity(cw.SchedulePipelineLoaderActivity)
+	w.RegisterActivity(cw.UploadToMinioActivity)
+	w.RegisterActivity(cw.UploadInputsToMinioActivity)
+	w.RegisterActivity(cw.UploadReceiptToMinioActivity)
+	w.RegisterActivity(cw.UploadOutputsToMinioWorkflow)
 
 	span.End()
 	err = w.Run(worker.InterruptCh())
