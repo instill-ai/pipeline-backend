@@ -12,14 +12,12 @@ import (
 
 const batchSize = 100
 
-// ConvertToTextTaskConverter executes code along with the 21st database
-// schema revision.
+
 type ConvertToTextTaskConverter struct {
 	DB     *gorm.DB
 	Logger *zap.Logger
 }
 
-// Migrate `TASK_CONVERT_TO_TEXT` from the Text operator to the Document operator
 func (c *ConvertToTextTaskConverter) Migrate() error {
 	if err := c.migratePipeline(); err != nil {
 		return err
