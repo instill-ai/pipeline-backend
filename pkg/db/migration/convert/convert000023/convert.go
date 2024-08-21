@@ -147,7 +147,6 @@ func (c *TextFieldsConverter) convertField(comp *datamodel.Component) (bool, err
 		return false, nil
 	}
 
-	chunkMethod, ok := settingMap["chunk-method"].(string)
 	if !ok {
 		log.Println("Missing field chunk-method on TASK_CHUNK_TEXT")
 		return false, nil
@@ -157,10 +156,6 @@ func (c *TextFieldsConverter) convertField(comp *datamodel.Component) (bool, err
 
 	if !ok {
 		log.Println("Missing field model-name on TASK_CHUNK_TEXT")
-		return false, nil
-	}
-
-	if !(chunkMethod == "Recursive" || chunkMethod == "Markdown") {
 		return false, nil
 	}
 
