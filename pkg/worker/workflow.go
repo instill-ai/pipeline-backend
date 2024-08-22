@@ -73,6 +73,11 @@ type ComponentActivityParam struct {
 	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 }
 
+type ComponentActivityResult struct {
+	*ComponentActivityParam
+	Outputs []*structpb.Struct
+}
+
 type PreIteratorActivityParam struct {
 	WorkflowID       string
 	MemoryStorageKey *recipe.BatchMemoryKey
@@ -135,6 +140,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		TriggeredBy:        param.SystemVariables.PipelineRequesterUID.String(),
 		StartedTime:        startTime,
 	}
+	if pipelineRun.PipelineVersion == "" {
+		pipelineRun.PipelineVersion = "latest"
+	}
 
 	err = w.repository.UpsertPipelineRun(sCtx, pipelineRun)
 	if err != nil {
@@ -147,13 +155,15 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		if succeeded {
 			return
 		}
+
+		var errMsg string
 		if err != nil {
-			pipelineRun.Error = null.StringFrom(err.Error())
+			errMsg = err.Error()
 		} else {
-			pipelineRun.Error = null.StringFrom("trigger pipeline run failed due to unknown error")
+			errMsg = "trigger pipeline run failed due to unknown error"
 		}
 
-		err = w.repository.UpsertPipelineRun(sCtx, pipelineRun)
+		err = w.repository.UpdatePipelineRun(sCtx, param.SystemVariables.PipelineTriggerID, &datamodel.PipelineRun{Error: null.StringFrom(errMsg)})
 		if err != nil {
 			logger.Error("failed to log pipeline run", zap.Error(err))
 		}
@@ -245,15 +255,22 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
-	b, err := json.Marshal(r)
+	recipeForUpload := &datamodel.Recipe{
+		Version:   r.Version,
+		On:        r.On,
+		Component: r.Component,
+		Variable:  r.Variable,
+		Output:    r.Output,
+	}
+	b, err := json.Marshal(recipeForUpload)
 	if err != nil {
 		return err
 	}
 
-	uploadReceiptActivity := workflow.ExecuteActivity(ctx, w.UploadReceiptToMinioActivity, &UploadReceiptToMinioActivityParam{
+	uploadRecipeActivity := workflow.ExecuteActivity(ctx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 		UploadToMinioActivityParam: UploadToMinioActivityParam{
-			ObjectName:  fmt.Sprintf("%s.recipe.json", workflowID),
+			ObjectName:  fmt.Sprintf("pipeline-runs/recipe/%s.json", param.SystemVariables.PipelineTriggerID),
 			Data:        b,
 			ContentType: constant.ContentTypeJSON,
 		},
@@ -288,7 +305,20 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 			switch comp.Type {
 			default:
-				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, &ComponentActivityParam{
+				componentRun := &datamodel.ComponentRun{
+					PipelineTriggerUID: uuid.FromStringOrNil(param.SystemVariables.PipelineTriggerID),
+					ComponentID:        compID,
+					Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+					StartedTime:        time.Now(),
+				}
+
+				// adding the data row in advance in case that UploadComponentInputsActivity starts before ComponentActivity
+				err = w.repository.UpsertComponentRun(sCtx, componentRun)
+				if err != nil {
+					logger.Error("failed to log component run start", zap.Error(err))
+				}
+
+				args := &ComponentActivityParam{
 					WorkflowID:       workflowID,
 					ID:               compID,
 					UpstreamIDs:      upstreamIDs,
@@ -299,7 +329,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Condition:        comp.Condition,
 					MemoryStorageKey: param.MemoryStorageKey,
 					SystemVariables:  param.SystemVariables,
-				}))
+				}
+
+				workflow.ExecuteActivity(ctx, w.UploadComponentInputsActivity, args)
+
+				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, args))
 
 			case datamodel.Iterator:
 				// TODO tillknuesting: support intermediate result streaming for Iterator
@@ -360,7 +394,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 
 		for idx := range futures {
-			var result ComponentActivityParam
+			var result ComponentActivityResult
 			err = futures[idx].Get(ctx, &result)
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
@@ -375,6 +409,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				sChan <- WorkFlowSignal{Status: statusStep, ID: result.ID}
 			}
 			// todo: upload component outputs
+
+			workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, &result)
 		}
 
 		for batchIdx := range param.BatchSize {
@@ -420,7 +456,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	workflow.Go(ctx, func(ctx workflow.Context) {
-		err = uploadReceiptActivity.Get(ctx, nil)
+		err = uploadRecipeActivity.Get(ctx, nil)
 		if err != nil {
 			logger.Error("failed to upload recipe to MinIO", zap.Error(err))
 		}
@@ -438,21 +474,32 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	return nil
 }
 
-func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityParam, error) {
+func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityResult, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
 
 	startTime := time.Now()
-	componentRun := &datamodel.ComponentRun{
-		PipelineTriggerUID: uuid.FromStringOrNil(param.WorkflowID),
-		ComponentID:        param.ID,
-		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
-		StartedTime:        startTime,
-	}
-
-	err := w.repository.UpsertComponentRun(ctx, componentRun)
+	// this is component run actual start time
+	err := w.repository.UpdateComponentRun(ctx, param.SystemVariables.PipelineTriggerID, param.ID, &datamodel.ComponentRun{StartedTime: startTime})
 	if err != nil {
-		logger.Error("failed to log component run start", zap.Error(err))
+		logger.Error("failed to log component run start time", zap.Error(err))
+	} else {
+		defer func() {
+			componentRun := &datamodel.ComponentRun{
+				CompletedTime: null.TimeFrom(time.Now()),
+				TotalDuration: null.IntFrom(time.Since(startTime).Milliseconds()),
+			}
+			if err != nil {
+				componentRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED)
+				componentRun.Error = null.StringFrom(err.Error())
+			} else {
+				componentRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED)
+			}
+			err = w.repository.UpdateComponentRun(ctx, param.SystemVariables.PipelineTriggerID, param.ID, componentRun)
+			if err != nil {
+				logger.Error("failed to log component run end time", zap.Error(err))
+			}
+		}()
 	}
 
 	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
@@ -464,13 +511,6 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	if err != nil {
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
-
-	// Upload inputs to MinIO
-	// inputsJSONB, err := w.uploadJSONToMinIO(ctx, compInputs, param.WorkflowID, param.ID, "inputs")
-	// if err != nil {
-	// 	return nil, componentActivityError(err, componentActivityErrorType, param.ID)
-	// }
-	// componentRun.Inputs = inputsJSONB
 
 	cons, err := w.processSetup(batchMemory, param.Setup)
 	if err != nil {
@@ -494,23 +534,8 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
-	err = w.repository.UpsertComponentRun(ctx, componentRun)
-	if err != nil {
-		logger.Error("failed to log component run inputs", zap.Error(err))
-	}
-
 	compOutputs, err := execution.Execute(ctx, compInputs)
 	if err != nil {
-		componentRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED)
-		componentRun.Error = null.StringFrom(err.Error())
-		componentRun.CompletedTime = null.TimeFrom(time.Now())
-		componentRun.TotalDuration = null.IntFrom(time.Since(startTime).Milliseconds())
-
-		err = w.repository.UpsertComponentRun(ctx, componentRun)
-		if err != nil {
-			logger.Error("failed to log failed component run", zap.Error(err))
-		}
-
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
@@ -520,6 +545,16 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	// 	return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	// }
 	// componentRun.Outputs = outputsJSONB
+
+	// test
+	key := fmt.Sprintf("%s:%s", param.SystemVariables.PipelineTriggerID, param.ID)
+	val := w.redisClient.Get(ctx, key).Val()
+	if val != "" {
+		logger.Error(fmt.Sprintf("test by jeremy: key [%s] exists", key))
+	}
+	if err = w.redisClient.Set(ctx, key, 1, time.Minute).Err(); err != nil {
+		logger.Error(fmt.Sprintf("test by jeremy: failed to set key [%s]", key))
+	}
 
 	compMem, err := w.processOutput(batchMemory, param.ID, compOutputs, idxMap)
 	if err != nil {
@@ -531,23 +566,18 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
-	componentRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED)
-	componentRun.CompletedTime = null.TimeFrom(time.Now())
-	componentRun.TotalDuration = null.IntFrom(time.Since(startTime).Milliseconds())
-
-	err = w.repository.UpsertComponentRun(ctx, componentRun)
-	if err != nil {
-		logger.Error("failed to log completed component run", zap.Error(err))
-	}
-
 	logger.Info("ComponentActivity completed")
 
 	// the data is logged in temporal hence we should only return data that is needed
 	p := &ComponentActivityParam{
-		WorkflowID: param.WorkflowID,
-		ID:         param.ID, // is used by the caller to identify the component
+		WorkflowID:      param.WorkflowID,
+		ID:              param.ID, // is used by the caller to identify the component
+		SystemVariables: param.SystemVariables,
 	}
-	return p, nil
+	return &ComponentActivityResult{
+		ComponentActivityParam: p,
+		Outputs:                compOutputs,
+	}, nil
 }
 
 // func (w *worker) uploadJSONToMinIO(ctx context.Context, data interface{}, workflowID, componentID, prefix string) (datamodel.JSONB, error) {

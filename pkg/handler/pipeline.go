@@ -12,6 +12,7 @@ import (
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 	"golang.org/x/mod/semver"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -21,15 +22,17 @@ import (
 
 	fieldmask_utils "github.com/mennanov/fieldmask-utils"
 
+	"github.com/instill-ai/x/checkfield"
+
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
-	"github.com/instill-ai/x/checkfield"
+
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func (h *PrivateHandler) ListPipelinesAdmin(ctx context.Context, req *pb.ListPipelinesAdminRequest) (*pb.ListPipelinesAdminResponse, error) {
@@ -2111,4 +2114,63 @@ func mergeInputsIntoData(inputs []*structpb.Struct, data []*pb.TriggerData) []*p
 		merged = data
 	}
 	return merged
+}
+
+func (h *PublicHandler) ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest) (*pb.ListPipelineRunsResponse, error) {
+	logger, _ := logger.GetZapLogger(ctx)
+	logUUID, _ := uuid.NewV4()
+	logger.Info("ListPipelineRuns starts", zap.String("logUUID", logUUID.String()), zap.String("pipelineID", req.GetPipelineId()))
+
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareIdent("pipelineTriggerUID", filtering.TypeString),
+		filtering.DeclareIdent("status", filtering.TypeString),
+		filtering.DeclareIdent("source", filtering.TypeString),
+		filtering.DeclareIdent("startTime", filtering.TypeTimestamp),
+		filtering.DeclareIdent("completeTime", filtering.TypeTimestamp),
+	}...)
+	if err != nil {
+		return nil, err
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := h.service.ListPipelineRuns(ctx, req, filter)
+	if err != nil {
+		logger.Error("failed in ListPipelineRuns", zap.String("logUUID", logUUID.String()), zap.String("pipelineID", req.GetPipelineId()), zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to list pipeline runs")
+	}
+
+	logger.Info("ListPipelineRuns finished", zap.String("logUUID", logUUID.String()), zap.String("pipelineID", req.GetPipelineId()))
+
+	return resp, nil
+}
+
+func (h *PublicHandler) ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest) (*pb.ListComponentRunsResponse, error) {
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareIdent("pipelineTriggerUID", filtering.TypeString),
+		filtering.DeclareIdent("componentID", filtering.TypeString),
+		filtering.DeclareIdent("status", filtering.TypeString),
+		filtering.DeclareIdent("startedTime", filtering.TypeTimestamp),
+		filtering.DeclareIdent("completedTime", filtering.TypeTimestamp),
+	}...)
+	if err != nil {
+		return nil, err
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := h.service.ListComponentRuns(ctx, req, filter)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to list component runs. error: %s", err.Error()))
+	}
+
+	return resp, nil
 }

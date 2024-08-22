@@ -2,6 +2,7 @@ package worker
 
 import (
 	"github.com/minio/minio-go/v7"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 )
@@ -22,13 +23,12 @@ type UploadInputsToMinioActivityParam struct {
 	MemoryStorageKey  *recipe.BatchMemoryKey
 }
 
-type UploadComponentInputsParam struct {
+type UploadOutputsWorkflowParam struct {
 	PipelineTriggerID string
-	ComponentID       string
-	MemoryStorageKey  *recipe.BatchMemoryKey
+	Outputs           []*structpb.Struct
 }
 
-type UploadReceiptToMinioActivityParam struct {
+type UploadRecipeToMinioActivityParam struct {
 	PipelineTriggerID string
 	UploadToMinioActivityParam
 }
