@@ -22,7 +22,6 @@ func (w *worker) writeNewDataPoint(ctx context.Context, data utils.PipelineUsage
 	}
 
 	w.influxDBWriteClient.WritePoint(utils.NewPipelineDataPoint(data))
-	w.influxDBWriteClient.WritePoint(utils.DeprecatedNewPipelineDatapoint(data))
 
 	return nil
 }
