@@ -132,7 +132,7 @@ func (c *converter) processSetup(ctx context.Context, ownerPermalink string, set
 		case map[string]any:
 			rendered[k] = c.processSetup(ctx, ownerPermalink, v)
 		case string:
-			if strings.HasPrefix(v, "${"+recipe.SegSecret+".") && strings.HasSuffix(v, "}") {
+			if strings.HasPrefix(v, "${"+constant.SegSecret+".") && strings.HasSuffix(v, "}") {
 
 				// Remove the prefix and suffix
 				secretKey := v[9 : len(v)-1]
@@ -235,9 +235,9 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPer
 				}
 				splits := strings.Split(path, ".")
 
-				if splits[1] == "output" {
+				if splits[1] == constant.SegOutput {
 					walk = structpb.NewStructValue(output)
-				} else if splits[1] == "input" {
+				} else if splits[1] == constant.SegInput {
 					walk = structpb.NewStructValue(input)
 				} else {
 					// Skip schema generation if the configuration is not valid.
@@ -845,9 +845,9 @@ func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Var
 				}
 			}
 
-			if upstreamCompID != "" || compID == recipe.SegVariable {
+			if upstreamCompID != "" || compID == constant.SegVariable {
 				var walk *structpb.Value
-				if compID == recipe.SegVariable {
+				if compID == constant.SegVariable {
 					walk = structpb.NewStructValue(dataInput)
 				} else {
 					comp := compsOrigin[upstreamCompID]
@@ -856,7 +856,7 @@ func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Var
 					case datamodel.Iterator:
 
 						splits := strings.Split(str, ".")
-						if splits[1] == "output" {
+						if splits[1] == constant.SegOutput {
 							walk = structpb.NewStructValue(comp.DataSpecification.Output)
 						} else {
 							return nil, fmt.Errorf("generate pipeline data spec error")
@@ -879,9 +879,9 @@ func (c *converter) generatePipelineDataSpec(variables map[string]*datamodel.Var
 
 						splits := strings.Split(str, ".")
 
-						if splits[1] == "output" {
+						if splits[1] == constant.SegOutput {
 							walk = structpb.NewStructValue(output)
-						} else if splits[1] == "input" {
+						} else if splits[1] == constant.SegInput {
 							walk = structpb.NewStructValue(input)
 						} else {
 							return nil, fmt.Errorf("generate pipeline data spec error")

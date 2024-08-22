@@ -19,13 +19,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
+	"github.com/instill-ai/x/temporal"
+	"github.com/instill-ai/x/zapadapter"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-	pipelineWorker "github.com/instill-ai/pipeline-backend/pkg/worker"
-
-	"github.com/instill-ai/x/temporal"
-	"github.com/instill-ai/x/zapadapter"
+	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
 )
 
 func initTemporalNamespace(ctx context.Context, client client.Client) {
@@ -150,7 +149,7 @@ func main() {
 		logger.Fatal("failed to create minio client", zap.Error(err))
 	}
 
-	cw := pipelineWorker.NewWorker(
+	cw := pipelineworker.NewWorker(
 		repo,
 		redisClient,
 		timeseries.WriteAPI(),
@@ -159,21 +158,25 @@ func main() {
 		minioClient,
 	)
 
-	w := worker.New(temporalClient, pipelineWorker.TaskQueue, worker.Options{
-		WorkflowPanicPolicy: worker.FailWorkflow,
+	w := worker.New(temporalClient, pipelineworker.TaskQueue, worker.Options{
+		EnableSessionWorker:               true,
+		WorkflowPanicPolicy:               worker.FailWorkflow,
+		MaxConcurrentSessionExecutionSize: 1000,
 	})
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
 	w.RegisterWorkflow(cw.SchedulePipelineWorkflow)
-	w.RegisterWorkflow(cw.UploadOutputsToMinioWorkflow)
 
 	w.RegisterActivity(cw.ComponentActivity)
+	w.RegisterActivity(cw.OutputActivity)
 	w.RegisterActivity(cw.PreIteratorActivity)
 	w.RegisterActivity(cw.PostIteratorActivity)
+	w.RegisterActivity(cw.CloneToMemoryStoreActivity)
+	w.RegisterActivity(cw.CloneToRedisActivity)
 	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
-	w.RegisterActivity(cw.SchedulePipelineLoaderActivity)
 	w.RegisterActivity(cw.UploadToMinioActivity)
 	w.RegisterActivity(cw.UploadInputsToMinioActivity)
+	w.RegisterActivity(cw.UploadOutputsToMinioActivity)
 	w.RegisterActivity(cw.UploadRecipeToMinioActivity)
 	w.RegisterActivity(cw.UploadComponentInputsActivity)
 	w.RegisterActivity(cw.UploadComponentOutputsActivity)

@@ -8,7 +8,6 @@ import (
 	"go/parser"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
@@ -16,13 +15,15 @@ import (
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/guregu/null.v4"
 
+	"github.com/gofrs/uuid"
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
@@ -35,70 +36,67 @@ import (
 )
 
 type TriggerPipelineWorkflowParam struct {
-	BatchSize        int
-	MemoryStorageKey *recipe.BatchMemoryKey
-	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-	Mode             mgmtpb.Mode
-	IsIterator       bool
-	IsStreaming      bool
+	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	Mode            mgmtpb.Mode
+	TriggerFromAPI  bool
+	IsStreaming     bool
 }
 
 type SchedulePipelineWorkflowParam struct {
-	Namespace  resource.Namespace
-	PipelineID string
+	Namespace          resource.Namespace
+	PipelineID         string
+	PipelineUID        uuid.UUID
+	PipelineReleaseID  string
+	PipelineReleaseUID uuid.UUID
 }
 
 type SchedulePipelineLoaderActivityParam struct {
-	Namespace  resource.Namespace
-	PipelineID string
+	Namespace          resource.Namespace
+	PipelineUID        uuid.UUID
+	PipelineReleaseUID uuid.UUID
 }
 
 type SchedulePipelineLoaderActivityResult struct {
-	Key        *recipe.BatchMemoryKey
 	ScheduleID string
 	Pipeline   *datamodel.Pipeline
 }
 
 // ComponentActivityParam represents the parameters for TriggerActivity
 type ComponentActivityParam struct {
-	WorkflowID       string
-	MemoryStorageKey *recipe.BatchMemoryKey
-	ID               string
-	UpstreamIDs      []string
-	Condition        string
-	Input            map[string]any
-	Setup            map[string]any
-	Type             string
-	Task             string
-	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
-}
-
-type ComponentActivityResult struct {
-	*ComponentActivityParam
-	Outputs []*structpb.Struct
+	WorkflowID      string
+	ID              string
+	UpstreamIDs     []string
+	Condition       string
+	Type            string
+	Task            string
+	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	Streaming       bool
 }
 
 type PreIteratorActivityParam struct {
-	WorkflowID       string
-	MemoryStorageKey *recipe.BatchMemoryKey
-	ID               string
-	UpstreamIDs      []string
-	Input            string
-	SystemVariables  recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	WorkflowID      string
+	ID              string
+	UpstreamIDs     []string
+	Input           string
+	SystemVariables recipe.SystemVariables
 }
 
 type PreIteratorActivityResult struct {
-	ChildWorkflowIDs  []string
-	MemoryStorageKeys []*recipe.BatchMemoryKey
-	ElementSize       []int
+	ChildWorkflowIDs []string
+	ElementSize      []int
 }
 
 type PostIteratorActivityParam struct {
-	WorkflowID        string
-	MemoryStorageKeys []*recipe.BatchMemoryKey
-	ID                string
-	OutputElements    map[string]string
-	SystemVariables   recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
+	WorkflowID      string
+	ID              string
+	OutputElements  map[string]string
+	SystemVariables recipe.SystemVariables
+}
+
+type MemoryCopyParam struct {
+	WorkflowID      string
+	SystemVariables recipe.SystemVariables
+	IsStreaming     bool
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -113,6 +111,7 @@ type WorkFlowSignal struct {
 // The workflow is only responsible for orchestrating the DAG, not processing or reading/writing the data.
 // All data processing should be done in activities.
 func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error {
+
 	eventName := "TriggerPipelineWorkflow"
 	startTime := time.Now()
 	sCtx, span := tracer.Start(context.Background(), eventName,
@@ -169,50 +168,19 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}()
 
-	// Inline function to initialize the channel only if streaming is active
-	initChan := func() chan WorkFlowSignal {
+	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
+
+	defer func() {
+		if param.TriggerFromAPI {
+			_ = w.memoryStore.PurgeWorkflowMemory(sCtx, workflowID)
+		}
+
+	}()
+	defer func() {
 		if param.IsStreaming {
-			return make(chan WorkFlowSignal, 100) // 100 is probably more than enough
+			_ = w.memoryStore.SendWorkflowStatusEvent(sCtx, workflowID, memory.Event{Event: memory.PipelineClosed})
 		}
-		return nil
-	}
-
-	// sChan is used to signal from the Workflow to the QueryHandler if an Activity is completed.
-	// The QueryHandler will be called by the client to get the status of the Workflow in order
-	// to act accordingly e.g. signal partial completion of the Workflow. The buffer size is set to 100 but
-	// can be adjusted based on the expected number of components in the Workflow.
-	var sChan = initChan()
-	const statusStep = "step"
-	const statusCompleted = "completed"
-
-	if param.IsStreaming {
-		logger.Debug("streaming is active")
-		// sChan is used to signal from the Workflow to the QueryHandler if an Activity is completed.
-		// The QueryHandler will be called by the client to get the status of the Workflow in order
-		// act accordingly e.g. signal partial completion of the Workflow. The buffer size is set to 100 but
-		// can be adjusted based on the expected number of components in the Workflow.
-		var sChan2 = make(chan WorkFlowSignal, 100)
-		sChan = sChan2
-
-		// Register query handler for workflow status
-		err := workflow.SetQueryHandler(ctx, "workflowStatusQuery", func() (WorkFlowSignal, error) {
-			select {
-			case msg := <-sChan:
-				if len(msg.Status) == 0 {
-					return WorkFlowSignal{}, nil
-				}
-				return msg, nil
-			case <-time.After(time.Second * 3):
-				return WorkFlowSignal{Status: "timeout"}, nil
-			}
-		})
-		if err != nil {
-			return err
-		}
-
-		sChan <- WorkFlowSignal{Status: "started"}
-		defer close(sChan)
-	}
+	}()
 
 	var ownerType mgmtpb.OwnerType
 	switch param.SystemVariables.PipelineOwnerType {
@@ -223,6 +191,12 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	default:
 		ownerType = mgmtpb.OwnerType_OWNER_TYPE_UNSPECIFIED
 	}
+	sessionOptions := &workflow.SessionOptions{
+		CreationTimeout:  time.Minute,
+		ExecutionTimeout: time.Minute,
+	}
+	ctx, _ = workflow.CreateSession(ctx, sessionOptions)
+	defer workflow.CompleteSession(ctx)
 
 	dataPoint := utils.PipelineUsageMetricData{
 		OwnerUID:           param.SystemVariables.PipelineOwnerUID.String(),
@@ -248,19 +222,29 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		dataPoint.RequesterType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	}
 
-	r, err := recipe.LoadRecipe(sCtx, w.redisClient, param.MemoryStorageKey.Recipe)
+	ctx = workflow.WithActivityOptions(ctx, ao)
+
+	if param.TriggerFromAPI {
+		if err := workflow.ExecuteActivity(ctx, w.CloneToMemoryStoreActivity, &MemoryCopyParam{
+			WorkflowID:      workflowID,
+			SystemVariables: param.SystemVariables,
+			IsStreaming:     param.IsStreaming,
+		}).Get(ctx, nil); err != nil {
+			return err
+		}
+	}
+
+	wfm, err := w.memoryStore.GetWorkflowMemory(sCtx, workflowID)
 	if err != nil {
 		return err
 	}
 
-	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
-
 	recipeForUpload := &datamodel.Recipe{
-		Version:   r.Version,
-		On:        r.On,
-		Component: r.Component,
-		Variable:  r.Variable,
-		Output:    r.Output,
+		Version:   wfm.GetRecipe().Version,
+		On:        wfm.GetRecipe().On,
+		Component: wfm.GetRecipe().Component,
+		Variable:  wfm.GetRecipe().Variable,
+		Output:    wfm.GetRecipe().Output,
 	}
 	b, err := json.Marshal(recipeForUpload)
 	if err != nil {
@@ -278,10 +262,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	uploadInputsActivity := workflow.ExecuteActivity(ctx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
-		MemoryStorageKey:  param.MemoryStorageKey,
 	})
 
-	dag, err := recipe.GenerateDAG(r.Component)
+	if param.IsStreaming {
+		wfm.EnableStreaming()
+	}
+
+	dag, err := recipe.GenerateDAG(wfm.GetRecipe().Component)
 	if err != nil {
 		return err
 	}
@@ -291,15 +278,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
-	for i := range param.BatchSize {
-		if param.MemoryStorageKey.Components[i] == nil {
-			param.MemoryStorageKey.Components[i] = map[string]string{}
-		}
-	}
-
 	// The components in the same group can be executed in parallel
 	for group := range orderedComp {
 		futures := []workflow.Future{}
+		futureArgs := []*ComponentActivityParam{}
 		for compID, comp := range orderedComp[group] {
 			upstreamIDs := dag.GetUpstreamCompIDs(compID)
 
@@ -319,39 +301,37 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}
 
 				args := &ComponentActivityParam{
-					WorkflowID:       workflowID,
-					ID:               compID,
-					UpstreamIDs:      upstreamIDs,
-					Type:             comp.Type,
-					Task:             comp.Task,
-					Input:            comp.Input.(map[string]any),
-					Setup:            comp.Setup,
-					Condition:        comp.Condition,
-					MemoryStorageKey: param.MemoryStorageKey,
-					SystemVariables:  param.SystemVariables,
+					WorkflowID:      workflowID,
+					ID:              compID,
+					UpstreamIDs:     upstreamIDs,
+					Type:            comp.Type,
+					Task:            comp.Task,
+					Condition:       comp.Condition,
+					SystemVariables: param.SystemVariables,
+					Streaming:       param.IsStreaming,
 				}
 
 				workflow.ExecuteActivity(ctx, w.UploadComponentInputsActivity, args)
 
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, args))
+				futureArgs = append(futureArgs, args)
 
 			case datamodel.Iterator:
 				// TODO tillknuesting: support intermediate result streaming for Iterator
 
 				preIteratorResult := &PreIteratorActivityResult{}
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
-					WorkflowID:       workflowID,
-					ID:               compID,
-					UpstreamIDs:      upstreamIDs,
-					Input:            comp.Input.(string),
-					SystemVariables:  param.SystemVariables,
-					MemoryStorageKey: param.MemoryStorageKey,
+					WorkflowID:      workflowID,
+					ID:              compID,
+					UpstreamIDs:     upstreamIDs,
+					Input:           comp.Input.(string),
+					SystemVariables: param.SystemVariables,
 				}).Get(ctx, &preIteratorResult); err != nil {
 					return err
 				}
 
 				itFutures := []workflow.Future{}
-				for iter := range param.BatchSize {
+				for iter := range wfm.GetBatchSize() {
 					childWorkflowOptions := workflow.ChildWorkflowOptions{
 						TaskQueue:                TaskQueue,
 						WorkflowID:               preIteratorResult.ChildWorkflowIDs[iter],
@@ -365,14 +345,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 						workflow.WithChildOptions(ctx, childWorkflowOptions),
 						"TriggerPipelineWorkflow",
 						&TriggerPipelineWorkflowParam{
-							IsIterator:       true,
-							BatchSize:        preIteratorResult.ElementSize[iter],
-							MemoryStorageKey: preIteratorResult.MemoryStorageKeys[iter],
-							SystemVariables:  param.SystemVariables,
-							Mode:             mgmtpb.Mode_MODE_SYNC,
+							TriggerFromAPI:  false,
+							SystemVariables: param.SystemVariables,
+							Mode:            mgmtpb.Mode_MODE_SYNC,
+							// TODO: support streaming inside iterator.
+							// IsStreaming:     param.IsStreaming,
 						}))
 				}
-				for iter := 0; iter < param.BatchSize; iter++ {
+				for iter := 0; iter < wfm.GetBatchSize(); iter++ {
 					err = itFutures[iter].Get(ctx, nil)
 					if err != nil {
 						logger.Error(fmt.Sprintf("unable to execute iterator workflow: %s", err.Error()))
@@ -381,11 +361,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				}
 
 				if err = workflow.ExecuteActivity(ctx, w.PostIteratorActivity, &PostIteratorActivityParam{
-					WorkflowID:        workflowID,
-					ID:                compID,
-					MemoryStorageKeys: preIteratorResult.MemoryStorageKeys,
-					OutputElements:    comp.OutputElements,
-					SystemVariables:   param.SystemVariables,
+					WorkflowID:      workflowID,
+					ID:              compID,
+					OutputElements:  comp.OutputElements,
+					SystemVariables: param.SystemVariables,
 				}).Get(ctx, nil); err != nil {
 					return err
 				}
@@ -394,8 +373,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 
 		for idx := range futures {
-			var result ComponentActivityResult
-			err = futures[idx].Get(ctx, &result)
+			err = futures[idx].Get(ctx, nil)
 			if err != nil {
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 
@@ -405,36 +383,35 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				// message from the activity.
 				return err
 			}
-			if param.IsStreaming {
-				sChan <- WorkFlowSignal{Status: statusStep, ID: result.ID}
-			}
-			// todo: upload component outputs
 
-			workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, &result)
+			workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, futureArgs[idx])
 		}
 
-		for batchIdx := range param.BatchSize {
-			for compID := range orderedComp[group] {
-				param.MemoryStorageKey.Components[batchIdx][compID] = fmt.Sprintf("%s:%d:%s:%s", workflowID, batchIdx, recipe.SegComponent, compID)
-			}
-		}
-		if param.IsStreaming {
-			// if we don't sleep, there will be race condition between Redis write and read
-			if err := workflow.Sleep(ctx, time.Millisecond*10); err != nil {
-				logger.Error(fmt.Sprintf(" workflow unable to sleep: %s", err.Error()))
-			}
-		}
-	}
-
-	if param.IsStreaming {
-		sChan <- WorkFlowSignal{Status: statusCompleted}
 	}
 
 	duration := time.Since(startTime)
 	dataPoint.ComputeTimeDuration = duration.Seconds()
 	dataPoint.Status = mgmtpb.Status_STATUS_COMPLETED
 
-	if !param.IsIterator {
+	if param.TriggerFromAPI {
+		if err := workflow.ExecuteActivity(ctx, w.OutputActivity, &ComponentActivityParam{
+			WorkflowID: workflowID,
+		}).Get(ctx, nil); err != nil {
+			return err
+		}
+
+		if err := workflow.ExecuteActivity(ctx, w.UploadOutputsToMinioActivity, &UploadOutputsToMinioActivityParam{
+			PipelineTriggerID: workflowID,
+		}).Get(ctx, nil); err != nil {
+			return err
+		}
+
+		if err := workflow.ExecuteActivity(ctx, w.CloneToRedisActivity, &MemoryCopyParam{
+			WorkflowID: workflowID,
+		}).Get(ctx, nil); err != nil {
+			return err
+		}
+
 		// TODO: we should check whether to collect failed component or not
 		if err := workflow.ExecuteActivity(ctx, w.IncreasePipelineTriggerCountActivity, param.SystemVariables).Get(ctx, nil); err != nil {
 			return fmt.Errorf("updating pipeline trigger count: %w", err)
@@ -474,7 +451,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	return nil
 }
 
-func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) (*ComponentActivityResult, error) {
+func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivityParam) error {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("ComponentActivity started")
 
@@ -502,82 +479,82 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		}()
 	}
 
-	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+		return componentActivityError(err, componentActivityErrorType, param.ID)
 	}
-
-	compInputs, idxMap, err := w.processInput(batchMemory, param.ID, param.UpstreamIDs, param.Condition, param.Input)
+	conditionMap, err := w.processCondition(ctx, wfm, param.ID, param.UpstreamIDs, param.Condition)
 	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+		return componentActivityError(err, componentActivityErrorType, param.ID)
 	}
-
-	cons, err := w.processSetup(batchMemory, param.Setup)
+	setups, err := NewSetupReader(wfm, param.ID, conditionMap).Read(ctx)
 	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+		return componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 	sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
 	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+		return componentActivityError(err, componentActivityErrorType, param.ID)
 	}
-
-	// Note: we assume that setup in the batch are all the same
 	executionParams := componentstore.ExecutionParams{
 		ComponentID:           param.ID,
 		ComponentDefinitionID: param.Type,
 		SystemVariables:       sysVars,
-		Setup:                 cons[0],
-		Task:                  param.Task,
+
+		// Note: currently, we assume that setup in the batch are all the same
+		Setup: setups[0],
+		Task:  param.Task,
 	}
+
 	execution, err := w.component.CreateExecution(executionParams)
 	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+		return componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
-	compOutputs, err := execution.Execute(ctx, compInputs)
+	err = execution.Execute(
+		ctx,
+		NewInputReader(wfm, param.ID, conditionMap),
+		NewOutputWriter(wfm, param.ID, conditionMap),
+	)
 	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+		return componentActivityError(err, componentActivityErrorType, param.ID)
 	}
 
-	// Upload outputs to MinIO
-	// outputsJSONB, err := w.uploadJSONToMinIO(ctx, compOutputs, param.WorkflowID, param.ID, "outputs")
-	// if err != nil {
-	// 	return nil, componentActivityError(err, componentActivityErrorType, param.ID)
-	// }
-	// componentRun.Outputs = outputsJSONB
-
-	// test
-	key := fmt.Sprintf("%s:%s", param.SystemVariables.PipelineTriggerID, param.ID)
-	val := w.redisClient.Get(ctx, key).Val()
-	if val != "" {
-		logger.Error(fmt.Sprintf("test by jeremy: key [%s] exists", key))
-	}
-	if err = w.redisClient.Set(ctx, key, 1, time.Minute).Err(); err != nil {
-		logger.Error(fmt.Sprintf("test by jeremy: failed to set key [%s]", key))
-	}
-
-	compMem, err := w.processOutput(batchMemory, param.ID, compOutputs, idxMap)
-	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
-	}
-
-	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.WorkflowID, param.ID, compMem)
-	if err != nil {
-		return nil, componentActivityError(err, componentActivityErrorType, param.ID)
+	for _, idx := range conditionMap {
+		if err = wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
+			return componentActivityError(err, componentActivityErrorType, param.ID)
+		}
 	}
 
 	logger.Info("ComponentActivity completed")
+	return nil
+}
 
-	// the data is logged in temporal hence we should only return data that is needed
-	p := &ComponentActivityParam{
-		WorkflowID:      param.WorkflowID,
-		ID:              param.ID, // is used by the caller to identify the component
-		SystemVariables: param.SystemVariables,
+func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityParam) error {
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("OutputActivity started")
+
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
+	if err != nil {
+		return temporal.NewApplicationErrorWithCause("failed to load pipeline memory", outputActivityErrorType, err)
 	}
-	return &ComponentActivityResult{
-		ComponentActivityParam: p,
-		Outputs:                compOutputs,
-	}, nil
+
+	for idx := range wfm.GetBatchSize() {
+		output, err := wfm.Get(ctx, idx, string(memory.PipelineOutputTemplate))
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("failed to load pipeline output", outputActivityErrorType, err)
+		}
+		output, err = recipe.Render(ctx, output, idx, wfm)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("failed to render pipeline output", outputActivityErrorType, err)
+		}
+		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, output)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("failed to store pipeline output", outputActivityErrorType, err)
+		}
+	}
+
+	logger.Info("OutputActivity completed")
+	return nil
 }
 
 // func (w *worker) uploadJSONToMinIO(ctx context.Context, data interface{}, workflowID, componentID, prefix string) (datamodel.JSONB, error) {
@@ -619,85 +596,99 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("PreIteratorActivity started")
 
-	m, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
 		return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
-	}
-	r, err := recipe.LoadRecipe(ctx, w.redisClient, param.MemoryStorageKey.Recipe)
-	if err != nil {
-		return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
-	}
-
-	iteratorRecipe := &datamodel.Recipe{
-		Component: r.Component[param.ID].Component,
 	}
 
 	result := &PreIteratorActivityResult{
-		MemoryStorageKeys: make([]*recipe.BatchMemoryKey, len(m)),
-		ElementSize:       make([]int, len(m)),
-	}
-	recipeKey := fmt.Sprintf("%s:%s:%s", param.WorkflowID, param.ID, recipe.SegRecipe)
-	err = recipe.WriteRecipe(ctx, w.redisClient, recipeKey, iteratorRecipe)
-	if err != nil {
-		return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+		ElementSize: make([]int, wfm.GetBatchSize()),
 	}
 
-	batchSize := len(m)
+	batchSize := wfm.GetBatchSize()
 	childWorkflowIDs := make([]string, batchSize)
-	for iter := range batchSize {
-		childWorkflowIDs[iter] = fmt.Sprintf("%s:%d:%s:%s:%s", param.WorkflowID, iter, recipe.SegComponent, param.ID, recipe.SegIteration)
-	}
 
-	for iter := range m {
+	for iter := range wfm.GetBatchSize() {
+		if err = wfm.SetComponentStatus(ctx, iter, param.ID, memory.ComponentStatusStarted, true); err != nil {
+			return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+		}
+		childWorkflowID := fmt.Sprintf("%s:%d:%s:%s:%s", param.WorkflowID, iter, constant.SegComponent, param.ID, constant.SegIteration)
+		childWorkflowIDs[iter] = childWorkflowID
 
-		input, err := recipe.RenderInput(param.Input, iter, m[iter])
+		input, err := recipe.Render(ctx, data.NewString(param.Input), iter, wfm)
 		if err != nil {
 			return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
 		}
 
-		elems := make([]*recipe.ComponentMemory, len(input.([]any)))
-		for elemIdx := range input.([]any) {
-			elems[elemIdx] = &recipe.ComponentMemory{
-				Element: input.([]any)[elemIdx],
-			}
-
-		}
+		elems := input.(*data.Array).Values
 		elementSize := len(elems)
 		result.ElementSize[iter] = elementSize
 
-		err = recipe.WriteComponentMemory(ctx, w.redisClient, childWorkflowIDs[iter], param.ID, elems)
+		iteratorRecipe := &datamodel.Recipe{
+			Component: wfm.GetRecipe().Component[param.ID].Component,
+		}
+
+		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowIDs[iter], iteratorRecipe, elementSize)
 		if err != nil {
 			return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
 		}
 
-		varKeys := make([]string, elementSize)
 		for e := range elementSize {
-			varKeys[e] = param.MemoryStorageKey.Variables[iter]
-		}
-		secretKeys := make([]string, elementSize)
-		for e := range elementSize {
-			secretKeys[e] = param.MemoryStorageKey.Secrets[iter]
-		}
-		compKeys := make([]map[string]string, elementSize)
-		for e := range elementSize {
-			compKeys[e] = make(map[string]string)
+
+			iteratorElem := data.NewMap(
+				map[string]data.Value{
+					"element": elems[e],
+				},
+			)
+			err = childWFM.Set(ctx, e, param.ID, iteratorElem)
+			if err != nil {
+				return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+			}
+			variable, err := wfm.Get(ctx, iter, constant.SegVariable)
+			if err != nil {
+				return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+			}
+			secret, err := wfm.Get(ctx, iter, constant.SegSecret)
+			if err != nil {
+				return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+			}
+			err = childWFM.SetPipelineData(ctx, e, memory.PipelineVariable, variable)
+			if err != nil {
+				return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+			}
+			err = childWFM.SetPipelineData(ctx, e, memory.PipelineSecret, secret)
+			if err != nil {
+				return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+			}
+
 			for _, id := range param.UpstreamIDs {
-				compKeys[e][id] = param.MemoryStorageKey.Components[iter][id]
+				component, err := wfm.Get(ctx, iter, id)
+				if err != nil {
+					return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+				}
+				err = childWFM.Set(ctx, e, id, component)
+				if err != nil {
+					return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+				}
+			}
+			for compID, comp := range iteratorRecipe.Component {
+				inputVal, err := data.NewValue(comp.Input)
+				if err != nil {
+					return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+				}
+				setupVal, err := data.NewValue(comp.Setup)
+				if err != nil {
+					return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+				}
+				childWFM.InitComponent(ctx, e, compID)
+				if err := childWFM.SetComponentData(ctx, e, compID, memory.ComponentDataInput, inputVal); err != nil {
+					return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+				}
+				if err := childWFM.SetComponentData(ctx, e, compID, memory.ComponentDataSetup, setupVal); err != nil {
+					return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
+				}
 			}
 		}
-
-		for e := range elementSize {
-			compKeys[e][param.ID] = fmt.Sprintf("%s:%d:%s:%s", childWorkflowIDs[iter], e, recipe.SegComponent, param.ID)
-		}
-
-		k := &recipe.BatchMemoryKey{
-			Components:     compKeys,
-			Variables:      varKeys,
-			Secrets:        secretKeys,
-			Recipe:         recipeKey,
-			OwnerPermalink: param.MemoryStorageKey.OwnerPermalink,
-		}
-		result.MemoryStorageKeys[iter] = k
 
 	}
 	result.ChildWorkflowIDs = childWorkflowIDs
@@ -710,57 +701,186 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("PostIteratorActivity started")
 
-	// recipes for all iteration are the same
-	r, err := recipe.LoadRecipe(ctx, w.redisClient, param.MemoryStorageKeys[0].Recipe)
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
 		return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 	}
 
-	iterComp := []*recipe.ComponentMemory{}
-	for iter := range param.MemoryStorageKeys {
-
-		k := param.MemoryStorageKeys[iter]
-		for e := range len(k.Variables) {
-			for compID := range r.Component {
-				k.Components[e][compID] = fmt.Sprintf("%s:%d:%s:%s:%s:%d:%s:%s", param.WorkflowID, iter, recipe.SegComponent, param.ID, recipe.SegIteration, e, recipe.SegComponent, compID)
-			}
-		}
-
-		m, err := recipe.LoadMemory(ctx, w.redisClient, k)
+	for iter := range wfm.GetBatchSize() {
+		childWorkflowID := fmt.Sprintf("%s:%d:%s:%s:%s", param.WorkflowID, iter, constant.SegComponent, param.ID, constant.SegIteration)
+		childWFM, err := w.memoryStore.GetWorkflowMemory(ctx, childWorkflowID)
 		if err != nil {
 			return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 		}
+		defer func() {
+			_ = w.memoryStore.PurgeWorkflowMemory(ctx, childWorkflowID)
+		}()
 
-		output := recipe.ComponentIO{}
+		output := data.NewMap(nil)
 		for k, v := range param.OutputElements {
-			elemVals := []any{}
+			elemVals := data.NewArray(nil)
 
-			for elemIdx := range len(m) {
-				elemVal, err := recipe.RenderInput(v, elemIdx, m[elemIdx])
+			for elemIdx := range childWFM.GetBatchSize() {
+				elemVal, err := recipe.Render(ctx, data.NewString(v), elemIdx, childWFM)
 				if err != nil {
 					return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 				}
-				elemVals = append(elemVals, elemVal)
+				elemVals.Values = append(elemVals.Values, elemVal)
 
 			}
-			output[k] = elemVals
+			output.Fields[k] = elemVals
+		}
+		if err = wfm.SetComponentData(ctx, iter, param.ID, memory.ComponentDataOutput, output); err != nil {
+			return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 		}
 
-		iterComp = append(iterComp, &recipe.ComponentMemory{
-			Output: &output,
-			Status: &recipe.ComponentStatus{ // TODO: use real status
-				Started:   true,
-				Completed: true,
-			},
-		})
-	}
-	err = recipe.WriteComponentMemory(ctx, w.redisClient, param.WorkflowID, param.ID, iterComp)
-	if err != nil {
-		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
-		return componentActivityError(err, postIteratorActivityErrorType, param.ID)
+		if err = wfm.SetComponentStatus(ctx, iter, param.ID, memory.ComponentStatusCompleted, true); err != nil {
+			return componentActivityError(err, postIteratorActivityErrorType, param.ID)
+		}
 	}
 
 	logger.Info("PostIteratorActivity completed")
+	return nil
+}
+
+// CloneToMemoryStoreActivity clone the trigger memory from Redis to MemoryStore.
+func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCopyParam) error {
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("CloneToMemoryStoreActivity started")
+
+	wfm, err := w.memoryStore.LoadWorkflowMemoryFromRedis(ctx, param.WorkflowID)
+	if err != nil {
+		return temporal.NewApplicationErrorWithCause("failed to load pipeline memory", cloneToMemoryStoreActivityErrorType, err)
+	}
+	var recipe *datamodel.Recipe
+	if param.SystemVariables.PipelineReleaseUID.IsNil() {
+		pipeline, err := w.repository.GetPipelineByUIDAdmin(ctx, param.SystemVariables.PipelineUID, false, false)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("failed to load pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
+		}
+		recipe = pipeline.Recipe
+	} else {
+		release, err := w.repository.GetPipelineReleaseByUIDAdmin(ctx, param.SystemVariables.PipelineReleaseUID, false)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("failed to load pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
+		}
+		recipe = release.Recipe
+	}
+
+	wfm.SetRecipe(recipe)
+
+	pt := ""
+	var nsSecrets []*datamodel.Secret
+	ownerPermalink := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwnerType, param.SystemVariables.PipelineOwnerUID)
+	for {
+		var secrets []*datamodel.Secret
+		secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, ownerPermalink, 100, pt, filtering.Filter{})
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("failed to load pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
+		}
+
+		for _, secret := range secrets {
+			if secret.Value != nil {
+				nsSecrets = append(nsSecrets, secret)
+			}
+		}
+		if pt == "" {
+			break
+		}
+	}
+
+	for idx := range wfm.GetBatchSize() {
+		pipelineSecrets, err := wfm.Get(ctx, idx, constant.SegSecret)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("failed to load pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
+		}
+
+		for _, secret := range nsSecrets {
+			if _, ok := pipelineSecrets.(*data.Map).Fields[secret.ID]; !ok {
+				pipelineSecrets.(*data.Map).Fields[secret.ID] = data.NewString(*secret.Value)
+			}
+		}
+
+		// Init component template
+		for compID, comp := range recipe.Component {
+
+			wfm.InitComponent(ctx, idx, compID)
+
+			inputVal, err := data.NewValue(comp.Input)
+			if err != nil {
+				return temporal.NewApplicationErrorWithCause("failed to init pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
+			}
+			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataInput, inputVal); err != nil {
+				return temporal.NewApplicationErrorWithCause("failed to init pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
+			}
+
+			setupVal, err := data.NewValue(comp.Setup)
+			if err != nil {
+				return temporal.NewApplicationErrorWithCause("failed to init pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
+			}
+			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataSetup, setupVal); err != nil {
+				return temporal.NewApplicationErrorWithCause("failed to init pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
+			}
+		}
+		output := data.NewMap(nil)
+
+		for key, o := range recipe.Output {
+			output.Fields[key] = data.NewString(o.Value)
+		}
+		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutputTemplate, output)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("failed to clone pipeline memory", cloneToMemoryStoreActivityErrorType, err)
+		}
+	}
+
+	if param.IsStreaming {
+		for batchIdx := range wfm.GetBatchSize() {
+			variable, err := wfm.Get(ctx, batchIdx, "variable")
+			if err != nil {
+				return temporal.NewApplicationErrorWithCause("failed to send event", cloneToMemoryStoreActivityErrorType, err)
+			}
+			variableStruct, err := variable.ToStructValue()
+			if err != nil {
+				return temporal.NewApplicationErrorWithCause("failed to send event", cloneToMemoryStoreActivityErrorType, err)
+			}
+			variableJSON := map[string]any{}
+			b, _ := protojson.Marshal(variableStruct)
+			_ = json.Unmarshal(b, &variableJSON)
+			err = w.memoryStore.SendWorkflowStatusEvent(
+				ctx,
+				param.WorkflowID,
+				memory.Event{
+					Event: memory.PipelineStarted,
+					Data: memory.PipelineStartedEventData{
+						UpdateTime: time.Now(),
+						BatchIndex: batchIdx,
+						Variable:   variableJSON,
+					},
+				},
+			)
+			if err != nil {
+				return temporal.NewApplicationErrorWithCause("failed to send event", cloneToMemoryStoreActivityErrorType, err)
+			}
+		}
+	}
+
+	logger.Info("CloneToMemoryStoreActivity completed")
+	return nil
+}
+
+// CloneToRedisActivity copy the trigger memory from MemoryStore to Redis.
+func (w *worker) CloneToRedisActivity(ctx context.Context, param *MemoryCopyParam) error {
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("CloneToRedisActivity started")
+
+	err := w.memoryStore.WriteWorkflowMemoryToRedis(ctx, param.WorkflowID)
+	if err != nil {
+		return temporal.NewApplicationErrorWithCause("failed to clone pipeline memory", cloneToRedisActivityErrorType, err)
+	}
+
+	logger.Info("CloneToRedisActivity completed")
 	return nil
 }
 
@@ -777,159 +897,71 @@ func (w *worker) IncreasePipelineTriggerCountActivity(ctx context.Context, sv re
 	return nil
 }
 
-func (w *worker) processInput(batchMemory []*recipe.Memory, id string, UpstreamIDs []string, condition string, input any) ([]*structpb.Struct, map[int]int, error) {
-	var compInputs []*structpb.Struct
-	idxMap := map[int]int{}
+func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory, id string, UpstreamIDs []string, condition string) (map[int]int, error) {
+	conditionMap := map[int]int{}
 
-	for idx := range batchMemory {
-
-		batchMemory[idx].Component[id] = &recipe.ComponentMemory{
-			Input:  &recipe.ComponentIO{},
-			Output: &recipe.ComponentIO{},
-			Status: &recipe.ComponentStatus{},
-		}
+	ptr := 0
+	for idx := range wfm.GetBatchSize() {
 
 		for _, upstreamID := range UpstreamIDs {
-			if batchMemory[idx].Component[upstreamID].Status.Skipped {
-				batchMemory[idx].Component[id].Status.Skipped = true
+			if s, err := wfm.GetComponentStatus(ctx, idx, upstreamID, memory.ComponentStatusSkipped); err == nil && s {
+				if err = wfm.SetComponentStatus(ctx, idx, upstreamID, memory.ComponentStatusSkipped, true); err != nil {
+					return nil, err
+				}
 				break
 			}
 		}
 
-		if !batchMemory[idx].Component[id].Status.Skipped {
-			if condition != "" {
+		if condition != "" {
+			// TODO: these code should be refactored and shared some common functions with Render
+			condStr := condition
+			var varMapping map[string]string
+			condStr, _, varMapping = recipe.SanitizeCondition(condStr)
 
-				// TODO: these code should be refactored and shared some common functions with RenderInput
-				condStr := condition
-				var varMapping map[string]string
-				condStr, _, varMapping = recipe.SanitizeCondition(condStr)
+			expr, err := parser.ParseExpr(condStr)
+			if err != nil {
+				return nil, err
+			}
 
-				expr, err := parser.ParseExpr(condStr)
-				if err != nil {
-					return nil, nil, err
+			allMemory, err := wfm.Get(ctx, idx, "")
+			if err != nil {
+
+				return nil, err
+			}
+			condMemoryForConditionStruct, err := allMemory.ToStructValue()
+			if err != nil {
+				return nil, err
+			}
+			b, _ := protojson.Marshal(condMemoryForConditionStruct)
+			condMemoryForCondition := map[string]any{}
+			_ = json.Unmarshal(b, &condMemoryForCondition)
+
+			sanitizedCondMemoryForCondition := map[string]any{}
+			for k, v := range condMemoryForCondition {
+				sanitizedCondMemoryForCondition[varMapping[k]] = v
+			}
+
+			cond, err := recipe.EvalCondition(expr, sanitizedCondMemoryForCondition)
+			if err != nil {
+				return nil, err
+			}
+
+			if cond == false {
+				if err = wfm.SetComponentStatus(ctx, idx, id, memory.ComponentStatusSkipped, true); err != nil {
+					return nil, err
 				}
-
-				condMemory := map[string]any{}
-
-				for k, v := range batchMemory[idx].Component {
-					condMemory[varMapping[k]] = v
-				}
-				condMemory[varMapping["variable"]] = batchMemory[idx].Variable
-
-				cond, err := recipe.EvalCondition(expr, condMemory)
-				if err != nil {
-					return nil, nil, err
-				}
-				if cond == false {
-					batchMemory[idx].Component[id].Status.Skipped = true
-				} else {
-					batchMemory[idx].Component[id].Status.Started = true
-				}
-			} else {
-				batchMemory[idx].Component[id].Status.Started = true
 			}
 		}
 
-		if batchMemory[idx].Component[id].Status.Started {
-
-			var compInputTemplateJSON []byte
-			compInputTemplate := input
-
-			compInputTemplateJSON, err := json.Marshal(compInputTemplate)
-			if err != nil {
-				return nil, nil, err
+		if s, err := wfm.GetComponentStatus(ctx, idx, id, memory.ComponentStatusSkipped); err == nil && !s {
+			if err = wfm.SetComponentStatus(ctx, idx, id, memory.ComponentStatusStarted, true); err != nil {
+				return nil, err
 			}
-			var compInputTemplateStruct any
-			err = json.Unmarshal(compInputTemplateJSON, &compInputTemplateStruct)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			compInputStruct, err := recipe.RenderInput(compInputTemplateStruct, idx, batchMemory[idx])
-			if err != nil {
-				return nil, nil, err
-			}
-			compInputJSON, err := json.Marshal(compInputStruct)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			compInput := &structpb.Struct{}
-			err = protojson.Unmarshal([]byte(compInputJSON), compInput)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			*batchMemory[idx].Component[id].Input = compInputStruct.(map[string]any)
-
-			idxMap[len(compInputs)] = idx
-			compInputs = append(compInputs, compInput)
-
+			conditionMap[ptr] = idx
+			ptr += 1
 		}
 	}
-	return compInputs, idxMap, nil
-}
-
-func (w *worker) processOutput(batchMemory []*recipe.Memory, id string, compOutputs []*structpb.Struct, idxMap map[int]int) ([]*recipe.ComponentMemory, error) {
-
-	for idx := range compOutputs {
-
-		outputJSON, err := protojson.Marshal(compOutputs[idx])
-		if err != nil {
-			return nil, err
-		}
-		var outputStruct map[string]any
-		err = json.Unmarshal(outputJSON, &outputStruct)
-		if err != nil {
-			return nil, err
-		}
-		*batchMemory[idxMap[idx]].Component[id].Output = outputStruct
-		batchMemory[idxMap[idx]].Component[id].Status.Completed = true
-	}
-
-	compMem := make([]*recipe.ComponentMemory, len(batchMemory))
-	for idx, m := range batchMemory {
-		compMem[idx] = m.Component[id]
-	}
-
-	return compMem, nil
-}
-
-func (w *worker) processSetup(batchMemory []*recipe.Memory, setup map[string]any) ([]*structpb.Struct, error) {
-
-	if setup == nil {
-		setup = map[string]any{}
-	}
-
-	conTemplateJSON, err := json.Marshal(setup)
-	if err != nil {
-		return nil, err
-	}
-	var conTemplateStruct any
-	err = json.Unmarshal(conTemplateJSON, &conTemplateStruct)
-	if err != nil {
-		return nil, err
-	}
-
-	cons := []*structpb.Struct{}
-	for idx := range batchMemory {
-		conStruct, err := recipe.RenderInput(conTemplateStruct, 0, batchMemory[idx])
-		if err != nil {
-			return nil, err
-		}
-		conJSON, err := json.Marshal(conStruct)
-		if err != nil {
-			return nil, err
-		}
-		con := &structpb.Struct{}
-		err = protojson.Unmarshal([]byte(conJSON), con)
-		if err != nil {
-			return nil, err
-		}
-		cons = append(cons, con)
-	}
-
-	return cons, nil
+	return conditionMap, nil
 }
 
 // writeErrorDataPoint is a helper function that writes the error data point to
@@ -958,9 +990,12 @@ func componentActivityError(err error, errType, componentID string) error {
 // business domain (e.g. VendorError (non billable), InputDataError (billable),
 // etc.).
 const (
-	componentActivityErrorType    = "ComponentActivityError"
-	preIteratorActivityErrorType  = "PreIteratorActivityError"
-	postIteratorActivityErrorType = "PostIteratorActivityError"
+	componentActivityErrorType          = "ComponentActivityError"
+	outputActivityErrorType             = "OutputActivityError"
+	preIteratorActivityErrorType        = "PreIteratorActivityError"
+	postIteratorActivityErrorType       = "PostIteratorActivityError"
+	cloneToMemoryStoreActivityErrorType = "CloneToMemoryStoreActivityError"
+	cloneToRedisActivityErrorType       = "CloneToRedisActivityError"
 )
 
 // EndUserErrorDetails provides a structured way to add an end-user error
@@ -969,77 +1004,18 @@ type EndUserErrorDetails struct {
 	Message string
 }
 
-func (w *worker) SchedulePipelineLoaderActivity(ctx context.Context, param *SchedulePipelineLoaderActivityParam) (*SchedulePipelineLoaderActivityResult, error) {
-	dbPipeline, err := w.repository.GetNamespacePipelineByID(ctx, param.Namespace.Permalink(), param.PipelineID, true, false)
-	if err != nil {
-		return nil, err
-	}
-
-	scheduleID := fmt.Sprintf("%s_schedule", dbPipeline.UID)
-
-	memory := make([]*recipe.Memory, 1)
-	memory[0] = &recipe.Memory{
-		Variable:  make(recipe.VariableMemory),
-		Secret:    make(recipe.SecretMemory),
-		Component: make(map[string]*recipe.ComponentMemory),
-	}
-	pt := ""
-	for {
-		var nsSecrets []*datamodel.Secret
-		// TODO: should use ctx user uid
-		nsSecrets, _, pt, err := w.repository.ListNamespaceSecrets(ctx, param.Namespace.Permalink(), 100, pt, filtering.Filter{})
-		if err != nil {
-			return nil, err
-		}
-
-		for _, nsSecret := range nsSecrets {
-			if nsSecret.Value != nil {
-				if _, ok := memory[0].Secret[nsSecret.ID]; !ok {
-					memory[0].Secret[nsSecret.ID] = *nsSecret.Value
-				}
-			}
-		}
-
-		if pt == "" {
-			break
-		}
-	}
-
-	k, err := recipe.Write(ctx, w.redisClient, scheduleID, dbPipeline.Recipe, memory, param.Namespace.Permalink())
-	if err != nil {
-		return nil, err
-	}
-	return &SchedulePipelineLoaderActivityResult{Key: k, ScheduleID: scheduleID, Pipeline: dbPipeline}, nil
-}
-
 func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *SchedulePipelineWorkflowParam) error {
 
-	r := SchedulePipelineLoaderActivityResult{}
-	ao := workflow.ActivityOptions{
-		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		RetryPolicy: &temporal.RetryPolicy{
-			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
-		},
-	}
-	wfctx = workflow.WithActivityOptions(wfctx, ao)
-	if err := workflow.ExecuteActivity(wfctx, w.SchedulePipelineLoaderActivity, &SchedulePipelineLoaderActivityParam{
-		Namespace:  param.Namespace,
-		PipelineID: param.PipelineID,
-	}).Get(wfctx, &r); err != nil {
-		return err
-	}
+	scheduleID := fmt.Sprintf("%s_%s_schedule", param.PipelineUID, param.PipelineReleaseUID)
 
 	// TODO: huitang - Handle pipeline release as well.
 	triggerParam := &TriggerPipelineWorkflowParam{
-		BatchSize:        1,
-		MemoryStorageKey: r.Key,
 		SystemVariables: recipe.SystemVariables{
-			PipelineTriggerID:    r.ScheduleID,
-			PipelineID:           r.Pipeline.ID,
-			PipelineUID:          r.Pipeline.UID,
-			PipelineReleaseID:    "",
-			PipelineReleaseUID:   uuid.Nil,
-			PipelineRecipe:       r.Pipeline.Recipe,
+			PipelineTriggerID:    scheduleID,
+			PipelineID:           param.PipelineID,
+			PipelineUID:          param.PipelineUID,
+			PipelineReleaseID:    param.PipelineReleaseID,
+			PipelineReleaseUID:   param.PipelineReleaseUID,
 			PipelineOwnerType:    param.Namespace.NsType,
 			PipelineOwnerUID:     param.Namespace.NsUID,
 			PipelineUserUID:      param.Namespace.NsUID,

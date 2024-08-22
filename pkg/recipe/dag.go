@@ -1,6 +1,7 @@
 package recipe
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -11,12 +12,11 @@ import (
 	"go/ast"
 	"go/token"
 
-	"github.com/PaesslerAG/jsonpath"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/memory"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	componentbase "github.com/instill-ai/component/base"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -157,71 +157,27 @@ func (d *dag) TopologicalSort() ([]datamodel.ComponentMap, error) {
 	return ans, nil
 }
 
-func splitFunc(s rune) bool {
-	return s == '.' || s == '['
-}
-func TraverseBinding(memory *Memory, path string) (any, error) {
-	compsMemory := memory.Component
-	varsMemory := memory.Variable
-	secretsMemory := memory.Secret
-
-	splits := strings.FieldsFunc(path, splitFunc)
-
-	newPath := ""
-	for _, split := range splits {
-		if strings.HasSuffix(split, "]") {
-			newPath += fmt.Sprintf("[%s", split)
-		} else {
-			newPath += fmt.Sprintf("[\"%s\"]", split)
-		}
-	}
-
-	m := map[string]any{
-		SegMemory: map[string]any{},
-	}
-	for k := range compsMemory {
-		m[SegMemory].(map[string]any)[k] = compsMemory[k]
-	}
-
-	if varsMemory != nil {
-		m[SegMemory].(map[string]any)[SegVariable] = varsMemory
-	}
-	if secretsMemory != nil {
-		m[SegMemory].(map[string]any)[SegSecret] = secretsMemory
-	}
-
-	b, _ := json.Marshal(m)
-	var mParsed any
-	_ = json.Unmarshal(b, &mParsed)
-	res, err := jsonpath.Get(fmt.Sprintf("$.%s%s", SegMemory, newPath), mParsed)
+func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx int, path string) (data.Value, error) {
+	v, err := wfm.Get(ctx, batchIdx, path)
 	if err != nil {
-		// check primitive value
-		var ret any
-		err := json.Unmarshal([]byte(path), &ret)
-		if err != nil {
-			return nil, fmt.Errorf("reference not correct: '%s'", path)
-		}
-		return ret, nil
+		return data.NewString(path), nil
 	}
-	switch res := res.(type) {
-	default:
-		return res, nil
-	}
+	return v, err
 }
 
-func RenderInput(inputTemplate any, dataIndex int, memory *Memory) (any, error) {
+func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.WorkflowMemory) (data.Value, error) {
 
-	switch input := inputTemplate.(type) {
-	case string:
-		if strings.HasPrefix(input, "${") && strings.HasSuffix(input, "}") && strings.Count(input, "${") == 1 {
-			input = input[2:]
-			input = input[:len(input)-1]
-			input = strings.TrimSpace(input)
-			if input == SegSecret+"."+constant.GlobalSecretKey {
-				return componentbase.SecretKeyword, nil
+	switch input := template.(type) {
+	case *data.String:
+		s := input.GetString()
+		if strings.HasPrefix(s, "${") && strings.HasSuffix(s, "}") && strings.Count(s, "${") == 1 {
+			s = s[2:]
+			s = s[:len(s)-1]
+			s = strings.TrimSpace(s)
+			if s == constant.SegSecret+"."+constant.GlobalSecretKey {
+				return data.NewString(componentbase.SecretKeyword), nil
 			}
-
-			val, err := TraverseBinding(memory, input)
+			val, err := resolveReference(ctx, wfm, batchIdx, s)
 			if err != nil {
 				return nil, err
 			}
@@ -230,28 +186,28 @@ func RenderInput(inputTemplate any, dataIndex int, memory *Memory) (any, error) 
 
 		val := ""
 		for {
-			startIdx := strings.Index(input, "${")
+			startIdx := strings.Index(s, "${")
 			if startIdx == -1 {
-				val += input
+				val += s
 				break
 			}
-			val += input[:startIdx]
-			input = input[startIdx:]
-			endIdx := strings.Index(input, "}")
+			val += s[:startIdx]
+			s = s[startIdx:]
+			endIdx := strings.Index(s, "}")
 			if endIdx == -1 {
-				val += input
+				val += s
 				break
 			}
 
-			ref := strings.TrimSpace(input[2:endIdx])
-			v, err := TraverseBinding(memory, ref)
+			ref := strings.TrimSpace(s[2:endIdx])
+			v, err := resolveReference(ctx, wfm, batchIdx, ref)
 			if err != nil {
 				return nil, err
 			}
 
 			switch v := v.(type) {
-			case string:
-				val += v
+			case *data.String:
+				val += v.GetString()
 			default:
 				b, err := json.Marshal(v)
 				if err != nil {
@@ -259,31 +215,30 @@ func RenderInput(inputTemplate any, dataIndex int, memory *Memory) (any, error) 
 				}
 				val += string(b)
 			}
-			input = input[endIdx+1:]
+			s = s[endIdx+1:]
 		}
-		return val, nil
+		return data.NewString(val), nil
 
-	case map[string]any:
-		val := map[string]any{}
-		for k, v := range input {
-			converted, err := RenderInput(v, dataIndex, memory)
+	case *data.Map:
+		var err error
+		mp := data.NewMap(nil)
+		for k, v := range input.Fields {
+			mp.Fields[k], err = Render(ctx, v, batchIdx, wfm)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
-			val[k] = converted
-
 		}
-		return val, nil
-	case []any:
-		val := []any{}
-		for _, v := range input {
-			converted, err := RenderInput(v, dataIndex, memory)
+		return mp, nil
+	case *data.Array:
+		var err error
+		arr := data.NewArray(make([]data.Value, len(input.Values)))
+		for i, v := range input.Values {
+			arr.Values[i], err = Render(ctx, v, batchIdx, wfm)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
-			val = append(val, converted)
 		}
-		return val, nil
+		return arr, nil
 	default:
 		return input, nil
 	}
@@ -658,57 +613,54 @@ func FindReferenceParent(input string) []string {
 	return upstreams
 }
 
-func GenerateTraces(comps datamodel.ComponentMap, memory []*Memory) (map[string]*pb.Trace, error) {
+func GenerateTraces(ctx context.Context, wfm memory.WorkflowMemory) (map[string]*pb.Trace, error) {
+
 	trace := map[string]*pb.Trace{}
 
-	batchSize := len(memory)
+	batchSize := wfm.GetBatchSize()
 
-	for compID := range comps {
+	for compID := range wfm.GetRecipe().Component {
 
 		inputs := make([]*structpb.Struct, batchSize)
 		outputs := make([]*structpb.Struct, batchSize)
 		traceStatuses := make([]pb.Trace_Status, batchSize)
 
 		for dataIdx := range batchSize {
-			m, ok := memory[dataIdx].Component[compID]
-			if !ok {
-				// Skip this iteration if compID is not present in memory
+			compMemory, err := wfm.Get(ctx, dataIdx, compID)
+			if err != nil {
 				continue
 			}
-			if m.Status.Completed {
+
+			completed, err := wfm.GetComponentStatus(ctx, dataIdx, compID, memory.ComponentStatusCompleted)
+			if err != nil {
+				continue
+			}
+			skipped, err := wfm.GetComponentStatus(ctx, dataIdx, compID, memory.ComponentStatusSkipped)
+			if err != nil {
+				continue
+			}
+			if completed {
 				traceStatuses[dataIdx] = pb.Trace_STATUS_COMPLETED
-			} else if m.Status.Skipped {
+			} else if skipped {
 				traceStatuses[dataIdx] = pb.Trace_STATUS_SKIPPED
 			} else {
 				traceStatuses[dataIdx] = pb.Trace_STATUS_ERROR
 			}
 
-			if m.Input != nil {
-
-				in, err := json.Marshal(m.Input)
+			if input := compMemory.(*data.Map).Fields[constant.SegInput]; input != nil {
+				structVal, err := input.ToStructValue()
 				if err != nil {
 					return nil, err
 				}
-				inputStruct := &structpb.Struct{}
-
-				err = protojson.Unmarshal(in, inputStruct)
-				if err != nil {
-					return nil, err
-				}
-				inputs[dataIdx] = inputStruct
+				inputs[dataIdx] = structVal.GetStructValue()
 			}
 
-			if m.Output != nil {
-				out, err := json.Marshal(m.Output)
+			if output := compMemory.(*data.Map).Fields[constant.SegOutput]; output != nil {
+				structVal, err := output.ToStructValue()
 				if err != nil {
 					return nil, err
 				}
-				outputStruct := &structpb.Struct{}
-				err = protojson.Unmarshal(out, outputStruct)
-				if err != nil {
-					return nil, err
-				}
-				outputs[dataIdx] = outputStruct
+				outputs[dataIdx] = structVal.GetStructValue()
 			}
 		}
 

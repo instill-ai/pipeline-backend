@@ -1277,12 +1277,8 @@ github.com/influxdata/influxdb-client-go/v2 v2.12.3 h1:28nRlNMRIV4QbtIUvxhWqaxn0
 github.com/influxdata/influxdb-client-go/v2 v2.12.3/go.mod h1:IrrLUbCjjfkmRuaCiGQg4m2GbkaeJDcuWoxiWdQEbA0=
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 h1:W9WBk7wlPfJLvMCdtV4zPulc4uCPrlywQOmbFOhgQNU=
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839/go.mod h1:xaLFMmpvUxqXtVkUJfg9QmT88cDaCJ3ZKgdZ78oO8Qo=
-github.com/instill-ai/component v0.25.0-beta.0.20240820140647-05c9d67c4d1e h1:AEInsEp/qGwemHPRe/zqGmBzcp0xC7bnMPH2v0W4k7Q=
-github.com/instill-ai/component v0.25.0-beta.0.20240820140647-05c9d67c4d1e/go.mod h1:iLp/UImVL1O4XsnX3K2ZwyZ3PqYFgdPiISQyJphdFRQ=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240816055604-05d1f942a819 h1:Nr6kELKakaKdSn1/YA+wAFg5xOTCIaCWzu5SzVbI+EI=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240816055604-05d1f942a819/go.mod h1:2blmpUwiTwxIDnrjIqT6FhR5ewshZZF554wzjXFvKpQ=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240819081616-68ca1f2c3072 h1:yM7xW4fa20sHNOjrvJvYjbNJgrtji72z0gbjvuMwtKM=
-github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240819081616-68ca1f2c3072/go.mod h1:2blmpUwiTwxIDnrjIqT6FhR5ewshZZF554wzjXFvKpQ=
+github.com/instill-ai/component v0.25.0-beta.0.20240822024738-aa20a16365e9 h1:AZtZbacU5rPjfS5NrJoOTb7ar7qOts4I+JhC/QzPRrI=
+github.com/instill-ai/component v0.25.0-beta.0.20240822024738-aa20a16365e9/go.mod h1:fJH5Wc6XQi18FYeRcKz6VRVOuD8crY6ZOnDRYbvaaDw=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240821045923-b011008c60b2 h1:80FGH7p6FgmCWqonVVLXjvCv6sZKBeTAwVmxvoJU7AA=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240821045923-b011008c60b2/go.mod h1:2blmpUwiTwxIDnrjIqT6FhR5ewshZZF554wzjXFvKpQ=
 github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a h1:gmy8BcCFDZQan40c/D3f62DwTYtlCwi0VrSax+pKffw=
@@ -1784,6 +1780,8 @@ github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d h1:hrujxIzL1woJ7
 github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d/go.mod h1:uugorj2VCxiV1x+LzaIdVa9b4S4qGAcH6cbhh4qVxOU=
 github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 h1:lZUw3E0/J3roVtGQ+SCrUrg3ON6NgVqpn3+iol9aGu4=
 github.com/santhosh-tekuri/jsonschema/v5 v5.3.1/go.mod h1:uToXkOrWAZ6/Oc07xWQrPOhJotwFIyu2bBVN41fcDUY=
+github.com/sashabaranov/go-openai v1.28.2 h1:Q3pi34SuNYNN7YrqpHlHbpeYlf75ljgHOAVM/r1yun0=
+github.com/sashabaranov/go-openai v1.28.2/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=
 github.com/sclevine/agouti v3.0.0+incompatible/go.mod h1:b4WX9W9L1sfQKXeJf1mUTLZKJ48R1S7H23Ji7oFO5Bw=
 github.com/sclevine/spec v1.2.0/go.mod h1:W4J29eT/Kzv7/b9IWLB055Z+qvVC9vt0Arko24q7p+U=

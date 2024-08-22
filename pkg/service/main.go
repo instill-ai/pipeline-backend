@@ -13,6 +13,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
@@ -56,7 +57,6 @@ type Service interface {
 	DeleteNamespaceSecretByID(ctx context.Context, ns resource.Namespace, id string) error
 
 	TriggerNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pb.TriggerMetadata, error)
-	TriggerNamespacePipelineByIDWithStream(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool, stream chan<- TriggerResult) error
 	TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error)
 
 	CheckPipelineEventCode(ctx context.Context, ns resource.Namespace, id string, code string) (bool, error)
@@ -94,6 +94,7 @@ type service struct {
 	aclClient                acl.ACLClientInterface
 	converter                Converter
 	minioClient              minio.MinioI
+	memory                   memory.MemoryStore
 }
 
 // NewService initiates a service instance
@@ -117,5 +118,6 @@ func NewService(
 		aclClient:                acl,
 		converter:                c,
 		minioClient:              minioClient,
+		memory:                   memory.NewMemoryStore(rc),
 	}
 }

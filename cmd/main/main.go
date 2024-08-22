@@ -340,16 +340,16 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 
-	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger, redisClient)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync, redisClient)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*/releases/*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerRelease)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerRelease, redisClient)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1beta/{name=users/*/pipelines/*/releases/*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease, redisClient)); err != nil {
 		logger.Fatal(err.Error())
 	}
 	if err := publicServeMux.HandlePath("GET", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/image", middleware.HandleProfileImage(service, repository)); err != nil {
@@ -370,11 +370,11 @@ func main() {
 
 	sseMux.Handle("/", publicServeMux)
 
-	wrappedHandler := middleware.SSEStreamResponseMiddleware(sseMux)
+	// wrappedHandler := middleware.SSEStreamResponseMiddleware(sseMux)
 
 	publicHTTPServer := &http.Server{
 		Addr:      fmt.Sprintf(":%v", config.Config.Server.PublicPort),
-		Handler:   grpcHandlerFunc(publicGrpcS, wrappedHandler),
+		Handler:   grpcHandlerFunc(publicGrpcS, publicServeMux),
 		TLSConfig: tlsConfig,
 	}
 

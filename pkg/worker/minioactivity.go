@@ -2,19 +2,15 @@ package worker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
-	"go.opentelemetry.io/otel/trace"
-	"go.temporal.io/sdk/workflow"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
-	"github.com/instill-ai/pipeline-backend/pkg/recipe"
+	"github.com/instill-ai/pipeline-backend/pkg/memory"
 )
 
 const (
@@ -33,26 +29,23 @@ func (w *worker) UploadInputsToMinioActivity(ctx context.Context, param *UploadI
 	log, _ := logger.GetZapLogger(ctx)
 	log.Info("UploadInputsToMinioActivity started")
 
-	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.PipelineTriggerID)
 	if err != nil {
-		log.Error("failed to load pipeline run inputs", zap.Error(err))
 		return err
 	}
-	var pipelineData []*structpb.Struct
-	for _, memory := range batchMemory {
-		jsonBytes, err := json.Marshal(memory.Variable)
-		if err != nil {
-			log.Error("failed to marshal memory variable to json", zap.Error(err))
-			return err
-		}
 
-		data := &structpb.Struct{}
-		err = protojson.Unmarshal(jsonBytes, data)
+	pipelineData := make([]*structpb.Struct, wfm.GetBatchSize())
+
+	for i := range wfm.GetBatchSize() {
+		val, err := wfm.GetPipelineData(ctx, i, memory.PipelineVariable)
 		if err != nil {
-			log.Error("failed to unmarshal memory variable to trigger data", zap.Error(err))
 			return err
 		}
-		pipelineData = append(pipelineData, data)
+		varStr, err := val.ToStructValue()
+		if err != nil {
+			return err
+		}
+		pipelineData[i] = varStr.GetStructValue()
 	}
 
 	objectName := fmt.Sprintf("pipeline-runs/input/%s.json", param.PipelineTriggerID)
@@ -101,16 +94,34 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 	return nil
 }
 
-func (w *worker) UploadOutputsToMinioWorkflow(ctx workflow.Context, param *UploadOutputsWorkflowParam) error {
-	eventName := "UploadOutputsToMinioWorkflow"
+func (w *worker) UploadOutputsToMinioActivity(ctx context.Context, param *UploadOutputsToMinioActivityParam) error {
+	eventName := "UploadOutputsToMinioActivity"
 	w.log.Info(fmt.Sprintf("%s started", eventName), zap.String("PipelineTriggerID", param.PipelineTriggerID))
 
 	objectName := fmt.Sprintf("pipeline-runs/output/%s.json", param.PipelineTriggerID)
-	sCtx, span := tracer.Start(context.Background(), eventName,
-		trace.WithSpanKind(trace.SpanKindServer))
-	defer span.End()
 
-	url, objectInfo, err := w.minioClient.UploadFile(sCtx, objectName, param.Outputs, constant.ContentTypeJSON)
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.PipelineTriggerID)
+	if err != nil {
+		return err
+	}
+
+	outputStructs := make([]*structpb.Struct, wfm.GetBatchSize())
+
+	for idx := range wfm.GetBatchSize() {
+
+		outputVal, err := wfm.GetPipelineData(ctx, idx, memory.PipelineOutput)
+		if err != nil {
+			return err
+		}
+		outputValStr, err := outputVal.ToStructValue()
+		if err != nil {
+			return err
+		}
+
+		outputStructs[idx] = outputValStr.GetStructValue()
+	}
+
+	url, objectInfo, err := w.minioClient.UploadFile(ctx, objectName, outputStructs, constant.ContentTypeJSON)
 	if err != nil {
 		w.log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
 		return err
@@ -123,7 +134,7 @@ func (w *worker) UploadOutputsToMinioWorkflow(ctx workflow.Context, param *Uploa
 		URL:  url,
 	}}
 
-	err = w.repository.UpdatePipelineRun(sCtx, param.PipelineTriggerID, &datamodel.PipelineRun{Outputs: outputs})
+	err = w.repository.UpdatePipelineRun(ctx, param.PipelineTriggerID, &datamodel.PipelineRun{Outputs: outputs})
 	if err != nil {
 		w.log.Error("failed to save pipeline run output data", zap.Error(err))
 		return err
@@ -137,15 +148,25 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 	pipelineTriggerID := param.SystemVariables.PipelineTriggerID
 	w.log.Info("UploadComponentInputsActivity started", zap.String("PipelineTriggerID", pipelineTriggerID))
 
-	batchMemory, err := recipe.LoadMemory(ctx, w.redisClient, param.MemoryStorageKey)
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
 		return err
 	}
 
-	compInputs, _, err := w.processInput(batchMemory, param.ID, param.UpstreamIDs, param.Condition, param.Input)
-	if err != nil {
-		return err
+	compInputs := make([]*structpb.Struct, wfm.GetBatchSize())
+
+	for i := range wfm.GetBatchSize() {
+		val, err := wfm.GetComponentData(ctx, i, param.ID, memory.ComponentDataInput)
+		if err != nil {
+			return err
+		}
+		varStr, err := val.ToStructValue()
+		if err != nil {
+			return err
+		}
+		compInputs[i] = varStr.GetStructValue()
 	}
+
 	objectName := fmt.Sprintf("component-runs/%s/input/%s.json", param.ID, pipelineTriggerID)
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, objectName, compInputs, constant.ContentTypeJSON)
@@ -169,13 +190,32 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 	return nil
 }
 
-func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *ComponentActivityResult) error {
+func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *ComponentActivityParam) error {
 	pipelineTriggerID := param.SystemVariables.PipelineTriggerID
 	w.log.Info("UploadComponentOutputsActivity started", zap.String("PipelineTriggerID", pipelineTriggerID))
 
 	objectName := fmt.Sprintf("component-runs/%s/output/%s.json", pipelineTriggerID, param.ID)
 
-	url, objectInfo, err := w.minioClient.UploadFile(ctx, objectName, param.Outputs, constant.ContentTypeJSON)
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
+	if err != nil {
+		return err
+	}
+
+	compOutputs := make([]*structpb.Struct, wfm.GetBatchSize())
+
+	for i := range wfm.GetBatchSize() {
+		val, err := wfm.GetComponentData(ctx, i, param.ID, memory.ComponentDataOutput)
+		if err != nil {
+			return err
+		}
+		varStr, err := val.ToStructValue()
+		if err != nil {
+			return err
+		}
+		compOutputs[i] = varStr.GetStructValue()
+	}
+
+	url, objectInfo, err := w.minioClient.UploadFile(ctx, objectName, compOutputs, constant.ContentTypeJSON)
 	if err != nil {
 		w.log.Error("failed to upload component run outputs to minio", zap.Error(err))
 		return err
