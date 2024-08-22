@@ -739,7 +739,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		Description: &dbPipelineRelease.Description.String,
 		Readme:      dbPipelineRelease.Readme,
 		Recipe:      pbRecipe,
-		RawRecipe:   dbPipeline.RecipeYAML,
+		RawRecipe:   dbPipelineRelease.RecipeYAML,
 	}
 
 	if view > pb.Pipeline_VIEW_BASIC {
