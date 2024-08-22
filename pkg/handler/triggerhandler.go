@@ -377,8 +377,6 @@ func request_PipelinePublicService_TriggerNamespacePipeline_0(ctx context.Contex
 	}
 
 	if sh != nil {
-		// var wg sync.WaitGroup
-		// wg.Add(1)
 		asyncReq := pb.TriggerAsyncNamespacePipelineRequest{
 			NamespaceId: protoReq.NamespaceId,
 			PipelineId:  protoReq.PipelineId,
@@ -706,6 +704,26 @@ func request_PipelinePublicService_TriggerNamespacePipelineRelease_0(ctx context
 	protoReq.ReleaseId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "release_id", err)
+	}
+
+	if sh != nil {
+		asyncReq := pb.TriggerAsyncNamespacePipelineReleaseRequest{
+			NamespaceId: protoReq.NamespaceId,
+			PipelineId:  protoReq.PipelineId,
+			ReleaseId:   protoReq.ReleaseId,
+			Inputs:      protoReq.Inputs,
+			Data:        protoReq.Data,
+		}
+		resp, err := client.TriggerAsyncNamespacePipelineRelease(ctx, &asyncReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+		if err != nil {
+			return nil, metadata, err
+		}
+		triggerID := strings.Split(resp.Operation.Name, "/")[1]
+		err = sh(triggerID)
+		if err != nil {
+			return nil, metadata, err
+		}
+		return nil, metadata, nil
 	}
 
 	msg, err := client.TriggerNamespacePipelineRelease(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
