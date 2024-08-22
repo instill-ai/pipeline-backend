@@ -129,7 +129,7 @@ func (i *Image) Get(path string) (v Value, err error) {
 		return i.GetHeight(), nil
 	case strings.HasPrefix(path, ".base64"):
 		ss := strings.Split(path, ".")
-		if len(ss) > 1 {
+		if len(ss) > 2 {
 			switch ss[2] {
 			case "jpeg", "jpg":
 				return i.GetBase64(JPEG)
@@ -142,7 +142,7 @@ func (i *Image) Get(path string) (v Value, err error) {
 		return i.GetBase64(i.ContentType)
 	case strings.HasPrefix(path, ".data-url"):
 		ss := strings.Split(path, ".")
-		if len(ss) > 1 {
+		if len(ss) > 2 {
 			switch ss[2] {
 			case "jpeg", "jpg":
 				return i.GetDataURL(JPEG)
@@ -155,7 +155,7 @@ func (i *Image) Get(path string) (v Value, err error) {
 		return i.GetDataURL(i.ContentType)
 	case strings.HasPrefix(path, ".byte-array"):
 		ss := strings.Split(path, ".")
-		if len(ss) > 1 {
+		if len(ss) > 2 {
 			switch ss[2] {
 			case "jpeg", "jpg":
 				return i.GetByteArray(JPEG)
