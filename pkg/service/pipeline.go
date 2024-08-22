@@ -1799,6 +1799,18 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 				if err != nil {
 					return nil, err
 				}
+
+				dbRecipe := &datamodel.Recipe{}
+				err = json.Unmarshal(data, dbRecipe)
+				if err != nil {
+					return nil, fmt.Errorf("failed to load recipe metadata. pipeline UID: %s recipe reference ID: %s", run.PipelineUID.String(), run.RecipeSnapshot[0].Name)
+				}
+
+				pbRun.DataSpecification, err = s.converter.GeneratePipelineDataSpec(dbRecipe.Variable, dbRecipe.Output, dbRecipe.Component)
+				if err != nil {
+					return nil, err
+				}
+
 			}
 		}
 
