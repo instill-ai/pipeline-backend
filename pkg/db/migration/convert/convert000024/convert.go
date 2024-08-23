@@ -12,7 +12,6 @@ import (
 
 const batchSize = 100
 
-
 type ConvertToTextTaskConverter struct {
 	DB     *gorm.DB
 	Logger *zap.Logger
@@ -129,11 +128,13 @@ func (c *ConvertToTextTaskConverter) updateDocToDocument(comp *datamodel.Compone
 
 	in, isMap := comp.Input.(map[string]any)
 	if !isMap {
-		return false, fmt.Errorf("invalid input type on TASK_CONVERT_TO_MARKDOWN")
+		return false, fmt.Errorf("invalid input type on TASK_CONVERT_TO_TEXT")
 	}
 
-	in["document"] = in["doc"]
-	delete(in, "doc")
+	if v, ok := in["doc"]; ok {
+		in["document"] = v
+		delete(in, "doc")
+	}
 
 	comp.Input = in
 
