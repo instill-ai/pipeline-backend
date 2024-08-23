@@ -18,6 +18,7 @@ import (
 	"gopkg.in/guregu/null.v4"
 
 	"github.com/gofrs/uuid"
+
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
@@ -251,7 +252,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
-	uploadRecipeActivity := workflow.ExecuteActivity(ctx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
+	workflow.ExecuteActivity(ctx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 		UploadToMinioActivityParam: UploadToMinioActivityParam{
 			ObjectName:  fmt.Sprintf("pipeline-runs/recipe/%s.json", param.SystemVariables.PipelineTriggerID),
@@ -260,7 +261,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		},
 	})
 
-	uploadInputsActivity := workflow.ExecuteActivity(ctx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
+	workflow.ExecuteActivity(ctx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 	})
 
@@ -431,18 +432,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		logger.Error("failed to log completed pipeline run", zap.Error(err))
 		// Note: We're not returning here because we want to complete the workflow even if logging fails
 	}
-
-	workflow.Go(ctx, func(ctx workflow.Context) {
-		err = uploadRecipeActivity.Get(ctx, nil)
-		if err != nil {
-			logger.Error("failed to upload recipe to MinIO", zap.Error(err))
-		}
-
-		err = uploadInputsActivity.Get(ctx, nil)
-		if err != nil {
-			logger.Error("failed to upload inputs to MinIO", zap.Error(err))
-		}
-	})
 
 	succeeded = true
 

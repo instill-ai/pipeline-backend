@@ -1057,16 +1057,10 @@ func (r *repository) GetPaginatedPipelineRunsWithPermissions(ctx context.Context
 		whereArgs = append(whereArgs, expr)
 	}
 
+	// todo: remove parameter dbPipeline and pass a boolean 'isOwner' as param
 	if dbPipeline.OwnerUID().String() != userUID { // for a runner without ownership, they could only view their own logs
 		whereConditions = append(whereConditions, "triggered_by = ?")
 		whereArgs = append(whereArgs, userUID)
-	} else { // for owner viewing run logging
-		if !dbPipeline.IsPublic() {
-			// for a private pipeline, owner could view their own logs
-			whereConditions = append(whereConditions, "triggered_by = ?")
-			whereArgs = append(whereArgs, userUID)
-		}
-		// for a public pipeline, owner could view all logs
 	}
 
 	var where string
