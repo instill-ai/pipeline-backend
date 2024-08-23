@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package common.task.v1alpha;
+
+// Task enumerates the AI task that a model is designed to solve.
+enum Task {
+  // Unspecified.
+  TASK_UNSPECIFIED = 0;
+  // Image Classification - classify images into predefined categories.
+  TASK_CLASSIFICATION = 1;
+  // Object Detection - detect and localize multiple objects in images.
+  TASK_DETECTION = 2;
+  // Keypoint Detection - detect and localize multiple keypoints of objects in images.
+  TASK_KEYPOINT = 3;
+  // OCR (Optical Character Recognition) - detect and recognize text in images.
+  TASK_OCR = 4;
+  // Instance Segmentation - detect, localize and delineate multiple objects in images.
+  TASK_INSTANCE_SEGMENTATION = 5;
+  // Semantic Segmentation - classify image pixels into predefined categories.
+  TASK_SEMANTIC_SEGMENTATION = 6;
+  // Text to Image - generate images from input text prompts.
+  TASK_TEXT_TO_IMAGE = 7;
+  // Text Generation - generate texts from input text prompts.
+  TASK_TEXT_GENERATION = 8;
+  // Conversational Text Generation - generate text as responses to a dialog input.
+  TASK_TEXT_GENERATION_CHAT = 9;
+  // Visual Question Answering - generate text as a response to a visual prompt.
+  TASK_VISUAL_QUESTION_ANSWERING = 10;
+  // Image to Image - generate an image from another image.
+  TASK_IMAGE_TO_IMAGE = 11;
+  // Text Embeddings - generate an embedding (a representation as coordinates) from a text input.
+  TASK_TEXT_EMBEDDINGS = 12;
+  // Speech Recognition - transcribe the words in an audio input.
+  TASK_SPEECH_RECOGNITION = 13;
+}

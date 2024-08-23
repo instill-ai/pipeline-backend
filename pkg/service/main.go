@@ -77,9 +77,11 @@ type Service interface {
 
 	ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest, filter filtering.Filter) (*pb.ListPipelineRunsResponse, error)
 	ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error)
+
+	GetIntegration(_ context.Context, id string, _ pb.View) (*pb.Integration, error)
 }
 
-// Define a new type to encapsulate the stream data
+// TriggerResult defines a new type to encapsulate the stream data
 type TriggerResult struct {
 	Struct   []*structpb.Struct
 	Metadata *pb.TriggerMetadata

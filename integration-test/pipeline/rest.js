@@ -12,6 +12,7 @@ import {
 import * as componentDefinition from "./rest-component-definition.js";
 import * as connectorDefinition from "./rest-connector-definition.js";
 import * as constant from "./const.js";
+import * as integration from "./rest-integration.js";
 import * as operatorDefinition from "./rest-operator-definition.js";
 import * as pipelinePublic from './rest-pipeline-public.js';
 import * as pipelinePublicWithJwt from './rest-pipeline-public-with-jwt.js';
@@ -88,11 +89,13 @@ export default function (data) {
     trigger.CheckTrigger(data)
     triggerAsync.CheckTrigger(data)
 
-    connectorDefinition.CheckList(data)
-    connectorDefinition.CheckGet(data)
-    operatorDefinition.CheckList()
-    operatorDefinition.CheckGet()
-    componentDefinition.CheckList(data)
+    connectorDefinition.CheckList(data);
+    connectorDefinition.CheckGet(data);
+    operatorDefinition.CheckList();
+    operatorDefinition.CheckGet();
+    componentDefinition.CheckList(data);
+
+    integration.CheckGet();
   }
 }
 

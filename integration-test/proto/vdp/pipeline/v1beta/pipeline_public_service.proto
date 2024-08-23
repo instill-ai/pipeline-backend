@@ -10,6 +10,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 // VDP definitions
 import "../../../vdp/pipeline/v1beta/common.proto";
 import "../../../vdp/pipeline/v1beta/component_definition.proto";
+import "../../../vdp/pipeline/v1beta/integration.proto";
 import "../../../vdp/pipeline/v1beta/pipeline.proto";
 import "../../../vdp/pipeline/v1beta/secret.proto";
 
@@ -163,6 +164,26 @@ service PipelinePublicService {
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline"};
+  }
+
+  // SendNamespacePipelineEvent
+  rpc SendNamespacePipelineEvent(SendNamespacePipelineEventRequest) returns (SendNamespacePipelineEventResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/events"
+      body: "data"
+      response_body: "data"
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // SendNamespacePipelineReleaseEvent
+  rpc SendNamespacePipelineReleaseEvent(SendNamespacePipelineReleaseEventRequest) returns (SendNamespacePipelineReleaseEventResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/releases/{release_id}/events"
+      body: "data"
+      response_body: "data"
+    };
+    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Trigger a pipeline
@@ -372,7 +393,7 @@ service PipelinePublicService {
   // Create a secret
   //
   // Creates a new secret under the parenthood of an namespace.
-  rpc CreateSecret(CreateSecretRequest) returns (CreateSecretResponse) {
+  rpc CreateNamespaceSecret(CreateNamespaceSecretRequest) returns (CreateNamespaceSecretResponse) {
     option (google.api.http) = {
       post: "/v1beta/namespaces/{namespace_id}/secrets"
       body: "secret"
@@ -384,7 +405,7 @@ service PipelinePublicService {
   //
   // Returns a paginated list of secrets that belong to the specified
   // namespace.
-  rpc ListSecrets(ListSecretsRequest) returns (ListSecretsResponse) {
+  rpc ListNamespaceSecrets(ListNamespaceSecretsRequest) returns (ListNamespaceSecretsResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/secrets"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
@@ -393,7 +414,7 @@ service PipelinePublicService {
   //
   // Returns the details of an namespace-owned secret by its resource name,
   // which is defined by the parent namespace and the ID of the secret.
-  rpc GetSecret(GetSecretRequest) returns (GetSecretResponse) {
+  rpc GetNamespaceSecret(GetNamespaceSecretRequest) returns (GetNamespaceSecretResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/secrets/{secret_id}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
@@ -404,7 +425,7 @@ service PipelinePublicService {
   //
   // In REST requests, only the supplied secret fields will be taken into
   // account when updating the resource.
-  rpc UpdateSecret(UpdateSecretRequest) returns (UpdateSecretResponse) {
+  rpc UpdateNamespaceSecret(UpdateNamespaceSecretRequest) returns (UpdateNamespaceSecretResponse) {
     option (google.api.http) = {
       patch: "/v1beta/namespaces/{namespace_id}/secrets/{secret_id}"
       body: "secret"
@@ -416,7 +437,7 @@ service PipelinePublicService {
   //
   // Deletes a secret, accesing it by its resource name, which is defined by
   // the parent namespace and the ID of the secret.
-  rpc DeleteSecret(DeleteSecretRequest) returns (DeleteSecretResponse) {
+  rpc DeleteNamespaceSecret(DeleteNamespaceSecretRequest) returns (DeleteNamespaceSecretResponse) {
     option (google.api.http) = {delete: "/v1beta/namespaces/{namespace_id}/secrets/{secret_id}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret"};
   }
@@ -436,7 +457,7 @@ service PipelinePublicService {
   // This method allows requesters to request the status and outcome of
   // long-running operations such as asynchronous pipeline triggers.
   rpc GetOperation(GetOperationRequest) returns (GetOperationResponse) {
-    option (google.api.http) = {get: "/v1beta/{name=operations/*}"};
+    option (google.api.http) = {get: "/v1beta/operations/{operation_id}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger"
       parameters: {
@@ -461,7 +482,10 @@ service PipelinePublicService {
       post: "/v1beta/{parent=users/*}/pipelines"
       body: "pipeline"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -473,7 +497,10 @@ service PipelinePublicService {
   // latter.
   rpc ListUserPipelines(ListUserPipelinesRequest) returns (ListUserPipelinesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=users/*}/pipelines"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -483,7 +510,10 @@ service PipelinePublicService {
   // by the parent user and the ID of the pipeline.
   rpc GetUserPipeline(GetUserPipelineRequest) returns (GetUserPipelineResponse) {
     option (google.api.http) = {get: "/v1beta/{name=users/*/pipelines/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -500,7 +530,10 @@ service PipelinePublicService {
       patch: "/v1beta/{pipeline.name=users/*/pipelines/*}"
       body: "pipeline"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -511,7 +544,10 @@ service PipelinePublicService {
   // the parent of the pipeline in order to delete it.
   rpc DeleteUserPipeline(DeleteUserPipelineRequest) returns (DeleteUserPipelineResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=users/*/pipelines/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -526,7 +562,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=users/*/pipelines/*}/validate"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -546,7 +585,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=users/*/pipelines/*}/rename"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -559,7 +601,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=users/*/pipelines/*}/clone"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -572,7 +617,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=users/*/pipelines/*/releases/*}/clone"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -593,6 +641,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -619,6 +668,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -648,6 +698,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -671,7 +722,10 @@ service PipelinePublicService {
       post: "/v1beta/{parent=users/*/pipelines/*}/releases"
       body: "release"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -681,7 +735,10 @@ service PipelinePublicService {
   // name, which is formed by the parent user and ID of the pipeline.
   rpc ListUserPipelineReleases(ListUserPipelineReleasesRequest) returns (ListUserPipelineReleasesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=users/*/pipelines/*}/releases"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -691,7 +748,10 @@ service PipelinePublicService {
   // by its resource name, formed by its parent user and ID.
   rpc GetUserPipelineRelease(GetUserPipelineReleaseRequest) returns (GetUserPipelineReleaseResponse) {
     option (google.api.http) = {get: "/v1beta/{name=users/*/pipelines/*/releases/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -707,7 +767,10 @@ service PipelinePublicService {
       patch: "/v1beta/{release.name=users/*/pipelines/*/releases/*}"
       body: "release"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -720,7 +783,10 @@ service PipelinePublicService {
   // perform this action.
   rpc DeleteUserPipelineRelease(DeleteUserPipelineReleaseRequest) returns (DeleteUserPipelineReleaseResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=users/*/pipelines/*/releases/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -735,7 +801,10 @@ service PipelinePublicService {
   // perform this action.
   rpc RestoreUserPipelineRelease(RestoreUserPipelineReleaseRequest) returns (RestoreUserPipelineReleaseResponse) {
     option (google.api.http) = {post: "/v1beta/{name=users/*/pipelines/*/releases/*}/restore"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -756,7 +825,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=users/*/pipelines/*/releases/*}/rename"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -776,6 +848,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -803,6 +876,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -822,7 +896,10 @@ service PipelinePublicService {
       post: "/v1beta/{parent=organizations/*}/pipelines"
       body: "pipeline"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -832,7 +909,10 @@ service PipelinePublicService {
   // organization.
   rpc ListOrganizationPipelines(ListOrganizationPipelinesRequest) returns (ListOrganizationPipelinesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/pipelines"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -842,7 +922,10 @@ service PipelinePublicService {
   // which is defined by the parent organization and the ID of the pipeline.
   rpc GetOrganizationPipeline(GetOrganizationPipelineRequest) returns (GetOrganizationPipelineResponse) {
     option (google.api.http) = {get: "/v1beta/{name=organizations/*/pipelines/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -857,7 +940,10 @@ service PipelinePublicService {
       patch: "/v1beta/{pipeline.name=organizations/*/pipelines/*}"
       body: "pipeline"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -867,7 +953,10 @@ service PipelinePublicService {
   // the parent organization and the ID of the pipeline.
   rpc DeleteOrganizationPipeline(DeleteOrganizationPipelineRequest) returns (DeleteOrganizationPipelineResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=organizations/*/pipelines/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -883,7 +972,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=organizations/*/pipelines/*}/validate"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -900,7 +992,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=organizations/*/pipelines/*}/rename"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -913,7 +1008,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=organizations/*/pipelines/*}/clone"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -926,7 +1024,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/clone"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Pipeline (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Pipeline (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -947,6 +1048,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -975,6 +1077,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -1004,6 +1107,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -1024,7 +1128,10 @@ service PipelinePublicService {
       post: "/v1beta/{parent=organizations/*/pipelines/*}/releases"
       body: "release"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1034,7 +1141,10 @@ service PipelinePublicService {
   // which is formed by the parent organization and ID of the pipeline.
   rpc ListOrganizationPipelineReleases(ListOrganizationPipelineReleasesRequest) returns (ListOrganizationPipelineReleasesResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=organizations/*/pipelines/*}/releases"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1044,7 +1154,10 @@ service PipelinePublicService {
   // its resource name, formed by its parent organization and ID.
   rpc GetOrganizationPipelineRelease(GetOrganizationPipelineReleaseRequest) returns (GetOrganizationPipelineReleaseResponse) {
     option (google.api.http) = {get: "/v1beta/{name=organizations/*/pipelines/*/releases/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1057,7 +1170,10 @@ service PipelinePublicService {
       patch: "/v1beta/{release.name=organizations/*/pipelines/*/releases/*}"
       body: "release"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1067,7 +1183,10 @@ service PipelinePublicService {
   // name, formed by its parent organization and ID.
   rpc DeleteOrganizationPipelineRelease(DeleteOrganizationPipelineReleaseRequest) returns (DeleteOrganizationPipelineReleaseResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=organizations/*/pipelines/*/releases/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1079,7 +1198,10 @@ service PipelinePublicService {
   // organization and ID.
   rpc RestoreOrganizationPipelineRelease(RestoreOrganizationPipelineReleaseRequest) returns (RestoreOrganizationPipelineReleaseResponse) {
     option (google.api.http) = {post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/restore"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1097,7 +1219,10 @@ service PipelinePublicService {
       post: "/v1beta/{name=organizations/*/pipelines/*/releases/*}/rename"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Release (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Release (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1117,6 +1242,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -1144,6 +1270,7 @@ service PipelinePublicService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "Trigger (Deprecated)"
+      deprecated: true
       parameters: {
         headers: {
           name: "Instill-Requester-Uid"
@@ -1160,7 +1287,10 @@ service PipelinePublicService {
   // Returns a paginated list of connector definitions.
   rpc ListConnectorDefinitions(ListConnectorDefinitionsRequest) returns (ListConnectorDefinitionsResponse) {
     option (google.api.http) = {get: "/v1beta/connector-definitions"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Component (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Component (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1169,7 +1299,10 @@ service PipelinePublicService {
   // Returns the details of a connector definition.
   rpc GetConnectorDefinition(GetConnectorDefinitionRequest) returns (GetConnectorDefinitionResponse) {
     option (google.api.http) = {get: "/v1beta/{name=connector-definitions/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Component (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Component (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1178,7 +1311,10 @@ service PipelinePublicService {
   // Returns a paginated list of operator definitions.
   rpc ListOperatorDefinitions(ListOperatorDefinitionsRequest) returns (ListOperatorDefinitionsResponse) {
     option (google.api.http) = {get: "/v1beta/operator-definitions"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Component (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Component (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1187,7 +1323,10 @@ service PipelinePublicService {
   // Returns the details of an operator definition.
   rpc GetOperatorDefinition(GetOperatorDefinitionRequest) returns (GetOperatorDefinitionResponse) {
     option (google.api.http) = {get: "/v1beta/{name=operator-definitions/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Component (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Component (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1200,7 +1339,10 @@ service PipelinePublicService {
       post: "/v1beta/check-name"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Utils (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Utils (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1212,7 +1354,10 @@ service PipelinePublicService {
       post: "/v1beta/{parent=users/*}/secrets"
       body: "secret"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1222,7 +1367,10 @@ service PipelinePublicService {
   // user.
   rpc ListUserSecrets(ListUserSecretsRequest) returns (ListUserSecretsResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=users/*}/secrets"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1232,7 +1380,10 @@ service PipelinePublicService {
   // which is defined by the parent user and the ID of the secret.
   rpc GetUserSecret(GetUserSecretRequest) returns (GetUserSecretResponse) {
     option (google.api.http) = {get: "/v1beta/{name=users/*/secrets/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1247,7 +1398,10 @@ service PipelinePublicService {
       patch: "/v1beta/{secret.name=users/*/secrets/*}"
       body: "secret"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1257,7 +1411,10 @@ service PipelinePublicService {
   // the parent user and the ID of the secret.
   rpc DeleteUserSecret(DeleteUserSecretRequest) returns (DeleteUserSecretResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=users/*/secrets/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1269,7 +1426,10 @@ service PipelinePublicService {
       post: "/v1beta/{parent=organizations/*}/secrets"
       body: "secret"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1279,7 +1439,10 @@ service PipelinePublicService {
   // organization.
   rpc ListOrganizationSecrets(ListOrganizationSecretsRequest) returns (ListOrganizationSecretsResponse) {
     option (google.api.http) = {get: "/v1beta/{parent=organizations/*}/secrets"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1289,7 +1452,10 @@ service PipelinePublicService {
   // which is defined by the parent organization and the ID of the secret.
   rpc GetOrganizationSecret(GetOrganizationSecretRequest) returns (GetOrganizationSecretResponse) {
     option (google.api.http) = {get: "/v1beta/{name=organizations/*/secrets/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1304,7 +1470,10 @@ service PipelinePublicService {
       patch: "/v1beta/{secret.name=organizations/*/secrets/*}"
       body: "secret"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
   }
 
@@ -1314,7 +1483,137 @@ service PipelinePublicService {
   // the parent organization and the ID of the secret.
   rpc DeleteOrganizationSecret(DeleteOrganizationSecretRequest) returns (DeleteOrganizationSecretResponse) {
     option (google.api.http) = {delete: "/v1beta/{name=organizations/*/secrets/*}"};
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Secret (Deprecated)"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "Secret (Deprecated)"
+      deprecated: true
+    };
     option deprecated = true;
+  }
+
+  // List Pipeline Runs
+  //
+  // Returns a paginated list of runs for a given pipeline. When the requester
+  // is the owner of the pipeline, they will be able to all the pipeline runs,
+  // regardless the requester. Other requesters will only be able to see the
+  // runs requested by themselves.
+  rpc ListPipelineRuns(ListPipelineRunsRequest) returns (ListPipelineRunsResponse) {
+    option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/pipelines/{pipeline_id}/runs"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
+  }
+
+  // List Component runs
+  //
+  // Returns the information of each component execution within a pipeline run.
+  rpc ListComponentRuns(ListComponentRunsRequest) returns (ListComponentRunsResponse) {
+    option (google.api.http) = {get: "/v1beta/pipeline-runs/{pipeline_run_id}/component-runs"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Trigger"};
+  }
+
+  // List namespace connections
+  //
+  // Returns a paginated list of connections created by a namespace.
+  rpc ListNamespaceConnections(ListNamespaceConnectionsRequest) returns (ListNamespaceConnectionsResponse) {
+    option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/connections"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
+
+    // This is hidden while the implementation of the endpoints is under
+    // development.
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get a namespace connection
+  //
+  // Returns the details of a connection.
+  rpc GetNamespaceConnection(GetNamespaceConnectionRequest) returns (GetNamespaceConnectionResponse) {
+    option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
+
+    // This is hidden while the implementation of the endpoints is under
+    // development.
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Create a connection
+  //
+  // Creates a connection under the ownership of a namespace.
+  rpc CreateNamespaceConnection(CreateNamespaceConnectionRequest) returns (CreateNamespaceConnectionResponse) {
+    option (google.api.http) = {
+      post: "/v1beta/namespaces/{connection.namespace_id}/connections"
+      body: "connection"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
+
+    // This is hidden while the implementation of the endpoints is under
+    // development.
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Update a connection
+  //
+  // Updates a connection with the supplied connection fields.
+  rpc UpdateNamespaceConnection(UpdateNamespaceConnectionRequest) returns (UpdateNamespaceConnectionResponse) {
+    option (google.api.http) = {
+        patch: "/v1beta/namespaces/{connection.namespace_id}/connections/{connection.id}"
+        body: "connection"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
+
+    // This is hidden while the implementation of the endpoints is under
+    // development.
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Delete a connection
+  //
+  // Deletes a connection.
+  rpc DeleteNamespaceConnection(DeleteNamespaceConnectionRequest) returns (DeleteNamespaceConnectionResponse) {
+    option (google.api.http) = {delete: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
+
+    // This is hidden while the implementation of the endpoints is under
+    // development.
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Test a connection
+  //
+  // Makes a request to the 3rd party app that the connection is configured to
+  // communicate with, and checks the result of the call. If the test fails,
+  // the response status and error message will provide more information about
+  // the failure.
+  //
+  // Note that this action might affect the quota or billing of the integrated
+  // account in the 3rd party app.
+  rpc TestNamespaceConnection(TestNamespaceConnectionRequest) returns (TestNamespaceConnectionResponse) {
+    option (google.api.http) = {post: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}/test"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
+
+    // This is hidden while the implementation of the endpoints is under
+    // development.
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // List integrations
+  //
+  // Returns a paginated list of available integrations.
+  rpc ListIntegrations(ListIntegrationsRequest) returns (ListIntegrationsResponse) {
+    option (google.api.http) = {get: "/v1beta/integrations"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
+
+    // This is hidden while the implementation of the endpoints is under
+    // development.
+    option (google.api.method_visibility).restriction = "INTERNAL";
+  }
+
+  // Get an integration
+  //
+  // Returns the details of an integration.
+  rpc GetIntegration(GetIntegrationRequest) returns (GetIntegrationResponse) {
+    option (google.api.http) = {get: "/v1beta/integrations/{integration_id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
+
+    // This is hidden while the implementation of the endpoints is under
+    // development.
+    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 }
