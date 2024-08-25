@@ -223,10 +223,13 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 		var err error
 		mp := data.NewMap(nil)
 		for k, v := range input.Fields {
-			mp.Fields[k], err = Render(ctx, v, batchIdx, wfm)
-			if err != nil {
-				return nil, err
+			if _, isNull := v.(*data.Null); !isNull {
+				mp.Fields[k], err = Render(ctx, v, batchIdx, wfm)
+				if err != nil {
+					return nil, err
+				}
 			}
+
 		}
 		return mp, nil
 	case *data.Array:
@@ -239,6 +242,8 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 			}
 		}
 		return arr, nil
+	case *data.Null:
+		return nil, nil
 	default:
 		return input, nil
 	}

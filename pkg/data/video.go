@@ -4,7 +4,7 @@ type Video struct {
 	File
 }
 
-func (*Video) isValue() {}
+func (Video) isValue() {}
 
 func NewVideoFromBytes(b []byte, contentType, fileName string) (video *Video, err error) {
 	f, err := NewFileFromBytes(b, contentType, fileName, nil)

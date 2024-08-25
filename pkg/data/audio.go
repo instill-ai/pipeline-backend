@@ -4,7 +4,7 @@ type Audio struct {
 	File
 }
 
-func (*Audio) isValue() {}
+func (Audio) isValue() {}
 
 func NewAudioFromBytes(b []byte, contentType, fileName string) (audio *Audio, err error) {
 	f, err := NewFileFromBytes(b, contentType, fileName, nil)

@@ -16,7 +16,7 @@ const PPTX = "application/vnd.openxmlformats-officedocument.presentationml.prese
 const HTML = "text/html"
 const PDF = "application/pdf"
 
-func (*Document) isValue() {}
+func (Document) isValue() {}
 
 func NewDocumentFromBytes(b []byte, contentType, fileName string) (doc *Document, err error) {
 	f, err := NewFileFromBytes(b, contentType, fileName, nil)

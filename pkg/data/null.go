@@ -9,8 +9,8 @@ func NewNull() *Null {
 	return &Null{}
 }
 
-func (*Null) isValue() {}
+func (Null) isValue() {}
 
-func (b *Null) ToStructValue() (v *structpb.Value, err error) {
+func (n Null) ToStructValue() (v *structpb.Value, err error) {
 	return structpb.NewNullValue(), nil
 }
