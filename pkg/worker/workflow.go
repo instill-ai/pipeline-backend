@@ -524,21 +524,21 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("failed to load pipeline memory", outputActivityErrorType, err)
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", outputActivityErrorType, err)
 	}
 
 	for idx := range wfm.GetBatchSize() {
 		output, err := wfm.Get(ctx, idx, string(memory.PipelineOutputTemplate))
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline output", outputActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
 		output, err = recipe.Render(ctx, output, idx, wfm)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to render pipeline output", outputActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, output)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to store pipeline output", outputActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
 	}
 
@@ -740,19 +740,19 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 
 	wfm, err := w.memoryStore.LoadWorkflowMemoryFromRedis(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("failed to load pipeline memory", cloneToMemoryStoreActivityErrorType, err)
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToMemoryStoreActivityErrorType, err)
 	}
 	var recipe *datamodel.Recipe
 	if param.SystemVariables.PipelineReleaseUID.IsNil() {
 		pipeline, err := w.repository.GetPipelineByUIDAdmin(ctx, param.SystemVariables.PipelineUID, false, false)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
 		}
 		recipe = pipeline.Recipe
 	} else {
 		release, err := w.repository.GetPipelineReleaseByUIDAdmin(ctx, param.SystemVariables.PipelineReleaseUID, false)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
 		}
 		recipe = release.Recipe
 	}
@@ -766,7 +766,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 		var secrets []*datamodel.Secret
 		secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, ownerPermalink, 100, pt, filtering.Filter{})
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
 		}
 
 		for _, secret := range secrets {
@@ -782,7 +782,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 	for idx := range wfm.GetBatchSize() {
 		pipelineSecrets, err := wfm.Get(ctx, idx, constant.SegSecret)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
 		}
 
 		for _, secret := range nsSecrets {
@@ -798,18 +798,18 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 
 			inputVal, err := data.NewValue(comp.Input)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to init pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
 			}
 			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataInput, inputVal); err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to init pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
 			}
 
 			setupVal, err := data.NewValue(comp.Setup)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to init pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
 			}
 			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataSetup, setupVal); err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to init pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
 			}
 		}
 		output := data.NewMap(nil)
@@ -819,7 +819,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 		}
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutputTemplate, output)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to clone pipeline memory", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("initializing pipeline memory", cloneToMemoryStoreActivityErrorType, err)
 		}
 	}
 
@@ -827,11 +827,11 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 		for batchIdx := range wfm.GetBatchSize() {
 			variable, err := wfm.Get(ctx, batchIdx, "variable")
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to send event", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("sending event", cloneToMemoryStoreActivityErrorType, err)
 			}
 			variableStruct, err := variable.ToStructValue()
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to send event", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("sending event", cloneToMemoryStoreActivityErrorType, err)
 			}
 			variableJSON := map[string]any{}
 			b, _ := protojson.Marshal(variableStruct)
@@ -849,7 +849,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 				},
 			)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to send event", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("sending event", cloneToMemoryStoreActivityErrorType, err)
 			}
 		}
 	}
@@ -866,7 +866,33 @@ func (w *worker) CloneToRedisActivity(ctx context.Context, param *MemoryCopyPara
 
 	err := w.memoryStore.WriteWorkflowMemoryToRedis(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("failed to clone pipeline memory", cloneToRedisActivityErrorType, err)
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+	}
+	wfm, err := w.memoryStore.LoadWorkflowMemoryFromRedis(ctx, param.WorkflowID)
+	if err != nil {
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+	}
+	for batchIdx := range wfm.GetBatchSize() {
+		output, err := wfm.GetPipelineData(ctx, batchIdx, memory.PipelineOutput)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+		}
+
+		err = w.memoryStore.SendWorkflowStatusEvent(
+			ctx,
+			param.WorkflowID,
+			memory.Event{
+				Event: memory.PipelineCompleted,
+				Data: memory.PipelineCompletedEventData{
+					UpdateTime: time.Now(),
+					BatchIndex: batchIdx,
+					Output:     output,
+				},
+			},
+		)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("sending event", cloneToRedisActivityErrorType, err)
+		}
 	}
 
 	logger.Info("CloneToRedisActivity completed")
