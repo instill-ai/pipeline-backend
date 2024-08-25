@@ -144,7 +144,7 @@ func (f *File) Get(path string) (v Value, err error) {
 	return nil, fmt.Errorf("wrong path")
 }
 
-func (f *File) ToStructValue() (v *structpb.Value, err error) {
+func (f File) ToStructValue() (v *structpb.Value, err error) {
 	d, err := f.GetDataURL(f.ContentType)
 	if err != nil {
 		return nil, err

@@ -31,8 +31,10 @@ const (
 	HeaderInstillCodeKey  = "Instill-Share-Code"
 	HeaderReturnTracesKey = "Instill-Return-Traces"
 
-	HeaderUserAgentKey  = "Instill-User-Agent"
-	HeaderInstillUseSSE = "Instill-Use-SSE"
+	HeaderUserAgentKey = "Instill-User-Agent"
+
+	HeaderAccept           = "Accept"
+	HeaderValueEventStream = "text/event-stream"
 
 	SegMemory    = "memory"
 	SegVariable  = "variable"

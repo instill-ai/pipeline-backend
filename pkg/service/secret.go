@@ -138,13 +138,13 @@ func (s *service) checkSecret(ctx context.Context, components datamodel.Componen
 		default:
 
 			c, err := s.component.GetDefinitionByID(comp.Type, nil, nil)
-			if err != nil {
-				return err
+			if err == nil {
+				err := s.checkSecretFields(ctx, uuid.FromStringOrNil(c.Uid), comp.Setup, "")
+				if err != nil {
+					return err
+				}
 			}
-			err = s.checkSecretFields(ctx, uuid.FromStringOrNil(c.Uid), comp.Setup, "")
-			if err != nil {
-				return err
-			}
+
 		case datamodel.Iterator:
 			err := s.checkSecret(ctx, comp.Component)
 			if err != nil {

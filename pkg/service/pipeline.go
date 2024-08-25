@@ -1279,7 +1279,7 @@ func (s *service) triggerAsyncPipeline(
 	if requesterUID.IsNil() {
 		requesterUID = userUID
 	}
-	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderInstillUseSSE) == "true"
+	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 
 	runSource := datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API)
 	userAgentValue, ok := runpb.RunSource_value[resource.GetRequestSingleHeader(ctx, constant.HeaderUserAgentKey)]
@@ -1380,15 +1380,15 @@ func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID s
 	}
 
 	var metadata *pipelinepb.TriggerMetadata
-	if returnTraces {
-		traces, err := recipe.GenerateTraces(ctx, wfm)
-		if err != nil {
-			return nil, nil, err
-		}
-		metadata = &pipelinepb.TriggerMetadata{
-			Traces: traces,
-		}
+
+	traces, err := recipe.GenerateTraces(ctx, wfm, returnTraces)
+	if err != nil {
+		return nil, nil, err
 	}
+	metadata = &pipelinepb.TriggerMetadata{
+		Traces: traces,
+	}
+
 	return pipelineOutputs, metadata, nil
 }
 

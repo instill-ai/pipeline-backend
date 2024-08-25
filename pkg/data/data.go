@@ -16,6 +16,8 @@ type Value interface {
 func NewValue(in any) (val Value, err error) {
 
 	switch in := in.(type) {
+	case nil:
+		return NewNull(), nil
 	case bool:
 		return NewBoolean(in), nil
 	case float64:
@@ -117,6 +119,7 @@ func NewValueFromStruct(in *structpb.Value) (val Value, err error) {
 func init() {
 	gob.Register(&Map{})
 	gob.Register(&Array{})
+	gob.Register(&Null{})
 	gob.Register(&Boolean{})
 	gob.Register(&Number{})
 	gob.Register(&String{})

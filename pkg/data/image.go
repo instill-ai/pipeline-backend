@@ -16,7 +16,7 @@ type Image struct {
 	Height int
 }
 
-func (*Image) isValue() {}
+func (Image) isValue() {}
 
 const JPEG = "image/jpeg"
 const PNG = "image/png"

@@ -19,7 +19,7 @@ func NewArray(v []Value) (arr *Array) {
 
 func (Array) isValue() {}
 
-func (a *Array) ToStructValue() (v *structpb.Value, err error) {
+func (a Array) ToStructValue() (v *structpb.Value, err error) {
 	arr := &structpb.ListValue{Values: make([]*structpb.Value, len(a.Values))}
 	for idx, v := range a.Values {
 		if v == nil {

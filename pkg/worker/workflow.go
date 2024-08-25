@@ -4,6 +4,7 @@ package worker
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go/parser"
 	"time"
@@ -328,7 +329,27 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Input:           comp.Input.(string),
 					SystemVariables: param.SystemVariables,
 				}).Get(ctx, &preIteratorResult); err != nil {
-					return err
+					if err != nil {
+						// TODO: huitang
+						// Currently, if any data in the batch has an error, we
+						// treat the entire batch as errored. In the future, we
+						// should allow partial errors within a batch.
+						var applicationErr *temporal.ApplicationError
+						if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
+
+							for batchIdx := range wfm.GetBatchSize() {
+								if wfmErr := wfm.SetComponentStatus(sCtx, batchIdx, compID, memory.ComponentStatusErrored, true); wfmErr != nil {
+									return wfmErr
+								}
+								if wfmErr := wfm.SetComponentErrorMessage(sCtx, batchIdx, compID, applicationErr.Message()); wfmErr != nil {
+									return wfmErr
+								}
+							}
+						}
+
+						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						continue
+					}
 				}
 
 				itFutures := []workflow.Future{}
@@ -367,7 +388,27 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					OutputElements:  comp.OutputElements,
 					SystemVariables: param.SystemVariables,
 				}).Get(ctx, nil); err != nil {
-					return err
+					if err != nil {
+						// TODO: huitang
+						// Currently, if any data in the batch has an error, we
+						// treat the entire batch as errored. In the future, we
+						// should allow partial errors within a batch.
+						var applicationErr *temporal.ApplicationError
+						if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
+
+							for batchIdx := range wfm.GetBatchSize() {
+								if wfmErr := wfm.SetComponentStatus(sCtx, batchIdx, compID, memory.ComponentStatusErrored, true); wfmErr != nil {
+									return wfmErr
+								}
+								if wfmErr := wfm.SetComponentErrorMessage(sCtx, batchIdx, compID, applicationErr.Message()); wfmErr != nil {
+									return wfmErr
+								}
+							}
+						}
+
+						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						continue
+					}
 				}
 			}
 
@@ -376,16 +417,34 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		for idx := range futures {
 			err = futures[idx].Get(ctx, nil)
 			if err != nil {
-				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+				// TODO: huitang
+				// Currently, if any data in the batch has an error, we
+				// treat the entire batch as errored. In the future, we
+				// should allow partial errors within a batch.
+				var applicationErr *temporal.ApplicationError
+				if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
 
-				// ComponentActivity is responsible for returning a temporal
-				// application error with the relevant information. Wrapping
-				// the error here prevents the client from accessing the error
-				// message from the activity.
-				return err
+					for batchIdx := range wfm.GetBatchSize() {
+						if wfmErr := wfm.SetComponentStatus(sCtx, batchIdx, futureArgs[idx].ID, memory.ComponentStatusErrored, true); wfmErr != nil {
+							return wfmErr
+						}
+						if wfmErr := wfm.SetComponentErrorMessage(sCtx, batchIdx, futureArgs[idx].ID, applicationErr.Message()); wfmErr != nil {
+							return wfmErr
+						}
+					}
+				}
+
+				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+				continue
 			}
 
+			// ComponentActivity is responsible for returning a temporal
+			// application error with the relevant information. Wrapping
+			// the error here prevents the client from accessing the error
+			// message from the activity.
+			// return err
 			workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, futureArgs[idx])
+
 		}
 
 	}
@@ -408,7 +467,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 
 		if err := workflow.ExecuteActivity(ctx, w.CloneToRedisActivity, &MemoryCopyParam{
-			WorkflowID: workflowID,
+			WorkflowID:      workflowID,
+			SystemVariables: param.SystemVariables,
+			IsStreaming:     param.IsStreaming,
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
@@ -502,7 +563,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	err = execution.Execute(
 		ctx,
 		NewInputReader(wfm, param.ID, conditionMap),
-		NewOutputWriter(wfm, param.ID, conditionMap),
+		NewOutputWriter(wfm, param.ID, conditionMap, param.Streaming),
 	)
 	if err != nil {
 		return componentActivityError(err, componentActivityErrorType, param.ID)
@@ -524,21 +585,21 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 
 	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("failed to load pipeline memory", outputActivityErrorType, err)
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", outputActivityErrorType, err)
 	}
 
 	for idx := range wfm.GetBatchSize() {
 		output, err := wfm.Get(ctx, idx, string(memory.PipelineOutputTemplate))
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline output", outputActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
-		output, err = recipe.Render(ctx, output, idx, wfm)
+		output, err = recipe.Render(ctx, output, idx, wfm, true)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to render pipeline output", outputActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, output)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to store pipeline output", outputActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
 	}
 
@@ -604,7 +665,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		childWorkflowID := fmt.Sprintf("%s:%d:%s:%s:%s", param.WorkflowID, iter, constant.SegComponent, param.ID, constant.SegIteration)
 		childWorkflowIDs[iter] = childWorkflowID
 
-		input, err := recipe.Render(ctx, data.NewString(param.Input), iter, wfm)
+		input, err := recipe.Render(ctx, data.NewString(param.Input), iter, wfm, false)
 		if err != nil {
 			return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
 		}
@@ -710,7 +771,7 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 			elemVals := data.NewArray(nil)
 
 			for elemIdx := range childWFM.GetBatchSize() {
-				elemVal, err := recipe.Render(ctx, data.NewString(v), elemIdx, childWFM)
+				elemVal, err := recipe.Render(ctx, data.NewString(v), elemIdx, childWFM, false)
 				if err != nil {
 					return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 				}
@@ -740,19 +801,19 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 
 	wfm, err := w.memoryStore.LoadWorkflowMemoryFromRedis(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("failed to load pipeline memory", cloneToMemoryStoreActivityErrorType, err)
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToMemoryStoreActivityErrorType, err)
 	}
 	var recipe *datamodel.Recipe
 	if param.SystemVariables.PipelineReleaseUID.IsNil() {
 		pipeline, err := w.repository.GetPipelineByUIDAdmin(ctx, param.SystemVariables.PipelineUID, false, false)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
 		}
 		recipe = pipeline.Recipe
 	} else {
 		release, err := w.repository.GetPipelineReleaseByUIDAdmin(ctx, param.SystemVariables.PipelineReleaseUID, false)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
 		}
 		recipe = release.Recipe
 	}
@@ -766,7 +827,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 		var secrets []*datamodel.Secret
 		secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, ownerPermalink, 100, pt, filtering.Filter{})
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
 		}
 
 		for _, secret := range secrets {
@@ -782,7 +843,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 	for idx := range wfm.GetBatchSize() {
 		pipelineSecrets, err := wfm.Get(ctx, idx, constant.SegSecret)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to load pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
 		}
 
 		for _, secret := range nsSecrets {
@@ -798,18 +859,18 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 
 			inputVal, err := data.NewValue(comp.Input)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to init pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
 			}
 			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataInput, inputVal); err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to init pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
 			}
 
 			setupVal, err := data.NewValue(comp.Setup)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to init pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
 			}
 			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataSetup, setupVal); err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to init pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
 			}
 		}
 		output := data.NewMap(nil)
@@ -819,7 +880,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 		}
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutputTemplate, output)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("failed to clone pipeline memory", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("initializing pipeline memory", cloneToMemoryStoreActivityErrorType, err)
 		}
 	}
 
@@ -827,11 +888,11 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 		for batchIdx := range wfm.GetBatchSize() {
 			variable, err := wfm.Get(ctx, batchIdx, "variable")
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to send event", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("sending event", cloneToMemoryStoreActivityErrorType, err)
 			}
 			variableStruct, err := variable.ToStructValue()
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to send event", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("sending event", cloneToMemoryStoreActivityErrorType, err)
 			}
 			variableJSON := map[string]any{}
 			b, _ := protojson.Marshal(variableStruct)
@@ -849,7 +910,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 				},
 			)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("failed to send event", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("sending event", cloneToMemoryStoreActivityErrorType, err)
 			}
 		}
 	}
@@ -866,7 +927,36 @@ func (w *worker) CloneToRedisActivity(ctx context.Context, param *MemoryCopyPara
 
 	err := w.memoryStore.WriteWorkflowMemoryToRedis(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("failed to clone pipeline memory", cloneToRedisActivityErrorType, err)
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+	}
+	wfm, err := w.memoryStore.LoadWorkflowMemoryFromRedis(ctx, param.WorkflowID)
+	if err != nil {
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+	}
+
+	for batchIdx := range wfm.GetBatchSize() {
+		output, err := wfm.GetPipelineData(ctx, batchIdx, memory.PipelineOutput)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+		}
+
+		if param.IsStreaming {
+			err = w.memoryStore.SendWorkflowStatusEvent(
+				ctx,
+				param.WorkflowID,
+				memory.Event{
+					Event: memory.PipelineCompleted,
+					Data: memory.PipelineCompletedEventData{
+						UpdateTime: time.Now(),
+						BatchIndex: batchIdx,
+						Output:     output,
+					},
+				},
+			)
+			if err != nil {
+				return temporal.NewApplicationErrorWithCause("sending event", cloneToRedisActivityErrorType, err)
+			}
+		}
 	}
 
 	logger.Info("CloneToRedisActivity completed")
@@ -914,7 +1004,6 @@ func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory
 
 			allMemory, err := wfm.Get(ctx, idx, "")
 			if err != nil {
-
 				return nil, err
 			}
 			condMemoryForConditionStruct, err := allMemory.ToStructValue()
