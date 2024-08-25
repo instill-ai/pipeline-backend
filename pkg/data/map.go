@@ -22,12 +22,14 @@ func (Map) isValue() {}
 func (m Map) ToStructValue() (v *structpb.Value, err error) {
 	mp := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	for k, v := range m.Fields {
-		switch v := v.(type) {
-		case Null:
-		default:
-			mp.Fields[k], err = v.ToStructValue()
-			if err != nil {
-				return nil, err
+		if v != nil {
+			switch v := v.(type) {
+			case Null:
+			default:
+				mp.Fields[k], err = v.ToStructValue()
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}

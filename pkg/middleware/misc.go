@@ -155,6 +155,8 @@ func CustomMatcher(key string) (string, bool) {
 	}
 
 	switch key {
+	case "Accept":
+		return key, true
 	case "request-id":
 		return key, true
 	case "X-B3-Traceid", "X-B3-Spanid", "X-B3-Sampled":

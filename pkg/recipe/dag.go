@@ -160,12 +160,12 @@ func (d *dag) TopologicalSort() ([]datamodel.ComponentMap, error) {
 func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx int, path string) (data.Value, error) {
 	v, err := wfm.Get(ctx, batchIdx, path)
 	if err != nil {
-		return data.NewString(path), nil
+		return nil, err
 	}
 	return v, err
 }
 
-func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.WorkflowMemory) (data.Value, error) {
+func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.WorkflowMemory, allowUnresolved bool) (data.Value, error) {
 
 	switch input := template.(type) {
 	case *data.String:
@@ -179,6 +179,9 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 			}
 			val, err := resolveReference(ctx, wfm, batchIdx, s)
 			if err != nil {
+				if allowUnresolved {
+					return data.NewString(input.GetString()), nil
+				}
 				return nil, err
 			}
 			return val, nil
@@ -202,6 +205,9 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 			ref := strings.TrimSpace(s[2:endIdx])
 			v, err := resolveReference(ctx, wfm, batchIdx, ref)
 			if err != nil {
+				if allowUnresolved {
+					return data.NewString(input.GetString()), nil
+				}
 				return nil, err
 			}
 
@@ -224,7 +230,7 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 		mp := data.NewMap(nil)
 		for k, v := range input.Fields {
 			if _, isNull := v.(*data.Null); !isNull {
-				mp.Fields[k], err = Render(ctx, v, batchIdx, wfm)
+				mp.Fields[k], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
 				if err != nil {
 					return nil, err
 				}
@@ -236,7 +242,7 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 		var err error
 		arr := data.NewArray(make([]data.Value, len(input.Values)))
 		for i, v := range input.Values {
-			arr.Values[i], err = Render(ctx, v, batchIdx, wfm)
+			arr.Values[i], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
 			if err != nil {
 				return nil, err
 			}
@@ -618,7 +624,7 @@ func FindReferenceParent(input string) []string {
 	return upstreams
 }
 
-func GenerateTraces(ctx context.Context, wfm memory.WorkflowMemory) (map[string]*pb.Trace, error) {
+func GenerateTraces(ctx context.Context, wfm memory.WorkflowMemory, full bool) (map[string]*pb.Trace, error) {
 
 	trace := map[string]*pb.Trace{}
 
@@ -628,13 +634,10 @@ func GenerateTraces(ctx context.Context, wfm memory.WorkflowMemory) (map[string]
 
 		inputs := make([]*structpb.Struct, batchSize)
 		outputs := make([]*structpb.Struct, batchSize)
+		errors := make([]*structpb.Struct, batchSize)
 		traceStatuses := make([]pb.Trace_Status, batchSize)
 
 		for dataIdx := range batchSize {
-			compMemory, err := wfm.Get(ctx, dataIdx, compID)
-			if err != nil {
-				continue
-			}
 
 			completed, err := wfm.GetComponentStatus(ctx, dataIdx, compID, memory.ComponentStatusCompleted)
 			if err != nil {
@@ -652,20 +655,30 @@ func GenerateTraces(ctx context.Context, wfm memory.WorkflowMemory) (map[string]
 				traceStatuses[dataIdx] = pb.Trace_STATUS_ERROR
 			}
 
-			if input := compMemory.(*data.Map).Fields[constant.SegInput]; input != nil {
-				structVal, err := input.ToStructValue()
+			if compErr, err := wfm.GetComponentData(ctx, dataIdx, compID, memory.ComponentDataError); err == nil {
+				structVal, err := compErr.ToStructValue()
 				if err != nil {
 					return nil, err
 				}
-				inputs[dataIdx] = structVal.GetStructValue()
+				errors[dataIdx] = structVal.GetStructValue()
 			}
 
-			if output := compMemory.(*data.Map).Fields[constant.SegOutput]; output != nil {
-				structVal, err := output.ToStructValue()
-				if err != nil {
-					return nil, err
+			if full {
+				if input, err := wfm.GetComponentData(ctx, dataIdx, compID, memory.ComponentDataInput); err == nil {
+					structVal, err := input.ToStructValue()
+					if err != nil {
+						return nil, err
+					}
+					inputs[dataIdx] = structVal.GetStructValue()
 				}
-				outputs[dataIdx] = structVal.GetStructValue()
+
+				if output, err := wfm.GetComponentData(ctx, dataIdx, compID, memory.ComponentDataOutput); err == nil {
+					structVal, err := output.ToStructValue()
+					if err != nil {
+						return nil, err
+					}
+					outputs[dataIdx] = structVal.GetStructValue()
+				}
 			}
 		}
 
@@ -673,6 +686,9 @@ func GenerateTraces(ctx context.Context, wfm memory.WorkflowMemory) (map[string]
 			Statuses: traceStatuses,
 			Inputs:   inputs,
 			Outputs:  outputs,
+
+			// Note: Currently, all errors in a batch are the same.
+			Error: errors[0],
 		}
 	}
 

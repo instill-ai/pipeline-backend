@@ -149,7 +149,7 @@ type ComponentMap map[string]*Component
 type Recipe struct {
 	Version   string               `json:"version,omitempty" yaml:"version,omitempty"`
 	On        *On                  `json:"on,omitempty" yaml:"on,omitempty"`
-	Component ComponentMap         `json:"component" yaml:"component,omitempty"`
+	Component ComponentMap         `json:"component,omitempty" yaml:"component,omitempty"`
 	Variable  map[string]*Variable `json:"variable,omitempty" yaml:"variable,omitempty"`
 	Secret    map[string]string    `json:"secret,omitempty" yaml:"secret,omitempty"`
 	Output    map[string]*Output   `json:"output,omitempty" yaml:"output,omitempty"`
@@ -189,6 +189,9 @@ func (c *ComponentMap) UnmarshalYAML(node *yaml.Node) error {
 
 	for _, content := range node.Content {
 		if _, ok := result[content.Value]; ok {
+			if result[content.Value] == nil {
+				result[content.Value] = &Component{}
+			}
 			headCommentLines := strings.Split(content.HeadComment, "\n")
 			for i := range headCommentLines {
 				headCommentLines[i] = strings.TrimLeft(headCommentLines[i], "# ")
@@ -326,7 +329,7 @@ type Component struct {
 	Definition *Definition    `json:"definition,omitempty" yaml:"-"`
 
 	// Fields for iterators
-	Component         ComponentMap          `json:"component" yaml:"component,omitempty"`
+	Component         ComponentMap          `json:"component,omitempty" yaml:"component,omitempty"`
 	OutputElements    map[string]string     `json:"outputElements,omitempty" yaml:"output-elements,omitempty"`
 	DataSpecification *pb.DataSpecification `json:"dataSpecification,omitempty" yaml:"-"`
 }

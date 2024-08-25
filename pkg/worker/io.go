@@ -30,7 +30,7 @@ func (i *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err 
 		if err != nil {
 			return nil, err
 		}
-		setupVal, err := recipe.Render(ctx, setupTemplate, i.conditionMap[idx], i.wfm)
+		setupVal, err := recipe.Render(ctx, setupTemplate, i.conditionMap[idx], i.wfm, false)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ func (i *inputReader) Read(ctx context.Context) (inputs []*structpb.Struct, err 
 			return nil, err
 		}
 
-		inputVal, err := recipe.Render(ctx, inputTemplate, i.conditionMap[idx], i.wfm)
+		inputVal, err := recipe.Render(ctx, inputTemplate, i.conditionMap[idx], i.wfm, false)
 		if err != nil {
 			return nil, err
 		}
@@ -89,13 +89,15 @@ type outputWriter struct {
 	compID       string
 	wfm          memory.WorkflowMemory
 	conditionMap map[int]int
+	streaming    bool
 }
 
-func NewOutputWriter(wfm memory.WorkflowMemory, compID string, conditionMap map[int]int) *outputWriter {
+func NewOutputWriter(wfm memory.WorkflowMemory, compID string, conditionMap map[int]int, streaming bool) *outputWriter {
 	return &outputWriter{
 		compID:       compID,
 		wfm:          wfm,
 		conditionMap: conditionMap,
+		streaming:    streaming,
 	}
 }
 
@@ -109,18 +111,23 @@ func (o *outputWriter) Write(ctx context.Context, outputs []*structpb.Struct) (e
 		if err := o.wfm.SetComponentData(ctx, o.conditionMap[idx], o.compID, memory.ComponentDataOutput, val); err != nil {
 			return err
 		}
-		outputTemplate, err := o.wfm.Get(ctx, idx, string(memory.PipelineOutputTemplate))
-		if err != nil {
-			return err
+
+		if o.streaming {
+			outputTemplate, err := o.wfm.Get(ctx, idx, string(memory.PipelineOutputTemplate))
+			if err != nil {
+				return err
+			}
+
+			output, err := recipe.Render(ctx, outputTemplate, idx, o.wfm, true)
+			if err != nil {
+				return err
+			}
+			err = o.wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, output)
+			if err != nil {
+				return err
+			}
 		}
-		output, err := recipe.Render(ctx, outputTemplate, idx, o.wfm)
-		if err != nil {
-			return err
-		}
-		err = o.wfm.SetPipelineData(ctx, idx, memory.PipelineOutput, output)
-		if err != nil {
-			return err
-		}
+
 	}
 
 	return nil

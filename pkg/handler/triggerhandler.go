@@ -207,11 +207,11 @@ func convertFormData(ctx context.Context, req *http.Request) ([]*pb.TriggerData,
 // HandleTrigger
 func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, rc *redis.Client) {
 
-	var sh streamingHandlerFunc
-	if req.Header.Get(constant.HeaderInstillUseSSE) == "true" {
-		sh = func(triggerID string) (err error) {
+	ctx := req.Context()
 
-			ctx, cancel := context.WithCancel(context.Background())
+	var sh streamingHandlerFunc
+	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
+		sh = func(triggerID string) (err error) {
 
 			pubsub := rc.Subscribe(ctx, triggerID)
 			defer pubsub.Close()
@@ -222,7 +222,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 			w.Header().Set("Cache-Control", "no-cache")
 			w.Header().Set("Connection", "keep-alive")
 
-			defer cancel()
+			// defer cancel()
 			closed := false
 			for !closed {
 				select {
@@ -259,9 +259,6 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 
 		}
 	}
-
-	ctx, cancel := context.WithCancel(req.Context())
-	defer cancel()
 
 	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 	var err error
@@ -300,8 +297,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 // HandleTriggerAsync
 func HandleTriggerAsync(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, rc *redis.Client) {
 
-	ctx, cancel := context.WithCancel(req.Context())
-	defer cancel()
+	ctx := req.Context()
 
 	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 	var err error
@@ -529,11 +525,10 @@ func request_PipelinePublicService_TriggerAsyncNamespacePipeline_0_form(ctx cont
 // HandleTrigger
 func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, rc *redis.Client) {
 
+	ctx := req.Context()
 	var sh streamingHandlerFunc
-	if req.Header.Get(constant.HeaderInstillUseSSE) == "true" {
+	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
 		sh = func(triggerID string) (err error) {
-
-			ctx, cancel := context.WithCancel(context.Background())
 
 			pubsub := rc.Subscribe(ctx, triggerID)
 			defer pubsub.Close()
@@ -544,7 +539,6 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 			w.Header().Set("Cache-Control", "no-cache")
 			w.Header().Set("Connection", "keep-alive")
 
-			defer cancel()
 			closed := false
 			for !closed {
 				select {
@@ -581,9 +575,6 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 
 		}
 	}
-
-	ctx, cancel := context.WithCancel(req.Context())
-	defer cancel()
 
 	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 	var err error
@@ -622,8 +613,7 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 // HandleTriggerAsync
 func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, rc *redis.Client) {
 
-	ctx, cancel := context.WithCancel(req.Context())
-	defer cancel()
+	ctx := req.Context()
 
 	inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 	var err error

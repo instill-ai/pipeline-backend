@@ -4,6 +4,7 @@ package worker
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go/parser"
 	"time"
@@ -328,7 +329,27 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Input:           comp.Input.(string),
 					SystemVariables: param.SystemVariables,
 				}).Get(ctx, &preIteratorResult); err != nil {
-					return err
+					if err != nil {
+						// TODO: huitang
+						// Currently, if any data in the batch has an error, we
+						// treat the entire batch as errored. In the future, we
+						// should allow partial errors within a batch.
+						var applicationErr *temporal.ApplicationError
+						if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
+
+							for batchIdx := range wfm.GetBatchSize() {
+								if wfmErr := wfm.SetComponentStatus(sCtx, batchIdx, compID, memory.ComponentStatusErrored, true); wfmErr != nil {
+									return wfmErr
+								}
+								if wfmErr := wfm.SetComponentErrorMessage(sCtx, batchIdx, compID, applicationErr.Message()); wfmErr != nil {
+									return wfmErr
+								}
+							}
+						}
+
+						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						continue
+					}
 				}
 
 				itFutures := []workflow.Future{}
@@ -367,7 +388,27 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					OutputElements:  comp.OutputElements,
 					SystemVariables: param.SystemVariables,
 				}).Get(ctx, nil); err != nil {
-					return err
+					if err != nil {
+						// TODO: huitang
+						// Currently, if any data in the batch has an error, we
+						// treat the entire batch as errored. In the future, we
+						// should allow partial errors within a batch.
+						var applicationErr *temporal.ApplicationError
+						if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
+
+							for batchIdx := range wfm.GetBatchSize() {
+								if wfmErr := wfm.SetComponentStatus(sCtx, batchIdx, compID, memory.ComponentStatusErrored, true); wfmErr != nil {
+									return wfmErr
+								}
+								if wfmErr := wfm.SetComponentErrorMessage(sCtx, batchIdx, compID, applicationErr.Message()); wfmErr != nil {
+									return wfmErr
+								}
+							}
+						}
+
+						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						continue
+					}
 				}
 			}
 
@@ -376,16 +417,34 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		for idx := range futures {
 			err = futures[idx].Get(ctx, nil)
 			if err != nil {
-				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+				// TODO: huitang
+				// Currently, if any data in the batch has an error, we
+				// treat the entire batch as errored. In the future, we
+				// should allow partial errors within a batch.
+				var applicationErr *temporal.ApplicationError
+				if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
 
-				// ComponentActivity is responsible for returning a temporal
-				// application error with the relevant information. Wrapping
-				// the error here prevents the client from accessing the error
-				// message from the activity.
-				return err
+					for batchIdx := range wfm.GetBatchSize() {
+						if wfmErr := wfm.SetComponentStatus(sCtx, batchIdx, futureArgs[idx].ID, memory.ComponentStatusErrored, true); wfmErr != nil {
+							return wfmErr
+						}
+						if wfmErr := wfm.SetComponentErrorMessage(sCtx, batchIdx, futureArgs[idx].ID, applicationErr.Message()); wfmErr != nil {
+							return wfmErr
+						}
+					}
+				}
+
+				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+				continue
 			}
 
+			// ComponentActivity is responsible for returning a temporal
+			// application error with the relevant information. Wrapping
+			// the error here prevents the client from accessing the error
+			// message from the activity.
+			// return err
 			workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, futureArgs[idx])
+
 		}
 
 	}
@@ -408,7 +467,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 
 		if err := workflow.ExecuteActivity(ctx, w.CloneToRedisActivity, &MemoryCopyParam{
-			WorkflowID: workflowID,
+			WorkflowID:      workflowID,
+			SystemVariables: param.SystemVariables,
+			IsStreaming:     param.IsStreaming,
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
@@ -502,7 +563,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	err = execution.Execute(
 		ctx,
 		NewInputReader(wfm, param.ID, conditionMap),
-		NewOutputWriter(wfm, param.ID, conditionMap),
+		NewOutputWriter(wfm, param.ID, conditionMap, param.Streaming),
 	)
 	if err != nil {
 		return componentActivityError(err, componentActivityErrorType, param.ID)
@@ -532,7 +593,7 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
-		output, err = recipe.Render(ctx, output, idx, wfm)
+		output, err = recipe.Render(ctx, output, idx, wfm, true)
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
@@ -604,7 +665,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		childWorkflowID := fmt.Sprintf("%s:%d:%s:%s:%s", param.WorkflowID, iter, constant.SegComponent, param.ID, constant.SegIteration)
 		childWorkflowIDs[iter] = childWorkflowID
 
-		input, err := recipe.Render(ctx, data.NewString(param.Input), iter, wfm)
+		input, err := recipe.Render(ctx, data.NewString(param.Input), iter, wfm, false)
 		if err != nil {
 			return nil, componentActivityError(err, preIteratorActivityErrorType, param.ID)
 		}
@@ -710,7 +771,7 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 			elemVals := data.NewArray(nil)
 
 			for elemIdx := range childWFM.GetBatchSize() {
-				elemVal, err := recipe.Render(ctx, data.NewString(v), elemIdx, childWFM)
+				elemVal, err := recipe.Render(ctx, data.NewString(v), elemIdx, childWFM, false)
 				if err != nil {
 					return componentActivityError(err, postIteratorActivityErrorType, param.ID)
 				}
@@ -872,26 +933,29 @@ func (w *worker) CloneToRedisActivity(ctx context.Context, param *MemoryCopyPara
 	if err != nil {
 		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
 	}
+
 	for batchIdx := range wfm.GetBatchSize() {
 		output, err := wfm.GetPipelineData(ctx, batchIdx, memory.PipelineOutput)
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
 		}
 
-		err = w.memoryStore.SendWorkflowStatusEvent(
-			ctx,
-			param.WorkflowID,
-			memory.Event{
-				Event: memory.PipelineCompleted,
-				Data: memory.PipelineCompletedEventData{
-					UpdateTime: time.Now(),
-					BatchIndex: batchIdx,
-					Output:     output,
+		if param.IsStreaming {
+			err = w.memoryStore.SendWorkflowStatusEvent(
+				ctx,
+				param.WorkflowID,
+				memory.Event{
+					Event: memory.PipelineCompleted,
+					Data: memory.PipelineCompletedEventData{
+						UpdateTime: time.Now(),
+						BatchIndex: batchIdx,
+						Output:     output,
+					},
 				},
-			},
-		)
-		if err != nil {
-			return temporal.NewApplicationErrorWithCause("sending event", cloneToRedisActivityErrorType, err)
+			)
+			if err != nil {
+				return temporal.NewApplicationErrorWithCause("sending event", cloneToRedisActivityErrorType, err)
+			}
 		}
 	}
 
@@ -940,7 +1004,6 @@ func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory
 
 			allMemory, err := wfm.Get(ctx, idx, "")
 			if err != nil {
-
 				return nil, err
 			}
 			condMemoryForConditionStruct, err := allMemory.ToStructValue()

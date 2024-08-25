@@ -171,15 +171,19 @@ func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink s
 			Setup: c.processSetup(ctx, ownerPermalink, comp.Setup),
 		})
 		if err != nil {
-			return err
+			comp.Definition = nil
+		} else {
+			comp.Definition = &datamodel.Definition{ComponentDefinition: def}
 		}
-		comp.Definition = &datamodel.Definition{ComponentDefinition: def}
+
 	} else {
 		def, err := c.component.GetDefinitionByID(comp.Type, nil, nil)
 		if err != nil {
-			return err
+			comp.Definition = nil
+		} else {
+			comp.Definition = &datamodel.Definition{ComponentDefinition: def}
 		}
-		comp.Definition = &datamodel.Definition{ComponentDefinition: def}
+
 	}
 
 	return nil
