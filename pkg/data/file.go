@@ -92,7 +92,7 @@ func (f *File) GetDataURL(contentType string) (url *String, err error) {
 	if err != nil {
 		return
 	}
-	s, err := encodeDataURL(ba.GetByteArray(), contentType)
+	s, err := encodeDataURL(ba.GetByteArray(), contentType, f.FileName)
 	if err != nil {
 		return
 	}
@@ -128,7 +128,7 @@ func (f *File) Get(path string) (v Value, err error) {
 	switch {
 	case comparePath(path, ".source-url"):
 		return f.GetSourceURL(), nil
-	case comparePath(path, ".file-name"):
+	case comparePath(path, ".filename"):
 		return f.GetFileName(), nil
 	case comparePath(path, ".file-size"):
 		return f.GetFileSize(), nil

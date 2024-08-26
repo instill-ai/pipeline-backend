@@ -34,7 +34,6 @@ func (m *Map) Get(path string) (v Value, err error) {
 	}
 
 	return m.Fields[key].Get(remainingPath)
-
 }
 
 func (m Map) ToStructValue() (v *structpb.Value, err error) {

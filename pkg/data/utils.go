@@ -19,18 +19,21 @@ func decodeDataURL(s string) (b []byte, contentType string, fileName string, err
 		tags := ""
 		contentType, tags, _ = strings.Cut(mime[1], ";")
 		b, err = base64.StdEncoding.DecodeString(slices[1])
-		for _, tag := range strings.Split(tags, ",") {
+		for _, tag := range strings.Split(tags, ";") {
+
 			key, value, _ := strings.Cut(tag, "=")
 			if key == "filename" || key == "fileName" || key == "file-name" {
 				fileName = value
 			}
 		}
+		fmt.Println("contentType", s[:30], contentType, "tags", tags, fileName)
 	}
+
 	return
 }
 
-func encodeDataURL(b []byte, contentType string) (s string, err error) {
-	s = fmt.Sprintf("data:%s;base64,%s", contentType, base64.StdEncoding.EncodeToString(b))
+func encodeDataURL(b []byte, contentType, fileName string) (s string, err error) {
+	s = fmt.Sprintf("data:%s;filename=%s;base64,%s", contentType, fileName, base64.StdEncoding.EncodeToString(b))
 	return
 }
 
@@ -81,4 +84,17 @@ func comparePath(path1, path2 string) bool {
 		return false
 	}
 	return path1 == path2
+}
+
+func matchPathPrefix(path, prefix string) bool {
+	var err error
+	path, err = standardizePath(path)
+	if err != nil {
+		return false
+	}
+	prefix, err = standardizePath(prefix)
+	if err != nil {
+		return false
+	}
+	return strings.HasPrefix(path, prefix)
 }
