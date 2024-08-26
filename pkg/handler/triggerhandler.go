@@ -237,7 +237,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 					if err != nil {
 						return err
 					}
-					if event.Event == memory.PipelineClosed {
+					if event.Event == string(memory.PipelineClosed) {
 						closed = true
 						break
 					}
@@ -553,7 +553,7 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 					if err != nil {
 						return err
 					}
-					if event.Event == memory.PipelineClosed {
+					if event.Event == string(memory.PipelineClosed) {
 						closed = true
 						break
 					}
