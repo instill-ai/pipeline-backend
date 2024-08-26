@@ -10,17 +10,15 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-type converterFunc func(raw []byte, sourceContentType, targetContentType string) (b []byte, err error)
 type File struct {
 	Raw         []byte
 	ContentType string
 	FileName    string
 	SourceURL   string
 	Cache       map[string][]byte
-	Converter   converterFunc
 }
 
-func NewFileFromBytes(b []byte, contentType, fileName string, converter converterFunc) (bin *File, err error) {
+func NewFileFromBytes(b []byte, contentType, fileName string) (bin *File, err error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	}
@@ -30,14 +28,13 @@ func NewFileFromBytes(b []byte, contentType, fileName string, converter converte
 		Raw:         b,
 		ContentType: contentType,
 		FileName:    fileName,
-		Converter:   converter,
 		Cache:       cache,
 	}, nil
 }
 
-func NewFileFromURL(url string, converter converterFunc) (bin *File, err error) {
+func NewFileFromURL(url string) (bin *File, err error) {
 	if strings.HasPrefix(url, "data:") {
-		return newFileFromDataURL(url, converter)
+		return newFileFromDataURL(url)
 	}
 
 	resp, err := http.Get(url)
@@ -54,7 +51,7 @@ func NewFileFromURL(url string, converter converterFunc) (bin *File, err error) 
 		contentType = headers[0]
 	}
 
-	bin, err = NewFileFromBytes(body, contentType, "", converter)
+	bin, err = NewFileFromBytes(body, contentType, "")
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +59,7 @@ func NewFileFromURL(url string, converter converterFunc) (bin *File, err error) 
 	return bin, nil
 }
 
-func newFileFromDataURL(url string, converter converterFunc) (bin *File, err error) {
+func newFileFromDataURL(url string) (bin *File, err error) {
 	b, contentType, fileName, err := decodeDataURL(url)
 	if err != nil {
 		return
@@ -73,7 +70,6 @@ func newFileFromDataURL(url string, converter converterFunc) (bin *File, err err
 		Raw:         b,
 		ContentType: contentType,
 		FileName:    fileName,
-		Converter:   converter,
 		Cache:       cache,
 	}, nil
 }
@@ -82,10 +78,8 @@ func (f *File) GetByteArray(contentType string) (ba *ByteArray, err error) {
 	if c, ok := f.Cache[contentType]; ok {
 		return NewByteArray(c), nil
 	}
-	if f.Converter == nil {
-		return nil, fmt.Errorf("can not convert data from %s to %s", f.ContentType, contentType)
-	}
-	b, err := f.Converter(f.Raw, f.ContentType, contentType)
+
+	b, err := convertFile(f.Raw, f.ContentType, contentType)
 	if err != nil {
 		return nil, fmt.Errorf("can not convert data from %s to %s", f.ContentType, contentType)
 	}
@@ -132,13 +126,13 @@ func (f *File) GetSourceURL() (t *String) {
 
 func (f *File) Get(path string) (v Value, err error) {
 	switch {
-	case path == ".source-url":
+	case comparePath(path, ".source-url"):
 		return f.GetSourceURL(), nil
-	case path == ".file-name":
+	case comparePath(path, ".file-name"):
 		return f.GetFileName(), nil
-	case path == ".file-size":
+	case comparePath(path, ".file-size"):
 		return f.GetFileSize(), nil
-	case path == ".content-type":
+	case comparePath(path, ".content-type"):
 		return f.GetContentType(), nil
 	}
 	return nil, fmt.Errorf("wrong path")

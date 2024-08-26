@@ -19,6 +19,20 @@ func NewArray(v []Value) (arr *Array) {
 
 func (Array) isValue() {}
 
+func (a *Array) Get(path string) (v Value, err error) {
+	if path == "" {
+		return a, nil
+	}
+	path, err = standardizePath(path)
+	if err != nil {
+		return nil, err
+	}
+	index, remainingPath, err := trimFirstIndexFromPath(path)
+	if err != nil {
+		return nil, err
+	}
+	return a.Values[index].Get(remainingPath)
+}
 func (a Array) ToStructValue() (v *structpb.Value, err error) {
 	arr := &structpb.ListValue{Values: make([]*structpb.Value, len(a.Values))}
 	for idx, v := range a.Values {

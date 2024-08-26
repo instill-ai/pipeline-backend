@@ -2,7 +2,6 @@ package data
 
 import (
 	"fmt"
-	"strings"
 )
 
 type Document struct {
@@ -19,7 +18,7 @@ const PDF = "application/pdf"
 func (Document) isValue() {}
 
 func NewDocumentFromBytes(b []byte, contentType, fileName string) (doc *Document, err error) {
-	f, err := NewFileFromBytes(b, contentType, fileName, nil)
+	f, err := NewFileFromBytes(b, contentType, fileName)
 	if err != nil {
 		return
 	}
@@ -27,7 +26,7 @@ func NewDocumentFromBytes(b []byte, contentType, fileName string) (doc *Document
 }
 
 func NewDocumentFromURL(url string) (doc *Document, err error) {
-	f, err := NewFileFromURL(url, nil)
+	f, err := NewFileFromURL(url)
 	if err != nil {
 		return
 	}
@@ -50,16 +49,16 @@ func (d *Document) Get(path string) (v Value, err error) {
 		return
 	}
 	switch {
-	case path == "":
+	case comparePath(path, ""):
 		// TODO: we use data-url for now
 		return d.GetDataURL(d.ContentType)
-	case path == ".text":
+	case comparePath(path, ".text"):
 		return d.GetText(), nil
-	case strings.HasPrefix(path, ".base64"):
+	case comparePath(path, ".base64"):
 		return d.GetBase64(d.ContentType)
-	case strings.HasPrefix(path, ".data-url"):
+	case comparePath(path, ".data-url"):
 		return d.GetDataURL(d.ContentType)
-	case strings.HasPrefix(path, ".byte-array"):
+	case comparePath(path, ".byte-array"):
 		return d.GetByteArray(d.ContentType)
 	}
 	return nil, fmt.Errorf("wrong path")

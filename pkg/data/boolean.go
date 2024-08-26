@@ -1,6 +1,10 @@
 package data
 
-import "google.golang.org/protobuf/types/known/structpb"
+import (
+	"fmt"
+
+	"google.golang.org/protobuf/types/known/structpb"
+)
 
 type Boolean struct {
 	Raw bool
@@ -14,6 +18,13 @@ func (Boolean) isValue() {}
 
 func (b *Boolean) GetBoolean() bool {
 	return b.Raw
+}
+
+func (b *Boolean) Get(path string) (v Value, err error) {
+	if path == "" {
+		return b, nil
+	}
+	return nil, fmt.Errorf("wrong path %s for Boolean", path)
 }
 
 func (b Boolean) ToStructValue() (v *structpb.Value, err error) {
