@@ -180,7 +180,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}()
 	defer func() {
 		if param.IsStreaming {
-			_ = w.memoryStore.SendWorkflowStatusEvent(sCtx, workflowID, memory.Event{Event: memory.PipelineClosed})
+			_ = w.memoryStore.SendWorkflowStatusEvent(sCtx, workflowID, memory.Event{Event: string(memory.PipelineClosed)})
 		}
 	}()
 
@@ -886,26 +886,21 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 
 	if param.IsStreaming {
 		for batchIdx := range wfm.GetBatchSize() {
-			variable, err := wfm.Get(ctx, batchIdx, "variable")
-			if err != nil {
-				return temporal.NewApplicationErrorWithCause("sending event", cloneToMemoryStoreActivityErrorType, err)
-			}
-			variableStruct, err := variable.ToStructValue()
-			if err != nil {
-				return temporal.NewApplicationErrorWithCause("sending event", cloneToMemoryStoreActivityErrorType, err)
-			}
-			variableJSON := map[string]any{}
-			b, _ := protojson.Marshal(variableStruct)
-			_ = json.Unmarshal(b, &variableJSON)
 			err = w.memoryStore.SendWorkflowStatusEvent(
 				ctx,
 				param.WorkflowID,
 				memory.Event{
-					Event: memory.PipelineStarted,
-					Data: memory.PipelineStartedEventData{
-						UpdateTime: time.Now(),
-						BatchIndex: batchIdx,
-						Variable:   variableJSON,
+					Event: string(memory.PipelineStatusUpdated),
+					Data: memory.PipelineStatusUpdatedEventData{
+						PipelineEventData: memory.PipelineEventData{
+							UpdateTime: time.Now(),
+							BatchIndex: batchIdx,
+							Status: map[memory.PipelineStatusType]bool{
+								memory.PipelineStatusStarted:   true,
+								memory.PipelineStatusErrored:   false,
+								memory.PipelineStatusCompleted: false,
+							},
+						},
 					},
 				},
 			)
@@ -959,11 +954,17 @@ func (w *worker) CloneToRedisActivity(ctx context.Context, param *MemoryCopyPara
 				ctx,
 				param.WorkflowID,
 				memory.Event{
-					Event: memory.PipelineCompleted,
-					Data: memory.PipelineCompletedEventData{
-						UpdateTime: time.Now(),
-						BatchIndex: batchIdx,
-						Output:     data,
+					Event: string(memory.PipelineStatusUpdated),
+					Data: memory.PipelineStatusUpdatedEventData{
+						PipelineEventData: memory.PipelineEventData{
+							UpdateTime: time.Now(),
+							BatchIndex: batchIdx,
+							Status: map[memory.PipelineStatusType]bool{
+								memory.PipelineStatusStarted:   true,
+								memory.PipelineStatusErrored:   false,
+								memory.PipelineStatusCompleted: true,
+							},
+						},
 					},
 				},
 			)
