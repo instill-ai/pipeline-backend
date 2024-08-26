@@ -1,6 +1,10 @@
 package data
 
-import "google.golang.org/protobuf/types/known/structpb"
+import (
+	"fmt"
+
+	"google.golang.org/protobuf/types/known/structpb"
+)
 
 type Number struct {
 	Raw float64
@@ -22,6 +26,13 @@ func (n *Number) GetInteger() int {
 
 func (n *Number) GetFloat() float64 {
 	return n.Raw
+}
+
+func (n *Number) Get(path string) (v Value, err error) {
+	if path == "" {
+		return n, nil
+	}
+	return nil, fmt.Errorf("wrong path %s for Number", path)
 }
 
 func (n Number) ToStructValue() (v *structpb.Value, err error) {

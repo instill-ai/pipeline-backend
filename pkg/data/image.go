@@ -7,7 +7,6 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
-	"strings"
 )
 
 type Image struct {
@@ -23,7 +22,7 @@ const PNG = "image/png"
 const GIF = "image/gif"
 
 func NewImageFromBytes(b []byte, contentType, fileName string) (image *Image, err error) {
-	f, err := NewFileFromBytes(b, contentType, fileName, convertImage)
+	f, err := NewFileFromBytes(b, contentType, fileName)
 	if err != nil {
 		return
 	}
@@ -31,7 +30,7 @@ func NewImageFromBytes(b []byte, contentType, fileName string) (image *Image, er
 }
 
 func NewImageFromURL(url string) (image *Image, err error) {
-	f, err := NewFileFromURL(url, convertImage)
+	f, err := NewFileFromURL(url)
 	if err != nil {
 		return
 	}
@@ -67,45 +66,6 @@ func getImageShape(raw []byte, contentType string) (width, height int) {
 	return img.Bounds().Dx(), img.Bounds().Dy()
 }
 
-func convertImage(raw []byte, sourceContentType, targetContentType string) (b []byte, err error) {
-	var img image.Image
-	switch sourceContentType {
-	case PNG:
-		if img, err = png.Decode(bytes.NewReader(raw)); err != nil {
-			return
-		}
-	case JPEG:
-		if img, err = jpeg.Decode(bytes.NewReader(raw)); err != nil {
-			return
-		}
-	case GIF:
-		if img, err = gif.Decode(bytes.NewReader(raw)); err != nil {
-			return
-		}
-	default:
-		return nil, fmt.Errorf("conversion error")
-	}
-
-	buf := new(bytes.Buffer)
-	switch targetContentType {
-	case PNG:
-		if err = png.Encode(buf, img); err != nil {
-			return
-		}
-	case JPEG:
-		if err = jpeg.Encode(buf, img, nil); err != nil {
-			return
-		}
-	case GIF:
-		if err = gif.Encode(buf, img, nil); err != nil {
-			return
-		}
-	default:
-		return nil, fmt.Errorf("conversion error")
-	}
-	return buf.Bytes(), nil
-}
-
 func (i *Image) GetWidth() *Number {
 	return NewNumberFromInteger(i.Width)
 }
@@ -120,52 +80,48 @@ func (i *Image) Get(path string) (v Value, err error) {
 		return
 	}
 	switch {
-	case path == "":
-		// TODO: we use data-url for now
+
+	// TODO: we use data-url as default format for now
+	case comparePath(path, ""):
 		return i.GetDataURL(i.ContentType)
-	case path == ".width":
-		return i.GetWidth(), nil
-	case path == ".height":
-		return i.GetHeight(), nil
-	case strings.HasPrefix(path, ".base64"):
-		ss := strings.Split(path, ".")
-		if len(ss) > 2 {
-			switch ss[2] {
-			case "jpeg", "jpg":
-				return i.GetBase64(JPEG)
-			case "png":
-				return i.GetBase64(PNG)
-			case "gif":
-				return i.GetBase64(GIF)
-			}
-		}
+	case comparePath(path, ".jpeg") || comparePath(path, ".jpg"):
+		return i.GetDataURL(JPEG)
+	case comparePath(path, ".png"):
+		return i.GetDataURL(PNG)
+	case comparePath(path, ".gif"):
+		return i.GetDataURL(GIF)
+
+	case comparePath(path, ".base64"):
 		return i.GetBase64(i.ContentType)
-	case strings.HasPrefix(path, ".data-url"):
-		ss := strings.Split(path, ".")
-		if len(ss) > 2 {
-			switch ss[2] {
-			case "jpeg", "jpg":
-				return i.GetDataURL(JPEG)
-			case "png":
-				return i.GetDataURL(PNG)
-			case "gif":
-				return i.GetDataURL(GIF)
-			}
-		}
+	case comparePath(path, ".base64.jpeg") || comparePath(path, ".base64.jpg"):
+		return i.GetBase64(JPEG)
+	case comparePath(path, ".base64.png"):
+		return i.GetBase64(PNG)
+	case comparePath(path, ".base64.gif"):
+		return i.GetBase64(GIF)
+
+	case comparePath(path, ".data-url"):
 		return i.GetDataURL(i.ContentType)
-	case strings.HasPrefix(path, ".byte-array"):
-		ss := strings.Split(path, ".")
-		if len(ss) > 2 {
-			switch ss[2] {
-			case "jpeg", "jpg":
-				return i.GetByteArray(JPEG)
-			case "png":
-				return i.GetByteArray(PNG)
-			case "gif":
-				return i.GetByteArray(GIF)
-			}
-		}
+	case comparePath(path, ".data-url.jpeg") || comparePath(path, ".data-url.jpg"):
+		return i.GetDataURL(JPEG)
+	case comparePath(path, ".data-url.png"):
+		return i.GetDataURL(PNG)
+	case comparePath(path, ".data-url.gif"):
+		return i.GetDataURL(GIF)
+
+	case comparePath(path, ".byte-array"):
 		return i.GetByteArray(i.ContentType)
+	case comparePath(path, ".byte-array.jpeg") || comparePath(path, ".byte-array.jpg"):
+		return i.GetByteArray(JPEG)
+	case comparePath(path, ".byte-array.png"):
+		return i.GetByteArray(PNG)
+	case comparePath(path, ".byte-array.gif"):
+		return i.GetByteArray(GIF)
+
+	case comparePath(path, ".width"):
+		return i.GetWidth(), nil
+	case comparePath(path, ".height"):
+		return i.GetHeight(), nil
 	}
 	return nil, fmt.Errorf("wrong path")
 }

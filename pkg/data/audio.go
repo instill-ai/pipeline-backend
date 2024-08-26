@@ -7,7 +7,7 @@ type Audio struct {
 func (Audio) isValue() {}
 
 func NewAudioFromBytes(b []byte, contentType, fileName string) (audio *Audio, err error) {
-	f, err := NewFileFromBytes(b, contentType, fileName, nil)
+	f, err := NewFileFromBytes(b, contentType, fileName)
 	if err != nil {
 		return
 	}
@@ -15,7 +15,7 @@ func NewAudioFromBytes(b []byte, contentType, fileName string) (audio *Audio, er
 }
 
 func NewAudioFromURL(url string) (audio *Audio, err error) {
-	f, err := NewFileFromURL(url, nil)
+	f, err := NewFileFromURL(url)
 	if err != nil {
 		return
 	}
