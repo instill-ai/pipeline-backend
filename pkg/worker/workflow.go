@@ -939,6 +939,20 @@ func (w *worker) CloneToRedisActivity(ctx context.Context, param *MemoryCopyPara
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
 		}
+		// TODO: optimize the struct conversion
+		outputStruct, err := output.ToStructValue()
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+		}
+		b, err := protojson.Marshal(outputStruct)
+		if err != nil {
+			return err
+		}
+		var data map[string]any
+		err = json.Unmarshal(b, &data)
+		if err != nil {
+			return err
+		}
 
 		if param.IsStreaming {
 			err = w.memoryStore.SendWorkflowStatusEvent(
@@ -949,7 +963,7 @@ func (w *worker) CloneToRedisActivity(ctx context.Context, param *MemoryCopyPara
 					Data: memory.PipelineCompletedEventData{
 						UpdateTime: time.Now(),
 						BatchIndex: batchIdx,
-						Output:     output,
+						Output:     data,
 					},
 				},
 			)
