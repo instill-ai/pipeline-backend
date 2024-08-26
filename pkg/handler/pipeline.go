@@ -164,6 +164,8 @@ func (h *PublicHandler) ListPipelines(ctx context.Context, req *pb.ListPipelines
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
 		filtering.DeclareIdent("owner", filtering.TypeString),
+		filtering.DeclareIdent("numberOfRuns", filtering.TypeInt),
+		filtering.DeclareIdent("numberOfClones", filtering.TypeInt),
 		filtering.DeclareIdent("createTime", filtering.TypeTimestamp),
 		filtering.DeclareIdent("updateTime", filtering.TypeTimestamp),
 	}...)
@@ -372,6 +374,8 @@ func (h *PublicHandler) ListNamespacePipelines(ctx context.Context, req *pb.List
 		// only support "recipe.components.resource_name" for now
 		filtering.DeclareIdent("recipe", filtering.TypeMap(filtering.TypeString, filtering.TypeMap(filtering.TypeString, filtering.TypeString))),
 		filtering.DeclareIdent("owner", filtering.TypeString),
+		filtering.DeclareIdent("numberOfRuns", filtering.TypeInt),
+		filtering.DeclareIdent("numberOfClones", filtering.TypeInt),
 		filtering.DeclareIdent("createTime", filtering.TypeTimestamp),
 		filtering.DeclareIdent("updateTime", filtering.TypeTimestamp),
 	}...)
