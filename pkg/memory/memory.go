@@ -6,8 +6,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -471,41 +469,8 @@ func (wfm *workflowMemory) Get(ctx context.Context, batchIdx int, path string) (
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	if path == "" {
-		return wfm.Data[batchIdx], nil
-	}
-	splits := strings.FieldsFunc(path, func(s rune) bool {
-		return s == '.' || s == '['
-	})
+	return wfm.Data[batchIdx].Get(path)
 
-	newPath := ""
-	for _, split := range splits {
-		if strings.HasSuffix(split, "]") {
-			// Array Index
-			newPath += fmt.Sprintf("[%s", split)
-		} else {
-			// Map Key
-			newPath += fmt.Sprintf("[\"%s\"]", split)
-		}
-	}
-
-	newPath = newPath[1 : len(newPath)-1]
-	ss := strings.Split(newPath, "][")
-	ptr := wfm.Data[batchIdx]
-	for _, s := range ss {
-		if i, err := strconv.Atoi(s); err == nil {
-			ptr = ptr.(*data.Array).Values[i]
-		} else {
-			key := s[1 : len(s)-1]
-			if v, ok := ptr.(*data.Map).Fields[key]; ok {
-				ptr = v
-			} else {
-				return nil, fmt.Errorf("can not found %s", path)
-			}
-		}
-	}
-
-	return ptr, nil
 }
 
 func (wfm *workflowMemory) GetBatchSize() int {

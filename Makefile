@@ -20,8 +20,18 @@ dev:							## Run dev container
 	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
 		echo "Run dev container ${SERVICE_NAME}. To stop it, run \"make stop\"."
 	@docker run -d --rm \
-		-v $(PWD):/${SERVICE_NAME} \
 		-p ${SERVICE_PORT}:${SERVICE_PORT} \
+		-v $(PWD)/../go.work:/go.work \
+		-v $(PWD)/../go.work.sum:/go.work.sum \
+		-v $(PWD)/../mgmt-backend:/mgmt-backend \
+		-v $(PWD)/../model-backend:/model-backend \
+		-v $(PWD)/../pipeline-backend:/pipeline-backend \
+		-v $(PWD)/../artifact-backend:/artifact-backend \
+		-v $(PWD)/../mgmt-backend-cloud:/mgmt-backend-cloud \
+		-v $(PWD)/../model-backend-cloud:/model-backend-cloud \
+		-v $(PWD)/../pipeline-backend-cloud:/pipeline-backend-cloud \
+		-v $(PWD)/../protogengo:/protogengo \
+		-v $(PWD)/../component:/component \
 		--network instill-network \
 		--name ${SERVICE_NAME} \
 		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
@@ -46,7 +56,6 @@ top:							## Display all running service processes
 build:							## Build dev docker image
 	@docker build \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
-		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg K6_VERSION=${K6_VERSION} \
 		-f Dockerfile.dev  -t instill/${SERVICE_NAME}:dev .
 
@@ -100,11 +109,6 @@ integration-test:				## Run integration test
 	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} -e API_GATEWAY_URL=${API_GATEWAY_URL} \
 		integration-test/pipeline/rest.js --no-usage-report --quiet
-
-.PHONY: gen-mock
-gen-mock:
-	@go install github.com/gojuno/minimock/v3/cmd/minimock@v3.3.13
-	@go generate -run minimock ./...
 
 .PHONY: help
 help:       	 				## Show this help

@@ -11,6 +11,7 @@ type Data map[string]Value
 type Value interface {
 	isValue()
 	ToStructValue() (v *structpb.Value, err error)
+	Get(path string) (v Value, err error)
 }
 
 func NewValue(in any) (val Value, err error) {

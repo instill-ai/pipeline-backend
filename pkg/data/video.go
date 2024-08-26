@@ -7,7 +7,7 @@ type Video struct {
 func (Video) isValue() {}
 
 func NewVideoFromBytes(b []byte, contentType, fileName string) (video *Video, err error) {
-	f, err := NewFileFromBytes(b, contentType, fileName, nil)
+	f, err := NewFileFromBytes(b, contentType, fileName)
 	if err != nil {
 		return
 	}
@@ -15,7 +15,7 @@ func NewVideoFromBytes(b []byte, contentType, fileName string) (video *Video, er
 }
 
 func NewVideoFromURL(url string) (video *Video, err error) {
-	f, err := NewFileFromURL(url, nil)
+	f, err := NewFileFromURL(url)
 	if err != nil {
 		return
 	}
