@@ -30,10 +30,12 @@ type Worker interface {
 	OutputActivity(ctx context.Context, param *ComponentActivityParam) error
 	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
-	CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCopyParam) error
-	CloneToRedisActivity(ctx context.Context, param *MemoryCopyParam) error
+	PreTriggerActivity(ctx context.Context, param *PreTriggerActivityParam) error
+	PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 
+	UpdatePipelineRunActivity(ctx context.Context, param *UpdatePipelineRunActivityParam) error
+	UpsertComponentRunActivity(ctx context.Context, param *UpsertComponentRunActivityParam) error
 	UploadToMinioActivity(ctx context.Context, param *UploadToMinioActivityParam) (string, error)
 	UploadInputsToMinioActivity(ctx context.Context, param *UploadInputsToMinioActivityParam) error
 	UploadOutputsToMinioActivity(ctx context.Context, param *UploadOutputsToMinioActivityParam) error
