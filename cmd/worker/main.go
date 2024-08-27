@@ -174,6 +174,7 @@ func main() {
 	w.RegisterActivity(cw.PreTriggerActivity)
 	w.RegisterActivity(cw.PostTriggerActivity)
 	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
+	w.RegisterActivity(cw.UpsertPipelineRunActivity)
 	w.RegisterActivity(cw.UpdatePipelineRunActivity)
 	w.RegisterActivity(cw.UpsertComponentRunActivity)
 	w.RegisterActivity(cw.UploadToMinioActivity)

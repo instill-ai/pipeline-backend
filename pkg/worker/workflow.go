@@ -106,6 +106,10 @@ type PostTriggerActivityParam struct {
 	IsStreaming     bool
 }
 
+type UpsertPipelineRunActivityParam struct {
+	PipelineRun *datamodel.PipelineRun
+}
+
 type UpdatePipelineRunActivityParam struct {
 	PipelineTriggerID string
 	PipelineRun       *datamodel.PipelineRun
@@ -159,9 +163,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		pipelineRun.PipelineVersion = "latest"
 	}
 
-	_ = workflow.ExecuteActivity(ctx, w.UpdatePipelineRunActivity, &UpdatePipelineRunActivityParam{
-		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
-		PipelineRun:       pipelineRun,
+	_ = workflow.ExecuteActivity(ctx, w.UpsertPipelineRunActivity, &UpsertPipelineRunActivityParam{
+		PipelineRun: pipelineRun,
 	}).Get(ctx, nil)
 
 	// todo: mark pipeline run as failed if not succeeded
@@ -518,6 +521,19 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", duration))
 
+	return nil
+}
+
+func (w *worker) UpsertPipelineRunActivity(ctx context.Context, param *UpsertPipelineRunActivityParam) error {
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("UpsertPipelineRunActivity started")
+
+	err := w.repository.UpsertPipelineRun(ctx, param.PipelineRun)
+	if err != nil {
+		logger.Error("failed to log pipeline run", zap.Error(err))
+	}
+
+	logger.Info("UpsertPipelineRunActivity completed")
 	return nil
 }
 

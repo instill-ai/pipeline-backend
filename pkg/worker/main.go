@@ -34,6 +34,7 @@ type Worker interface {
 	PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 
+	UpsertPipelineRunActivity(ctx context.Context, param *UpsertPipelineRunActivityParam) error
 	UpdatePipelineRunActivity(ctx context.Context, param *UpdatePipelineRunActivityParam) error
 	UpsertComponentRunActivity(ctx context.Context, param *UpsertComponentRunActivityParam) error
 	UploadToMinioActivity(ctx context.Context, param *UploadToMinioActivityParam) (string, error)
