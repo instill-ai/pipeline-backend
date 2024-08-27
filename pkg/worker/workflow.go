@@ -95,10 +95,24 @@ type PostIteratorActivityParam struct {
 	SystemVariables recipe.SystemVariables
 }
 
-type MemoryCopyParam struct {
+type PreTriggerActivityParam struct {
 	WorkflowID      string
 	SystemVariables recipe.SystemVariables
 	IsStreaming     bool
+}
+type PostTriggerActivityParam struct {
+	WorkflowID      string
+	SystemVariables recipe.SystemVariables
+	IsStreaming     bool
+}
+
+type UpdatePipelineRunActivityParam struct {
+	PipelineTriggerID string
+	PipelineRun       *datamodel.PipelineRun
+}
+
+type UpsertComponentRunActivityParam struct {
+	ComponentRun *datamodel.ComponentRun
 }
 
 var tracer = otel.Tracer("pipeline-backend.temporal.tracer")
@@ -145,10 +159,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		pipelineRun.PipelineVersion = "latest"
 	}
 
-	err = w.repository.UpsertPipelineRun(sCtx, pipelineRun)
-	if err != nil {
-		logger.Error("failed to log pipeline run", zap.Error(err))
-	}
+	_ = workflow.ExecuteActivity(ctx, w.UpdatePipelineRunActivity, &UpdatePipelineRunActivityParam{
+		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+		PipelineRun:       pipelineRun,
+	}).Get(ctx, nil)
 
 	// todo: mark pipeline run as failed if not succeeded
 	succeeded := false
@@ -164,10 +178,13 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			errMsg = "trigger pipeline run failed due to unknown error"
 		}
 
-		err = w.repository.UpdatePipelineRun(sCtx, param.SystemVariables.PipelineTriggerID, &datamodel.PipelineRun{Error: null.StringFrom(errMsg)})
-		if err != nil {
-			logger.Error("failed to log pipeline run", zap.Error(err))
-		}
+		_ = workflow.ExecuteActivity(ctx, w.UpdatePipelineRunActivity, &UpdatePipelineRunActivityParam{
+			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+			PipelineRun: &datamodel.PipelineRun{
+				Error: null.StringFrom(errMsg),
+			},
+		}).Get(ctx, nil)
+
 	}()
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
@@ -227,7 +244,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	if param.TriggerFromAPI {
-		if err := workflow.ExecuteActivity(ctx, w.CloneToMemoryStoreActivity, &MemoryCopyParam{
+		if err := workflow.ExecuteActivity(ctx, w.PreTriggerActivity, &PreTriggerActivityParam{
 			WorkflowID:      workflowID,
 			SystemVariables: param.SystemVariables,
 			IsStreaming:     param.IsStreaming,
@@ -295,6 +312,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 					StartedTime:        time.Now(),
 				}
+
+				_ = workflow.ExecuteActivity(ctx, w.UpsertComponentRunActivity, &UpsertComponentRunActivityParam{
+					ComponentRun: componentRun,
+				}).Get(ctx, nil)
 
 				// adding the data row in advance in case that UploadComponentInputsActivity starts before ComponentActivity
 				err = w.repository.UpsertComponentRun(sCtx, componentRun)
@@ -466,7 +487,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			return err
 		}
 
-		if err := workflow.ExecuteActivity(ctx, w.CloneToRedisActivity, &MemoryCopyParam{
+		if err := workflow.ExecuteActivity(ctx, w.PostTriggerActivity, &PostTriggerActivityParam{
 			WorkflowID:      workflowID,
 			SystemVariables: param.SystemVariables,
 			IsStreaming:     param.IsStreaming,
@@ -484,20 +505,45 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	err = w.repository.UpdatePipelineRun(sCtx, param.SystemVariables.PipelineTriggerID, &datamodel.PipelineRun{
-		CompletedTime: null.TimeFrom(time.Now()),
-		Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED),
-		TotalDuration: null.IntFrom(duration.Milliseconds()),
-	})
-	if err != nil {
-		logger.Error("failed to log completed pipeline run", zap.Error(err))
-		// Note: We're not returning here because we want to complete the workflow even if logging fails
-	}
+	_ = workflow.ExecuteActivity(ctx, w.UpdatePipelineRunActivity, &UpdatePipelineRunActivityParam{
+		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
+		PipelineRun: &datamodel.PipelineRun{
+			CompletedTime: null.TimeFrom(time.Now()),
+			Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED),
+			TotalDuration: null.IntFrom(duration.Milliseconds()),
+		},
+	}).Get(ctx, nil)
 
 	succeeded = true
 
 	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", duration))
 
+	return nil
+}
+
+func (w *worker) UpdatePipelineRunActivity(ctx context.Context, param *UpdatePipelineRunActivityParam) error {
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("UpdatePipelineRunActivity started")
+
+	err := w.repository.UpdatePipelineRun(ctx, param.PipelineTriggerID, param.PipelineRun)
+	if err != nil {
+		logger.Error("failed to log completed pipeline run", zap.Error(err))
+		// Note: We're not returning here because we want to complete the workflow even if logging fails
+	}
+
+	logger.Info("UpdatePipelineRunActivity completed")
+	return nil
+}
+
+func (w *worker) UpsertComponentRunActivity(ctx context.Context, param *UpsertComponentRunActivityParam) error {
+	logger, _ := logger.GetZapLogger(ctx)
+	logger.Info("UpsertComponentRunActivity started")
+	// adding the data row in advance in case that UploadComponentInputsActivity starts before ComponentActivity
+	err := w.repository.UpsertComponentRun(ctx, param.ComponentRun)
+	if err != nil {
+		logger.Error("failed to log component run start", zap.Error(err))
+	}
+	logger.Info("UpsertComponentRunActivity completed")
 	return nil
 }
 
@@ -606,38 +652,6 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 	logger.Info("OutputActivity completed")
 	return nil
 }
-
-// func (w *worker) uploadJSONToMinIO(ctx context.Context, data interface{}, workflowID, componentID, prefix string) (datamodel.JSONB, error) {
-// 	jsonData, err := json.Marshal(data)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to marshal data: %w", err)
-// 	}
-//
-// 	objectName := fmt.Sprintf("%s-%s-%s.json", workflowID, componentID, prefix)
-//
-// 	var uploadResult struct {
-// 		URL        string
-// 		ObjectInfo minio.ObjectInfo
-// 	}
-//
-// 	// todo: fix this, should not call activity in activity
-// 	err = workflow.ExecuteActivity(nil, w.UploadToMinioActivity, UploadToMinioActivityParam{
-// 		ObjectName:  objectName,
-// 		Data:        jsonData,
-// 		ContentType: constant.ContentTypeJSON,
-// 	}).Get(nil, &uploadResult)
-//
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to upload to MinIO: %w", err)
-// 	}
-//
-// 	return datamodel.JSONB{datamodel.FileReference{
-// 		Name: uploadResult.ObjectInfo.Key,
-// 		Type: uploadResult.ObjectInfo.ContentType,
-// 		Size: uploadResult.ObjectInfo.Size,
-// 		URL:  uploadResult.URL,
-// 	}}, nil
-// }
 
 // TODO: complete iterator
 // PreIteratorActivity generate the trigger memory for each iteration.
@@ -793,27 +807,27 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 	return nil
 }
 
-// CloneToMemoryStoreActivity clone the trigger memory from Redis to MemoryStore.
-func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCopyParam) error {
+// PreTriggerActivity clone the trigger memory from Redis to MemoryStore.
+func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivityParam) error {
 
 	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("CloneToMemoryStoreActivity started")
+	logger.Info("PreTriggerActivity started")
 
 	wfm, err := w.memoryStore.LoadWorkflowMemoryFromRedis(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToMemoryStoreActivityErrorType, err)
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", preTriggerActivityErrorType, err)
 	}
 	var recipe *datamodel.Recipe
 	if param.SystemVariables.PipelineReleaseUID.IsNil() {
 		pipeline, err := w.repository.GetPipelineByUIDAdmin(ctx, param.SystemVariables.PipelineUID, false, false)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", preTriggerActivityErrorType, err)
 		}
 		recipe = pipeline.Recipe
 	} else {
 		release, err := w.repository.GetPipelineReleaseByUIDAdmin(ctx, param.SystemVariables.PipelineReleaseUID, false)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", preTriggerActivityErrorType, err)
 		}
 		recipe = release.Recipe
 	}
@@ -827,7 +841,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 		var secrets []*datamodel.Secret
 		secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, ownerPermalink, 100, pt, filtering.Filter{})
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", preTriggerActivityErrorType, err)
 		}
 
 		for _, secret := range secrets {
@@ -843,7 +857,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 	for idx := range wfm.GetBatchSize() {
 		pipelineSecrets, err := wfm.Get(ctx, idx, constant.SegSecret)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", preTriggerActivityErrorType, err)
 		}
 
 		for _, secret := range nsSecrets {
@@ -859,18 +873,18 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 
 			inputVal, err := data.NewValue(comp.Input)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", preTriggerActivityErrorType, err)
 			}
 			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataInput, inputVal); err != nil {
-				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", preTriggerActivityErrorType, err)
 			}
 
 			setupVal, err := data.NewValue(comp.Setup)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", preTriggerActivityErrorType, err)
 			}
 			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataSetup, setupVal); err != nil {
-				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", preTriggerActivityErrorType, err)
 			}
 		}
 		output := data.NewMap(nil)
@@ -880,7 +894,7 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 		}
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutputTemplate, output)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("initializing pipeline memory", cloneToMemoryStoreActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("initializing pipeline memory", preTriggerActivityErrorType, err)
 		}
 	}
 
@@ -905,39 +919,39 @@ func (w *worker) CloneToMemoryStoreActivity(ctx context.Context, param *MemoryCo
 				},
 			)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("sending event", cloneToMemoryStoreActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("sending event", preTriggerActivityErrorType, err)
 			}
 		}
 	}
 
-	logger.Info("CloneToMemoryStoreActivity completed")
+	logger.Info("PreTriggerActivity completed")
 	return nil
 }
 
-// CloneToRedisActivity copy the trigger memory from MemoryStore to Redis.
-func (w *worker) CloneToRedisActivity(ctx context.Context, param *MemoryCopyParam) error {
+// PostTriggerActivity copy the trigger memory from MemoryStore to Redis.
+func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error {
 
 	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("CloneToRedisActivity started")
+	logger.Info("PostTriggerActivity started")
 
 	err := w.memoryStore.WriteWorkflowMemoryToRedis(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", postTriggerActivityErrorType, err)
 	}
 	wfm, err := w.memoryStore.LoadWorkflowMemoryFromRedis(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+		return temporal.NewApplicationErrorWithCause("loading pipeline memory", postTriggerActivityErrorType, err)
 	}
 
 	for batchIdx := range wfm.GetBatchSize() {
 		output, err := wfm.GetPipelineData(ctx, batchIdx, memory.PipelineOutput)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline memory", postTriggerActivityErrorType, err)
 		}
 		// TODO: optimize the struct conversion
 		outputStruct, err := output.ToStructValue()
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline memory", cloneToRedisActivityErrorType, err)
+			return temporal.NewApplicationErrorWithCause("loading pipeline memory", postTriggerActivityErrorType, err)
 		}
 		b, err := protojson.Marshal(outputStruct)
 		if err != nil {
@@ -969,12 +983,12 @@ func (w *worker) CloneToRedisActivity(ctx context.Context, param *MemoryCopyPara
 				},
 			)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("sending event", cloneToRedisActivityErrorType, err)
+				return temporal.NewApplicationErrorWithCause("sending event", postTriggerActivityErrorType, err)
 			}
 		}
 	}
 
-	logger.Info("CloneToRedisActivity completed")
+	logger.Info("PostTriggerActivity completed")
 	return nil
 }
 
@@ -1083,12 +1097,12 @@ func componentActivityError(err error, errType, componentID string) error {
 // business domain (e.g. VendorError (non billable), InputDataError (billable),
 // etc.).
 const (
-	componentActivityErrorType          = "ComponentActivityError"
-	outputActivityErrorType             = "OutputActivityError"
-	preIteratorActivityErrorType        = "PreIteratorActivityError"
-	postIteratorActivityErrorType       = "PostIteratorActivityError"
-	cloneToMemoryStoreActivityErrorType = "CloneToMemoryStoreActivityError"
-	cloneToRedisActivityErrorType       = "CloneToRedisActivityError"
+	componentActivityErrorType    = "ComponentActivityError"
+	outputActivityErrorType       = "OutputActivityError"
+	preIteratorActivityErrorType  = "PreIteratorActivityError"
+	postIteratorActivityErrorType = "PostIteratorActivityError"
+	preTriggerActivityErrorType   = "PreTriggerActivityError"
+	postTriggerActivityErrorType  = "PostTriggerActivityError"
 )
 
 // EndUserErrorDetails provides a structured way to add an end-user error
