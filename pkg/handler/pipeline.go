@@ -576,6 +576,7 @@ func (h *PublicHandler) UpdateNamespacePipeline(ctx context.Context, req *pb.Upd
 	}
 
 	pbPipelineToUpdate := getResp.GetPipeline()
+	pbPipelineToUpdate.Recipe = nil
 
 	// Return error if IMMUTABLE fields are intentionally changed
 	if err := checkfield.CheckUpdateImmutableFields(pbPipelineReq, pbPipelineToUpdate, immutablePipelineFields); err != nil {

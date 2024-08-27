@@ -273,18 +273,18 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
-	workflow.ExecuteActivity(ctx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
+	_ = workflow.ExecuteActivity(ctx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 		UploadToMinioActivityParam: UploadToMinioActivityParam{
 			ObjectName:  fmt.Sprintf("pipeline-runs/recipe/%s.json", param.SystemVariables.PipelineTriggerID),
 			Data:        b,
 			ContentType: constant.ContentTypeJSON,
 		},
-	})
+	}).Get(ctx, nil)
 
-	workflow.ExecuteActivity(ctx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
+	_ = workflow.ExecuteActivity(ctx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
-	})
+	}).Get(ctx, nil)
 
 	if param.IsStreaming {
 		wfm.EnableStreaming()
@@ -300,6 +300,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
+	componentRunFutures := []workflow.Future{}
 	// The components in the same group can be executed in parallel
 	for group := range orderedComp {
 		futures := []workflow.Future{}
@@ -337,7 +338,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Streaming:       param.IsStreaming,
 				}
 
-				workflow.ExecuteActivity(ctx, w.UploadComponentInputsActivity, args)
+				componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(ctx, w.UploadComponentInputsActivity, args))
 
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, args))
 				futureArgs = append(futureArgs, args)
@@ -467,7 +468,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			// the error here prevents the client from accessing the error
 			// message from the activity.
 			// return err
-			workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, futureArgs[idx])
+			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, futureArgs[idx]))
 
 		}
 
@@ -506,6 +507,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
 			logger.Warn(err.Error())
 		}
+	}
+
+	for _, f := range componentRunFutures {
+		_ = f.Get(ctx, nil)
 	}
 
 	_ = workflow.ExecuteActivity(ctx, w.UpdatePipelineRunActivity, &UpdatePipelineRunActivityParam{
