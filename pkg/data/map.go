@@ -1,6 +1,8 @@
 package data
 
 import (
+	"fmt"
+
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -33,7 +35,11 @@ func (m *Map) Get(path string) (v Value, err error) {
 		return nil, err
 	}
 
-	return m.Fields[key].Get(remainingPath)
+	if v, ok := m.Fields[key]; !ok {
+		return nil, fmt.Errorf("path not found: %s", path)
+	} else {
+		return v.Get(remainingPath)
+	}
 }
 
 func (m Map) ToStructValue() (v *structpb.Value, err error) {

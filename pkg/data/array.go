@@ -1,6 +1,8 @@
 package data
 
 import (
+	"fmt"
+
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -31,6 +33,10 @@ func (a *Array) Get(path string) (v Value, err error) {
 	if err != nil {
 		return nil, err
 	}
+	if index >= len(a.Values) {
+		return nil, fmt.Errorf("path not found: %s", path)
+	}
+
 	return a.Values[index].Get(remainingPath)
 }
 func (a Array) ToStructValue() (v *structpb.Value, err error) {

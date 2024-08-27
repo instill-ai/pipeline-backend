@@ -194,8 +194,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		ownerType = mgmtpb.OwnerType_OWNER_TYPE_UNSPECIFIED
 	}
 	sessionOptions := &workflow.SessionOptions{
-		CreationTimeout:  time.Minute,
-		ExecutionTimeout: time.Minute,
+		CreationTimeout:  time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		ExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 	}
 	ctx, _ = workflow.CreateSession(ctx, sessionOptions)
 	defer workflow.CompleteSession(ctx)
@@ -589,11 +589,11 @@ func (w *worker) OutputActivity(ctx context.Context, param *ComponentActivityPar
 	}
 
 	for idx := range wfm.GetBatchSize() {
-		output, err := wfm.Get(ctx, idx, string(memory.PipelineOutputTemplate))
+		outputTemplate, err := wfm.Get(ctx, idx, string(memory.PipelineOutputTemplate))
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
-		output, err = recipe.Render(ctx, output, idx, wfm, true)
+		output, err := recipe.Render(ctx, outputTemplate, idx, wfm, true)
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline output", outputActivityErrorType, err)
 		}
