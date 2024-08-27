@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-redis/redismock/v9"
 	"github.com/gofrs/uuid"
+	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
 
@@ -71,6 +72,125 @@ func TestRepository_ComponentDefinitionUIDs(t *testing.T) {
 	c.Check(dbDefs[0].UID.String(), qt.Equals, uid.String())
 }
 
+func TestRepository_IntegrationCursor(t *testing.T) {
+	c := qt.New(t)
+
+	cursor := integrationCursor{
+		Score: 30,
+		UID:   uuid.Must(uuid.NewV4()),
+	}
+
+	token, err := cursor.asToken()
+	c.Assert(err, qt.IsNil)
+
+	p := ListIntegrationsParams{PageToken: token}
+	got, err := p.cursor()
+	c.Assert(err, qt.IsNil)
+	c.Check(got, qt.ContentEquals, cursor)
+}
+
+func TestRepository_Integrations(t *testing.T) {
+	c := qt.New(t)
+	ctx := context.Background()
+
+	tx := db.Begin()
+	c.Cleanup(func() { tx.Rollback() })
+
+	repo := NewRepository(tx, nil)
+
+	// IDs define the score
+	ids := []string{
+		"instill-model", // 50,
+		"pinecone",      // 30,
+		"numbers",       // 30,
+		"foo",           // 0,
+		"bar",           // 0,
+	}
+	uidStrings := []string{
+		"1deff56a-0510-43fe-90d4-1c8d0cd44db2",
+		"349f1c92-6f73-4a80-889d-ffea793fa057",
+		"5fb69d62-b92c-4916-9460-604c45863736",
+		"2c5793d6-8b6d-451e-9e0e-f2a0d248a465",
+		"e6d1f275-6b5e-408f-9e23-baa4faca004b",
+	}
+
+	// Score precedes UID when sorting.
+	wantUIDsOrdered := []string{
+		uidStrings[0], uidStrings[2], uidStrings[1], uidStrings[4], uidStrings[3],
+	}
+
+	// Public but without integration.
+	err := repo.UpsertComponentDefinition(ctx, &pipelinepb.ComponentDefinition{
+		Type:   pipelinepb.ComponentType_COMPONENT_TYPE_OPERATOR,
+		Uid:    uuid.Must(uuid.NewV4()).String(),
+		Id:     "json",
+		Public: true,
+	})
+	c.Assert(err, qt.IsNil)
+
+	// With integration but hidden.
+	compSpec, err := structpb.NewStruct(map[string]any{
+		"properties": map[string]any{
+			"setup": map[string]any{},
+		},
+	})
+	c.Assert(err, qt.IsNil)
+	spec := &pipelinepb.ComponentDefinition_Spec{ComponentSpecification: compSpec}
+
+	err = repo.UpsertComponentDefinition(ctx, &pipelinepb.ComponentDefinition{
+		Type: pipelinepb.ComponentType_COMPONENT_TYPE_AI,
+		Uid:  uuid.Must(uuid.NewV4()).String(),
+		Id:   "weaviate",
+		Spec: spec,
+	})
+	c.Assert(err, qt.IsNil)
+
+	for i := range uidStrings {
+		err = repo.UpsertComponentDefinition(ctx, &pipelinepb.ComponentDefinition{
+			Type:   pipelinepb.ComponentType_COMPONENT_TYPE_AI,
+			Uid:    uidStrings[i],
+			Id:     ids[i],
+			Spec:   spec,
+			Public: true,
+		})
+		c.Assert(err, qt.IsNil)
+	}
+
+	// Page one
+	p := ListIntegrationsParams{
+		Limit: 2,
+	}
+	page, err := repo.ListIntegrations(ctx, p)
+	c.Check(err, qt.IsNil)
+	c.Check(page.TotalSize, qt.Equals, int32(5))
+	c.Check(page.ComponentDefinitions, qt.HasLen, 2)
+	c.Check(page.NextPageToken, qt.Not(qt.HasLen), 0)
+	for i, want := range wantUIDsOrdered[:2] {
+		c.Check(page.ComponentDefinitions[i].UID.String(), qt.Equals, want)
+	}
+
+	// Page two
+	p.PageToken = page.NextPageToken
+	page, err = repo.ListIntegrations(ctx, p)
+	c.Check(err, qt.IsNil)
+	c.Check(page.TotalSize, qt.Equals, int32(5))
+	c.Check(page.ComponentDefinitions, qt.HasLen, 2)
+	c.Check(page.NextPageToken, qt.Not(qt.HasLen), 0)
+	for i, want := range wantUIDsOrdered[2:4] {
+		c.Check(page.ComponentDefinitions[i].UID.String(), qt.Equals, want)
+	}
+
+	// Page three
+	p.PageToken = page.NextPageToken
+	page, err = repo.ListIntegrations(ctx, p)
+	c.Check(err, qt.IsNil)
+	c.Check(page.TotalSize, qt.Equals, int32(5))
+	c.Check(page.ComponentDefinitions, qt.HasLen, 1)
+	c.Check(page.NextPageToken, qt.HasLen, 0)
+	for i, want := range wantUIDsOrdered[4:] {
+		c.Check(page.ComponentDefinitions[i].UID.String(), qt.Equals, want)
+	}
+}
 func TestRepository_AddPipelineRuns(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()

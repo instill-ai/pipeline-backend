@@ -95,7 +95,7 @@ export default function (data) {
     operatorDefinition.CheckGet();
     componentDefinition.CheckList(data);
 
-    integration.CheckGet();
+    integration.CheckIntegrations();
   }
 }
 

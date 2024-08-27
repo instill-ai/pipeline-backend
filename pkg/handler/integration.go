@@ -29,3 +29,20 @@ func (h *PublicHandler) GetIntegration(ctx context.Context, req *pb.GetIntegrati
 	logger.Info("GetIntegration")
 	return &pb.GetIntegrationResponse{Integration: integration}, nil
 }
+
+// ListIntegrations returns a paginated list of available integrations.
+func (h *PublicHandler) ListIntegrations(ctx context.Context, req *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error) {
+	ctx, span := tracer.Start(ctx, "ListIntegrations", trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp, err := h.service.ListIntegrations(ctx, req)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	logger.Info("ListIntegrations")
+	return resp, nil
+}

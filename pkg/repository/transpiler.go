@@ -110,6 +110,17 @@ func (t *transpiler) transpileIdentExpr(e *expr.Expr) (*clause.Expr, error) {
 			}
 		}
 	}
+
+	// Tapping into the transpiler for the integration list filter. `featured`
+	// is a boolean property in the API but in the database it translates to a
+	// score to order the items in the list.
+	if identExpr.Name == "featured" {
+		return &clause.Expr{
+			SQL:                "feature_score > 0",
+			WithoutParentheses: true,
+		}, nil
+	}
+
 	return &clause.Expr{
 		SQL:                strcase.ToSnake(identExpr.Name),
 		Vars:               nil,
@@ -188,6 +199,12 @@ func (t *transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (
 		case "q_title":
 			sql = "((SIMILARITY(title, ?) > 0.2) OR (LOWER(title) LIKE LOWER(?)))"
 			vars = append(vars, con.Vars[0], fmt.Sprintf("%%%s%%", con.Vars[0]))
+		case "q_integration":
+			val := con.Vars[0]
+			likeVal := fmt.Sprintf("%%%s%%", val)
+
+			sql = "((SIMILARITY(title, ?) > 0.2) OR (LOWER(title) LIKE LOWER(?)) OR (SIMILARITY(vendor, ?) > 0.2) OR (LOWER(vendor) LIKE LOWER(?)))"
+			vars = append(vars, val, likeVal, val, likeVal)
 		case "tag":
 			sql = "tag.tag_name = ?"
 			vars = append(vars, con.Vars...)

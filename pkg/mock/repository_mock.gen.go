@@ -174,6 +174,12 @@ type RepositoryMock struct {
 	beforeListComponentDefinitionUIDsCounter uint64
 	ListComponentDefinitionUIDsMock          mRepositoryMockListComponentDefinitionUIDs
 
+	funcListIntegrations          func(ctx context.Context, l1 mm_repository.ListIntegrationsParams) (i1 mm_repository.IntegrationList, err error)
+	inspectFuncListIntegrations   func(ctx context.Context, l1 mm_repository.ListIntegrationsParams)
+	afterListIntegrationsCounter  uint64
+	beforeListIntegrationsCounter uint64
+	ListIntegrationsMock          mRepositoryMockListIntegrations
+
 	funcListNamespacePipelineReleases          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) (ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error)
 	inspectFuncListNamespacePipelineReleases   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool)
 	afterListNamespacePipelineReleasesCounter  uint64
@@ -365,6 +371,9 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 
 	m.ListComponentDefinitionUIDsMock = mRepositoryMockListComponentDefinitionUIDs{mock: m}
 	m.ListComponentDefinitionUIDsMock.callArgs = []*RepositoryMockListComponentDefinitionUIDsParams{}
+
+	m.ListIntegrationsMock = mRepositoryMockListIntegrations{mock: m}
+	m.ListIntegrationsMock.callArgs = []*RepositoryMockListIntegrationsParams{}
 
 	m.ListNamespacePipelineReleasesMock = mRepositoryMockListNamespacePipelineReleases{mock: m}
 	m.ListNamespacePipelineReleasesMock.callArgs = []*RepositoryMockListNamespacePipelineReleasesParams{}
@@ -9478,6 +9487,327 @@ func (m *RepositoryMock) MinimockListComponentDefinitionUIDsInspect() {
 	}
 }
 
+type mRepositoryMockListIntegrations struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockListIntegrationsExpectation
+	expectations       []*RepositoryMockListIntegrationsExpectation
+
+	callArgs []*RepositoryMockListIntegrationsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// RepositoryMockListIntegrationsExpectation specifies expectation struct of the Repository.ListIntegrations
+type RepositoryMockListIntegrationsExpectation struct {
+	mock      *RepositoryMock
+	params    *RepositoryMockListIntegrationsParams
+	paramPtrs *RepositoryMockListIntegrationsParamPtrs
+	results   *RepositoryMockListIntegrationsResults
+	Counter   uint64
+}
+
+// RepositoryMockListIntegrationsParams contains parameters of the Repository.ListIntegrations
+type RepositoryMockListIntegrationsParams struct {
+	ctx context.Context
+	l1  mm_repository.ListIntegrationsParams
+}
+
+// RepositoryMockListIntegrationsParamPtrs contains pointers to parameters of the Repository.ListIntegrations
+type RepositoryMockListIntegrationsParamPtrs struct {
+	ctx *context.Context
+	l1  *mm_repository.ListIntegrationsParams
+}
+
+// RepositoryMockListIntegrationsResults contains results of the Repository.ListIntegrations
+type RepositoryMockListIntegrationsResults struct {
+	i1  mm_repository.IntegrationList
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListIntegrations *mRepositoryMockListIntegrations) Optional() *mRepositoryMockListIntegrations {
+	mmListIntegrations.optional = true
+	return mmListIntegrations
+}
+
+// Expect sets up expected params for Repository.ListIntegrations
+func (mmListIntegrations *mRepositoryMockListIntegrations) Expect(ctx context.Context, l1 mm_repository.ListIntegrationsParams) *mRepositoryMockListIntegrations {
+	if mmListIntegrations.mock.funcListIntegrations != nil {
+		mmListIntegrations.mock.t.Fatalf("RepositoryMock.ListIntegrations mock is already set by Set")
+	}
+
+	if mmListIntegrations.defaultExpectation == nil {
+		mmListIntegrations.defaultExpectation = &RepositoryMockListIntegrationsExpectation{}
+	}
+
+	if mmListIntegrations.defaultExpectation.paramPtrs != nil {
+		mmListIntegrations.mock.t.Fatalf("RepositoryMock.ListIntegrations mock is already set by ExpectParams functions")
+	}
+
+	mmListIntegrations.defaultExpectation.params = &RepositoryMockListIntegrationsParams{ctx, l1}
+	for _, e := range mmListIntegrations.expectations {
+		if minimock.Equal(e.params, mmListIntegrations.defaultExpectation.params) {
+			mmListIntegrations.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListIntegrations.defaultExpectation.params)
+		}
+	}
+
+	return mmListIntegrations
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.ListIntegrations
+func (mmListIntegrations *mRepositoryMockListIntegrations) ExpectCtxParam1(ctx context.Context) *mRepositoryMockListIntegrations {
+	if mmListIntegrations.mock.funcListIntegrations != nil {
+		mmListIntegrations.mock.t.Fatalf("RepositoryMock.ListIntegrations mock is already set by Set")
+	}
+
+	if mmListIntegrations.defaultExpectation == nil {
+		mmListIntegrations.defaultExpectation = &RepositoryMockListIntegrationsExpectation{}
+	}
+
+	if mmListIntegrations.defaultExpectation.params != nil {
+		mmListIntegrations.mock.t.Fatalf("RepositoryMock.ListIntegrations mock is already set by Expect")
+	}
+
+	if mmListIntegrations.defaultExpectation.paramPtrs == nil {
+		mmListIntegrations.defaultExpectation.paramPtrs = &RepositoryMockListIntegrationsParamPtrs{}
+	}
+	mmListIntegrations.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmListIntegrations
+}
+
+// ExpectL1Param2 sets up expected param l1 for Repository.ListIntegrations
+func (mmListIntegrations *mRepositoryMockListIntegrations) ExpectL1Param2(l1 mm_repository.ListIntegrationsParams) *mRepositoryMockListIntegrations {
+	if mmListIntegrations.mock.funcListIntegrations != nil {
+		mmListIntegrations.mock.t.Fatalf("RepositoryMock.ListIntegrations mock is already set by Set")
+	}
+
+	if mmListIntegrations.defaultExpectation == nil {
+		mmListIntegrations.defaultExpectation = &RepositoryMockListIntegrationsExpectation{}
+	}
+
+	if mmListIntegrations.defaultExpectation.params != nil {
+		mmListIntegrations.mock.t.Fatalf("RepositoryMock.ListIntegrations mock is already set by Expect")
+	}
+
+	if mmListIntegrations.defaultExpectation.paramPtrs == nil {
+		mmListIntegrations.defaultExpectation.paramPtrs = &RepositoryMockListIntegrationsParamPtrs{}
+	}
+	mmListIntegrations.defaultExpectation.paramPtrs.l1 = &l1
+
+	return mmListIntegrations
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.ListIntegrations
+func (mmListIntegrations *mRepositoryMockListIntegrations) Inspect(f func(ctx context.Context, l1 mm_repository.ListIntegrationsParams)) *mRepositoryMockListIntegrations {
+	if mmListIntegrations.mock.inspectFuncListIntegrations != nil {
+		mmListIntegrations.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ListIntegrations")
+	}
+
+	mmListIntegrations.mock.inspectFuncListIntegrations = f
+
+	return mmListIntegrations
+}
+
+// Return sets up results that will be returned by Repository.ListIntegrations
+func (mmListIntegrations *mRepositoryMockListIntegrations) Return(i1 mm_repository.IntegrationList, err error) *RepositoryMock {
+	if mmListIntegrations.mock.funcListIntegrations != nil {
+		mmListIntegrations.mock.t.Fatalf("RepositoryMock.ListIntegrations mock is already set by Set")
+	}
+
+	if mmListIntegrations.defaultExpectation == nil {
+		mmListIntegrations.defaultExpectation = &RepositoryMockListIntegrationsExpectation{mock: mmListIntegrations.mock}
+	}
+	mmListIntegrations.defaultExpectation.results = &RepositoryMockListIntegrationsResults{i1, err}
+	return mmListIntegrations.mock
+}
+
+// Set uses given function f to mock the Repository.ListIntegrations method
+func (mmListIntegrations *mRepositoryMockListIntegrations) Set(f func(ctx context.Context, l1 mm_repository.ListIntegrationsParams) (i1 mm_repository.IntegrationList, err error)) *RepositoryMock {
+	if mmListIntegrations.defaultExpectation != nil {
+		mmListIntegrations.mock.t.Fatalf("Default expectation is already set for the Repository.ListIntegrations method")
+	}
+
+	if len(mmListIntegrations.expectations) > 0 {
+		mmListIntegrations.mock.t.Fatalf("Some expectations are already set for the Repository.ListIntegrations method")
+	}
+
+	mmListIntegrations.mock.funcListIntegrations = f
+	return mmListIntegrations.mock
+}
+
+// When sets expectation for the Repository.ListIntegrations which will trigger the result defined by the following
+// Then helper
+func (mmListIntegrations *mRepositoryMockListIntegrations) When(ctx context.Context, l1 mm_repository.ListIntegrationsParams) *RepositoryMockListIntegrationsExpectation {
+	if mmListIntegrations.mock.funcListIntegrations != nil {
+		mmListIntegrations.mock.t.Fatalf("RepositoryMock.ListIntegrations mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockListIntegrationsExpectation{
+		mock:   mmListIntegrations.mock,
+		params: &RepositoryMockListIntegrationsParams{ctx, l1},
+	}
+	mmListIntegrations.expectations = append(mmListIntegrations.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.ListIntegrations return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockListIntegrationsExpectation) Then(i1 mm_repository.IntegrationList, err error) *RepositoryMock {
+	e.results = &RepositoryMockListIntegrationsResults{i1, err}
+	return e.mock
+}
+
+// Times sets number of times Repository.ListIntegrations should be invoked
+func (mmListIntegrations *mRepositoryMockListIntegrations) Times(n uint64) *mRepositoryMockListIntegrations {
+	if n == 0 {
+		mmListIntegrations.mock.t.Fatalf("Times of RepositoryMock.ListIntegrations mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListIntegrations.expectedInvocations, n)
+	return mmListIntegrations
+}
+
+func (mmListIntegrations *mRepositoryMockListIntegrations) invocationsDone() bool {
+	if len(mmListIntegrations.expectations) == 0 && mmListIntegrations.defaultExpectation == nil && mmListIntegrations.mock.funcListIntegrations == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListIntegrations.mock.afterListIntegrationsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListIntegrations.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListIntegrations implements repository.Repository
+func (mmListIntegrations *RepositoryMock) ListIntegrations(ctx context.Context, l1 mm_repository.ListIntegrationsParams) (i1 mm_repository.IntegrationList, err error) {
+	mm_atomic.AddUint64(&mmListIntegrations.beforeListIntegrationsCounter, 1)
+	defer mm_atomic.AddUint64(&mmListIntegrations.afterListIntegrationsCounter, 1)
+
+	if mmListIntegrations.inspectFuncListIntegrations != nil {
+		mmListIntegrations.inspectFuncListIntegrations(ctx, l1)
+	}
+
+	mm_params := RepositoryMockListIntegrationsParams{ctx, l1}
+
+	// Record call args
+	mmListIntegrations.ListIntegrationsMock.mutex.Lock()
+	mmListIntegrations.ListIntegrationsMock.callArgs = append(mmListIntegrations.ListIntegrationsMock.callArgs, &mm_params)
+	mmListIntegrations.ListIntegrationsMock.mutex.Unlock()
+
+	for _, e := range mmListIntegrations.ListIntegrationsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.i1, e.results.err
+		}
+	}
+
+	if mmListIntegrations.ListIntegrationsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListIntegrations.ListIntegrationsMock.defaultExpectation.Counter, 1)
+		mm_want := mmListIntegrations.ListIntegrationsMock.defaultExpectation.params
+		mm_want_ptrs := mmListIntegrations.ListIntegrationsMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockListIntegrationsParams{ctx, l1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListIntegrations.t.Errorf("RepositoryMock.ListIntegrations got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.l1 != nil && !minimock.Equal(*mm_want_ptrs.l1, mm_got.l1) {
+				mmListIntegrations.t.Errorf("RepositoryMock.ListIntegrations got unexpected parameter l1, want: %#v, got: %#v%s\n", *mm_want_ptrs.l1, mm_got.l1, minimock.Diff(*mm_want_ptrs.l1, mm_got.l1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListIntegrations.t.Errorf("RepositoryMock.ListIntegrations got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListIntegrations.ListIntegrationsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListIntegrations.t.Fatal("No results are set for the RepositoryMock.ListIntegrations")
+		}
+		return (*mm_results).i1, (*mm_results).err
+	}
+	if mmListIntegrations.funcListIntegrations != nil {
+		return mmListIntegrations.funcListIntegrations(ctx, l1)
+	}
+	mmListIntegrations.t.Fatalf("Unexpected call to RepositoryMock.ListIntegrations. %v %v", ctx, l1)
+	return
+}
+
+// ListIntegrationsAfterCounter returns a count of finished RepositoryMock.ListIntegrations invocations
+func (mmListIntegrations *RepositoryMock) ListIntegrationsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListIntegrations.afterListIntegrationsCounter)
+}
+
+// ListIntegrationsBeforeCounter returns a count of RepositoryMock.ListIntegrations invocations
+func (mmListIntegrations *RepositoryMock) ListIntegrationsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListIntegrations.beforeListIntegrationsCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.ListIntegrations.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListIntegrations *mRepositoryMockListIntegrations) Calls() []*RepositoryMockListIntegrationsParams {
+	mmListIntegrations.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockListIntegrationsParams, len(mmListIntegrations.callArgs))
+	copy(argCopy, mmListIntegrations.callArgs)
+
+	mmListIntegrations.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListIntegrationsDone returns true if the count of the ListIntegrations invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockListIntegrationsDone() bool {
+	if m.ListIntegrationsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListIntegrationsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListIntegrationsMock.invocationsDone()
+}
+
+// MinimockListIntegrationsInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockListIntegrationsInspect() {
+	for _, e := range m.ListIntegrationsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.ListIntegrations with params: %#v", *e.params)
+		}
+	}
+
+	afterListIntegrationsCounter := mm_atomic.LoadUint64(&m.afterListIntegrationsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListIntegrationsMock.defaultExpectation != nil && afterListIntegrationsCounter < 1 {
+		if m.ListIntegrationsMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.ListIntegrations")
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.ListIntegrations with params: %#v", *m.ListIntegrationsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListIntegrations != nil && afterListIntegrationsCounter < 1 {
+		m.t.Error("Expected call to RepositoryMock.ListIntegrations")
+	}
+
+	if !m.ListIntegrationsMock.invocationsDone() && afterListIntegrationsCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.ListIntegrations but found %d calls",
+			mm_atomic.LoadUint64(&m.ListIntegrationsMock.expectedInvocations), afterListIntegrationsCounter)
+	}
+}
+
 type mRepositoryMockListNamespacePipelineReleases struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -16485,6 +16815,8 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockListComponentDefinitionUIDsInspect()
 
+			m.MinimockListIntegrationsInspect()
+
 			m.MinimockListNamespacePipelineReleasesInspect()
 
 			m.MinimockListNamespacePipelinesInspect()
@@ -16568,6 +16900,7 @@ func (m *RepositoryMock) minimockDone() bool {
 		m.MinimockGetPipelineReleaseByUIDAdminDone() &&
 		m.MinimockGetPipelineRunByUIDDone() &&
 		m.MinimockListComponentDefinitionUIDsDone() &&
+		m.MinimockListIntegrationsDone() &&
 		m.MinimockListNamespacePipelineReleasesDone() &&
 		m.MinimockListNamespacePipelinesDone() &&
 		m.MinimockListNamespaceSecretsDone() &&

@@ -79,6 +79,7 @@ type Service interface {
 	ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error)
 
 	GetIntegration(_ context.Context, id string, _ pb.View) (*pb.Integration, error)
+	ListIntegrations(context.Context, *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error)
 }
 
 // TriggerResult defines a new type to encapsulate the stream data
