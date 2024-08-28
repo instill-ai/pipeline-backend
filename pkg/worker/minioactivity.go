@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -75,7 +76,29 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 	log, _ := logger.GetZapLogger(ctx)
 	log.Info("UploadReceiptToMinioActivity started", zap.String("PipelineTriggerID", param.PipelineTriggerID))
 
-	url, minioObjectInfo, err := w.minioClient.UploadFileBytes(ctx, param.ObjectName, param.Data, param.ContentType)
+	wfm, err := w.memoryStore.GetWorkflowMemory(ctx, param.PipelineTriggerID)
+	if err != nil {
+		return err
+	}
+
+	recipeForUpload := &datamodel.Recipe{
+		Version:   wfm.GetRecipe().Version,
+		On:        wfm.GetRecipe().On,
+		Component: wfm.GetRecipe().Component,
+		Variable:  wfm.GetRecipe().Variable,
+		Output:    wfm.GetRecipe().Output,
+	}
+	b, err := json.Marshal(recipeForUpload)
+	if err != nil {
+		return err
+	}
+
+	url, minioObjectInfo, err := w.minioClient.UploadFileBytes(
+		ctx,
+		fmt.Sprintf("pipeline-runs/recipe/%s.json", param.PipelineTriggerID),
+		b,
+		constant.ContentTypeJSON,
+	)
 	if err != nil {
 		w.log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
 		return err

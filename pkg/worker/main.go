@@ -29,6 +29,7 @@ type Worker interface {
 	ComponentActivity(ctx context.Context, param *ComponentActivityParam) error
 	OutputActivity(ctx context.Context, param *ComponentActivityParam) error
 	PreIteratorActivity(ctx context.Context, param *PreIteratorActivityParam) (*PreIteratorActivityResult, error)
+	LoadDAGDataActivity(ctx context.Context, param *LoadDAGDataActivityParam) (*LoadDAGDataActivityResult, error)
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 	PreTriggerActivity(ctx context.Context, param *PreTriggerActivityParam) error
 	PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error
