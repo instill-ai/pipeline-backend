@@ -307,15 +307,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					StartedTime:        time.Now(),
 				}
 
+				// adding the data row in advance in case that UploadComponentInputsActivity starts before ComponentActivity
 				_ = workflow.ExecuteActivity(ctx, w.UpsertComponentRunActivity, &UpsertComponentRunActivityParam{
 					ComponentRun: componentRun,
 				}).Get(ctx, nil)
-
-				// adding the data row in advance in case that UploadComponentInputsActivity starts before ComponentActivity
-				err = w.repository.UpsertComponentRun(sCtx, componentRun)
-				if err != nil {
-					logger.Error("failed to log component run start", zap.Error(err))
-				}
 
 				args := &ComponentActivityParam{
 					WorkflowID:      workflowID,
@@ -498,7 +493,6 @@ func (w *worker) UpdatePipelineRunActivity(ctx context.Context, param *UpdatePip
 func (w *worker) UpsertComponentRunActivity(ctx context.Context, param *UpsertComponentRunActivityParam) error {
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("UpsertComponentRunActivity started")
-	// adding the data row in advance in case that UploadComponentInputsActivity starts before ComponentActivity
 	err := w.repository.UpsertComponentRun(ctx, param.ComponentRun)
 	if err != nil {
 		logger.Error("failed to log component run start", zap.Error(err))
