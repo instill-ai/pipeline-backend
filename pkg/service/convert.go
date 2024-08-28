@@ -655,7 +655,7 @@ func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID 
 
 	var recipe *datamodel.Recipe
 	if pbPipelineRelease.Recipe != nil {
-		recipe := &datamodel.Recipe{}
+		recipe = &datamodel.Recipe{}
 		b, err := protojson.Marshal(pbPipelineRelease.Recipe)
 		if err != nil {
 			return nil, err
