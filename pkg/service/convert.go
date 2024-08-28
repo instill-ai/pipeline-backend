@@ -139,13 +139,17 @@ func (c *converter) processSetup(ctx context.Context, ownerPermalink string, set
 				// Remove the prefix and suffix
 				secretKey := v[9 : len(v)-1]
 
-				// Since we allow unfinished pipeline recipes, the secret
-				// reference target might not exist. We ignore the error here.
-				s, err := c.repository.GetNamespaceSecretByID(ctx, ownerPermalink, secretKey)
-				if err == nil {
-					rendered[k] = *s.Value
-				} else {
+				if secretKey == "INSTILL_SECRET" {
 					rendered[k] = v
+				} else {
+					// Since we allow unfinished pipeline recipes, the secret
+					// reference target might not exist. We ignore the error here.
+					s, err := c.repository.GetNamespaceSecretByID(ctx, ownerPermalink, secretKey)
+					if err == nil {
+						rendered[k] = *s.Value
+					} else {
+						rendered[k] = v
+					}
 				}
 			} else {
 				rendered[k] = v

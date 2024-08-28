@@ -1813,7 +1813,9 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 
 				pbRun.DataSpecification, err = s.converter.GeneratePipelineDataSpec(dbRecipe.Variable, dbRecipe.Output, dbRecipe.Component)
 				if err != nil {
-					return nil, err
+					// Some recipes cannot generate a DataSpecification, so we
+					// can skip them.
+					pbRun.DataSpecification = nil
 				}
 
 			}

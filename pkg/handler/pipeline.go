@@ -1862,7 +1862,7 @@ func (h *PublicHandler) TriggerNamespacePipelineRelease(ctx context.Context, req
 
 	logger, _ := logger.GetZapLogger(ctx)
 
-	ns, releaseID, pbPipeline, pbPipelineRelease, returnTraces, err := h.preTriggerNamespacePipelineRelease(ctx, req)
+	ns, releaseID, pbPipeline, _, returnTraces, err := h.preTriggerNamespacePipelineRelease(ctx, req)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -1879,7 +1879,6 @@ func (h *PublicHandler) TriggerNamespacePipelineRelease(ctx context.Context, req
 		span,
 		logUUID.String(),
 		eventName,
-		customotel.SetEventResource(pbPipelineRelease),
 	)))
 
 	return &pb.TriggerNamespacePipelineReleaseResponse{Outputs: outputs, Metadata: metadata}, nil
