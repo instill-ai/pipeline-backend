@@ -154,6 +154,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		HeartbeatTimeout:    120 * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
 			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
 		},
@@ -162,6 +163,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	sessionOptions := &workflow.SessionOptions{
 		CreationTimeout:  time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		ExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		HeartbeatTimeout: 120 * time.Second,
 	}
 	ctx, _ = workflow.CreateSession(ctx, sessionOptions)
 	defer workflow.CompleteSession(ctx)
