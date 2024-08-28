@@ -117,13 +117,11 @@ func (d *Document) GetImages() (mp *Array, err error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(d.FileName)
 
 	dataURL, err := pdf.GetDataURL("application/pdf")
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("cccc", dataURL.GetString()[:40])
 	res, err := document.ConvertPDFToImage(&document.ConvertPDFToImagesInput{
 		PDF:      dataURL.GetString(),
 		Filename: d.FileName,

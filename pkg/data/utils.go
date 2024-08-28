@@ -26,7 +26,6 @@ func decodeDataURL(s string) (b []byte, contentType string, fileName string, err
 				fileName = value
 			}
 		}
-		fmt.Println("contentType", s[:30], contentType, "tags", tags, fileName)
 	}
 
 	return
