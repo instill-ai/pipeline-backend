@@ -157,8 +157,10 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	if err != nil {
 		return nil, err
 	}
-	if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
-		return nil, err
+	if dbPipeline.Recipe != nil {
+		if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
+			return nil, err
+		}
 	}
 
 	dbPipeline.ShareCode = generateShareCode()
@@ -355,8 +357,11 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	if err != nil {
 		return nil, err
 	}
-	if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
-		return nil, err
+
+	if dbPipeline.Recipe != nil {
+		if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
+			return nil, err
+		}
 	}
 
 	if granted, err := s.aclClient.CheckPermission(ctx, "pipeline", dbPipeline.UID, "reader"); err != nil {

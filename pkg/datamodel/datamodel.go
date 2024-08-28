@@ -205,6 +205,9 @@ func (c *ComponentMap) UnmarshalYAML(node *yaml.Node) error {
 }
 
 func convertRecipeToRecipeYAML(recipe *Recipe) (string, error) {
+	if recipe == nil {
+		return "", nil
+	}
 	recipeYAML, err := yaml.Marshal(recipe)
 	if err != nil {
 		return "", err
@@ -225,13 +228,6 @@ func (p *Pipeline) BeforeSave(db *gorm.DB) (err error) {
 		}
 	}
 
-	// We need to verify that the YAML is a valid recipe. The current approach
-	// is to convert it to JSON format.
-	_, err = convertRecipeYAMLToRecipe(p.RecipeYAML)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -248,37 +244,29 @@ func (p *PipelineRelease) BeforeSave(db *gorm.DB) (err error) {
 		}
 	}
 
-	// We need to verify that the YAML is a valid recipe. The current approach
-	// is to convert it to JSON format.
-	_, err = convertRecipeYAMLToRecipe(p.RecipeYAML)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func (p *Pipeline) AfterFind(tx *gorm.DB) (err error) {
 	if p.RecipeYAML == "" {
+		p.Recipe = nil
 		return
 	}
-	recipe, err := convertRecipeYAMLToRecipe(p.RecipeYAML)
-	if err != nil {
-		return err
-	}
-	p.Recipe = recipe
+	// For an invalid YAML recipe, we ignore the error and return a `nil`
+	// structured recipe.
+	p.Recipe, _ = convertRecipeYAMLToRecipe(p.RecipeYAML)
 	return
 }
 
 func (p *PipelineRelease) AfterFind(tx *gorm.DB) (err error) {
 	if p.RecipeYAML == "" {
+		p.Recipe = nil
 		return
 	}
-	recipe, err := convertRecipeYAMLToRecipe(p.RecipeYAML)
-	if err != nil {
-		return err
-	}
-	p.Recipe = recipe
+
+	// For an invalid YAML recipe, we ignore the error and return a `nil`
+	// structured recipe.
+	p.Recipe, _ = convertRecipeYAMLToRecipe(p.RecipeYAML)
 	return
 }
 
