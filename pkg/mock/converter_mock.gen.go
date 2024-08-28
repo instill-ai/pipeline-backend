@@ -79,6 +79,12 @@ type ConverterMock struct {
 	afterGeneratePipelineDataSpecCounter  uint64
 	beforeGeneratePipelineDataSpecCounter uint64
 	GeneratePipelineDataSpecMock          mConverterMockGeneratePipelineDataSpec
+
+	funcIncludeDetailInRecipe          func(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) (err error)
+	inspectFuncIncludeDetailInRecipe   func(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool)
+	afterIncludeDetailInRecipeCounter  uint64
+	beforeIncludeDetailInRecipeCounter uint64
+	IncludeDetailInRecipeMock          mConverterMockIncludeDetailInRecipe
 }
 
 // NewConverterMock returns a mock for service.Converter
@@ -118,6 +124,9 @@ func NewConverterMock(t minimock.Tester) *ConverterMock {
 
 	m.GeneratePipelineDataSpecMock = mConverterMockGeneratePipelineDataSpec{mock: m}
 	m.GeneratePipelineDataSpecMock.callArgs = []*ConverterMockGeneratePipelineDataSpecParams{}
+
+	m.IncludeDetailInRecipeMock = mConverterMockIncludeDetailInRecipe{mock: m}
+	m.IncludeDetailInRecipeMock.callArgs = []*ConverterMockIncludeDetailInRecipeParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
@@ -3698,6 +3707,382 @@ func (m *ConverterMock) MinimockGeneratePipelineDataSpecInspect() {
 	}
 }
 
+type mConverterMockIncludeDetailInRecipe struct {
+	optional           bool
+	mock               *ConverterMock
+	defaultExpectation *ConverterMockIncludeDetailInRecipeExpectation
+	expectations       []*ConverterMockIncludeDetailInRecipeExpectation
+
+	callArgs []*ConverterMockIncludeDetailInRecipeParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// ConverterMockIncludeDetailInRecipeExpectation specifies expectation struct of the Converter.IncludeDetailInRecipe
+type ConverterMockIncludeDetailInRecipeExpectation struct {
+	mock      *ConverterMock
+	params    *ConverterMockIncludeDetailInRecipeParams
+	paramPtrs *ConverterMockIncludeDetailInRecipeParamPtrs
+	results   *ConverterMockIncludeDetailInRecipeResults
+	Counter   uint64
+}
+
+// ConverterMockIncludeDetailInRecipeParams contains parameters of the Converter.IncludeDetailInRecipe
+type ConverterMockIncludeDetailInRecipeParams struct {
+	ctx            context.Context
+	ownerPermalink string
+	recipe         *datamodel.Recipe
+	useDynamicDef  bool
+}
+
+// ConverterMockIncludeDetailInRecipeParamPtrs contains pointers to parameters of the Converter.IncludeDetailInRecipe
+type ConverterMockIncludeDetailInRecipeParamPtrs struct {
+	ctx            *context.Context
+	ownerPermalink *string
+	recipe         **datamodel.Recipe
+	useDynamicDef  *bool
+}
+
+// ConverterMockIncludeDetailInRecipeResults contains results of the Converter.IncludeDetailInRecipe
+type ConverterMockIncludeDetailInRecipeResults struct {
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) Optional() *mConverterMockIncludeDetailInRecipe {
+	mmIncludeDetailInRecipe.optional = true
+	return mmIncludeDetailInRecipe
+}
+
+// Expect sets up expected params for Converter.IncludeDetailInRecipe
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) Expect(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) *mConverterMockIncludeDetailInRecipe {
+	if mmIncludeDetailInRecipe.mock.funcIncludeDetailInRecipe != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Set")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation == nil {
+		mmIncludeDetailInRecipe.defaultExpectation = &ConverterMockIncludeDetailInRecipeExpectation{}
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation.paramPtrs != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by ExpectParams functions")
+	}
+
+	mmIncludeDetailInRecipe.defaultExpectation.params = &ConverterMockIncludeDetailInRecipeParams{ctx, ownerPermalink, recipe, useDynamicDef}
+	for _, e := range mmIncludeDetailInRecipe.expectations {
+		if minimock.Equal(e.params, mmIncludeDetailInRecipe.defaultExpectation.params) {
+			mmIncludeDetailInRecipe.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmIncludeDetailInRecipe.defaultExpectation.params)
+		}
+	}
+
+	return mmIncludeDetailInRecipe
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Converter.IncludeDetailInRecipe
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) ExpectCtxParam1(ctx context.Context) *mConverterMockIncludeDetailInRecipe {
+	if mmIncludeDetailInRecipe.mock.funcIncludeDetailInRecipe != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Set")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation == nil {
+		mmIncludeDetailInRecipe.defaultExpectation = &ConverterMockIncludeDetailInRecipeExpectation{}
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation.params != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Expect")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation.paramPtrs == nil {
+		mmIncludeDetailInRecipe.defaultExpectation.paramPtrs = &ConverterMockIncludeDetailInRecipeParamPtrs{}
+	}
+	mmIncludeDetailInRecipe.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmIncludeDetailInRecipe
+}
+
+// ExpectOwnerPermalinkParam2 sets up expected param ownerPermalink for Converter.IncludeDetailInRecipe
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) ExpectOwnerPermalinkParam2(ownerPermalink string) *mConverterMockIncludeDetailInRecipe {
+	if mmIncludeDetailInRecipe.mock.funcIncludeDetailInRecipe != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Set")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation == nil {
+		mmIncludeDetailInRecipe.defaultExpectation = &ConverterMockIncludeDetailInRecipeExpectation{}
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation.params != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Expect")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation.paramPtrs == nil {
+		mmIncludeDetailInRecipe.defaultExpectation.paramPtrs = &ConverterMockIncludeDetailInRecipeParamPtrs{}
+	}
+	mmIncludeDetailInRecipe.defaultExpectation.paramPtrs.ownerPermalink = &ownerPermalink
+
+	return mmIncludeDetailInRecipe
+}
+
+// ExpectRecipeParam3 sets up expected param recipe for Converter.IncludeDetailInRecipe
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) ExpectRecipeParam3(recipe *datamodel.Recipe) *mConverterMockIncludeDetailInRecipe {
+	if mmIncludeDetailInRecipe.mock.funcIncludeDetailInRecipe != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Set")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation == nil {
+		mmIncludeDetailInRecipe.defaultExpectation = &ConverterMockIncludeDetailInRecipeExpectation{}
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation.params != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Expect")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation.paramPtrs == nil {
+		mmIncludeDetailInRecipe.defaultExpectation.paramPtrs = &ConverterMockIncludeDetailInRecipeParamPtrs{}
+	}
+	mmIncludeDetailInRecipe.defaultExpectation.paramPtrs.recipe = &recipe
+
+	return mmIncludeDetailInRecipe
+}
+
+// ExpectUseDynamicDefParam4 sets up expected param useDynamicDef for Converter.IncludeDetailInRecipe
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) ExpectUseDynamicDefParam4(useDynamicDef bool) *mConverterMockIncludeDetailInRecipe {
+	if mmIncludeDetailInRecipe.mock.funcIncludeDetailInRecipe != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Set")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation == nil {
+		mmIncludeDetailInRecipe.defaultExpectation = &ConverterMockIncludeDetailInRecipeExpectation{}
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation.params != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Expect")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation.paramPtrs == nil {
+		mmIncludeDetailInRecipe.defaultExpectation.paramPtrs = &ConverterMockIncludeDetailInRecipeParamPtrs{}
+	}
+	mmIncludeDetailInRecipe.defaultExpectation.paramPtrs.useDynamicDef = &useDynamicDef
+
+	return mmIncludeDetailInRecipe
+}
+
+// Inspect accepts an inspector function that has same arguments as the Converter.IncludeDetailInRecipe
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) Inspect(f func(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool)) *mConverterMockIncludeDetailInRecipe {
+	if mmIncludeDetailInRecipe.mock.inspectFuncIncludeDetailInRecipe != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("Inspect function is already set for ConverterMock.IncludeDetailInRecipe")
+	}
+
+	mmIncludeDetailInRecipe.mock.inspectFuncIncludeDetailInRecipe = f
+
+	return mmIncludeDetailInRecipe
+}
+
+// Return sets up results that will be returned by Converter.IncludeDetailInRecipe
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) Return(err error) *ConverterMock {
+	if mmIncludeDetailInRecipe.mock.funcIncludeDetailInRecipe != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Set")
+	}
+
+	if mmIncludeDetailInRecipe.defaultExpectation == nil {
+		mmIncludeDetailInRecipe.defaultExpectation = &ConverterMockIncludeDetailInRecipeExpectation{mock: mmIncludeDetailInRecipe.mock}
+	}
+	mmIncludeDetailInRecipe.defaultExpectation.results = &ConverterMockIncludeDetailInRecipeResults{err}
+	return mmIncludeDetailInRecipe.mock
+}
+
+// Set uses given function f to mock the Converter.IncludeDetailInRecipe method
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) Set(f func(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) (err error)) *ConverterMock {
+	if mmIncludeDetailInRecipe.defaultExpectation != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("Default expectation is already set for the Converter.IncludeDetailInRecipe method")
+	}
+
+	if len(mmIncludeDetailInRecipe.expectations) > 0 {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("Some expectations are already set for the Converter.IncludeDetailInRecipe method")
+	}
+
+	mmIncludeDetailInRecipe.mock.funcIncludeDetailInRecipe = f
+	return mmIncludeDetailInRecipe.mock
+}
+
+// When sets expectation for the Converter.IncludeDetailInRecipe which will trigger the result defined by the following
+// Then helper
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) When(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) *ConverterMockIncludeDetailInRecipeExpectation {
+	if mmIncludeDetailInRecipe.mock.funcIncludeDetailInRecipe != nil {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("ConverterMock.IncludeDetailInRecipe mock is already set by Set")
+	}
+
+	expectation := &ConverterMockIncludeDetailInRecipeExpectation{
+		mock:   mmIncludeDetailInRecipe.mock,
+		params: &ConverterMockIncludeDetailInRecipeParams{ctx, ownerPermalink, recipe, useDynamicDef},
+	}
+	mmIncludeDetailInRecipe.expectations = append(mmIncludeDetailInRecipe.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Converter.IncludeDetailInRecipe return parameters for the expectation previously defined by the When method
+func (e *ConverterMockIncludeDetailInRecipeExpectation) Then(err error) *ConverterMock {
+	e.results = &ConverterMockIncludeDetailInRecipeResults{err}
+	return e.mock
+}
+
+// Times sets number of times Converter.IncludeDetailInRecipe should be invoked
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) Times(n uint64) *mConverterMockIncludeDetailInRecipe {
+	if n == 0 {
+		mmIncludeDetailInRecipe.mock.t.Fatalf("Times of ConverterMock.IncludeDetailInRecipe mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmIncludeDetailInRecipe.expectedInvocations, n)
+	return mmIncludeDetailInRecipe
+}
+
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) invocationsDone() bool {
+	if len(mmIncludeDetailInRecipe.expectations) == 0 && mmIncludeDetailInRecipe.defaultExpectation == nil && mmIncludeDetailInRecipe.mock.funcIncludeDetailInRecipe == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmIncludeDetailInRecipe.mock.afterIncludeDetailInRecipeCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmIncludeDetailInRecipe.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// IncludeDetailInRecipe implements service.Converter
+func (mmIncludeDetailInRecipe *ConverterMock) IncludeDetailInRecipe(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) (err error) {
+	mm_atomic.AddUint64(&mmIncludeDetailInRecipe.beforeIncludeDetailInRecipeCounter, 1)
+	defer mm_atomic.AddUint64(&mmIncludeDetailInRecipe.afterIncludeDetailInRecipeCounter, 1)
+
+	if mmIncludeDetailInRecipe.inspectFuncIncludeDetailInRecipe != nil {
+		mmIncludeDetailInRecipe.inspectFuncIncludeDetailInRecipe(ctx, ownerPermalink, recipe, useDynamicDef)
+	}
+
+	mm_params := ConverterMockIncludeDetailInRecipeParams{ctx, ownerPermalink, recipe, useDynamicDef}
+
+	// Record call args
+	mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.mutex.Lock()
+	mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.callArgs = append(mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.callArgs, &mm_params)
+	mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.mutex.Unlock()
+
+	for _, e := range mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.defaultExpectation.Counter, 1)
+		mm_want := mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.defaultExpectation.params
+		mm_want_ptrs := mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.defaultExpectation.paramPtrs
+
+		mm_got := ConverterMockIncludeDetailInRecipeParams{ctx, ownerPermalink, recipe, useDynamicDef}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmIncludeDetailInRecipe.t.Errorf("ConverterMock.IncludeDetailInRecipe got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.ownerPermalink != nil && !minimock.Equal(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink) {
+				mmIncludeDetailInRecipe.t.Errorf("ConverterMock.IncludeDetailInRecipe got unexpected parameter ownerPermalink, want: %#v, got: %#v%s\n", *mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink, minimock.Diff(*mm_want_ptrs.ownerPermalink, mm_got.ownerPermalink))
+			}
+
+			if mm_want_ptrs.recipe != nil && !minimock.Equal(*mm_want_ptrs.recipe, mm_got.recipe) {
+				mmIncludeDetailInRecipe.t.Errorf("ConverterMock.IncludeDetailInRecipe got unexpected parameter recipe, want: %#v, got: %#v%s\n", *mm_want_ptrs.recipe, mm_got.recipe, minimock.Diff(*mm_want_ptrs.recipe, mm_got.recipe))
+			}
+
+			if mm_want_ptrs.useDynamicDef != nil && !minimock.Equal(*mm_want_ptrs.useDynamicDef, mm_got.useDynamicDef) {
+				mmIncludeDetailInRecipe.t.Errorf("ConverterMock.IncludeDetailInRecipe got unexpected parameter useDynamicDef, want: %#v, got: %#v%s\n", *mm_want_ptrs.useDynamicDef, mm_got.useDynamicDef, minimock.Diff(*mm_want_ptrs.useDynamicDef, mm_got.useDynamicDef))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmIncludeDetailInRecipe.t.Errorf("ConverterMock.IncludeDetailInRecipe got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmIncludeDetailInRecipe.IncludeDetailInRecipeMock.defaultExpectation.results
+		if mm_results == nil {
+			mmIncludeDetailInRecipe.t.Fatal("No results are set for the ConverterMock.IncludeDetailInRecipe")
+		}
+		return (*mm_results).err
+	}
+	if mmIncludeDetailInRecipe.funcIncludeDetailInRecipe != nil {
+		return mmIncludeDetailInRecipe.funcIncludeDetailInRecipe(ctx, ownerPermalink, recipe, useDynamicDef)
+	}
+	mmIncludeDetailInRecipe.t.Fatalf("Unexpected call to ConverterMock.IncludeDetailInRecipe. %v %v %v %v", ctx, ownerPermalink, recipe, useDynamicDef)
+	return
+}
+
+// IncludeDetailInRecipeAfterCounter returns a count of finished ConverterMock.IncludeDetailInRecipe invocations
+func (mmIncludeDetailInRecipe *ConverterMock) IncludeDetailInRecipeAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmIncludeDetailInRecipe.afterIncludeDetailInRecipeCounter)
+}
+
+// IncludeDetailInRecipeBeforeCounter returns a count of ConverterMock.IncludeDetailInRecipe invocations
+func (mmIncludeDetailInRecipe *ConverterMock) IncludeDetailInRecipeBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmIncludeDetailInRecipe.beforeIncludeDetailInRecipeCounter)
+}
+
+// Calls returns a list of arguments used in each call to ConverterMock.IncludeDetailInRecipe.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmIncludeDetailInRecipe *mConverterMockIncludeDetailInRecipe) Calls() []*ConverterMockIncludeDetailInRecipeParams {
+	mmIncludeDetailInRecipe.mutex.RLock()
+
+	argCopy := make([]*ConverterMockIncludeDetailInRecipeParams, len(mmIncludeDetailInRecipe.callArgs))
+	copy(argCopy, mmIncludeDetailInRecipe.callArgs)
+
+	mmIncludeDetailInRecipe.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockIncludeDetailInRecipeDone returns true if the count of the IncludeDetailInRecipe invocations corresponds
+// the number of defined expectations
+func (m *ConverterMock) MinimockIncludeDetailInRecipeDone() bool {
+	if m.IncludeDetailInRecipeMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.IncludeDetailInRecipeMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.IncludeDetailInRecipeMock.invocationsDone()
+}
+
+// MinimockIncludeDetailInRecipeInspect logs each unmet expectation
+func (m *ConverterMock) MinimockIncludeDetailInRecipeInspect() {
+	for _, e := range m.IncludeDetailInRecipeMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ConverterMock.IncludeDetailInRecipe with params: %#v", *e.params)
+		}
+	}
+
+	afterIncludeDetailInRecipeCounter := mm_atomic.LoadUint64(&m.afterIncludeDetailInRecipeCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.IncludeDetailInRecipeMock.defaultExpectation != nil && afterIncludeDetailInRecipeCounter < 1 {
+		if m.IncludeDetailInRecipeMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to ConverterMock.IncludeDetailInRecipe")
+		} else {
+			m.t.Errorf("Expected call to ConverterMock.IncludeDetailInRecipe with params: %#v", *m.IncludeDetailInRecipeMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcIncludeDetailInRecipe != nil && afterIncludeDetailInRecipeCounter < 1 {
+		m.t.Error("Expected call to ConverterMock.IncludeDetailInRecipe")
+	}
+
+	if !m.IncludeDetailInRecipeMock.invocationsDone() && afterIncludeDetailInRecipeCounter > 0 {
+		m.t.Errorf("Expected %d calls to ConverterMock.IncludeDetailInRecipe but found %d calls",
+			mm_atomic.LoadUint64(&m.IncludeDetailInRecipeMock.expectedInvocations), afterIncludeDetailInRecipeCounter)
+	}
+}
+
 // MinimockFinish checks that all mocked methods have been called the expected number of times
 func (m *ConverterMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
@@ -3721,6 +4106,8 @@ func (m *ConverterMock) MinimockFinish() {
 			m.MinimockConvertSecretsToPBInspect()
 
 			m.MinimockGeneratePipelineDataSpecInspect()
+
+			m.MinimockIncludeDetailInRecipeInspect()
 		}
 	})
 }
@@ -3753,5 +4140,6 @@ func (m *ConverterMock) minimockDone() bool {
 		m.MinimockConvertSecretToDBDone() &&
 		m.MinimockConvertSecretToPBDone() &&
 		m.MinimockConvertSecretsToPBDone() &&
-		m.MinimockGeneratePipelineDataSpecDone()
+		m.MinimockGeneratePipelineDataSpecDone() &&
+		m.MinimockIncludeDetailInRecipeDone()
 }

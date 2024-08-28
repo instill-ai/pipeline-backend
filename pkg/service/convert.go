@@ -52,6 +52,7 @@ type Converter interface {
 	ConvertSecretToPB(ctx context.Context, dbSecret *datamodel.Secret) (*pb.Secret, error)
 	ConvertSecretsToPB(ctx context.Context, dbSecrets []*datamodel.Secret) ([]*pb.Secret, error)
 
+	IncludeDetailInRecipe(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) error
 	GeneratePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin datamodel.ComponentMap) (*pb.DataSpecification, error)
 }
 
@@ -322,7 +323,7 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPer
 	return nil
 }
 
-func (c *converter) includeDetailInRecipe(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) error {
+func (c *converter) IncludeDetailInRecipe(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) error {
 
 	if recipe == nil {
 		return nil
@@ -473,7 +474,7 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	ctxUserUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 
 	if view == pb.Pipeline_VIEW_FULL {
-		if err := c.includeDetailInRecipe(ctx, dbPipeline.Owner, dbPipeline.Recipe, useDynamicDef); err != nil {
+		if err := c.IncludeDetailInRecipe(ctx, dbPipeline.Owner, dbPipeline.Recipe, useDynamicDef); err != nil {
 			return nil, err
 		}
 	}
@@ -724,7 +725,7 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 	owner := fmt.Sprintf("%s/%s", dbPipeline.NamespaceType, dbPipeline.NamespaceID)
 
 	if view == pb.Pipeline_VIEW_FULL {
-		if err := c.includeDetailInRecipe(ctx, dbPipeline.Owner, dbPipelineRelease.Recipe, false); err != nil {
+		if err := c.IncludeDetailInRecipe(ctx, dbPipeline.Owner, dbPipelineRelease.Recipe, false); err != nil {
 			return nil, err
 		}
 	}
