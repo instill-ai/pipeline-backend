@@ -10,25 +10,10 @@ ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION
 
 # Install Python, create virtual environment, and install pdfplumber
 RUN apt update && \
-    apt install -y python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice ffmpeg curl chromium && \
+    apt install -y python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice ffmpeg chromium && \
     python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
     rm -rf /var/lib/apt/lists/*
-
-# nvm environment variables
-ENV NVM_DIR /usr/local/nvm
-ENV NODE_VERSION 22.5.1
-RUN mkdir -p $NVM_DIR && curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.40.0/install.sh | bash
-
-RUN echo "source $NVM_DIR/nvm.sh && \
-    nvm install $NODE_VERSION && \
-    nvm alias default $NODE_VERSION && \
-    nvm use default" | bash
-
-# add node and npm to path so the commands are available
-ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
-ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
-RUN npm install -g @opendocsg/pdf2md
 
 # air
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@v1.49
