@@ -320,6 +320,9 @@ func (c *converter) includeIteratorComponentDetail(ctx context.Context, ownerPer
 
 func (c *converter) includeDetailInRecipe(ctx context.Context, ownerPermalink string, recipe *datamodel.Recipe, useDynamicDef bool) error {
 
+	if recipe == nil {
+		return nil
+	}
 	for _, comp := range recipe.Component {
 		var err error
 		if comp.Type != datamodel.Iterator {
@@ -338,14 +341,18 @@ func (c *converter) includeDetailInRecipe(ctx context.Context, ownerPermalink st
 func (c *converter) ConvertPipelineToDB(ctx context.Context, ns resource.Namespace, pbPipeline *pb.Pipeline) (*datamodel.Pipeline, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
-	recipe := &datamodel.Recipe{}
-	b, err := protojson.Marshal(pbPipeline.Recipe)
-	if err != nil {
-		return nil, err
+	var recipe *datamodel.Recipe
+	if pbPipeline.Recipe != nil {
+		recipe = &datamodel.Recipe{}
+		b, err := protojson.Marshal(pbPipeline.Recipe)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(b, &recipe); err != nil {
+			return nil, err
+		}
 	}
-	if err := json.Unmarshal(b, &recipe); err != nil {
-		return nil, err
-	}
+
 	profileImage, err := c.compressProfileImage(pbPipeline.GetProfileImage())
 	if err != nil {
 		return nil, err
@@ -641,13 +648,16 @@ func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*dat
 func (c *converter) ConvertPipelineReleaseToDB(ctx context.Context, pipelineUID uuid.UUID, pbPipelineRelease *pb.PipelineRelease) (*datamodel.PipelineRelease, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 
-	recipe := &datamodel.Recipe{}
-	b, err := protojson.Marshal(pbPipelineRelease.Recipe)
-	if err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal(b, &recipe); err != nil {
-		return nil, err
+	var recipe *datamodel.Recipe
+	if pbPipelineRelease.Recipe != nil {
+		recipe := &datamodel.Recipe{}
+		b, err := protojson.Marshal(pbPipelineRelease.Recipe)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(b, &recipe); err != nil {
+			return nil, err
+		}
 	}
 
 	return &datamodel.PipelineRelease{
