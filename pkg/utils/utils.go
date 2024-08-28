@@ -183,3 +183,32 @@ func GetUserUID(ctx context.Context) string {
 	}
 	return requesterUID
 }
+
+func ConvertInstillFormat(f string) string {
+	// Note: This is a temporary conversion to make the new Instill Format
+	// compatible with the old validator.
+	switch f {
+	case "image":
+		return "image/*"
+	case "audio":
+		return "audio/*"
+	case "video":
+		return "video/*"
+	case "document":
+		return "*/*"
+	case "json":
+		return "semi-structured/json"
+	case "array:image":
+		return "array:image/*"
+	case "array:audio":
+		return "array:audio/*"
+	case "array:video":
+		return "array:video/*"
+	case "array:document":
+		return "array:*/*"
+	case "array:json":
+		return "array:semi-structured/json"
+	}
+
+	return f
+}
