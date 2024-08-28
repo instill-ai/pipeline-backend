@@ -86,7 +86,13 @@ func NewJSONValue(in any) (val Value, err error) {
 
 func NewValueFromStruct(in *structpb.Value) (val Value, err error) {
 
+	if in == nil {
+		return NewNull(), nil
+	}
+
 	switch in := in.Kind.(type) {
+	case *structpb.Value_NullValue:
+		return NewNull(), nil
 	case *structpb.Value_BoolValue:
 		return NewBoolean(in.BoolValue), nil
 	case *structpb.Value_NumberValue:
@@ -95,7 +101,7 @@ func NewValueFromStruct(in *structpb.Value) (val Value, err error) {
 		return NewString(in.StringValue), nil
 	case *structpb.Value_ListValue:
 		arr := NewArray(make([]Value, len(in.ListValue.Values)))
-		for i, item := range in.ListValue.Values {
+		for i, item := range in.ListValue.GetValues() {
 			arr.Values[i], err = NewValueFromStruct(item)
 			if err != nil {
 				return nil, err
@@ -104,7 +110,7 @@ func NewValueFromStruct(in *structpb.Value) (val Value, err error) {
 		return arr, nil
 	case *structpb.Value_StructValue:
 		mp := NewMap(nil)
-		for k, v := range in.StructValue.Fields {
+		for k, v := range in.StructValue.GetFields() {
 
 			mp.Fields[k], err = NewValueFromStruct(v)
 			if err != nil {
