@@ -276,7 +276,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	dagData := &LoadDAGDataActivityResult{}
 	err = workflow.ExecuteActivity(ctx, w.LoadDAGDataActivity, &LoadDAGDataActivityParam{
-		WorkflowID:  param.SystemVariables.PipelineTriggerID,
+		WorkflowID:  workflowID,
 		IsStreaming: param.IsStreaming,
 	}).Get(ctx, dagData)
 
