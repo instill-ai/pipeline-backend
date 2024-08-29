@@ -27,7 +27,6 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"gopkg.in/guregu/null.v4"
 
 	workflowpb "go.temporal.io/api/workflow/v1"
 	rpcstatus "google.golang.org/genproto/googleapis/rpc/status"
@@ -42,9 +41,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 
-	"github.com/instill-ai/x/errmsg"
-
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+
+	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/component/base"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
@@ -1193,12 +1192,6 @@ func (s *service) triggerPipeline(
 		requesterUID = userUID
 	}
 
-	runSource := datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API)
-	userAgentValue, ok := runpb.RunSource_value[resource.GetRequestSingleHeader(ctx, constant.HeaderUserAgentKey)]
-	if ok {
-		runSource = datamodel.RunSource(userAgentValue)
-	}
-
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1215,7 +1208,6 @@ func (s *service) triggerPipeline(
 				PipelineOwnerUID:     ns.NsUID,
 				PipelineUserUID:      userUID,
 				PipelineRequesterUID: requesterUID,
-				PipelineRunSource:    runSource,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode: mgmtpb.Mode_MODE_SYNC,
@@ -1235,24 +1227,6 @@ func (s *service) triggerPipeline(
 		var applicationErr *temporal.ApplicationError
 		if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
 			err = errmsg.AddMessage(err, applicationErr.Message())
-		}
-
-		run, repoErr := s.repository.GetPipelineRunByUID(ctx, uuid.FromStringOrNil(pipelineTriggerID))
-		if repoErr != nil {
-			logger.Error("failed to log pipeline run error", zap.Error(err), zap.Error(repoErr))
-			return nil, nil, err
-		}
-
-		now := time.Now()
-		pipelineRun := &datamodel.PipelineRun{
-			Error:         null.StringFrom(err.Error()),
-			CompletedTime: null.TimeFrom(now),
-			TotalDuration: null.IntFrom(now.Sub(run.StartedTime).Milliseconds()),
-			Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED),
-		}
-		repoErr = s.repository.UpdatePipelineRun(ctx, pipelineTriggerID, pipelineRun)
-		if repoErr != nil {
-			logger.Error("failed to log pipeline run error", zap.Error(err), zap.Error(repoErr))
 		}
 
 		return nil, nil, err
@@ -1296,12 +1270,6 @@ func (s *service) triggerAsyncPipeline(
 	}
 	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 
-	runSource := datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API)
-	userAgentValue, ok := runpb.RunSource_value[resource.GetRequestSingleHeader(ctx, constant.HeaderUserAgentKey)]
-	if ok {
-		runSource = datamodel.RunSource(userAgentValue)
-	}
-
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
 		workflowOptions,
@@ -1317,7 +1285,6 @@ func (s *service) triggerAsyncPipeline(
 				PipelineOwnerUID:     ns.NsUID,
 				PipelineUserUID:      userUID,
 				PipelineRequesterUID: requesterUID,
-				PipelineRunSource:    runSource,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
 			Mode:           mgmtpb.Mode_MODE_ASYNC,
@@ -1343,25 +1310,15 @@ func (s *service) triggerAsyncPipeline(
 			if errors.As(err, &applicationErr) && applicationErr.Message() != "" {
 				err = errmsg.AddMessage(err, applicationErr.Message())
 			}
+			logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
 
-			run, repoErr := s.repository.GetPipelineRunByUID(ctx, uuid.FromStringOrNil(pipelineTriggerID))
+			run, repoErr := s.repository.GetPipelineRunByUID(subCtx, uuid.FromStringOrNil(pipelineTriggerID))
 			if repoErr != nil {
 				logger.Error("failed to log pipeline run error", zap.Error(err), zap.Error(repoErr))
 				return
 			}
 
-			now := time.Now()
-			pipelineRun := &datamodel.PipelineRun{
-				Error:         null.StringFrom(err.Error()),
-				CompletedTime: null.TimeFrom(now),
-				TotalDuration: null.IntFrom(now.Sub(run.StartedTime).Milliseconds()),
-				Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED),
-			}
-			repoErr = s.repository.UpdatePipelineRun(ctx, pipelineTriggerID, pipelineRun)
-			if repoErr != nil {
-				logger.Error("failed to log pipeline run error", zap.Error(err), zap.Error(repoErr))
-			}
-
+			s.logPipelineRunError(subCtx, pipelineTriggerID, err, run.StartedTime)
 			return
 		}
 	})
@@ -1503,6 +1460,14 @@ func (s *service) HandleNamespacePipelineEventByID(ctx context.Context, ns resou
 	if err != nil {
 		return nil, errdomain.ErrNotFound
 	}
+
+	pipelineRun := s.logPipelineRunStart(ctx, pipelineTriggerID, dbPipeline.UID, defaultPipelineReleaseID)
+	defer func() {
+		if err != nil {
+			s.logPipelineRunError(ctx, pipelineTriggerID, err, pipelineRun.StartedTime)
+		}
+	}()
+
 	if e, ok := dbPipeline.Recipe.On.Event[eventID]; ok {
 
 		targetType = e.Type
@@ -1569,12 +1534,24 @@ func (s *service) TriggerNamespacePipelineByID(ctx context.Context, ns resource.
 	if err != nil {
 		return nil, nil, errdomain.ErrNotFound
 	}
+	pipelineUID := dbPipeline.UID
 
-	if err := s.checkTriggerPermission(ctx, dbPipeline); err != nil {
+	pipelineRun := s.logPipelineRunStart(ctx, pipelineTriggerID, pipelineUID, defaultPipelineReleaseID)
+	defer func() {
+		if err != nil {
+			s.logPipelineRunError(ctx, pipelineTriggerID, err, pipelineRun.StartedTime)
+		}
+	}()
+
+	if err = s.checkTriggerPermission(ctx, dbPipeline); err != nil {
 		return nil, nil, fmt.Errorf("check trigger permission error: %w", err)
 	}
 
-	return s.triggerPipeline(ctx, ns, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
+	outputs, triggerMetadata, err := s.triggerPipeline(ctx, ns, dbPipeline.Recipe, dbPipeline.ID, pipelineUID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
+	if err != nil {
+		return nil, nil, err
+	}
+	return outputs, triggerMetadata, nil
 }
 
 func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
@@ -1585,11 +1562,23 @@ func (s *service) TriggerAsyncNamespacePipelineByID(ctx context.Context, ns reso
 	if err != nil {
 		return nil, errdomain.ErrNotFound
 	}
-	if err := s.checkTriggerPermission(ctx, dbPipeline); err != nil {
+
+	pipelineRun := s.logPipelineRunStart(ctx, pipelineTriggerID, dbPipeline.UID, defaultPipelineReleaseID)
+	defer func() {
+		if err != nil {
+			s.logPipelineRunError(ctx, pipelineTriggerID, err, pipelineRun.StartedTime)
+		}
+	}()
+
+	if err = s.checkTriggerPermission(ctx, dbPipeline); err != nil {
 		return nil, err
 	}
 
-	return s.triggerAsyncPipeline(ctx, ns, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
+	operation, err := s.triggerAsyncPipeline(ctx, ns, dbPipeline.Recipe, dbPipeline.ID, dbPipeline.UID, "", uuid.Nil, data, pipelineTriggerID, returnTraces)
+	if err != nil {
+		return nil, err
+	}
+	return operation, nil
 
 }
 
@@ -1602,16 +1591,27 @@ func (s *service) TriggerNamespacePipelineReleaseByID(ctx context.Context, ns re
 		return nil, nil, errdomain.ErrNotFound
 	}
 
-	if err := s.checkTriggerPermission(ctx, dbPipeline); err != nil {
-		return nil, nil, err
-	}
-
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, false)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return s.triggerPipeline(ctx, ns, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces)
+	pipelineRun := s.logPipelineRunStart(ctx, pipelineTriggerID, pipelineUID, dbPipelineRelease.ID)
+	defer func() {
+		if err != nil {
+			s.logPipelineRunError(ctx, pipelineTriggerID, err, pipelineRun.StartedTime)
+		}
+	}()
+
+	if err = s.checkTriggerPermission(ctx, dbPipeline); err != nil {
+		return nil, nil, err
+	}
+
+	outputs, triggerMetadata, err := s.triggerPipeline(ctx, ns, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces)
+	if err != nil {
+		return nil, nil, err
+	}
+	return outputs, triggerMetadata, nil
 }
 
 func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, data []*pipelinepb.TriggerData, pipelineTriggerID string, returnTraces bool) (*longrunningpb.Operation, error) {
@@ -1623,16 +1623,27 @@ func (s *service) TriggerAsyncNamespacePipelineReleaseByID(ctx context.Context, 
 		return nil, errdomain.ErrNotFound
 	}
 
-	if err := s.checkTriggerPermission(ctx, dbPipeline); err != nil {
-		return nil, err
-	}
-
 	dbPipelineRelease, err := s.repository.GetNamespacePipelineReleaseByID(ctx, ownerPermalink, pipelineUID, id, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.triggerAsyncPipeline(ctx, ns, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces)
+	pipelineRun := s.logPipelineRunStart(ctx, pipelineTriggerID, pipelineUID, dbPipelineRelease.ID)
+	defer func() {
+		if err != nil {
+			s.logPipelineRunError(ctx, pipelineTriggerID, err, pipelineRun.StartedTime)
+		}
+	}()
+
+	if err = s.checkTriggerPermission(ctx, dbPipeline); err != nil {
+		return nil, err
+	}
+
+	operation, err := s.triggerAsyncPipeline(ctx, ns, dbPipelineRelease.Recipe, dbPipeline.ID, dbPipeline.UID, dbPipelineRelease.ID, dbPipelineRelease.UID, data, pipelineTriggerID, returnTraces)
+	if err != nil {
+		return nil, err
+	}
+	return operation, nil
 }
 
 func (s *service) GetOperation(ctx context.Context, workflowID string) (*longrunningpb.Operation, error) {

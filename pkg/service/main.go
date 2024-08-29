@@ -9,6 +9,7 @@ import (
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 	"go.temporal.io/sdk/client"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
@@ -100,6 +101,7 @@ type service struct {
 	converter                Converter
 	minioClient              minio.MinioI
 	memory                   memory.MemoryStore
+	log                      *zap.Logger
 }
 
 // NewService initiates a service instance
@@ -112,17 +114,18 @@ func NewService(
 	m mgmtpb.MgmtPrivateServiceClient,
 	minioClient minio.MinioI,
 ) Service {
-	logger, _ := logger.GetZapLogger(context.Background())
+	zapLogger, _ := logger.GetZapLogger(context.Background())
 
 	return &service{
 		repository:               r,
 		redisClient:              rc,
 		temporalClient:           t,
 		mgmtPrivateServiceClient: m,
-		component:                componentstore.Init(logger, nil, nil),
+		component:                componentstore.Init(zapLogger, nil, nil),
 		aclClient:                acl,
 		converter:                c,
 		minioClient:              minioClient,
 		memory:                   memory.NewMemoryStore(rc),
+		log:                      zapLogger,
 	}
 }
