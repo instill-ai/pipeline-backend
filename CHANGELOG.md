@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.37.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.36.0-beta...v0.37.0-beta) (2024-08-29)
+
+
+### Features
+
+* add support for filtering by numberOfRuns and numberOfClones ([#609](https://github.com/instill-ai/pipeline-backend/issues/609)) ([a5b9571](https://github.com/instill-ai/pipeline-backend/commit/a5b957177b46c9f20330bc5c9a2d70d0852c7fa4))
+* add supports for Data properties ([#613](https://github.com/instill-ai/pipeline-backend/issues/613)) ([1c605dc](https://github.com/instill-ai/pipeline-backend/commit/1c605dc153cc97fd4d8a56aa3e7743fa6e3dde88))
+* allow storing illegal YAML recipes ([#618](https://github.com/instill-ai/pipeline-backend/issues/618)) ([2d585dc](https://github.com/instill-ai/pipeline-backend/commit/2d585dc593dc6bea556546bf2e356e0b57123b50))
+* re-implement streaming and introduce new data struct ([#603](https://github.com/instill-ai/pipeline-backend/issues/603)) ([fe7851f](https://github.com/instill-ai/pipeline-backend/commit/fe7851f3b759c3a1d1806000ffbb9e876ccbd306))
+* return component status in all component events ([#612](https://github.com/instill-ai/pipeline-backend/issues/612)) ([9c1fad8](https://github.com/instill-ai/pipeline-backend/commit/9c1fad890859b7210e3496fbabb1be373523f1fd))
+* return error message when using streaming ([#608](https://github.com/instill-ai/pipeline-backend/issues/608)) ([3f47833](https://github.com/instill-ai/pipeline-backend/commit/3f478334d47ad4052d4bd705f7d5a72becf3bb80))
+* **run:** add dataSpecification in pipeline run logging response for… ([#606](https://github.com/instill-ai/pipeline-backend/issues/606)) ([1173def](https://github.com/instill-ai/pipeline-backend/commit/1173def4b7d423828dd2c90ee6202f0bf9e45066))
+* **run:** added pipeline run logging upsert points & upload inputs to minio activity ([#596](https://github.com/instill-ai/pipeline-backend/issues/596)) ([787de28](https://github.com/instill-ai/pipeline-backend/commit/787de28f0b2e9236965cf45d27313dc565a127a2))
+* **run:** pipeline & component run logging query APIs and component outputs ([#602](https://github.com/instill-ai/pipeline-backend/issues/602)) ([dba547d](https://github.com/instill-ai/pipeline-backend/commit/dba547da1559e830c86757e5025661096d1eca5b))
+* **run:** run logging data model & repo func ([#595](https://github.com/instill-ai/pipeline-backend/issues/595)) ([cbc6c48](https://github.com/instill-ai/pipeline-backend/commit/cbc6c48ac183d60868481be13baa8d73400ab2ed))
+* support new Instill Format in variable section ([#624](https://github.com/instill-ai/pipeline-backend/issues/624)) ([c7cb2ef](https://github.com/instill-ai/pipeline-backend/commit/c7cb2efee25f30de0490b4b4d542c14e9e5ee1e0))
+* **web:** add chromium ([#601](https://github.com/instill-ai/pipeline-backend/issues/601)) ([a0a6c7b](https://github.com/instill-ai/pipeline-backend/commit/a0a6c7b5ba17bc5bbfe8640399fb41fa233d1680))
+
+
+### Bug Fixes
+
+* return raw recipe for pipeline release ([#604](https://github.com/instill-ai/pipeline-backend/issues/604)) ([07f64e9](https://github.com/instill-ai/pipeline-backend/commit/07f64e9c010857bb84e756fa3c5f0da724ceca96))
+* **run:** fix the issue that sometimes recipe and input uploading fail in temporal with no error message ([#607](https://github.com/instill-ai/pipeline-backend/issues/607)) ([2895f1c](https://github.com/instill-ai/pipeline-backend/commit/2895f1ccb34347b2dc6d99f3fbe67695d87486ef))
+* the workflow timeout is using wrong value ([#614](https://github.com/instill-ai/pipeline-backend/issues/614)) ([a6118af](https://github.com/instill-ai/pipeline-backend/commit/a6118afeb00fcc8c657ebfcdf72994a248e86f46))
+
 ## [0.36.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.35.0-beta...v0.36.0-beta) (2024-08-16)
 
 
