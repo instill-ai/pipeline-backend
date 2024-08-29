@@ -154,7 +154,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		HeartbeatTimeout:    120 * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
 			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
 		},
@@ -163,7 +162,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	sessionOptions := &workflow.SessionOptions{
 		CreationTimeout:  time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		ExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		HeartbeatTimeout: 120 * time.Second,
+		HeartbeatTimeout: 2 * time.Minute,
 	}
 	ctx, _ = workflow.CreateSession(ctx, sessionOptions)
 	defer workflow.CompleteSession(ctx)
@@ -209,18 +208,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}()
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
-
-	defer func() {
-		if param.TriggerFromAPI {
-			_ = w.memoryStore.PurgeWorkflowMemory(sCtx, workflowID)
-		}
-
-	}()
-	defer func() {
-		if param.IsStreaming {
-			_ = w.memoryStore.SendWorkflowStatusEvent(sCtx, workflowID, memory.Event{Event: string(memory.PipelineClosed)})
-		}
-	}()
 
 	var ownerType mgmtpb.OwnerType
 	switch param.SystemVariables.PipelineOwnerType {
@@ -962,6 +949,11 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 				return temporal.NewApplicationErrorWithCause("sending event", postTriggerActivityErrorType, err)
 			}
 		}
+	}
+
+	_ = w.memoryStore.PurgeWorkflowMemory(ctx, param.WorkflowID)
+	if param.IsStreaming {
+		_ = w.memoryStore.SendWorkflowStatusEvent(ctx, param.WorkflowID, memory.Event{Event: string(memory.PipelineClosed)})
 	}
 
 	logger.Info("PostTriggerActivity completed")
