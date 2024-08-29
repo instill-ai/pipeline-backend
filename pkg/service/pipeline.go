@@ -669,13 +669,15 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 	schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	schStruct.Fields["type"] = structpb.NewStringValue("object")
+	for k, v := range r.Variable {
+		v.InstillFormat = utils.ConvertInstillFormat(v.InstillFormat)
+		instillFormatMap[k] = v.InstillFormat
+	}
+
 	b, _ := json.Marshal(r.Variable)
 	properties := &structpb.Struct{}
 	_ = protojson.Unmarshal(b, properties)
 	schStruct.Fields["properties"] = structpb.NewStructValue(properties)
-	for k, v := range r.Variable {
-		instillFormatMap[k] = v.InstillFormat
-	}
 	err := componentbase.CompileInstillAcceptFormats(schStruct)
 	if err != nil {
 		return err

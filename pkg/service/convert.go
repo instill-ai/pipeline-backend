@@ -32,6 +32,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
+	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
 	componentbase "github.com/instill-ai/component/base"
 	componentstore "github.com/instill-ai/component/store"
@@ -838,6 +839,9 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 		b, _ := json.Marshal(v)
 		p := &structpb.Struct{}
 		_ = protojson.Unmarshal(b, p)
+		if _, ok := p.Fields["instillFormat"]; ok {
+			p.Fields["instillFormat"] = structpb.NewStringValue(utils.ConvertInstillFormat(p.Fields["instillFormat"].GetStringValue()))
+		}
 		dataInput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(p)
 	}
 
@@ -977,6 +981,9 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 		if err != nil {
 			success = false
 		} else {
+			if _, ok := m.GetStructValue().Fields["instillFormat"]; ok {
+				m.GetStructValue().Fields["instillFormat"] = structpb.NewStringValue(utils.ConvertInstillFormat(m.GetStructValue().Fields["instillFormat"].GetStringValue()))
+			}
 			dataOutput.Fields["properties"].GetStructValue().Fields[k] = m
 		}
 
