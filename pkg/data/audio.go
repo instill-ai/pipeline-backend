@@ -1,5 +1,7 @@
 package data
 
+import "fmt"
+
 type Audio struct {
 	File
 }
@@ -26,4 +28,19 @@ func newAudio(f *File) (audio *Audio, err error) {
 	return &Audio{
 		File: *f,
 	}, nil
+}
+
+func (a *Audio) Get(path string) (v Value, err error) {
+	v, err = a.File.Get(path)
+	if err == nil {
+		return
+	}
+	switch {
+
+	// TODO: we use data-url as default format for now
+	case comparePath(path, ""):
+		return a.GetDataURL(a.ContentType)
+
+	}
+	return nil, fmt.Errorf("wrong path")
 }

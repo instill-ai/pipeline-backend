@@ -793,12 +793,20 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					array.Values[idx] = data.NewString(val.GetStringValue())
 				}
 				variable.Fields[k] = array
+			case "integer":
+				variable.Fields[k] = data.NewNumberFromFloat(v.GetNumberValue())
+			case "array:integer":
+				array := data.NewArray(make([]data.Value, len(v.GetListValue().Values)))
+				for idx, val := range v.GetListValue().Values {
+					array.Values[idx] = data.NewNumberFromFloat(val.GetNumberValue())
+				}
+				variable.Fields[k] = array
 			case "number":
 				variable.Fields[k] = data.NewNumberFromFloat(v.GetNumberValue())
 			case "array:number":
 				array := data.NewArray(make([]data.Value, len(v.GetListValue().Values)))
 				for idx, val := range v.GetListValue().Values {
-					array.Values[idx] = data.NewString(val.GetStringValue())
+					array.Values[idx] = data.NewNumberFromFloat(val.GetNumberValue())
 				}
 				variable.Fields[k] = array
 			case "image", "image/*":
