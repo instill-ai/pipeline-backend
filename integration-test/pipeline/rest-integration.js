@@ -1,7 +1,13 @@
 import http from "k6/http";
 import { check, group } from "k6";
+import { randomString } from "https://jslib.k6.io/k6-utils/1.1.0/index.js";
 
-import { pipelinePublicHost } from "./const.js";
+import {
+  pipelinePublicHost,
+  defaultUsername,
+  dbIDPrefix
+} from "./const.js";
+
 import { deepEqual } from "./helper.js";
 
 export function CheckIntegrations() {
@@ -70,7 +76,8 @@ export function CheckIntegrations() {
     check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo}`, null, null), {
       [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} has page size 2"`]: (r) => r.json().integrations.length === 2,
-      [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} has different elements than page 1"`]: (r) => r.json().integrations[0].id != firstPage.json().integrations[0].id,
+      [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} has different elements than page 1"`]: (r) =>
+        r.json().integrations[0].id != firstPage.json().integrations[0].id,
     });
 
     // Filter featured
@@ -94,6 +101,72 @@ export function CheckIntegrations() {
       [`GET /v1beta/integrations?filter=qIntegration="labs" response totalSize > 0`]: (r) => r.json().totalSize === 1,
       [`GET /v1beta/integrations?filter=qIntegration="labs" returns Redis integration`]: (r) => r.json().integrations[0].title === "Redis",
       [`GET /v1beta/integrations?filter=qIntegration="labs" intgration vendor matches Redis Labs`]: (r) => r.json().integrations[0].vendor === "Redis Labs",
+    });
+  });
+}
+
+export function CheckConnections(data) {
+  group("Integration API: Create connection", () => {
+    var path = `/v1beta/namespaces/${defaultUsername}/connections`;
+
+    // Successful creation
+    var okReq = http.request(
+      "POST",
+      pipelinePublicHost + path,
+      JSON.stringify({
+        id: dbIDPrefix + randomString(8),
+        integrationId: "email",
+        method: "METHOD_DICTIONARY",
+        setup: {
+          "email-address": "wombat@instill.tech",
+          password: "0123",
+          "server-address": "localhost",
+          "server-port": 993,
+        },
+      }),
+      data.header
+    );
+    check(okReq, {
+      [`POST ${path} response status is 201`]: (r) => r.status === 201,
+      [`POST ${path} has a UID`]: (r) => r.json().connection.uid.length > 0,
+      [`POST ${path} has a creation time`]: (r) => new Date(r.json().connection.createTime).getTime() > new Date().setTime(0),
+    });
+
+    // Check ID format
+    var invalidID = dbIDPrefix + "This-Is-Invalid";
+    var invalidIDReq = http.request(
+      "POST",
+      pipelinePublicHost + path,
+      JSON.stringify({
+        id: invalidID,
+        integrationId: "email",
+        method: "METHOD_DICTIONARY",
+        setup: {},
+      }),
+      data.header
+    );
+    check(invalidIDReq, {
+      [`POST ${path} response status is 400 with ID ${invalidID}`]: (r) => r.status === 400,
+    });
+
+    var invalidSetupReq = http.request(
+      "POST",
+      pipelinePublicHost + path,
+      JSON.stringify({
+        id: dbIDPrefix + randomString(16),
+        integrationId: "email",
+        method: "METHOD_DICTIONARY",
+        setup: {
+          "email-address": "wombat@instill.tech",
+          password: "0123",
+          "server-address": "localhost",
+          "server-port": "993", // Should be string
+        },
+      }),
+      data.header
+    );
+    check(invalidIDReq, {
+      [`POST ${path} response status is 400`]: (r) => r.status === 400,
     });
   });
 }

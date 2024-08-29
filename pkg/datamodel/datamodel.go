@@ -594,3 +594,27 @@ type Secret struct {
 	NamespaceID   string `gorm:"type:namespace_id"`
 	NamespaceType string `gorm:"type:namespace_type"`
 }
+
+// ConnectionMethod is an alias type for the proto enum that allows us to use its string value in the database.
+type ConnectionMethod pb.Role
+
+// Scan function for custom GORM type ConnectionMethod
+func (m *ConnectionMethod) Scan(value interface{}) error {
+	*m = ConnectionMethod(pb.Connection_Method_value[value.(string)])
+	return nil
+}
+
+// Value function for custom GORM type ConnectionMethod
+func (m ConnectionMethod) Value() (driver.Value, error) {
+	return pb.Connection_Method(m).String(), nil
+}
+
+// Connection is the data model for the `integration` table
+type Connection struct {
+	BaseDynamic
+	ID             string
+	NamespaceUID   uuid.UUID
+	IntegrationUID uuid.UUID
+	Method         ConnectionMethod
+	Setup          datatypes.JSON `gorm:"type:jsonb"`
+}

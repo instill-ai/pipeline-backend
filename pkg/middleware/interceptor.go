@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"gorm.io/gorm"
 
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -83,14 +82,10 @@ func AsGRPCError(err error) error {
 
 	var code codes.Code
 	switch {
-	case
-		errors.Is(err, gorm.ErrDuplicatedKey),
-		errors.Is(err, repository.ErrNameExists):
-
+	case errors.Is(err, errdomain.ErrAlreadyExists):
 		code = codes.AlreadyExists
 	case
 		errors.Is(err, errdomain.ErrNotFound),
-		errors.Is(err, gorm.ErrRecordNotFound),
 		errors.Is(err, repository.ErrNoDataDeleted),
 		errors.Is(err, repository.ErrNoDataUpdated),
 		errors.Is(err, acl.ErrMembershipNotFound):

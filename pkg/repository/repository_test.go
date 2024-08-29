@@ -5,6 +5,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"os"
 	"testing"
@@ -12,17 +13,21 @@ import (
 
 	"github.com/go-redis/redismock/v9"
 	"github.com/gofrs/uuid"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/guregu/null.v4"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 
+	componentstore "github.com/instill-ai/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -191,6 +196,79 @@ func TestRepository_Integrations(t *testing.T) {
 		c.Check(page.ComponentDefinitions[i].UID.String(), qt.Equals, want)
 	}
 }
+
+func TestRepository_Connection(t *testing.T) {
+	c := qt.New(t)
+	ctx := context.Background()
+	logger := zap.NewNop()
+
+	// Need to load and store component definitions as they're referenced by
+	// connections.
+	integrationID := "email"
+	cd, err := componentstore.Init(logger, nil, nil).GetDefinitionByID(integrationID, nil, nil)
+	c.Assert(err, qt.IsNil)
+
+	newRepo := func(c *qt.C) Repository {
+		tx := db.Begin()
+		c.Cleanup(func() { tx.Rollback() })
+
+		repo := NewRepository(tx, nil)
+
+		err := repo.UpsertComponentDefinition(ctx, cd)
+		c.Assert(err, qt.IsNil)
+
+		return repo
+	}
+
+	id := "test"
+	method := datamodel.ConnectionMethod(pipelinepb.Connection_METHOD_DICTIONARY)
+	newConn := func() *datamodel.Connection {
+		return &datamodel.Connection{
+			ID:             id,
+			NamespaceUID:   uuid.Must(uuid.NewV4()),
+			IntegrationUID: uuid.FromStringOrNil(cd.GetUid()),
+			Method:         method,
+			Setup:          datatypes.JSON(`{}`),
+		}
+
+	}
+
+	c.Run("nok - connection not found", func(c *qt.C) {
+		_, err := newRepo(c).GetConnectionByID(ctx, "foo")
+		c.Check(errors.Is(err, errdomain.ErrNotFound), qt.IsTrue)
+	})
+
+	c.Run("nok - missing integration reference", func(c *qt.C) {
+		conn := newConn()
+		conn.IntegrationUID = uuid.Must(uuid.NewV4())
+		_, err := newRepo(c).CreateNamespaceConnection(ctx, conn)
+		c.Check(err, qt.ErrorMatches, ".*foreign key.*integration_uid.*")
+	})
+
+	c.Run("ok", func(c *qt.C) {
+		repo := newRepo(c)
+		conn := newConn()
+		inserted, err := repo.CreateNamespaceConnection(ctx, conn)
+		c.Check(err, qt.IsNil)
+		c.Check(inserted.UID, qt.IsNotNil)
+		c.Check(inserted.CreateTime.IsZero(), qt.IsFalse)
+		c.Check(inserted.UpdateTime.IsZero(), qt.IsFalse)
+		c.Check(inserted.DeleteTime.Valid, qt.IsFalse)
+		// Testing proto scan & write.
+		c.Check(inserted.Method, qt.ContentEquals, method)
+
+		fetched, err := repo.GetConnectionByID(ctx, id)
+		c.Check(err, qt.IsNil)
+
+		cmp := qt.CmpEquals(cmpopts.EquateApproxTime(time.Millisecond))
+		c.Check(fetched, cmp, inserted)
+
+		// Check double creation
+		_, err = repo.CreateNamespaceConnection(ctx, conn)
+		c.Check(errors.Is(err, errdomain.ErrAlreadyExists), qt.IsTrue)
+	})
+}
+
 func TestRepository_AddPipelineRuns(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()

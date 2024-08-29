@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"testing"
 
-	qt "github.com/frankban/quicktest"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	"github.com/instill-ai/x/errmsg"
 	"github.com/jackc/pgconn"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"gorm.io/gorm"
+
+	qt "github.com/frankban/quicktest"
+
+	"github.com/instill-ai/x/errmsg"
+
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 )
 
 func TestAsGRPCError(t *testing.T) {
@@ -38,23 +40,8 @@ func TestAsGRPCError(t *testing.T) {
 			wantMessage: ".*FATAL.*connection_failure.*",
 		},
 		{
-			name: "pq unique constraint",
-			in: &pgconn.PgError{
-				Severity:       "FATAL",
-				Code:           "23505",
-				Message:        "unique_violation",
-				Detail:         "unique_violation",
-				ConstraintName: "idx_mytable_mycolumn",
-			},
-			wantCode:    codes.Unknown,
-			wantMessage: ".*FATAL.*unique_violation.*",
-		},
-		{
-			name: "with end-user message",
-			in: errmsg.AddMessage(
-				fmt.Errorf("already exists: %w", gorm.ErrDuplicatedKey),
-				"Resource already exists.",
-			),
+			name:        "resource exists",
+			in:          errdomain.ErrAlreadyExists,
 			wantCode:    codes.AlreadyExists,
 			wantMessage: "Resource already exists.",
 		},
@@ -72,6 +59,12 @@ func TestAsGRPCError(t *testing.T) {
 			),
 			wantCode:    codes.FailedPrecondition,
 			wantMessage: "Invalid recipe in pipeline",
+		},
+		{
+			name:        "not found",
+			in:          fmt.Errorf("finding item: %w", errdomain.ErrNotFound),
+			wantCode:    codes.NotFound,
+			wantMessage: "finding item: not found",
 		},
 		{
 			name:        "unauthorized",

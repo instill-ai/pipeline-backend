@@ -49,6 +49,7 @@ build:							## Build dev docker image
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg K6_VERSION=${K6_VERSION} \
+		--build-arg XK6_VERSION=${XK6_VERSION} \
 		-f Dockerfile.dev  -t instill/${SERVICE_NAME}:dev .
 
 .PHONY: run-dev-services
