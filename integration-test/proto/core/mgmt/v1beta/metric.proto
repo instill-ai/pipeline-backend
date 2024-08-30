@@ -32,77 +32,56 @@ enum Status {
 // PipelineTriggerCount represents a pipeline execution count with some
 // aggregation params (e.g. trigger status).
 message PipelineTriggerCount {
-  // Number og triggers
+  // Number of triggers.
   int32 trigger_count = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // This field will be present when results are grouped by trigger status;
+  // This field will be present when results are grouped by trigger status.
   optional Status status = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
-// PipelineTriggerTableRecord contains pipeline trigger metrics, aggregated by
-// pipeline ID.
-message PipelineTriggerTableRecord {
-  // Pipeline ID.
-  string pipeline_id = 1;
-  // Pipeline UUID.
-  string pipeline_uid = 2;
-  // Number of triggers with `STATUS_COMPLETED`.
-  int32 trigger_count_completed = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Number of triggers with `STATUS_ERRORED`.
-  int32 trigger_count_errored = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Version for the triggered pipeline if it is a release pipeline.
-  string pipeline_release_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Release UUID for the triggered pipeline if it is a release pipeline.
-  string pipeline_release_uid = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-}
-
-// PipelineTriggerChartRecord represents a timeline of pipeline triggers. It
-// contains a collection of (timestamp, count) pairs that represent the total
-// pipeline triggers in a given time bucket.
-// pipeline ID and time frame.
-message PipelineTriggerChartRecord {
-  // This field will be present present when the information is grouped by pipeline.
-  optional string pipeline_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // 2 is reserved for the pipeline UUID.
-  reserved 2;
-  // 3 is reserved for the trigger mode. The server wasn't grouping results by this
-  // field.
-  reserved 3;
-  // 4 is reserved for the trigger status. The server wasn't grouping results
-  // by this field.
-  reserved 4;
-  // Time buckets.
-  repeated google.protobuf.Timestamp time_buckets = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Aggregated trigger count in each time bucket.
-  repeated int32 trigger_counts = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // 7 is reserved for the trigger execution duration.
-  reserved 7;
-  // 8 is reserved for the pipeline release ID. The server wasn't grouping
-  // results by this field.
-  reserved 8;
-  // 9 is reserved for the pipeline release UUID. The server wasn't grouping
-  // results by this field.
-  reserved 9;
-  // Trigger requester ID, e.g. `users/specialist-wombat`.
-  string requester = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
-}
+/*
+   // PipelineTriggerChartRecord represents a timeline of pipeline triggers. It
+   // contains a collection of (timestamp, count) pairs that represent the total
+   // pipeline triggers in a given time bucket.
+   // pipeline ID and time frame.
+   message PipelineTriggerChartRecord {
+     // This field will be present present when the information is grouped by pipeline.
+     optional string pipeline_id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+     // 2 is reserved for the pipeline UUID.
+     reserved 2;
+     // 3 is reserved for the trigger mode. The server wasn't grouping results by this
+     // field.
+     reserved 3;
+     // 4 is reserved for the trigger status. The server wasn't grouping results
+     // by this field.
+     reserved 4;
+     // Time buckets.
+     repeated google.protobuf.Timestamp time_buckets = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+     // Aggregated trigger count in each time bucket.
+     repeated int32 trigger_counts = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+     // 7 is reserved for the trigger execution duration.
+     reserved 7;
+     // 8 is reserved for the pipeline release ID. The server wasn't grouping
+     // results by this field.
+     reserved 8;
+     // 9 is reserved for the pipeline release UUID. The server wasn't grouping
+     // results by this field.
+     reserved 9;
+     // The ID of the namespace that requested the pipeline triggers.
+     string namespace_id = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+   }
+*/
 
 // GetPipelineTriggerCountRequest represents a request to fetch the trigger
 // count of a requester over a time period.
 message GetPipelineTriggerCountRequest {
-  // The ID of the pipeline trigger requester.
-  // Format: `{[users|organizations]}/{id}`.
-  string requester = 1 [(google.api.field_behavior) = REQUIRED];
-  // Aggregation window. The value is a positive duration string, i.e. a
-  // sequence of decimal numbers, each with optional fraction and a unit
-  // suffix, such as "300ms", "1.5h" or "2h45m".
-  // The minimum (and default) window is 1h.
-  optional string aggregation_window = 2;
+  // The ID of the namespace that requested the pipeline triggers.
+  string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Beginning of the time range from which the records will be fetched.
   // The default value is the beginning of the current day, in UTC.
-  optional google.protobuf.Timestamp start = 3;
+  optional google.protobuf.Timestamp start = 2;
   // End of the time range from which the records will be fetched.
   // The default value is the current timestamp.
-  optional google.protobuf.Timestamp stop = 4;
+  optional google.protobuf.Timestamp stop = 3;
 }
 
 // GetPipelineTriggerCountResponse contains the trigger count, grouped by
@@ -112,50 +91,51 @@ message GetPipelineTriggerCountResponse {
   repeated PipelineTriggerCount pipeline_trigger_counts = 1;
 }
 
-// ListPipelineTriggerChartRecordsRequest represents a request to list pipeline
-// trigger chart records for a given requester, grouped by time buckets.
-message ListPipelineTriggerChartRecordsRequest {
-  // 1 is reserved for the aggregation window in nanoseconds. This is
-  // deprecated in favour of an aggregation window string that represents a
-  // duration.
-  reserved 1;
-  // 2 is reserved for the filter. For now, this endpoint won't allow filtering
-  // but in the future we might implement a filter to show the trigger count of
-  // only certain pipelines and to group by the pipeline ID.
-  reserved 2;
+/*
+   // ListPipelineTriggerChartRecordsRequest represents a request to list pipeline
+   // trigger chart records for a given requester, grouped by time buckets.
+   message ListPipelineTriggerChartRecordsRequest {
+     // 1 is reserved for the aggregation window in nanoseconds. This is
+     // deprecated in favour of an aggregation window string that represents a
+     // duration.
+     reserved 1;
+     // 2 is reserved for the filter. For now, this endpoint won't allow filtering
+     // but in the future we might implement a filter to show the trigger count of
+     // only certain pipelines and to group by the pipeline ID.
+     reserved 2;
 
-  // The ID of the pipeline trigger requester.
-  // Format: `{[users|organizations]}/{id}`.
-  string requester = 3 [(google.api.field_behavior) = REQUIRED];
-  // Aggregation window. The value is a positive duration string, i.e. a
-  // sequence of decimal numbers, each with optional fraction and a unit
-  // suffix, such as "300ms", "1.5h" or "2h45m".
-  // The minimum (and default) window is 1h.
-  optional string aggregation_window = 4;
-  // Beginning of the time range from which the records will be fetched.
-  // The default value is the beginning of the current day, in UTC.
-  optional google.protobuf.Timestamp start = 5;
-  // End of the time range from which the records will be fetched.
-  // The default value is the current timestamp.
-  optional google.protobuf.Timestamp stop = 6;
-}
+     // The ID of the namespace that requested the pipeline triggers.
+     string namespace_id = 3 [(google.api.field_behavior) = REQUIRED];
+     // Aggregation window. The value is a positive duration string, i.e. a
+     // sequence of decimal numbers, each with optional fraction and a unit
+     // suffix, such as "300ms", "1.5h" or "2h45m".
+     // The minimum (and default) window is 1h.
+     optional string aggregation_window = 4;
+     // Beginning of the time range from which the records will be fetched.
+     // The default value is the beginning of the current day, in UTC.
+     optional google.protobuf.Timestamp start = 5;
+     // End of the time range from which the records will be fetched.
+     // The default value is the current timestamp.
+     optional google.protobuf.Timestamp stop = 6;
+   }
 
-// ListPipelineTriggerChartRecordsResponse contains a list of pipeline trigger
-// chart records.
-message ListPipelineTriggerChartRecordsResponse {
-  // Pipeline trigger counts. Until we allow filtering or grouping by fields
-  // like pipeline ID, this list will contain only one element with the
-  // timeline of trigger counts for a given requester, regardless the pipeline
-  // ID, trigger mode, final status or other fields.
-  repeated PipelineTriggerChartRecord pipeline_trigger_chart_records = 1;
-}
+   // ListPipelineTriggerChartRecordsResponse contains a list of pipeline trigger
+   // chart records.
+   message ListPipelineTriggerChartRecordsResponse {
+     // Pipeline trigger counts. Until we allow filtering or grouping by fields
+     // like pipeline ID, this list will contain only one element with the
+     // timeline of trigger counts for a given requester, regardless the pipeline
+     // ID, trigger mode, final status or other fields.
+     repeated PipelineTriggerChartRecord pipeline_trigger_chart_records = 1;
+   }
+*/
 
 // CreditConsumptionChartRecord represents a timeline of Instill Credit
 // consumption. It contains a collection of (timestamp, amount) pairs that
 // represent the total credit consumption in a given time bucket.
 message CreditConsumptionChartRecord {
-  // Credit owner ID, e.g. `users/chef-wombat`.
-  string credit_owner = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The ID of the namespace that owns the credit.
+  string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Time buckets.
   repeated google.protobuf.Timestamp time_buckets = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Total credit consumed in each time bucket.
@@ -168,9 +148,8 @@ message CreditConsumptionChartRecord {
 // consumption chart records for a given owner, grouped by time buckets and
 // consumption sources.
 message ListCreditConsumptionChartRecordsRequest {
-  // The user or organization to which the credit belongs.
-  // Format: `{[users|organizations]}/{id}`.
-  string owner = 1 [(google.api.field_behavior) = REQUIRED];
+  // The ID of the namespace that owns the credit.
+  string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Aggregation window. The value is a positive duration string, i.e. a
   // sequence of decimal numbers, each with optional fraction and a unit
   // suffix, such as "300ms", "1.5h" or "2h45m".
@@ -193,4 +172,89 @@ message ListCreditConsumptionChartRecordsResponse {
   // the request. This won't be returned anymore as we need to aggregate the
   // consumption by source.
   reserved 2;
+}
+
+// Deprecated messages, to be removed with the new dashboard implementation.
+
+// PipelineTriggerTableRecord contains pipeline trigger metrics, aggregated by
+// pipeline ID.
+message PipelineTriggerTableRecord {
+  // Pipeline ID.
+  string pipeline_id = 1;
+  // Pipeline UUID.
+  string pipeline_uid = 2;
+  // Number of triggers with `STATUS_COMPLETED`.
+  int32 trigger_count_completed = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Number of triggers with `STATUS_ERRORED`.
+  int32 trigger_count_errored = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Version for the triggered pipeline if it is a release pipeline.
+  string pipeline_release_id = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release UUID for the triggered pipeline if it is a release pipeline.
+  string pipeline_release_uid = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ListPipelineTriggerTableRecordsRequest represents a request to list the
+// pipeline triggers metrics, aggregated by pipeline ID.
+message ListPipelineTriggerTableRecordsRequest {
+  // The maximum number of results to return. If this parameter is unspecified,
+  // at most 100 pipelines will be returned. The cap value for this parameter
+  // is 1000 (i.e. any value above that will be coerced to 1000).
+  optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
+  // Page token.
+  optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListPipelineTriggerTableRecordsResponse contains the pipeline metrics.
+message ListPipelineTriggerTableRecordsResponse {
+  // A list of pipeline trigger tables.
+  repeated PipelineTriggerTableRecord pipeline_trigger_table_records = 1;
+  // Next page token.
+  string next_page_token = 2;
+  // Total number of pipeline trigger records
+  int32 total_size = 3;
+}
+
+// ListPipelineTriggerChartRecordsRequest represents a request to list pipeline
+// trigger metrics, aggregated by pipeline ID and time frame.
+message ListPipelineTriggerChartRecordsRequest {
+  // Aggregation window in nanoseconds.
+  int32 aggregation_window = 1;
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // - Example: `create_time>timestamp("2000-06-19T23:31:08.657Z")`.
+  optional string filter = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListPipelineTriggerChartRecordsResponse contains a list of pipeline trigger
+// chart records.
+message ListPipelineTriggerChartRecordsResponse {
+  // A list of pipeline trigger records.
+  repeated PipelineTriggerChartRecord pipeline_trigger_chart_records = 1;
+}
+
+// PipelineTriggerChartRecord contains pipeline trigger metrics, aggregated by
+// pipeline ID and time frame.
+message PipelineTriggerChartRecord {
+  // Pipeline ID.
+  string pipeline_id = 1;
+  // Pipeline UUID.
+  string pipeline_uid = 2;
+  // Trigger mode.
+  Mode trigger_mode = 3;
+  // Final status.
+  Status status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Time buckets.
+  repeated google.protobuf.Timestamp time_buckets = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Aggregated trigger count in each time bucket.
+  repeated int32 trigger_counts = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Total computation time duration in each time bucket.
+  repeated float compute_time_duration = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Version for the triggered pipeline if it is a release pipeline.
+  string pipeline_release_id = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Release UUID for the triggered pipeline if it is a release pipeline.
+  string pipeline_release_uid = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
 }

@@ -122,7 +122,8 @@ func (s *service) componentDefinitionToIntegration(
 		}
 	}
 
-	return &pb.Integration{
+	return &pipelinepb.Integration{
+		Uid:         cd.GetUid(),
 		Id:          cd.GetId(),
 		Title:       cd.GetTitle(),
 		Description: cd.GetDescription(),

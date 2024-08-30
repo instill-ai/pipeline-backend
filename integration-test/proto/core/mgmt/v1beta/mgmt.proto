@@ -457,6 +457,50 @@ message CheckNamespaceAdminResponse {
   Namespace type = 1;
   // Namespace UID.
   string uid = 2;
+  // The owner, which can be either a User or an Organization.
+  oneof owner {
+    // User.
+    core.mgmt.v1beta.User user = 3;
+    // Organization.
+    core.mgmt.v1beta.Organization organization = 4;
+  }
+}
+
+// CheckNamespaceByUIDAdminRequest represents a request to verify if a namespace is
+// available.
+message CheckNamespaceByUIDAdminRequest {
+  // The namespace UID to be checked.
+  string uid = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// CheckNamespaceByUIDAdminResponse contains the availability of a namespace or the type
+// of resource that's using it.
+message CheckNamespaceByUIDAdminResponse {
+  // Namespace contains information about the availability of a namespace.
+  enum Namespace {
+    // Unspecified.
+    NAMESPACE_UNSPECIFIED = 0;
+    // Available.
+    NAMESPACE_AVAILABLE = 1;
+    // Namespace belongs to a user.
+    NAMESPACE_USER = 2;
+    // Namespace belongs to an organization.
+    NAMESPACE_ORGANIZATION = 3;
+    // Reserved.
+    NAMESPACE_RESERVED = 4;
+  }
+
+  // Namespace type.
+  Namespace type = 1;
+  // Namespace ID.
+  string id = 2;
+  // The owner, which can be either a User or an Organization.
+  oneof owner {
+    // User.
+    core.mgmt.v1beta.User user = 3;
+    // Organization.
+    core.mgmt.v1beta.Organization organization = 4;
+  }
 }
 
 // API tokens allow users to make requests to the Instill AI API.
@@ -1075,8 +1119,8 @@ message UserSubscription {
     PLAN_UNSPECIFIED = 0;
     // Free plan.
     PLAN_FREE = 1;
-    // Starter plan.
-    PLAN_STARTER = 2;
+    // Pro plan.
+    PLAN_PRO = 2;
   }
 
   // Plan identifier.
@@ -1091,22 +1135,20 @@ message OrganizationSubscription {
   enum Plan {
     // Unspecified plan.
     PLAN_UNSPECIFIED = 0;
-    // Unpaid.
-    PLAN_UNPAID = 1;
+    // Free plan.
+    PLAN_FREE = 1;
     // Team plan.
     PLAN_TEAM = 2;
     // Enterprise plan.
     PLAN_ENTERPRISE = 3;
-    // Team pro plan.
-    PLAN_TEAM_PRO = 4;
   }
 
   // Plan identifier.
   Plan plan = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Details of the associated Stripe subscription.
   StripeSubscriptionDetail detail = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Maximum number of seats allowed.
-  int32 max_seats = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Reserved for max_seats
+  reserved 3;
   // Number of used seats within the organization subscription.
   int32 used_seats = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 }

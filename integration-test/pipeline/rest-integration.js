@@ -23,6 +23,7 @@ export function CheckIntegrations() {
       json().connectorDefinition;
 
     var integration = {
+      uid: cdef.uid,
       id: cdef.id,
       title: cdef.title,
       description: cdef.description,

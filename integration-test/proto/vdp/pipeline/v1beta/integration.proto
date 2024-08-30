@@ -53,12 +53,11 @@ message Connection {
   google.protobuf.Struct setup = 8 [(google.api.field_behavior) = REQUIRED];
   // View defines how the integration is presented. The `setup` field is only
   // showed in the FULL view.
-  View view = 9  [(google.api.field_behavior) = OUTPUT_ONLY];
+  View view = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Creation timestamp.
   google.protobuf.Timestamp create_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Last update timestamp.
   google.protobuf.Timestamp update_time = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
-
 }
 
 // ListNamespaceConnectionsRequest represents a request to list the connections
@@ -75,7 +74,7 @@ message ListNamespaceConnectionsRequest {
   // expression.
   // The following filters are supported:
   // - `integration_id`
-  // - `q` (fuzzy search on connection ID, integration title or vendor)
+  // - `qConnection` (fuzzy search on connection ID, integration title or vendor)
   // Examples:
   // - List connections where app name, vendor or connection ID match `googl`:
   // `q="googl"`.
@@ -176,16 +175,18 @@ message Integration {
     // different data to connect to the 3rd party app.
     google.protobuf.Struct schema = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   }
+  // UUID-formatted unique identifier. It references a component definition.
+  string uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Identifier of the integration, which references a component definition.
   // Components with that definition ID will be able to use the connections
   // produced by this integration.
-  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string id = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Title, reflects the app name.
-  string title = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string title = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Short description of the integrated app.
-  string description = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string description = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Integrated app vendor name.
-  string vendor = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string vendor = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Integration icon. This is a path that's relative to the root of
   // the component implementation and that allows frontend applications to pull
   // and locate the icons.
@@ -198,7 +199,7 @@ message Integration {
   repeated SetupSchema schemas = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
   // View defines how the integration is presented. The `spec` field is only
   // showed in the FULL view.
-  View view = 9  [(google.api.field_behavior) = OUTPUT_ONLY];
+  View view = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ListIntegrationsRequest represents a request to list the available
@@ -212,7 +213,7 @@ message ListIntegrationsRequest {
   // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
   // expression.
   // The following filters are supported:
-  // - `q` (fuzzy search on title or vendor)
+  // - `qIntegration` (fuzzy search on title or vendor)
   // - `featured`
   // Examples:
   // - List integrations where app name or vendor match `googl`: `q="googl"`.

@@ -1515,10 +1515,6 @@ service PipelinePublicService {
   rpc ListNamespaceConnections(ListNamespaceConnectionsRequest) returns (ListNamespaceConnectionsResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/connections"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
-
-    // This is hidden while the implementation of the endpoints is under
-    // development.
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Get a namespace connection
@@ -1527,10 +1523,6 @@ service PipelinePublicService {
   rpc GetNamespaceConnection(GetNamespaceConnectionRequest) returns (GetNamespaceConnectionResponse) {
     option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
-
-    // This is hidden while the implementation of the endpoints is under
-    // development.
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Create a connection
@@ -1542,10 +1534,6 @@ service PipelinePublicService {
       body: "connection"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
-
-    // This is hidden while the implementation of the endpoints is under
-    // development.
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Update a connection
@@ -1553,14 +1541,10 @@ service PipelinePublicService {
   // Updates a connection with the supplied connection fields.
   rpc UpdateNamespaceConnection(UpdateNamespaceConnectionRequest) returns (UpdateNamespaceConnectionResponse) {
     option (google.api.http) = {
-        patch: "/v1beta/namespaces/{connection.namespace_id}/connections/{connection.id}"
-        body: "connection"
+      patch: "/v1beta/namespaces/{connection.namespace_id}/connections/{connection.id}"
+      body: "connection"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
-
-    // This is hidden while the implementation of the endpoints is under
-    // development.
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Delete a connection
@@ -1569,10 +1553,6 @@ service PipelinePublicService {
   rpc DeleteNamespaceConnection(DeleteNamespaceConnectionRequest) returns (DeleteNamespaceConnectionResponse) {
     option (google.api.http) = {delete: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
-
-    // This is hidden while the implementation of the endpoints is under
-    // development.
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Test a connection
@@ -1587,10 +1567,6 @@ service PipelinePublicService {
   rpc TestNamespaceConnection(TestNamespaceConnectionRequest) returns (TestNamespaceConnectionResponse) {
     option (google.api.http) = {post: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}/test"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
-
-    // This is hidden while the implementation of the endpoints is under
-    // development.
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // List integrations
@@ -1599,10 +1575,6 @@ service PipelinePublicService {
   rpc ListIntegrations(ListIntegrationsRequest) returns (ListIntegrationsResponse) {
     option (google.api.http) = {get: "/v1beta/integrations"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
-
-    // This is hidden while the implementation of the endpoints is under
-    // development.
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 
   // Get an integration
@@ -1611,9 +1583,5 @@ service PipelinePublicService {
   rpc GetIntegration(GetIntegrationRequest) returns (GetIntegrationResponse) {
     option (google.api.http) = {get: "/v1beta/integrations/{integration_id}"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
-
-    // This is hidden while the implementation of the endpoints is under
-    // development.
-    option (google.api.method_visibility).restriction = "INTERNAL";
   }
 }
