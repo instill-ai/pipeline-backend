@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -75,6 +77,7 @@ type Repository interface {
 	ListComponentDefinitionUIDs(context.Context, ListComponentDefinitionsParams) (uids []*datamodel.ComponentDefinition, totalSize int64, err error)
 	GetDefinitionByUID(context.Context, uuid.UUID) (*datamodel.ComponentDefinition, error)
 	UpsertComponentDefinition(context.Context, *pb.ComponentDefinition) error
+	ListIntegrations(context.Context, ListIntegrationsParams) (IntegrationList, error)
 
 	CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error
 	ListNamespaceSecrets(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) ([]*datamodel.Secret, int64, string, error)
@@ -702,7 +705,7 @@ type ListComponentDefinitionsParams struct {
 // ListComponentDefinitionUIDs returns the UIDs of a page of component
 // definitions.
 //
-// The source of truth for a compnent definition is its JSON
+// The source of truth for a component definition is its JSON
 // specification. These are loaded in memory, but we hold a table that allows
 // us to quiclky transpile query filters and to have unified filtering and
 // pagination.
@@ -787,6 +790,138 @@ func (r *repository) UpsertComponentDefinition(_ context.Context, cd *pb.Compone
 	}
 
 	return nil
+}
+
+// ListIntegrationsParams allows clients to request a page of integrations.
+type ListIntegrationsParams struct {
+	PageToken string
+	Limit     int
+	Filter    filtering.Filter
+}
+
+// IntegrationList returns a page of integrations.
+type IntegrationList struct {
+	ComponentDefinitions []*datamodel.ComponentDefinition
+	NextPageToken        string
+	TotalSize            int32
+}
+
+type integrationCursor struct {
+	Score int       `json:"score"`
+	UID   uuid.UUID `json:"uid"`
+}
+
+func (p ListIntegrationsParams) cursor() (cursor integrationCursor, err error) {
+	b, err := base64.StdEncoding.DecodeString(p.PageToken)
+	if err != nil {
+		return cursor, fmt.Errorf("decoding token: %w", err)
+	}
+
+	if err := json.Unmarshal(b, &cursor); err != nil {
+		return cursor, fmt.Errorf("unmarshalling token: %w", err)
+	}
+
+	return cursor, nil
+}
+
+func (c integrationCursor) asToken() (string, error) {
+	b, err := json.Marshal(c)
+	if err != nil {
+		return "", fmt.Errorf("marshalling cursor: %w", err)
+	}
+
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+
+// ListIntegrations returns the UIDs and indexed information of a page of
+// integrations.
+//
+// The source of truth for integration is the JSON specification of its
+// component definition. The database only holds the indexed information of
+// component definitions in order to filter and paginate them.
+func (r *repository) ListIntegrations(_ context.Context, p ListIntegrationsParams) (IntegrationList, error) {
+	var resp IntegrationList
+
+	db := r.db
+	where := ""
+	whereArgs := []any{}
+
+	// Get item count.
+	expr, err := r.TranspileFilter(p.Filter)
+	if err != nil {
+		return resp, fmt.Errorf("transpiling filter: %w", err)
+	}
+
+	if expr != nil {
+		where = "(?)"
+		whereArgs = []any{expr}
+	}
+
+	queryBuilder := db.Model(&datamodel.ComponentDefinition{}).
+		Where(where, whereArgs...).
+		Where("is_visible IS TRUE AND has_integration IS TRUE")
+
+	var count int64
+	queryBuilder.Count(&count)
+	resp.TotalSize = int32(count)
+
+	// Get definitions matching criteria.
+	if p.PageToken != "" {
+		cursor, err := p.cursor()
+		if err != nil {
+			return resp, err
+		}
+		queryBuilder = queryBuilder.Where("(feature_score,uid) < (?, ?)", cursor.Score, cursor.UID)
+	}
+
+	// Several results might have the same score and release stage. We need to
+	// sort by at least one unique field so the pagination results aren't
+	// arbitrary.
+	orderBy := "feature_score DESC, uid DESC"
+	rows, err := queryBuilder.Order(orderBy).Limit(p.Limit).Rows()
+	if err != nil {
+		return resp, fmt.Errorf("querying database rows: %w", err)
+	}
+	defer rows.Close()
+
+	resp.ComponentDefinitions = make([]*datamodel.ComponentDefinition, 0, p.Limit)
+	for rows.Next() {
+		item := new(datamodel.ComponentDefinition)
+		if err = db.ScanRows(rows, item); err != nil {
+			return resp, fmt.Errorf("scanning rows: %w", err)
+		}
+
+		resp.ComponentDefinitions = append(resp.ComponentDefinitions, item)
+	}
+
+	if len(resp.ComponentDefinitions) == 0 {
+		return resp, nil
+	}
+
+	lastInPage := resp.ComponentDefinitions[len(resp.ComponentDefinitions)-1]
+	lastInDB := new(datamodel.ComponentDefinition)
+
+	orderInverse := "feature_score ASC, uid ASC"
+	if result := queryBuilder.Order(orderInverse).Limit(1).Find(lastInDB); result.Error != nil {
+		return resp, fmt.Errorf("finding last item: %w", err)
+	}
+
+	if lastInDB.FeatureScore == lastInPage.FeatureScore &&
+		lastInDB.UID.String() == lastInPage.UID.String() {
+
+		return resp, nil
+	}
+
+	nextCursor := integrationCursor{
+		Score: lastInPage.FeatureScore,
+		UID:   lastInPage.UID,
+	}
+	resp.NextPageToken, err = nextCursor.asToken()
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
 }
 
 func (r *repository) CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error {

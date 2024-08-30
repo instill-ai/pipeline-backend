@@ -6,15 +6,14 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 func Test_ShouldSkipUpsert(t *testing.T) {
 	c := qt.New(t)
 
 	v := "0.1.0-alpha"
-	d := &pb.ConnectorDefinition{
-		Id:      "my-conn",
+	d := &datamodel.ComponentDefinition{
+		ID:      "my-conn",
 		Version: v,
 	}
 
@@ -25,7 +24,7 @@ func Test_ShouldSkipUpsert(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		def  definition
+		def  *datamodel.ComponentDefinition
 		inDB *datamodel.ComponentDefinition
 
 		want    bool
@@ -50,7 +49,7 @@ func Test_ShouldSkipUpsert(t *testing.T) {
 		},
 		{
 			name: "don't skip - newer version",
-			def:  &pb.ConnectorDefinition{Id: "my-conn", Version: "0.1.0-alpha.1"},
+			def:  &datamodel.ComponentDefinition{ID: "my-conn", Version: "0.1.0-alpha.1"},
 			inDB: db,
 			want: false,
 		},
@@ -61,8 +60,32 @@ func Test_ShouldSkipUpsert(t *testing.T) {
 			want: false,
 		},
 		{
+			name: "don't skip - visibility change",
+			def:  d,
+			inDB: &datamodel.ComponentDefinition{Version: v, IsVisible: true},
+			want: false,
+		},
+		{
+			name: "don't skip - integration change",
+			def:  d,
+			inDB: &datamodel.ComponentDefinition{Version: v, HasIntegration: true},
+			want: false,
+		},
+		{
+			name: "don't skip - title change",
+			def:  d,
+			inDB: &datamodel.ComponentDefinition{Version: v, Title: "foo"},
+			want: false,
+		},
+		{
+			name: "don't skip - vendor change",
+			def:  d,
+			inDB: &datamodel.ComponentDefinition{Version: v, Vendor: "foo"},
+			want: false,
+		},
+		{
 			name:    "err - malformed version",
-			def:     &pb.ConnectorDefinition{Id: "my-conn", Version: "v0.1.0-alpha"},
+			def:     &datamodel.ComponentDefinition{ID: "my-conn", Version: "v0.1.0-alpha"},
 			inDB:    db,
 			wantErr: "failed to parse version.*",
 		},

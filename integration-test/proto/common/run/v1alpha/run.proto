@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package common.run.v1alpha;
+
+// RunStatus defines the status of a pipeline or model run.
+enum RunStatus {
+  // Unspecified.
+  RUN_STATUS_UNSPECIFIED = 0;
+  // Run in progress.
+  RUN_STATUS_PROCESSING = 1;
+  // Run succeeded.
+  RUN_STATUS_COMPLETED = 2;
+  // Run failed.
+  RUN_STATUS_FAILED = 3;
+  // Run is waiting to be executed.
+  RUN_STATUS_QUEUED = 4;
+}
+
+// RunSource defines the source of a pipeline or model run.
+enum RunSource {
+  // Unspecified.
+  RUN_SOURCE_UNSPECIFIED = 0;
+  // Run from frontend UI.
+  RUN_SOURCE_CONSOLE = 1;
+  // Run from API or SDK.
+  RUN_SOURCE_API = 2;
+}

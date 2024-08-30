@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -14,25 +15,20 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
 
+	component "github.com/instill-ai/component/store"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-func (s *service) GetOperatorDefinitionByID(ctx context.Context, defID string) (*pb.OperatorDefinition, error) {
-
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+func (s *service) GetOperatorDefinitionByID(ctx context.Context, id string) (*pb.OperatorDefinition, error) {
+	compDef, err := s.getComponentDefinitionByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	compDef, err := s.component.GetDefinitionByID(defID, vars, nil)
-	if err != nil {
-		return nil, err
-	}
 	switch compDef.Type {
 	case pb.ComponentType_COMPONENT_TYPE_OPERATOR:
 		return convertComponentDefToOperatorDef(compDef), nil
-
 	default:
 		return nil, errdomain.ErrNotFound
 	}
@@ -344,22 +340,18 @@ func (s *service) ListConnectorDefinitions(ctx context.Context, req *pb.ListConn
 }
 
 func (s *service) GetConnectorDefinitionByID(ctx context.Context, id string) (*pb.ConnectorDefinition, error) {
+	compDef, err := s.getComponentDefinitionByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
 
-	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
-	if err != nil {
-		return nil, err
-	}
-	compDef, err := s.component.GetDefinitionByID(id, vars, nil)
-	if err != nil {
-		return nil, err
-	}
 	switch compDef.Type {
 	case pb.ComponentType_COMPONENT_TYPE_AI,
 		pb.ComponentType_COMPONENT_TYPE_DATA,
 		pb.ComponentType_COMPONENT_TYPE_APPLICATION,
 		pb.ComponentType_COMPONENT_TYPE_GENERIC:
-		return convertComponentDefToConnectorDef(compDef), nil
 
+		return convertComponentDefToConnectorDef(compDef), nil
 	default:
 		return nil, errdomain.ErrNotFound
 	}
@@ -424,4 +416,21 @@ func convertComponentDefToOperatorDef(compDef *pb.ComponentDefinition) *pb.Opera
 		ReleaseStage:     compDef.ReleaseStage,
 	}
 
+}
+
+func (s *service) getComponentDefinitionByID(ctx context.Context, id string) (*pb.ComponentDefinition, error) {
+	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
+	if err != nil {
+		return nil, err
+	}
+
+	cd, err := s.component.GetDefinitionByID(id, vars, nil)
+	if err != nil {
+		if errors.Is(err, component.ErrComponentDefinitionNotFound) {
+			err = fmt.Errorf("fetching component definition: %w", errdomain.ErrNotFound)
+		}
+		return nil, err
+	}
+
+	return cd, nil
 }

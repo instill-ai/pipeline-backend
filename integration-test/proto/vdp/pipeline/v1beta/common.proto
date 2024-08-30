@@ -119,4 +119,19 @@ enum ComponentType {
   COMPONENT_TYPE_OPERATOR = 4;
   // Connect with an external application.
   COMPONENT_TYPE_APPLICATION = 5;
+  // Generic.
+  COMPONENT_TYPE_GENERIC = 6;
+}
+
+// View defines how a resource is presented. Most resources can share this view
+// definition, the particular meaning of each value should be defined in the
+// resource itself. Certain resources might have their own View definition if
+// they need to implement more than 2 (basic / full) views.
+enum View {
+  // Unspecified, equivalent to BASIC.
+  VIEW_UNSPECIFIED = 0;
+  // Default view.
+  VIEW_BASIC = 1;
+  // Full representation.
+  VIEW_FULL = 2;
 }

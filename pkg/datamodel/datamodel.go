@@ -484,6 +484,7 @@ type ComponentDefinition struct {
 	UID           uuid.UUID `gorm:"type:uuid;primaryKey;<-:create"` // allow read and create
 	ID            string
 	Title         string
+	Vendor        string
 	ComponentType ComponentType
 	Version       string
 	ReleaseStage  ReleaseStage
@@ -492,6 +493,10 @@ type ComponentDefinition struct {
 	// public, deprecated), and is used to hide components from the list
 	// endpoint.
 	IsVisible bool
+	// HasIntegration indicates that integrations can be created for a
+	// component definition. It is determined by the presence of a `setup`
+	// object in the specification.
+	HasIntegration bool
 	// FeatureScore is used to position results in a page, i.e., to give more
 	// visibility to certain components.
 	FeatureScore int
@@ -530,17 +535,23 @@ var FeatureScores = map[string]int{
 // ComponentDefinitionFromProto parses a ComponentDefinition from the proto
 // structure.
 func ComponentDefinitionFromProto(cdpb *pb.ComponentDefinition) *ComponentDefinition {
+	props, hasIntegration := cdpb.GetSpec().GetComponentSpecification().GetFields()["properties"]
+	if hasIntegration {
+		_, hasIntegration = props.GetStructValue().GetFields()["setup"]
+	}
 
 	cd := &ComponentDefinition{
 		ComponentType: ComponentType(cdpb.Type),
 
-		UID:          uuid.FromStringOrNil(cdpb.GetUid()),
-		ID:           cdpb.GetId(),
-		Title:        cdpb.GetTitle(),
-		Version:      cdpb.GetVersion(),
-		IsVisible:    cdpb.GetPublic() && !cdpb.GetTombstone(),
-		FeatureScore: FeatureScores[cdpb.GetId()],
-		ReleaseStage: ReleaseStage(cdpb.GetReleaseStage()),
+		UID:            uuid.FromStringOrNil(cdpb.GetUid()),
+		ID:             cdpb.GetId(),
+		Title:          cdpb.GetTitle(),
+		Vendor:         cdpb.GetVendor(),
+		Version:        cdpb.GetVersion(),
+		IsVisible:      cdpb.GetPublic() && !cdpb.GetTombstone(),
+		HasIntegration: hasIntegration,
+		FeatureScore:   FeatureScores[cdpb.GetId()],
+		ReleaseStage:   ReleaseStage(cdpb.GetReleaseStage()),
 	}
 
 	return cd

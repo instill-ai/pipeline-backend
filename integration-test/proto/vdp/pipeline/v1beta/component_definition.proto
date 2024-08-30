@@ -167,6 +167,8 @@ enum ConnectorType {
   CONNECTOR_TYPE_OPERATOR = 6;
   // Application connector.
   CONNECTOR_TYPE_APPLICATION = 7;
+  // Generic.
+  CONNECTOR_TYPE_GENERIC = 8;
 }
 
 // A Connector is a type of pipeline component that queries, processes or sends
