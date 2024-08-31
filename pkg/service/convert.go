@@ -12,7 +12,6 @@ import (
 	"image/jpeg"
 	"image/png"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gabriel-vasile/mimetype"
@@ -617,36 +616,22 @@ func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*dat
 		err      error
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(dbPipelines))
-	ch := make(chan result)
+	pbPipelines := make([]*pb.Pipeline, len(dbPipelines))
 
 	for idx := range dbPipelines {
-		go func(i int) {
-			defer wg.Done()
-			pbPipeline, err := c.ConvertPipelineToPB(
-				ctx,
-				dbPipelines[i],
-				view,
-				checkPermission,
-				false, // to reduce loading, we don't use dynamic definition when convert the list
-			)
-			ch <- result{
-				idx:      i,
-				pipeline: pbPipeline,
-				err:      err,
-			}
-		}(idx)
+		pbPipeline, err := c.ConvertPipelineToPB(
+			ctx,
+			dbPipelines[idx],
+			view,
+			checkPermission,
+			false, // to reduce loading, we don't use dynamic definition when convert the list
+		)
+		if err != nil {
+			return nil, err
+		}
+		pbPipelines[idx] = pbPipeline
 	}
 
-	pbPipelines := make([]*pb.Pipeline, len(dbPipelines))
-	for range dbPipelines {
-		r := <-ch
-		if r.err != nil {
-			return nil, r.err
-		}
-		pbPipelines[r.idx] = r.pipeline
-	}
 	return pbPipelines, nil
 }
 
@@ -794,35 +779,20 @@ func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline 
 		err     error
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(dbPipelineRelease))
-	ch := make(chan result)
-
-	for idx := range dbPipelineRelease {
-		go func(i int) {
-			defer wg.Done()
-			pbRelease, err := c.ConvertPipelineReleaseToPB(
-				ctx,
-				dbPipeline,
-				dbPipelineRelease[i],
-				view,
-			)
-			ch <- result{
-				idx:     i,
-				release: pbRelease,
-				err:     err,
-			}
-		}(idx)
-	}
-
 	pbPipelineReleases := make([]*pb.PipelineRelease, len(dbPipelineRelease))
-	for range dbPipelineRelease {
-		r := <-ch
-		if r.err != nil {
-			return nil, r.err
+	for idx := range dbPipelineRelease {
+		pbRelease, err := c.ConvertPipelineReleaseToPB(
+			ctx,
+			dbPipeline,
+			dbPipelineRelease[idx],
+			view,
+		)
+		if err != nil {
+			return nil, err
 		}
-		pbPipelineReleases[r.idx] = r.release
+		pbPipelineReleases[idx] = pbRelease
 	}
+
 	return pbPipelineReleases, nil
 }
 
