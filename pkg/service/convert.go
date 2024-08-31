@@ -978,7 +978,7 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 			})
 		}
 
-		if err != nil {
+		if m == nil || err != nil {
 			success = false
 		} else {
 			if _, ok := m.GetStructValue().Fields["instillFormat"]; ok {
