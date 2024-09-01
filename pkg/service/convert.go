@@ -797,9 +797,17 @@ func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline 
 }
 
 // TODO: refactor these codes
-func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin datamodel.ComponentMap) (*pb.DataSpecification, error) {
+func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin datamodel.ComponentMap) (pipelineDataSpec *pb.DataSpecification, err error) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("panic: %+v", r)
+			err = fmt.Errorf("generate pipeline data spec error")
+		}
+	}()
+
 	success := true
-	pipelineDataSpec := &pb.DataSpecification{}
+	pipelineDataSpec = &pb.DataSpecification{}
 
 	dataInput := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	dataInput.Fields["type"] = structpb.NewStringValue("object")
