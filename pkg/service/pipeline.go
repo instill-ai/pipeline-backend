@@ -301,10 +301,14 @@ func (s *service) GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view
 }
 
 func (s *service) setSchedulePipeline(ctx context.Context, ns resource.Namespace, pipelineID, pipelineReleaseID string, pipelineUID, releaseUID uuid.UUID, recipe *datamodel.Recipe) error {
-
+	// TODO This check could be removed, as the receiver should be initialized
+	// at this point. However, some tests depend on it, so we would need to
+	// either mock this interface or (better) communicate with Temporal through
+	// our own interface.
 	if s.temporalClient == nil {
 		return nil
 	}
+
 	crons := []string{}
 	if recipe != nil && recipe.On != nil && recipe.On.Schedule != nil {
 		for _, v := range recipe.On.Schedule {
