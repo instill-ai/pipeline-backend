@@ -102,8 +102,8 @@ type Repository interface {
 	UpsertComponentRun(ctx context.Context, componentRun *datamodel.ComponentRun) error
 	UpdateComponentRun(ctx context.Context, pipelineTriggerUID, componentID string, componentRun *datamodel.ComponentRun) error
 
-	GetPaginatedPipelineRunsWithPermissions(ctx context.Context, userID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, dbPipeline *datamodel.Pipeline) ([]datamodel.PipelineRun, int64, error)
-	GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, userID, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, dbPipeline *datamodel.Pipeline) ([]datamodel.ComponentRun, int64, error)
+	GetPaginatedPipelineRunsWithPermissions(ctx context.Context, userUID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, isOwner bool) ([]datamodel.PipelineRun, int64, error)
+	GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.ComponentRun, int64, error)
 }
 
 type repository struct {
@@ -1151,7 +1151,7 @@ func (r *repository) UpdateComponentRun(ctx context.Context, pipelineTriggerUID,
 	return r.db.Model(&datamodel.ComponentRun{}).Where(&datamodel.ComponentRun{PipelineTriggerUID: uid, ComponentID: componentID}).Updates(componentRun).Error
 }
 
-func (r *repository) GetPaginatedPipelineRunsWithPermissions(ctx context.Context, userUID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, dbPipeline *datamodel.Pipeline) ([]datamodel.PipelineRun, int64, error) {
+func (r *repository) GetPaginatedPipelineRunsWithPermissions(ctx context.Context, userUID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, isOwner bool) ([]datamodel.PipelineRun, int64, error) {
 	var pipelineRuns []datamodel.PipelineRun
 	var totalRows int64
 
@@ -1168,8 +1168,7 @@ func (r *repository) GetPaginatedPipelineRunsWithPermissions(ctx context.Context
 		whereArgs = append(whereArgs, expr)
 	}
 
-	// todo: remove parameter dbPipeline and pass a boolean 'isOwner' as param
-	if dbPipeline.OwnerUID().String() != userUID { // for a runner without ownership, they could only view their own logs
+	if !isOwner { // for a runner without ownership, they could only view their own logs
 		whereConditions = append(whereConditions, "triggered_by = ?")
 		whereArgs = append(whereArgs, userUID)
 	}
@@ -1212,7 +1211,7 @@ func (r *repository) GetPaginatedPipelineRunsWithPermissions(ctx context.Context
 	return pipelineRuns, totalRows, nil
 }
 
-func (r *repository) GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, userID, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, dbPipeline *datamodel.Pipeline) ([]datamodel.ComponentRun, int64, error) {
+func (r *repository) GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.ComponentRun, int64, error) {
 	var componentRuns []datamodel.ComponentRun
 	var totalRows int64
 

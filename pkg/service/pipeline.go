@@ -32,6 +32,7 @@ import (
 	rpcstatus "google.golang.org/genproto/googleapis/rpc/status"
 
 	"github.com/instill-ai/pipeline-backend/config"
+	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -1726,6 +1727,13 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 		return nil, fmt.Errorf("invalid namespace: %w", err)
 	}
 
+	log, _ := logger.GetZapLogger(ctx)
+
+	userOrgUIDs, err := s.aclClient.ListPermissions(ctx, string(acl.Organization), string(acl.Member), false)
+	if err != nil {
+		return nil, err
+	}
+
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ns.Permalink(), req.GetPipelineId(), true, false)
 	if err != nil {
 		return nil, err
@@ -1740,7 +1748,13 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 		return nil, err
 	}
 
-	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, ctxUserUID, dbPipeline.UID.String(), page, pageSize, filter, orderBy, dbPipeline)
+	isOwner := dbPipeline.OwnerUID().String() == ctxUserUID
+	if slices.Contains(userOrgUIDs, dbPipeline.OwnerUID()) {
+		log.Info("requester is viewing pipeline belonging to one of their organizations", zap.String("organizationUID", dbPipeline.OwnerUID().String()))
+		isOwner = true
+	}
+
+	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, ctxUserUID, dbPipeline.UID.String(), page, pageSize, filter, orderBy, isOwner)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pipeline runs: %w", err)
 	}
@@ -1760,11 +1774,10 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 		}
 	}
 
-	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
+	log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
 	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
 	if err != nil {
-		logger.Error("failed to get files from minio", zap.Error(err))
+		log.Error("failed to get files from minio", zap.Error(err))
 		return nil, err
 	}
 
@@ -1784,7 +1797,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 		if err != nil {
 			return nil, err
 		}
-		logger.Info("CheckNamespaceByUIDAdmin finished", zap.String("RequesterUID", requesterID), zap.String("runnerId", runner.Id))
+		log.Info("CheckNamespaceByUIDAdmin finished", zap.String("RequesterUID", requesterID), zap.String("runnerId", runner.Id))
 		runnerMap[requesterID] = &runner.Id
 	}
 
@@ -1872,6 +1885,8 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 	ctxUserUID := utils.GetUserUID(ctx)
 
+	log, _ := logger.GetZapLogger(ctx)
+
 	orderBy, err := ordering.ParseOrderBy(req)
 	if err != nil {
 		return nil, err
@@ -1886,8 +1901,19 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 		return nil, fmt.Errorf("failed to get pipeline by UID: %s. error: %s", dbPipelineRun.PipelineUID.String(), err.Error())
 	}
 
+	userOrgUIDs, err := s.aclClient.ListPermissions(ctx, string(acl.Organization), string(acl.Member), false)
+	if err != nil {
+		return nil, err
+	}
+
+	isOwner := dbPipeline.OwnerUID().String() == ctxUserUID
+	if slices.Contains(userOrgUIDs, dbPipeline.OwnerUID()) {
+		log.Info("requester is viewing pipeline belonging to one of their organizations", zap.String("organizationUID", dbPipeline.OwnerUID().String()))
+		isOwner = true
+	}
+
 	// if the view requester is the pipeline owner, they could see all component runs. else...
-	if dbPipeline.OwnerUID().String() != ctxUserUID {
+	if !isOwner {
 		// if  the view requester is the pipeline runner, they could view the component runs of the pipeline run.
 		// else they could see nothing
 		if dbPipelineRun.TriggeredBy != ctxUserUID {
@@ -1895,7 +1921,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 		}
 	}
 
-	componentRuns, totalCount, err := s.repository.GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx, ctxUserUID, req.GetPipelineRunId(), page, pageSize, filter, orderBy, dbPipeline)
+	componentRuns, totalCount, err := s.repository.GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx, req.GetPipelineRunId(), page, pageSize, filter, orderBy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get component runs: %w", err)
 	}
@@ -1912,11 +1938,10 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 		}
 	}
 
-	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
+	log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
 	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
 	if err != nil {
-		logger.Error("failed to get files from minio", zap.Error(err))
+		log.Error("failed to get files from minio", zap.Error(err))
 		return nil, err
 	}
 

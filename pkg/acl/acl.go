@@ -46,10 +46,16 @@ type Relation struct {
 }
 
 type Mode string
+type ObjectType string
+type Role string
 
 const (
 	ReadMode  Mode = "read"
 	WriteMode Mode = "write"
+
+	Organization ObjectType = "organization"
+
+	Member Role = "member"
 )
 
 func NewACLClient(wc openfga.OpenFGAServiceClient, rc openfga.OpenFGAServiceClient, redisClient *redis.Client) ACLClient {
