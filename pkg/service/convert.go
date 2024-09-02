@@ -609,13 +609,6 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 
 // ConvertPipelinesToPB converts db data model to protobuf data model
 func (c *converter) ConvertPipelinesToPB(ctx context.Context, dbPipelines []*datamodel.Pipeline, view pb.Pipeline_View, checkPermission bool) ([]*pb.Pipeline, error) {
-
-	type result struct {
-		idx      int
-		pipeline *pb.Pipeline
-		err      error
-	}
-
 	pbPipelines := make([]*pb.Pipeline, len(dbPipelines))
 
 	for idx := range dbPipelines {
@@ -772,13 +765,6 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 
 // ConvertPipelineReleaseToPB converts db data model to protobuf data model
 func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline *datamodel.Pipeline, dbPipelineRelease []*datamodel.PipelineRelease, view pb.Pipeline_View) ([]*pb.PipelineRelease, error) {
-
-	type result struct {
-		idx     int
-		release *pb.PipelineRelease
-		err     error
-	}
-
 	pbPipelineReleases := make([]*pb.PipelineRelease, len(dbPipelineRelease))
 	for idx := range dbPipelineRelease {
 		pbRelease, err := c.ConvertPipelineReleaseToPB(

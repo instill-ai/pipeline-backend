@@ -13,12 +13,13 @@ require (
 	github.com/gogo/status v1.1.1
 	github.com/gojuno/minimock/v3 v3.3.13
 	github.com/golang-migrate/migrate/v4 v4.15.2
+	github.com/google/go-cmp v0.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 	github.com/instill-ai/component v0.26.0-beta
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240827183501-4342879886c2
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240830112314-d65ed8778a46
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
 	github.com/jackc/pgx/v5 v5.5.5
@@ -114,7 +115,6 @@ require (
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v23.5.26+incompatible // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-github/v62 v62.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect

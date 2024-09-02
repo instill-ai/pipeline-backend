@@ -27,7 +27,6 @@ import (
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 
-	"github.com/instill-ai/x/errmsg"
 	"github.com/instill-ai/x/paginate"
 
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -79,6 +78,9 @@ type Repository interface {
 	UpsertComponentDefinition(context.Context, *pb.ComponentDefinition) error
 	ListIntegrations(context.Context, ListIntegrationsParams) (IntegrationList, error)
 
+	CreateNamespaceConnection(context.Context, *datamodel.Connection) (*datamodel.Connection, error)
+	GetConnectionByID(context.Context, string) (*datamodel.Connection, error)
+
 	CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error
 	ListNamespaceSecrets(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) ([]*datamodel.Secret, int64, string, error)
 	GetNamespaceSecretByID(ctx context.Context, ownerPermalink string, id string) (*datamodel.Secret, error)
@@ -113,6 +115,23 @@ func NewRepository(db *gorm.DB, redisClient *redis.Client) Repository {
 		db:          db,
 		redisClient: redisClient,
 	}
+}
+
+func (r *repository) toDomainErr(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" || errors.Is(err, gorm.ErrDuplicatedKey) {
+		return errdomain.ErrAlreadyExists
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errdomain.ErrNotFound
+	}
+
+	return err
 }
 
 func (r *repository) GetHubStats(uidAllowList []uuid.UUID) (*datamodel.HubStats, error) {
@@ -168,14 +187,8 @@ func (r *repository) CreateNamespacePipeline(ctx context.Context, pipeline *data
 	r.PinUser(ctx, "pipeline")
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline")
 
-	if result := db.Model(&datamodel.Pipeline{}).Create(pipeline); result.Error != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return errmsg.AddMessage(ErrNameExists, "Pipeline ID already exists")
-		}
-		return result.Error
-	}
-	return nil
+	err := db.Model(&datamodel.Pipeline{}).Create(pipeline).Error
+	return r.toDomainErr(err)
 }
 
 func (r *repository) listPipelines(ctx context.Context, where string, whereArgs []interface{}, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (pipelines []*datamodel.Pipeline, totalSize int64, nextPageToken string, err error) {
@@ -529,14 +542,8 @@ func (r *repository) CreateNamespacePipelineRelease(ctx context.Context, ownerPe
 	r.PinUser(ctx, "pipeline_release")
 	db := r.CheckPinnedUser(ctx, r.db, "pipeline_release")
 
-	if result := db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease); result.Error != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return errmsg.AddMessage(ErrNameExists, "Release version already exists")
-		}
-		return result.Error
-	}
-	return nil
+	err := db.Model(&datamodel.PipelineRelease{}).Create(pipelineRelease).Error
+	return r.toDomainErr(err)
 }
 
 func (r *repository) ListNamespacePipelineReleases(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) (pipelineReleases []*datamodel.PipelineRelease, totalSize int64, nextPageToken string, err error) {
@@ -767,12 +774,8 @@ func (r *repository) ListComponentDefinitionUIDs(_ context.Context, p ListCompon
 func (r *repository) GetDefinitionByUID(_ context.Context, uid uuid.UUID) (*datamodel.ComponentDefinition, error) {
 	record := new(datamodel.ComponentDefinition)
 
-	if result := r.db.Model(record).Where("uid = ?", uid.String()).First(record); result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return nil, errdomain.ErrNotFound
-		}
-
-		return nil, result.Error
+	if err := r.db.Model(record).Where("uid = ?", uid.String()).First(record).Error; err != nil {
+		return nil, r.toDomainErr(err)
 	}
 
 	return record, nil
@@ -839,10 +842,10 @@ func (c integrationCursor) asToken() (string, error) {
 // The source of truth for integration is the JSON specification of its
 // component definition. The database only holds the indexed information of
 // component definitions in order to filter and paginate them.
-func (r *repository) ListIntegrations(_ context.Context, p ListIntegrationsParams) (IntegrationList, error) {
+func (r *repository) ListIntegrations(ctx context.Context, p ListIntegrationsParams) (IntegrationList, error) {
 	var resp IntegrationList
 
-	db := r.db
+	db := r.db.WithContext(ctx)
 	where := ""
 	whereArgs := []any{}
 
@@ -873,6 +876,9 @@ func (r *repository) ListIntegrations(_ context.Context, p ListIntegrationsParam
 		}
 		queryBuilder = queryBuilder.Where("(feature_score,uid) < (?, ?)", cursor.Score, cursor.UID)
 	}
+
+	// From here we'll apply different search criteria.
+	queryBuilder = queryBuilder.Session(&gorm.Session{})
 
 	// Several results might have the same score and release stage. We need to
 	// sort by at least one unique field so the pagination results aren't
@@ -928,16 +934,8 @@ func (r *repository) CreateNamespaceSecret(ctx context.Context, ownerPermalink s
 	r.PinUser(ctx, "secret")
 	db := r.CheckPinnedUser(ctx, r.db, "secret")
 
-	logger, _ := logger.GetZapLogger(ctx)
-	if result := db.Model(&datamodel.Secret{}).Create(secret); result.Error != nil {
-		logger.Error(result.Error.Error())
-		var pgErr *pgconn.PgError
-		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return errmsg.AddMessage(ErrNameExists, "Secret ID already exists")
-		}
-		return result.Error
-	}
-	return nil
+	err := db.Model(&datamodel.Secret{}).Create(secret).Error
+	return r.toDomainErr(err)
 }
 
 func (r *repository) ListNamespaceSecrets(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) (secrets []*datamodel.Secret, totalSize int64, nextPageToken string, err error) {
@@ -1058,22 +1056,8 @@ func (r *repository) CreatePipelineTags(ctx context.Context, pipelineUID uuid.UU
 		tags = append(tags, tag)
 	}
 
-	if result := db.Model(&datamodel.Tag{}).Create(&tags); result.Error != nil {
-
-		var pgErr *pgconn.PgError
-
-		if errors.As(result.Error, &pgErr) && pgErr.Code == "23505" || errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-
-			return errmsg.AddMessage(ErrNameExists, "Tag already exists")
-
-		}
-
-		return result.Error
-
-	}
-
-	return nil
-
+	err := db.Model(&datamodel.Tag{}).Create(&tags).Error
+	return r.toDomainErr(err)
 }
 
 func (r *repository) DeletePipelineTags(ctx context.Context, pipelineUID uuid.UUID, tagNames []string) error {
@@ -1289,4 +1273,25 @@ func (r *repository) GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx
 	}
 
 	return componentRuns, totalRows, nil
+}
+
+func (r *repository) CreateNamespaceConnection(ctx context.Context, conn *datamodel.Connection) (*datamodel.Connection, error) {
+	db := r.db.WithContext(ctx)
+
+	err := db.Create(conn).Error
+	if err != nil {
+		return nil, r.toDomainErr(err)
+	}
+	return conn, nil
+}
+
+func (r *repository) GetConnectionByID(ctx context.Context, id string) (*datamodel.Connection, error) {
+	db := r.db.WithContext(ctx)
+
+	conn := new(datamodel.Connection)
+	if err := db.Where("id = ?", id).First(&conn).Error; err != nil {
+		return nil, r.toDomainErr(err)
+	}
+
+	return conn, nil
 }

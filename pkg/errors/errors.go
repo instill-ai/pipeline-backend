@@ -9,12 +9,14 @@ package errors
 
 import (
 	"fmt"
+
+	"github.com/instill-ai/x/errmsg"
 )
 
 var (
 	// ErrInvalidArgument is used when the provided argument is incorrect (e.g.
 	// format, reserved).
-	ErrInvalidArgument = fmt.Errorf("invalid resource ID")
+	ErrInvalidArgument = fmt.Errorf("invalid")
 	// ErrNotFound is used when a resource doesn't exist.
 	ErrNotFound = fmt.Errorf("not found")
 	// ErrInvalidCloneTarget is used when the pipeline clone target is not
@@ -24,4 +26,7 @@ var (
 	// ErrUnauthorized is used when a request can't be performed due to
 	// insufficient permissions.
 	ErrUnauthorized = fmt.Errorf("unauthorized")
+	// ErrAlreadyExists is used when a resource can't be created because it
+	// already exists.
+	ErrAlreadyExists = errmsg.AddMessage(fmt.Errorf("resource already exists"), "Resource already exists.")
 )

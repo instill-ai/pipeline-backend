@@ -6,7 +6,7 @@ WORKDIR /${SERVICE_NAME}
 
 # -- install 3rd-party
 
-ARG TARGETOS TARGETARCH K6_VERSION
+ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION
 
 # Install Python, create virtual environment, and install pdfplumber
 RUN apt update && \
@@ -34,8 +34,8 @@ RUN npm install -g @opendocsg/pdf2md
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@v1.49
 
 # k6
-ADD https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz
-RUN tar -xf k6-v${K6_VERSION}-linux-$TARGETARCH.tar.gz --strip-components 1 -C /usr/bin
+RUN go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
+RUN xk6 build v${K6_VERSION} --with github.com/grafana/xk6-sql --output /usr/bin/k6
 
 # -- set up Go
 

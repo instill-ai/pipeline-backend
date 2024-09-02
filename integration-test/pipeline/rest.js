@@ -1,13 +1,12 @@
 import http from "k6/http";
+import grpc from "k6/net/grpc";
 
 import {
   check,
   group,
 } from "k6";
 
-import {
-  pipelinePublicHost,
-} from "./const.js";
+import { pipelinePublicHost } from "./const.js";
 
 import * as componentDefinition from "./rest-component-definition.js";
 import * as connectorDefinition from "./rest-connector-definition.js";
@@ -19,6 +18,12 @@ import * as pipelinePublicWithJwt from './rest-pipeline-public-with-jwt.js';
 import * as pipelinePrivate from './rest-pipeline-private.js';
 import * as trigger from './rest-trigger.js';
 import * as triggerAsync from './rest-trigger-async.js';
+
+const mgmtPrivateClient = new grpc.Client();
+mgmtPrivateClient.load(
+  ["../proto/core/mgmt/v1beta"],
+  "mgmt_private_service.proto"
+);
 
 export let options = {
   setupTimeout: '300s',
@@ -96,16 +101,35 @@ export default function (data) {
     componentDefinition.CheckList(data);
 
     integration.CheckIntegrations();
+    integration.CheckConnections(data);
   }
 }
 
 export function teardown(data) {
-
   group("Pipeline API: Delete all pipelines created by this test", () => {
     for (const pipeline of http.request("GET", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines?pageSize=100`, null, data.header).json("pipelines")) {
       check(http.request("DELETE", `${pipelinePublicHost}/v1beta/${constant.namespace}/pipelines/${pipeline.id}`, null, data.header), {
         [`DELETE /v1beta/${constant.namespace}/pipelines response status is 204`]: (r) => r.status === 204,
       });
     }
+  });
+
+  group("Integration API: Delete all connections created by this test", () => {
+    mgmtPrivateClient.connect(constant.mgmtGRPCPrivateHost, {
+      plaintext: true,
+      timeout: "300s",
+    });
+
+    var namespaceCheck = mgmtPrivateClient.invoke(
+      "core.mgmt.v1beta.MgmtPrivateService/CheckNamespaceAdmin",
+      { id: constant.defaultUsername },
+      {}
+    );
+    mgmtPrivateClient.close();
+
+    var q = `DELETE FROM connection WHERE namespace_uid = '${namespaceCheck.message.uid}' ` +
+      `AND id LIKE '${constant.dbIDPrefix}%';`;
+    constant.db.exec(q);
+    constant.db.close();
   });
 }

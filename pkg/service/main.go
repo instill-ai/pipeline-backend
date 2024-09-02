@@ -80,6 +80,7 @@ type Service interface {
 
 	GetIntegration(_ context.Context, id string, _ pb.View) (*pb.Integration, error)
 	ListIntegrations(context.Context, *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error)
+	CreateNamespaceConnection(context.Context, *pb.Connection) (*pb.Connection, error)
 }
 
 // TriggerResult defines a new type to encapsulate the stream data

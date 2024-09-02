@@ -10,7 +10,6 @@ import (
 var ErrOwnerTypeNotMatch = errors.New("owner type not match")
 var ErrNoDataDeleted = errors.New("no data deleted")
 var ErrNoDataUpdated = errors.New("no data updated")
-var ErrNameExists = errors.New("name or ID already exists")
 
 func newPageTokenErr(err error) error {
 	return fmt.Errorf("%w: invalid page token: %w", errdomain.ErrInvalidArgument, err)
