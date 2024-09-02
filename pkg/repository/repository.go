@@ -842,10 +842,10 @@ func (c integrationCursor) asToken() (string, error) {
 // The source of truth for integration is the JSON specification of its
 // component definition. The database only holds the indexed information of
 // component definitions in order to filter and paginate them.
-func (r *repository) ListIntegrations(_ context.Context, p ListIntegrationsParams) (IntegrationList, error) {
+func (r *repository) ListIntegrations(ctx context.Context, p ListIntegrationsParams) (IntegrationList, error) {
 	var resp IntegrationList
 
-	db := r.db
+	db := r.db.WithContext(ctx)
 	where := ""
 	whereArgs := []any{}
 
@@ -876,6 +876,9 @@ func (r *repository) ListIntegrations(_ context.Context, p ListIntegrationsParam
 		}
 		queryBuilder = queryBuilder.Where("(feature_score,uid) < (?, ?)", cursor.Score, cursor.UID)
 	}
+
+	// From here we'll apply different search criteria.
+	queryBuilder = queryBuilder.Session(&gorm.Session{})
 
 	// Several results might have the same score and release stage. We need to
 	// sort by at least one unique field so the pagination results aren't
