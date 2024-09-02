@@ -234,7 +234,7 @@ func TestRepository_Connection(t *testing.T) {
 	}
 
 	c.Run("nok - connection not found", func(c *qt.C) {
-		_, err := newRepo(c).GetConnectionByID(ctx, "foo")
+		_, err := newRepo(c).GetNamespaceConnectionByID(ctx, uuid.Must(uuid.NewV4()), "foo")
 		c.Check(errors.Is(err, errdomain.ErrNotFound), qt.IsTrue)
 	})
 
@@ -257,7 +257,7 @@ func TestRepository_Connection(t *testing.T) {
 		// Testing proto scan & write.
 		c.Check(inserted.Method, qt.ContentEquals, method)
 
-		fetched, err := repo.GetConnectionByID(ctx, id)
+		fetched, err := repo.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, id)
 		c.Check(err, qt.IsNil)
 
 		cmp := qt.CmpEquals(cmpopts.EquateApproxTime(time.Millisecond))

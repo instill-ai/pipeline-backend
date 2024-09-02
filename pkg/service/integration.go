@@ -289,3 +289,55 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pipelinep
 
 	return conn, nil
 }
+
+func (s *service) GetNamespaceConnection(ctx context.Context, req *pipelinepb.GetNamespaceConnectionRequest) (*pipelinepb.Connection, error) {
+	view := req.GetView()
+	if view == pipelinepb.View_VIEW_UNSPECIFIED {
+		view = pipelinepb.View_VIEW_BASIC
+	}
+
+	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	if err != nil {
+		return nil, fmt.Errorf("fetching namespace: %w", err)
+	}
+
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, fmt.Errorf("checking namespace permissions: %w", err)
+	}
+
+	inDB, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, req.GetConnectionId())
+	if err != nil {
+		return nil, fmt.Errorf("fetching connection: %w", err)
+	}
+
+	cdIdx, err := s.repository.GetDefinitionByUID(ctx, inDB.IntegrationUID)
+	if err != nil {
+		return nil, fmt.Errorf("fetching definition index: %w", err)
+	}
+
+	conn := &pipelinepb.Connection{
+		Uid:              inDB.UID.String(),
+		Id:               inDB.ID,
+		NamespaceId:      req.GetNamespaceId(),
+		IntegrationId:    cdIdx.ID,
+		IntegrationTitle: cdIdx.Title,
+		Method:           pipelinepb.Connection_Method(inDB.Method),
+		View:             view,
+		CreateTime:       timestamppb.New(inDB.CreateTime),
+		UpdateTime:       timestamppb.New(inDB.UpdateTime),
+	}
+
+	if view != pipelinepb.View_VIEW_FULL {
+		return conn, nil
+	}
+
+	conn.Setup = new(structpb.Struct)
+	if err := conn.Setup.UnmarshalJSON(inDB.Setup); err != nil {
+		return nil, fmt.Errorf("unmarshalling setup: %w", err)
+	}
+
+	// TODO jvallesm: INS-5963 addresses redacting these values.
+
+	return conn, nil
+
+}

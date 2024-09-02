@@ -106,6 +106,8 @@ export function CheckIntegrations() {
 }
 
 export function CheckConnections(data) {
+  var connectionID = dbIDPrefix + randomString(8);
+
   group("Integration API: Create connection", () => {
     var path = `/v1beta/namespaces/${defaultUsername}/connections`;
 
@@ -114,7 +116,7 @@ export function CheckConnections(data) {
       "POST",
       pipelinePublicHost + path,
       JSON.stringify({
-        id: dbIDPrefix + randomString(8),
+        id: connectionID,
         integrationId: "email",
         method: "METHOD_DICTIONARY",
         setup: {
@@ -167,6 +169,31 @@ export function CheckConnections(data) {
     );
     check(invalidIDReq, {
       [`POST ${path} response status is 400`]: (r) => r.status === 400,
+    });
+  });
+
+  group("Integration API: Get connection", () => {
+    var path = `/v1beta/namespaces/${defaultUsername}/connections/${connectionID}`;
+
+    check(http.request( "GET", pipelinePublicHost + path + "aaa", null, data.header), {
+      [`POST ${path + "aaa"} response status is 404`]: (r) => r.status === 404,
+    });
+
+    // Basic view
+    check(http.request( "GET", pipelinePublicHost + path, null, data.header), {
+      [`POST ${path} response status is 200`]: (r) => r.status === 200,
+      [`POST ${path} has basic view`]: (r) => r.json().connection.view === "VIEW_BASIC",
+      [`POST ${path} has setup hidden`]: (r) => r.json().connection.setup === null,
+      [`POST ${path} has integration ID`]: (r) => r.json().connection.integrationId === "email",
+      [`POST ${path} has integration title`]: (r) => r.json().connection.integrationTitle === "Email",
+    });
+
+    // Full view
+    check(http.request( "GET", pipelinePublicHost + path + "?view=VIEW_FULL", null, data.header), {
+      [`POST ${path + "?view=VIEW_FULL"} response status is 200`]: (r) => r.status === 200,
+      [`POST ${path + "?view=VIEW_FULL"} has full view`]: (r) => r.json().connection.view === "VIEW_FULL",
+      [`POST ${path + "?view=VIEW_FULL"} has setup`]: (r) => r.json().connection.setup != null,
+      [`POST ${path + "?view=VIEW_FULL"} has setup value`]: (r) => r.json().connection.setup.password === "0123", // TODO: redact
     });
   });
 }

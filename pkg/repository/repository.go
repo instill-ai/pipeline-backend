@@ -79,7 +79,7 @@ type Repository interface {
 	ListIntegrations(context.Context, ListIntegrationsParams) (IntegrationList, error)
 
 	CreateNamespaceConnection(context.Context, *datamodel.Connection) (*datamodel.Connection, error)
-	GetConnectionByID(context.Context, string) (*datamodel.Connection, error)
+	GetNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error)
 
 	CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error
 	ListNamespaceSecrets(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) ([]*datamodel.Secret, int64, string, error)
@@ -1285,11 +1285,13 @@ func (r *repository) CreateNamespaceConnection(ctx context.Context, conn *datamo
 	return conn, nil
 }
 
-func (r *repository) GetConnectionByID(ctx context.Context, id string) (*datamodel.Connection, error) {
+func (r *repository) GetNamespaceConnectionByID(ctx context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error) {
 	db := r.db.WithContext(ctx)
 
+	q := db.Where("namespace_uid = ? AND id = ? AND delete_time IS NULL", nsUID, id)
+
 	conn := new(datamodel.Connection)
-	if err := db.Where("id = ?", id).First(&conn).Error; err != nil {
+	if err := q.First(&conn).Error; err != nil {
 		return nil, r.toDomainErr(err)
 	}
 
