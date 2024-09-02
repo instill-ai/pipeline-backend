@@ -96,12 +96,6 @@ type RepositoryMock struct {
 	beforeDeletePipelineTagsCounter uint64
 	DeletePipelineTagsMock          mRepositoryMockDeletePipelineTags
 
-	funcGetConnectionByID          func(ctx context.Context, s1 string) (cp1 *datamodel.Connection, err error)
-	inspectFuncGetConnectionByID   func(ctx context.Context, s1 string)
-	afterGetConnectionByIDCounter  uint64
-	beforeGetConnectionByIDCounter uint64
-	GetConnectionByIDMock          mRepositoryMockGetConnectionByID
-
 	funcGetDefinitionByUID          func(ctx context.Context, u1 uuid.UUID) (cp1 *datamodel.ComponentDefinition, err error)
 	inspectFuncGetDefinitionByUID   func(ctx context.Context, u1 uuid.UUID)
 	afterGetDefinitionByUIDCounter  uint64
@@ -119,6 +113,12 @@ type RepositoryMock struct {
 	afterGetLatestNamespacePipelineReleaseCounter  uint64
 	beforeGetLatestNamespacePipelineReleaseCounter uint64
 	GetLatestNamespacePipelineReleaseMock          mRepositoryMockGetLatestNamespacePipelineRelease
+
+	funcGetNamespaceConnectionByID          func(ctx context.Context, nsUID uuid.UUID, id string) (cp1 *datamodel.Connection, err error)
+	inspectFuncGetNamespaceConnectionByID   func(ctx context.Context, nsUID uuid.UUID, id string)
+	afterGetNamespaceConnectionByIDCounter  uint64
+	beforeGetNamespaceConnectionByIDCounter uint64
+	GetNamespaceConnectionByIDMock          mRepositoryMockGetNamespaceConnectionByID
 
 	funcGetNamespacePipelineByID          func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool) (pp1 *datamodel.Pipeline, err error)
 	inspectFuncGetNamespacePipelineByID   func(ctx context.Context, ownerPermalink string, id string, isBasicView bool, embedReleases bool)
@@ -345,9 +345,6 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 	m.DeletePipelineTagsMock = mRepositoryMockDeletePipelineTags{mock: m}
 	m.DeletePipelineTagsMock.callArgs = []*RepositoryMockDeletePipelineTagsParams{}
 
-	m.GetConnectionByIDMock = mRepositoryMockGetConnectionByID{mock: m}
-	m.GetConnectionByIDMock.callArgs = []*RepositoryMockGetConnectionByIDParams{}
-
 	m.GetDefinitionByUIDMock = mRepositoryMockGetDefinitionByUID{mock: m}
 	m.GetDefinitionByUIDMock.callArgs = []*RepositoryMockGetDefinitionByUIDParams{}
 
@@ -356,6 +353,9 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 
 	m.GetLatestNamespacePipelineReleaseMock = mRepositoryMockGetLatestNamespacePipelineRelease{mock: m}
 	m.GetLatestNamespacePipelineReleaseMock.callArgs = []*RepositoryMockGetLatestNamespacePipelineReleaseParams{}
+
+	m.GetNamespaceConnectionByIDMock = mRepositoryMockGetNamespaceConnectionByID{mock: m}
+	m.GetNamespaceConnectionByIDMock.callArgs = []*RepositoryMockGetNamespaceConnectionByIDParams{}
 
 	m.GetNamespacePipelineByIDMock = mRepositoryMockGetNamespacePipelineByID{mock: m}
 	m.GetNamespacePipelineByIDMock.callArgs = []*RepositoryMockGetNamespacePipelineByIDParams{}
@@ -4573,327 +4573,6 @@ func (m *RepositoryMock) MinimockDeletePipelineTagsInspect() {
 	}
 }
 
-type mRepositoryMockGetConnectionByID struct {
-	optional           bool
-	mock               *RepositoryMock
-	defaultExpectation *RepositoryMockGetConnectionByIDExpectation
-	expectations       []*RepositoryMockGetConnectionByIDExpectation
-
-	callArgs []*RepositoryMockGetConnectionByIDParams
-	mutex    sync.RWMutex
-
-	expectedInvocations uint64
-}
-
-// RepositoryMockGetConnectionByIDExpectation specifies expectation struct of the Repository.GetConnectionByID
-type RepositoryMockGetConnectionByIDExpectation struct {
-	mock      *RepositoryMock
-	params    *RepositoryMockGetConnectionByIDParams
-	paramPtrs *RepositoryMockGetConnectionByIDParamPtrs
-	results   *RepositoryMockGetConnectionByIDResults
-	Counter   uint64
-}
-
-// RepositoryMockGetConnectionByIDParams contains parameters of the Repository.GetConnectionByID
-type RepositoryMockGetConnectionByIDParams struct {
-	ctx context.Context
-	s1  string
-}
-
-// RepositoryMockGetConnectionByIDParamPtrs contains pointers to parameters of the Repository.GetConnectionByID
-type RepositoryMockGetConnectionByIDParamPtrs struct {
-	ctx *context.Context
-	s1  *string
-}
-
-// RepositoryMockGetConnectionByIDResults contains results of the Repository.GetConnectionByID
-type RepositoryMockGetConnectionByIDResults struct {
-	cp1 *datamodel.Connection
-	err error
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) Optional() *mRepositoryMockGetConnectionByID {
-	mmGetConnectionByID.optional = true
-	return mmGetConnectionByID
-}
-
-// Expect sets up expected params for Repository.GetConnectionByID
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) Expect(ctx context.Context, s1 string) *mRepositoryMockGetConnectionByID {
-	if mmGetConnectionByID.mock.funcGetConnectionByID != nil {
-		mmGetConnectionByID.mock.t.Fatalf("RepositoryMock.GetConnectionByID mock is already set by Set")
-	}
-
-	if mmGetConnectionByID.defaultExpectation == nil {
-		mmGetConnectionByID.defaultExpectation = &RepositoryMockGetConnectionByIDExpectation{}
-	}
-
-	if mmGetConnectionByID.defaultExpectation.paramPtrs != nil {
-		mmGetConnectionByID.mock.t.Fatalf("RepositoryMock.GetConnectionByID mock is already set by ExpectParams functions")
-	}
-
-	mmGetConnectionByID.defaultExpectation.params = &RepositoryMockGetConnectionByIDParams{ctx, s1}
-	for _, e := range mmGetConnectionByID.expectations {
-		if minimock.Equal(e.params, mmGetConnectionByID.defaultExpectation.params) {
-			mmGetConnectionByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetConnectionByID.defaultExpectation.params)
-		}
-	}
-
-	return mmGetConnectionByID
-}
-
-// ExpectCtxParam1 sets up expected param ctx for Repository.GetConnectionByID
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockGetConnectionByID {
-	if mmGetConnectionByID.mock.funcGetConnectionByID != nil {
-		mmGetConnectionByID.mock.t.Fatalf("RepositoryMock.GetConnectionByID mock is already set by Set")
-	}
-
-	if mmGetConnectionByID.defaultExpectation == nil {
-		mmGetConnectionByID.defaultExpectation = &RepositoryMockGetConnectionByIDExpectation{}
-	}
-
-	if mmGetConnectionByID.defaultExpectation.params != nil {
-		mmGetConnectionByID.mock.t.Fatalf("RepositoryMock.GetConnectionByID mock is already set by Expect")
-	}
-
-	if mmGetConnectionByID.defaultExpectation.paramPtrs == nil {
-		mmGetConnectionByID.defaultExpectation.paramPtrs = &RepositoryMockGetConnectionByIDParamPtrs{}
-	}
-	mmGetConnectionByID.defaultExpectation.paramPtrs.ctx = &ctx
-
-	return mmGetConnectionByID
-}
-
-// ExpectS1Param2 sets up expected param s1 for Repository.GetConnectionByID
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) ExpectS1Param2(s1 string) *mRepositoryMockGetConnectionByID {
-	if mmGetConnectionByID.mock.funcGetConnectionByID != nil {
-		mmGetConnectionByID.mock.t.Fatalf("RepositoryMock.GetConnectionByID mock is already set by Set")
-	}
-
-	if mmGetConnectionByID.defaultExpectation == nil {
-		mmGetConnectionByID.defaultExpectation = &RepositoryMockGetConnectionByIDExpectation{}
-	}
-
-	if mmGetConnectionByID.defaultExpectation.params != nil {
-		mmGetConnectionByID.mock.t.Fatalf("RepositoryMock.GetConnectionByID mock is already set by Expect")
-	}
-
-	if mmGetConnectionByID.defaultExpectation.paramPtrs == nil {
-		mmGetConnectionByID.defaultExpectation.paramPtrs = &RepositoryMockGetConnectionByIDParamPtrs{}
-	}
-	mmGetConnectionByID.defaultExpectation.paramPtrs.s1 = &s1
-
-	return mmGetConnectionByID
-}
-
-// Inspect accepts an inspector function that has same arguments as the Repository.GetConnectionByID
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) Inspect(f func(ctx context.Context, s1 string)) *mRepositoryMockGetConnectionByID {
-	if mmGetConnectionByID.mock.inspectFuncGetConnectionByID != nil {
-		mmGetConnectionByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetConnectionByID")
-	}
-
-	mmGetConnectionByID.mock.inspectFuncGetConnectionByID = f
-
-	return mmGetConnectionByID
-}
-
-// Return sets up results that will be returned by Repository.GetConnectionByID
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) Return(cp1 *datamodel.Connection, err error) *RepositoryMock {
-	if mmGetConnectionByID.mock.funcGetConnectionByID != nil {
-		mmGetConnectionByID.mock.t.Fatalf("RepositoryMock.GetConnectionByID mock is already set by Set")
-	}
-
-	if mmGetConnectionByID.defaultExpectation == nil {
-		mmGetConnectionByID.defaultExpectation = &RepositoryMockGetConnectionByIDExpectation{mock: mmGetConnectionByID.mock}
-	}
-	mmGetConnectionByID.defaultExpectation.results = &RepositoryMockGetConnectionByIDResults{cp1, err}
-	return mmGetConnectionByID.mock
-}
-
-// Set uses given function f to mock the Repository.GetConnectionByID method
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) Set(f func(ctx context.Context, s1 string) (cp1 *datamodel.Connection, err error)) *RepositoryMock {
-	if mmGetConnectionByID.defaultExpectation != nil {
-		mmGetConnectionByID.mock.t.Fatalf("Default expectation is already set for the Repository.GetConnectionByID method")
-	}
-
-	if len(mmGetConnectionByID.expectations) > 0 {
-		mmGetConnectionByID.mock.t.Fatalf("Some expectations are already set for the Repository.GetConnectionByID method")
-	}
-
-	mmGetConnectionByID.mock.funcGetConnectionByID = f
-	return mmGetConnectionByID.mock
-}
-
-// When sets expectation for the Repository.GetConnectionByID which will trigger the result defined by the following
-// Then helper
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) When(ctx context.Context, s1 string) *RepositoryMockGetConnectionByIDExpectation {
-	if mmGetConnectionByID.mock.funcGetConnectionByID != nil {
-		mmGetConnectionByID.mock.t.Fatalf("RepositoryMock.GetConnectionByID mock is already set by Set")
-	}
-
-	expectation := &RepositoryMockGetConnectionByIDExpectation{
-		mock:   mmGetConnectionByID.mock,
-		params: &RepositoryMockGetConnectionByIDParams{ctx, s1},
-	}
-	mmGetConnectionByID.expectations = append(mmGetConnectionByID.expectations, expectation)
-	return expectation
-}
-
-// Then sets up Repository.GetConnectionByID return parameters for the expectation previously defined by the When method
-func (e *RepositoryMockGetConnectionByIDExpectation) Then(cp1 *datamodel.Connection, err error) *RepositoryMock {
-	e.results = &RepositoryMockGetConnectionByIDResults{cp1, err}
-	return e.mock
-}
-
-// Times sets number of times Repository.GetConnectionByID should be invoked
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) Times(n uint64) *mRepositoryMockGetConnectionByID {
-	if n == 0 {
-		mmGetConnectionByID.mock.t.Fatalf("Times of RepositoryMock.GetConnectionByID mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmGetConnectionByID.expectedInvocations, n)
-	return mmGetConnectionByID
-}
-
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) invocationsDone() bool {
-	if len(mmGetConnectionByID.expectations) == 0 && mmGetConnectionByID.defaultExpectation == nil && mmGetConnectionByID.mock.funcGetConnectionByID == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmGetConnectionByID.mock.afterGetConnectionByIDCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmGetConnectionByID.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// GetConnectionByID implements repository.Repository
-func (mmGetConnectionByID *RepositoryMock) GetConnectionByID(ctx context.Context, s1 string) (cp1 *datamodel.Connection, err error) {
-	mm_atomic.AddUint64(&mmGetConnectionByID.beforeGetConnectionByIDCounter, 1)
-	defer mm_atomic.AddUint64(&mmGetConnectionByID.afterGetConnectionByIDCounter, 1)
-
-	if mmGetConnectionByID.inspectFuncGetConnectionByID != nil {
-		mmGetConnectionByID.inspectFuncGetConnectionByID(ctx, s1)
-	}
-
-	mm_params := RepositoryMockGetConnectionByIDParams{ctx, s1}
-
-	// Record call args
-	mmGetConnectionByID.GetConnectionByIDMock.mutex.Lock()
-	mmGetConnectionByID.GetConnectionByIDMock.callArgs = append(mmGetConnectionByID.GetConnectionByIDMock.callArgs, &mm_params)
-	mmGetConnectionByID.GetConnectionByIDMock.mutex.Unlock()
-
-	for _, e := range mmGetConnectionByID.GetConnectionByIDMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.cp1, e.results.err
-		}
-	}
-
-	if mmGetConnectionByID.GetConnectionByIDMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmGetConnectionByID.GetConnectionByIDMock.defaultExpectation.Counter, 1)
-		mm_want := mmGetConnectionByID.GetConnectionByIDMock.defaultExpectation.params
-		mm_want_ptrs := mmGetConnectionByID.GetConnectionByIDMock.defaultExpectation.paramPtrs
-
-		mm_got := RepositoryMockGetConnectionByIDParams{ctx, s1}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmGetConnectionByID.t.Errorf("RepositoryMock.GetConnectionByID got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.s1 != nil && !minimock.Equal(*mm_want_ptrs.s1, mm_got.s1) {
-				mmGetConnectionByID.t.Errorf("RepositoryMock.GetConnectionByID got unexpected parameter s1, want: %#v, got: %#v%s\n", *mm_want_ptrs.s1, mm_got.s1, minimock.Diff(*mm_want_ptrs.s1, mm_got.s1))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmGetConnectionByID.t.Errorf("RepositoryMock.GetConnectionByID got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmGetConnectionByID.GetConnectionByIDMock.defaultExpectation.results
-		if mm_results == nil {
-			mmGetConnectionByID.t.Fatal("No results are set for the RepositoryMock.GetConnectionByID")
-		}
-		return (*mm_results).cp1, (*mm_results).err
-	}
-	if mmGetConnectionByID.funcGetConnectionByID != nil {
-		return mmGetConnectionByID.funcGetConnectionByID(ctx, s1)
-	}
-	mmGetConnectionByID.t.Fatalf("Unexpected call to RepositoryMock.GetConnectionByID. %v %v", ctx, s1)
-	return
-}
-
-// GetConnectionByIDAfterCounter returns a count of finished RepositoryMock.GetConnectionByID invocations
-func (mmGetConnectionByID *RepositoryMock) GetConnectionByIDAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetConnectionByID.afterGetConnectionByIDCounter)
-}
-
-// GetConnectionByIDBeforeCounter returns a count of RepositoryMock.GetConnectionByID invocations
-func (mmGetConnectionByID *RepositoryMock) GetConnectionByIDBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGetConnectionByID.beforeGetConnectionByIDCounter)
-}
-
-// Calls returns a list of arguments used in each call to RepositoryMock.GetConnectionByID.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmGetConnectionByID *mRepositoryMockGetConnectionByID) Calls() []*RepositoryMockGetConnectionByIDParams {
-	mmGetConnectionByID.mutex.RLock()
-
-	argCopy := make([]*RepositoryMockGetConnectionByIDParams, len(mmGetConnectionByID.callArgs))
-	copy(argCopy, mmGetConnectionByID.callArgs)
-
-	mmGetConnectionByID.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockGetConnectionByIDDone returns true if the count of the GetConnectionByID invocations corresponds
-// the number of defined expectations
-func (m *RepositoryMock) MinimockGetConnectionByIDDone() bool {
-	if m.GetConnectionByIDMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.GetConnectionByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.GetConnectionByIDMock.invocationsDone()
-}
-
-// MinimockGetConnectionByIDInspect logs each unmet expectation
-func (m *RepositoryMock) MinimockGetConnectionByIDInspect() {
-	for _, e := range m.GetConnectionByIDMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to RepositoryMock.GetConnectionByID with params: %#v", *e.params)
-		}
-	}
-
-	afterGetConnectionByIDCounter := mm_atomic.LoadUint64(&m.afterGetConnectionByIDCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.GetConnectionByIDMock.defaultExpectation != nil && afterGetConnectionByIDCounter < 1 {
-		if m.GetConnectionByIDMock.defaultExpectation.params == nil {
-			m.t.Error("Expected call to RepositoryMock.GetConnectionByID")
-		} else {
-			m.t.Errorf("Expected call to RepositoryMock.GetConnectionByID with params: %#v", *m.GetConnectionByIDMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcGetConnectionByID != nil && afterGetConnectionByIDCounter < 1 {
-		m.t.Error("Expected call to RepositoryMock.GetConnectionByID")
-	}
-
-	if !m.GetConnectionByIDMock.invocationsDone() && afterGetConnectionByIDCounter > 0 {
-		m.t.Errorf("Expected %d calls to RepositoryMock.GetConnectionByID but found %d calls",
-			mm_atomic.LoadUint64(&m.GetConnectionByIDMock.expectedInvocations), afterGetConnectionByIDCounter)
-	}
-}
-
 type mRepositoryMockGetDefinitionByUID struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -5882,6 +5561,355 @@ func (m *RepositoryMock) MinimockGetLatestNamespacePipelineReleaseInspect() {
 	if !m.GetLatestNamespacePipelineReleaseMock.invocationsDone() && afterGetLatestNamespacePipelineReleaseCounter > 0 {
 		m.t.Errorf("Expected %d calls to RepositoryMock.GetLatestNamespacePipelineRelease but found %d calls",
 			mm_atomic.LoadUint64(&m.GetLatestNamespacePipelineReleaseMock.expectedInvocations), afterGetLatestNamespacePipelineReleaseCounter)
+	}
+}
+
+type mRepositoryMockGetNamespaceConnectionByID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockGetNamespaceConnectionByIDExpectation
+	expectations       []*RepositoryMockGetNamespaceConnectionByIDExpectation
+
+	callArgs []*RepositoryMockGetNamespaceConnectionByIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// RepositoryMockGetNamespaceConnectionByIDExpectation specifies expectation struct of the Repository.GetNamespaceConnectionByID
+type RepositoryMockGetNamespaceConnectionByIDExpectation struct {
+	mock      *RepositoryMock
+	params    *RepositoryMockGetNamespaceConnectionByIDParams
+	paramPtrs *RepositoryMockGetNamespaceConnectionByIDParamPtrs
+	results   *RepositoryMockGetNamespaceConnectionByIDResults
+	Counter   uint64
+}
+
+// RepositoryMockGetNamespaceConnectionByIDParams contains parameters of the Repository.GetNamespaceConnectionByID
+type RepositoryMockGetNamespaceConnectionByIDParams struct {
+	ctx   context.Context
+	nsUID uuid.UUID
+	id    string
+}
+
+// RepositoryMockGetNamespaceConnectionByIDParamPtrs contains pointers to parameters of the Repository.GetNamespaceConnectionByID
+type RepositoryMockGetNamespaceConnectionByIDParamPtrs struct {
+	ctx   *context.Context
+	nsUID *uuid.UUID
+	id    *string
+}
+
+// RepositoryMockGetNamespaceConnectionByIDResults contains results of the Repository.GetNamespaceConnectionByID
+type RepositoryMockGetNamespaceConnectionByIDResults struct {
+	cp1 *datamodel.Connection
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) Optional() *mRepositoryMockGetNamespaceConnectionByID {
+	mmGetNamespaceConnectionByID.optional = true
+	return mmGetNamespaceConnectionByID
+}
+
+// Expect sets up expected params for Repository.GetNamespaceConnectionByID
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) Expect(ctx context.Context, nsUID uuid.UUID, id string) *mRepositoryMockGetNamespaceConnectionByID {
+	if mmGetNamespaceConnectionByID.mock.funcGetNamespaceConnectionByID != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation == nil {
+		mmGetNamespaceConnectionByID.defaultExpectation = &RepositoryMockGetNamespaceConnectionByIDExpectation{}
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by ExpectParams functions")
+	}
+
+	mmGetNamespaceConnectionByID.defaultExpectation.params = &RepositoryMockGetNamespaceConnectionByIDParams{ctx, nsUID, id}
+	for _, e := range mmGetNamespaceConnectionByID.expectations {
+		if minimock.Equal(e.params, mmGetNamespaceConnectionByID.defaultExpectation.params) {
+			mmGetNamespaceConnectionByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetNamespaceConnectionByID.defaultExpectation.params)
+		}
+	}
+
+	return mmGetNamespaceConnectionByID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.GetNamespaceConnectionByID
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockGetNamespaceConnectionByID {
+	if mmGetNamespaceConnectionByID.mock.funcGetNamespaceConnectionByID != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation == nil {
+		mmGetNamespaceConnectionByID.defaultExpectation = &RepositoryMockGetNamespaceConnectionByIDExpectation{}
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation.params != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by Expect")
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs == nil {
+		mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespaceConnectionByIDParamPtrs{}
+	}
+	mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmGetNamespaceConnectionByID
+}
+
+// ExpectNsUIDParam2 sets up expected param nsUID for Repository.GetNamespaceConnectionByID
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) ExpectNsUIDParam2(nsUID uuid.UUID) *mRepositoryMockGetNamespaceConnectionByID {
+	if mmGetNamespaceConnectionByID.mock.funcGetNamespaceConnectionByID != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation == nil {
+		mmGetNamespaceConnectionByID.defaultExpectation = &RepositoryMockGetNamespaceConnectionByIDExpectation{}
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation.params != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by Expect")
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs == nil {
+		mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespaceConnectionByIDParamPtrs{}
+	}
+	mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs.nsUID = &nsUID
+
+	return mmGetNamespaceConnectionByID
+}
+
+// ExpectIdParam3 sets up expected param id for Repository.GetNamespaceConnectionByID
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) ExpectIdParam3(id string) *mRepositoryMockGetNamespaceConnectionByID {
+	if mmGetNamespaceConnectionByID.mock.funcGetNamespaceConnectionByID != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation == nil {
+		mmGetNamespaceConnectionByID.defaultExpectation = &RepositoryMockGetNamespaceConnectionByIDExpectation{}
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation.params != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by Expect")
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs == nil {
+		mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs = &RepositoryMockGetNamespaceConnectionByIDParamPtrs{}
+	}
+	mmGetNamespaceConnectionByID.defaultExpectation.paramPtrs.id = &id
+
+	return mmGetNamespaceConnectionByID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.GetNamespaceConnectionByID
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) Inspect(f func(ctx context.Context, nsUID uuid.UUID, id string)) *mRepositoryMockGetNamespaceConnectionByID {
+	if mmGetNamespaceConnectionByID.mock.inspectFuncGetNamespaceConnectionByID != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetNamespaceConnectionByID")
+	}
+
+	mmGetNamespaceConnectionByID.mock.inspectFuncGetNamespaceConnectionByID = f
+
+	return mmGetNamespaceConnectionByID
+}
+
+// Return sets up results that will be returned by Repository.GetNamespaceConnectionByID
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) Return(cp1 *datamodel.Connection, err error) *RepositoryMock {
+	if mmGetNamespaceConnectionByID.mock.funcGetNamespaceConnectionByID != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmGetNamespaceConnectionByID.defaultExpectation == nil {
+		mmGetNamespaceConnectionByID.defaultExpectation = &RepositoryMockGetNamespaceConnectionByIDExpectation{mock: mmGetNamespaceConnectionByID.mock}
+	}
+	mmGetNamespaceConnectionByID.defaultExpectation.results = &RepositoryMockGetNamespaceConnectionByIDResults{cp1, err}
+	return mmGetNamespaceConnectionByID.mock
+}
+
+// Set uses given function f to mock the Repository.GetNamespaceConnectionByID method
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) Set(f func(ctx context.Context, nsUID uuid.UUID, id string) (cp1 *datamodel.Connection, err error)) *RepositoryMock {
+	if mmGetNamespaceConnectionByID.defaultExpectation != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("Default expectation is already set for the Repository.GetNamespaceConnectionByID method")
+	}
+
+	if len(mmGetNamespaceConnectionByID.expectations) > 0 {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("Some expectations are already set for the Repository.GetNamespaceConnectionByID method")
+	}
+
+	mmGetNamespaceConnectionByID.mock.funcGetNamespaceConnectionByID = f
+	return mmGetNamespaceConnectionByID.mock
+}
+
+// When sets expectation for the Repository.GetNamespaceConnectionByID which will trigger the result defined by the following
+// Then helper
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) When(ctx context.Context, nsUID uuid.UUID, id string) *RepositoryMockGetNamespaceConnectionByIDExpectation {
+	if mmGetNamespaceConnectionByID.mock.funcGetNamespaceConnectionByID != nil {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.GetNamespaceConnectionByID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockGetNamespaceConnectionByIDExpectation{
+		mock:   mmGetNamespaceConnectionByID.mock,
+		params: &RepositoryMockGetNamespaceConnectionByIDParams{ctx, nsUID, id},
+	}
+	mmGetNamespaceConnectionByID.expectations = append(mmGetNamespaceConnectionByID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.GetNamespaceConnectionByID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockGetNamespaceConnectionByIDExpectation) Then(cp1 *datamodel.Connection, err error) *RepositoryMock {
+	e.results = &RepositoryMockGetNamespaceConnectionByIDResults{cp1, err}
+	return e.mock
+}
+
+// Times sets number of times Repository.GetNamespaceConnectionByID should be invoked
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) Times(n uint64) *mRepositoryMockGetNamespaceConnectionByID {
+	if n == 0 {
+		mmGetNamespaceConnectionByID.mock.t.Fatalf("Times of RepositoryMock.GetNamespaceConnectionByID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetNamespaceConnectionByID.expectedInvocations, n)
+	return mmGetNamespaceConnectionByID
+}
+
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) invocationsDone() bool {
+	if len(mmGetNamespaceConnectionByID.expectations) == 0 && mmGetNamespaceConnectionByID.defaultExpectation == nil && mmGetNamespaceConnectionByID.mock.funcGetNamespaceConnectionByID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetNamespaceConnectionByID.mock.afterGetNamespaceConnectionByIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetNamespaceConnectionByID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetNamespaceConnectionByID implements repository.Repository
+func (mmGetNamespaceConnectionByID *RepositoryMock) GetNamespaceConnectionByID(ctx context.Context, nsUID uuid.UUID, id string) (cp1 *datamodel.Connection, err error) {
+	mm_atomic.AddUint64(&mmGetNamespaceConnectionByID.beforeGetNamespaceConnectionByIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetNamespaceConnectionByID.afterGetNamespaceConnectionByIDCounter, 1)
+
+	if mmGetNamespaceConnectionByID.inspectFuncGetNamespaceConnectionByID != nil {
+		mmGetNamespaceConnectionByID.inspectFuncGetNamespaceConnectionByID(ctx, nsUID, id)
+	}
+
+	mm_params := RepositoryMockGetNamespaceConnectionByIDParams{ctx, nsUID, id}
+
+	// Record call args
+	mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.mutex.Lock()
+	mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.callArgs = append(mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.callArgs, &mm_params)
+	mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.mutex.Unlock()
+
+	for _, e := range mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.cp1, e.results.err
+		}
+	}
+
+	if mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.defaultExpectation.params
+		mm_want_ptrs := mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockGetNamespaceConnectionByIDParams{ctx, nsUID, id}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetNamespaceConnectionByID.t.Errorf("RepositoryMock.GetNamespaceConnectionByID got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.nsUID != nil && !minimock.Equal(*mm_want_ptrs.nsUID, mm_got.nsUID) {
+				mmGetNamespaceConnectionByID.t.Errorf("RepositoryMock.GetNamespaceConnectionByID got unexpected parameter nsUID, want: %#v, got: %#v%s\n", *mm_want_ptrs.nsUID, mm_got.nsUID, minimock.Diff(*mm_want_ptrs.nsUID, mm_got.nsUID))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmGetNamespaceConnectionByID.t.Errorf("RepositoryMock.GetNamespaceConnectionByID got unexpected parameter id, want: %#v, got: %#v%s\n", *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetNamespaceConnectionByID.t.Errorf("RepositoryMock.GetNamespaceConnectionByID got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetNamespaceConnectionByID.GetNamespaceConnectionByIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetNamespaceConnectionByID.t.Fatal("No results are set for the RepositoryMock.GetNamespaceConnectionByID")
+		}
+		return (*mm_results).cp1, (*mm_results).err
+	}
+	if mmGetNamespaceConnectionByID.funcGetNamespaceConnectionByID != nil {
+		return mmGetNamespaceConnectionByID.funcGetNamespaceConnectionByID(ctx, nsUID, id)
+	}
+	mmGetNamespaceConnectionByID.t.Fatalf("Unexpected call to RepositoryMock.GetNamespaceConnectionByID. %v %v %v", ctx, nsUID, id)
+	return
+}
+
+// GetNamespaceConnectionByIDAfterCounter returns a count of finished RepositoryMock.GetNamespaceConnectionByID invocations
+func (mmGetNamespaceConnectionByID *RepositoryMock) GetNamespaceConnectionByIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetNamespaceConnectionByID.afterGetNamespaceConnectionByIDCounter)
+}
+
+// GetNamespaceConnectionByIDBeforeCounter returns a count of RepositoryMock.GetNamespaceConnectionByID invocations
+func (mmGetNamespaceConnectionByID *RepositoryMock) GetNamespaceConnectionByIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetNamespaceConnectionByID.beforeGetNamespaceConnectionByIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.GetNamespaceConnectionByID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetNamespaceConnectionByID *mRepositoryMockGetNamespaceConnectionByID) Calls() []*RepositoryMockGetNamespaceConnectionByIDParams {
+	mmGetNamespaceConnectionByID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockGetNamespaceConnectionByIDParams, len(mmGetNamespaceConnectionByID.callArgs))
+	copy(argCopy, mmGetNamespaceConnectionByID.callArgs)
+
+	mmGetNamespaceConnectionByID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetNamespaceConnectionByIDDone returns true if the count of the GetNamespaceConnectionByID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockGetNamespaceConnectionByIDDone() bool {
+	if m.GetNamespaceConnectionByIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetNamespaceConnectionByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetNamespaceConnectionByIDMock.invocationsDone()
+}
+
+// MinimockGetNamespaceConnectionByIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockGetNamespaceConnectionByIDInspect() {
+	for _, e := range m.GetNamespaceConnectionByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.GetNamespaceConnectionByID with params: %#v", *e.params)
+		}
+	}
+
+	afterGetNamespaceConnectionByIDCounter := mm_atomic.LoadUint64(&m.afterGetNamespaceConnectionByIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetNamespaceConnectionByIDMock.defaultExpectation != nil && afterGetNamespaceConnectionByIDCounter < 1 {
+		if m.GetNamespaceConnectionByIDMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.GetNamespaceConnectionByID")
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.GetNamespaceConnectionByID with params: %#v", *m.GetNamespaceConnectionByIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetNamespaceConnectionByID != nil && afterGetNamespaceConnectionByIDCounter < 1 {
+		m.t.Error("Expected call to RepositoryMock.GetNamespaceConnectionByID")
+	}
+
+	if !m.GetNamespaceConnectionByIDMock.invocationsDone() && afterGetNamespaceConnectionByIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.GetNamespaceConnectionByID but found %d calls",
+			mm_atomic.LoadUint64(&m.GetNamespaceConnectionByIDMock.expectedInvocations), afterGetNamespaceConnectionByIDCounter)
 	}
 }
 
@@ -17449,13 +17477,13 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockDeletePipelineTagsInspect()
 
-			m.MinimockGetConnectionByIDInspect()
-
 			m.MinimockGetDefinitionByUIDInspect()
 
 			m.MinimockGetHubStatsInspect()
 
 			m.MinimockGetLatestNamespacePipelineReleaseInspect()
+
+			m.MinimockGetNamespaceConnectionByIDInspect()
 
 			m.MinimockGetNamespacePipelineByIDInspect()
 
@@ -17551,10 +17579,10 @@ func (m *RepositoryMock) minimockDone() bool {
 		m.MinimockDeleteNamespacePipelineReleaseByIDDone() &&
 		m.MinimockDeleteNamespaceSecretByIDDone() &&
 		m.MinimockDeletePipelineTagsDone() &&
-		m.MinimockGetConnectionByIDDone() &&
 		m.MinimockGetDefinitionByUIDDone() &&
 		m.MinimockGetHubStatsDone() &&
 		m.MinimockGetLatestNamespacePipelineReleaseDone() &&
+		m.MinimockGetNamespaceConnectionByIDDone() &&
 		m.MinimockGetNamespacePipelineByIDDone() &&
 		m.MinimockGetNamespacePipelineReleaseByIDDone() &&
 		m.MinimockGetNamespaceSecretByIDDone() &&

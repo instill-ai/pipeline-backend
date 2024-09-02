@@ -81,3 +81,25 @@ func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pb.C
 	logger.Info("CreateNamespaceConnection")
 	return &pb.CreateNamespaceConnectionResponse{Connection: conn}, nil
 }
+
+// GetNamespaceConnection fetches the details of a namespace connection.
+func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.GetNamespaceConnectionResponse, error) {
+	ctx, span := tracer.Start(ctx, "GetNamespaceConnection", trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+
+	if err := authenticateUser(ctx, false); err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	conn, err := h.service.GetNamespaceConnection(ctx, req)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	logger.Info("GetNamespaceConnection")
+	return &pb.GetNamespaceConnectionResponse{Connection: conn}, nil
+}
