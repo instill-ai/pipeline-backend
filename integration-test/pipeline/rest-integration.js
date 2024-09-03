@@ -35,7 +35,7 @@ export function CheckIntegrations() {
       description: cdef.description,
       vendor: cdef.vendor,
       icon: cdef.icon,
-      featured: true,
+      featured: false, // TODO when protogen-go is updated, this will be removed
       schemas: [],
       view: "VIEW_BASIC"
     };
@@ -51,13 +51,6 @@ export function CheckIntegrations() {
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.schemas[0].method === "METHOD_DICTIONARY",
     });
-
-    // Unfeatured integration
-    var unfeaturedID = "cohere";
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/${unfeaturedID}`, null, null), {
-      [`GET /v1beta/integrations/${unfeaturedID} response status is 200`]: (r) => r.status === 200,
-      [`GET /v1beta/integrations/${unfeaturedID} response has featured: false`]: (r) => r.json().integration.featured === false,
-    });
   });
 
   group("Integration API: List integrations", () => {
@@ -67,7 +60,6 @@ export function CheckIntegrations() {
     check(firstPage, {
       "GET /v1beta/integrations response status is 200": (r) => r.status === 200,
       "GET /v1beta/integrations response totalSize > 0": (r) => r.json().totalSize > 0,
-      "GET /v1beta/integrations starts with featured integrations": (r) => r.json().integrations[0].featured === true,
       "GET /v1beta/integrations has default page size": (r) => r.json().integrations.length === defaultPageSize,
     });
 
@@ -78,14 +70,6 @@ export function CheckIntegrations() {
       [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} has page size 2"`]: (r) => r.json().integrations.length === 2,
       [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} has different elements than page 1"`]: (r) =>
         r.json().integrations[0].id != firstPage.json().integrations[0].id,
-    });
-
-    // Filter featured
-    check(http.request( "GET", `${pipelinePublicHost}/v1beta/integrations?filter=NOT%20featured`, null, null), {
-      "GET /v1beta/integrations?filter=NOT%20featured response status is 200": (r) => r.status === 200,
-      "GET /v1beta/integrations?filter=NOT%20featured response totalSize > 0": (r) => r.json().totalSize > 0,
-      "GET /v1beta/integrations?filter=NOT%20featured response totalSize < firstPage.totalSize": (r) => r.json().totalSize < firstPage.json().totalSize,
-      "GET /v1beta/integrations?filter=NOT%20featured doesn't have featured integrations": (r) => r.json().integrations[0].featured === false,
     });
 
     // Filter fuzzy title
