@@ -235,5 +235,21 @@ export function CheckConnections(data) {
       [`GET ${pathWithIntegration} response contains connections for ${integrationID} integration`]: (r) =>
         r.json().connections[0].integrationId === integrationID,
     });
+
+  });
+
+  group("Integration API: Delete connection", () => {
+    var path = `/v1beta/namespaces/${defaultUsername}/connections/${connectionID}`;
+    check(http.request("DELETE", pipelinePublicHost + path, null, data.header), {
+      [`DELETE ${path} response status 204`]: (r) => r.status === 204,
+    });
+
+    check(http.request( "GET", pipelinePublicHost + path, null, data.header), {
+      [`GET ${path} response status is 404`]: (r) => r.status === 404,
+    });
+
+    check(http.request("DELETE", pipelinePublicHost + path, null, data.header), {
+      [`DELETE ${path} response status 404`]: (r) => r.status === 404,
+    });
   });
 }

@@ -369,3 +369,17 @@ func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListName
 
 	return resp, nil
 }
+
+func (s *service) DeleteNamespaceConnection(ctx context.Context, namespaceID, id string) error {
+	ns, err := s.GetRscNamespace(ctx, namespaceID)
+	if err != nil {
+		return fmt.Errorf("fetching namespace: %w", err)
+	}
+
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return fmt.Errorf("checking namespace permissions: %w", err)
+	}
+
+	return s.repository.DeleteNamespaceConnectionByID(ctx, ns.NsUID, id)
+
+}

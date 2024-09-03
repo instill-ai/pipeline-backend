@@ -72,6 +72,12 @@ type RepositoryMock struct {
 	beforeCreatePipelineTagsCounter uint64
 	CreatePipelineTagsMock          mRepositoryMockCreatePipelineTags
 
+	funcDeleteNamespaceConnectionByID          func(ctx context.Context, nsUID uuid.UUID, id string) (err error)
+	inspectFuncDeleteNamespaceConnectionByID   func(ctx context.Context, nsUID uuid.UUID, id string)
+	afterDeleteNamespaceConnectionByIDCounter  uint64
+	beforeDeleteNamespaceConnectionByIDCounter uint64
+	DeleteNamespaceConnectionByIDMock          mRepositoryMockDeleteNamespaceConnectionByID
+
 	funcDeleteNamespacePipelineByID          func(ctx context.Context, ownerPermalink string, id string) (err error)
 	inspectFuncDeleteNamespacePipelineByID   func(ctx context.Context, ownerPermalink string, id string)
 	afterDeleteNamespacePipelineByIDCounter  uint64
@@ -338,6 +344,9 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 
 	m.CreatePipelineTagsMock = mRepositoryMockCreatePipelineTags{mock: m}
 	m.CreatePipelineTagsMock.callArgs = []*RepositoryMockCreatePipelineTagsParams{}
+
+	m.DeleteNamespaceConnectionByIDMock = mRepositoryMockDeleteNamespaceConnectionByID{mock: m}
+	m.DeleteNamespaceConnectionByIDMock.callArgs = []*RepositoryMockDeleteNamespaceConnectionByIDParams{}
 
 	m.DeleteNamespacePipelineByIDMock = mRepositoryMockDeleteNamespacePipelineByID{mock: m}
 	m.DeleteNamespacePipelineByIDMock.callArgs = []*RepositoryMockDeleteNamespacePipelineByIDParams{}
@@ -3159,6 +3168,354 @@ func (m *RepositoryMock) MinimockCreatePipelineTagsInspect() {
 	if !m.CreatePipelineTagsMock.invocationsDone() && afterCreatePipelineTagsCounter > 0 {
 		m.t.Errorf("Expected %d calls to RepositoryMock.CreatePipelineTags but found %d calls",
 			mm_atomic.LoadUint64(&m.CreatePipelineTagsMock.expectedInvocations), afterCreatePipelineTagsCounter)
+	}
+}
+
+type mRepositoryMockDeleteNamespaceConnectionByID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockDeleteNamespaceConnectionByIDExpectation
+	expectations       []*RepositoryMockDeleteNamespaceConnectionByIDExpectation
+
+	callArgs []*RepositoryMockDeleteNamespaceConnectionByIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// RepositoryMockDeleteNamespaceConnectionByIDExpectation specifies expectation struct of the Repository.DeleteNamespaceConnectionByID
+type RepositoryMockDeleteNamespaceConnectionByIDExpectation struct {
+	mock      *RepositoryMock
+	params    *RepositoryMockDeleteNamespaceConnectionByIDParams
+	paramPtrs *RepositoryMockDeleteNamespaceConnectionByIDParamPtrs
+	results   *RepositoryMockDeleteNamespaceConnectionByIDResults
+	Counter   uint64
+}
+
+// RepositoryMockDeleteNamespaceConnectionByIDParams contains parameters of the Repository.DeleteNamespaceConnectionByID
+type RepositoryMockDeleteNamespaceConnectionByIDParams struct {
+	ctx   context.Context
+	nsUID uuid.UUID
+	id    string
+}
+
+// RepositoryMockDeleteNamespaceConnectionByIDParamPtrs contains pointers to parameters of the Repository.DeleteNamespaceConnectionByID
+type RepositoryMockDeleteNamespaceConnectionByIDParamPtrs struct {
+	ctx   *context.Context
+	nsUID *uuid.UUID
+	id    *string
+}
+
+// RepositoryMockDeleteNamespaceConnectionByIDResults contains results of the Repository.DeleteNamespaceConnectionByID
+type RepositoryMockDeleteNamespaceConnectionByIDResults struct {
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) Optional() *mRepositoryMockDeleteNamespaceConnectionByID {
+	mmDeleteNamespaceConnectionByID.optional = true
+	return mmDeleteNamespaceConnectionByID
+}
+
+// Expect sets up expected params for Repository.DeleteNamespaceConnectionByID
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) Expect(ctx context.Context, nsUID uuid.UUID, id string) *mRepositoryMockDeleteNamespaceConnectionByID {
+	if mmDeleteNamespaceConnectionByID.mock.funcDeleteNamespaceConnectionByID != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation == nil {
+		mmDeleteNamespaceConnectionByID.defaultExpectation = &RepositoryMockDeleteNamespaceConnectionByIDExpectation{}
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by ExpectParams functions")
+	}
+
+	mmDeleteNamespaceConnectionByID.defaultExpectation.params = &RepositoryMockDeleteNamespaceConnectionByIDParams{ctx, nsUID, id}
+	for _, e := range mmDeleteNamespaceConnectionByID.expectations {
+		if minimock.Equal(e.params, mmDeleteNamespaceConnectionByID.defaultExpectation.params) {
+			mmDeleteNamespaceConnectionByID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmDeleteNamespaceConnectionByID.defaultExpectation.params)
+		}
+	}
+
+	return mmDeleteNamespaceConnectionByID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.DeleteNamespaceConnectionByID
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockDeleteNamespaceConnectionByID {
+	if mmDeleteNamespaceConnectionByID.mock.funcDeleteNamespaceConnectionByID != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation == nil {
+		mmDeleteNamespaceConnectionByID.defaultExpectation = &RepositoryMockDeleteNamespaceConnectionByIDExpectation{}
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation.params != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by Expect")
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs == nil {
+		mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespaceConnectionByIDParamPtrs{}
+	}
+	mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmDeleteNamespaceConnectionByID
+}
+
+// ExpectNsUIDParam2 sets up expected param nsUID for Repository.DeleteNamespaceConnectionByID
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) ExpectNsUIDParam2(nsUID uuid.UUID) *mRepositoryMockDeleteNamespaceConnectionByID {
+	if mmDeleteNamespaceConnectionByID.mock.funcDeleteNamespaceConnectionByID != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation == nil {
+		mmDeleteNamespaceConnectionByID.defaultExpectation = &RepositoryMockDeleteNamespaceConnectionByIDExpectation{}
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation.params != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by Expect")
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs == nil {
+		mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespaceConnectionByIDParamPtrs{}
+	}
+	mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs.nsUID = &nsUID
+
+	return mmDeleteNamespaceConnectionByID
+}
+
+// ExpectIdParam3 sets up expected param id for Repository.DeleteNamespaceConnectionByID
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) ExpectIdParam3(id string) *mRepositoryMockDeleteNamespaceConnectionByID {
+	if mmDeleteNamespaceConnectionByID.mock.funcDeleteNamespaceConnectionByID != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation == nil {
+		mmDeleteNamespaceConnectionByID.defaultExpectation = &RepositoryMockDeleteNamespaceConnectionByIDExpectation{}
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation.params != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by Expect")
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs == nil {
+		mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs = &RepositoryMockDeleteNamespaceConnectionByIDParamPtrs{}
+	}
+	mmDeleteNamespaceConnectionByID.defaultExpectation.paramPtrs.id = &id
+
+	return mmDeleteNamespaceConnectionByID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.DeleteNamespaceConnectionByID
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) Inspect(f func(ctx context.Context, nsUID uuid.UUID, id string)) *mRepositoryMockDeleteNamespaceConnectionByID {
+	if mmDeleteNamespaceConnectionByID.mock.inspectFuncDeleteNamespaceConnectionByID != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.DeleteNamespaceConnectionByID")
+	}
+
+	mmDeleteNamespaceConnectionByID.mock.inspectFuncDeleteNamespaceConnectionByID = f
+
+	return mmDeleteNamespaceConnectionByID
+}
+
+// Return sets up results that will be returned by Repository.DeleteNamespaceConnectionByID
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) Return(err error) *RepositoryMock {
+	if mmDeleteNamespaceConnectionByID.mock.funcDeleteNamespaceConnectionByID != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by Set")
+	}
+
+	if mmDeleteNamespaceConnectionByID.defaultExpectation == nil {
+		mmDeleteNamespaceConnectionByID.defaultExpectation = &RepositoryMockDeleteNamespaceConnectionByIDExpectation{mock: mmDeleteNamespaceConnectionByID.mock}
+	}
+	mmDeleteNamespaceConnectionByID.defaultExpectation.results = &RepositoryMockDeleteNamespaceConnectionByIDResults{err}
+	return mmDeleteNamespaceConnectionByID.mock
+}
+
+// Set uses given function f to mock the Repository.DeleteNamespaceConnectionByID method
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) Set(f func(ctx context.Context, nsUID uuid.UUID, id string) (err error)) *RepositoryMock {
+	if mmDeleteNamespaceConnectionByID.defaultExpectation != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("Default expectation is already set for the Repository.DeleteNamespaceConnectionByID method")
+	}
+
+	if len(mmDeleteNamespaceConnectionByID.expectations) > 0 {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("Some expectations are already set for the Repository.DeleteNamespaceConnectionByID method")
+	}
+
+	mmDeleteNamespaceConnectionByID.mock.funcDeleteNamespaceConnectionByID = f
+	return mmDeleteNamespaceConnectionByID.mock
+}
+
+// When sets expectation for the Repository.DeleteNamespaceConnectionByID which will trigger the result defined by the following
+// Then helper
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) When(ctx context.Context, nsUID uuid.UUID, id string) *RepositoryMockDeleteNamespaceConnectionByIDExpectation {
+	if mmDeleteNamespaceConnectionByID.mock.funcDeleteNamespaceConnectionByID != nil {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("RepositoryMock.DeleteNamespaceConnectionByID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockDeleteNamespaceConnectionByIDExpectation{
+		mock:   mmDeleteNamespaceConnectionByID.mock,
+		params: &RepositoryMockDeleteNamespaceConnectionByIDParams{ctx, nsUID, id},
+	}
+	mmDeleteNamespaceConnectionByID.expectations = append(mmDeleteNamespaceConnectionByID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.DeleteNamespaceConnectionByID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockDeleteNamespaceConnectionByIDExpectation) Then(err error) *RepositoryMock {
+	e.results = &RepositoryMockDeleteNamespaceConnectionByIDResults{err}
+	return e.mock
+}
+
+// Times sets number of times Repository.DeleteNamespaceConnectionByID should be invoked
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) Times(n uint64) *mRepositoryMockDeleteNamespaceConnectionByID {
+	if n == 0 {
+		mmDeleteNamespaceConnectionByID.mock.t.Fatalf("Times of RepositoryMock.DeleteNamespaceConnectionByID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmDeleteNamespaceConnectionByID.expectedInvocations, n)
+	return mmDeleteNamespaceConnectionByID
+}
+
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) invocationsDone() bool {
+	if len(mmDeleteNamespaceConnectionByID.expectations) == 0 && mmDeleteNamespaceConnectionByID.defaultExpectation == nil && mmDeleteNamespaceConnectionByID.mock.funcDeleteNamespaceConnectionByID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmDeleteNamespaceConnectionByID.mock.afterDeleteNamespaceConnectionByIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmDeleteNamespaceConnectionByID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// DeleteNamespaceConnectionByID implements repository.Repository
+func (mmDeleteNamespaceConnectionByID *RepositoryMock) DeleteNamespaceConnectionByID(ctx context.Context, nsUID uuid.UUID, id string) (err error) {
+	mm_atomic.AddUint64(&mmDeleteNamespaceConnectionByID.beforeDeleteNamespaceConnectionByIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmDeleteNamespaceConnectionByID.afterDeleteNamespaceConnectionByIDCounter, 1)
+
+	if mmDeleteNamespaceConnectionByID.inspectFuncDeleteNamespaceConnectionByID != nil {
+		mmDeleteNamespaceConnectionByID.inspectFuncDeleteNamespaceConnectionByID(ctx, nsUID, id)
+	}
+
+	mm_params := RepositoryMockDeleteNamespaceConnectionByIDParams{ctx, nsUID, id}
+
+	// Record call args
+	mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.mutex.Lock()
+	mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.callArgs = append(mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.callArgs, &mm_params)
+	mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.mutex.Unlock()
+
+	for _, e := range mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.defaultExpectation.params
+		mm_want_ptrs := mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockDeleteNamespaceConnectionByIDParams{ctx, nsUID, id}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeleteNamespaceConnectionByID.t.Errorf("RepositoryMock.DeleteNamespaceConnectionByID got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.nsUID != nil && !minimock.Equal(*mm_want_ptrs.nsUID, mm_got.nsUID) {
+				mmDeleteNamespaceConnectionByID.t.Errorf("RepositoryMock.DeleteNamespaceConnectionByID got unexpected parameter nsUID, want: %#v, got: %#v%s\n", *mm_want_ptrs.nsUID, mm_got.nsUID, minimock.Diff(*mm_want_ptrs.nsUID, mm_got.nsUID))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmDeleteNamespaceConnectionByID.t.Errorf("RepositoryMock.DeleteNamespaceConnectionByID got unexpected parameter id, want: %#v, got: %#v%s\n", *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmDeleteNamespaceConnectionByID.t.Errorf("RepositoryMock.DeleteNamespaceConnectionByID got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmDeleteNamespaceConnectionByID.DeleteNamespaceConnectionByIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmDeleteNamespaceConnectionByID.t.Fatal("No results are set for the RepositoryMock.DeleteNamespaceConnectionByID")
+		}
+		return (*mm_results).err
+	}
+	if mmDeleteNamespaceConnectionByID.funcDeleteNamespaceConnectionByID != nil {
+		return mmDeleteNamespaceConnectionByID.funcDeleteNamespaceConnectionByID(ctx, nsUID, id)
+	}
+	mmDeleteNamespaceConnectionByID.t.Fatalf("Unexpected call to RepositoryMock.DeleteNamespaceConnectionByID. %v %v %v", ctx, nsUID, id)
+	return
+}
+
+// DeleteNamespaceConnectionByIDAfterCounter returns a count of finished RepositoryMock.DeleteNamespaceConnectionByID invocations
+func (mmDeleteNamespaceConnectionByID *RepositoryMock) DeleteNamespaceConnectionByIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteNamespaceConnectionByID.afterDeleteNamespaceConnectionByIDCounter)
+}
+
+// DeleteNamespaceConnectionByIDBeforeCounter returns a count of RepositoryMock.DeleteNamespaceConnectionByID invocations
+func (mmDeleteNamespaceConnectionByID *RepositoryMock) DeleteNamespaceConnectionByIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmDeleteNamespaceConnectionByID.beforeDeleteNamespaceConnectionByIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.DeleteNamespaceConnectionByID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmDeleteNamespaceConnectionByID *mRepositoryMockDeleteNamespaceConnectionByID) Calls() []*RepositoryMockDeleteNamespaceConnectionByIDParams {
+	mmDeleteNamespaceConnectionByID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockDeleteNamespaceConnectionByIDParams, len(mmDeleteNamespaceConnectionByID.callArgs))
+	copy(argCopy, mmDeleteNamespaceConnectionByID.callArgs)
+
+	mmDeleteNamespaceConnectionByID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockDeleteNamespaceConnectionByIDDone returns true if the count of the DeleteNamespaceConnectionByID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockDeleteNamespaceConnectionByIDDone() bool {
+	if m.DeleteNamespaceConnectionByIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.DeleteNamespaceConnectionByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.DeleteNamespaceConnectionByIDMock.invocationsDone()
+}
+
+// MinimockDeleteNamespaceConnectionByIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockDeleteNamespaceConnectionByIDInspect() {
+	for _, e := range m.DeleteNamespaceConnectionByIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.DeleteNamespaceConnectionByID with params: %#v", *e.params)
+		}
+	}
+
+	afterDeleteNamespaceConnectionByIDCounter := mm_atomic.LoadUint64(&m.afterDeleteNamespaceConnectionByIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.DeleteNamespaceConnectionByIDMock.defaultExpectation != nil && afterDeleteNamespaceConnectionByIDCounter < 1 {
+		if m.DeleteNamespaceConnectionByIDMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.DeleteNamespaceConnectionByID")
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.DeleteNamespaceConnectionByID with params: %#v", *m.DeleteNamespaceConnectionByIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcDeleteNamespaceConnectionByID != nil && afterDeleteNamespaceConnectionByIDCounter < 1 {
+		m.t.Error("Expected call to RepositoryMock.DeleteNamespaceConnectionByID")
+	}
+
+	if !m.DeleteNamespaceConnectionByIDMock.invocationsDone() && afterDeleteNamespaceConnectionByIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.DeleteNamespaceConnectionByID but found %d calls",
+			mm_atomic.LoadUint64(&m.DeleteNamespaceConnectionByIDMock.expectedInvocations), afterDeleteNamespaceConnectionByIDCounter)
 	}
 }
 
@@ -17799,6 +18156,8 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockCreatePipelineTagsInspect()
 
+			m.MinimockDeleteNamespaceConnectionByIDInspect()
+
 			m.MinimockDeleteNamespacePipelineByIDInspect()
 
 			m.MinimockDeleteNamespacePipelineReleaseByIDInspect()
@@ -17907,6 +18266,7 @@ func (m *RepositoryMock) minimockDone() bool {
 		m.MinimockCreateNamespacePipelineReleaseDone() &&
 		m.MinimockCreateNamespaceSecretDone() &&
 		m.MinimockCreatePipelineTagsDone() &&
+		m.MinimockDeleteNamespaceConnectionByIDDone() &&
 		m.MinimockDeleteNamespacePipelineByIDDone() &&
 		m.MinimockDeleteNamespacePipelineReleaseByIDDone() &&
 		m.MinimockDeleteNamespaceSecretByIDDone() &&

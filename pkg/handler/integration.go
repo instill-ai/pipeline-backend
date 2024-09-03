@@ -107,6 +107,42 @@ func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pb.C
 	return &pb.CreateNamespaceConnectionResponse{Connection: conn}, nil
 }
 
+// DeleteNamespaceConnection deletes a connection.
+func (h *PublicHandler) DeleteNamespaceConnection(ctx context.Context, req *pb.DeleteNamespaceConnectionRequest) (*pb.DeleteNamespaceConnectionResponse, error) {
+	eventName := "DeleteNamespaceConnection"
+	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logUUID, _ := uuid.NewV4()
+
+	if err := authenticateUser(ctx, false); err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	err := h.service.DeleteNamespaceConnection(ctx, req.GetNamespaceId(), req.GetConnectionId())
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	// Manually set the custom header to have a StatusNoContent http response for
+	// REST endpoint.
+	err = grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(http.StatusNoContent)))
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	logger.Info(string(customotel.NewLogMessage(
+		ctx,
+		span,
+		logUUID.String(),
+		eventName,
+	)))
+	return &pb.DeleteNamespaceConnectionResponse{}, nil
+}
 // GetNamespaceConnection fetches the details of a namespace connection.
 func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.GetNamespaceConnectionResponse, error) {
 	eventName := "GetNamespaceConnection"
