@@ -77,21 +77,37 @@ func TestRepository_ComponentDefinitionUIDs(t *testing.T) {
 	c.Check(dbDefs[0].UID.String(), qt.Equals, uid.String())
 }
 
-func TestRepository_IntegrationCursor(t *testing.T) {
+func TestRepository_Cursor(t *testing.T) {
 	c := qt.New(t)
 
-	cursor := integrationCursor{
-		Score: 30,
-		UID:   uuid.Must(uuid.NewV4()),
-	}
+	c.Run("ok - integration cursor", func(c *qt.C) {
+		cursor := integrationCursor{
+			Score: 30,
+			UID:   uuid.Must(uuid.NewV4()),
+		}
 
-	token, err := cursor.asToken()
-	c.Assert(err, qt.IsNil)
+		token, err := encodeCursor[integrationCursor](cursor)
+		c.Assert(err, qt.IsNil)
 
-	p := ListIntegrationsParams{PageToken: token}
-	got, err := p.cursor()
-	c.Assert(err, qt.IsNil)
-	c.Check(got, qt.ContentEquals, cursor)
+		got, err := decodeCursor[integrationCursor](token)
+		c.Assert(err, qt.IsNil)
+		c.Check(got, qt.ContentEquals, cursor)
+	})
+
+	c.Run("ok - connection cursor", func(c *qt.C) {
+		cursor := connectionCursor{
+			Score:          30,
+			IntegrationUID: uuid.Must(uuid.NewV4()),
+			CreateTime:     time.Now(),
+		}
+
+		token, err := encodeCursor[connectionCursor](cursor)
+		c.Assert(err, qt.IsNil)
+
+		got, err := decodeCursor[connectionCursor](token)
+		c.Assert(err, qt.IsNil)
+		c.Check(got, qt.ContentEquals, cursor)
+	})
 }
 
 func TestRepository_Integrations(t *testing.T) {

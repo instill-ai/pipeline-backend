@@ -133,6 +133,28 @@ func (r *repository) toDomainErr(err error) error {
 	return err
 }
 
+func decodeCursor[T any](token string) (cursor T, err error) {
+	b, err := base64.StdEncoding.DecodeString(token)
+	if err != nil {
+		return cursor, fmt.Errorf("decoding token: %w", err)
+	}
+
+	if err := json.Unmarshal(b, &cursor); err != nil {
+		return cursor, fmt.Errorf("unmarshalling token: %w", err)
+	}
+
+	return cursor, nil
+}
+
+func encodeCursor[T any](cursor T) (string, error) {
+	b, err := json.Marshal(cursor)
+	if err != nil {
+		return "", fmt.Errorf("marshalling cursor: %w", err)
+	}
+
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+
 func (r *repository) GetHubStats(uidAllowList []uuid.UUID) (*datamodel.HubStats, error) {
 
 	db := r.db
@@ -813,28 +835,6 @@ type integrationCursor struct {
 	UID   uuid.UUID `json:"uid"`
 }
 
-func (p ListIntegrationsParams) cursor() (cursor integrationCursor, err error) {
-	b, err := base64.StdEncoding.DecodeString(p.PageToken)
-	if err != nil {
-		return cursor, fmt.Errorf("decoding token: %w", err)
-	}
-
-	if err := json.Unmarshal(b, &cursor); err != nil {
-		return cursor, fmt.Errorf("unmarshalling token: %w", err)
-	}
-
-	return cursor, nil
-}
-
-func (c integrationCursor) asToken() (string, error) {
-	b, err := json.Marshal(c)
-	if err != nil {
-		return "", fmt.Errorf("marshalling cursor: %w", err)
-	}
-
-	return base64.StdEncoding.EncodeToString(b), nil
-}
-
 // ListIntegrations returns the UIDs and indexed information of a page of
 // integrations.
 //
@@ -869,7 +869,7 @@ func (r *repository) ListIntegrations(ctx context.Context, p ListIntegrationsPar
 
 	// Get definitions matching criteria.
 	if p.PageToken != "" {
-		cursor, err := p.cursor()
+		cursor, err := decodeCursor[integrationCursor](p.PageToken)
 		if err != nil {
 			return resp, err
 		}
@@ -919,7 +919,7 @@ func (r *repository) ListIntegrations(ctx context.Context, p ListIntegrationsPar
 		Score: lastInPage.FeatureScore,
 		UID:   lastInPage.UID,
 	}
-	resp.NextPageToken, err = nextCursor.asToken()
+	resp.NextPageToken, err = encodeCursor[integrationCursor](nextCursor)
 	if err != nil {
 		return resp, err
 	}
@@ -1316,28 +1316,6 @@ type connectionCursor struct {
 	CreateTime     time.Time `json:"create_time"`
 }
 
-func (p ListNamespaceConnectionsParams) cursor() (cursor connectionCursor, err error) {
-	b, err := base64.StdEncoding.DecodeString(p.PageToken)
-	if err != nil {
-		return cursor, fmt.Errorf("decoding token: %w", err)
-	}
-
-	if err := json.Unmarshal(b, &cursor); err != nil {
-		return cursor, fmt.Errorf("unmarshalling token: %w", err)
-	}
-
-	return cursor, nil
-}
-
-func (c connectionCursor) asToken() (string, error) {
-	b, err := json.Marshal(c)
-	if err != nil {
-		return "", fmt.Errorf("marshalling cursor: %w", err)
-	}
-
-	return base64.StdEncoding.EncodeToString(b), nil
-}
-
 type connectionListResult struct {
 	*datamodel.Connection
 	FeatureScore int
@@ -1372,7 +1350,7 @@ func (r *repository) ListNamespaceConnections(ctx context.Context, p ListNamespa
 
 	// Get definitions matching criteria.
 	if p.PageToken != "" {
-		cursor, err := p.cursor()
+		cursor, err := decodeCursor[connectionCursor](p.PageToken)
 		if err != nil {
 			return resp, err
 		}
@@ -1428,7 +1406,7 @@ func (r *repository) ListNamespaceConnections(ctx context.Context, p ListNamespa
 		IntegrationUID: lastScanned.IntegrationUID,
 		CreateTime:     lastScanned.CreateTime,
 	}
-	resp.NextPageToken, err = nextCursor.asToken()
+	resp.NextPageToken, err = encodeCursor[connectionCursor](nextCursor)
 	if err != nil {
 		return resp, err
 	}
