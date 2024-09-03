@@ -328,3 +328,66 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespa
 
 	return conn, nil
 }
+
+func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error) {
+	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	if err != nil {
+		return nil, fmt.Errorf("fetching namespace: %w", err)
+	}
+
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, fmt.Errorf("checking namespace permissions: %w", err)
+	}
+
+	declarations, err := filtering.NewDeclarations(
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareIdent("integrationId", filtering.TypeString),
+		filtering.DeclareIdent("qConnection", filtering.TypeString),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("building filter declarations: %w", err)
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return nil, fmt.Errorf("parsing filter: %w", err)
+	}
+	p := repository.ListNamespaceConnectionsParams{
+		NamespaceUID: ns.NsUID,
+		PageToken:    req.GetPageToken(),
+		Limit:        s.pageSizeInRange(req.GetPageSize()),
+		Filter:       filter,
+	}
+
+	dbConns, err := s.repository.ListNamespaceConnections(ctx, p)
+	if err != nil {
+		return nil, fmt.Errorf("fetching connections: %w", err)
+	}
+
+	resp := &pb.ListNamespaceConnectionsResponse{
+		Connections:   make([]*pb.Connection, len(dbConns.Connections)),
+		NextPageToken: dbConns.NextPageToken,
+		TotalSize:     dbConns.TotalSize,
+	}
+
+	for i, inDB := range dbConns.Connections {
+		cdIdx, err := s.repository.GetDefinitionByUID(ctx, inDB.IntegrationUID)
+		if err != nil {
+			return nil, fmt.Errorf("fetching definition index: %w", err)
+		}
+
+		resp.Connections[i] = &pb.Connection{
+			Uid:              inDB.UID.String(),
+			Id:               inDB.ID,
+			NamespaceId:      req.GetNamespaceId(),
+			IntegrationId:    cdIdx.ID,
+			IntegrationTitle: cdIdx.Title,
+			Method:           pb.Connection_Method(inDB.Method),
+			View:             pb.View_VIEW_BASIC,
+			CreateTime:       timestamppb.New(inDB.CreateTime),
+			UpdateTime:       timestamppb.New(inDB.UpdateTime),
+		}
+	}
+
+	return resp, nil
+}

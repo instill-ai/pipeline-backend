@@ -204,8 +204,14 @@ func TestRepository_Connection(t *testing.T) {
 
 	// Need to load and store component definitions as they're referenced by
 	// connections.
-	integrationID := "email"
-	cd, err := componentstore.Init(logger, nil, nil).GetDefinitionByID(integrationID, nil, nil)
+	cds := componentstore.Init(logger, nil, nil)
+	openAI, err := cds.GetDefinitionByID("openai", nil, nil)
+	c.Assert(err, qt.IsNil)
+
+	pinecone, err := cds.GetDefinitionByID("pinecone", nil, nil)
+	c.Assert(err, qt.IsNil)
+
+	email, err := cds.GetDefinitionByID("email", nil, nil)
 	c.Assert(err, qt.IsNil)
 
 	newRepo := func(c *qt.C) Repository {
@@ -214,21 +220,20 @@ func TestRepository_Connection(t *testing.T) {
 
 		repo := NewRepository(tx, nil)
 
-		err := repo.UpsertComponentDefinition(ctx, cd)
-		c.Assert(err, qt.IsNil)
+		c.Assert(repo.UpsertComponentDefinition(ctx, openAI), qt.IsNil)
+		c.Assert(repo.UpsertComponentDefinition(ctx, pinecone), qt.IsNil)
+		c.Assert(repo.UpsertComponentDefinition(ctx, email), qt.IsNil)
 
 		return repo
 	}
 
-	id := "test"
+	nsUID := uuid.Must(uuid.NewV4())
 	method := datamodel.ConnectionMethod(pipelinepb.Connection_METHOD_DICTIONARY)
 	newConn := func() *datamodel.Connection {
 		return &datamodel.Connection{
-			ID:             id,
-			NamespaceUID:   uuid.Must(uuid.NewV4()),
-			IntegrationUID: uuid.FromStringOrNil(cd.GetUid()),
-			Method:         method,
-			Setup:          datatypes.JSON(`{}`),
+			NamespaceUID: nsUID,
+			Method:       method,
+			Setup:        datatypes.JSON(`{}`),
 		}
 
 	}
@@ -240,30 +245,81 @@ func TestRepository_Connection(t *testing.T) {
 
 	c.Run("nok - missing integration reference", func(c *qt.C) {
 		conn := newConn()
+		conn.ID = "invalid-integration-uid"
 		conn.IntegrationUID = uuid.Must(uuid.NewV4())
+
 		_, err := newRepo(c).CreateNamespaceConnection(ctx, conn)
 		c.Check(err, qt.ErrorMatches, ".*foreign key.*integration_uid.*")
 	})
 
-	c.Run("ok", func(c *qt.C) {
+	c.Run("ok - create, get, list", func(c *qt.C) {
+		repo := newRepo(c)
+
+		connectionIDs := []string{"2nd", "3rd", "4th", "1st"}
+		integrations := []*pipelinepb.ComponentDefinition{openAI, pinecone, email, openAI}
+
+		for i, id := range connectionIDs {
+			integration := integrations[i]
+
+			conn := newConn()
+			conn.ID = id
+			conn.IntegrationUID = uuid.FromStringOrNil(integration.GetUid())
+
+			inserted, err := repo.CreateNamespaceConnection(ctx, conn)
+			c.Check(err, qt.IsNil, qt.Commentf(conn.UID.String()))
+			c.Check(inserted.UID, qt.IsNotNil)
+			c.Check(inserted.CreateTime.IsZero(), qt.IsFalse)
+			c.Check(inserted.UpdateTime.IsZero(), qt.IsFalse)
+			c.Check(inserted.DeleteTime.Valid, qt.IsFalse)
+			// Testing proto scan & write.
+			c.Check(inserted.Method, qt.ContentEquals, method)
+
+			fetched, err := repo.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, conn.ID)
+			c.Check(err, qt.IsNil)
+
+			cmp := qt.CmpEquals(
+				cmpopts.EquateApproxTime(time.Millisecond),
+				cmpopts.IgnoreFields(datamodel.Connection{}, "Integration"),
+			)
+			c.Check(fetched, cmp, inserted)
+
+			// Query should preload Integration to avoid fetching it later in order
+			// to build the integration title and ID.
+			c.Check(fetched.Integration.Title, qt.Equals, integration.GetTitle())
+			c.Check(fetched.Integration.ID, qt.Equals, integration.GetId())
+		}
+
+		// Page one
+		p := ListNamespaceConnectionsParams{
+			NamespaceUID: nsUID,
+			Limit:        2,
+		}
+		connList, err := repo.ListNamespaceConnections(ctx, p)
+		c.Check(err, qt.IsNil)
+		c.Check(connList.TotalSize, qt.Equals, int32(4))
+		c.Check(connList.Connections, qt.HasLen, 2)
+		c.Check(connList.Connections[0].ID, qt.Equals, "1st")
+		c.Check(connList.Connections[1].ID, qt.Equals, "2nd")
+		c.Check(connList.NextPageToken, qt.Not(qt.HasLen), 0)
+
+		// Page two
+		p.PageToken = connList.NextPageToken
+		connList, err = repo.ListNamespaceConnections(ctx, p)
+		c.Check(err, qt.IsNil)
+		c.Check(connList.Connections, qt.HasLen, 2)
+		c.Check(connList.Connections[0].ID, qt.Equals, "3rd")
+		c.Check(connList.Connections[1].ID, qt.Equals, "4th")
+		c.Check(connList.NextPageToken, qt.HasLen, 0)
+	})
+
+	c.Run("nok - double creation", func(c *qt.C) {
 		repo := newRepo(c)
 		conn := newConn()
-		inserted, err := repo.CreateNamespaceConnection(ctx, conn)
+		conn.ID = "foo"
+		conn.IntegrationUID = uuid.FromStringOrNil(email.GetUid())
+
+		_, err := repo.CreateNamespaceConnection(ctx, conn)
 		c.Check(err, qt.IsNil)
-		c.Check(inserted.UID, qt.IsNotNil)
-		c.Check(inserted.CreateTime.IsZero(), qt.IsFalse)
-		c.Check(inserted.UpdateTime.IsZero(), qt.IsFalse)
-		c.Check(inserted.DeleteTime.Valid, qt.IsFalse)
-		// Testing proto scan & write.
-		c.Check(inserted.Method, qt.ContentEquals, method)
-
-		fetched, err := repo.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, id)
-		c.Check(err, qt.IsNil)
-
-		cmp := qt.CmpEquals(cmpopts.EquateApproxTime(time.Millisecond))
-		c.Check(fetched, cmp, inserted)
-
-		// Check double creation
 		_, err = repo.CreateNamespaceConnection(ctx, conn)
 		c.Check(errors.Is(err, errdomain.ErrAlreadyExists), qt.IsTrue)
 	})

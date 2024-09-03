@@ -24,11 +24,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-
 	"github.com/instill-ai/x/paginate"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -80,6 +78,7 @@ type Repository interface {
 
 	CreateNamespaceConnection(context.Context, *datamodel.Connection) (*datamodel.Connection, error)
 	GetNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error)
+	ListNamespaceConnections(context.Context, ListNamespaceConnectionsParams) (ConnectionList, error)
 
 	CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error
 	ListNamespaceSecrets(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) ([]*datamodel.Secret, int64, string, error)
@@ -912,9 +911,7 @@ func (r *repository) ListIntegrations(ctx context.Context, p ListIntegrationsPar
 		return resp, fmt.Errorf("finding last item: %w", err)
 	}
 
-	if lastInDB.FeatureScore == lastInPage.FeatureScore &&
-		lastInDB.UID.String() == lastInPage.UID.String() {
-
+	if lastInDB.UID.String() == lastInPage.UID.String() {
 		return resp, nil
 	}
 
@@ -1288,12 +1285,153 @@ func (r *repository) CreateNamespaceConnection(ctx context.Context, conn *datamo
 func (r *repository) GetNamespaceConnectionByID(ctx context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error) {
 	db := r.db.WithContext(ctx)
 
-	q := db.Where("namespace_uid = ? AND id = ? AND delete_time IS NULL", nsUID, id)
-
+	q := db.Where("namespace_uid = ? AND id = ?", nsUID, id)
 	conn := new(datamodel.Connection)
 	if err := q.First(&conn).Error; err != nil {
 		return nil, r.toDomainErr(err)
 	}
 
 	return conn, nil
+}
+
+// ListNamespaceConnectionsParams allows clients to request a page of
+// connections.
+type ListNamespaceConnectionsParams struct {
+	NamespaceUID uuid.UUID
+	PageToken    string
+	Limit        int
+	Filter       filtering.Filter
+}
+
+// ConnectionList returns a page of connections.
+type ConnectionList struct {
+	Connections   []*datamodel.Connection
+	NextPageToken string
+	TotalSize     int32
+}
+
+type connectionCursor struct {
+	Score          int       `json:"score"`
+	IntegrationUID uuid.UUID `json:"integration_uid"`
+	CreateTime     time.Time `json:"create_time"`
+}
+
+func (p ListNamespaceConnectionsParams) cursor() (cursor connectionCursor, err error) {
+	b, err := base64.StdEncoding.DecodeString(p.PageToken)
+	if err != nil {
+		return cursor, fmt.Errorf("decoding token: %w", err)
+	}
+
+	if err := json.Unmarshal(b, &cursor); err != nil {
+		return cursor, fmt.Errorf("unmarshalling token: %w", err)
+	}
+
+	return cursor, nil
+}
+
+func (c connectionCursor) asToken() (string, error) {
+	b, err := json.Marshal(c)
+	if err != nil {
+		return "", fmt.Errorf("marshalling cursor: %w", err)
+	}
+
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+
+type connectionListResult struct {
+	*datamodel.Connection
+	FeatureScore int
+}
+
+func (r *repository) ListNamespaceConnections(ctx context.Context, p ListNamespaceConnectionsParams) (ConnectionList, error) {
+	var resp ConnectionList
+
+	db := r.db.WithContext(ctx)
+	where := ""
+	whereArgs := []any{}
+
+	// Get item count.
+	expr, err := r.TranspileFilter(p.Filter)
+	if err != nil {
+		return resp, fmt.Errorf("transpiling filter: %w", err)
+	}
+
+	if expr != nil {
+		where = "(?)"
+		whereArgs = []any{expr}
+	}
+
+	queryBuilder := db.Model(&datamodel.Connection{}).
+		Where(where, whereArgs...).
+		Where("namespace_uid = ?", p.NamespaceUID).
+		Joins("LEFT JOIN component_definition_index ON component_definition_index.uid = connection.integration_uid")
+
+	var count int64
+	queryBuilder.Count(&count)
+	resp.TotalSize = int32(count)
+
+	// Get definitions matching criteria.
+	if p.PageToken != "" {
+		cursor, err := p.cursor()
+		if err != nil {
+			return resp, err
+		}
+		queryBuilder = queryBuilder.Where(
+			"(feature_score,integration_uid,create_time) < (?, ?, ?)",
+			cursor.Score,
+			cursor.IntegrationUID,
+			cursor.CreateTime,
+		)
+	}
+
+	// From here we'll apply different search criteria.
+	queryBuilder = queryBuilder.
+		Select("connection.*, component_definition_index.feature_score").
+		Session(&gorm.Session{})
+
+	orderBy := "feature_score DESC, integration_uid DESC, create_time DESC"
+	rows, err := queryBuilder.Order(orderBy).Limit(p.Limit).Rows()
+	if err != nil {
+		return resp, fmt.Errorf("querying database rows: %w", err)
+	}
+	defer rows.Close()
+
+	var lastScanned connectionListResult
+	resp.Connections = make([]*datamodel.Connection, 0, p.Limit)
+	for rows.Next() {
+		item := new(connectionListResult)
+		if err = db.ScanRows(rows, item); err != nil {
+			return resp, fmt.Errorf("scanning rows: %w", err)
+		}
+
+		resp.Connections = append(resp.Connections, item.Connection)
+
+		lastScanned = *item
+	}
+
+	if len(resp.Connections) == 0 {
+		return resp, nil
+	}
+
+	lastInDB := new(connectionListResult)
+	orderInverse := "feature_score ASC, integration_uid ASC, create_time ASC"
+	if result := queryBuilder.Order(orderInverse).Limit(1).Find(lastInDB); result.Error != nil {
+		return resp, fmt.Errorf("finding last item: %w", err)
+	}
+
+	if lastInDB.UID.String() == lastScanned.UID.String() {
+		return resp, nil
+	}
+
+	nextCursor := connectionCursor{
+		Score:          lastScanned.FeatureScore,
+		IntegrationUID: lastScanned.IntegrationUID,
+		CreateTime:     lastScanned.CreateTime,
+	}
+	resp.NextPageToken, err = nextCursor.asToken()
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
 }

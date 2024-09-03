@@ -135,3 +135,33 @@ func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetN
 	)))
 	return &pb.GetNamespaceConnectionResponse{Connection: conn}, nil
 }
+
+// ListNamespaceConnections returns a paginated list of connections created by
+// a namespace.
+func (h *PublicHandler) ListNamespaceConnections(ctx context.Context, req *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error) {
+	eventName := "ListNamespaceConnections"
+	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logUUID, _ := uuid.NewV4()
+
+	if err := authenticateUser(ctx, false); err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	resp, err := h.service.ListNamespaceConnections(ctx, req)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	logger.Info(string(customotel.NewLogMessage(
+		ctx,
+		span,
+		logUUID.String(),
+		eventName,
+	)))
+	return resp, nil
+}
