@@ -5,19 +5,25 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/gofrs/uuid"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/instill-ai/pipeline-backend/pkg/logger"
+
+	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // GetIntegration returns the details of an integration.
 func (h *PublicHandler) GetIntegration(ctx context.Context, req *pb.GetIntegrationRequest) (*pb.GetIntegrationResponse, error) {
-	ctx, span := tracer.Start(ctx, "GetIntegration", trace.WithSpanKind(trace.SpanKindServer))
+	eventName := "GetIntegration"
+	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
+
 	logger, _ := logger.GetZapLogger(ctx)
+	logUUID, _ := uuid.NewV4()
 
 	view := req.GetView()
 	if view == pb.View_VIEW_UNSPECIFIED {
@@ -30,16 +36,23 @@ func (h *PublicHandler) GetIntegration(ctx context.Context, req *pb.GetIntegrati
 		return nil, err
 	}
 
-	logger.Info("GetIntegration")
+	logger.Info(string(customotel.NewLogMessage(
+		ctx,
+		span,
+		logUUID.String(),
+		eventName,
+	)))
 	return &pb.GetIntegrationResponse{Integration: integration}, nil
 }
 
 // ListIntegrations returns a paginated list of available integrations.
 func (h *PublicHandler) ListIntegrations(ctx context.Context, req *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error) {
-	ctx, span := tracer.Start(ctx, "ListIntegrations", trace.WithSpanKind(trace.SpanKindServer))
+	eventName := "ListIntegrations"
+	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
+	logUUID, _ := uuid.NewV4()
 
 	resp, err := h.service.ListIntegrations(ctx, req)
 	if err != nil {
@@ -47,17 +60,24 @@ func (h *PublicHandler) ListIntegrations(ctx context.Context, req *pb.ListIntegr
 		return nil, err
 	}
 
-	logger.Info("ListIntegrations")
+	logger.Info(string(customotel.NewLogMessage(
+		ctx,
+		span,
+		logUUID.String(),
+		eventName,
+	)))
 	return resp, nil
 }
 
 // CreateNamespaceConnection creates a connection under the ownership of
 // a namespace.
 func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pb.CreateNamespaceConnectionRequest) (*pb.CreateNamespaceConnectionResponse, error) {
-	ctx, span := tracer.Start(ctx, "CreateNamespaceConnection", trace.WithSpanKind(trace.SpanKindServer))
+	eventName := "CreateNamespaceConnection"
+	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
+	logUUID, _ := uuid.NewV4()
 
 	if err := authenticateUser(ctx, false); err != nil {
 		span.SetStatus(1, err.Error())
@@ -78,16 +98,23 @@ func (h *PublicHandler) CreateNamespaceConnection(ctx context.Context, req *pb.C
 		return nil, err
 	}
 
-	logger.Info("CreateNamespaceConnection")
+	logger.Info(string(customotel.NewLogMessage(
+		ctx,
+		span,
+		logUUID.String(),
+		eventName,
+	)))
 	return &pb.CreateNamespaceConnectionResponse{Connection: conn}, nil
 }
 
 // GetNamespaceConnection fetches the details of a namespace connection.
 func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.GetNamespaceConnectionResponse, error) {
-	ctx, span := tracer.Start(ctx, "GetNamespaceConnection", trace.WithSpanKind(trace.SpanKindServer))
+	eventName := "GetNamespaceConnection"
+	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
 	defer span.End()
 
 	logger, _ := logger.GetZapLogger(ctx)
+	logUUID, _ := uuid.NewV4()
 
 	if err := authenticateUser(ctx, false); err != nil {
 		span.SetStatus(1, err.Error())
@@ -100,6 +127,11 @@ func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetN
 		return nil, err
 	}
 
-	logger.Info("GetNamespaceConnection")
+	logger.Info(string(customotel.NewLogMessage(
+		ctx,
+		span,
+		logUUID.String(),
+		eventName,
+	)))
 	return &pb.GetNamespaceConnectionResponse{Connection: conn}, nil
 }
