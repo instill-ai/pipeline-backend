@@ -39,7 +39,6 @@ func HandleProfileImage(srv service.Service, repo repository.Repository) runtime
 		}
 
 		pipelineID := pathParams["pipelineID"]
-		profileImageBase64 := ""
 		dbModel, err := repo.GetNamespacePipelineByID(ctx, ns.Permalink(), pipelineID, true, true)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
@@ -49,7 +48,7 @@ func HandleProfileImage(srv service.Service, repo repository.Repository) runtime
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		profileImageBase64 = dbModel.ProfileImage.String
+		profileImageBase64 := dbModel.ProfileImage.String
 
 		b, err := base64.StdEncoding.DecodeString(strings.Split(profileImageBase64, ",")[1])
 		if err != nil {

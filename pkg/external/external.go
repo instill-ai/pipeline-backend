@@ -48,7 +48,7 @@ func InitUsageServiceClient(ctx context.Context) (usagepb.UsageServiceClient, *g
 	var clientDialOpts grpc.DialOption
 	var err error
 	if config.Config.Server.Usage.TLSEnabled {
-		tlsConfig := &tls.Config{}
+		tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}
 		clientDialOpts = grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))
 	} else {
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())

@@ -83,32 +83,32 @@ func NewLogMessage(
 	logMessage.ID = logID
 	logMessage.ServiceName = "pipeline-backend"
 	logMessage.TraceInfo = struct {
-		TraceID string "json:\"traceID\""
-		SpanID  string "json:\"spanID\""
+		TraceID string `json:"traceID"`
+		SpanID  string `json:"spanID"`
 	}{
 		TraceID: span.SpanContext().TraceID().String(),
 		SpanID:  span.SpanContext().SpanID().String(),
 	}
 	logMessage.UserInfo = struct {
-		UserUUID string "json:\"userUUID\""
+		UserUUID string `json:"userUUID"`
 	}{
 
 		UserUUID: resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey),
 	}
 	logMessage.Event = struct {
-		IsAuditEvent bool "json:\"isAuditEvent\""
+		IsAuditEvent bool `json:"isAuditEvent"`
 		EventInfo    struct {
-			EventName string "json:\"eventName\""
-			Billable  bool   "json:\"billable\""
+			EventName string `json:"eventName"`
+			Billable  bool   `json:"billable"`
 		}
-		EventResource interface{} "json:\"eventResource\""
-		EventResult   interface{} "json:\"eventResult\""
-		EventMessage  string      "json:\"eventMessage\""
+		EventResource interface{} `json:"eventResource"`
+		EventResult   interface{} `json:"eventResult"`
+		EventMessage  string      `json:"eventMessage"`
 	}{
 		IsAuditEvent: utils.IsAuditEvent(eventName),
 		EventInfo: struct {
-			EventName string "json:\"eventName\""
-			Billable  bool   "json:\"billable\""
+			EventName string `json:"eventName"`
+			Billable  bool   `json:"billable"`
 		}{
 			EventName: eventName,
 			Billable:  utils.IsBillableEvent(eventName),

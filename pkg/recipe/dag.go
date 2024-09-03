@@ -438,7 +438,6 @@ func EvalCondition(expr ast.Expr, value map[string]any) (any, error) {
 					return xVal >= yVal, nil
 				}
 			}
-
 		}
 
 	case *ast.ParenExpr:
