@@ -270,12 +270,7 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 		return nil, fmt.Errorf("persisting connection: %w", err)
 	}
 
-	conn.Uid = inserted.UID.String()
-	conn.CreateTime = timestamppb.New(inserted.CreateTime)
-	conn.UpdateTime = timestamppb.New(inserted.UpdateTime)
-	conn.View = pb.View_VIEW_FULL
-
-	return conn, nil
+	return s.connectionToPB(inserted, conn.GetNamespaceId(), pb.View_VIEW_FULL), nil
 }
 
 func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.Connection, error) {
@@ -298,23 +293,7 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespa
 		return nil, fmt.Errorf("fetching connection: %w", err)
 	}
 
-	cdIdx, err := s.repository.GetDefinitionByUID(ctx, inDB.IntegrationUID)
-	if err != nil {
-		return nil, fmt.Errorf("fetching definition index: %w", err)
-	}
-
-	conn := &pb.Connection{
-		Uid:              inDB.UID.String(),
-		Id:               inDB.ID,
-		NamespaceId:      req.GetNamespaceId(),
-		IntegrationId:    cdIdx.ID,
-		IntegrationTitle: cdIdx.Title,
-		Method:           pb.Connection_Method(inDB.Method),
-		View:             view,
-		CreateTime:       timestamppb.New(inDB.CreateTime),
-		UpdateTime:       timestamppb.New(inDB.UpdateTime),
-	}
-
+	conn := s.connectionToPB(inDB, req.GetNamespaceId(), view)
 	if view != pb.View_VIEW_FULL {
 		return conn, nil
 	}
@@ -327,6 +306,20 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespa
 	// TODO jvallesm: INS-5963 addresses redacting these values.
 
 	return conn, nil
+}
+
+func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view pb.View) *pb.Connection {
+	return &pb.Connection{
+		Uid:              conn.UID.String(),
+		Id:               conn.ID,
+		NamespaceId:      nsID,
+		IntegrationId:    conn.Integration.ID,
+		IntegrationTitle: conn.Integration.Title,
+		Method:           pb.Connection_Method(conn.Method),
+		View:             view,
+		CreateTime:       timestamppb.New(conn.CreateTime),
+		UpdateTime:       timestamppb.New(conn.UpdateTime),
+	}
 }
 
 func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error) {
@@ -371,22 +364,7 @@ func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListName
 	}
 
 	for i, inDB := range dbConns.Connections {
-		cdIdx, err := s.repository.GetDefinitionByUID(ctx, inDB.IntegrationUID)
-		if err != nil {
-			return nil, fmt.Errorf("fetching definition index: %w", err)
-		}
-
-		resp.Connections[i] = &pb.Connection{
-			Uid:              inDB.UID.String(),
-			Id:               inDB.ID,
-			NamespaceId:      req.GetNamespaceId(),
-			IntegrationId:    cdIdx.ID,
-			IntegrationTitle: cdIdx.Title,
-			Method:           pb.Connection_Method(inDB.Method),
-			View:             pb.View_VIEW_BASIC,
-			CreateTime:       timestamppb.New(inDB.CreateTime),
-			UpdateTime:       timestamppb.New(inDB.UpdateTime),
-		}
+		resp.Connections[i] = s.connectionToPB(inDB, req.GetNamespaceId(), pb.View_VIEW_BASIC)
 	}
 
 	return resp, nil

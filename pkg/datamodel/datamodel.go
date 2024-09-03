@@ -616,5 +616,6 @@ type Connection struct {
 	NamespaceUID   uuid.UUID
 	IntegrationUID uuid.UUID
 	Method         ConnectionMethod
-	Setup          datatypes.JSON `gorm:"type:jsonb"`
+	Setup          datatypes.JSON      `gorm:"type:jsonb"`
+	Integration    ComponentDefinition `gorm:"foreignKey:IntegrationUID;references:UID"`
 }

@@ -289,6 +289,7 @@ func TestRepository_Connection(t *testing.T) {
 			c.Check(inserted.DeleteTime.Valid, qt.IsFalse)
 			// Testing proto scan & write.
 			c.Check(inserted.Method, qt.ContentEquals, method)
+			c.Check(inserted.Integration.Title, qt.Not(qt.HasLen), 0)
 
 			fetched, err := repo.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, conn.ID)
 			c.Check(err, qt.IsNil)
@@ -326,6 +327,10 @@ func TestRepository_Connection(t *testing.T) {
 		c.Check(connList.Connections[0].ID, qt.Equals, "3rd")
 		c.Check(connList.Connections[1].ID, qt.Equals, "4th")
 		c.Check(connList.NextPageToken, qt.HasLen, 0)
+
+		// Check Integration preload
+		c.Check(connList.Connections[0].Integration.Title, qt.Not(qt.HasLen), 0)
+
 	})
 
 	c.Run("nok - double creation", func(c *qt.C) {

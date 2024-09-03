@@ -882,21 +882,13 @@ func (r *repository) ListIntegrations(ctx context.Context, p ListIntegrationsPar
 	// Several results might have the same score and release stage. We need to
 	// sort by at least one unique field so the pagination results aren't
 	// arbitrary.
-	orderBy := "feature_score DESC, uid DESC"
-	rows, err := queryBuilder.Order(orderBy).Limit(p.Limit).Rows()
+	resp.ComponentDefinitions = make([]*datamodel.ComponentDefinition, 0, p.Limit)
+	err = queryBuilder.
+		Limit(p.Limit).
+		Order("feature_score DESC, uid DESC").
+		Find(&resp.ComponentDefinitions).Error
 	if err != nil {
 		return resp, fmt.Errorf("querying database rows: %w", err)
-	}
-	defer rows.Close()
-
-	resp.ComponentDefinitions = make([]*datamodel.ComponentDefinition, 0, p.Limit)
-	for rows.Next() {
-		item := new(datamodel.ComponentDefinition)
-		if err = db.ScanRows(rows, item); err != nil {
-			return resp, fmt.Errorf("scanning rows: %w", err)
-		}
-
-		resp.ComponentDefinitions = append(resp.ComponentDefinitions, item)
 	}
 
 	if len(resp.ComponentDefinitions) == 0 {
@@ -1279,13 +1271,15 @@ func (r *repository) CreateNamespaceConnection(ctx context.Context, conn *datamo
 	if err != nil {
 		return nil, r.toDomainErr(err)
 	}
-	return conn, nil
+
+	// Extra query is used to return the associated integration.
+	return r.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, conn.ID)
 }
 
 func (r *repository) GetNamespaceConnectionByID(ctx context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error) {
 	db := r.db.WithContext(ctx)
 
-	q := db.Where("namespace_uid = ? AND id = ?", nsUID, id)
+	q := db.Preload("Integration").Where("namespace_uid = ? AND id = ?", nsUID, id)
 	conn := new(datamodel.Connection)
 	if err := q.First(&conn).Error; err != nil {
 		return nil, r.toDomainErr(err)
@@ -1314,11 +1308,6 @@ type connectionCursor struct {
 	Score          int       `json:"score"`
 	IntegrationUID uuid.UUID `json:"integration_uid"`
 	CreateTime     time.Time `json:"create_time"`
-}
-
-type connectionListResult struct {
-	*datamodel.Connection
-	FeatureScore int
 }
 
 func (r *repository) ListNamespaceConnections(ctx context.Context, p ListNamespaceConnectionsParams) (ConnectionList, error) {
@@ -1367,44 +1356,34 @@ func (r *repository) ListNamespaceConnections(ctx context.Context, p ListNamespa
 		Select("connection.*, component_definition_index.feature_score").
 		Session(&gorm.Session{})
 
-	orderBy := "feature_score DESC, integration_uid DESC, create_time DESC"
-	rows, err := queryBuilder.Order(orderBy).Limit(p.Limit).Rows()
+	resp.Connections = make([]*datamodel.Connection, 0, p.Limit)
+	err = queryBuilder.Preload("Integration").
+		Limit(p.Limit).
+		Order("feature_score DESC, integration_uid DESC, create_time DESC").
+		Find(&resp.Connections).Error
 	if err != nil {
 		return resp, fmt.Errorf("querying database rows: %w", err)
-	}
-	defer rows.Close()
-
-	var lastScanned connectionListResult
-	resp.Connections = make([]*datamodel.Connection, 0, p.Limit)
-	for rows.Next() {
-		item := new(connectionListResult)
-		if err = db.ScanRows(rows, item); err != nil {
-			return resp, fmt.Errorf("scanning rows: %w", err)
-		}
-
-		resp.Connections = append(resp.Connections, item.Connection)
-
-		lastScanned = *item
 	}
 
 	if len(resp.Connections) == 0 {
 		return resp, nil
 	}
 
-	lastInDB := new(connectionListResult)
+	lastInPage := resp.Connections[len(resp.Connections)-1]
+	lastInDB := new(datamodel.Connection)
 	orderInverse := "feature_score ASC, integration_uid ASC, create_time ASC"
 	if result := queryBuilder.Order(orderInverse).Limit(1).Find(lastInDB); result.Error != nil {
 		return resp, fmt.Errorf("finding last item: %w", err)
 	}
 
-	if lastInDB.UID.String() == lastScanned.UID.String() {
+	if lastInDB.UID.String() == lastInPage.UID.String() {
 		return resp, nil
 	}
 
 	nextCursor := connectionCursor{
-		Score:          lastScanned.FeatureScore,
-		IntegrationUID: lastScanned.IntegrationUID,
-		CreateTime:     lastScanned.CreateTime,
+		Score:          lastInPage.Integration.FeatureScore,
+		IntegrationUID: lastInPage.IntegrationUID,
+		CreateTime:     lastInPage.CreateTime,
 	}
 	resp.NextPageToken, err = encodeCursor[connectionCursor](nextCursor)
 	if err != nil {
