@@ -5,21 +5,26 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
+	"github.com/iancoleman/strcase"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.einride.tech/aip/filtering"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/datatypes"
 
+	fieldmaskutil "github.com/mennanov/fieldmask-utils"
+
+	componentbase "github.com/instill-ai/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/errmsg"
 
-	componentbase "github.com/instill-ai/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -135,37 +140,17 @@ func (s *service) componentDefinitionToIntegration(
 	}, nil
 }
 
-// validateConnection checks an input connection (for creation) is valid. Note
-// that OUTUPUT_ONLY fields and undefined setup fields will be set to zero.
+var outputOnlyConnectionFields = []string{
+	"uid",
+	"integration_title",
+	"create_time",
+	"update_time",
+}
+
+// validateConnection validates the fields of a pb.Connection. In particular,it
+// verifies the setup fulfills its integration's schema.
+// Note that the connection input will be modified.
 func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integration) error {
-	// Check REQUIRED fields are provided in the request.
-	requiredFields := []string{
-		"id",
-		"namespace_id",
-		"integration_id",
-		"method",
-		"setup",
-	}
-	if err := checkfield.CheckRequiredFields(conn, requiredFields); err != nil {
-		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
-	}
-
-	// Set all OUTPUT_ONLY fields to zero value.
-	outputOnlyFields := []string{
-		"uid",
-		"integration_title",
-		"create_time",
-		"update_time",
-	}
-	if err := checkfield.CheckCreateOutputOnlyFields(conn, outputOnlyFields); err != nil {
-		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
-	}
-
-	// Validate resource ID.
-	if err := checkfield.CheckResourceID(conn.GetId()); err != nil {
-		return fmt.Errorf("%w: %w", errdomain.ErrInvalidArgument, err)
-	}
-
 	// Validate method is METHOD_DICTIONARY.
 	// TODO jvallesm: support OAuth in v0.39.0
 	if conn.GetMethod() != pb.Connection_METHOD_DICTIONARY {
@@ -231,6 +216,86 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 	return nil
 }
 
+// validateConnectionCreation checks an input connection is valid for creation.
+// Note that OUTUPUT_ONLY fields and undefined setup fields will be set to
+// zero.
+func (s *service) validateConnectionCreation(conn *pb.Connection, integration *pb.Integration) error {
+	// Check REQUIRED fields are provided in the request.
+	requiredFields := []string{
+		"id",
+		"namespace_id",
+		"integration_id",
+		"method",
+		"setup",
+	}
+	if err := checkfield.CheckRequiredFields(conn, requiredFields); err != nil {
+		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+	}
+
+	// Set all OUTPUT_ONLY fields to zero value.
+	if err := checkfield.CheckCreateOutputOnlyFields(conn, outputOnlyConnectionFields); err != nil {
+		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+	}
+
+	// Validate resource ID.
+	if err := checkfield.CheckResourceID(conn.GetId()); err != nil {
+		return fmt.Errorf("%w: %w", errdomain.ErrInvalidArgument, err)
+	}
+
+	return s.validateConnection(conn, integration)
+}
+
+var errEmptyMask = fmt.Errorf("empty mask")
+
+// validateConnectionUpdate checks an input connection is valid for update.
+// Note that OUTUPUT_ONLY fields and undefined setup fields will be set to
+// zero in the input connection.
+func (s *service) validateConnectionUpdate(
+	updateReq, destConn *pb.Connection,
+	pbMask *fieldmaskpb.FieldMask,
+	integration *pb.Integration,
+) (err error) {
+	// setup field's type is google.protobuf.Struct, which needs to be updated
+	// in block.
+	for i, path := range pbMask.Paths {
+		if strings.Contains(path, "setup") {
+			pbMask.Paths[i] = "setup"
+		}
+	}
+
+	if !pbMask.IsValid(updateReq) {
+		return fmt.Errorf("%w: invalid input mask", errdomain.ErrInvalidArgument)
+	}
+
+	pbMask, err = checkfield.CheckUpdateOutputOnlyFields(pbMask, outputOnlyConnectionFields)
+	if err != nil {
+		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+	}
+
+	mask, err := fieldmaskutil.MaskFromProtoFieldMask(pbMask, strcase.ToCamel)
+	if err != nil {
+		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+	}
+
+	if mask.IsEmpty() {
+		return errEmptyMask
+	}
+
+	// Return error if IMMUTABLE fields are intentionally changed.
+	immutableFields := []string{"id", "namespace_id", "integration_id"}
+	if err := checkfield.CheckUpdateImmutableFields(updateReq, destConn, immutableFields); err != nil {
+		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
+	}
+
+	// Only the fields mentioned in the field mask will be copied to the
+	// destination connection, the other fields will be left intact.
+	if err := fieldmaskutil.StructToStruct(mask, updateReq, destConn); err != nil {
+		return fmt.Errorf("copying updates to connection object: %w", err)
+	}
+
+	return s.validateConnection(destConn, integration)
+}
+
 func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connection) (*pb.Connection, error) {
 	ns, err := s.GetRscNamespace(ctx, conn.GetNamespaceId())
 	if err != nil {
@@ -250,7 +315,7 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 		return nil, fmt.Errorf("fetching integration details: %w", err)
 	}
 
-	if err := s.validateConnection(conn, integration); err != nil {
+	if err := s.validateConnectionCreation(conn, integration); err != nil {
 		return nil, err
 	}
 
@@ -271,6 +336,60 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 	}
 
 	return s.connectionToPB(inserted, conn.GetNamespaceId(), pb.View_VIEW_FULL)
+}
+
+func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateNamespaceConnectionRequest) (*pb.Connection, error) {
+	ns, err := s.GetRscNamespace(ctx, req.GetConnection().GetNamespaceId())
+	if err != nil {
+		return nil, fmt.Errorf("fetching namespace: %w", err)
+	}
+
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, fmt.Errorf("checking namespace permissions: %w", err)
+	}
+
+	inDB, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, req.GetConnection().GetId())
+	if err != nil {
+		return nil, fmt.Errorf("fetching connection: %w", err)
+	}
+
+	destConn, err := s.connectionToPB(inDB, ns.NsID, pb.View_VIEW_FULL)
+	if err != nil {
+		return nil, fmt.Errorf("converting database connection to proto: %w", err)
+	}
+
+	integration, err := s.GetIntegration(ctx, inDB.Integration.ID, pb.View_VIEW_FULL)
+	if err != nil {
+		if errors.Is(err, errIntegrationNotFound) {
+			return nil, fmt.Errorf("%w: invalid integration ID", errdomain.ErrInvalidArgument)
+		}
+
+		return nil, fmt.Errorf("fetching integration details: %w", err)
+	}
+
+	err = s.validateConnectionUpdate(req.GetConnection(), destConn, req.GetUpdateMask(), integration)
+	if err != nil {
+		if !errors.Is(err, errEmptyMask) {
+			return nil, err
+		}
+
+		return s.connectionToPB(inDB, ns.NsID, pb.View_VIEW_FULL)
+	}
+
+	j, err := destConn.GetSetup().MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("marshalling setup: %w", err)
+	}
+
+	updated, err := s.repository.UpdateNamespaceConnectionByUID(ctx, inDB.UID, &datamodel.Connection{
+		Method: datamodel.ConnectionMethod(destConn.GetMethod()),
+		Setup:  datatypes.JSON(j),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("persisting connection: %w", err)
+	}
+
+	return s.connectionToPB(updated, destConn.GetNamespaceId(), pb.View_VIEW_FULL)
 }
 
 func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.Connection, error) {

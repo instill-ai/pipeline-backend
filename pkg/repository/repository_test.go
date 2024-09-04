@@ -5,6 +5,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/url"
 	"os"
@@ -280,6 +281,13 @@ func TestRepository_Connection(t *testing.T) {
 		c.Check(errors.Is(err, errdomain.ErrAlreadyExists), qt.IsTrue)
 	})
 
+	c.Run("nok - update not found", func(c *qt.C) {
+		repo := newRepo(c)
+		conn := newConn()
+		_, err := repo.UpdateNamespaceConnectionByUID(ctx, uuid.Must(uuid.NewV4()), conn)
+		c.Check(errors.Is(err, errdomain.ErrNotFound), qt.IsTrue)
+	})
+
 	c.Run("nok - deletion not found", func(c *qt.C) {
 		err := newRepo(c).DeleteNamespaceConnectionByID(ctx, uuid.Must(uuid.NewV4()), "foo")
 		c.Check(errors.Is(err, errdomain.ErrNotFound), qt.IsTrue)
@@ -347,6 +355,20 @@ func TestRepository_Connection(t *testing.T) {
 
 		// Check Integration preload
 		c.Check(connList.Connections[0].Integration.Title, qt.Not(qt.HasLen), 0)
+
+		preUpdateConn := connList.Connections[0]
+		conn, err := repo.UpdateNamespaceConnectionByUID(ctx, preUpdateConn.UID, &datamodel.Connection{
+			ID:             "testytest",
+			NamespaceUID:   uuid.Must(uuid.NewV4()),
+			IntegrationUID: uuid.Must(uuid.NewV4()),
+			Setup:          datatypes.JSON(`{"foo":"bar"}`),
+		})
+		c.Check(err, qt.IsNil)
+		c.Check(conn.ID, qt.Equals, preUpdateConn.ID)
+		c.Check(conn.UID, qt.Equals, preUpdateConn.UID)
+		c.Check(conn.NamespaceUID, qt.Equals, preUpdateConn.NamespaceUID)
+		c.Check(conn.IntegrationUID, qt.Equals, preUpdateConn.IntegrationUID)
+		c.Check([]byte(conn.Setup), qt.JSONEquals, json.RawMessage(`{"foo":"bar"}`))
 
 		// Delete & fetch
 		err = repo.DeleteNamespaceConnectionByID(ctx, nsUID, "1st")

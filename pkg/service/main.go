@@ -81,6 +81,7 @@ type Service interface {
 	GetIntegration(_ context.Context, id string, _ pb.View) (*pb.Integration, error)
 	ListIntegrations(context.Context, *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error)
 	CreateNamespaceConnection(context.Context, *pb.Connection) (*pb.Connection, error)
+	UpdateNamespaceConnection(context.Context, *pb.UpdateNamespaceConnectionRequest) (*pb.Connection, error)
 	DeleteNamespaceConnection(_ context.Context, namespaceID, id string) error
 	GetNamespaceConnection(context.Context, *pb.GetNamespaceConnectionRequest) (*pb.Connection, error)
 	ListNamespaceConnections(context.Context, *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error)

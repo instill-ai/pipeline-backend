@@ -77,6 +77,7 @@ type Repository interface {
 	ListIntegrations(context.Context, ListIntegrationsParams) (IntegrationList, error)
 
 	CreateNamespaceConnection(context.Context, *datamodel.Connection) (*datamodel.Connection, error)
+	UpdateNamespaceConnectionByUID(context.Context, uuid.UUID, *datamodel.Connection) (*datamodel.Connection, error)
 	DeleteNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) error
 	GetNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error)
 	ListNamespaceConnections(context.Context, ListNamespaceConnectionsParams) (ConnectionList, error)
@@ -1271,6 +1272,25 @@ func (r *repository) CreateNamespaceConnection(ctx context.Context, conn *datamo
 	err := db.Create(conn).Error
 	if err != nil {
 		return nil, r.toDomainErr(err)
+	}
+
+	// Extra query is used to return the associated integration.
+	return r.GetNamespaceConnectionByID(ctx, conn.NamespaceUID, conn.ID)
+}
+
+func (r *repository) UpdateNamespaceConnectionByUID(ctx context.Context, uid uuid.UUID, conn *datamodel.Connection) (*datamodel.Connection, error) {
+	db := r.db.WithContext(ctx).Debug()
+
+	result := db.Where("uid = ?", uid).
+		Omit("UID", "ID", "NamespaceUID", "IntegrationUID"). // Immutable fields
+		Clauses(clause.Returning{}).
+		Updates(conn)
+	if result.Error != nil {
+		return nil, r.toDomainErr(result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, errdomain.ErrNotFound
 	}
 
 	// Extra query is used to return the associated integration.
