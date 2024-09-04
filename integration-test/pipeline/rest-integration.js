@@ -57,7 +57,7 @@ export function CheckIntegrations() {
 
   group("Integration API: List integrations", () => {
     // Default pagination.
-    var firstPage = http.request( "GET", `${pipelinePublicHost}/v1beta/integrations`, null, null);
+    var firstPage = http.request("GET", `${pipelinePublicHost}/v1beta/integrations`, null, null);
     check(firstPage, {
       "GET /v1beta/integrations response status is 200": (r) => r.status === 200,
       "GET /v1beta/integrations response totalSize > 0": (r) => r.json().totalSize > 0,
@@ -74,14 +74,14 @@ export function CheckIntegrations() {
     });
 
     // Filter fuzzy title
-    check(http.request( "GET", `${pipelinePublicHost}/v1beta/integrations?filter=qIntegration="que"`, null, null), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations?filter=qIntegration="que"`, null, null), {
       [`GET /v1beta/integrations?filter=qIntegration="que" response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations?filter=qIntegration="que" response totalSize > 0`]: (r) => r.json().totalSize === 1,
       [`GET /v1beta/integrations?filter=qIntegration="que" returns BigQuery integration`]: (r) => r.json().integrations[0].title === "BigQuery",
     });
 
     // Filter fuzzy vendor
-    check(http.request( "GET", `${pipelinePublicHost}/v1beta/integrations?filter=qIntegration="labs"`, null, null), {
+    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations?filter=qIntegration="labs"`, null, null), {
       [`GET /v1beta/integrations?filter=qIntegration="labs" response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations?filter=qIntegration="labs" response totalSize > 0`]: (r) => r.json().totalSize === 1,
       [`GET /v1beta/integrations?filter=qIntegration="labs" returns Redis integration`]: (r) => r.json().integrations[0].title === "Redis",
@@ -92,6 +92,12 @@ export function CheckIntegrations() {
 
 export function CheckConnections(data) {
   var connectionID = dbIDPrefix + randomString(8);
+  var setup = Object.assign({
+    "email-address": "wombat@instill.tech",
+    password: "0123",
+    "server-address": "localhost",
+    "server-port": 993,
+  });
 
   group("Integration API: Create connection", () => {
     var path = `/v1beta/namespaces/${defaultUsername}/connections`;
@@ -104,12 +110,7 @@ export function CheckConnections(data) {
         id: connectionID,
         integrationId: "email",
         method: "METHOD_DICTIONARY",
-        setup: {
-          "email-address": "wombat@instill.tech",
-          password: "0123",
-          "server-address": "localhost",
-          "server-port": 993,
-        },
+        setup: setup,
       }),
       data.header
     );
@@ -160,25 +161,25 @@ export function CheckConnections(data) {
   group("Integration API: Get connection", () => {
     var path = `/v1beta/namespaces/${defaultUsername}/connections/${connectionID}`;
 
-    check(http.request( "GET", pipelinePublicHost + path + "aaa", null, data.header), {
-      [`POST ${path + "aaa"} response status is 404`]: (r) => r.status === 404,
+    check(http.request("GET", pipelinePublicHost + path + "aaa", null, data.header), {
+      [`GET ${path + "aaa"} response status is 404`]: (r) => r.status === 404,
     });
 
     // Basic view
-    check(http.request( "GET", pipelinePublicHost + path, null, data.header), {
-      [`POST ${path} response status is 200`]: (r) => r.status === 200,
-      [`POST ${path} has basic view`]: (r) => r.json().connection.view === "VIEW_BASIC",
-      [`POST ${path} has setup hidden`]: (r) => r.json().connection.setup === null,
-      [`POST ${path} has integration ID`]: (r) => r.json().connection.integrationId === "email",
-      [`POST ${path} has integration title`]: (r) => r.json().connection.integrationTitle === "Email",
+    check(http.request("GET", pipelinePublicHost + path, null, data.header), {
+      [`GET ${path} response status is 200`]: (r) => r.status === 200,
+      [`GET ${path} has basic view`]: (r) => r.json().connection.view === "VIEW_BASIC",
+      [`GET ${path} has setup hidden`]: (r) => r.json().connection.setup === null,
+      [`GET ${path} has integration ID`]: (r) => r.json().connection.integrationId === "email",
+      [`GET ${path} has integration title`]: (r) => r.json().connection.integrationTitle === "Email",
     });
 
     // Full view
-    check(http.request( "GET", pipelinePublicHost + path + "?view=VIEW_FULL", null, data.header), {
-      [`POST ${path + "?view=VIEW_FULL"} response status is 200`]: (r) => r.status === 200,
-      [`POST ${path + "?view=VIEW_FULL"} has full view`]: (r) => r.json().connection.view === "VIEW_FULL",
-      [`POST ${path + "?view=VIEW_FULL"} has setup`]: (r) => r.json().connection.setup != null,
-      [`POST ${path + "?view=VIEW_FULL"} has setup value`]: (r) => r.json().connection.setup.password === "0123", // TODO: redact
+    check(http.request("GET", pipelinePublicHost + path + "?view=VIEW_FULL", null, data.header), {
+      [`GET ${path + "?view=VIEW_FULL"} response status is 200`]: (r) => r.status === 200,
+      [`GET ${path + "?view=VIEW_FULL"} has full view`]: (r) => r.json().connection.view === "VIEW_FULL",
+      [`GET ${path + "?view=VIEW_FULL"} has setup`]: (r) => r.json().connection.setup != null,
+      [`GET ${path + "?view=VIEW_FULL"} has setup value`]: (r) => r.json().connection.setup.password === setup.password, // TODO: redact
     });
   });
 
@@ -207,7 +208,7 @@ export function CheckConnections(data) {
 
     // With connection ID filter
     var pathWithFilter =  path + `?filter=qConnection="${dbIDPrefix}"`;
-    var firstPage = http.request( "GET", pipelinePublicHost + pathWithFilter, null, data.header);
+    var firstPage = http.request("GET", pipelinePublicHost + pathWithFilter, null, data.header);
     check(firstPage, {
       [`GET ${pathWithFilter} response status is 200`]: (r) => r.status === 200,
       [`GET ${pathWithFilter} response has totalSize = ${nConnections + 1}`]: (r) =>
@@ -217,7 +218,7 @@ export function CheckConnections(data) {
     });
 
     var pathWithToken = pathWithFilter + `&pageToken=${firstPage.json().nextPageToken}`;
-    check( http.request( "GET", pipelinePublicHost + pathWithToken, null, data.header), {
+    check(http.request("GET", pipelinePublicHost + pathWithToken, null, data.header), {
       [`GET ${pathWithToken} response status is 200`]: (r) => r.status === 200,
       [`GET ${pathWithToken} response has totalSize = ${nConnections + 1}`]: (r) =>
         r.json().totalSize === nConnections + 1,
@@ -228,12 +229,66 @@ export function CheckConnections(data) {
 
     // With integration ID filter
     var pathWithIntegration = pathWithFilter + `%20AND%20integrationId='${integrationID}'`;
-    check(http.request( "GET", pipelinePublicHost + pathWithIntegration, null, data.header), {
+    check(http.request("GET", pipelinePublicHost + pathWithIntegration, null, data.header), {
       [`GET ${pathWithIntegration} response status is 200`]: (r) => r.status === 200,
       [`GET ${pathWithIntegration} response has totalSize = ${nConnections}`]: (r) =>
         r.json().totalSize === nConnections,
       [`GET ${pathWithIntegration} response contains connections for ${integrationID} integration`]: (r) =>
         r.json().connections[0].integrationId === integrationID,
+    });
+
+  });
+
+  group("Integration API: Update connection", () => {
+    var path = `/v1beta/namespaces/${defaultUsername}/connections/${connectionID}`;
+    var originalConn = http.request(
+      "GET",
+      pipelinePublicHost + path,
+      null,
+      data.header
+    ).json().connection;
+
+    var newPass = "4324";
+    var req = http.request(
+      "PATCH",
+      pipelinePublicHost + path,
+      JSON.stringify({
+        uid: "should-be-ignored",
+        setup: {
+          "email-address": "wombat@instill.tech",
+          password: newPass,
+          "server-address": "localhost",
+          "server-port": 993,
+        },
+      }),
+      data.header
+    );
+
+    check(req, {
+      [`PATCH ${path} response status 200`]: (r) => r.status === 200,
+      [`PATCH ${path} contains new setup`]: (r) => r.json().connection.setup.password === newPass,
+      [`PATCH ${path} didn't modify UID`]: (r) => r.json().connection.uid === originalConn.uid,
+    });
+
+    check(http.request("GET", pipelinePublicHost + path + "?view=VIEW_FULL", null, data.header), {
+      [`GET ${path + "?view=VIEW_FULL"} response status is 200`]: (r) => r.status === 200,
+      [`GET ${path + "?view=VIEW_FULL"} has new setup value`]: (r) =>
+        r.json().connection.setup.password === newPass,
+    });
+  });
+
+  group("Integration API: Delete connection", () => {
+    var path = `/v1beta/namespaces/${defaultUsername}/connections/${connectionID}`;
+    check(http.request("DELETE", pipelinePublicHost + path, null, data.header), {
+      [`DELETE ${path} response status 204`]: (r) => r.status === 204,
+    });
+
+    check(http.request("GET", pipelinePublicHost + path, null, data.header), {
+      [`GET ${path} response status is 404`]: (r) => r.status === 404,
+    });
+
+    check(http.request("DELETE", pipelinePublicHost + path, null, data.header), {
+      [`DELETE ${path} response status 404`]: (r) => r.status === 404,
     });
   });
 }

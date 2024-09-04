@@ -5,6 +5,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/url"
 	"os"
@@ -24,10 +25,10 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 
 	componentstore "github.com/instill-ai/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -268,6 +269,30 @@ func TestRepository_Connection(t *testing.T) {
 		c.Check(err, qt.ErrorMatches, ".*foreign key.*integration_uid.*")
 	})
 
+	c.Run("nok - double creation", func(c *qt.C) {
+		repo := newRepo(c)
+		conn := newConn()
+		conn.ID = "foo"
+		conn.IntegrationUID = uuid.FromStringOrNil(email.GetUid())
+
+		_, err := repo.CreateNamespaceConnection(ctx, conn)
+		c.Check(err, qt.IsNil)
+		_, err = repo.CreateNamespaceConnection(ctx, conn)
+		c.Check(errors.Is(err, errdomain.ErrAlreadyExists), qt.IsTrue)
+	})
+
+	c.Run("nok - update not found", func(c *qt.C) {
+		repo := newRepo(c)
+		conn := newConn()
+		_, err := repo.UpdateNamespaceConnectionByUID(ctx, uuid.Must(uuid.NewV4()), conn)
+		c.Check(errors.Is(err, errdomain.ErrNotFound), qt.IsTrue)
+	})
+
+	c.Run("nok - deletion not found", func(c *qt.C) {
+		err := newRepo(c).DeleteNamespaceConnectionByID(ctx, uuid.Must(uuid.NewV4()), "foo")
+		c.Check(errors.Is(err, errdomain.ErrNotFound), qt.IsTrue)
+	})
+
 	c.Run("ok - create, get, list", func(c *qt.C) {
 		repo := newRepo(c)
 
@@ -331,18 +356,26 @@ func TestRepository_Connection(t *testing.T) {
 		// Check Integration preload
 		c.Check(connList.Connections[0].Integration.Title, qt.Not(qt.HasLen), 0)
 
-	})
-
-	c.Run("nok - double creation", func(c *qt.C) {
-		repo := newRepo(c)
-		conn := newConn()
-		conn.ID = "foo"
-		conn.IntegrationUID = uuid.FromStringOrNil(email.GetUid())
-
-		_, err := repo.CreateNamespaceConnection(ctx, conn)
+		preUpdateConn := connList.Connections[0]
+		conn, err := repo.UpdateNamespaceConnectionByUID(ctx, preUpdateConn.UID, &datamodel.Connection{
+			ID:             "testytest",
+			NamespaceUID:   uuid.Must(uuid.NewV4()),
+			IntegrationUID: uuid.Must(uuid.NewV4()),
+			Setup:          datatypes.JSON(`{"foo":"bar"}`),
+		})
 		c.Check(err, qt.IsNil)
-		_, err = repo.CreateNamespaceConnection(ctx, conn)
-		c.Check(errors.Is(err, errdomain.ErrAlreadyExists), qt.IsTrue)
+		c.Check(conn.ID, qt.Equals, preUpdateConn.ID)
+		c.Check(conn.UID, qt.Equals, preUpdateConn.UID)
+		c.Check(conn.NamespaceUID, qt.Equals, preUpdateConn.NamespaceUID)
+		c.Check(conn.IntegrationUID, qt.Equals, preUpdateConn.IntegrationUID)
+		c.Check([]byte(conn.Setup), qt.JSONEquals, json.RawMessage(`{"foo":"bar"}`))
+
+		// Delete & fetch
+		err = repo.DeleteNamespaceConnectionByID(ctx, nsUID, "1st")
+		c.Check(err, qt.IsNil)
+		connList, err = repo.ListNamespaceConnections(ctx, p)
+		c.Check(err, qt.IsNil)
+		c.Check(connList.TotalSize, qt.Equals, int32(3))
 	})
 }
 
