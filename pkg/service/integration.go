@@ -13,20 +13,20 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/datatypes"
 
-	componentbase "github.com/instill-ai/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/errmsg"
 
+	componentbase "github.com/instill-ai/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 var errIntegrationNotFound = errmsg.AddMessage(errdomain.ErrNotFound, "Integration does not exist.")
 
-func (s *service) GetIntegration(ctx context.Context, id string, view pipelinepb.View) (*pipelinepb.Integration, error) {
+func (s *service) GetIntegration(ctx context.Context, id string, view pb.View) (*pb.Integration, error) {
 	cd, err := s.getComponentDefinitionByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, errdomain.ErrNotFound) {
@@ -36,12 +36,7 @@ func (s *service) GetIntegration(ctx context.Context, id string, view pipelinepb
 		return nil, fmt.Errorf("fetching component information: %w", err)
 	}
 
-	cdIdx, err := s.repository.GetDefinitionByUID(ctx, uuid.FromStringOrNil(cd.GetUid()))
-	if err != nil {
-		return nil, fmt.Errorf("fetching definition index: %w", err)
-	}
-
-	integration, err := s.componentDefinitionToIntegration(cd, cdIdx, view)
+	integration, err := s.componentDefinitionToIntegration(cd, view)
 	if err != nil {
 		return nil, errIntegrationNotFound
 	}
@@ -49,11 +44,10 @@ func (s *service) GetIntegration(ctx context.Context, id string, view pipelinepb
 	return integration, nil
 }
 
-func (s *service) ListIntegrations(ctx context.Context, req *pipelinepb.ListIntegrationsRequest) (*pipelinepb.ListIntegrationsResponse, error) {
+func (s *service) ListIntegrations(ctx context.Context, req *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error) {
 	declarations, err := filtering.NewDeclarations(
 		filtering.DeclareStandardFunctions(),
 		filtering.DeclareIdent("qIntegration", filtering.TypeString),
-		filtering.DeclareIdent("featured", filtering.TypeBool),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("building filter declarations: %w", err)
@@ -81,20 +75,20 @@ func (s *service) ListIntegrations(ctx context.Context, req *pipelinepb.ListInte
 	}
 
 	cdIndices := integrationsPage.ComponentDefinitions
-	integrations := make([]*pipelinepb.Integration, len(cdIndices))
+	integrations := make([]*pb.Integration, len(cdIndices))
 	for i, cdIdx := range cdIndices {
 		cd, err := s.component.GetDefinitionByUID(cdIdx.UID, vars, nil)
 		if err != nil {
 			return nil, fmt.Errorf("fetching component definition: %w", err)
 		}
 
-		integrations[i], err = s.componentDefinitionToIntegration(cd, cdIdx, pipelinepb.View_VIEW_BASIC)
+		integrations[i], err = s.componentDefinitionToIntegration(cd, pb.View_VIEW_BASIC)
 		if err != nil {
 			return nil, fmt.Errorf("converting component definition: %w", err)
 		}
 	}
 
-	return &pipelinepb.ListIntegrationsResponse{
+	return &pb.ListIntegrationsResponse{
 		Integrations:  integrations,
 		NextPageToken: integrationsPage.NextPageToken,
 		TotalSize:     integrationsPage.TotalSize,
@@ -104,10 +98,9 @@ func (s *service) ListIntegrations(ctx context.Context, req *pipelinepb.ListInte
 var errIntegrationConversion = fmt.Errorf("component definition has no integration configuration")
 
 func (s *service) componentDefinitionToIntegration(
-	cd *pipelinepb.ComponentDefinition,
-	cdIdx *datamodel.ComponentDefinition,
-	view pipelinepb.View,
-) (*pipelinepb.Integration, error) {
+	cd *pb.ComponentDefinition,
+	view pb.View,
+) (*pb.Integration, error) {
 
 	props, hasIntegration := cd.GetSpec().GetComponentSpecification().GetFields()["properties"]
 	if !hasIntegration {
@@ -119,37 +112,32 @@ func (s *service) componentDefinitionToIntegration(
 		return nil, errIntegrationConversion
 	}
 
-	var schemas []*pipelinepb.Integration_SetupSchema
-	if view == pipelinepb.View_VIEW_FULL {
+	var schemas []*pb.Integration_SetupSchema
+	if view == pb.View_VIEW_FULL {
 		// Integration Milestone 1 supports only key-value integrations.
-		schemas = []*pipelinepb.Integration_SetupSchema{
+		schemas = []*pb.Integration_SetupSchema{
 			{
-				Method: pipelinepb.Connection_METHOD_DICTIONARY,
+				Method: pb.Connection_METHOD_DICTIONARY,
 				Schema: setup.GetStructValue(),
 			},
 		}
 	}
 
-	return &pipelinepb.Integration{
+	return &pb.Integration{
 		Uid:         cd.GetUid(),
 		Id:          cd.GetId(),
 		Title:       cd.GetTitle(),
 		Description: cd.GetDescription(),
 		Vendor:      cd.GetVendor(),
 		Icon:        cd.GetIcon(),
-		// TODO jvallesm: we'll probably want different "featured" lists for
-		// the component defintion list (showcase components in the marketing
-		// website) and for the integrations (shortlist on the integrations
-		// page or pipeline builder).
-		Featured: cdIdx.FeatureScore > 0,
-		Schemas:  schemas,
-		View:     view,
+		Schemas:     schemas,
+		View:        view,
 	}, nil
 }
 
 // validateConnection checks an input connection (for creation) is valid. Note
 // that OUTUPUT_ONLY fields and undefined setup fields will be set to zero.
-func (s *service) validateConnection(conn *pipelinepb.Connection, integration *pipelinepb.Integration) error {
+func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integration) error {
 	// Check REQUIRED fields are provided in the request.
 	requiredFields := []string{
 		"id",
@@ -180,7 +168,7 @@ func (s *service) validateConnection(conn *pipelinepb.Connection, integration *p
 
 	// Validate method is METHOD_DICTIONARY.
 	// TODO jvallesm: support OAuth in v0.39.0
-	if conn.GetMethod() != pipelinepb.Connection_METHOD_DICTIONARY {
+	if conn.GetMethod() != pb.Connection_METHOD_DICTIONARY {
 		err := fmt.Errorf("%w: unsupported method", errdomain.ErrInvalidArgument)
 		return errmsg.AddMessage(err, "Only METHOD_DICTIONARY is supported at the moment.")
 	}
@@ -243,7 +231,7 @@ func (s *service) validateConnection(conn *pipelinepb.Connection, integration *p
 	return nil
 }
 
-func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pipelinepb.Connection) (*pipelinepb.Connection, error) {
+func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connection) (*pb.Connection, error) {
 	ns, err := s.GetRscNamespace(ctx, conn.GetNamespaceId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching namespace: %w", err)
@@ -253,7 +241,7 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pipelinep
 		return nil, fmt.Errorf("checking namespace permissions: %w", err)
 	}
 
-	integration, err := s.GetIntegration(ctx, conn.GetIntegrationId(), pipelinepb.View_VIEW_FULL)
+	integration, err := s.GetIntegration(ctx, conn.GetIntegrationId(), pb.View_VIEW_FULL)
 	if err != nil {
 		if errors.Is(err, errIntegrationNotFound) {
 			return nil, fmt.Errorf("%w: invalid integration ID", errdomain.ErrInvalidArgument)
@@ -282,18 +270,13 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pipelinep
 		return nil, fmt.Errorf("persisting connection: %w", err)
 	}
 
-	conn.Uid = inserted.UID.String()
-	conn.CreateTime = timestamppb.New(inserted.CreateTime)
-	conn.UpdateTime = timestamppb.New(inserted.UpdateTime)
-	conn.View = pipelinepb.View_VIEW_FULL
-
-	return conn, nil
+	return s.connectionToPB(inserted, conn.GetNamespaceId(), pb.View_VIEW_FULL), nil
 }
 
-func (s *service) GetNamespaceConnection(ctx context.Context, req *pipelinepb.GetNamespaceConnectionRequest) (*pipelinepb.Connection, error) {
+func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.Connection, error) {
 	view := req.GetView()
-	if view == pipelinepb.View_VIEW_UNSPECIFIED {
-		view = pipelinepb.View_VIEW_BASIC
+	if view == pb.View_VIEW_UNSPECIFIED {
+		view = pb.View_VIEW_BASIC
 	}
 
 	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
@@ -310,24 +293,8 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pipelinepb.Ge
 		return nil, fmt.Errorf("fetching connection: %w", err)
 	}
 
-	cdIdx, err := s.repository.GetDefinitionByUID(ctx, inDB.IntegrationUID)
-	if err != nil {
-		return nil, fmt.Errorf("fetching definition index: %w", err)
-	}
-
-	conn := &pipelinepb.Connection{
-		Uid:              inDB.UID.String(),
-		Id:               inDB.ID,
-		NamespaceId:      req.GetNamespaceId(),
-		IntegrationId:    cdIdx.ID,
-		IntegrationTitle: cdIdx.Title,
-		Method:           pipelinepb.Connection_Method(inDB.Method),
-		View:             view,
-		CreateTime:       timestamppb.New(inDB.CreateTime),
-		UpdateTime:       timestamppb.New(inDB.UpdateTime),
-	}
-
-	if view != pipelinepb.View_VIEW_FULL {
+	conn := s.connectionToPB(inDB, req.GetNamespaceId(), view)
+	if view != pb.View_VIEW_FULL {
 		return conn, nil
 	}
 
@@ -339,5 +306,66 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pipelinepb.Ge
 	// TODO jvallesm: INS-5963 addresses redacting these values.
 
 	return conn, nil
+}
 
+func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view pb.View) *pb.Connection {
+	return &pb.Connection{
+		Uid:              conn.UID.String(),
+		Id:               conn.ID,
+		NamespaceId:      nsID,
+		IntegrationId:    conn.Integration.ID,
+		IntegrationTitle: conn.Integration.Title,
+		Method:           pb.Connection_Method(conn.Method),
+		View:             view,
+		CreateTime:       timestamppb.New(conn.CreateTime),
+		UpdateTime:       timestamppb.New(conn.UpdateTime),
+	}
+}
+
+func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error) {
+	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	if err != nil {
+		return nil, fmt.Errorf("fetching namespace: %w", err)
+	}
+
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, fmt.Errorf("checking namespace permissions: %w", err)
+	}
+
+	declarations, err := filtering.NewDeclarations(
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareIdent("integrationId", filtering.TypeString),
+		filtering.DeclareIdent("qConnection", filtering.TypeString),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("building filter declarations: %w", err)
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return nil, fmt.Errorf("parsing filter: %w", err)
+	}
+	p := repository.ListNamespaceConnectionsParams{
+		NamespaceUID: ns.NsUID,
+		PageToken:    req.GetPageToken(),
+		Limit:        s.pageSizeInRange(req.GetPageSize()),
+		Filter:       filter,
+	}
+
+	dbConns, err := s.repository.ListNamespaceConnections(ctx, p)
+	if err != nil {
+		return nil, fmt.Errorf("fetching connections: %w", err)
+	}
+
+	resp := &pb.ListNamespaceConnectionsResponse{
+		Connections:   make([]*pb.Connection, len(dbConns.Connections)),
+		NextPageToken: dbConns.NextPageToken,
+		TotalSize:     dbConns.TotalSize,
+	}
+
+	for i, inDB := range dbConns.Connections {
+		resp.Connections[i] = s.connectionToPB(inDB, req.GetNamespaceId(), pb.View_VIEW_BASIC)
+	}
+
+	return resp, nil
 }

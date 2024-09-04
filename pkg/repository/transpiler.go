@@ -205,6 +205,17 @@ func (t *transpiler) transpileComparisonCallExpr(e *expr.Expr, op interface{}) (
 
 			sql = "((SIMILARITY(title, ?) > 0.2) OR (LOWER(title) LIKE LOWER(?)) OR (SIMILARITY(vendor, ?) > 0.2) OR (LOWER(vendor) LIKE LOWER(?)))"
 			vars = append(vars, val, likeVal, val, likeVal)
+		case "q_connection":
+			val := con.Vars[0]
+			likeVal := fmt.Sprintf("%%%s%%", val)
+
+			sql = "((SIMILARITY(connection.id, ?) > 0.2) OR (LOWER(connection.id) LIKE LOWER(?)) OR " +
+				"(SIMILARITY(component_definition_index.title, ?) > 0.2) OR (LOWER(component_definition_index.title) LIKE LOWER(?)) OR" +
+				"(SIMILARITY(component_definition_index.vendor, ?) > 0.2) OR (LOWER(component_definition_index.vendor) LIKE LOWER(?)))"
+			vars = append(vars, val, likeVal, val, likeVal, val, likeVal)
+		case "integration_id":
+			sql = "component_definition_index.id = ?"
+			vars = append(vars, con.Vars...)
 		case "tag":
 			sql = "tag.tag_name = ?"
 			vars = append(vars, con.Vars...)

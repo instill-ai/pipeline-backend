@@ -10,6 +10,8 @@ import {
 
 import { deepEqual } from "./helper.js";
 
+const defaultPageSize = 10;
+
 export function CheckIntegrations() {
   group("Integration API: Get integration", () => {
     // Inexistent component
@@ -35,7 +37,7 @@ export function CheckIntegrations() {
       description: cdef.description,
       vendor: cdef.vendor,
       icon: cdef.icon,
-      featured: true,
+      featured: false, // TODO when protogen-go is updated, this will be removed
       schemas: [],
       view: "VIEW_BASIC"
     };
@@ -51,23 +53,14 @@ export function CheckIntegrations() {
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response status is 200`]: (r) => r.status === 200,
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.schemas[0].method === "METHOD_DICTIONARY",
     });
-
-    // Unfeatured integration
-    var unfeaturedID = "cohere";
-    check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/${unfeaturedID}`, null, null), {
-      [`GET /v1beta/integrations/${unfeaturedID} response status is 200`]: (r) => r.status === 200,
-      [`GET /v1beta/integrations/${unfeaturedID} response has featured: false`]: (r) => r.json().integration.featured === false,
-    });
   });
 
   group("Integration API: List integrations", () => {
     // Default pagination.
-    var defaultPageSize = 10;
     var firstPage = http.request( "GET", `${pipelinePublicHost}/v1beta/integrations`, null, null);
     check(firstPage, {
       "GET /v1beta/integrations response status is 200": (r) => r.status === 200,
       "GET /v1beta/integrations response totalSize > 0": (r) => r.json().totalSize > 0,
-      "GET /v1beta/integrations starts with featured integrations": (r) => r.json().integrations[0].featured === true,
       "GET /v1beta/integrations has default page size": (r) => r.json().integrations.length === defaultPageSize,
     });
 
@@ -78,14 +71,6 @@ export function CheckIntegrations() {
       [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} has page size 2"`]: (r) => r.json().integrations.length === 2,
       [`GET /v1beta/integrations?pageSize=2&pageToken=${tokenPageTwo} has different elements than page 1"`]: (r) =>
         r.json().integrations[0].id != firstPage.json().integrations[0].id,
-    });
-
-    // Filter featured
-    check(http.request( "GET", `${pipelinePublicHost}/v1beta/integrations?filter=NOT%20featured`, null, null), {
-      "GET /v1beta/integrations?filter=NOT%20featured response status is 200": (r) => r.status === 200,
-      "GET /v1beta/integrations?filter=NOT%20featured response totalSize > 0": (r) => r.json().totalSize > 0,
-      "GET /v1beta/integrations?filter=NOT%20featured response totalSize < firstPage.totalSize": (r) => r.json().totalSize < firstPage.json().totalSize,
-      "GET /v1beta/integrations?filter=NOT%20featured doesn't have featured integrations": (r) => r.json().integrations[0].featured === false,
     });
 
     // Filter fuzzy title
@@ -194,6 +179,61 @@ export function CheckConnections(data) {
       [`POST ${path + "?view=VIEW_FULL"} has full view`]: (r) => r.json().connection.view === "VIEW_FULL",
       [`POST ${path + "?view=VIEW_FULL"} has setup`]: (r) => r.json().connection.setup != null,
       [`POST ${path + "?view=VIEW_FULL"} has setup value`]: (r) => r.json().connection.setup.password === "0123", // TODO: redact
+    });
+  });
+
+  group("Integration API: List connections", () => {
+    var path = `/v1beta/namespaces/${defaultUsername}/connections`;
+    var nConnections = 12;
+    var integrationID = "openai";
+
+    for (var i = 0; i < nConnections; i++) {
+      var req = http.request(
+        "POST",
+        pipelinePublicHost + path,
+        JSON.stringify({
+          id: dbIDPrefix + randomString(8),
+          integrationId: integrationID,
+          method: "METHOD_DICTIONARY",
+          setup: {
+            "api-key": randomString(16),
+          },
+        }),
+        data.header
+      );
+      check(req, { [`POST ${path}[${i}] response status is 201`]: (r) => r.status === 201 });
+    }
+
+
+    // With connection ID filter
+    var pathWithFilter =  path + `?filter=qConnection="${dbIDPrefix}"`;
+    var firstPage = http.request( "GET", pipelinePublicHost + pathWithFilter, null, data.header);
+    check(firstPage, {
+      [`GET ${pathWithFilter} response status is 200`]: (r) => r.status === 200,
+      [`GET ${pathWithFilter} response has totalSize = ${nConnections + 1}`]: (r) =>
+        r.json().totalSize === nConnections + 1,
+      [`GET ${pathWithFilter} response has default page size`]: (r) =>
+        r.json().connections.length === defaultPageSize,
+    });
+
+    var pathWithToken = pathWithFilter + `&pageToken=${firstPage.json().nextPageToken}`;
+    check( http.request( "GET", pipelinePublicHost + pathWithToken, null, data.header), {
+      [`GET ${pathWithToken} response status is 200`]: (r) => r.status === 200,
+      [`GET ${pathWithToken} response has totalSize = ${nConnections + 1}`]: (r) =>
+        r.json().totalSize === nConnections + 1,
+      [`GET ${pathWithToken} response has remaining items`]: (r) =>
+        r.json().connections.length === nConnections + 1 - defaultPageSize,
+      [`GET ${pathWithToken} response has no more pages`]: (r) => r.json().nextPageToken === "",
+    });
+
+    // With integration ID filter
+    var pathWithIntegration = pathWithFilter + `%20AND%20integrationId='${integrationID}'`;
+    check(http.request( "GET", pipelinePublicHost + pathWithIntegration, null, data.header), {
+      [`GET ${pathWithIntegration} response status is 200`]: (r) => r.status === 200,
+      [`GET ${pathWithIntegration} response has totalSize = ${nConnections}`]: (r) =>
+        r.json().totalSize === nConnections,
+      [`GET ${pathWithIntegration} response contains connections for ${integrationID} integration`]: (r) =>
+        r.json().connections[0].integrationId === integrationID,
     });
   });
 }

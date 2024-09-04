@@ -192,6 +192,12 @@ type RepositoryMock struct {
 	beforeListIntegrationsCounter uint64
 	ListIntegrationsMock          mRepositoryMockListIntegrations
 
+	funcListNamespaceConnections          func(ctx context.Context, l1 mm_repository.ListNamespaceConnectionsParams) (c2 mm_repository.ConnectionList, err error)
+	inspectFuncListNamespaceConnections   func(ctx context.Context, l1 mm_repository.ListNamespaceConnectionsParams)
+	afterListNamespaceConnectionsCounter  uint64
+	beforeListNamespaceConnectionsCounter uint64
+	ListNamespaceConnectionsMock          mRepositoryMockListNamespaceConnections
+
 	funcListNamespacePipelineReleases          func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool) (ppa1 []*datamodel.PipelineRelease, i1 int64, s1 string, err error)
 	inspectFuncListNamespacePipelineReleases   func(ctx context.Context, ownerPermalink string, pipelineUID uuid.UUID, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, showDeleted bool, returnCount bool)
 	afterListNamespacePipelineReleasesCounter  uint64
@@ -392,6 +398,9 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 
 	m.ListIntegrationsMock = mRepositoryMockListIntegrations{mock: m}
 	m.ListIntegrationsMock.callArgs = []*RepositoryMockListIntegrationsParams{}
+
+	m.ListNamespaceConnectionsMock = mRepositoryMockListNamespaceConnections{mock: m}
+	m.ListNamespaceConnectionsMock.callArgs = []*RepositoryMockListNamespaceConnectionsParams{}
 
 	m.ListNamespacePipelineReleasesMock = mRepositoryMockListNamespacePipelineReleases{mock: m}
 	m.ListNamespacePipelineReleasesMock.callArgs = []*RepositoryMockListNamespacePipelineReleasesParams{}
@@ -10496,6 +10505,327 @@ func (m *RepositoryMock) MinimockListIntegrationsInspect() {
 	}
 }
 
+type mRepositoryMockListNamespaceConnections struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockListNamespaceConnectionsExpectation
+	expectations       []*RepositoryMockListNamespaceConnectionsExpectation
+
+	callArgs []*RepositoryMockListNamespaceConnectionsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// RepositoryMockListNamespaceConnectionsExpectation specifies expectation struct of the Repository.ListNamespaceConnections
+type RepositoryMockListNamespaceConnectionsExpectation struct {
+	mock      *RepositoryMock
+	params    *RepositoryMockListNamespaceConnectionsParams
+	paramPtrs *RepositoryMockListNamespaceConnectionsParamPtrs
+	results   *RepositoryMockListNamespaceConnectionsResults
+	Counter   uint64
+}
+
+// RepositoryMockListNamespaceConnectionsParams contains parameters of the Repository.ListNamespaceConnections
+type RepositoryMockListNamespaceConnectionsParams struct {
+	ctx context.Context
+	l1  mm_repository.ListNamespaceConnectionsParams
+}
+
+// RepositoryMockListNamespaceConnectionsParamPtrs contains pointers to parameters of the Repository.ListNamespaceConnections
+type RepositoryMockListNamespaceConnectionsParamPtrs struct {
+	ctx *context.Context
+	l1  *mm_repository.ListNamespaceConnectionsParams
+}
+
+// RepositoryMockListNamespaceConnectionsResults contains results of the Repository.ListNamespaceConnections
+type RepositoryMockListNamespaceConnectionsResults struct {
+	c2  mm_repository.ConnectionList
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) Optional() *mRepositoryMockListNamespaceConnections {
+	mmListNamespaceConnections.optional = true
+	return mmListNamespaceConnections
+}
+
+// Expect sets up expected params for Repository.ListNamespaceConnections
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) Expect(ctx context.Context, l1 mm_repository.ListNamespaceConnectionsParams) *mRepositoryMockListNamespaceConnections {
+	if mmListNamespaceConnections.mock.funcListNamespaceConnections != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("RepositoryMock.ListNamespaceConnections mock is already set by Set")
+	}
+
+	if mmListNamespaceConnections.defaultExpectation == nil {
+		mmListNamespaceConnections.defaultExpectation = &RepositoryMockListNamespaceConnectionsExpectation{}
+	}
+
+	if mmListNamespaceConnections.defaultExpectation.paramPtrs != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("RepositoryMock.ListNamespaceConnections mock is already set by ExpectParams functions")
+	}
+
+	mmListNamespaceConnections.defaultExpectation.params = &RepositoryMockListNamespaceConnectionsParams{ctx, l1}
+	for _, e := range mmListNamespaceConnections.expectations {
+		if minimock.Equal(e.params, mmListNamespaceConnections.defaultExpectation.params) {
+			mmListNamespaceConnections.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListNamespaceConnections.defaultExpectation.params)
+		}
+	}
+
+	return mmListNamespaceConnections
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.ListNamespaceConnections
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) ExpectCtxParam1(ctx context.Context) *mRepositoryMockListNamespaceConnections {
+	if mmListNamespaceConnections.mock.funcListNamespaceConnections != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("RepositoryMock.ListNamespaceConnections mock is already set by Set")
+	}
+
+	if mmListNamespaceConnections.defaultExpectation == nil {
+		mmListNamespaceConnections.defaultExpectation = &RepositoryMockListNamespaceConnectionsExpectation{}
+	}
+
+	if mmListNamespaceConnections.defaultExpectation.params != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("RepositoryMock.ListNamespaceConnections mock is already set by Expect")
+	}
+
+	if mmListNamespaceConnections.defaultExpectation.paramPtrs == nil {
+		mmListNamespaceConnections.defaultExpectation.paramPtrs = &RepositoryMockListNamespaceConnectionsParamPtrs{}
+	}
+	mmListNamespaceConnections.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmListNamespaceConnections
+}
+
+// ExpectL1Param2 sets up expected param l1 for Repository.ListNamespaceConnections
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) ExpectL1Param2(l1 mm_repository.ListNamespaceConnectionsParams) *mRepositoryMockListNamespaceConnections {
+	if mmListNamespaceConnections.mock.funcListNamespaceConnections != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("RepositoryMock.ListNamespaceConnections mock is already set by Set")
+	}
+
+	if mmListNamespaceConnections.defaultExpectation == nil {
+		mmListNamespaceConnections.defaultExpectation = &RepositoryMockListNamespaceConnectionsExpectation{}
+	}
+
+	if mmListNamespaceConnections.defaultExpectation.params != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("RepositoryMock.ListNamespaceConnections mock is already set by Expect")
+	}
+
+	if mmListNamespaceConnections.defaultExpectation.paramPtrs == nil {
+		mmListNamespaceConnections.defaultExpectation.paramPtrs = &RepositoryMockListNamespaceConnectionsParamPtrs{}
+	}
+	mmListNamespaceConnections.defaultExpectation.paramPtrs.l1 = &l1
+
+	return mmListNamespaceConnections
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.ListNamespaceConnections
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) Inspect(f func(ctx context.Context, l1 mm_repository.ListNamespaceConnectionsParams)) *mRepositoryMockListNamespaceConnections {
+	if mmListNamespaceConnections.mock.inspectFuncListNamespaceConnections != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ListNamespaceConnections")
+	}
+
+	mmListNamespaceConnections.mock.inspectFuncListNamespaceConnections = f
+
+	return mmListNamespaceConnections
+}
+
+// Return sets up results that will be returned by Repository.ListNamespaceConnections
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) Return(c2 mm_repository.ConnectionList, err error) *RepositoryMock {
+	if mmListNamespaceConnections.mock.funcListNamespaceConnections != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("RepositoryMock.ListNamespaceConnections mock is already set by Set")
+	}
+
+	if mmListNamespaceConnections.defaultExpectation == nil {
+		mmListNamespaceConnections.defaultExpectation = &RepositoryMockListNamespaceConnectionsExpectation{mock: mmListNamespaceConnections.mock}
+	}
+	mmListNamespaceConnections.defaultExpectation.results = &RepositoryMockListNamespaceConnectionsResults{c2, err}
+	return mmListNamespaceConnections.mock
+}
+
+// Set uses given function f to mock the Repository.ListNamespaceConnections method
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) Set(f func(ctx context.Context, l1 mm_repository.ListNamespaceConnectionsParams) (c2 mm_repository.ConnectionList, err error)) *RepositoryMock {
+	if mmListNamespaceConnections.defaultExpectation != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("Default expectation is already set for the Repository.ListNamespaceConnections method")
+	}
+
+	if len(mmListNamespaceConnections.expectations) > 0 {
+		mmListNamespaceConnections.mock.t.Fatalf("Some expectations are already set for the Repository.ListNamespaceConnections method")
+	}
+
+	mmListNamespaceConnections.mock.funcListNamespaceConnections = f
+	return mmListNamespaceConnections.mock
+}
+
+// When sets expectation for the Repository.ListNamespaceConnections which will trigger the result defined by the following
+// Then helper
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) When(ctx context.Context, l1 mm_repository.ListNamespaceConnectionsParams) *RepositoryMockListNamespaceConnectionsExpectation {
+	if mmListNamespaceConnections.mock.funcListNamespaceConnections != nil {
+		mmListNamespaceConnections.mock.t.Fatalf("RepositoryMock.ListNamespaceConnections mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockListNamespaceConnectionsExpectation{
+		mock:   mmListNamespaceConnections.mock,
+		params: &RepositoryMockListNamespaceConnectionsParams{ctx, l1},
+	}
+	mmListNamespaceConnections.expectations = append(mmListNamespaceConnections.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.ListNamespaceConnections return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockListNamespaceConnectionsExpectation) Then(c2 mm_repository.ConnectionList, err error) *RepositoryMock {
+	e.results = &RepositoryMockListNamespaceConnectionsResults{c2, err}
+	return e.mock
+}
+
+// Times sets number of times Repository.ListNamespaceConnections should be invoked
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) Times(n uint64) *mRepositoryMockListNamespaceConnections {
+	if n == 0 {
+		mmListNamespaceConnections.mock.t.Fatalf("Times of RepositoryMock.ListNamespaceConnections mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListNamespaceConnections.expectedInvocations, n)
+	return mmListNamespaceConnections
+}
+
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) invocationsDone() bool {
+	if len(mmListNamespaceConnections.expectations) == 0 && mmListNamespaceConnections.defaultExpectation == nil && mmListNamespaceConnections.mock.funcListNamespaceConnections == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListNamespaceConnections.mock.afterListNamespaceConnectionsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListNamespaceConnections.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListNamespaceConnections implements repository.Repository
+func (mmListNamespaceConnections *RepositoryMock) ListNamespaceConnections(ctx context.Context, l1 mm_repository.ListNamespaceConnectionsParams) (c2 mm_repository.ConnectionList, err error) {
+	mm_atomic.AddUint64(&mmListNamespaceConnections.beforeListNamespaceConnectionsCounter, 1)
+	defer mm_atomic.AddUint64(&mmListNamespaceConnections.afterListNamespaceConnectionsCounter, 1)
+
+	if mmListNamespaceConnections.inspectFuncListNamespaceConnections != nil {
+		mmListNamespaceConnections.inspectFuncListNamespaceConnections(ctx, l1)
+	}
+
+	mm_params := RepositoryMockListNamespaceConnectionsParams{ctx, l1}
+
+	// Record call args
+	mmListNamespaceConnections.ListNamespaceConnectionsMock.mutex.Lock()
+	mmListNamespaceConnections.ListNamespaceConnectionsMock.callArgs = append(mmListNamespaceConnections.ListNamespaceConnectionsMock.callArgs, &mm_params)
+	mmListNamespaceConnections.ListNamespaceConnectionsMock.mutex.Unlock()
+
+	for _, e := range mmListNamespaceConnections.ListNamespaceConnectionsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.c2, e.results.err
+		}
+	}
+
+	if mmListNamespaceConnections.ListNamespaceConnectionsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListNamespaceConnections.ListNamespaceConnectionsMock.defaultExpectation.Counter, 1)
+		mm_want := mmListNamespaceConnections.ListNamespaceConnectionsMock.defaultExpectation.params
+		mm_want_ptrs := mmListNamespaceConnections.ListNamespaceConnectionsMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockListNamespaceConnectionsParams{ctx, l1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListNamespaceConnections.t.Errorf("RepositoryMock.ListNamespaceConnections got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.l1 != nil && !minimock.Equal(*mm_want_ptrs.l1, mm_got.l1) {
+				mmListNamespaceConnections.t.Errorf("RepositoryMock.ListNamespaceConnections got unexpected parameter l1, want: %#v, got: %#v%s\n", *mm_want_ptrs.l1, mm_got.l1, minimock.Diff(*mm_want_ptrs.l1, mm_got.l1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListNamespaceConnections.t.Errorf("RepositoryMock.ListNamespaceConnections got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListNamespaceConnections.ListNamespaceConnectionsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListNamespaceConnections.t.Fatal("No results are set for the RepositoryMock.ListNamespaceConnections")
+		}
+		return (*mm_results).c2, (*mm_results).err
+	}
+	if mmListNamespaceConnections.funcListNamespaceConnections != nil {
+		return mmListNamespaceConnections.funcListNamespaceConnections(ctx, l1)
+	}
+	mmListNamespaceConnections.t.Fatalf("Unexpected call to RepositoryMock.ListNamespaceConnections. %v %v", ctx, l1)
+	return
+}
+
+// ListNamespaceConnectionsAfterCounter returns a count of finished RepositoryMock.ListNamespaceConnections invocations
+func (mmListNamespaceConnections *RepositoryMock) ListNamespaceConnectionsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListNamespaceConnections.afterListNamespaceConnectionsCounter)
+}
+
+// ListNamespaceConnectionsBeforeCounter returns a count of RepositoryMock.ListNamespaceConnections invocations
+func (mmListNamespaceConnections *RepositoryMock) ListNamespaceConnectionsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListNamespaceConnections.beforeListNamespaceConnectionsCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.ListNamespaceConnections.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListNamespaceConnections *mRepositoryMockListNamespaceConnections) Calls() []*RepositoryMockListNamespaceConnectionsParams {
+	mmListNamespaceConnections.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockListNamespaceConnectionsParams, len(mmListNamespaceConnections.callArgs))
+	copy(argCopy, mmListNamespaceConnections.callArgs)
+
+	mmListNamespaceConnections.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListNamespaceConnectionsDone returns true if the count of the ListNamespaceConnections invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockListNamespaceConnectionsDone() bool {
+	if m.ListNamespaceConnectionsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListNamespaceConnectionsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListNamespaceConnectionsMock.invocationsDone()
+}
+
+// MinimockListNamespaceConnectionsInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockListNamespaceConnectionsInspect() {
+	for _, e := range m.ListNamespaceConnectionsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.ListNamespaceConnections with params: %#v", *e.params)
+		}
+	}
+
+	afterListNamespaceConnectionsCounter := mm_atomic.LoadUint64(&m.afterListNamespaceConnectionsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListNamespaceConnectionsMock.defaultExpectation != nil && afterListNamespaceConnectionsCounter < 1 {
+		if m.ListNamespaceConnectionsMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.ListNamespaceConnections")
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.ListNamespaceConnections with params: %#v", *m.ListNamespaceConnectionsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListNamespaceConnections != nil && afterListNamespaceConnectionsCounter < 1 {
+		m.t.Error("Expected call to RepositoryMock.ListNamespaceConnections")
+	}
+
+	if !m.ListNamespaceConnectionsMock.invocationsDone() && afterListNamespaceConnectionsCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.ListNamespaceConnections but found %d calls",
+			mm_atomic.LoadUint64(&m.ListNamespaceConnectionsMock.expectedInvocations), afterListNamespaceConnectionsCounter)
+	}
+}
+
 type mRepositoryMockListNamespacePipelineReleases struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -17509,6 +17839,8 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockListIntegrationsInspect()
 
+			m.MinimockListNamespaceConnectionsInspect()
+
 			m.MinimockListNamespacePipelineReleasesInspect()
 
 			m.MinimockListNamespacePipelinesInspect()
@@ -17595,6 +17927,7 @@ func (m *RepositoryMock) minimockDone() bool {
 		m.MinimockGetPipelineRunByUIDDone() &&
 		m.MinimockListComponentDefinitionUIDsDone() &&
 		m.MinimockListIntegrationsDone() &&
+		m.MinimockListNamespaceConnectionsDone() &&
 		m.MinimockListNamespacePipelineReleasesDone() &&
 		m.MinimockListNamespacePipelinesDone() &&
 		m.MinimockListNamespaceSecretsDone() &&
