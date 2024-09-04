@@ -254,11 +254,15 @@ export function CheckConnections(data) {
       pipelinePublicHost + path,
       JSON.stringify({
         uid: "should-be-ignored",
+        // All the required setup fields need to be sent due to the underlying
+        // proto type (structpb.Struct).
         setup: {
           "email-address": "wombat@instill.tech",
           password: newPass,
           "server-address": "localhost",
           "server-port": 993,
+          // On email, no extra fields are allowed (additionalProperties field
+          // is false in the schema)
         },
       }),
       data.header
