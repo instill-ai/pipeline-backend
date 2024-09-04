@@ -245,7 +245,7 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	countBuilder.Count(&totalSize)
 
 	queryBuilder := db.Distinct().Model(&datamodel.Pipeline{}).Joins(joinStr).Where(where, whereArgs...)
-	if order.Fields == nil || len(order.Fields) == 0 {
+	if len(order.Fields) == 0 {
 		order.Fields = append(order.Fields, ordering.Field{
 			Path: "create_time",
 			Desc: true,
@@ -1188,7 +1188,7 @@ func (r *repository) GetPaginatedPipelineRunsWithPermissions(ctx context.Context
 
 	queryBuilder := r.db.Where(where, whereArgs...)
 
-	if order.Fields == nil || len(order.Fields) == 0 {
+	if len(order.Fields) == 0 {
 		order.Fields = append(order.Fields, ordering.Field{
 			Path: "started_time",
 			Desc: true,
@@ -1243,7 +1243,7 @@ func (r *repository) GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx
 
 	queryBuilder := r.db.Where(where, whereArgs...)
 
-	if order.Fields == nil || len(order.Fields) == 0 {
+	if len(order.Fields) == 0 {
 		order.Fields = append(order.Fields, ordering.Field{
 			Path: "started_time",
 			Desc: true,

@@ -852,11 +852,10 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 						}
 						str = str[len(splits[1])+1:]
 					default:
-						task := ""
 						input := &structpb.Struct{}
 						output := &structpb.Struct{}
 
-						task = comp.Task
+						task := comp.Task
 						if comp.Definition != nil {
 							if _, ok := comp.Definition.Spec.DataSpecifications[task]; ok {
 								input = comp.Definition.Spec.DataSpecifications[task].Input

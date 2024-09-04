@@ -231,7 +231,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 					return nil
 				case msg := <-ch:
 					event := memory.Event{}
-					buf := bytes.NewBuffer([]byte(msg.Payload))
+					buf := bytes.NewBufferString(msg.Payload)
 					dec := gob.NewDecoder(buf)
 					err := dec.Decode(&event)
 					if err != nil {
@@ -547,7 +547,7 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 					return nil
 				case msg := <-ch:
 					event := memory.Event{}
-					buf := bytes.NewBuffer([]byte(msg.Payload))
+					buf := bytes.NewBufferString(msg.Payload)
 					dec := gob.NewDecoder(buf)
 					err := dec.Decode(&event)
 					if err != nil {

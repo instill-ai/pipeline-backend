@@ -175,7 +175,7 @@ func convertToYAML(recipe *Recipe) (string, error) {
 		newID := strings.ReplaceAll(id, "_", "-")
 		if _, exist := compIDmap[newID]; exist {
 			// If ID duplicated after migrate, we add a postfix
-			newID = newID + "0"
+			newID += "0"
 		}
 		compIDmap[id] = newID
 		newComponentMap[newID] = recipe.Component[id]
@@ -187,7 +187,7 @@ func convertToYAML(recipe *Recipe) (string, error) {
 				newID := strings.ReplaceAll(nestedID, "_", "-")
 				if _, exist := compIDmap[newID]; exist {
 					// If ID duplicated after migrate, we'll add a postfix
-					newID = newID + "0"
+					newID += "0"
 				}
 				compIDmap[id] = newID
 				newIterComponentMap[newID] = recipe.Component[id].Component[nestedID]

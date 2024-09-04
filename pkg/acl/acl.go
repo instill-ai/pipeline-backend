@@ -353,7 +353,7 @@ func (c *ACLClient) CheckPublicExecutable(ctx context.Context, objectType string
 func (c *ACLClient) ListPermissions(ctx context.Context, objectType string, role string, isPublic bool) ([]uuid.UUID, error) {
 
 	userType := resource.GetRequestSingleHeader(ctx, constant.HeaderAuthTypeKey)
-	userUIDStr := ""
+	var userUIDStr string
 	if userType == "user" {
 		userUIDStr = resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
 

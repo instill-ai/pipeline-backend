@@ -111,7 +111,7 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 	}
 
 	clientConn, err := grpc.NewClient(fmt.Sprintf("%s:%d", config.Config.InstillCloud.Host, config.Config.InstillCloud.Port),
-		grpc.WithTransportCredentials(credentials.NewTLS((&tls.Config{}))),
+		grpc.WithTransportCredentials(credentials.NewTLS((&tls.Config{MinVersion: tls.VersionTLS12}))),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(constant.MaxPayloadSize), grpc.MaxCallSendMsgSize(constant.MaxPayloadSize)))
 	if err != nil {
 		// Skip the download process if Instill Cloud is unreachable.

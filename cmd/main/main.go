@@ -218,6 +218,7 @@ func main() {
 	if config.Config.Server.HTTPS.Cert != "" && config.Config.Server.HTTPS.Key != "" {
 		tlsConfig = &tls.Config{
 			ClientAuth: tls.RequireAndVerifyClientCert,
+			MinVersion: tls.VersionTLS12,
 		}
 		creds, err = credentials.NewServerTLSFromFile(config.Config.Server.HTTPS.Cert, config.Config.Server.HTTPS.Key)
 		if err != nil {
@@ -357,15 +358,17 @@ func main() {
 	}
 
 	privateHTTPServer := &http.Server{
-		Addr:      fmt.Sprintf(":%v", config.Config.Server.PrivatePort),
-		Handler:   grpcHandlerFunc(privateGrpcS, privateServeMux),
-		TLSConfig: tlsConfig,
+		Addr:              fmt.Sprintf(":%v", config.Config.Server.PrivatePort),
+		Handler:           grpcHandlerFunc(privateGrpcS, privateServeMux),
+		TLSConfig:         tlsConfig,
+		ReadHeaderTimeout: 10 * time.Millisecond,
 	}
 
 	publicHTTPServer := &http.Server{
-		Addr:      fmt.Sprintf(":%v", config.Config.Server.PublicPort),
-		Handler:   grpcHandlerFunc(publicGrpcS, publicServeMux),
-		TLSConfig: tlsConfig,
+		Addr:              fmt.Sprintf(":%v", config.Config.Server.PublicPort),
+		Handler:           grpcHandlerFunc(publicGrpcS, publicServeMux),
+		TLSConfig:         tlsConfig,
+		ReadHeaderTimeout: 10 * time.Millisecond,
 	}
 
 	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 5 seconds.

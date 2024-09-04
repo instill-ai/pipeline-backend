@@ -147,10 +147,8 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 		if !granted {
 			return nil, errdomain.ErrUnauthorized
 		}
-	} else {
-		if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
-			return nil, errdomain.ErrUnauthorized
-		}
+	} else if ns.NsUID != uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)) {
+		return nil, errdomain.ErrUnauthorized
 	}
 
 	dbPipeline, err := s.converter.ConvertPipelineToDB(ctx, ns, pbPipeline)
@@ -1434,7 +1432,7 @@ func (s *service) checkRequesterPermission(ctx context.Context, pipeline *datamo
 	}
 
 	if !isMember {
-		return fmt.Errorf("authenticated user doesn't belong to requester organization: %s", errdomain.ErrUnauthorized)
+		return fmt.Errorf("authenticated user doesn't belong to requester organization: %w", errdomain.ErrUnauthorized)
 	}
 
 	if pipeline.IsPublic() {
@@ -1497,7 +1495,7 @@ func (s *service) CheckPipelineEventCode(ctx context.Context, ns resource.Namesp
 
 func (s *service) HandleNamespacePipelineEventByID(ctx context.Context, ns resource.Namespace, id string, eventID string, data *structpb.Struct, pipelineTriggerID string) (*structpb.Struct, error) {
 
-	targetType := ""
+	var targetType string
 	ownerPermalink := ns.Permalink()
 	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, id, false, true)
 	if err != nil {
