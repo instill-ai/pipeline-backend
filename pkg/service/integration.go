@@ -270,7 +270,7 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 		return nil, fmt.Errorf("persisting connection: %w", err)
 	}
 
-	return s.connectionToPB(inserted, conn.GetNamespaceId(), pb.View_VIEW_FULL), nil
+	return s.connectionToPB(inserted, conn.GetNamespaceId(), pb.View_VIEW_FULL)
 }
 
 func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.Connection, error) {
@@ -293,23 +293,11 @@ func (s *service) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespa
 		return nil, fmt.Errorf("fetching connection: %w", err)
 	}
 
-	conn := s.connectionToPB(inDB, req.GetNamespaceId(), view)
-	if view != pb.View_VIEW_FULL {
-		return conn, nil
-	}
-
-	conn.Setup = new(structpb.Struct)
-	if err := conn.Setup.UnmarshalJSON(inDB.Setup); err != nil {
-		return nil, fmt.Errorf("unmarshalling setup: %w", err)
-	}
-
-	// TODO jvallesm: INS-5963 addresses redacting these values.
-
-	return conn, nil
+	return s.connectionToPB(inDB, req.GetNamespaceId(), view)
 }
 
-func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view pb.View) *pb.Connection {
-	return &pb.Connection{
+func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view pb.View) (*pb.Connection, error) {
+	pbConn := &pb.Connection{
 		Uid:              conn.UID.String(),
 		Id:               conn.ID,
 		NamespaceId:      nsID,
@@ -320,6 +308,19 @@ func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view p
 		CreateTime:       timestamppb.New(conn.CreateTime),
 		UpdateTime:       timestamppb.New(conn.UpdateTime),
 	}
+
+	if view != pb.View_VIEW_FULL {
+		return pbConn, nil
+	}
+
+	pbConn.Setup = new(structpb.Struct)
+	if err := pbConn.Setup.UnmarshalJSON(conn.Setup); err != nil {
+		return nil, fmt.Errorf("unmarshalling setup: %w", err)
+	}
+
+	// TODO jvallesm: INS-5963 addresses redacting these values.
+
+	return pbConn, nil
 }
 
 func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error) {
@@ -364,7 +365,10 @@ func (s *service) ListNamespaceConnections(ctx context.Context, req *pb.ListName
 	}
 
 	for i, inDB := range dbConns.Connections {
-		resp.Connections[i] = s.connectionToPB(inDB, req.GetNamespaceId(), pb.View_VIEW_BASIC)
+		resp.Connections[i], err = s.connectionToPB(inDB, req.GetNamespaceId(), pb.View_VIEW_BASIC)
+		if err != nil {
+			return nil, fmt.Errorf("building proto connection: %w", err)
+		}
 	}
 
 	return resp, nil
