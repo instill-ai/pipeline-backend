@@ -1279,6 +1279,9 @@ func (s *service) triggerAsyncPipeline(
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
+	}()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
