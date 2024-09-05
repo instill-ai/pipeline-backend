@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/parser"
+	"strings"
 	"time"
 
 	"go.einride.tech/aip/filtering"
@@ -240,6 +241,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}
 
 	componentRunFutures := []workflow.Future{}
+	componentRunFailed := false
+	var componentRunErrors []string
 	// The components in the same group can be executed in parallel
 	for group := range orderedComp {
 		futures := []workflow.Future{}
@@ -342,6 +345,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		for idx := range futures {
 			err = futures[idx].Get(ctx, nil)
 			if err != nil {
+				componentRunFailed = true
+				componentRunErrors = append(componentRunErrors, fmt.Sprintf("component(ID: %s) run failed", futureArgs[idx].ID))
 				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
 				continue
 			}
@@ -396,14 +401,20 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		_ = f.Get(ctx, nil)
 	}
 
-	_ = workflow.ExecuteActivity(ctx, w.UpdatePipelineRunActivity, &UpdatePipelineRunActivityParam{
+	updatePipelineRunArgs := &UpdatePipelineRunActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 		PipelineRun: &datamodel.PipelineRun{
 			CompletedTime: null.TimeFrom(time.Now()),
 			Status:        datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_COMPLETED),
 			TotalDuration: null.IntFrom(duration.Milliseconds()),
 		},
-	}).Get(ctx, nil)
+	}
+	if componentRunFailed {
+		updatePipelineRunArgs.PipelineRun.Status = datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_FAILED)
+		updatePipelineRunArgs.PipelineRun.Error = null.StringFrom(strings.Join(componentRunErrors, " / "))
+	}
+
+	_ = workflow.ExecuteActivity(ctx, w.UpdatePipelineRunActivity, updatePipelineRunArgs).Get(ctx, nil)
 
 	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", duration))
 
