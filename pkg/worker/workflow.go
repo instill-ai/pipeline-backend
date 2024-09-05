@@ -26,6 +26,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
@@ -744,6 +745,9 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 
 	wfm.SetRecipe(recipe)
 
+	// Loading all secrets and connections into memory.
+	// TODO jvalles: we should load only the elements present in the recipe,
+	// this strategy is inefficient.
 	pt := ""
 	var nsSecrets []*datamodel.Secret
 	ownerPermalink := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwnerType, param.SystemVariables.PipelineOwnerUID)
@@ -764,6 +768,28 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		}
 	}
 
+	pt = ""
+	var nsConnections []*datamodel.Connection
+	for {
+		p := repository.ListNamespaceConnectionsParams{
+			// Connections shouldn't be accessible by other namespaces.
+			NamespaceUID: param.SystemVariables.PipelineRequesterUID,
+			PageToken:    pt,
+			Limit:        100,
+		}
+		conns, err := w.repository.ListNamespaceConnections(ctx, p)
+		if err != nil {
+			return temporal.NewApplicationErrorWithCause("fetching connections", preTriggerActivityErrorType, err)
+		}
+
+		nsConnections = append(nsConnections, conns.Connections...)
+		if conns.NextPageToken == "" {
+			break
+		}
+
+		pt = conns.NextPageToken
+	}
+
 	for idx := range wfm.GetBatchSize() {
 		pipelineSecrets, err := wfm.Get(ctx, idx, constant.SegSecret)
 		if err != nil {
@@ -774,6 +800,26 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 			if _, ok := pipelineSecrets.(*data.Map).Fields[secret.ID]; !ok {
 				pipelineSecrets.(*data.Map).Fields[secret.ID] = data.NewString(*secret.Value)
 			}
+		}
+
+		connections := data.NewMap(nil)
+		for _, conn := range nsConnections {
+			setupMap := make(map[string]any)
+			if err := json.Unmarshal(conn.Setup, &setupMap); err != nil {
+				return temporal.NewApplicationErrorWithCause("unmarshalling setup", preTriggerActivityErrorType, err)
+			}
+			connValue, err := data.NewValue(setupMap)
+			if err != nil {
+				return temporal.NewApplicationErrorWithCause("transforming connection setup to value", preTriggerActivityErrorType, err)
+			}
+
+			// This is where we set the secrets & connections. Do we need any
+			// other place? E.g. streaming, iterator.
+			connections.Fields[conn.ID] = connValue
+		}
+
+		if err := wfm.Set(ctx, idx, constant.SegConnection, connections); err != nil {
+			return temporal.NewApplicationErrorWithCause("setting connections in memory", preTriggerActivityErrorType, err)
 		}
 
 		// Init component template

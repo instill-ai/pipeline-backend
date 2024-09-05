@@ -24,7 +24,6 @@ func NewSetupReader(wfm memory.WorkflowMemory, compID string, conditionMap map[i
 }
 
 func (i *setupReader) Read(ctx context.Context) (setups []*structpb.Struct, err error) {
-
 	for idx := range len(i.conditionMap) {
 		setupTemplate, err := i.wfm.GetComponentData(ctx, i.conditionMap[idx], i.compID, memory.ComponentDataSetup)
 		if err != nil {

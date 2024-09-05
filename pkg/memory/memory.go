@@ -21,9 +21,10 @@ type ComponentStatusType string
 type ComponentDataType string
 
 const (
-	PipelineVariable PipelineDataType = "variable"
-	PipelineSecret   PipelineDataType = "secret"
-	PipelineOutput   PipelineDataType = "output"
+	PipelineVariable   PipelineDataType = "variable"
+	PipelineSecret     PipelineDataType = "secret"
+	PipelineConnection PipelineDataType = "connection"
+	PipelineOutput     PipelineDataType = "output"
 
 	// We preserve the `PipelineOutputTemplate` in memory to re-render the
 	// results.
@@ -195,9 +196,10 @@ func (ms *memoryStore) NewWorkflowMemory(ctx context.Context, workflowID string,
 	wfmData := make([]data.Value, batchSize)
 	for idx := range batchSize {
 		m := data.NewMap(map[string]data.Value{
-			string(PipelineVariable): data.NewMap(nil),
-			string(PipelineSecret):   data.NewMap(nil),
-			string(PipelineOutput):   data.NewMap(nil),
+			string(PipelineVariable):   data.NewMap(nil),
+			string(PipelineSecret):     data.NewMap(nil),
+			string(PipelineConnection): data.NewMap(nil),
+			string(PipelineOutput):     data.NewMap(nil),
 		})
 
 		wfmData[idx] = m

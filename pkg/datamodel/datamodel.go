@@ -313,8 +313,8 @@ type Component struct {
 	Description string `json:"description,omitempty"  yaml:"-"`
 
 	// Fields for regular components
-	Setup      map[string]any `json:"setup,omitempty" yaml:"setup,omitempty"`
-	Definition *Definition    `json:"definition,omitempty" yaml:"-"`
+	Setup      any         `json:"setup,omitempty" yaml:"setup,omitempty"`
+	Definition *Definition `json:"definition,omitempty" yaml:"-"`
 
 	// Fields for iterators
 	Component         ComponentMap          `json:"component,omitempty" yaml:"component,omitempty"`

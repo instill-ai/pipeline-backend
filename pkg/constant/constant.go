@@ -36,13 +36,14 @@ const (
 	HeaderAccept           = "Accept"
 	HeaderValueEventStream = "text/event-stream"
 
-	SegMemory    = "memory"
-	SegVariable  = "variable"
-	SegSecret    = "secret"
-	SegComponent = "component"
-	SegIteration = "iterator"
-	SegInput     = "input"
-	SegOutput    = "output"
+	SegMemory     = "memory"
+	SegVariable   = "variable"
+	SegSecret     = "secret"
+	SegConnection = "connection"
+	SegComponent  = "component"
+	SegIteration  = "iterator"
+	SegInput      = "input"
+	SegOutput     = "output"
 )
 
 const ContentTypeJSON = "application/json"

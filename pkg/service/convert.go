@@ -128,6 +128,15 @@ func (c *converter) compressProfileImage(profileImage string) (string, error) {
 	return profileImage, nil
 }
 
+/*
+// The Setup property used to be a map[string]any, but now it can be a string
+// that references a connection.
+// TODO jvallesm: this method was commented out to ship Integration. The
+// method's signature should be transformed to take a `setup any` argument, it
+// should verify its type (string or map) and, if it is a string, verify it
+// references an existing connection.
+//
+// The method was unused so it was quicker to disable it.
 func (c *converter) processSetup(ctx context.Context, ownerPermalink string, setup map[string]any) map[string]any {
 	rendered := map[string]any{}
 	for k, v := range setup {
@@ -162,6 +171,7 @@ func (c *converter) processSetup(ctx context.Context, ownerPermalink string, set
 	}
 	return rendered
 }
+*/
 
 func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink string, comp *datamodel.Component, useDynamicDef bool) error {
 
@@ -173,7 +183,11 @@ func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink s
 		def, err := c.component.GetDefinitionByID(comp.Type, vars, &componentbase.ComponentConfig{
 			Task:  comp.Task,
 			Input: comp.Input.(map[string]any),
-			Setup: c.processSetup(ctx, ownerPermalink, comp.Setup),
+			// TODO jvallesm: this was commented out in order to ship the 1st
+			// milestone of the Integration feature. All calls to this method
+			// had `useDynamicRef == false`. However, this should be supported
+			// (alternatively the dynamic ref parameter should be removed).
+			// Setup: c.processSetup(ctx, ownerPermalink, comp.Setup),
 		})
 		if err != nil {
 			comp.Definition = nil

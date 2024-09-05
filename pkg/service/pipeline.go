@@ -658,7 +658,6 @@ func (s *service) UpdateNamespacePipelineIDByID(ctx context.Context, ns resource
 }
 
 func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace, r *datamodel.Recipe, pipelineTriggerID string, pipelineData []*pipelinepb.TriggerData) error {
-
 	batchSize := len(pipelineData)
 	if batchSize > constant.MaxBatchSize {
 		return ErrExceedMaxBatchSize
@@ -1175,6 +1174,7 @@ func (s *service) triggerPipeline(
 	if err != nil {
 		return nil, nil, err
 	}
+
 	defer func() {
 		_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
 	}()
