@@ -364,7 +364,7 @@ func TestRepository_Connection(t *testing.T) {
 			Setup:          datatypes.JSON(`{"foo":"bar"}`),
 		})
 		c.Check(err, qt.IsNil)
-		c.Check(conn.ID, qt.Equals, preUpdateConn.ID)
+		c.Check(conn.ID, qt.Equals, "testytest")
 		c.Check(conn.UID, qt.Equals, preUpdateConn.UID)
 		c.Check(conn.NamespaceUID, qt.Equals, preUpdateConn.NamespaceUID)
 		c.Check(conn.IntegrationUID, qt.Equals, preUpdateConn.IntegrationUID)
