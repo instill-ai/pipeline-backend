@@ -19,12 +19,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/x/temporal"
-	"github.com/instill-ai/x/zapadapter"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
+
+	"github.com/instill-ai/x/temporal"
+	"github.com/instill-ai/x/zapadapter"
 )
 
 func initTemporalNamespace(ctx context.Context, client client.Client) {
@@ -175,10 +176,8 @@ func main() {
 	w.RegisterActivity(cw.LoadDAGDataActivity)
 	w.RegisterActivity(cw.PostTriggerActivity)
 	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
-	w.RegisterActivity(cw.UpsertPipelineRunActivity)
 	w.RegisterActivity(cw.UpdatePipelineRunActivity)
 	w.RegisterActivity(cw.UpsertComponentRunActivity)
-	w.RegisterActivity(cw.UploadToMinioActivity)
 	w.RegisterActivity(cw.UploadInputsToMinioActivity)
 	w.RegisterActivity(cw.UploadOutputsToMinioActivity)
 	w.RegisterActivity(cw.UploadRecipeToMinioActivity)

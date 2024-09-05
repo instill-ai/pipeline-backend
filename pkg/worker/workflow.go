@@ -167,46 +167,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	ctx, _ = workflow.CreateSession(ctx, sessionOptions)
 	defer workflow.CompleteSession(ctx)
 
-	pipelineRun := &datamodel.PipelineRun{
-		PipelineTriggerUID: uuid.FromStringOrNil(param.SystemVariables.PipelineTriggerID), // should not be empty
-		PipelineUID:        param.SystemVariables.PipelineUID,
-		PipelineVersion:    param.SystemVariables.PipelineReleaseID,
-		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
-		Source:             param.SystemVariables.PipelineRunSource,
-		TriggeredBy:        param.SystemVariables.PipelineRequesterUID.String(),
-		StartedTime:        startTime,
-	}
-	if pipelineRun.PipelineVersion == "" {
-		pipelineRun.PipelineVersion = "latest"
-	}
-
-	_ = workflow.ExecuteActivity(ctx, w.UpsertPipelineRunActivity, &UpsertPipelineRunActivityParam{
-		PipelineRun: pipelineRun,
-	}).Get(ctx, nil)
-
-	// todo: mark pipeline run as failed if not succeeded
-	succeeded := false
-	defer func() {
-		if succeeded {
-			return
-		}
-
-		var errMsg string
-		if err != nil {
-			errMsg = err.Error()
-		} else {
-			errMsg = "trigger pipeline run failed due to unknown error"
-		}
-
-		_ = workflow.ExecuteActivity(ctx, w.UpdatePipelineRunActivity, &UpdatePipelineRunActivityParam{
-			PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
-			PipelineRun: &datamodel.PipelineRun{
-				Error: null.StringFrom(errMsg),
-			},
-		}).Get(ctx, nil)
-
-	}()
-
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
 	var ownerType mgmtpb.OwnerType
@@ -264,7 +224,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	}).Get(ctx, nil)
 
 	dagData := &LoadDAGDataActivityResult{}
-	err = workflow.ExecuteActivity(ctx, w.LoadDAGDataActivity, &LoadDAGDataActivityParam{
+	_ = workflow.ExecuteActivity(ctx, w.LoadDAGDataActivity, &LoadDAGDataActivityParam{
 		WorkflowID:  workflowID,
 		IsStreaming: param.IsStreaming,
 	}).Get(ctx, dagData)
@@ -445,28 +405,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		},
 	}).Get(ctx, nil)
 
-	succeeded = true
-
 	logger.Info("TriggerPipelineWorkflow completed in", zap.Duration("duration", duration))
 
 	return nil
 }
 
-func (w *worker) UpsertPipelineRunActivity(ctx context.Context, param *UpsertPipelineRunActivityParam) error {
-	logger, _ := logger.GetZapLogger(ctx)
-	logger.Info("UpsertPipelineRunActivity started")
-
-	err := w.repository.UpsertPipelineRun(ctx, param.PipelineRun)
-	if err != nil {
-		logger.Error("failed to log pipeline run", zap.Error(err))
-	}
-
-	logger.Info("UpsertPipelineRunActivity completed")
-	return nil
-}
-
 func (w *worker) UpdatePipelineRunActivity(ctx context.Context, param *UpdatePipelineRunActivityParam) error {
 	logger, _ := logger.GetZapLogger(ctx)
+	logger = logger.With(zap.String("PipelineTriggerUID", param.PipelineTriggerID))
 	logger.Info("UpdatePipelineRunActivity started")
 
 	err := w.repository.UpdatePipelineRun(ctx, param.PipelineTriggerID, param.PipelineRun)
@@ -481,6 +427,7 @@ func (w *worker) UpdatePipelineRunActivity(ctx context.Context, param *UpdatePip
 
 func (w *worker) UpsertComponentRunActivity(ctx context.Context, param *UpsertComponentRunActivityParam) error {
 	logger, _ := logger.GetZapLogger(ctx)
+	logger = logger.With(zap.String("PipelineTriggerUID", param.ComponentRun.PipelineTriggerUID.String()), zap.String("ComponentID", param.ComponentRun.ComponentID))
 	logger.Info("UpsertComponentRunActivity started")
 	err := w.repository.UpsertComponentRun(ctx, param.ComponentRun)
 	if err != nil {
