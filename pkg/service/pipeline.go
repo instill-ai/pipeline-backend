@@ -784,6 +784,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		// TODO: refactor array parser
 		variable := data.NewMap(nil)
 		for k, v := range d.Variable.Fields {
+			if _, ok := instillFormatMap[k]; !ok {
+				continue
+			}
 			switch instillFormatMap[k] {
 			case "string":
 				variable.Fields[k] = data.NewString(v.GetStringValue())

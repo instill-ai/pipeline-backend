@@ -180,7 +180,7 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 			val, err := resolveReference(ctx, wfm, batchIdx, s)
 			if err != nil {
 				if allowUnresolved {
-					return data.NewString(input.GetString()), nil
+					return data.NewNull(), nil
 				}
 				return nil, err
 			}
@@ -206,7 +206,7 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 			v, err := resolveReference(ctx, wfm, batchIdx, ref)
 			if err != nil {
 				if allowUnresolved {
-					return data.NewString(input.GetString()), nil
+					return data.NewNull(), nil
 				}
 				return nil, err
 			}
