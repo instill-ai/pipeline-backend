@@ -21,7 +21,7 @@ FROM node:22.5.1-alpine3.19
 
 COPY requirements.txt requirements.txt
 
-RUN apk add --no-cache gperftools --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community 
+RUN apk add --no-cache gperftools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
 
 RUN apk add --no-cache \
     curl \
