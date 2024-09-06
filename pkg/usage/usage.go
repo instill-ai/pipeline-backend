@@ -186,6 +186,7 @@ func (u *usage) RetrievePipelineUsageData() interface{} {
 					triggerDataList = append(
 						triggerDataList,
 						&usagePB.PipelineUsageData_UserUsageData_PipelineTriggerData{
+							PipelineId:         triggerData.PipelineID,
 							PipelineUid:        triggerData.PipelineUID,
 							PipelineReleaseId:  triggerData.PipelineReleaseID,
 							PipelineReleaseUid: triggerData.PipelineReleaseUID,
