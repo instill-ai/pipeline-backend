@@ -21,6 +21,9 @@ FROM node:22.5.1-alpine3.19
 
 COPY requirements.txt requirements.txt
 
+RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
+    gperftools 
+
 RUN apk add --no-cache \
     curl \
     poppler-utils \
@@ -40,7 +43,7 @@ RUN apk add --no-cache \
     ffmpeg \
     leptonica \
     chromium \
-    gperftools --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community\
+    gperftools \
     pkgconfig \
     && update-ms-fonts \
     && fc-cache -f \
