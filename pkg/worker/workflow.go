@@ -33,6 +33,7 @@ import (
 
 	"github.com/instill-ai/x/errmsg"
 
+	componentbase "github.com/instill-ai/component/base"
 	componentstore "github.com/instill-ai/component/store"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
@@ -508,18 +509,27 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 	}
 
+	jobs := make([]*componentbase.Job, len(conditionMap))
+	for idx, originalIdx := range conditionMap {
+		jobs[idx] = &componentbase.Job{
+			Input:  NewInputReader(wfm, param.ID, originalIdx),
+			Output: NewOutputWriter(wfm, param.ID, originalIdx, param.Streaming),
+			Error:  NewErrorHandler(wfm, param.ID, originalIdx),
+		}
+	}
 	err = execution.Execute(
 		ctx,
-		NewInputReader(wfm, param.ID, conditionMap),
-		NewOutputWriter(wfm, param.ID, conditionMap, param.Streaming),
+		jobs,
 	)
 	if err != nil {
 		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 	}
 
 	for _, idx := range conditionMap {
-		if err = wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
-			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+		if e, err := wfm.GetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusErrored); err == nil && !e {
+			if err = wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
+				return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+			}
 		}
 	}
 
@@ -985,11 +995,18 @@ func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory
 
 		for _, upstreamID := range UpstreamIDs {
 			if s, err := wfm.GetComponentStatus(ctx, idx, upstreamID, memory.ComponentStatusSkipped); err == nil && s {
-				if err = wfm.SetComponentStatus(ctx, idx, upstreamID, memory.ComponentStatusSkipped, true); err != nil {
+				if err = wfm.SetComponentStatus(ctx, idx, id, memory.ComponentStatusSkipped, true); err != nil {
 					return nil, err
 				}
-				break
 			}
+			if s, err := wfm.GetComponentStatus(ctx, idx, upstreamID, memory.ComponentStatusErrored); err == nil && s {
+				if err = wfm.SetComponentStatus(ctx, idx, id, memory.ComponentStatusSkipped, true); err != nil {
+					return nil, err
+				}
+			}
+		}
+		if s, err := wfm.GetComponentStatus(ctx, idx, id, memory.ComponentStatusSkipped); err == nil && s {
+			continue
 		}
 
 		if condition != "" {
