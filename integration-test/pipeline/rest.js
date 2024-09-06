@@ -19,12 +19,6 @@ import * as pipelinePrivate from './rest-pipeline-private.js';
 import * as trigger from './rest-trigger.js';
 import * as triggerAsync from './rest-trigger-async.js';
 
-const mgmtPrivateClient = new grpc.Client();
-mgmtPrivateClient.load(
-  ["../proto/core/mgmt/v1beta"],
-  "mgmt_private_service.proto"
-);
-
 export let options = {
   setupTimeout: '300s',
   insecureSkipTLSVerify: true,
@@ -115,20 +109,7 @@ export function teardown(data) {
   });
 
   group("Integration API: Delete all connections created by this test", () => {
-    mgmtPrivateClient.connect(constant.mgmtGRPCPrivateHost, {
-      plaintext: true,
-      timeout: "300s",
-    });
-
-    var namespaceCheck = mgmtPrivateClient.invoke(
-      "core.mgmt.v1beta.MgmtPrivateService/CheckNamespaceAdmin",
-      { id: constant.defaultUsername },
-      {}
-    );
-    mgmtPrivateClient.close();
-
-    var q = `DELETE FROM connection WHERE namespace_uid = '${namespaceCheck.message.uid}' ` +
-      `AND id LIKE '${constant.dbIDPrefix}%';`;
+    var q = `DELETE FROM connection WHERE id LIKE '${constant.dbIDPrefix}%';`;
     constant.db.exec(q);
     constant.db.close();
   });
