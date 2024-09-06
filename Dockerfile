@@ -28,7 +28,7 @@ RUN apk add --no-cache \
     tidyhtml \
     libc6-compat \
     tesseract-ocr \
-    python3.11 \
+    python3 \
     py3-pip \
     build-base \
     python3-dev \
@@ -43,7 +43,7 @@ RUN apk add --no-cache \
     pkg-config \
     && update-ms-fonts \
     && fc-cache -f \
-    && python3.11 -m venv /opt/venv \
+    && python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
     && /opt/venv/bin/pip install -r requirements.txt \
     && rm -rf /var/cache/apk/* /var/cache/fontconfig/*
