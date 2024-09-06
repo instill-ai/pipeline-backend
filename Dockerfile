@@ -40,7 +40,7 @@ RUN apk add --no-cache \
     ffmpeg \
     leptonica \
     chromium \
-    pkg-config \
+    pkgconfig \
     && update-ms-fonts \
     && fc-cache -f \
     && python3 -m venv /opt/venv \
