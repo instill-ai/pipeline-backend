@@ -9,7 +9,7 @@ WORKDIR /${SERVICE_NAME}
 ARG TARGETOS TARGETARCH K6_VERSION XK6_VERSION
 
 # -- Copy requirements.txt and install dependencies
-COPY requirements.txt .
+COPY requirements.txt requirements.txt
 
 # Install Python, create virtual environment, and install pdfplumber
 RUN apt update && \
