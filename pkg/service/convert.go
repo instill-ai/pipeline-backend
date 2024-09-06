@@ -18,6 +18,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/gogo/status"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 	"golang.org/x/image/draw"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -35,6 +36,7 @@ import (
 
 	componentbase "github.com/instill-ai/component/base"
 	componentstore "github.com/instill-ai/component/store"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -128,69 +130,128 @@ func (c *converter) compressProfileImage(profileImage string) (string, error) {
 	return profileImage, nil
 }
 
-func (c *converter) processSetup(ctx context.Context, ownerPermalink string, setup map[string]any) map[string]any {
+// processSetup resolves the setup references (a connection if defined as a
+// string or secrets in its fields if defined as a map).
+func (c *converter) processSetup(ctx context.Context, ownerPermalink string, setup any) (map[string]any, error) {
+	switch v := setup.(type) {
+	case nil:
+		return nil, nil
+	case map[string]any:
+		return c.processSetupMap(ctx, ownerPermalink, v), nil
+	case string:
+		if !(strings.HasPrefix(v, "${"+constant.SegConnection+".") && strings.HasSuffix(v, "}")) {
+			return nil, fmt.Errorf(
+				"%w: string setup only supports connection references (${connection.<conn-id>})",
+				errdomain.ErrInvalidArgument,
+			)
+		}
+
+		// Since we allow unfinished pipeline recipes, the connection reference
+		// target might not exist. We ignore the error here.
+		id := v[9 : len(v)-1]
+		nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
+		if err != nil {
+			return nil, fmt.Errorf("extracting owner UID: %w", err)
+		}
+
+		conn, err := c.repository.GetNamespaceConnectionByID(ctx, nsUID, id)
+		if err != nil {
+			return map[string]any{}, nil
+		}
+
+		var rendered map[string]any
+		if err := json.Unmarshal(conn.Setup, &rendered); err != nil {
+			return nil, fmt.Errorf("unmarshalling setup: %w", err)
+		}
+
+		return rendered, nil
+	default:
+		return nil, fmt.Errorf(
+			"%w: setup field can only have string or map[string]any types",
+			errdomain.ErrInvalidArgument,
+		)
+	}
+}
+
+// processSetupMap processes the setup when deifned as a map[string]any, i.e.,
+// when it doesn't reference a connection.
+func (c *converter) processSetupMap(ctx context.Context, ownerPermalink string, setup map[string]any) map[string]any {
 	rendered := map[string]any{}
 	for k, v := range setup {
 		switch v := v.(type) {
 		case map[string]any:
-			rendered[k] = c.processSetup(ctx, ownerPermalink, v)
+			rendered[k] = c.processSetupMap(ctx, ownerPermalink, v)
 		case string:
-			if strings.HasPrefix(v, "${"+constant.SegSecret+".") && strings.HasSuffix(v, "}") {
+			if !(strings.HasPrefix(v, "${"+constant.SegSecret+".") && strings.HasSuffix(v, "}")) {
+				rendered[k] = v
+				continue
+			}
 
-				// Remove the prefix and suffix
-				secretKey := v[9 : len(v)-1]
+			// Remove the prefix and suffix
+			secretKey := v[9 : len(v)-1]
 
-				if secretKey == "INSTILL_SECRET" {
-					rendered[k] = v
-				} else {
-					// Since we allow unfinished pipeline recipes, the secret
-					// reference target might not exist. We ignore the error here.
-					s, err := c.repository.GetNamespaceSecretByID(ctx, ownerPermalink, secretKey)
-					if err == nil {
-						rendered[k] = *s.Value
-					} else {
-						rendered[k] = v
-					}
-				}
+			if secretKey == "INSTILL_SECRET" {
+				rendered[k] = v
+				continue
+			}
+
+			// Since we allow unfinished pipeline recipes, the secret
+			// reference target might not exist. We ignore the error here.
+			s, err := c.repository.GetNamespaceSecretByID(ctx, ownerPermalink, secretKey)
+			if err == nil {
+				rendered[k] = *s.Value
 			} else {
 				rendered[k] = v
 			}
 		default:
 			rendered[k] = v
 		}
-
 	}
+
 	return rendered
 }
 
 func (c *converter) includeComponentDetail(ctx context.Context, ownerPermalink string, comp *datamodel.Component, useDynamicDef bool) error {
+	l, _ := logger.GetZapLogger(ctx)
+	l = l.With(
+		zap.String("owner", ownerPermalink),
+		zap.String("compType", comp.Type),
+	)
+
+	if !useDynamicDef || comp.Input == nil {
+		def, err := c.component.GetDefinitionByID(comp.Type, nil, nil)
+		if err != nil {
+			l.Error("Couldn't include component details.", zap.Error(err))
+			comp.Definition = nil
+			return nil
+		}
+
+		comp.Definition = &datamodel.Definition{ComponentDefinition: def}
+		return nil
+	}
 
 	vars, err := recipe.GenerateSystemVariables(ctx, recipe.SystemVariables{})
 	if err != nil {
 		return err
 	}
-	if useDynamicDef && comp.Input != nil {
-		def, err := c.component.GetDefinitionByID(comp.Type, vars, &componentbase.ComponentConfig{
-			Task:  comp.Task,
-			Input: comp.Input.(map[string]any),
-			Setup: c.processSetup(ctx, ownerPermalink, comp.Setup),
-		})
-		if err != nil {
-			comp.Definition = nil
-		} else {
-			comp.Definition = &datamodel.Definition{ComponentDefinition: def}
-		}
 
-	} else {
-		def, err := c.component.GetDefinitionByID(comp.Type, nil, nil)
-		if err != nil {
-			comp.Definition = nil
-		} else {
-			comp.Definition = &datamodel.Definition{ComponentDefinition: def}
-		}
-
+	setup, err := c.processSetup(ctx, ownerPermalink, comp.Setup)
+	if err != nil {
+		return fmt.Errorf("processing setup: %w", err)
 	}
 
+	def, err := c.component.GetDefinitionByID(comp.Type, vars, &componentbase.ComponentConfig{
+		Task:  comp.Task,
+		Input: comp.Input.(map[string]any),
+		Setup: setup,
+	})
+	if err != nil {
+		l.Error("Couldn't include component details.", zap.Error(err))
+		comp.Definition = nil
+		return nil
+	}
+
+	comp.Definition = &datamodel.Definition{ComponentDefinition: def}
 	return nil
 }
 

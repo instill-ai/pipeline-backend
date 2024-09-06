@@ -26,38 +26,37 @@ message Connection {
     METHOD_OAUTH = 2;
   }
   // UUID-formatted unique identifier.
-  string uid = 1 [
-    (google.api.field_behavior) = OUTPUT_ONLY,
-    (google.api.field_behavior) = IMMUTABLE
-  ];
+  string uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // ID.
   string id = 2 [(google.api.field_behavior) = REQUIRED];
   // ID of the namespace owning the connection.
-  string namespace_id = 3 [(google.api.field_behavior) = REQUIRED];
+  string namespace_id = 3 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
   // Integration ID. It determines for which type of components can reference
   // this connection.
-  string integration_id = 4 [(google.api.field_behavior) = REQUIRED];
+  string integration_id = 4 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
   // Integration title. This helps the console display the results grouped by
   // integration ID without needing an extra call to fetch title by integration
   // ID.
   string integration_title = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // The IDs of the pipelines that use this integration. All the pipelines will
-  // be within the same namespace as the connection.
-  // The length of the list will be capped to 100.
-  repeated string pipeline_ids = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Connection method. It references the setup schema provided by the
   // integration.
-  Method method = 7 [(google.api.field_behavior) = REQUIRED];
+  Method method = 6 [(google.api.field_behavior) = REQUIRED];
   // Connection details. This field is required on creation, optional on view.
   // When viewing the connection details, the setup values will be redacted.
-  google.protobuf.Struct setup = 8 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.Struct setup = 7 [(google.api.field_behavior) = REQUIRED];
   // View defines how the integration is presented. The `setup` field is only
   // showed in the FULL view.
-  View view = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+  View view = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Creation timestamp.
-  google.protobuf.Timestamp create_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp create_time = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Last update timestamp.
-  google.protobuf.Timestamp update_time = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp update_time = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ListNamespaceConnectionsRequest represents a request to list the connections
@@ -73,7 +72,7 @@ message ListNamespaceConnectionsRequest {
   // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
   // expression.
   // The following filters are supported:
-  // - `integration_id`
+  // - `integrationId`
   // - `qConnection` (fuzzy search on connection ID, integration title or vendor)
   // Examples:
   // - List connections where app name, vendor or connection ID match `googl`:
@@ -126,13 +125,17 @@ message CreateNamespaceConnectionResponse {
 // UpdateNamespaceConnectionRequest represents a request to update a
 // connection.
 message UpdateNamespaceConnectionRequest {
-  // Properties of the connection to be updated.
-  Connection connection = 1 [(google.api.field_behavior) = REQUIRED];
+  // ID of the connection to be updated, as present in the database.
+  string connection_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Connection object with the new properties to be updated. Immutable and
+  // output-only fields will be ignored. The Setup property must be updated
+  // in block (no partial update is supported).
+  Connection connection = 2 [(google.api.field_behavior) = REQUIRED];
   // The update mask specifies the subset of fields that should be modified.
   //
   // For more information about this field, see
   // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#field-mask.
-  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.FieldMask update_mask = 3 [(google.api.field_behavior) = REQUIRED];
 }
 
 // UpdateNamespaceConnectionResponse contains the updated connection.
@@ -175,6 +178,15 @@ message Integration {
     // different data to connect to the 3rd party app.
     google.protobuf.Struct schema = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   }
+
+  // Link contains the information to display an reference to an external URL.
+  message Link {
+    // Text contains the message to display.
+    string text = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // URL contains the reference the link will redirect to.
+    string url = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  }
+
   // UUID-formatted unique identifier. It references a component definition.
   string uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Identifier of the integration, which references a component definition.
@@ -193,13 +205,42 @@ message Integration {
   // See the `icon` field in the `ComponentDefinition` entity for more
   // information.
   string icon = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // This field allows requesters to list only shortlisted integrations.
-  bool featured = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Reference to the vendor's documentation to expand the integration details.
+  optional string help_link = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Schemas defines the supported schemas for the connection setup.
   repeated SetupSchema schemas = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
   // View defines how the integration is presented. The `spec` field is only
   // showed in the FULL view.
   View view = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ListPipelineIDsByConnectionIDRequest represents a request to list the
+// pipelines that reference a connection.
+message ListPipelineIDsByConnectionIDRequest {
+  // Namespace ID.
+  string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Connection ID.
+  string connection_id = 2 [(google.api.field_behavior) = REQUIRED];
+  // The maximum number of items to return. The default and cap values are 10
+  // and 100, respectively.
+  optional int32 page_size = 3 [(google.api.field_behavior) = OPTIONAL];
+  // Page token. By default, the first page will be returned.
+  optional string page_token = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
+  // expression.
+  // The following filters are supported:
+  // - `q` (fuzzy search on pipeline ID)
+  optional string filter = 5 [(google.api.field_behavior) = OPTIONAL];
+}
+
+// ListPipelineIDsByConnectionIDResponse contains a paginated list of integrations.
+message ListPipelineIDsByConnectionIDResponse {
+  // A list of pipeline IDs matching the request parameters.
+  repeated string pipeline_ids = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Next page token.
+  string next_page_token = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Total number of items.
+  int32 total_size = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // ListIntegrationsRequest represents a request to list the available
@@ -214,10 +255,8 @@ message ListIntegrationsRequest {
   // expression.
   // The following filters are supported:
   // - `qIntegration` (fuzzy search on title or vendor)
-  // - `featured`
   // Examples:
   // - List integrations where app name or vendor match `googl`: `q="googl"`.
-  // - List featured integrations: `featured=true`.
   optional string filter = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 

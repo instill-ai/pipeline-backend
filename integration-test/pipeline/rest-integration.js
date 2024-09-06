@@ -37,7 +37,6 @@ export function CheckIntegrations() {
       description: cdef.description,
       vendor: cdef.vendor,
       icon: cdef.icon,
-      featured: false, // TODO when protogen-go is updated, this will be removed
       schemas: [],
       view: "VIEW_BASIC"
     };
@@ -92,6 +91,9 @@ export function CheckIntegrations() {
 
 export function CheckConnections(data) {
   var connectionID = dbIDPrefix + randomString(8);
+  var collectionPath = `/v1beta/namespaces/${defaultUsername}/connections`;
+  var resourcePath = `${collectionPath}/${connectionID}`;
+
   var setup = Object.assign({
     "email-address": "wombat@instill.tech",
     password: "0123",
@@ -100,7 +102,7 @@ export function CheckConnections(data) {
   });
 
   group("Integration API: Create connection", () => {
-    var path = `/v1beta/namespaces/${defaultUsername}/connections`;
+    var path = collectionPath;
 
     // Successful creation
     var okReq = http.request(
@@ -159,7 +161,7 @@ export function CheckConnections(data) {
   });
 
   group("Integration API: Get connection", () => {
-    var path = `/v1beta/namespaces/${defaultUsername}/connections/${connectionID}`;
+    var path = resourcePath;
 
     check(http.request("GET", pipelinePublicHost + path + "aaa", null, data.header), {
       [`GET ${path + "aaa"} response status is 404`]: (r) => r.status === 404,
@@ -184,7 +186,7 @@ export function CheckConnections(data) {
   });
 
   group("Integration API: List connections", () => {
-    var path = `/v1beta/namespaces/${defaultUsername}/connections`;
+    var path = collectionPath;
     var nConnections = 12;
     var integrationID = "openai";
 
@@ -240,7 +242,7 @@ export function CheckConnections(data) {
   });
 
   group("Integration API: Update connection", () => {
-    var path = `/v1beta/namespaces/${defaultUsername}/connections/${connectionID}`;
+    var path = resourcePath;
     var originalConn = http.request(
       "GET",
       pipelinePublicHost + path,
@@ -249,16 +251,22 @@ export function CheckConnections(data) {
     ).json().connection;
 
     var newPass = "4324";
+    var newID = dbIDPrefix + "my-new-id";
     var req = http.request(
       "PATCH",
       pipelinePublicHost + path,
       JSON.stringify({
         uid: "should-be-ignored",
+        id: newID,
+        // All the required setup fields need to be sent due to the underlying
+        // proto type (structpb.Struct).
         setup: {
           "email-address": "wombat@instill.tech",
           password: newPass,
           "server-address": "localhost",
           "server-port": 993,
+          // On email, no extra fields are allowed (additionalProperties field
+          // is false in the schema)
         },
       }),
       data.header
@@ -266,19 +274,24 @@ export function CheckConnections(data) {
 
     check(req, {
       [`PATCH ${path} response status 200`]: (r) => r.status === 200,
+      [`PATCH ${path} contains new ID`]: (r) => r.json().connection.id === newID,
       [`PATCH ${path} contains new setup`]: (r) => r.json().connection.setup.password === newPass,
       [`PATCH ${path} didn't modify UID`]: (r) => r.json().connection.uid === originalConn.uid,
     });
 
+    resourcePath = `${collectionPath}/${newID}`;
+    path = resourcePath;
+
     check(http.request("GET", pipelinePublicHost + path + "?view=VIEW_FULL", null, data.header), {
       [`GET ${path + "?view=VIEW_FULL"} response status is 200`]: (r) => r.status === 200,
+      [`GET ${path + "?view=VIEW_FULL"} has new ID value`]: (r) => r.json().connection.id === newID,
       [`GET ${path + "?view=VIEW_FULL"} has new setup value`]: (r) =>
         r.json().connection.setup.password === newPass,
     });
   });
 
   group("Integration API: Delete connection", () => {
-    var path = `/v1beta/namespaces/${defaultUsername}/connections/${connectionID}`;
+    var path = resourcePath;
     check(http.request("DELETE", pipelinePublicHost + path, null, data.header), {
       [`DELETE ${path} response status 204`]: (r) => r.status === 204,
     });

@@ -111,9 +111,21 @@ func (s *service) DeleteNamespaceSecretByID(ctx context.Context, ns resource.Nam
 	return s.repository.DeleteNamespaceSecretByID(ctx, ownerPermalink, id)
 }
 
-func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, setup map[string]any, prefix string) error {
+func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, setup any, prefix string) error {
+	var setupMap map[string]any
 
-	for k, v := range setup {
+	switch s := setup.(type) {
+	case map[string]any:
+		setupMap = s
+	case string, nil:
+		// Setup should either not be present or contain a reference to a
+		// connection.
+		return nil
+	default:
+		return fmt.Errorf("invalid type for setup field")
+	}
+
+	for k, v := range setupMap {
 		key := prefix + k
 		if ok, err := s.component.IsSecretField(uid, key); err == nil && ok {
 			if s, ok := v.(string); ok {

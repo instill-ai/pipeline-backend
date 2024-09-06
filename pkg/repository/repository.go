@@ -1279,10 +1279,10 @@ func (r *repository) CreateNamespaceConnection(ctx context.Context, conn *datamo
 }
 
 func (r *repository) UpdateNamespaceConnectionByUID(ctx context.Context, uid uuid.UUID, conn *datamodel.Connection) (*datamodel.Connection, error) {
-	db := r.db.WithContext(ctx).Debug()
+	db := r.db.WithContext(ctx)
 
 	result := db.Where("uid = ?", uid).
-		Omit("UID", "ID", "NamespaceUID", "IntegrationUID"). // Immutable fields
+		Omit("UID", "NamespaceUID", "IntegrationUID"). // Immutable fields
 		Clauses(clause.Returning{}).
 		Updates(conn)
 	if result.Error != nil {

@@ -282,7 +282,7 @@ func (s *service) validateConnectionUpdate(
 	}
 
 	// Return error if IMMUTABLE fields are intentionally changed.
-	immutableFields := []string{"id", "namespace_id", "integration_id"}
+	immutableFields := []string{"namespace_id", "integration_id"}
 	if err := checkfield.CheckUpdateImmutableFields(updateReq, destConn, immutableFields); err != nil {
 		return fmt.Errorf("%w:%w", errdomain.ErrInvalidArgument, err)
 	}
@@ -348,7 +348,7 @@ func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateN
 		return nil, fmt.Errorf("checking namespace permissions: %w", err)
 	}
 
-	inDB, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, req.GetConnection().GetId())
+	inDB, err := s.repository.GetNamespaceConnectionByID(ctx, ns.NsUID, req.GetConnectionId())
 	if err != nil {
 		return nil, fmt.Errorf("fetching connection: %w", err)
 	}
@@ -382,6 +382,7 @@ func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateN
 	}
 
 	updated, err := s.repository.UpdateNamespaceConnectionByUID(ctx, inDB.UID, &datamodel.Connection{
+		ID:     destConn.GetId(),
 		Method: datamodel.ConnectionMethod(destConn.GetMethod()),
 		Setup:  datatypes.JSON(j),
 	})

@@ -1541,7 +1541,7 @@ service PipelinePublicService {
   // Updates a connection with the supplied connection fields.
   rpc UpdateNamespaceConnection(UpdateNamespaceConnectionRequest) returns (UpdateNamespaceConnectionResponse) {
     option (google.api.http) = {
-      patch: "/v1beta/namespaces/{connection.namespace_id}/connections/{connection.id}"
+      patch: "/v1beta/namespaces/{connection.namespace_id}/connections/{connection_id}"
       body: "connection"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
@@ -1566,6 +1566,16 @@ service PipelinePublicService {
   // account in the 3rd party app.
   rpc TestNamespaceConnection(TestNamespaceConnectionRequest) returns (TestNamespaceConnectionResponse) {
     option (google.api.http) = {post: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}/test"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
+  }
+
+  // List pipelines that reference a connection
+  //
+  // Returns a paginated list with the IDs of the pipelines that reference a
+  // given connection. All the pipelines will belong to the same namespace as
+  // the connection.
+  rpc ListPipelineIDsByConnectionID(ListPipelineIDsByConnectionIDRequest) returns (ListPipelineIDsByConnectionIDResponse) {
+    option (google.api.http) = {get: "/v1beta/namespaces/{namespace_id}/connections/{connection_id}/referenced-pipelines"};
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {tags: "Integration"};
   }
 
