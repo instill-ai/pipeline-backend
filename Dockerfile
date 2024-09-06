@@ -19,6 +19,10 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 
 FROM node:22.5.1-alpine3.19
 
+COPY requirements.txt requirements.txt
+
+RUN apk add --no-cache gperftools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+
 RUN apk add --no-cache \
     curl \
     poppler-utils \
@@ -38,11 +42,13 @@ RUN apk add --no-cache \
     ffmpeg \
     leptonica \
     chromium \
+    pkgconfig \
+    cmake \
     && update-ms-fonts \
     && fc-cache -f \
     && python3 -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
-    && /opt/venv/bin/pip install pdfplumber tokenizers \
+    && /opt/venv/bin/pip install -r requirements.txt \
     && rm -rf /var/cache/apk/* /var/cache/fontconfig/*
 
 ARG TARGETARCH
