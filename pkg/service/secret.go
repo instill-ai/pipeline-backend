@@ -117,8 +117,9 @@ func (s *service) checkSecretFields(ctx context.Context, uid uuid.UUID, setup an
 	switch s := setup.(type) {
 	case map[string]any:
 		setupMap = s
-	case string:
-		// Setup should contain a reference to a connection.
+	case string, nil:
+		// Setup should either not be present or contain a reference to a
+		// connection.
 		return nil
 	default:
 		return fmt.Errorf("invalid type for setup field")
