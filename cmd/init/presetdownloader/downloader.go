@@ -18,6 +18,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
@@ -145,6 +146,14 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 			dbPipeline, err := converter.ConvertPipelineToDB(ctx, ns, pipeline)
 			if err != nil {
 				return err
+			}
+			dbPipeline.Sharing = &datamodel.Sharing{
+				Users: map[string]*datamodel.SharingUser{
+					"*/*": &datamodel.SharingUser{
+						Role:    "ROLE_EXECUTOR",
+						Enabled: true,
+					},
+				},
 			}
 			p, err := repo.GetNamespacePipelineByID(ctx, ns.Permalink(), dbPipeline.ID, true, false)
 			if err == nil {
