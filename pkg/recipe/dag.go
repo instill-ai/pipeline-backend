@@ -248,8 +248,6 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 			}
 		}
 		return arr, nil
-	case *data.Null:
-		return nil, nil
 	default:
 		return input, nil
 	}
