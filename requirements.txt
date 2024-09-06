@@ -7,3 +7,6 @@ pdfplumber==0.11.3
 # components/operator/text
 mistral_common==1.3.3
 
+# misc
+sentencepiece==0.2.0
+
