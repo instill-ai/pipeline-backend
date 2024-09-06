@@ -507,3 +507,46 @@ func (s *service) DeleteNamespaceConnection(ctx context.Context, namespaceID, id
 	return s.repository.DeleteNamespaceConnectionByID(ctx, ns.NsUID, id)
 
 }
+
+func (s *service) ListPipelineIDsByConnectionID(ctx context.Context, req *pb.ListPipelineIDsByConnectionIDRequest) (*pb.ListPipelineIDsByConnectionIDResponse, error) {
+	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
+	if err != nil {
+		return nil, fmt.Errorf("fetching namespace: %w", err)
+	}
+
+	if err := s.checkNamespacePermission(ctx, ns); err != nil {
+		return nil, fmt.Errorf("checking namespace permissions: %w", err)
+	}
+
+	declarations, err := filtering.NewDeclarations(
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareIdent("q", filtering.TypeString),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("building filter declarations: %w", err)
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return nil, fmt.Errorf("parsing filter: %w", err)
+	}
+
+	p := repository.ListPipelineIDsByConnectionIDParams{
+		Owner:        ns,
+		ConnectionID: req.GetConnectionId(),
+		PageToken:    req.GetPageToken(),
+		Limit:        s.pageSizeInRange(req.GetPageSize()),
+		Filter:       filter,
+	}
+
+	page, err := s.repository.ListPipelineIDsByConnectionID(ctx, p)
+	if err != nil {
+		return nil, fmt.Errorf("fetching connections: %w", err)
+	}
+
+	return &pb.ListPipelineIDsByConnectionIDResponse{
+		PipelineIds:   page.PipelineIDs,
+		NextPageToken: page.NextPageToken,
+		TotalSize:     page.TotalSize,
+	}, nil
+}

@@ -238,7 +238,80 @@ export function CheckConnections(data) {
       [`GET ${pathWithIntegration} response contains connections for ${integrationID} integration`]: (r) =>
         r.json().connections[0].integrationId === integrationID,
     });
+  });
 
+  group("Integration API: List pipelines by connection", () => {
+    const yamlRecipe = `
+version: v1beta
+variable:
+  recipients:
+    instill-format: array:string
+component:
+  email-0:
+    type: email
+    input:
+      recipients: \${variable.recipients}
+      cc: null
+      bcc: null
+      subject: "Dummy email"
+      message: "Hi I'm testing integrations"
+    condition: null
+    setup: \${connection.${connectionID}}
+    task: TASK_SEND_EMAIL
+output:
+  resp:
+    title: Response
+    value: \${email-0.output.result}
+`;
+
+    const nPipelines = 30;
+    for (var i = 0; i < nPipelines; i++) {
+      var id = dbIDPrefix + randomString(8);
+      if (i == 0) {
+        id = dbIDPrefix + "foobar";
+      }
+      var reqBody = {
+        id: id,
+        description: randomString(10),
+        rawRecipe: yamlRecipe,
+      };
+
+
+      check(
+        http.request(
+          "POST",
+          `${pipelinePublicHost}/v1beta/namespaces/${defaultUsername}/pipelines`,
+          JSON.stringify(reqBody),
+          data.header
+        ),
+        {
+          [`POST /v1beta/namespaces/${defaultUsername}/pipelines ${reqBody.id} response status is 201`]:
+          (r) => r.status === 201,
+        }
+      );
+    }
+
+    var path = resourcePath + `/referenced-pipelines?pageSize=${nPipelines - 5}`;
+    var firstPage = http.request("GET", pipelinePublicHost + path, null, data.header);
+    check(firstPage, {
+      [`GET ${path} response status is 200`]: (r) => r.status === 200,
+      [`GET ${path} response has totalSize = ${nPipelines}`]: (r) => r.json().totalSize === nPipelines,
+      [`GET ${path} response has page size ${nPipelines - 5}`]: (r) => r.json().pipelineIds.length === nPipelines - 5,
+    });
+
+    var pathWithToken = path + `&pageToken=${firstPage.json().nextPageToken}`;
+    check(http.request("GET", pipelinePublicHost + pathWithToken, null, data.header), {
+      [`GET ${pathWithToken} response status is 200`]: (r) => r.status === 200,
+      [`GET ${pathWithToken} response has totalSize = ${nPipelines}`]: (r) => r.json().totalSize === nPipelines,
+      [`GET ${pathWithToken} response has remaining items`]: (r) => r.json().pipelineIds.length === 5,
+      [`GET ${pathWithToken} response has no more pages`]: (r) => r.json().nextPageToken === "",
+    });
+
+    var pathWithFilter = path + `&filter=q="fooba"`;
+    check(http.request("GET", pipelinePublicHost + pathWithFilter, null, data.header), {
+      [`GET ${pathWithToken} response status is 200`]: (r) => r.status === 200,
+      [`GET ${pathWithToken} response has totalSize = 1`]: (r) => r.json().totalSize === 1,
+    });
   });
 
   group("Integration API: Update connection", () => {

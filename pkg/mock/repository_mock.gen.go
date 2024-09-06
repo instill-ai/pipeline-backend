@@ -222,6 +222,12 @@ type RepositoryMock struct {
 	beforeListNamespaceSecretsCounter uint64
 	ListNamespaceSecretsMock          mRepositoryMockListNamespaceSecrets
 
+	funcListPipelineIDsByConnectionID          func(ctx context.Context, l1 mm_repository.ListPipelineIDsByConnectionIDParams) (p1 mm_repository.PipelinesByConnectionList, err error)
+	inspectFuncListPipelineIDsByConnectionID   func(ctx context.Context, l1 mm_repository.ListPipelineIDsByConnectionIDParams)
+	afterListPipelineIDsByConnectionIDCounter  uint64
+	beforeListPipelineIDsByConnectionIDCounter uint64
+	ListPipelineIDsByConnectionIDMock          mRepositoryMockListPipelineIDsByConnectionID
+
 	funcListPipelineTags          func(ctx context.Context, pipelineUID uuid.UUID) (ta1 []datamodel.Tag, err error)
 	inspectFuncListPipelineTags   func(ctx context.Context, pipelineUID uuid.UUID)
 	afterListPipelineTagsCounter  uint64
@@ -425,6 +431,9 @@ func NewRepositoryMock(t minimock.Tester) *RepositoryMock {
 
 	m.ListNamespaceSecretsMock = mRepositoryMockListNamespaceSecrets{mock: m}
 	m.ListNamespaceSecretsMock.callArgs = []*RepositoryMockListNamespaceSecretsParams{}
+
+	m.ListPipelineIDsByConnectionIDMock = mRepositoryMockListPipelineIDsByConnectionID{mock: m}
+	m.ListPipelineIDsByConnectionIDMock.callArgs = []*RepositoryMockListPipelineIDsByConnectionIDParams{}
 
 	m.ListPipelineTagsMock = mRepositoryMockListPipelineTags{mock: m}
 	m.ListPipelineTagsMock.callArgs = []*RepositoryMockListPipelineTagsParams{}
@@ -12665,6 +12674,327 @@ func (m *RepositoryMock) MinimockListNamespaceSecretsInspect() {
 	}
 }
 
+type mRepositoryMockListPipelineIDsByConnectionID struct {
+	optional           bool
+	mock               *RepositoryMock
+	defaultExpectation *RepositoryMockListPipelineIDsByConnectionIDExpectation
+	expectations       []*RepositoryMockListPipelineIDsByConnectionIDExpectation
+
+	callArgs []*RepositoryMockListPipelineIDsByConnectionIDParams
+	mutex    sync.RWMutex
+
+	expectedInvocations uint64
+}
+
+// RepositoryMockListPipelineIDsByConnectionIDExpectation specifies expectation struct of the Repository.ListPipelineIDsByConnectionID
+type RepositoryMockListPipelineIDsByConnectionIDExpectation struct {
+	mock      *RepositoryMock
+	params    *RepositoryMockListPipelineIDsByConnectionIDParams
+	paramPtrs *RepositoryMockListPipelineIDsByConnectionIDParamPtrs
+	results   *RepositoryMockListPipelineIDsByConnectionIDResults
+	Counter   uint64
+}
+
+// RepositoryMockListPipelineIDsByConnectionIDParams contains parameters of the Repository.ListPipelineIDsByConnectionID
+type RepositoryMockListPipelineIDsByConnectionIDParams struct {
+	ctx context.Context
+	l1  mm_repository.ListPipelineIDsByConnectionIDParams
+}
+
+// RepositoryMockListPipelineIDsByConnectionIDParamPtrs contains pointers to parameters of the Repository.ListPipelineIDsByConnectionID
+type RepositoryMockListPipelineIDsByConnectionIDParamPtrs struct {
+	ctx *context.Context
+	l1  *mm_repository.ListPipelineIDsByConnectionIDParams
+}
+
+// RepositoryMockListPipelineIDsByConnectionIDResults contains results of the Repository.ListPipelineIDsByConnectionID
+type RepositoryMockListPipelineIDsByConnectionIDResults struct {
+	p1  mm_repository.PipelinesByConnectionList
+	err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) Optional() *mRepositoryMockListPipelineIDsByConnectionID {
+	mmListPipelineIDsByConnectionID.optional = true
+	return mmListPipelineIDsByConnectionID
+}
+
+// Expect sets up expected params for Repository.ListPipelineIDsByConnectionID
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) Expect(ctx context.Context, l1 mm_repository.ListPipelineIDsByConnectionIDParams) *mRepositoryMockListPipelineIDsByConnectionID {
+	if mmListPipelineIDsByConnectionID.mock.funcListPipelineIDsByConnectionID != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("RepositoryMock.ListPipelineIDsByConnectionID mock is already set by Set")
+	}
+
+	if mmListPipelineIDsByConnectionID.defaultExpectation == nil {
+		mmListPipelineIDsByConnectionID.defaultExpectation = &RepositoryMockListPipelineIDsByConnectionIDExpectation{}
+	}
+
+	if mmListPipelineIDsByConnectionID.defaultExpectation.paramPtrs != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("RepositoryMock.ListPipelineIDsByConnectionID mock is already set by ExpectParams functions")
+	}
+
+	mmListPipelineIDsByConnectionID.defaultExpectation.params = &RepositoryMockListPipelineIDsByConnectionIDParams{ctx, l1}
+	for _, e := range mmListPipelineIDsByConnectionID.expectations {
+		if minimock.Equal(e.params, mmListPipelineIDsByConnectionID.defaultExpectation.params) {
+			mmListPipelineIDsByConnectionID.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListPipelineIDsByConnectionID.defaultExpectation.params)
+		}
+	}
+
+	return mmListPipelineIDsByConnectionID
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Repository.ListPipelineIDsByConnectionID
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) ExpectCtxParam1(ctx context.Context) *mRepositoryMockListPipelineIDsByConnectionID {
+	if mmListPipelineIDsByConnectionID.mock.funcListPipelineIDsByConnectionID != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("RepositoryMock.ListPipelineIDsByConnectionID mock is already set by Set")
+	}
+
+	if mmListPipelineIDsByConnectionID.defaultExpectation == nil {
+		mmListPipelineIDsByConnectionID.defaultExpectation = &RepositoryMockListPipelineIDsByConnectionIDExpectation{}
+	}
+
+	if mmListPipelineIDsByConnectionID.defaultExpectation.params != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("RepositoryMock.ListPipelineIDsByConnectionID mock is already set by Expect")
+	}
+
+	if mmListPipelineIDsByConnectionID.defaultExpectation.paramPtrs == nil {
+		mmListPipelineIDsByConnectionID.defaultExpectation.paramPtrs = &RepositoryMockListPipelineIDsByConnectionIDParamPtrs{}
+	}
+	mmListPipelineIDsByConnectionID.defaultExpectation.paramPtrs.ctx = &ctx
+
+	return mmListPipelineIDsByConnectionID
+}
+
+// ExpectL1Param2 sets up expected param l1 for Repository.ListPipelineIDsByConnectionID
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) ExpectL1Param2(l1 mm_repository.ListPipelineIDsByConnectionIDParams) *mRepositoryMockListPipelineIDsByConnectionID {
+	if mmListPipelineIDsByConnectionID.mock.funcListPipelineIDsByConnectionID != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("RepositoryMock.ListPipelineIDsByConnectionID mock is already set by Set")
+	}
+
+	if mmListPipelineIDsByConnectionID.defaultExpectation == nil {
+		mmListPipelineIDsByConnectionID.defaultExpectation = &RepositoryMockListPipelineIDsByConnectionIDExpectation{}
+	}
+
+	if mmListPipelineIDsByConnectionID.defaultExpectation.params != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("RepositoryMock.ListPipelineIDsByConnectionID mock is already set by Expect")
+	}
+
+	if mmListPipelineIDsByConnectionID.defaultExpectation.paramPtrs == nil {
+		mmListPipelineIDsByConnectionID.defaultExpectation.paramPtrs = &RepositoryMockListPipelineIDsByConnectionIDParamPtrs{}
+	}
+	mmListPipelineIDsByConnectionID.defaultExpectation.paramPtrs.l1 = &l1
+
+	return mmListPipelineIDsByConnectionID
+}
+
+// Inspect accepts an inspector function that has same arguments as the Repository.ListPipelineIDsByConnectionID
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) Inspect(f func(ctx context.Context, l1 mm_repository.ListPipelineIDsByConnectionIDParams)) *mRepositoryMockListPipelineIDsByConnectionID {
+	if mmListPipelineIDsByConnectionID.mock.inspectFuncListPipelineIDsByConnectionID != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ListPipelineIDsByConnectionID")
+	}
+
+	mmListPipelineIDsByConnectionID.mock.inspectFuncListPipelineIDsByConnectionID = f
+
+	return mmListPipelineIDsByConnectionID
+}
+
+// Return sets up results that will be returned by Repository.ListPipelineIDsByConnectionID
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) Return(p1 mm_repository.PipelinesByConnectionList, err error) *RepositoryMock {
+	if mmListPipelineIDsByConnectionID.mock.funcListPipelineIDsByConnectionID != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("RepositoryMock.ListPipelineIDsByConnectionID mock is already set by Set")
+	}
+
+	if mmListPipelineIDsByConnectionID.defaultExpectation == nil {
+		mmListPipelineIDsByConnectionID.defaultExpectation = &RepositoryMockListPipelineIDsByConnectionIDExpectation{mock: mmListPipelineIDsByConnectionID.mock}
+	}
+	mmListPipelineIDsByConnectionID.defaultExpectation.results = &RepositoryMockListPipelineIDsByConnectionIDResults{p1, err}
+	return mmListPipelineIDsByConnectionID.mock
+}
+
+// Set uses given function f to mock the Repository.ListPipelineIDsByConnectionID method
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) Set(f func(ctx context.Context, l1 mm_repository.ListPipelineIDsByConnectionIDParams) (p1 mm_repository.PipelinesByConnectionList, err error)) *RepositoryMock {
+	if mmListPipelineIDsByConnectionID.defaultExpectation != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("Default expectation is already set for the Repository.ListPipelineIDsByConnectionID method")
+	}
+
+	if len(mmListPipelineIDsByConnectionID.expectations) > 0 {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("Some expectations are already set for the Repository.ListPipelineIDsByConnectionID method")
+	}
+
+	mmListPipelineIDsByConnectionID.mock.funcListPipelineIDsByConnectionID = f
+	return mmListPipelineIDsByConnectionID.mock
+}
+
+// When sets expectation for the Repository.ListPipelineIDsByConnectionID which will trigger the result defined by the following
+// Then helper
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) When(ctx context.Context, l1 mm_repository.ListPipelineIDsByConnectionIDParams) *RepositoryMockListPipelineIDsByConnectionIDExpectation {
+	if mmListPipelineIDsByConnectionID.mock.funcListPipelineIDsByConnectionID != nil {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("RepositoryMock.ListPipelineIDsByConnectionID mock is already set by Set")
+	}
+
+	expectation := &RepositoryMockListPipelineIDsByConnectionIDExpectation{
+		mock:   mmListPipelineIDsByConnectionID.mock,
+		params: &RepositoryMockListPipelineIDsByConnectionIDParams{ctx, l1},
+	}
+	mmListPipelineIDsByConnectionID.expectations = append(mmListPipelineIDsByConnectionID.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Repository.ListPipelineIDsByConnectionID return parameters for the expectation previously defined by the When method
+func (e *RepositoryMockListPipelineIDsByConnectionIDExpectation) Then(p1 mm_repository.PipelinesByConnectionList, err error) *RepositoryMock {
+	e.results = &RepositoryMockListPipelineIDsByConnectionIDResults{p1, err}
+	return e.mock
+}
+
+// Times sets number of times Repository.ListPipelineIDsByConnectionID should be invoked
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) Times(n uint64) *mRepositoryMockListPipelineIDsByConnectionID {
+	if n == 0 {
+		mmListPipelineIDsByConnectionID.mock.t.Fatalf("Times of RepositoryMock.ListPipelineIDsByConnectionID mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListPipelineIDsByConnectionID.expectedInvocations, n)
+	return mmListPipelineIDsByConnectionID
+}
+
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) invocationsDone() bool {
+	if len(mmListPipelineIDsByConnectionID.expectations) == 0 && mmListPipelineIDsByConnectionID.defaultExpectation == nil && mmListPipelineIDsByConnectionID.mock.funcListPipelineIDsByConnectionID == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListPipelineIDsByConnectionID.mock.afterListPipelineIDsByConnectionIDCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListPipelineIDsByConnectionID.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListPipelineIDsByConnectionID implements repository.Repository
+func (mmListPipelineIDsByConnectionID *RepositoryMock) ListPipelineIDsByConnectionID(ctx context.Context, l1 mm_repository.ListPipelineIDsByConnectionIDParams) (p1 mm_repository.PipelinesByConnectionList, err error) {
+	mm_atomic.AddUint64(&mmListPipelineIDsByConnectionID.beforeListPipelineIDsByConnectionIDCounter, 1)
+	defer mm_atomic.AddUint64(&mmListPipelineIDsByConnectionID.afterListPipelineIDsByConnectionIDCounter, 1)
+
+	if mmListPipelineIDsByConnectionID.inspectFuncListPipelineIDsByConnectionID != nil {
+		mmListPipelineIDsByConnectionID.inspectFuncListPipelineIDsByConnectionID(ctx, l1)
+	}
+
+	mm_params := RepositoryMockListPipelineIDsByConnectionIDParams{ctx, l1}
+
+	// Record call args
+	mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.mutex.Lock()
+	mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.callArgs = append(mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.callArgs, &mm_params)
+	mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.mutex.Unlock()
+
+	for _, e := range mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.p1, e.results.err
+		}
+	}
+
+	if mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.defaultExpectation.Counter, 1)
+		mm_want := mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.defaultExpectation.params
+		mm_want_ptrs := mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.defaultExpectation.paramPtrs
+
+		mm_got := RepositoryMockListPipelineIDsByConnectionIDParams{ctx, l1}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListPipelineIDsByConnectionID.t.Errorf("RepositoryMock.ListPipelineIDsByConnectionID got unexpected parameter ctx, want: %#v, got: %#v%s\n", *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.l1 != nil && !minimock.Equal(*mm_want_ptrs.l1, mm_got.l1) {
+				mmListPipelineIDsByConnectionID.t.Errorf("RepositoryMock.ListPipelineIDsByConnectionID got unexpected parameter l1, want: %#v, got: %#v%s\n", *mm_want_ptrs.l1, mm_got.l1, minimock.Diff(*mm_want_ptrs.l1, mm_got.l1))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListPipelineIDsByConnectionID.t.Errorf("RepositoryMock.ListPipelineIDsByConnectionID got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListPipelineIDsByConnectionID.ListPipelineIDsByConnectionIDMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListPipelineIDsByConnectionID.t.Fatal("No results are set for the RepositoryMock.ListPipelineIDsByConnectionID")
+		}
+		return (*mm_results).p1, (*mm_results).err
+	}
+	if mmListPipelineIDsByConnectionID.funcListPipelineIDsByConnectionID != nil {
+		return mmListPipelineIDsByConnectionID.funcListPipelineIDsByConnectionID(ctx, l1)
+	}
+	mmListPipelineIDsByConnectionID.t.Fatalf("Unexpected call to RepositoryMock.ListPipelineIDsByConnectionID. %v %v", ctx, l1)
+	return
+}
+
+// ListPipelineIDsByConnectionIDAfterCounter returns a count of finished RepositoryMock.ListPipelineIDsByConnectionID invocations
+func (mmListPipelineIDsByConnectionID *RepositoryMock) ListPipelineIDsByConnectionIDAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListPipelineIDsByConnectionID.afterListPipelineIDsByConnectionIDCounter)
+}
+
+// ListPipelineIDsByConnectionIDBeforeCounter returns a count of RepositoryMock.ListPipelineIDsByConnectionID invocations
+func (mmListPipelineIDsByConnectionID *RepositoryMock) ListPipelineIDsByConnectionIDBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListPipelineIDsByConnectionID.beforeListPipelineIDsByConnectionIDCounter)
+}
+
+// Calls returns a list of arguments used in each call to RepositoryMock.ListPipelineIDsByConnectionID.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListPipelineIDsByConnectionID *mRepositoryMockListPipelineIDsByConnectionID) Calls() []*RepositoryMockListPipelineIDsByConnectionIDParams {
+	mmListPipelineIDsByConnectionID.mutex.RLock()
+
+	argCopy := make([]*RepositoryMockListPipelineIDsByConnectionIDParams, len(mmListPipelineIDsByConnectionID.callArgs))
+	copy(argCopy, mmListPipelineIDsByConnectionID.callArgs)
+
+	mmListPipelineIDsByConnectionID.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListPipelineIDsByConnectionIDDone returns true if the count of the ListPipelineIDsByConnectionID invocations corresponds
+// the number of defined expectations
+func (m *RepositoryMock) MinimockListPipelineIDsByConnectionIDDone() bool {
+	if m.ListPipelineIDsByConnectionIDMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListPipelineIDsByConnectionIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListPipelineIDsByConnectionIDMock.invocationsDone()
+}
+
+// MinimockListPipelineIDsByConnectionIDInspect logs each unmet expectation
+func (m *RepositoryMock) MinimockListPipelineIDsByConnectionIDInspect() {
+	for _, e := range m.ListPipelineIDsByConnectionIDMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to RepositoryMock.ListPipelineIDsByConnectionID with params: %#v", *e.params)
+		}
+	}
+
+	afterListPipelineIDsByConnectionIDCounter := mm_atomic.LoadUint64(&m.afterListPipelineIDsByConnectionIDCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListPipelineIDsByConnectionIDMock.defaultExpectation != nil && afterListPipelineIDsByConnectionIDCounter < 1 {
+		if m.ListPipelineIDsByConnectionIDMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to RepositoryMock.ListPipelineIDsByConnectionID")
+		} else {
+			m.t.Errorf("Expected call to RepositoryMock.ListPipelineIDsByConnectionID with params: %#v", *m.ListPipelineIDsByConnectionIDMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListPipelineIDsByConnectionID != nil && afterListPipelineIDsByConnectionIDCounter < 1 {
+		m.t.Error("Expected call to RepositoryMock.ListPipelineIDsByConnectionID")
+	}
+
+	if !m.ListPipelineIDsByConnectionIDMock.invocationsDone() && afterListPipelineIDsByConnectionIDCounter > 0 {
+		m.t.Errorf("Expected %d calls to RepositoryMock.ListPipelineIDsByConnectionID but found %d calls",
+			mm_atomic.LoadUint64(&m.ListPipelineIDsByConnectionIDMock.expectedInvocations), afterListPipelineIDsByConnectionIDCounter)
+	}
+}
+
 type mRepositoryMockListPipelineTags struct {
 	optional           bool
 	mock               *RepositoryMock
@@ -18564,6 +18894,8 @@ func (m *RepositoryMock) MinimockFinish() {
 
 			m.MinimockListNamespaceSecretsInspect()
 
+			m.MinimockListPipelineIDsByConnectionIDInspect()
+
 			m.MinimockListPipelineTagsInspect()
 
 			m.MinimockListPipelinesInspect()
@@ -18651,6 +18983,7 @@ func (m *RepositoryMock) minimockDone() bool {
 		m.MinimockListNamespacePipelineReleasesDone() &&
 		m.MinimockListNamespacePipelinesDone() &&
 		m.MinimockListNamespaceSecretsDone() &&
+		m.MinimockListPipelineIDsByConnectionIDDone() &&
 		m.MinimockListPipelineTagsDone() &&
 		m.MinimockListPipelinesDone() &&
 		m.MinimockListPipelinesAdminDone() &&
