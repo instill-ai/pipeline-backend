@@ -173,6 +173,38 @@ func (h *PublicHandler) DeleteNamespaceConnection(ctx context.Context, req *pb.D
 	)))
 	return &pb.DeleteNamespaceConnectionResponse{}, nil
 }
+
+// ListPipelineIDsByConnectionID returns a paginated list with the IDs of the
+// pipelines that reference a given connection. All the pipelines will belong
+// to the same namespace as the connection.
+func (h *PublicHandler) ListPipelineIDsByConnectionID(ctx context.Context, req *pb.ListPipelineIDsByConnectionIDRequest) (*pb.ListPipelineIDsByConnectionIDResponse, error) {
+	eventName := "ListPipelineIDsByConnectionID"
+	ctx, span := tracer.Start(ctx, eventName, trace.WithSpanKind(trace.SpanKindServer))
+	defer span.End()
+
+	logger, _ := logger.GetZapLogger(ctx)
+	logUUID, _ := uuid.NewV4()
+
+	if err := authenticateUser(ctx, false); err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	resp, err := h.service.ListPipelineIDsByConnectionID(ctx, req)
+	if err != nil {
+		span.SetStatus(1, err.Error())
+		return nil, err
+	}
+
+	logger.Info(string(customotel.NewLogMessage(
+		ctx,
+		span,
+		logUUID.String(),
+		eventName,
+	)))
+	return resp, nil
+}
+
 // GetNamespaceConnection fetches the details of a namespace connection.
 func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.GetNamespaceConnectionResponse, error) {
 	eventName := "GetNamespaceConnection"

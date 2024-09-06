@@ -81,6 +81,7 @@ type Repository interface {
 	DeleteNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) error
 	GetNamespaceConnectionByID(_ context.Context, nsUID uuid.UUID, id string) (*datamodel.Connection, error)
 	ListNamespaceConnections(context.Context, ListNamespaceConnectionsParams) (ConnectionList, error)
+	ListPipelineIDsByConnectionID(context.Context, ListPipelineIDsByConnectionIDParams) (PipelinesByConnectionList, error)
 
 	CreateNamespaceSecret(ctx context.Context, ownerPermalink string, secret *datamodel.Secret) error
 	ListNamespaceSecrets(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, filter filtering.Filter) ([]*datamodel.Secret, int64, string, error)
@@ -1332,7 +1333,7 @@ type ListNamespaceConnectionsParams struct {
 	Filter       filtering.Filter
 }
 
-// ConnectionList returns a page of connections.
+// ConnectionList contains a page of connections.
 type ConnectionList struct {
 	Connections   []*datamodel.Connection
 	NextPageToken string
@@ -1426,4 +1427,112 @@ func (r *repository) ListNamespaceConnections(ctx context.Context, p ListNamespa
 	}
 
 	return resp, nil
+}
+
+// ListPipelineIDsByConnectionIDParams allows clients to request a page of
+// pipeline IDs that reference a connection.
+type ListPipelineIDsByConnectionIDParams struct {
+	Owner        resource.Namespace
+	ConnectionID string
+	PageToken    string
+	Limit        int
+	Filter       filtering.Filter
+}
+
+// PipelinesByConnectionList contains a page of pipeline IDs that reference a
+// given connection.
+type PipelinesByConnectionList struct {
+	PipelineIDs   []string
+	NextPageToken string
+	TotalSize     int32
+}
+
+// pipelineByConnection can be used both for fetching the pipeline ID and as a
+// cursor for pagination.
+type pipelineByConnection struct {
+	CreateTime time.Time `json:"create_time"`
+	UID        uuid.UUID `json:"uid"`
+	ID         string    `json:"-"`
+}
+
+func (r *repository) ListPipelineIDsByConnectionID(
+	ctx context.Context,
+	p ListPipelineIDsByConnectionIDParams,
+) (page PipelinesByConnectionList, err error) {
+	db := r.db.WithContext(ctx)
+	where := ""
+	whereArgs := []any{}
+
+	// Get item count.
+	expr, err := r.TranspileFilter(p.Filter)
+	if err != nil {
+		return page, fmt.Errorf("transpiling filter: %w", err)
+	}
+
+	if expr != nil {
+		where = "(?)"
+		whereArgs = []any{expr}
+	}
+
+	// This is an inefficient search and won't scale.
+	// TODO jvallesm INS-6191: store a JSON copy of the recipe and use it to
+	// search by its properties.
+	reference := fmt.Sprintf("%%${%s.%s}%%", constant.SegConnection, p.ConnectionID)
+	queryBuilder := db.Table("pipeline").
+		Where(where, whereArgs...).
+		Where("recipe_yaml LIKE ?", reference).
+		Where("owner = ?", p.Owner.Permalink())
+
+	var count int64
+	queryBuilder.Count(&count)
+	page.TotalSize = int32(count)
+
+	// Get definitions matching criteria.
+	if p.PageToken != "" {
+		cursor, err := decodeCursor[pipelineByConnection](p.PageToken)
+		if err != nil {
+			return page, err
+		}
+		queryBuilder = queryBuilder.Where(
+			"(create_time,uid) < (?, ?)",
+			cursor.CreateTime,
+			cursor.UID,
+		)
+	}
+
+	// From here we'll apply different search criteria.
+	queryBuilder = queryBuilder.Session(&gorm.Session{})
+
+	rows, err := queryBuilder.Limit(p.Limit).Order("create_time DESC, uid DESC").Rows()
+	if err != nil {
+		return page, fmt.Errorf("querying database rows: %w", err)
+	}
+	defer rows.Close()
+
+	page.PipelineIDs = make([]string, 0, p.Limit)
+	lastItem := new(pipelineByConnection)
+	for rows.Next() {
+		if err = db.ScanRows(rows, lastItem); err != nil {
+			return page, fmt.Errorf("scanning pipeline ID: %w", err)
+		}
+
+		page.PipelineIDs = append(page.PipelineIDs, lastItem.ID)
+	}
+
+	lastInDB := new(pipelineByConnection)
+	orderInverse := "create_time ASC, uid ASC"
+	if result := queryBuilder.Order(orderInverse).Limit(1).Find(lastInDB); result.Error != nil {
+		return page, fmt.Errorf("finding last item: %w", err)
+	}
+
+	if lastInDB.UID.String() == lastItem.UID.String() {
+		return page, nil
+	}
+
+	page.NextPageToken, err = encodeCursor[pipelineByConnection](*lastItem)
+	if err != nil {
+		return page, err
+	}
+
+	return page, nil
 }

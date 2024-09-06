@@ -86,6 +86,7 @@ type Service interface {
 	DeleteNamespaceConnection(_ context.Context, namespaceID, id string) error
 	GetNamespaceConnection(context.Context, *pb.GetNamespaceConnectionRequest) (*pb.Connection, error)
 	ListNamespaceConnections(context.Context, *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error)
+	ListPipelineIDsByConnectionID(context.Context, *pb.ListPipelineIDsByConnectionIDRequest) (*pb.ListPipelineIDsByConnectionIDResponse, error)
 }
 
 // TriggerResult defines a new type to encapsulate the stream data
