@@ -40,7 +40,7 @@ RUN apk add --no-cache \
     ffmpeg \
     leptonica \
     chromium \
-    gperftools \
+    gperftools --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community\
     pkgconfig \
     && update-ms-fonts \
     && fc-cache -f \
