@@ -40,7 +40,7 @@ RUN apk add --no-cache \
     ffmpeg \
     leptonica \
     chromium \
-    gperftools \
+    gperftools-dev \
     pkgconfig \
     && update-ms-fonts \
     && fc-cache -f \
