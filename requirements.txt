@@ -1,5 +1,5 @@
 # misc
-sentencepiece==0.2.0
+sentencepiece==0.2.0 # dependency of ai21-tokenizer, will take ~2 minutes to build, it also need cmake, gperftools and pkgconfig
 
 # components/ai/ai21labs
 ai21-tokenizer==0.11.3
