@@ -1173,14 +1173,13 @@ func (s *service) triggerPipeline(
 
 	logger, _ := logger.GetZapLogger(ctx)
 
+	defer func() {
+		_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
+	}()
 	err := s.preTriggerPipeline(ctx, ns, r, pipelineTriggerID, pipelineData)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	defer func() {
-		_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
-	}()
 
 	workflowOptions := client.StartWorkflowOptions{
 		ID:                       pipelineTriggerID,
@@ -1252,13 +1251,13 @@ func (s *service) triggerAsyncPipeline(
 	pipelineTriggerID string,
 	returnTraces bool) (*longrunningpb.Operation, error) {
 
+	defer func() {
+		_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
+	}()
 	err := s.preTriggerPipeline(ctx, ns, r, pipelineTriggerID, pipelineData)
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
-	}()
 
 	logger, _ := logger.GetZapLogger(ctx)
 
