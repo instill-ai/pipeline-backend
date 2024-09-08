@@ -242,6 +242,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		return err
 	}
 
+	errs := []error{}
 	componentRunFutures := []workflow.Future{}
 	componentRunFailed := false
 	var componentRunErrors []string
@@ -294,7 +295,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					SystemVariables: param.SystemVariables,
 				}).Get(ctx, &preIteratorResult); err != nil {
 					if err != nil {
-						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						errs = append(errs, err)
 						continue
 					}
 				}
@@ -324,8 +325,8 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				for iter := 0; iter < dagData.BatchSize; iter++ {
 					err = itFutures[iter].Get(ctx, nil)
 					if err != nil {
-						logger.Error(fmt.Sprintf("unable to execute iterator workflow: %s", err.Error()))
-						return err
+						errs = append(errs, err)
+						continue
 					}
 				}
 
@@ -336,7 +337,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					SystemVariables: param.SystemVariables,
 				}).Get(ctx, nil); err != nil {
 					if err != nil {
-						w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+						errs = append(errs, err)
 						continue
 					}
 				}
@@ -349,7 +350,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			if err != nil {
 				componentRunFailed = true
 				componentRunErrors = append(componentRunErrors, fmt.Sprintf("component(ID: %s) run failed", futureArgs[idx].ID))
-				w.writeErrorDataPoint(sCtx, err, span, startTime, &dataPoint)
+				errs = append(errs, err)
 				continue
 			}
 
@@ -394,9 +395,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			return fmt.Errorf("updating pipeline trigger count: %w", err)
 		}
 
-		if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
-			logger.Warn(err.Error())
+		if len(errs) > 0 {
+			w.writeErrorDataPoint(sCtx, errs, span, startTime, &dataPoint)
+		} else {
+			if err := w.writeNewDataPoint(sCtx, dataPoint); err != nil {
+				logger.Warn(err.Error())
+			}
 		}
+
 	}
 
 	for _, f := range componentRunFutures {
@@ -1062,8 +1068,12 @@ func (w *worker) processCondition(ctx context.Context, wfm memory.WorkflowMemory
 
 // writeErrorDataPoint is a helper function that writes the error data point to
 // the usage metrics table.
-func (w *worker) writeErrorDataPoint(ctx context.Context, err error, span trace.Span, startTime time.Time, dataPoint *utils.PipelineUsageMetricData) {
-	span.SetStatus(1, err.Error())
+func (w *worker) writeErrorDataPoint(ctx context.Context, errs []error, span trace.Span, startTime time.Time, dataPoint *utils.PipelineUsageMetricData) {
+	errStrs := make([]string, len(errs))
+	for i, e := range errs {
+		errStrs[i] = e.Error()
+	}
+	span.SetStatus(1, "workflow error")
 	dataPoint.ComputeTimeDuration = time.Since(startTime).Seconds()
 	dataPoint.Status = mgmtpb.Status_STATUS_ERRORED
 	_ = w.writeNewDataPoint(ctx, *dataPoint)
