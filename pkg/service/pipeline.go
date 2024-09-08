@@ -1654,6 +1654,9 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 	case enums.WORKFLOW_EXECUTION_STATUS_COMPLETED:
 
 		pipelineTriggerID := workflowExecutionInfo.Execution.WorkflowId
+		defer func() {
+			_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
+		}()
 
 		outputs, metadata, err := s.getOutputsAndMetadata(ctx, pipelineTriggerID, true)
 		if err != nil {
