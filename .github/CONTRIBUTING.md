@@ -67,13 +67,35 @@ $ docker exec -it pipeline-backend /bin/bash
 $ go run ./cmd/worker
 ```
 
+### Run the unit tests
+
+```bash
+$ make coverate DBTEST=true
+```
+
+The repository tests in `make coverage` run against a real database (in contrast
+to a mocked one) in order to increase the confidence of the tests. `DBTEST=true`
+will create and migrate a test database to keep these queries isolated from the
+main DB. You can set the database host and name by overriding the `TEST_DBHOST`
+and `TEST_DBNAME` values.
+
 ### Run the integration test
 
 ```bash
 $ docker exec -it pipeline-backend /bin/bash
-$ make integration-test
+$ make integration-test API_GATEWAY_URL=api-gateway:8080 DB_HOST=pg-sql
 ```
 
+`API_GATEWAY_URL` points to the `api-gateway` container and triggers the public
+API tests. If this variable is empty, the private API tests will be run.
+
+At the end of the tests, some SQL queries are run to clean up the data.
+`DB_HOST` points to the database host so the SQL connection can be established.
+If empty, tests will try to connect to `localhost:5432`.
+
+```bash
+$ make integration-test API_GATEWAY_URL=api-gateway:8080 DB_HOST=pg-sql
+`
 ### Stop the dev container
 
 ```bash

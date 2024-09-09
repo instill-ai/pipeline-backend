@@ -96,6 +96,8 @@ coverage:
 
 .PHONY: integration-test
 integration-test:				## Run integration test
+	@ # DB_HOST points to localhost by default. Override this variable if
+	@ # pipeline-backend's database isn't accessible at that host.
 	@TEST_FOLDER_ABS_PATH=${PWD} k6 run \
 		-e API_GATEWAY_PROTOCOL=${API_GATEWAY_PROTOCOL} \
 		-e API_GATEWAY_URL=${API_GATEWAY_URL} \
