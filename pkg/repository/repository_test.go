@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"testing"
@@ -15,6 +16,8 @@ import (
 	"github.com/go-redis/redismock/v9"
 	"github.com/gofrs/uuid"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"go.einride.tech/aip/filtering"
+	"go.einride.tech/aip/ordering"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/structpb"
 	"gopkg.in/guregu/null.v4"
@@ -27,10 +30,11 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
 	componentstore "github.com/instill-ai/component/store"
-	database "github.com/instill-ai/pipeline-backend/pkg/db"
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+
+	database "github.com/instill-ai/pipeline-backend/pkg/db"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 )
 
 var db *gorm.DB
@@ -424,7 +428,7 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 	ctx := context.Background()
 
 	tx := db.Begin()
-	c.Cleanup(func() { tx.Commit() })
+	c.Cleanup(func() { tx.Rollback() })
 
 	cache, _ := redismock.NewClientMock()
 	repo := NewRepository(tx, cache)
@@ -497,5 +501,121 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 	c.Check(got2.Status, qt.Equals, componentRun.Status)
 	c.Check(got2.TotalDuration.Valid, qt.IsTrue)
 	c.Check(got2.TotalDuration.Int64, qt.Equals, componentRun.TotalDuration.Int64)
+
+}
+
+func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
+	t.SkipNow()
+	c := qt.New(t)
+	ctx := context.Background()
+
+	minioURL := `http://localhost:19000/instill-ai-vdp/e9ee5c7e-23a4-4910-b3be-afe1d3ca5254.recipe.json?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=minioadmin%2F20240816%2Fus-east-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240816T030849Z\u0026X-Amz-Expires=604800\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Signature=f25a30c82e067b8da32c01a17452977082309c873d4a3bd72767ffe1118d695c`
+	minioURL = url.QueryEscape(minioURL)
+
+	mockUIDs := make([]uuid.UUID, 4)
+	for i := range len(mockUIDs) {
+		mockUIDs[i] = uuid.Must(uuid.NewV4())
+	}
+	user1 := mockUIDs[0].String()
+	user2 := mockUIDs[1].String()
+	namespace1 := mockUIDs[2].String()
+
+	cache, _ := redismock.NewClientMock()
+
+	t0 := time.Now().UTC()
+	pipelineUID, ownerUID := uuid.Must(uuid.NewV4()), uuid.Must(uuid.NewV4())
+	ownerPermalink := "users/" + ownerUID.String()
+	pipelineID := "test"
+
+	testCases := []struct {
+		runner        string
+		runNamespace  string
+		viewer        string
+		viewNamespace string
+		canView       bool
+	}{
+		{
+			runner:        user1,
+			runNamespace:  namespace1,
+			viewer:        user1,
+			viewNamespace: namespace1,
+			canView:       true,
+		},
+		{
+			runner:        user1,
+			runNamespace:  user1,
+			viewer:        user1,
+			viewNamespace: user1,
+			canView:       true,
+		},
+		{
+			runner:        user1,
+			runNamespace:  namespace1,
+			viewer:        user1,
+			viewNamespace: user1,
+			canView:       true,
+		},
+		{
+			runner:        user2,
+			runNamespace:  user2,
+			viewer:        user1,
+			viewNamespace: user1,
+			canView:       false,
+		},
+	}
+
+	for i, testCase := range testCases {
+		c.Run(fmt.Sprintf("get pipeline run with permissions test case %d", i), func(c *qt.C) {
+			c.Log(testCase)
+
+			tx := db.Begin()
+			c.Cleanup(func() { tx.Rollback() })
+
+			repo := NewRepository(tx, cache)
+
+			p := &datamodel.Pipeline{
+				Owner: ownerPermalink,
+				ID:    pipelineID,
+				BaseDynamic: datamodel.BaseDynamic{
+					UID:        pipelineUID,
+					CreateTime: t0,
+					UpdateTime: t0,
+				},
+			}
+			err := repo.CreateNamespacePipeline(ctx, p)
+			c.Assert(err, qt.IsNil)
+
+			got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+			c.Assert(err, qt.IsNil)
+			c.Check(got.NumberOfRuns, qt.Equals, 0)
+			c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
+
+			pipelineRun := &datamodel.PipelineRun{
+				PipelineTriggerUID: uuid.Must(uuid.NewV4()),
+				PipelineUID:        p.UID,
+				Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+				Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
+				TriggeredBy:        testCase.runner,
+				Namespace:          testCase.runNamespace,
+				RecipeSnapshot: datamodel.JSONB{{
+					URL: minioURL,
+				}},
+				StartedTime:   time.Now(),
+				TotalDuration: null.IntFrom(42),
+				Components:    nil,
+			}
+
+			err = repo.UpsertPipelineRun(ctx, pipelineRun)
+			c.Assert(err, qt.IsNil)
+
+			response, _, err := repo.GetPaginatedPipelineRunsWithPermissions(ctx, testCase.viewer, testCase.viewNamespace, p.UID.String(), 0, 10, filtering.Filter{}, ordering.OrderBy{}, false, false)
+			c.Assert(err, qt.IsNil)
+			if testCase.canView {
+				c.Check(len(response), qt.Equals, 1)
+			} else {
+				c.Check(len(response), qt.Equals, 0)
+			}
+		})
+	}
 
 }

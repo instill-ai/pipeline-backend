@@ -25,7 +25,7 @@ func (s *service) logPipelineRunStart(ctx context.Context, pipelineTriggerID str
 		runSource = datamodel.RunSource(userAgentValue)
 	}
 
-	requesterUID := utils.GetUserUID(ctx)
+	requesterUID, userUID := utils.GetRequesterUIDAndUserUID(ctx)
 
 	pipelineRun := &datamodel.PipelineRun{
 		PipelineTriggerUID: uuid.FromStringOrNil(pipelineTriggerID),
@@ -33,7 +33,8 @@ func (s *service) logPipelineRunStart(ctx context.Context, pipelineTriggerID str
 		PipelineVersion:    pipelineReleaseID,
 		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 		Source:             runSource,
-		TriggeredBy:        requesterUID,
+		Namespace:          requesterUID,
+		TriggeredBy:        userUID,
 		StartedTime:        time.Now(),
 	}
 

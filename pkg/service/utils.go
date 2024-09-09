@@ -7,12 +7,17 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+
+	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -87,4 +92,88 @@ func (s *service) GetRscNamespace(ctx context.Context, namespaceID string) (reso
 		}, nil
 	}
 	return resource.Namespace{}, fmt.Errorf("namespace error")
+}
+
+// Helper methods
+func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb.PipelineRun, error) {
+	result := &pipelinepb.PipelineRun{
+		PipelineUid:     run.PipelineUID.String(),
+		PipelineRunUid:  run.PipelineTriggerUID.String(),
+		PipelineVersion: run.PipelineVersion,
+		Status:          runpb.RunStatus(run.Status),
+		Source:          runpb.RunSource(run.Source),
+		StartTime:       timestamppb.New(run.StartedTime),
+		Error:           run.Error.Ptr(),
+	}
+
+	if run.TotalDuration.Valid {
+		totalDuration := int32(run.TotalDuration.Int64)
+		result.TotalDuration = &totalDuration
+	}
+	if run.CompletedTime.Valid {
+		result.CompleteTime = timestamppb.New(run.CompletedTime.Time)
+	}
+
+	for _, fileReference := range run.Inputs {
+		result.InputsReference = append(result.InputsReference, &pipelinepb.FileReference{
+			Name: fileReference.Name,
+			Type: fileReference.Type,
+			Size: fileReference.Size,
+			Url:  fileReference.URL,
+		})
+	}
+	for _, fileReference := range run.Outputs {
+		result.OutputsReference = append(result.OutputsReference, &pipelinepb.FileReference{
+			Name: fileReference.Name,
+			Type: fileReference.Type,
+			Size: fileReference.Size,
+			Url:  fileReference.URL,
+		})
+	}
+
+	return result, nil
+}
+
+func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipelinepb.ComponentRun, error) {
+	result := &pipelinepb.ComponentRun{
+		PipelineRunUid: run.PipelineTriggerUID.String(),
+		ComponentId:    run.ComponentID,
+		Status:         runpb.RunStatus(run.Status),
+		StartTime:      timestamppb.New(run.StartedTime),
+		Error:          run.Error.Ptr(),
+	}
+
+	if run.TotalDuration.Valid {
+		totalDuration := int32(run.TotalDuration.Int64)
+		result.TotalDuration = &totalDuration
+	}
+	if run.CompletedTime.Valid {
+		result.CompleteTime = timestamppb.New(run.CompletedTime.Time)
+	}
+
+	for _, fileReference := range run.Inputs {
+		result.InputsReference = append(result.InputsReference, &pipelinepb.FileReference{
+			Name: fileReference.Name,
+			Type: fileReference.Type,
+			Size: fileReference.Size,
+			Url:  fileReference.URL,
+		})
+	}
+	for _, fileReference := range run.Outputs {
+		result.OutputsReference = append(result.OutputsReference, &pipelinepb.FileReference{
+			Name: fileReference.Name,
+			Type: fileReference.Type,
+			Size: fileReference.Size,
+			Url:  fileReference.URL,
+		})
+	}
+	return result, nil
+}
+
+func CanViewAttachments(runner, namespace, requesterUID string, isOwner, isOrgOwnerOrAdmin bool) bool {
+	if namespace != requesterUID { // whether view namespace is credit owner
+		return runner == requesterUID // runner is the same as view namespace
+	} else {
+		return isOwner || isOrgOwnerOrAdmin // view user is the resource owner or organization owner or admin
+	}
 }

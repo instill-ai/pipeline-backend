@@ -56,6 +56,8 @@ const (
 	Organization ObjectType = "organization"
 
 	Member Role = "member"
+	Admin  Role = "admin"
+	Owner  Role = "owner"
 )
 
 func NewACLClient(wc openfga.OpenFGAServiceClient, rc openfga.OpenFGAServiceClient, redisClient *redis.Client) ACLClient {
