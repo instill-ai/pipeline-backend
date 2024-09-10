@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.38.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.37.0-beta...v0.38.0-beta) (2024-09-10)
+
+
+### Features
+
+* add endpoints to read integrations ([#611](https://github.com/instill-ai/pipeline-backend/issues/611)) ([9be491b](https://github.com/instill-ai/pipeline-backend/commit/9be491b6e8f9fa92295ea73f8df10fef97897855))
+* **integration:** add create, update, delete connection endpoints ([#629](https://github.com/instill-ai/pipeline-backend/issues/629)) ([b784553](https://github.com/instill-ai/pipeline-backend/commit/b78455394f5e532c82f7280dabdfa33cd23fe0d2))
+* **integration:** add delete and update connection endpoints ([#636](https://github.com/instill-ai/pipeline-backend/issues/636)) ([b28db2c](https://github.com/instill-ai/pipeline-backend/commit/b28db2c7987b08174c9ae8dd5b8f99989d65cca1))
+* **integration:** add GetConnection endpoint ([#633](https://github.com/instill-ai/pipeline-backend/issues/633)) ([0f4e9ca](https://github.com/instill-ai/pipeline-backend/commit/0f4e9ca38454525f99d722250147658837975ddb))
+* **integration:** add ListNamespaceConnections endpoint ([#635](https://github.com/instill-ai/pipeline-backend/issues/635)) ([404621a](https://github.com/instill-ai/pipeline-backend/commit/404621ae00c8067bb0d76fc1e94f73d167eb093c))
+* **integration:** list pipeline IDs by connection reference ([#642](https://github.com/instill-ai/pipeline-backend/issues/642)) ([0c398fe](https://github.com/instill-ai/pipeline-backend/commit/0c398fe317d02dea5c88dceb99a000308e554569))
+* **integration:** reference connections in pipelines ([#638](https://github.com/instill-ai/pipeline-backend/issues/638)) ([21fcbdb](https://github.com/instill-ai/pipeline-backend/commit/21fcbdbc6cb223e29034a294c9cecaa31e3cdb64))
+* **run:** capture component run error for run logging ([#639](https://github.com/instill-ai/pipeline-backend/issues/639)) ([1492214](https://github.com/instill-ai/pipeline-backend/commit/1492214d6b497f16dac1d80812ceace818061950))
+
+
+### Bug Fixes
+
+* fix duplicated metric datapoint ([#645](https://github.com/instill-ai/pipeline-backend/issues/645)) ([c93cf23](https://github.com/instill-ai/pipeline-backend/commit/c93cf2333449cbd7b52a72849913964d97b67b04))
+* fix memory leak ([b97ba80](https://github.com/instill-ai/pipeline-backend/commit/b97ba8037a36062c507e772a1566cbb363b8af59))
+* fix nil-check ([a86722f](https://github.com/instill-ai/pipeline-backend/commit/a86722ffec4d42365f94054929d12ce02b8bf0f3))
+* remove goroutine in ConvertPipelinesToPB ([2d15fbe](https://github.com/instill-ai/pipeline-backend/commit/2d15fbe9c8f871dac43c657a0151de8ec46dfe87))
+* reset the preset pipeline sharing setting ([#643](https://github.com/instill-ai/pipeline-backend/issues/643)) ([1ca23ac](https://github.com/instill-ai/pipeline-backend/commit/1ca23acaca559fd583ca233834f0c867f4db9a88))
+
 ## [0.37.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.36.0-beta...v0.37.0-beta) (2024-08-29)
 
 
