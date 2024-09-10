@@ -17,7 +17,7 @@ RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=typ
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags=musl -o /${SERVICE_NAME}-migrate ./cmd/migration
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags=musl -o /${SERVICE_NAME}-init ./cmd/init
 
-FROM node:22.5.1-alpine3.19
+FROM alpine:3.19
 
 RUN apk add --no-cache \
     curl \
@@ -36,7 +36,6 @@ RUN apk add --no-cache \
     font-noto \
     font-noto-cjk \
     ffmpeg \
-    leptonica \
     chromium \
     && update-ms-fonts \
     && fc-cache -f \
@@ -49,7 +48,6 @@ ARG TARGETARCH
 ARG BUILDARCH
 RUN apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
 
-RUN npm install -g @opendocsg/pdf2md
 
 USER nobody:nogroup
 
