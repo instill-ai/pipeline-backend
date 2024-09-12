@@ -608,7 +608,7 @@ func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
 			err = repo.UpsertPipelineRun(ctx, pipelineRun)
 			c.Assert(err, qt.IsNil)
 
-			response, _, err := repo.GetPaginatedPipelineRunsWithPermissions(ctx, testCase.viewer, testCase.viewNamespace, p.UID.String(), 0, 10, filtering.Filter{}, ordering.OrderBy{}, false, false)
+			response, _, err := repo.GetPaginatedPipelineRunsWithPermissions(ctx, testCase.viewNamespace, p.UID.String(), 0, 10, filtering.Filter{}, ordering.OrderBy{}, false)
 			c.Assert(err, qt.IsNil)
 			if testCase.canView {
 				c.Check(len(response), qt.Equals, 1)

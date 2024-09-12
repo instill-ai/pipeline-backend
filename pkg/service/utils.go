@@ -170,10 +170,7 @@ func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipeline
 	return result, nil
 }
 
-func CanViewAttachments(runner, namespace, requesterUID string, isOwner, isOrgOwnerOrAdmin bool) bool {
-	if namespace != requesterUID { // whether view namespace is credit owner
-		return runner == requesterUID // runner is the same as view namespace
-	} else {
-		return isOwner || isOrgOwnerOrAdmin // view user is the resource owner or organization owner or admin
-	}
+// CanViewPrivateData - only with credit owner ns could users see their input/output data
+func CanViewPrivateData(namespace, requesterUID string) bool {
+	return namespace == requesterUID
 }

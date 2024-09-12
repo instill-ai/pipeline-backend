@@ -31,7 +31,6 @@ import (
 	rpcstatus "google.golang.org/genproto/googleapis/rpc/status"
 
 	"github.com/instill-ai/pipeline-backend/config"
-	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -1732,7 +1731,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 		return nil, err
 	}
 
-	requesterUID, userUID := utils.GetRequesterUIDAndUserUID(ctx)
+	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 
@@ -1741,21 +1740,17 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 		return nil, err
 	}
 
-	isOrgOwnerOrAdmin, err := s.aclClient.CheckPermission(ctx, string(acl.Organization), ns.NsUID, string(acl.Admin))
-	if err != nil {
-		return nil, err
-	}
+	isOwner := dbPipeline.OwnerUID().String() == requesterUID
 
-	isOwner := slices.Contains([]string{userUID, requesterUID}, dbPipeline.OwnerUID().String())
-
-	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, userUID, requesterUID, dbPipeline.UID.String(), page, pageSize, filter, orderBy, isOwner, isOrgOwnerOrAdmin)
+	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, requesterUID, dbPipeline.UID.String(),
+		page, pageSize, filter, orderBy, isOwner)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pipeline runs: %w", err)
 	}
 
 	var referenceIDs []string
 	for _, pipelineRun := range pipelineRuns {
-		if CanViewAttachments(pipelineRun.TriggeredBy, pipelineRun.Namespace, requesterUID, isOwner, isOrgOwnerOrAdmin) { // only the runner could see their input/output data
+		if CanViewPrivateData(pipelineRun.Namespace, requesterUID) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -1804,7 +1799,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 		}
 		pbRun.RunnerId = runnerMap[run.TriggeredBy]
 
-		if CanViewAttachments(run.TriggeredBy, run.Namespace, requesterUID, isOwner, isOrgOwnerOrAdmin) { // only the runner could see their input/output data
+		if CanViewPrivateData(run.Namespace, requesterUID) {
 			if len(run.Inputs) == 1 {
 				md, ok := metadataMap[run.Inputs[0].Name]
 				if !ok {
@@ -1877,7 +1872,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListComponentRunsRequest, filter filtering.Filter) (*pipelinepb.ListComponentRunsResponse, error) {
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
-	requesterUID, userUID := utils.GetRequesterUIDAndUserUID(ctx)
+	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
 
 	log, _ := logger.GetZapLogger(ctx)
 
@@ -1895,15 +1890,10 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 		return nil, fmt.Errorf("failed to get pipeline by UID: %s. error: %s", dbPipelineRun.PipelineUID.String(), err.Error())
 	}
 
-	isOrgOwnerOrAdmin, err := s.aclClient.CheckPermission(ctx, string(acl.Organization), dbPipeline.OwnerUID(), string(acl.Admin))
-	if err != nil {
-		return nil, err
-	}
+	isOwner := dbPipeline.OwnerUID().String() == requesterUID
 
-	isOwner := slices.Contains([]string{userUID, requesterUID}, dbPipeline.OwnerUID().String())
-
-	if !isOwner && !isOrgOwnerOrAdmin && requesterUID != dbPipelineRun.Namespace {
-		return nil, fmt.Errorf("requester is not pipeline owner/credit owner/organization admin or owner. they are not allowed to view these component runs")
+	if !isOwner && requesterUID != dbPipelineRun.Namespace {
+		return nil, fmt.Errorf("requester is not pipeline owner/credit owner. they are not allowed to view these component runs")
 	}
 
 	componentRuns, totalCount, err := s.repository.GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx, req.GetPipelineRunId(), page, pageSize, filter, orderBy)
@@ -1913,7 +1903,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 
 	var referenceIDs []string
 	for _, pipelineRun := range componentRuns {
-		if CanViewAttachments(dbPipelineRun.TriggeredBy, dbPipelineRun.Namespace, requesterUID, isOwner, isOrgOwnerOrAdmin) {
+		if CanViewPrivateData(dbPipelineRun.Namespace, requesterUID) {
 			for _, input := range pipelineRun.Inputs {
 				referenceIDs = append(referenceIDs, input.Name)
 			}
@@ -1943,7 +1933,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 			return nil, fmt.Errorf("failed to convert component run: %w", err)
 		}
 
-		if CanViewAttachments(dbPipelineRun.TriggeredBy, dbPipelineRun.Namespace, requesterUID, isOwner, isOrgOwnerOrAdmin) {
+		if CanViewPrivateData(dbPipelineRun.Namespace, requesterUID) {
 			if len(run.Inputs) == 1 {
 				md, ok := metadataMap[run.Inputs[0].Name]
 				if !ok {

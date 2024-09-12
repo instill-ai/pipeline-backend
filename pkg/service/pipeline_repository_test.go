@@ -72,15 +72,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 		canView       bool
 	}{
 		{
-			description:   "owner should be able to view all logs",
-			runner:        ownerUID,
-			runNamespace:  namespace1,
-			viewer:        ownerUID,
-			viewNamespace: namespace1,
-			canView:       true,
-		},
-		{
-			description:   "owner should be able to view all logs",
+			description:   "can view logs when view ns is resource owner ns or credit owner ns",
 			runner:        ownerUID,
 			runNamespace:  ownerUID,
 			viewer:        ownerUID,
@@ -88,23 +80,15 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       true,
 		},
 		{
-			description:   "owner should be able to view all logs",
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
 			runner:        ownerUID,
-			runNamespace:  namespace1,
+			runNamespace:  ownerUID,
 			viewer:        ownerUID,
-			viewNamespace: ownerUID,
-			canView:       true,
+			viewNamespace: namespace1,
+			canView:       false,
 		},
 		{
-			description:   "owner should be able to view all logs",
-			runner:        user2,
-			runNamespace:  user2,
-			viewer:        ownerUID,
-			viewNamespace: ownerUID,
-			canView:       true,
-		},
-		{
-			description:   "non-owner should not be able to view others' logs",
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
 			runner:        ownerUID,
 			runNamespace:  ownerUID,
 			viewer:        user2,
@@ -112,7 +96,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       false,
 		},
 		{
-			description:   "non-owner should not be able to view others' logs",
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
 			runner:        ownerUID,
 			runNamespace:  ownerUID,
 			viewer:        user2,
@@ -120,35 +104,51 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			canView:       false,
 		},
 		{
-			description:   "runner should be able to view their own logs",
-			runner:        user2,
-			runNamespace:  user2,
-			viewer:        user2,
-			viewNamespace: user2,
+			description:   "can view logs when view ns is resource owner ns",
+			runner:        ownerUID,
+			runNamespace:  namespace1,
+			viewer:        ownerUID,
+			viewNamespace: ownerUID,
 			canView:       true,
 		},
 		{
-			description:   "credit owner should be able to view their logs in same namespace",
-			runner:        user2,
+			description:   "can view logs when view ns is credit owner",
+			runner:        ownerUID,
+			runNamespace:  namespace1,
+			viewer:        ownerUID,
+			viewNamespace: namespace1,
+			canView:       true,
+		},
+		{
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			runner:        ownerUID,
 			runNamespace:  namespace1,
 			viewer:        user2,
-			viewNamespace: namespace1,
-			canView:       true,
-		},
-		{
-			description:   "non credit owner should not be able to view others' logs",
-			runner:        user2,
-			runNamespace:  user2,
-			viewer:        user2,
-			viewNamespace: namespace1,
+			viewNamespace: user2,
 			canView:       false,
 		},
 		{
-			description:   "non credit owner should not be able to view others' logs",
-			runner:        user2,
+			description:   "can view logs when view ns is credit owner",
+			runner:        ownerUID,
 			runNamespace:  namespace1,
 			viewer:        user2,
-			viewNamespace: user2,
+			viewNamespace: namespace1,
+			canView:       true,
+		},
+		{
+			description:   "can view logs when view ns is resource owner ns",
+			runner:        user2,
+			runNamespace:  user2,
+			viewer:        ownerUID,
+			viewNamespace: ownerUID,
+			canView:       true,
+		},
+		{
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			runner:        user2,
+			runNamespace:  user2,
+			viewer:        ownerUID,
+			viewNamespace: namespace1,
 			canView:       false,
 		},
 	}
@@ -158,7 +158,6 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	var temporalClient client.Client
 
 	aclClient := mock.NewACLClientInterfaceMock(mc)
-	aclClient.CheckPermissionMock.Return(false, nil)
 
 	mockConverter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
@@ -211,10 +210,11 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			c.Check(got.NumberOfRuns, qt.Equals, 0)
 			c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
+			c.Check(got.OwnerUID().String(), qt.Equals, ownerUID)
 
 			pipelineRun := &datamodel.PipelineRun{
 				PipelineTriggerUID: uuid.Must(uuid.NewV4()),
-				PipelineUID:        p.UID,
+				PipelineUID:        got.UID,
 				Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 				Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
 				TriggeredBy:        testCase.runner,
@@ -253,15 +253,16 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	c := qt.New(t)
 	mc := minimock.NewController(t)
 
-	mockUIDs := make([]uuid.UUID, 5)
+	mockUIDs := make([]uuid.UUID, 6)
 	for i := range len(mockUIDs) {
 		mockUIDs[i] = uuid.Must(uuid.NewV4())
 	}
 	orgUID := mockUIDs[0].String()
-	user2 := mockUIDs[1].String()
+	user1 := mockUIDs[1].String()
 	namespace1 := mockUIDs[2].String()
 	pipelineUID := mockUIDs[3]
-	user3 := mockUIDs[4].String()
+	user2 := mockUIDs[4].String()
+	user3 := mockUIDs[5].String()
 
 	t0 := time.Now()
 	ownerPermalink := "organizations/" + orgUID
@@ -276,36 +277,100 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 		canView       bool
 	}{
 		{
-			description:   "org admin or owner can view others' logs in same namespace (not resource owner)",
-			runner:        user2,
-			runNamespace:  namespace1,
-			viewer:        user3,
-			viewNamespace: namespace1,
+			description:   "can view logs when view ns is credit owner",
+			runner:        user1,
+			runNamespace:  user1,
+			viewer:        user1,
+			viewNamespace: user1,
 			canView:       true,
 		},
 		{
-			description:   "org admin or owner cannot view others' logs (not resource owner)",
+			description:   "can view logs when view ns is resource owner ns",
+			runner:        user1,
+			runNamespace:  user1,
+			viewer:        user1,
+			viewNamespace: orgUID,
+			canView:       true,
+		},
+		{
+			description:   "can view logs when view ns is resource owner ns or credit owner ns",
+			runner:        user1,
+			runNamespace:  orgUID,
+			viewer:        user1,
+			viewNamespace: orgUID,
+			canView:       true,
+		},
+		{
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			runner:        user1,
+			runNamespace:  orgUID,
+			viewer:        user1,
+			viewNamespace: user1,
+			canView:       false,
+		},
+		{
+			description:   "can view logs when view ns is resource owner ns or credit owner ns",
+			runner:        user1,
+			runNamespace:  orgUID,
+			viewer:        user2,
+			viewNamespace: orgUID,
+			canView:       true,
+		},
+		{
+			description:   "can view logs when view ns is credit owner",
 			runner:        user2,
 			runNamespace:  user2,
+			viewer:        user2,
+			viewNamespace: user2,
+			canView:       true,
+		},
+		{
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			runner:        user2,
+			runNamespace:  user2,
+			viewer:        user1,
+			viewNamespace: user1,
+			canView:       false,
+		},
+		{
+			description:   "can view logs when view ns is resource owner ns",
+			runner:        user2,
+			runNamespace:  user2,
+			viewer:        user1,
+			viewNamespace: orgUID,
+			canView:       true,
+		},
+		{
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			runner:        user2,
+			runNamespace:  orgUID,
+			viewer:        user1,
+			viewNamespace: user1,
+			canView:       false,
+		},
+		{
+			description:   "can view logs when view ns is resource owner ns or credit owner ns",
+			runner:        user2,
+			runNamespace:  orgUID,
+			viewer:        user1,
+			viewNamespace: orgUID,
+			canView:       true,
+		},
+		{
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			runner:        user1,
+			runNamespace:  user1,
 			viewer:        user3,
 			viewNamespace: namespace1,
 			canView:       false,
 		},
 		{
-			description:   "org admin or owner should be able to view others' logs as resource owner",
-			runner:        user2,
-			runNamespace:  user2,
+			description:   "cannot view logs when view ns is neither resource owner ns nor credit owner",
+			runner:        user1,
+			runNamespace:  orgUID,
 			viewer:        user3,
-			viewNamespace: orgUID,
-			canView:       true,
-		},
-		{
-			description:   "org admin or owner should be able to view others' logs as resource owner",
-			runner:        user2,
-			runNamespace:  namespace1,
-			viewer:        user3,
-			viewNamespace: orgUID,
-			canView:       true,
+			viewNamespace: namespace1,
+			canView:       false,
 		},
 	}
 
@@ -314,7 +379,6 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	var temporalClient client.Client
 
 	aclClient := mock.NewACLClientInterfaceMock(mc)
-	aclClient.CheckPermissionMock.Return(true, nil)
 
 	mockConverter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
@@ -371,10 +435,11 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			c.Check(got.NumberOfRuns, qt.Equals, 0)
 			c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
+			c.Check(got.OwnerUID().String(), qt.Equals, orgUID)
 
 			pipelineRun := &datamodel.PipelineRun{
 				PipelineTriggerUID: uuid.Must(uuid.NewV4()),
-				PipelineUID:        p.UID,
+				PipelineUID:        got.UID,
 				Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 				Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
 				TriggeredBy:        testCase.runner,
