@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.38.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.38.1-beta...v0.38.2-beta) (2024-09-13)
+
+
+### Features
+
+* allow users in organization to have owner permission in run log… ([#632](https://github.com/instill-ai/pipeline-backend/issues/632)) ([69158b9](https://github.com/instill-ai/pipeline-backend/commit/69158b9f74fb766f665553d2a1ee8ead7dd75ed0))
+
+
+### Miscellaneous Chores
+
+* release v0.38.2-beta ([14fbab4](https://github.com/instill-ai/pipeline-backend/commit/14fbab431d28372959e62edca487b92acb11627f))
+* release v0.38.2-beta ([cab5fbc](https://github.com/instill-ai/pipeline-backend/commit/cab5fbca7d5201e5fbf013d8174e12aa5d328dd6))
+
 ## [0.38.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.38.0-beta...v0.38.1-beta) (2024-09-12)
 
 
