@@ -176,12 +176,13 @@ func NewConnectorDataPoint(data ConnectorUsageMetricData, pipelineMetadata *stru
 	)
 }
 
-func GetUserUID(ctx context.Context) string {
+func GetRequesterUIDAndUserUID(ctx context.Context) (string, string) {
 	requesterUID := resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey)
-	if len(requesterUID) == 0 {
-		return resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	userUID := resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey)
+	if len(strings.TrimSpace(requesterUID)) == 0 {
+		requesterUID = userUID
 	}
-	return requesterUID
+	return requesterUID, userUID
 }
 
 func ConvertInstillFormat(f string) string {
