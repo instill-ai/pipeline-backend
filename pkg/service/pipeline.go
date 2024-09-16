@@ -786,6 +786,14 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				continue
 			}
 			switch instillFormatMap[k] {
+			case "boolean":
+				variable.Fields[k] = data.NewBoolean(v.GetBoolValue())
+			case "array:boolean":
+				array := data.NewArray(make([]data.Value, len(v.GetListValue().Values)))
+				for idx, val := range v.GetListValue().Values {
+					array.Values[idx] = data.NewBoolean(val.GetBoolValue())
+				}
+				variable.Fields[k] = array
 			case "string":
 				variable.Fields[k] = data.NewString(v.GetStringValue())
 			case "array:string":
