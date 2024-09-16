@@ -58,6 +58,7 @@ type MemoryStore interface {
 	GetWorkflowMemory(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error)
 	PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error)
 
+	SyncWorkflowMemoriesToRedis(ctx context.Context) (err error)
 	WriteWorkflowMemoryToRedis(ctx context.Context, workflowID string) (err error)
 	LoadWorkflowMemoryFromRedis(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error)
 
@@ -78,6 +79,7 @@ type WorkflowMemory interface {
 	SetComponentErrorMessage(ctx context.Context, batchIdx int, componentID string, msg string) (err error)
 
 	EnableStreaming()
+	IsStreaming() bool
 
 	GetBatchSize() int
 	SetRecipe(*datamodel.Recipe)
@@ -101,7 +103,7 @@ type workflowMemory struct {
 	Data        []data.Value
 	Recipe      *datamodel.Recipe
 	redisClient *redis.Client
-	streaming   bool
+	Streaming   bool
 }
 
 type ComponentEventType string
@@ -223,11 +225,10 @@ func (ms *memoryStore) NewWorkflowMemory(ctx context.Context, workflowID string,
 
 func (ms *memoryStore) GetWorkflowMemory(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error) {
 	wfm, ok := ms.workflows.Load(workflowID)
-	if !ok {
-		return nil, fmt.Errorf("workflow memory not found")
+	if ok {
+		return wfm.(WorkflowMemory), nil
 	}
-
-	return wfm.(WorkflowMemory), nil
+	return ms.LoadWorkflowMemoryFromRedis(ctx, workflowID)
 }
 
 func (ms *memoryStore) PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error) {
@@ -246,6 +247,31 @@ func (ms *memoryStore) SendWorkflowStatusEvent(ctx context.Context, workflowID s
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (ms *memoryStore) SyncWorkflowMemoriesToRedis(ctx context.Context) (err error) {
+
+	ms.workflows.Range(func(key, value any) bool {
+		workflowID := key.(string)
+		wfm, ok := ms.workflows.Load(workflowID)
+		if !ok {
+			return true
+		}
+
+		buf := bytes.Buffer{}
+		enc := gob.NewEncoder(&buf)
+		err = enc.Encode(wfm)
+		if err != nil {
+			return true
+		}
+		cmd := ms.redisClient.Set(ctx, fmt.Sprintf("pipeline_trigger:%s", workflowID), buf.Bytes(), 1*time.Hour)
+		if cmd.Err() != nil {
+			return true
+		}
+		return true
+	})
 
 	return nil
 }
@@ -296,8 +322,13 @@ func (ms *memoryStore) LoadWorkflowMemoryFromRedis(ctx context.Context, workflow
 
 }
 func (wfm *workflowMemory) EnableStreaming() {
-	wfm.streaming = true
+	wfm.Streaming = true
 }
+
+func (wfm *workflowMemory) IsStreaming() bool {
+	return wfm.Streaming
+}
+
 func (wfm *workflowMemory) InitComponent(ctx context.Context, batchIdx int, componentID string) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
@@ -401,7 +432,7 @@ func (wfm *workflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t 
 
 	wfm.Data[batchIdx].(*data.Map).Fields[string(t)] = value
 
-	if wfm.streaming {
+	if wfm.Streaming {
 		// TODO: simplify struct conversion
 		s, err := value.ToStructValue()
 		if err != nil {
@@ -431,18 +462,19 @@ func (wfm *workflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t 
 				},
 				Output: data,
 			}
-		}
-		buf := bytes.Buffer{}
-		enc := gob.NewEncoder(&buf)
-		err = enc.Encode(event)
-		if err != nil {
-			return err
+			buf := bytes.Buffer{}
+			enc := gob.NewEncoder(&buf)
+			err = enc.Encode(event)
+			if err != nil {
+				return err
+			}
+
+			err = wfm.redisClient.Publish(ctx, wfm.ID, buf.Bytes()).Err()
+			if err != nil {
+				return err
+			}
 		}
 
-		err = wfm.redisClient.Publish(ctx, wfm.ID, buf.Bytes()).Err()
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -510,7 +542,7 @@ func (wfm *workflowMemory) getComponentEventData(_ context.Context, batchIdx int
 
 func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int, componentID string, t ComponentEventType) (err error) {
 
-	if wfm.streaming {
+	if wfm.Streaming {
 		var event *Event
 		switch t {
 		case ComponentInputUpdated:

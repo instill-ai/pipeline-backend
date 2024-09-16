@@ -43,7 +43,6 @@ type TriggerPipelineWorkflowParam struct {
 	SystemVariables recipe.SystemVariables // TODO: we should store vars directly in trigger memory.
 	Mode            mgmtpb.Mode
 	TriggerFromAPI  bool
-	IsStreaming     bool
 }
 
 type SchedulePipelineWorkflowParam struct {
@@ -100,12 +99,10 @@ type PostIteratorActivityParam struct {
 type PreTriggerActivityParam struct {
 	WorkflowID      string
 	SystemVariables recipe.SystemVariables
-	IsStreaming     bool
 }
 
 type LoadDAGDataActivityParam struct {
-	WorkflowID  string
-	IsStreaming bool
+	WorkflowID string
 }
 
 type LoadDAGDataActivityResult struct {
@@ -116,7 +113,6 @@ type LoadDAGDataActivityResult struct {
 type PostTriggerActivityParam struct {
 	WorkflowID      string
 	SystemVariables recipe.SystemVariables
-	IsStreaming     bool
 }
 
 type UpsertPipelineRunActivityParam struct {
@@ -162,13 +158,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		},
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
-	sessionOptions := &workflow.SessionOptions{
-		CreationTimeout:  time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		ExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
-		HeartbeatTimeout: 2 * time.Minute,
-	}
-	ctx, _ = workflow.CreateSession(ctx, sessionOptions)
-	defer workflow.CompleteSession(ctx)
+
+	ao.TaskQueue = w.queue
+	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 
@@ -206,13 +198,10 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		dataPoint.RequesterType = mgmtpb.OwnerType_OWNER_TYPE_ORGANIZATION
 	}
 
-	ctx = workflow.WithActivityOptions(ctx, ao)
-
 	if param.TriggerFromAPI {
 		if err := workflow.ExecuteActivity(ctx, w.PreTriggerActivity, &PreTriggerActivityParam{
 			WorkflowID:      workflowID,
 			SystemVariables: param.SystemVariables,
-			IsStreaming:     param.IsStreaming,
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
@@ -228,8 +217,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	dagData := &LoadDAGDataActivityResult{}
 	_ = workflow.ExecuteActivity(ctx, w.LoadDAGDataActivity, &LoadDAGDataActivityParam{
-		WorkflowID:  workflowID,
-		IsStreaming: param.IsStreaming,
+		WorkflowID: workflowID,
 	}).Get(ctx, dagData)
 
 	dag, err := recipe.GenerateDAG(dagData.Recipe.Component)
@@ -275,7 +263,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					Task:            comp.Task,
 					Condition:       comp.Condition,
 					SystemVariables: param.SystemVariables,
-					Streaming:       param.IsStreaming,
 				}
 
 				componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(ctx, w.UploadComponentInputsActivity, args))
@@ -303,7 +290,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 				itFutures := []workflow.Future{}
 				for iter := range dagData.BatchSize {
 					childWorkflowOptions := workflow.ChildWorkflowOptions{
-						TaskQueue:                TaskQueue,
+						TaskQueue:                w.queue,
 						WorkflowID:               preIteratorResult.ChildWorkflowIDs[iter],
 						WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 						RetryPolicy: &temporal.RetryPolicy{
@@ -385,7 +372,6 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		if err := workflow.ExecuteActivity(ctx, w.PostTriggerActivity, &PostTriggerActivityParam{
 			WorkflowID:      workflowID,
 			SystemVariables: param.SystemVariables,
-			IsStreaming:     param.IsStreaming,
 		}).Get(ctx, nil); err != nil {
 			return err
 		}
@@ -736,9 +722,6 @@ func (w *worker) LoadDAGDataActivity(ctx context.Context, param *LoadDAGDataActi
 	if err != nil {
 		return nil, err
 	}
-	if param.IsStreaming {
-		wfm.EnableStreaming()
-	}
 
 	logger.Info("LoadDAGDataActivity completed")
 	return &LoadDAGDataActivityResult{
@@ -883,7 +866,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		}
 	}
 
-	if param.IsStreaming {
+	if wfm.IsStreaming() {
 		for batchIdx := range wfm.GetBatchSize() {
 			err = w.memoryStore.SendWorkflowStatusEvent(
 				ctx,
@@ -948,7 +931,7 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 			return err
 		}
 
-		if param.IsStreaming {
+		if wfm.IsStreaming() {
 			err = w.memoryStore.SendWorkflowStatusEvent(
 				ctx,
 				param.WorkflowID,
@@ -974,7 +957,7 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 	}
 
 	_ = w.memoryStore.PurgeWorkflowMemory(ctx, param.WorkflowID)
-	if param.IsStreaming {
+	if wfm.IsStreaming() {
 		_ = w.memoryStore.SendWorkflowStatusEvent(ctx, param.WorkflowID, memory.Event{Event: string(memory.PipelineClosed)})
 	}
 
@@ -1153,7 +1136,7 @@ func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *Schedul
 
 	wfUID, _ := uuid.NewV4()
 	childWorkflowOptions := workflow.ChildWorkflowOptions{
-		TaskQueue:                TaskQueue,
+		TaskQueue:                w.queue,
 		WorkflowID:               wfUID.String(),
 		WorkflowExecutionTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
