@@ -54,6 +54,9 @@ import (
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 )
 
+const gracefulShutdownWaitPeriod = 15 * time.Second
+const gracefulShutdownTimeout = 60 * time.Minute
+
 var propagator propagation.TextMapPropagator
 
 func grpcHandlerFunc(grpcServer *grpc.Server, gwHandler http.Handler) http.Handler {
@@ -268,9 +271,10 @@ func main() {
 		handler.NewPrivateHandler(ctx, service),
 	)
 
+	ph := handler.NewPublicHandler(ctx, service)
 	pb.RegisterPipelinePublicServiceServer(
 		publicGrpcS,
-		handler.NewPublicHandler(ctx, service),
+		ph,
 	)
 
 	privateServeMux := runtime.NewServeMux(
@@ -405,15 +409,35 @@ func main() {
 	// kill -2 is syscall.SIGINT
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
 	signal.Notify(quitSig, syscall.SIGINT, syscall.SIGTERM)
-
+	ph.(*handler.PublicHandler).SetReadiness(true)
 	select {
 	case err := <-errSig:
 		logger.Error(fmt.Sprintf("Fatal error: %v\n", err))
 	case <-quitSig:
+		// When the server receives a SIGTERM, Kubernetes services may still
+		// consider it available. To handle this properly, we should:
+		// 1. Set the readiness probe to false to signal the server is no longer
+		// ready to receive traffic.
+		// 2. Sleep for a brief period to allow Kubernetes to stop forwarding
+		// requests.
+		// 3. Continue processing any in-flight requests.
+		// 4. After Kubernetes stops sending new traffic, initiate the server's
+		// shutdown process.
+
+		logger.Info("Shutting down server...")
+		ph.(*handler.PublicHandler).SetReadiness(false)
+		logger.Info("Stop receiving request...")
+		time.Sleep(gracefulShutdownWaitPeriod)
 		if config.Config.Server.Usage.Enabled && usg != nil {
 			usg.TriggerSingleReporter(ctx)
 		}
-		logger.Info("Shutting down server...")
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), gracefulShutdownTimeout)
+		defer shutdownCancel()
+
+		logger.Info("Shutting down HTTP server...")
+		_ = privateHTTPServer.Shutdown(shutdownCtx)
+		_ = publicHTTPServer.Shutdown(shutdownCtx)
+		logger.Info("Shutting down gRPC server...")
 		privateGrpcS.GracefulStop()
 		publicGrpcS.GracefulStop()
 	}

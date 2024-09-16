@@ -53,6 +53,7 @@ type worker struct {
 	minioClient         minio.MinioI
 	log                 *zap.Logger
 	memoryStore         memory.MemoryStore
+	queue               string
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
@@ -63,9 +64,10 @@ func NewWorker(
 	cs componentstore.ComponentSecrets,
 	uh componentbase.UsageHandlerCreator,
 	minioClient minio.MinioI,
+	m memory.MemoryStore,
+	q string,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
-	m := memory.NewMemoryStore(rc)
 	return &worker{
 		repository:          r,
 		redisClient:         rc,
@@ -74,5 +76,6 @@ func NewWorker(
 		component:           componentstore.Init(logger, cs, uh),
 		minioClient:         minioClient,
 		log:                 logger,
+		queue:               q,
 	}
 }
