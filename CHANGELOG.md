@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.38.3-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.38.2-beta...v0.38.3-beta) (2024-09-16)
+
+
+### Bug Fixes
+
+* fix condition field can not reference variable ([#654](https://github.com/instill-ai/pipeline-backend/issues/654)) ([2342857](https://github.com/instill-ai/pipeline-backend/commit/23428573b1a2bb1d9ec81b24d14882c68b9fa8e0))
+
 ## [0.38.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.38.1-beta...v0.38.2-beta) (2024-09-13)
 
 
