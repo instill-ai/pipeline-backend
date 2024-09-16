@@ -492,49 +492,51 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 	if err != nil {
 		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 	}
-	setups, err := NewSetupReader(wfm, param.ID, conditionMap).Read(ctx)
-	if err != nil {
-		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
-	}
-	sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
-	if err != nil {
-		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
-	}
-	executionParams := componentstore.ExecutionParams{
-		ComponentID:           param.ID,
-		ComponentDefinitionID: param.Type,
-		SystemVariables:       sysVars,
-
-		// Note: currently, we assume that setup in the batch are all the same
-		Setup: setups[0],
-		Task:  param.Task,
-	}
-
-	execution, err := w.component.CreateExecution(executionParams)
-	if err != nil {
-		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
-	}
-
-	jobs := make([]*componentbase.Job, len(conditionMap))
-	for idx, originalIdx := range conditionMap {
-		jobs[idx] = &componentbase.Job{
-			Input:  NewInputReader(wfm, param.ID, originalIdx),
-			Output: NewOutputWriter(wfm, param.ID, originalIdx, param.Streaming),
-			Error:  NewErrorHandler(wfm, param.ID, originalIdx),
+	if len(conditionMap) > 0 {
+		setups, err := NewSetupReader(wfm, param.ID, conditionMap).Read(ctx)
+		if err != nil {
+			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
 		}
-	}
-	err = execution.Execute(
-		ctx,
-		jobs,
-	)
-	if err != nil {
-		return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
-	}
+		sysVars, err := recipe.GenerateSystemVariables(ctx, param.SystemVariables)
+		if err != nil {
+			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+		}
+		executionParams := componentstore.ExecutionParams{
+			ComponentID:           param.ID,
+			ComponentDefinitionID: param.Type,
+			SystemVariables:       sysVars,
 
-	for _, idx := range conditionMap {
-		if e, err := wfm.GetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusErrored); err == nil && !e {
-			if err = wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
-				return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+			// Note: currently, we assume that setup in the batch are all the same
+			Setup: setups[0],
+			Task:  param.Task,
+		}
+
+		execution, err := w.component.CreateExecution(executionParams)
+		if err != nil {
+			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+		}
+
+		jobs := make([]*componentbase.Job, len(conditionMap))
+		for idx, originalIdx := range conditionMap {
+			jobs[idx] = &componentbase.Job{
+				Input:  NewInputReader(wfm, param.ID, originalIdx),
+				Output: NewOutputWriter(wfm, param.ID, originalIdx, param.Streaming),
+				Error:  NewErrorHandler(wfm, param.ID, originalIdx),
+			}
+		}
+		err = execution.Execute(
+			ctx,
+			jobs,
+		)
+		if err != nil {
+			return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+		}
+
+		for _, idx := range conditionMap {
+			if e, err := wfm.GetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusErrored); err == nil && !e {
+				if err = wfm.SetComponentStatus(ctx, idx, param.ID, memory.ComponentStatusCompleted, true); err != nil {
+					return componentActivityError(ctx, wfm, err, componentActivityErrorType, param.ID)
+				}
 			}
 		}
 	}
