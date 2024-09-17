@@ -106,8 +106,10 @@ type LoadDAGDataActivityParam struct {
 }
 
 type LoadDAGDataActivityResult struct {
-	Recipe    *datamodel.Recipe
-	BatchSize int
+	OrderedComp     []datamodel.ComponentMap
+	UpstreamCompIDs map[string][]string
+	Recipe          *datamodel.Recipe
+	BatchSize       int
 }
 
 type PostTriggerActivityParam struct {
@@ -156,10 +158,9 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		RetryPolicy: &temporal.RetryPolicy{
 			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
 		},
+		TaskQueue: w.queue,
 	}
-	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	ao.TaskQueue = w.queue
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
@@ -220,26 +221,16 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		WorkflowID: workflowID,
 	}).Get(ctx, dagData)
 
-	dag, err := recipe.GenerateDAG(dagData.Recipe.Component)
-	if err != nil {
-		return err
-	}
-
-	orderedComp, err := dag.TopologicalSort()
-	if err != nil {
-		return err
-	}
-
 	errs := []error{}
 	componentRunFutures := []workflow.Future{}
 	componentRunFailed := false
 	var componentRunErrors []string
 	// The components in the same group can be executed in parallel
-	for group := range orderedComp {
+	for group := range dagData.OrderedComp {
 		futures := []workflow.Future{}
 		futureArgs := []*ComponentActivityParam{}
-		for compID, comp := range orderedComp[group] {
-			upstreamIDs := dag.GetUpstreamCompIDs(compID)
+		for compID, comp := range dagData.OrderedComp[group] {
+			upstreamIDs := dagData.UpstreamCompIDs[compID]
 
 			switch comp.Type {
 			default:
@@ -722,11 +713,26 @@ func (w *worker) LoadDAGDataActivity(ctx context.Context, param *LoadDAGDataActi
 	if err != nil {
 		return nil, err
 	}
+	dag, err := recipe.GenerateDAG(wfm.GetRecipe().Component)
+	if err != nil {
+		return nil, err
+	}
+	upstreamCompIDs := map[string][]string{}
+	for compID := range wfm.GetRecipe().Component {
+		upstreamCompIDs[compID] = dag.GetUpstreamCompIDs(compID)
+	}
+
+	orderedComp, err := dag.TopologicalSort()
+	if err != nil {
+		return nil, err
+	}
 
 	logger.Info("LoadDAGDataActivity completed")
 	return &LoadDAGDataActivityResult{
-		Recipe:    wfm.GetRecipe(),
-		BatchSize: wfm.GetBatchSize(),
+		UpstreamCompIDs: upstreamCompIDs,
+		OrderedComp:     orderedComp,
+		Recipe:          wfm.GetRecipe(),
+		BatchSize:       wfm.GetBatchSize(),
 	}, nil
 }
 

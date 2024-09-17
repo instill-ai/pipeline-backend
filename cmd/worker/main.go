@@ -172,13 +172,15 @@ func main() {
 	)
 
 	w := worker.New(temporalClient, pipelineworker.TaskQueue, worker.Options{
-		WorkflowPanicPolicy: worker.BlockWorkflow,
-		WorkerStopTimeout:   gracefulShutdownTimeout,
+		WorkflowPanicPolicy:                worker.BlockWorkflow,
+		WorkerStopTimeout:                  gracefulShutdownTimeout,
+		MaxConcurrentActivityExecutionSize: 100,
 	})
 
 	lw := worker.New(temporalClient, queue, worker.Options{
-		WorkflowPanicPolicy: worker.BlockWorkflow,
-		WorkerStopTimeout:   gracefulShutdownTimeout,
+		WorkflowPanicPolicy:                worker.BlockWorkflow,
+		WorkerStopTimeout:                  gracefulShutdownTimeout,
+		MaxConcurrentActivityExecutionSize: 100,
 	})
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
