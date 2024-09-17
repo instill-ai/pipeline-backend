@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"go.opentelemetry.io/otel"
@@ -23,8 +22,10 @@ var tracer = otel.Tracer("pipeline-backend.public-handler.tracer")
 type PublicHandler struct {
 	pipelinepb.UnimplementedPipelinePublicServiceServer
 	service service.Service
+}
 
-	ready bool
+type Streamer interface {
+	Context() context.Context
 }
 
 type TriggerPipelineRequestInterface interface {
@@ -54,11 +55,6 @@ func (h *PublicHandler) SetService(s service.Service) {
 	h.service = s
 }
 
-// SetService sets the service
-func (h *PublicHandler) SetReadiness(r bool) {
-	h.ready = r
-}
-
 func (h *PublicHandler) Liveness(ctx context.Context, req *pipelinepb.LivenessRequest) (*pipelinepb.LivenessResponse, error) {
 	return &pipelinepb.LivenessResponse{
 		HealthCheckResponse: &healthcheckpb.HealthCheckResponse{
@@ -68,15 +64,11 @@ func (h *PublicHandler) Liveness(ctx context.Context, req *pipelinepb.LivenessRe
 }
 
 func (h *PublicHandler) Readiness(ctx context.Context, req *pipelinepb.ReadinessRequest) (*pipelinepb.ReadinessResponse, error) {
-	if h.ready {
-		return &pipelinepb.ReadinessResponse{
-			HealthCheckResponse: &healthcheckpb.HealthCheckResponse{
-				Status: healthcheckpb.HealthCheckResponse_SERVING_STATUS_SERVING,
-			},
-		}, nil
-	} else {
-		return nil, fmt.Errorf("service not ready")
-	}
+	return &pipelinepb.ReadinessResponse{
+		HealthCheckResponse: &healthcheckpb.HealthCheckResponse{
+			Status: healthcheckpb.HealthCheckResponse_SERVING_STATUS_SERVING,
+		},
+	}, nil
 }
 
 // PrivateHandler handles private API

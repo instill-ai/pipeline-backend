@@ -930,10 +930,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		}
 
 	}
-	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
-	if isStreaming {
-		wfm.EnableStreaming()
-	}
 
 	err = s.memory.WriteWorkflowMemoryToRedis(ctx, pipelineTriggerID)
 	if err != nil {
@@ -1285,6 +1281,7 @@ func (s *service) triggerAsyncPipeline(
 	if requesterUID.IsNil() {
 		requesterUID = userUID
 	}
+	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
@@ -1305,6 +1302,7 @@ func (s *service) triggerAsyncPipeline(
 			},
 			Mode:           mgmtpb.Mode_MODE_ASYNC,
 			TriggerFromAPI: true,
+			IsStreaming:    isStreaming,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
