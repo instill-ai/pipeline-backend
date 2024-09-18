@@ -1,4 +1,4 @@
-FROM --platform=$TARGETPLATFORM golang:1.23.0-alpine3.19 AS build
+FROM --platform=$TARGETPLATFORM golang:1.22.5-alpine3.19 AS build
 
 RUN apk add --no-cache build-base leptonica-dev tesseract-ocr-dev musl-dev
 
