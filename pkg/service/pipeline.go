@@ -592,7 +592,7 @@ func (s *service) CloneNamespacePipelineRelease(ctx context.Context, ns resource
 	return pipeline, nil
 }
 
-func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) ([]*pipelinepb.PipelineValidationError, error) {
+func (s *service) ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) ([]*pipelinepb.ErrPipelineValidation, error) {
 
 	ownerPermalink := ns.Permalink()
 

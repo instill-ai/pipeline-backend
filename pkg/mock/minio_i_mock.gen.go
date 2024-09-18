@@ -3,6 +3,8 @@
 package mock
 
 import (
+	"github.com/instill-ai/pipeline-backend/pkg/minio"
+
 	"context"
 	"sync"
 	mm_atomic "sync/atomic"
