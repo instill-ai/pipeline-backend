@@ -154,7 +154,7 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	}
 	if dbPipeline.Recipe != nil {
 		if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("checking referenced secrets: %w", err)
 		}
 	}
 
@@ -359,7 +359,7 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 
 	if dbPipeline.Recipe != nil {
 		if err := s.checkSecret(ctx, dbPipeline.Recipe.Component); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("checking referenced secrets: %w", err)
 		}
 	}
 

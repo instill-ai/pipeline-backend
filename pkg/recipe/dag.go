@@ -16,6 +16,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
+	"github.com/instill-ai/x/errmsg"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	componentbase "github.com/instill-ai/component/base"
@@ -182,7 +183,10 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 				if allowUnresolved {
 					return data.NewNull(), nil
 				}
-				return nil, err
+				return nil, errmsg.AddMessage(
+					fmt.Errorf("resolving reference: %w", err),
+					"Couldn't resolve reference "+s+".",
+				)
 			}
 			return val, nil
 		}
