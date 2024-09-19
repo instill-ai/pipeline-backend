@@ -11,6 +11,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.einride.tech/aip/filtering"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -18,13 +19,13 @@ import (
 
 	fieldmaskutil "github.com/mennanov/fieldmask-utils"
 
-	componentbase "github.com/instill-ai/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/errmsg"
 
+	componentbase "github.com/instill-ai/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -43,7 +44,11 @@ func (s *service) GetIntegration(ctx context.Context, id string, view pb.View) (
 
 	integration, err := s.componentDefinitionToIntegration(cd, view)
 	if err != nil {
-		return nil, errIntegrationNotFound
+		if errors.Is(err, errIntegrationConversion) {
+			return nil, errIntegrationNotFound
+		}
+
+		return nil, fmt.Errorf("converting component definition: %w", err)
 	}
 
 	return integration, nil
@@ -117,10 +122,42 @@ func (s *service) componentDefinitionToIntegration(
 		return nil, errIntegrationConversion
 	}
 
-	var schemas []*pb.Integration_SetupSchema
+	integration := &pb.Integration{
+		Uid:         cd.GetUid(),
+		Id:          cd.GetId(),
+		Title:       cd.GetTitle(),
+		Description: cd.GetDescription(),
+		Vendor:      cd.GetVendor(),
+		Icon:        cd.GetIcon(),
+		View:        view,
+	}
+
 	if view == pb.View_VIEW_FULL {
-		// Integration Milestone 1 supports only key-value integrations.
-		schemas = []*pb.Integration_SetupSchema{
+		integration.SetupSchema = setup.GetStructValue()
+		schemaFields := integration.SetupSchema.GetFields()
+
+		if oAuthConfig, supportsOAuth := schemaFields["instillOAuthConfig"]; supportsOAuth {
+			// We extract the OAuth configuration to a dedicated proto field to
+			// have a structured contract with the clients.
+			j, err := oAuthConfig.GetStructValue().MarshalJSON()
+			if err != nil {
+				return nil, fmt.Errorf("marshalling OAuth config: %w", err)
+			}
+
+			integration.OAuthConfig = new(pb.Integration_OAuthConfig)
+			if err := protojson.Unmarshal(j, integration.OAuthConfig); err != nil {
+				return nil, fmt.Errorf("unmarshalling OAuth config: %w", err)
+			}
+
+			// We remove the information from the setup so it isn't duplicated
+			// in the response.
+			delete(schemaFields, "instillOAuthConfig")
+		}
+
+		// This is deprecated and only maintained for backwards compatibility.
+		// TODO jvallesm: remove when Integration Milestone 2 (OAuth) is rolled
+		// // out.
+		integration.Schemas = []*pb.Integration_SetupSchema{
 			{
 				Method: pb.Connection_METHOD_DICTIONARY,
 				Schema: setup.GetStructValue(),
@@ -128,16 +165,7 @@ func (s *service) componentDefinitionToIntegration(
 		}
 	}
 
-	return &pb.Integration{
-		Uid:         cd.GetUid(),
-		Id:          cd.GetId(),
-		Title:       cd.GetTitle(),
-		Description: cd.GetDescription(),
-		Vendor:      cd.GetVendor(),
-		Icon:        cd.GetIcon(),
-		Schemas:     schemas,
-		View:        view,
-	}, nil
+	return integration, nil
 }
 
 var outputOnlyConnectionFields = []string{
@@ -151,30 +179,19 @@ var outputOnlyConnectionFields = []string{
 // verifies the setup fulfills its integration's schema.
 // Note that the connection input will be modified.
 func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integration) error {
-	// Validate method is METHOD_DICTIONARY.
-	// TODO jvallesm: support OAuth in v0.39.0
-	if conn.GetMethod() != pb.Connection_METHOD_DICTIONARY {
+	if err := conn.Validate(); err != nil {
+		return err
+	}
+
+	switch conn.GetMethod() {
+	case pb.Connection_METHOD_DICTIONARY, pb.Connection_METHOD_OAUTH:
+	default:
 		err := fmt.Errorf("%w: unsupported method", errdomain.ErrInvalidArgument)
-		return errmsg.AddMessage(err, "Only METHOD_DICTIONARY is supported at the moment.")
-	}
-
-	var pbSchema *structpb.Struct
-	for _, s := range integration.GetSchemas() {
-		if s.GetMethod() == conn.GetMethod() {
-			pbSchema = s.GetSchema()
-		}
-	}
-
-	if pbSchema == nil {
-		return fmt.Errorf(
-			"%w: integration doesn't support method %s",
-			errdomain.ErrInvalidArgument,
-			conn.GetMethod().String(),
-		)
+		return errmsg.AddMessage(err, "Invalid method "+conn.GetMethod().String()+".")
 	}
 
 	// Validate setup fulfills integration schema.
-	schema, err := pbSchema.MarshalJSON()
+	schema, err := integration.GetSetupSchema().MarshalJSON()
 	if err != nil {
 		return fmt.Errorf("marshalling integration schema: %w", err)
 	}
@@ -201,14 +218,7 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 		return fmt.Errorf("%w: %w", errdomain.ErrInvalidArgument, err)
 	}
 
-	// Remove setup fields that aren't defined in the schema.
-	filteredSetup := map[string]any{}
-	properties := pbSchema.GetFields()["properties"].GetStructValue()
-	for k := range properties.GetFields() {
-		filteredSetup[k] = setup[k]
-	}
-
-	conn.Setup, err = structpb.NewStruct(filteredSetup)
+	conn.Setup, err = structpb.NewStruct(setup)
 	if err != nil {
 		return fmt.Errorf("filtering setup: %w", err)
 	}

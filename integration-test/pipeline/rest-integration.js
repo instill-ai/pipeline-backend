@@ -26,7 +26,7 @@ export function CheckIntegrations() {
       "GET /v1beta/integrations/document response contains end-user message": (r) => r.json().message === "Integration does not exist.",
     });
 
-    var id = "pinecone";
+    var id = "slack";
     var cdef = http.request("GET", `${pipelinePublicHost}/v1beta/connector-definitions/${id}`, null, null).
       json().connectorDefinition;
 
@@ -37,8 +37,15 @@ export function CheckIntegrations() {
       description: cdef.description,
       vendor: cdef.vendor,
       icon: cdef.icon,
-      schemas: [],
+      setupSchema: null,
+      schemas: [], // Deprecated
       view: "VIEW_BASIC"
+    };
+
+    var oAuthConfig = {
+      authUrl: "https://slack.com/oauth/v2/authorize",
+      accessUrl: "https://slack.com/api/oauth.v2.access",
+      scopes: []
     };
 
     // Basic view
@@ -50,7 +57,10 @@ export function CheckIntegrations() {
     // Full view
     check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/${id}?view=VIEW_FULL`, null, null), {
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response status is 200`]: (r) => r.status === 200,
-      [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.schemas[0].method === "METHOD_DICTIONARY",
+      [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.setupSchema.required[0] === "token",
+      [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains OAuth config`]: (r) => deepEqual(r.json().integration.oAuthConfig, oAuthConfig),
+      // Deprecated
+      [`DEPRECATED GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.schemas[0].method === "METHOD_DICTIONARY",
     });
   });
 
