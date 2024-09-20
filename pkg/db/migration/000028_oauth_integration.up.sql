@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE connection ADD COLUMN IF NOT EXISTS scopes TEXT[];
+ALTER TABLE connection ADD COLUMN IF NOT EXISTS o_auth_access_details JSONB;
+
+COMMIT;

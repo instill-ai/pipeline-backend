@@ -184,7 +184,15 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 	}
 
 	switch conn.GetMethod() {
-	case pb.Connection_METHOD_DICTIONARY, pb.Connection_METHOD_OAUTH:
+	case pb.Connection_METHOD_DICTIONARY:
+		err := fmt.Errorf("%w: invalid payload in dictionary connection", errdomain.ErrInvalidArgument)
+		if len(conn.GetScopes()) > 0 {
+			return errmsg.AddMessage(err, "Scopes only apply to OAuth connections.")
+		}
+		if conn.GetOAuthAccessDetails() != nil {
+			return errmsg.AddMessage(err, "OAuth access details only apply to OAuth connections.")
+		}
+	case pb.Connection_METHOD_OAUTH:
 	default:
 		err := fmt.Errorf("%w: unsupported method", errdomain.ErrInvalidArgument)
 		return errmsg.AddMessage(err, "Invalid method "+conn.GetMethod().String()+".")
@@ -265,11 +273,13 @@ func (s *service) validateConnectionUpdate(
 	pbMask *fieldmaskpb.FieldMask,
 	integration *pb.Integration,
 ) (err error) {
-	// setup field's type is google.protobuf.Struct, which needs to be updated
-	// in block.
+	// google.protobuf.Struct needs to be updated in block.
 	for i, path := range pbMask.Paths {
-		if strings.Contains(path, "setup") {
+		switch {
+		case strings.Contains(path, "setup"):
 			pbMask.Paths[i] = "setup"
+		case strings.Contains(path, "o_auth_access_details"):
+			pbMask.Paths[i] = "o_auth_access_details"
 		}
 	}
 
@@ -329,17 +339,27 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 		return nil, err
 	}
 
-	j, err := conn.GetSetup().MarshalJSON()
+	jsonSetup, err := conn.GetSetup().MarshalJSON()
 	if err != nil {
 		return nil, fmt.Errorf("marshalling setup: %w", err)
 	}
 
+	var jsonOAuth datatypes.JSON
+	if conn.GetOAuthAccessDetails() != nil {
+		jsonOAuth, err = conn.GetOAuthAccessDetails().MarshalJSON()
+		if err != nil {
+			return nil, fmt.Errorf("marshalling OAuth details: %w", err)
+		}
+	}
+
 	inserted, err := s.repository.CreateNamespaceConnection(ctx, &datamodel.Connection{
-		ID:             conn.GetId(),
-		NamespaceUID:   ns.NsUID,
-		IntegrationUID: uuid.FromStringOrNil(integration.GetUid()),
-		Method:         datamodel.ConnectionMethod(conn.GetMethod()),
-		Setup:          datatypes.JSON(j),
+		ID:                 conn.GetId(),
+		NamespaceUID:       ns.NsUID,
+		IntegrationUID:     uuid.FromStringOrNil(integration.GetUid()),
+		Method:             datamodel.ConnectionMethod(conn.GetMethod()),
+		Setup:              datatypes.JSON(jsonSetup),
+		Scopes:             conn.GetScopes(),
+		OAuthAccessDetails: jsonOAuth,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("persisting connection: %w", err)
@@ -386,15 +406,25 @@ func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateN
 		return s.connectionToPB(inDB, ns.NsID, pb.View_VIEW_FULL)
 	}
 
-	j, err := destConn.GetSetup().MarshalJSON()
+	jsonSetup, err := destConn.GetSetup().MarshalJSON()
 	if err != nil {
 		return nil, fmt.Errorf("marshalling setup: %w", err)
 	}
 
+	var jsonOAuth datatypes.JSON
+	if destConn.GetOAuthAccessDetails() != nil {
+		jsonOAuth, err = destConn.GetOAuthAccessDetails().MarshalJSON()
+		if err != nil {
+			return nil, fmt.Errorf("marshalling OAuth details: %w", err)
+		}
+	}
+
 	updated, err := s.repository.UpdateNamespaceConnectionByUID(ctx, inDB.UID, &datamodel.Connection{
-		ID:     destConn.GetId(),
-		Method: datamodel.ConnectionMethod(destConn.GetMethod()),
-		Setup:  datatypes.JSON(j),
+		ID:                 destConn.GetId(),
+		Method:             datamodel.ConnectionMethod(destConn.GetMethod()),
+		Setup:              datatypes.JSON(jsonSetup),
+		Scopes:             destConn.GetScopes(),
+		OAuthAccessDetails: jsonOAuth,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("persisting connection: %w", err)
@@ -443,12 +473,20 @@ func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view p
 		return pbConn, nil
 	}
 
+	// TODO jvallesm: INS-5963 addresses redacting these values.
 	pbConn.Setup = new(structpb.Struct)
 	if err := pbConn.Setup.UnmarshalJSON(conn.Setup); err != nil {
 		return nil, fmt.Errorf("unmarshalling setup: %w", err)
 	}
 
-	// TODO jvallesm: INS-5963 addresses redacting these values.
+	pbConn.Scopes = conn.Scopes
+
+	if len(conn.OAuthAccessDetails) > 0 {
+		pbConn.OAuthAccessDetails = new(structpb.Struct)
+		if err := pbConn.OAuthAccessDetails.UnmarshalJSON(conn.OAuthAccessDetails); err != nil {
+			return nil, fmt.Errorf("unmarshalling OAuth config: %w", err)
+		}
+	}
 
 	return pbConn, nil
 }
