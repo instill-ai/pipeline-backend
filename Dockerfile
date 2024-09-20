@@ -46,9 +46,7 @@ RUN apk add --no-cache \
 
 # Download tesseract data
 RUN curl -L https://github.com/tesseract-ocr/tessdata_best/raw/main/eng.traineddata \
-    -o /usr/share/tessdata/eng.traineddata \
-    && curl -L https://github.com/tesseract-ocr/tessdata_best/raw/main/osd.traineddata \
-    -o /usr/share/tessdata/osd.traineddata
+    -o /usr/share/tessdata/eng.traineddata
 
 ARG TARGETARCH
 ARG BUILDARCH
