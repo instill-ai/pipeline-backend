@@ -44,6 +44,12 @@ RUN apk add --no-cache \
     && /opt/venv/bin/pip install pdfplumber tokenizers \
     && rm -rf /var/cache/apk/* /var/cache/fontconfig/*
 
+# Download tesseract data
+RUN curl -L https://github.com/tesseract-ocr/tessdata_best/raw/main/eng.traineddata \
+    -o /usr/share/tessdata/eng.traineddata \
+    && curl -L https://github.com/tesseract-ocr/tessdata_best/raw/main/osd.traineddata \
+    -o /usr/share/tessdata/osd.traineddata
+
 ARG TARGETARCH
 ARG BUILDARCH
 RUN apk add unrtf --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
