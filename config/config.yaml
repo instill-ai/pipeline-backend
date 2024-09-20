@@ -92,7 +92,7 @@ minio:
   secure: false
 appbackend:
   host: app-backend
-  publicport: 8085
+  publicport: 8087
   https:
     cert:
     key:
