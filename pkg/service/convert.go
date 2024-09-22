@@ -26,6 +26,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
@@ -565,10 +566,26 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 	}
 
 	var pbRecipe *structpb.Struct
+	webhooks := map[string]*pb.Endpoints_WebhookEndpoint{}
 	if dbPipeline.Recipe != nil {
 		b, err = json.Marshal(dbPipeline.Recipe)
 		if err != nil {
 			return nil, err
+		}
+		if dbPipeline.Recipe.On != nil {
+			for w := range dbPipeline.Recipe.On.Event {
+				webhooks[w] = &pb.Endpoints_WebhookEndpoint{
+					Url: fmt.Sprintf(
+						"%s/v1beta/%s/%s/pipelines/%s/events?event=%s&code=%s",
+						config.Config.Server.InstillCoreHost,
+						dbPipeline.NamespaceType,
+						dbPipeline.NamespaceID,
+						dbPipeline.ID,
+						w,
+						dbPipeline.ShareCode,
+					),
+				}
+			}
 		}
 
 		pbRecipe = &structpb.Struct{}
@@ -607,6 +624,9 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		DocumentationUrl: &dbPipeline.DocumentationURL.String,
 		License:          &dbPipeline.License.String,
 		ProfileImage:     &profileImage,
+		Endpoints: &pb.Endpoints{
+			Webhooks: webhooks,
+		},
 	}
 
 	var owner *mgmtpb.Owner
@@ -773,10 +793,27 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 	}
 
 	var pbRecipe *structpb.Struct
+	webhooks := map[string]*pb.Endpoints_WebhookEndpoint{}
 	if dbPipelineRelease.Recipe != nil {
 		b, err := json.Marshal(dbPipelineRelease.Recipe)
 		if err != nil {
 			return nil, err
+		}
+		if dbPipeline.Recipe.On != nil {
+			for w := range dbPipeline.Recipe.On.Event {
+				webhooks[w] = &pb.Endpoints_WebhookEndpoint{
+					Url: fmt.Sprintf(
+						"%s/v1beta/%s/%s/pipelines/%s/releases/%sevents?event=%s&code=%s",
+						config.Config.Server.InstillCoreHost,
+						dbPipeline.NamespaceType,
+						dbPipeline.NamespaceID,
+						dbPipeline.ID,
+						dbPipelineRelease.ID,
+						w,
+						dbPipeline.ShareCode,
+					),
+				}
+			}
 		}
 
 		pbRecipe = &structpb.Struct{}
@@ -803,6 +840,9 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		Readme:      dbPipelineRelease.Readme,
 		Recipe:      pbRecipe,
 		RawRecipe:   dbPipelineRelease.RecipeYAML,
+		Endpoints: &pb.Endpoints{
+			Webhooks: webhooks,
+		},
 	}
 
 	if view > pb.Pipeline_VIEW_BASIC {
