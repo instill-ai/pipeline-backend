@@ -25,7 +25,7 @@ func (a *Array) Get(path string) (v Value, err error) {
 	if path == "" {
 		return a, nil
 	}
-	path, err = standardizePath(path)
+	path, err = StandardizePath(path)
 	if err != nil {
 		return nil, err
 	}

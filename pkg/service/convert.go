@@ -11,6 +11,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
@@ -885,9 +887,15 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 			str = str[2:]
 			str = str[:len(str)-1]
 			str = strings.ReplaceAll(str, " ", "")
+			str, err = data.StandardizePath(str)
+			if err != nil {
+				break
+			}
 
-			compID := strings.Split(str, ".")[0]
-			str = str[len(strings.Split(str, ".")[0]):]
+			str = str[1 : len(str)-1]
+			compID := ""
+			compID, str, _ = strings.Cut(str, "][")
+			compID = compID[1 : len(compID)-1] // remove ""
 			upstreamCompID := ""
 			for id := range compsOrigin {
 				if id == compID {
@@ -896,6 +904,9 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 			}
 
 			if upstreamCompID != "" || compID == constant.SegVariable {
+				seg := ""
+				seg, str, _ = strings.Cut(str, "][")
+				seg = seg[1 : len(seg)-1] // remove ""
 				var walk *structpb.Value
 				if compID == constant.SegVariable {
 					walk = structpb.NewStructValue(dataInput)
@@ -905,13 +916,11 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 					switch comp.Type {
 					case datamodel.Iterator:
 
-						splits := strings.Split(str, ".")
-						if splits[1] == constant.SegOutput {
+						if seg == constant.SegOutput {
 							walk = structpb.NewStructValue(comp.DataSpecification.Output)
 						} else {
 							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
-						str = str[len(splits[1])+1:]
 					default:
 						input := &structpb.Struct{}
 						output := &structpb.Struct{}
@@ -928,16 +937,13 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 
-						splits := strings.Split(str, ".")
-
-						if splits[1] == constant.SegOutput {
+						if seg == constant.SegOutput {
 							walk = structpb.NewStructValue(output)
-						} else if splits[1] == constant.SegInput {
+						} else if seg == constant.SegInput {
 							walk = structpb.NewStructValue(input)
 						} else {
 							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
-						str = str[len(splits[1])+1:]
 					}
 				}
 
@@ -946,50 +952,42 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 						break
 					}
 
-					splits := strings.Split(str, ".")
-					curr := splits[1]
+					curr := ""
+					curr, str, _ = strings.Cut(str, "][")
 
-					if strings.Contains(curr, "[") && strings.Contains(curr, "]") {
-						target := strings.Split(curr, "[")[0]
+					if curr[0] == '"' && curr[len(curr)-1] == '"' {
+						curr = curr[1 : len(curr)-1] // remove ""
+
 						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
-							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
+							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[curr]; !ok {
 								break
 							}
 						} else {
 							break
 						}
-						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target].GetStructValue().Fields["items"]
+
+						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[curr]
 					} else {
-						target := curr
-
-						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
-							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]; !ok {
-								break
-							}
-						} else {
+						_, err = strconv.Atoi(curr)
+						if err != nil {
 							break
 						}
-
-						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[target]
-
+						walk = walk.GetStructValue().Fields["items"]
 					}
 
-					str = str[len(curr)+1:]
 				}
-				m = structpb.NewStructValue(walk.GetStructValue())
+				if walk.GetStructValue() != nil && walk.GetStructValue().Fields != nil {
+					m, err = structpb.NewValue(map[string]interface{}{
+						"title":          v.Title,
+						"description":    v.Description,
+						"instillUIOrder": v.InstillUIOrder,
+						"type":           walk.GetStructValue().Fields["type"].GetStringValue(),
+						"instillFormat":  walk.GetStructValue().Fields["instillFormat"].GetStringValue(),
+					})
+				}
 
 			} else {
 				return nil, fmt.Errorf("generate data spec error")
-			}
-
-			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-				m.GetStructValue().Fields["title"] = structpb.NewStringValue(v.Title)
-			}
-			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-				m.GetStructValue().Fields["description"] = structpb.NewStringValue(v.Description)
-			}
-			if m.GetStructValue() != nil && m.GetStructValue().Fields != nil {
-				m.GetStructValue().Fields["instillUIOrder"] = structpb.NewNumberValue(float64(v.InstillUIOrder))
 			}
 
 		} else {

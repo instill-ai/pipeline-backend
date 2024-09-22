@@ -26,7 +26,7 @@ func (m *Map) Get(path string) (v Value, err error) {
 	if path == "" {
 		return m, nil
 	}
-	path, err = standardizePath(path)
+	path, err = StandardizePath(path)
 	if err != nil {
 		return nil, err
 	}
