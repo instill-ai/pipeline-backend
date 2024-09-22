@@ -11,6 +11,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000021"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000022"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000024"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000029"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
@@ -70,6 +71,11 @@ func Migrate(version uint) error {
 		}
 	case 24:
 		m = &convert000024.ConvertToTextTaskConverter{
+			DB:     db,
+			Logger: l,
+		}
+	case 29:
+		m = &convert000029.ConvertToArtifactType{
 			DB:     db,
 			Logger: l,
 		}
