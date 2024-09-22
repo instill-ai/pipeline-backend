@@ -35,6 +35,7 @@ type AppConfig struct {
 	InstillCloud    InstillCloudConfig    `koanf:"instillcloud"`
 	ArtifactBackend ArtifactBackendConfig `koanf:"artifactbackend"`
 	Minio           MinioConfig           `koanf:"minio"`
+	AppBackend      AppBackendConfig      `koanf:"appbackend"`
 }
 
 // InstillCloud config
@@ -187,6 +188,15 @@ type MinioConfig struct {
 	RootPwd    string `koanf:"rootpwd"`
 	BucketName string `koanf:"bucketname"`
 	Secure     bool   `koanf:"secure"` // Add this line for the Secure option
+}
+
+type AppBackendConfig struct {
+	Host       string `koanf:"host"`
+	PublicPort int    `koanf:"publicport"`
+	HTTPS      struct {
+		Cert string `koanf:"cert"`
+		Key  string `koanf:"key"`
+	}
 }
 
 // Init - Assign global config to decoded config struct

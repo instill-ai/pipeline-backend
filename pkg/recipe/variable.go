@@ -31,6 +31,7 @@ type SystemVariables struct {
 	ModelBackend        string `json:"__MODEL_BACKEND"`
 	MgmtBackend         string `json:"__MGMT_BACKEND"`
 	ArtifactBackend     string `json:"__ARTIFACT_BACKEND"`
+	AppBackend          string `json:"__APP_BACKEND"`
 }
 
 // GenerateSystemVariables fills SystemVariable fields with information from
@@ -56,6 +57,9 @@ func GenerateSystemVariables(ctx context.Context, sysVar SystemVariables) (map[s
 	}
 	if sysVar.ArtifactBackend == "" {
 		sysVar.ArtifactBackend = fmt.Sprintf("%s:%d", config.Config.ArtifactBackend.Host, config.Config.ArtifactBackend.PublicPort)
+	}
+	if sysVar.AppBackend == "" {
+		sysVar.AppBackend = fmt.Sprintf("%s:%d", config.Config.AppBackend.Host, config.Config.AppBackend.PublicPort)
 	}
 
 	b, err := json.Marshal(sysVar)

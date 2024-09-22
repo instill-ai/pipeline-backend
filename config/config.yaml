@@ -90,3 +90,9 @@ minio:
   rootpwd: minioadmin
   bucketname: instill-ai-vdp
   secure: false
+appbackend:
+  host: app-backend
+  publicport: 8087
+  https:
+    cert:
+    key:
