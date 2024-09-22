@@ -11,10 +11,11 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/minio/minio-go/v7/pkg/lifecycle"
 	"go.uber.org/zap"
+
+	minio "github.com/minio/minio-go/v7"
 
 	"github.com/instill-ai/pipeline-backend/config"
 

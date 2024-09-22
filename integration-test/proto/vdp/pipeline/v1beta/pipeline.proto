@@ -405,7 +405,7 @@ message ValidateNamespacePipelineResponse {
   // Success
   bool success = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // The validated pipeline resource.
-  repeated PipelineValidationError errors = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated ErrPipelineValidation errors = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
 
 // RenameNamespacePipelineRequest represents a request to rename the name of a
@@ -883,8 +883,9 @@ message DeleteUserPipelineRequest {
 // DeleteUserPipelineResponse is an empty response.
 message DeleteUserPipelineResponse {}
 
-// PipelineValidation
-message PipelineValidationError {
+// ErrPipelineValidation contains information about a failed pipeline
+// validation.
+message ErrPipelineValidation {
   // Location
   string location = 1;
   // error
@@ -911,7 +912,7 @@ message ValidateUserPipelineResponse {
   // Success
   bool success = 1;
   // The validated pipeline resource.
-  repeated PipelineValidationError errors = 2;
+  repeated ErrPipelineValidation errors = 2;
 }
 
 // RenameUserPipelineRequest represents a request to rename the name of a
@@ -1448,7 +1449,7 @@ message ValidateOrganizationPipelineResponse {
   // Success
   bool success = 1;
   // The validated pipeline resource.
-  repeated PipelineValidationError errors = 2;
+  repeated ErrPipelineValidation errors = 2;
 }
 
 // RenameOrganizationPipelineRequest represents a request to rename the name of

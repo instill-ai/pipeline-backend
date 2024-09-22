@@ -14,7 +14,7 @@ import (
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-func checkTask(compID, targetTask string, compSpec *structpb.Struct, compProperties map[string]any, validationErrors *[]*pb.PipelineValidationError) {
+func checkTask(compID, targetTask string, compSpec *structpb.Struct, compProperties map[string]any, validationErrors *[]*pb.ErrPipelineValidation) {
 	taskMatch := false
 	for _, t := range compSpec.Fields["oneOf"].GetListValue().Values {
 		task := t.GetStructValue().Fields["properties"].GetStructValue().Fields["task"].GetStructValue().Fields["const"].GetStringValue()
@@ -24,7 +24,7 @@ func checkTask(compID, targetTask string, compSpec *structpb.Struct, compPropert
 		}
 	}
 	if !taskMatch {
-		*validationErrors = append(*validationErrors, &pb.PipelineValidationError{
+		*validationErrors = append(*validationErrors, &pb.ErrPipelineValidation{
 			Location: "component." + compID,
 			Error:    "task not correct",
 		})
@@ -32,9 +32,9 @@ func checkTask(compID, targetTask string, compSpec *structpb.Struct, compPropert
 	// return nil
 }
 
-func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.PipelineValidationError, error) {
+func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.ErrPipelineValidation, error) {
 
-	validationErrors := []*pb.PipelineValidationError{}
+	validationErrors := []*pb.ErrPipelineValidation{}
 
 	schema := map[string]any{}
 
@@ -54,7 +54,7 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 
 		case datamodel.Iterator:
 			nestedCompProperties := map[string]any{}
-			nestedValidationErrors := []*pb.PipelineValidationError{}
+			nestedValidationErrors := []*pb.ErrPipelineValidation{}
 			for nestedID, nestedComp := range comp.Component {
 				if nestedComp.Type != datamodel.Iterator {
 					def, err := s.component.GetDefinitionByID(nestedComp.Type, nil, nil)
@@ -66,7 +66,7 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 
 			}
 			for _, e := range nestedValidationErrors {
-				validationErrors = append(validationErrors, &pb.PipelineValidationError{
+				validationErrors = append(validationErrors, &pb.ErrPipelineValidation{
 					Location: "component." + id + "." + e.Location,
 					Error:    e.Error,
 				})
@@ -123,7 +123,7 @@ func (s *service) checkRecipe(recipePermalink *datamodel.Recipe) ([]*pb.Pipeline
 				}
 				loc := strings.ReplaceAll(detail.InstanceLocation, "/", ".")
 				loc = loc[1:]
-				validationErrors = append(validationErrors, &pb.PipelineValidationError{
+				validationErrors = append(validationErrors, &pb.ErrPipelineValidation{
 					Location: loc,
 					Error:    detail.Error,
 				})

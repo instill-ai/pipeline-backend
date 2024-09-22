@@ -842,8 +842,6 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 				return temporal.NewApplicationErrorWithCause("transforming connection setup to value", preTriggerActivityErrorType, err)
 			}
 
-			// This is where we set the secrets & connections. Do we need any
-			// other place? E.g. streaming, iterator.
 			connections.Fields[conn.ID] = connValue
 		}
 

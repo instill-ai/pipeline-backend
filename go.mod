@@ -11,15 +11,15 @@ require (
 	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
-	github.com/gojuno/minimock/v3 v3.3.13
+	github.com/gojuno/minimock/v3 v3.4.0
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/go-cmp v0.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.27.5-beta.0.20240918082957-892c51f5d1e5
-	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240905055017-a91e02faf276
+	github.com/instill-ai/component v0.27.5-beta.0.20240920093616-25277673765b
+	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240920092128-7922db226754
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
 	github.com/jackc/pgx/v5 v5.5.5
@@ -237,7 +237,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/levigross/exp-html v0.0.0-20120902181939-8df60c69a8f5 // indirect
-	github.com/lib/pq v1.10.9 // indirect
+	github.com/lib/pq v1.10.9
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

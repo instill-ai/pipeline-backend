@@ -8,6 +8,8 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+// protoc-gen-validate message validators
+import "validate/validate.proto";
 // VDP definitions
 import "../../../vdp/pipeline/v1beta/common.proto";
 
@@ -26,7 +28,10 @@ message Connection {
     METHOD_OAUTH = 2;
   }
   // UUID-formatted unique identifier.
-  string uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string uid = 1 [
+    (validate.rules).string.uuid = true,
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
   // ID.
   string id = 2 [(google.api.field_behavior) = REQUIRED];
   // ID of the namespace owning the connection.
@@ -188,7 +193,10 @@ message Integration {
   }
 
   // UUID-formatted unique identifier. It references a component definition.
-  string uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string uid = 1 [
+    (validate.rules).string.uuid = true,
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
   // Identifier of the integration, which references a component definition.
   // Components with that definition ID will be able to use the connections
   // produced by this integration.

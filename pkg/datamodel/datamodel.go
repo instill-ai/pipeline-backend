@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/lib/pq"
 	"google.golang.org/protobuf/encoding/protojson"
 	"gopkg.in/yaml.v3"
 	"gorm.io/datatypes"
@@ -612,10 +613,12 @@ func (m ConnectionMethod) Value() (driver.Value, error) {
 // Connection is the data model for the `integration` table
 type Connection struct {
 	BaseDynamic
-	ID             string
-	NamespaceUID   uuid.UUID
-	IntegrationUID uuid.UUID
-	Method         ConnectionMethod
-	Setup          datatypes.JSON      `gorm:"type:jsonb"`
-	Integration    ComponentDefinition `gorm:"foreignKey:IntegrationUID;references:UID"`
+	ID                 string
+	NamespaceUID       uuid.UUID
+	IntegrationUID     uuid.UUID
+	Method             ConnectionMethod
+	Setup              datatypes.JSON      `gorm:"type:jsonb"`
+	Scopes             pq.StringArray      `gorm:"type:text[]"`
+	OAuthAccessDetails datatypes.JSON      `gorm:"type:jsonb"`
+	Integration        ComponentDefinition `gorm:"foreignKey:IntegrationUID;references:UID"`
 }

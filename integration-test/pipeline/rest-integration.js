@@ -26,7 +26,7 @@ export function CheckIntegrations() {
       "GET /v1beta/integrations/document response contains end-user message": (r) => r.json().message === "Integration does not exist.",
     });
 
-    var id = "pinecone";
+    var id = "slack";
     var cdef = http.request("GET", `${pipelinePublicHost}/v1beta/connector-definitions/${id}`, null, null).
       json().connectorDefinition;
 
@@ -37,8 +37,15 @@ export function CheckIntegrations() {
       description: cdef.description,
       vendor: cdef.vendor,
       icon: cdef.icon,
-      schemas: [],
+      setupSchema: null,
+      schemas: [], // Deprecated
       view: "VIEW_BASIC"
+    };
+
+    var oAuthConfig = {
+      authUrl: "https://slack.com/oauth/v2/authorize",
+      accessUrl: "https://slack.com/api/oauth.v2.access",
+      scopes: []
     };
 
     // Basic view
@@ -50,7 +57,10 @@ export function CheckIntegrations() {
     // Full view
     check(http.request("GET", `${pipelinePublicHost}/v1beta/integrations/${id}?view=VIEW_FULL`, null, null), {
       [`GET /v1beta/integrations/${id}?view=VIEW_FULL response status is 200`]: (r) => r.status === 200,
-      [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.schemas[0].method === "METHOD_DICTIONARY",
+      [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.setupSchema.required[0] === "token",
+      [`GET /v1beta/integrations/${id}?view=VIEW_FULL response contains OAuth config`]: (r) => deepEqual(r.json().integration.oAuthConfig, oAuthConfig),
+      // Deprecated
+      [`DEPRECATED GET /v1beta/integrations/${id}?view=VIEW_FULL response contains schema`]: (r) => r.json().integration.schemas[0].method === "METHOD_DICTIONARY",
     });
   });
 
@@ -93,33 +103,70 @@ export function CheckConnections(data) {
   var connectionID = dbIDPrefix + randomString(8);
   var collectionPath = `/v1beta/namespaces/${defaultUsername}/connections`;
   var resourcePath = `${collectionPath}/${connectionID}`;
+  var integrationID = "slack";
 
-  var setup = Object.assign({
-    "email-address": "wombat@instill.tech",
-    password: "0123",
-    "server-address": "localhost",
-    "server-port": 993,
-  });
+  var setup = {"token": "one2THREE"};
 
   group("Integration API: Create connection", () => {
     var path = collectionPath;
 
-    // Successful creation
-    var okReq = http.request(
+    // Successful creation: dictionary
+    var dictReq = http.request(
       "POST",
       pipelinePublicHost + path,
       JSON.stringify({
         id: connectionID,
-        integrationId: "email",
+        integrationId: integrationID,
         method: "METHOD_DICTIONARY",
         setup: setup,
       }),
       data.header
     );
-    check(okReq, {
-      [`POST ${path} response status is 201`]: (r) => r.status === 201,
-      [`POST ${path} has a UID`]: (r) => r.json().connection.uid.length > 0,
-      [`POST ${path} has a creation time`]: (r) => new Date(r.json().connection.createTime).getTime() > new Date().setTime(0),
+    check(dictReq, {
+      [`POST ${path} (dictionary) response status is 201`]: (r) => r.status === 201,
+      [`POST ${path} (dictionary) has a UID`]: (r) => r.json().connection.uid.length > 0,
+      [`POST ${path} (dictionary) has a creation time`]: (r) => new Date(r.json().connection.createTime).getTime() > new Date().setTime(0),
+    });
+
+    // Successful creation: dictionary
+    var oAuthReq = http.request(
+      "POST",
+      pipelinePublicHost + path,
+      JSON.stringify({
+        id: connectionID + "-oauth",
+        integrationId: integrationID,
+        method: "METHOD_OAUTH",
+        setup: setup,
+        scopes: ["commands", "incoming-webhook"],
+        oAuthAccessDetails: {
+          ok: true,
+          access_token: "xoxb-17653672481-19874698323-pdFZKVeTuE8sk7oOcBrzbqgy",
+          token_type: "bot",
+          scope: "commands,incoming-webhook",
+          bot_user_id: "U0KRQLJ9H",
+          app_id: "A0KRD7HC3",
+          team: {
+              name: "Slack Pickleball Team",
+              id: "T9TK3CUKW"
+          },
+          enterprise: {
+              name: "slack-pickleball",
+              id: "E12345678"
+          },
+          authed_user: {
+              id: "U1234",
+              scope: "chat:write",
+              access_token: "xoxp-1234",
+              token_type: "user"
+          }
+        }
+      }),
+      data.header
+    );
+    check(oAuthReq, {
+      [`POST ${path} (OAuth) response status is 201`]: (r) => r.status === 201,
+      [`POST ${path} (OAuth) has a UID`]: (r) => r.json().connection.uid.length > 0,
+      [`POST ${path} (OAuth) has a creation time`]: (r) => new Date(r.json().connection.createTime).getTime() > new Date().setTime(0),
     });
 
     // Check ID format
@@ -129,9 +176,9 @@ export function CheckConnections(data) {
       pipelinePublicHost + path,
       JSON.stringify({
         id: invalidID,
-        integrationId: "email",
+        integrationId: integrationID,
         method: "METHOD_DICTIONARY",
-        setup: {},
+        setup: {"token": "foo"},
       }),
       data.header
     );
@@ -144,24 +191,35 @@ export function CheckConnections(data) {
       pipelinePublicHost + path,
       JSON.stringify({
         id: dbIDPrefix + randomString(16),
-        integrationId: "email",
+        integrationId: integrationID,
         method: "METHOD_DICTIONARY",
-        setup: {
-          "email-address": "wombat@instill.tech",
-          password: "0123",
-          "server-address": "localhost",
-          "server-port": "993", // Should be string
-        },
+        setup: {"token": 234},
       }),
       data.header
     );
     check(invalidIDReq, {
-      [`POST ${path} response status is 400`]: (r) => r.status === 400,
+      [`POST ${path} response status is 400 with invalid setup`]: (r) => r.status === 400,
+    });
+
+    var invalidDictReq = http.request(
+      "POST",
+      pipelinePublicHost + path,
+      JSON.stringify({
+        id: dbIDPrefix + randomString(16),
+        integrationId: integrationID,
+        method: "METHOD_DICTIONARY",
+        setup: {"token": "valid"},
+        scopes: ["commands", "incoming-webhook"],
+      }),
+      data.header
+    );
+    check(invalidIDReq, {
+      [`POST ${path} response status is 400 with invalid method payload`]: (r) => r.status === 400,
     });
   });
 
   group("Integration API: Get connection", () => {
-    var path = resourcePath;
+    var path = resourcePath + "-oauth";
 
     check(http.request("GET", pipelinePublicHost + path + "aaa", null, data.header), {
       [`GET ${path + "aaa"} response status is 404`]: (r) => r.status === 404,
@@ -172,8 +230,8 @@ export function CheckConnections(data) {
       [`GET ${path} response status is 200`]: (r) => r.status === 200,
       [`GET ${path} has basic view`]: (r) => r.json().connection.view === "VIEW_BASIC",
       [`GET ${path} has setup hidden`]: (r) => r.json().connection.setup === null,
-      [`GET ${path} has integration ID`]: (r) => r.json().connection.integrationId === "email",
-      [`GET ${path} has integration title`]: (r) => r.json().connection.integrationTitle === "Email",
+      [`GET ${path} has integration ID`]: (r) => r.json().connection.integrationId === integrationID,
+      [`GET ${path} has integration title`]: (r) => r.json().connection.integrationTitle === "Slack",
     });
 
     // Full view
@@ -182,12 +240,16 @@ export function CheckConnections(data) {
       [`GET ${path + "?view=VIEW_FULL"} has full view`]: (r) => r.json().connection.view === "VIEW_FULL",
       [`GET ${path + "?view=VIEW_FULL"} has setup`]: (r) => r.json().connection.setup != null,
       [`GET ${path + "?view=VIEW_FULL"} has setup value`]: (r) => r.json().connection.setup.password === setup.password, // TODO: redact
+      [`GET ${path + "?view=VIEW_FULL"} has scopes`]: (r) => r.json().connection.scopes.length > 0,
+      [`GET ${path + "?view=VIEW_FULL"} has OAuth details`]: (r) => r.json().connection.oAuthAccessDetails.access_token.length > 0, // TODO redact
     });
   });
 
   group("Integration API: List connections", () => {
     var path = collectionPath;
     var nConnections = 12;
+    // Connections have been created in previous tests.
+    var totalConnections = nConnections + 2;
     var integrationID = "openai";
 
     for (var i = 0; i < nConnections; i++) {
@@ -213,8 +275,8 @@ export function CheckConnections(data) {
     var firstPage = http.request("GET", pipelinePublicHost + pathWithFilter, null, data.header);
     check(firstPage, {
       [`GET ${pathWithFilter} response status is 200`]: (r) => r.status === 200,
-      [`GET ${pathWithFilter} response has totalSize = ${nConnections + 1}`]: (r) =>
-        r.json().totalSize === nConnections + 1,
+      [`GET ${pathWithFilter} response has totalSize = ${totalConnections}`]: (r) =>
+        r.json().totalSize === totalConnections,
       [`GET ${pathWithFilter} response has default page size`]: (r) =>
         r.json().connections.length === defaultPageSize,
     });
@@ -222,10 +284,10 @@ export function CheckConnections(data) {
     var pathWithToken = pathWithFilter + `&pageToken=${firstPage.json().nextPageToken}`;
     check(http.request("GET", pipelinePublicHost + pathWithToken, null, data.header), {
       [`GET ${pathWithToken} response status is 200`]: (r) => r.status === 200,
-      [`GET ${pathWithToken} response has totalSize = ${nConnections + 1}`]: (r) =>
-        r.json().totalSize === nConnections + 1,
+      [`GET ${pathWithToken} response has totalSize = ${totalConnections}`]: (r) =>
+        r.json().totalSize === totalConnections,
       [`GET ${pathWithToken} response has remaining items`]: (r) =>
-        r.json().connections.length === nConnections + 1 - defaultPageSize,
+        r.json().connections.length === totalConnections - defaultPageSize,
       [`GET ${pathWithToken} response has no more pages`]: (r) => r.json().nextPageToken === "",
     });
 
@@ -323,23 +385,28 @@ output:
       data.header
     ).json().connection;
 
-    var newPass = "4324";
+    var newToken = "new-token";
     var newID = dbIDPrefix + "my-new-id";
+    var newMethod = "METHOD_OAUTH";
+    var scopes = ["foo"];
+
     var req = http.request(
       "PATCH",
       pipelinePublicHost + path,
       JSON.stringify({
         uid: "should-be-ignored",
+        method: newMethod,
+        scopes: scopes,
         id: newID,
-        // All the required setup fields need to be sent due to the underlying
-        // proto type (structpb.Struct).
-        setup: {
-          "email-address": "wombat@instill.tech",
-          password: newPass,
-          "server-address": "localhost",
-          "server-port": 993,
-          // On email, no extra fields are allowed (additionalProperties field
-          // is false in the schema)
+        // Fields with an underlying structpb.Struct type (setup,
+        // oAuthAccessDetails) will be updated in block.
+        setup: {"token": newToken},
+        oAuthAccessDetails: {
+          token_type: "bot",
+          enterprise: {
+            name: "slack-pickleball",
+            id: "E12345678"
+          },
         },
       }),
       data.header
@@ -348,7 +415,9 @@ output:
     check(req, {
       [`PATCH ${path} response status 200`]: (r) => r.status === 200,
       [`PATCH ${path} contains new ID`]: (r) => r.json().connection.id === newID,
-      [`PATCH ${path} contains new setup`]: (r) => r.json().connection.setup.password === newPass,
+      [`PATCH ${path} contains new method`]: (r) => r.json().connection.method === newMethod,
+      [`PATCH ${path} contains new setup`]: (r) => r.json().connection.setup.token === newToken,
+      [`PATCH ${path} contains scopes`]: (r) => r.json().connection.scopes[0] === scopes[0],
       [`PATCH ${path} didn't modify UID`]: (r) => r.json().connection.uid === originalConn.uid,
     });
 
@@ -358,8 +427,12 @@ output:
     check(http.request("GET", pipelinePublicHost + path + "?view=VIEW_FULL", null, data.header), {
       [`GET ${path + "?view=VIEW_FULL"} response status is 200`]: (r) => r.status === 200,
       [`GET ${path + "?view=VIEW_FULL"} has new ID value`]: (r) => r.json().connection.id === newID,
+      [`GET ${path + "?view=VIEW_FULL"} has new method`]: (r) => r.json().connection.method === newMethod,
+      [`GET ${path + "?view=VIEW_FULL"} has scopes`]: (r) => r.json().connection.setup.token === newToken,
+      [`GET ${path + "?view=VIEW_FULL"} has scopes`]: (r) =>
+        r.json().connection.scopes[0] === scopes[0],
       [`GET ${path + "?view=VIEW_FULL"} has new setup value`]: (r) =>
-        r.json().connection.setup.password === newPass,
+        r.json().connection.setup.token === newToken,
     });
   });
 

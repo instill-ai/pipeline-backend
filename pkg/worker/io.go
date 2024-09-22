@@ -6,6 +6,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
+	"github.com/instill-ai/x/errmsg"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -142,5 +143,5 @@ func NewErrorHandler(wfm memory.WorkflowMemory, compID string, originalIdx int) 
 
 func (e *errorHandler) Error(ctx context.Context, err error) {
 	_ = e.wfm.SetComponentStatus(ctx, e.originalIdx, e.compID, memory.ComponentStatusErrored, true)
-	_ = e.wfm.SetComponentErrorMessage(ctx, e.originalIdx, e.compID, err.Error())
+	_ = e.wfm.SetComponentErrorMessage(ctx, e.originalIdx, e.compID, errmsg.MessageOrErr(err))
 }
