@@ -36,7 +36,7 @@ func encodeDataURL(b []byte, contentType, fileName string) (s string, err error)
 	return
 }
 
-func standardizePath(path string) (newPath string, err error) {
+func StandardizePath(path string) (newPath string, err error) {
 	splits := strings.FieldsFunc(path, func(s rune) bool {
 		return s == '.' || s == '['
 	})
@@ -74,11 +74,11 @@ func trimFirstIndexFromPath(path string) (index int, remainingPath string, err e
 
 func comparePath(path1, path2 string) bool {
 	var err error
-	path1, err = standardizePath(path1)
+	path1, err = StandardizePath(path1)
 	if err != nil {
 		return false
 	}
-	path2, err = standardizePath(path2)
+	path2, err = StandardizePath(path2)
 	if err != nil {
 		return false
 	}
@@ -87,11 +87,11 @@ func comparePath(path1, path2 string) bool {
 
 func matchPathPrefix(path, prefix string) bool {
 	var err error
-	path, err = standardizePath(path)
+	path, err = StandardizePath(path)
 	if err != nil {
 		return false
 	}
-	prefix, err = standardizePath(prefix)
+	prefix, err = StandardizePath(prefix)
 	if err != nil {
 		return false
 	}

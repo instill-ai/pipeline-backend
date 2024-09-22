@@ -154,6 +154,7 @@ func (s *service) componentDefinitionToIntegration(
 			delete(schemaFields, "instillOAuthConfig")
 		}
 
+		//nolint:staticcheck
 		// This is deprecated and only maintained for backwards compatibility.
 		// TODO jvallesm: remove when Integration Milestone 2 (OAuth) is rolled
 		// // out.
