@@ -1184,6 +1184,7 @@ func (s *service) triggerPipeline(
 
 	defer func() {
 		_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
+		_ = s.memory.PurgeWorkflowMemoryFromRedis(ctx, pipelineTriggerID)
 	}()
 	err := s.preTriggerPipeline(ctx, ns, r, pipelineTriggerID, pipelineData)
 	if err != nil {
