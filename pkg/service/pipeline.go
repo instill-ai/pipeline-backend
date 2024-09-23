@@ -1477,6 +1477,15 @@ func (s *service) HandleNamespacePipelineEventByID(ctx context.Context, ns resou
 		return nil, errdomain.ErrNotFound
 	}
 
+	// TODO: In the webhook event, the request is sent by a system user, not an
+	// end user. It doesn't include the user UID or requester UID. For now,
+	// we'll use the namespace as the user ID and requester UID.
+	// A proper authentication mechanism for system users needs to be designed.
+	md, _ := metadata.FromIncomingContext(ctx)
+	md.Set(constant.HeaderUserUIDKey, ns.NsUID.String())
+	md.Set(constant.HeaderRequesterUIDKey, ns.NsUID.String())
+	ctx = metadata.NewIncomingContext(ctx, md)
+
 	pipelineRun := s.logPipelineRunStart(ctx, pipelineTriggerID, dbPipeline.UID, defaultPipelineReleaseID)
 	defer func() {
 		if err != nil {
@@ -1490,8 +1499,6 @@ func (s *service) HandleNamespacePipelineEventByID(ctx context.Context, ns resou
 	} else {
 		return nil, fmt.Errorf("eventID not correct")
 	}
-
-	md, _ := metadata.FromIncomingContext(ctx)
 
 	isVerificationEvent, out, err := s.component.HandleVerificationEvent(targetType, md, data, nil)
 	if err != nil {
