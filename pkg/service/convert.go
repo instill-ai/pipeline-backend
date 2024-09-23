@@ -576,9 +576,8 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 			for w := range dbPipeline.Recipe.On.Event {
 				webhooks[w] = &pb.Endpoints_WebhookEndpoint{
 					Url: fmt.Sprintf(
-						"%s/v1beta/%s/%s/pipelines/%s/events?event=%s&code=%s",
+						"%s/v1beta/namespaces/%s/pipelines/%s/events?event=%s&code=%s",
 						config.Config.Server.InstillCoreHost,
-						dbPipeline.NamespaceType,
 						dbPipeline.NamespaceID,
 						dbPipeline.ID,
 						w,
@@ -799,13 +798,12 @@ func (c *converter) ConvertPipelineReleaseToPB(ctx context.Context, dbPipeline *
 		if err != nil {
 			return nil, err
 		}
-		if dbPipeline.Recipe.On != nil {
-			for w := range dbPipeline.Recipe.On.Event {
+		if dbPipelineRelease.Recipe.On != nil {
+			for w := range dbPipelineRelease.Recipe.On.Event {
 				webhooks[w] = &pb.Endpoints_WebhookEndpoint{
 					Url: fmt.Sprintf(
-						"%s/v1beta/%s/%s/pipelines/%s/releases/%sevents?event=%s&code=%s",
+						"%s/v1beta/namespaces/%s/pipelines/%s/releases/%s/events?event=%s&code=%s",
 						config.Config.Server.InstillCoreHost,
-						dbPipeline.NamespaceType,
 						dbPipeline.NamespaceID,
 						dbPipeline.ID,
 						dbPipelineRelease.ID,
