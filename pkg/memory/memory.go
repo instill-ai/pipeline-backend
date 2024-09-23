@@ -57,6 +57,7 @@ type MemoryStore interface {
 	NewWorkflowMemory(ctx context.Context, workflowID string, recipe *datamodel.Recipe, batchSize int) (workflow WorkflowMemory, err error)
 	GetWorkflowMemory(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error)
 	PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error)
+	PurgeWorkflowMemoryFromRedis(ctx context.Context, workflowID string) (err error)
 
 	WriteWorkflowMemoryToRedis(ctx context.Context, workflowID string) (err error)
 	LoadWorkflowMemoryFromRedis(ctx context.Context, workflowID string) (workflow WorkflowMemory, err error)
@@ -232,6 +233,13 @@ func (ms *memoryStore) GetWorkflowMemory(ctx context.Context, workflowID string)
 
 func (ms *memoryStore) PurgeWorkflowMemory(ctx context.Context, workflowID string) (err error) {
 	ms.workflows.Delete(workflowID)
+	return nil
+}
+func (ms *memoryStore) PurgeWorkflowMemoryFromRedis(ctx context.Context, workflowID string) (err error) {
+	cmd := ms.redisClient.Del(ctx, fmt.Sprintf("pipeline_trigger:%s", workflowID))
+	if cmd.Err() != nil {
+		return cmd.Err()
+	}
 	return nil
 }
 
