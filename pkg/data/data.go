@@ -79,6 +79,8 @@ func NewJSONValue(in any) (val Value, err error) {
 			}
 		}
 		return mp, nil
+	case nil:
+		return NewNull(), nil
 	}
 
 	return nil, fmt.Errorf("NewJSONValue error")

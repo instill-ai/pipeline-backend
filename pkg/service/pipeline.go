@@ -381,7 +381,10 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 		return nil, err
 	}
 
-	dbPipeline.ShareCode = generateShareCode()
+	if existingPipeline.ShareCode == "" {
+		dbPipeline.ShareCode = generateShareCode()
+	}
+
 	if err := s.setSchedulePipeline(ctx, ns, dbPipeline.ID, "", dbPipeline.UID, uuid.Nil, dbPipeline.Recipe); err != nil {
 		return nil, err
 	}
