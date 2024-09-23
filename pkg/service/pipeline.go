@@ -1526,8 +1526,11 @@ func (s *service) HandleNamespacePipelineEventByID(ctx context.Context, ns resou
 		for _, l := range v.Listen {
 			l := l[2 : len(l)-1]
 			s := strings.Split(l, ".")
-			if eventID == s[1] {
-				path := strings.Join(s[3:], ".")
+			if s[0] != "on" || s[1] != "event" {
+				return nil, fmt.Errorf("cannot listen to data outside of `on.event`")
+			}
+			if eventID == s[2] {
+				path := strings.Join(s[4:], ".")
 				res, err := jsonpath.Get(fmt.Sprintf("$.%s", path), jsonInput)
 				if err != nil {
 					return nil, err
