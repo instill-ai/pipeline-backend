@@ -4,11 +4,13 @@ package worker
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go/parser"
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"go.einride.tech/aip/filtering"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
@@ -18,8 +20,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"gopkg.in/guregu/null.v4"
 
-	"github.com/gofrs/uuid"
-
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
@@ -27,14 +27,13 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
-	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
-
 	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/component/base"
 	componentstore "github.com/instill-ai/component/store"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
@@ -757,26 +756,24 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 	if err != nil {
 		return temporal.NewApplicationErrorWithCause("loading pipeline memory", preTriggerActivityErrorType, err)
 	}
-	var recipe *datamodel.Recipe
+	var triggerRecipe *datamodel.Recipe
 	if param.SystemVariables.PipelineReleaseUID.IsNil() {
 		pipeline, err := w.repository.GetPipelineByUIDAdmin(ctx, param.SystemVariables.PipelineUID, false, false)
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", preTriggerActivityErrorType, err)
 		}
-		recipe = pipeline.Recipe
+		triggerRecipe = pipeline.Recipe
 	} else {
 		release, err := w.repository.GetPipelineReleaseByUIDAdmin(ctx, param.SystemVariables.PipelineReleaseUID, false)
 		if err != nil {
 			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", preTriggerActivityErrorType, err)
 		}
-		recipe = release.Recipe
+		triggerRecipe = release.Recipe
 	}
 
-	wfm.SetRecipe(recipe)
+	wfm.SetRecipe(triggerRecipe)
 
-	// Loading all secrets and connections into memory.
-	// TODO jvalles: we should load only the elements present in the recipe,
-	// this strategy is inefficient.
+	// Loading secrets and connections into memory.
 	pt := ""
 	var nsSecrets []*datamodel.Secret
 	ownerPermalink := fmt.Sprintf("%s/%s", param.SystemVariables.PipelineOwnerType, param.SystemVariables.PipelineOwnerUID)
@@ -797,26 +794,49 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		}
 	}
 
-	pt = ""
-	var nsConnections []*datamodel.Connection
-	for {
-		p := repository.ListNamespaceConnectionsParams{
-			// Connections shouldn't be accessible by other namespaces.
-			NamespaceUID: param.SystemVariables.PipelineRequesterUID,
-			PageToken:    pt,
-			Limit:        100,
-		}
-		conns, err := w.repository.ListNamespaceConnections(ctx, p)
-		if err != nil {
-			return temporal.NewApplicationErrorWithCause("fetching connections", preTriggerActivityErrorType, err)
-		}
+	connections := data.NewMap(nil)
+	for _, comp := range triggerRecipe.Component {
+		if connRef, ok := comp.Setup.(string); ok {
+			connID, err := recipe.ConnectionIDFromReference(connRef)
+			if err != nil {
+				if msg := errmsg.Message(err); msg != "" {
+					return temporal.NewApplicationErrorWithCause(msg, preTriggerActivityErrorType, err)
+				}
 
-		nsConnections = append(nsConnections, conns.Connections...)
-		if conns.NextPageToken == "" {
-			break
-		}
+				return fmt.Errorf("resolving connection reference: %w", err)
+			}
 
-		pt = conns.NextPageToken
+			if _, connAlreadyLoaded := connections.Fields[connID]; connAlreadyLoaded {
+				continue
+			}
+
+			nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
+			if err != nil {
+				return fmt.Errorf("extracting owner UID: %w", err)
+			}
+
+			conn, err := w.repository.GetNamespaceConnectionByID(ctx, nsUID, connID)
+			if err != nil {
+				if errors.Is(err, errdomain.ErrNotFound) {
+					msg := fmt.Sprintf("Connection %s doesn't exist.", connID)
+					return temporal.NewApplicationErrorWithCause(msg, preTriggerActivityErrorType, err)
+				}
+
+				return fmt.Errorf("fetching connection: %w", err)
+			}
+
+			var setup map[string]any
+			if err := json.Unmarshal(conn.Setup, &setup); err != nil {
+				return fmt.Errorf("unmarshalling setup: %w", err)
+			}
+
+			setupVal, err := data.NewValue(setup)
+			if err != nil {
+				return fmt.Errorf("transforming connection setup to value: %w", err)
+			}
+
+			connections.Fields[connID] = setupVal
+		}
 	}
 
 	for idx := range wfm.GetBatchSize() {
@@ -831,27 +851,12 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 			}
 		}
 
-		connections := data.NewMap(nil)
-		for _, conn := range nsConnections {
-			setupMap := make(map[string]any)
-			if err := json.Unmarshal(conn.Setup, &setupMap); err != nil {
-				return temporal.NewApplicationErrorWithCause("unmarshalling setup", preTriggerActivityErrorType, err)
-			}
-			connValue, err := data.NewValue(setupMap)
-			if err != nil {
-				return temporal.NewApplicationErrorWithCause("transforming connection setup to value", preTriggerActivityErrorType, err)
-			}
-
-			connections.Fields[conn.ID] = connValue
-		}
-
 		if err := wfm.Set(ctx, idx, constant.SegConnection, connections); err != nil {
-			return temporal.NewApplicationErrorWithCause("setting connections in memory", preTriggerActivityErrorType, err)
+			return fmt.Errorf("setting connections in memory: %w", err)
 		}
 
 		// Init component template
-		for compID, comp := range recipe.Component {
-
+		for compID, comp := range triggerRecipe.Component {
 			wfm.InitComponent(ctx, idx, compID)
 
 			inputVal, err := data.NewValue(comp.Input)
@@ -872,7 +877,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		}
 		output := data.NewMap(nil)
 
-		for key, o := range recipe.Output {
+		for key, o := range triggerRecipe.Output {
 			output.Fields[key] = data.NewString(o.Value)
 		}
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutputTemplate, output)

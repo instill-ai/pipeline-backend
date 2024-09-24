@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -142,32 +143,28 @@ func (c *converter) processSetup(ctx context.Context, ownerPermalink string, set
 	case map[string]any:
 		return c.processSetupMap(ctx, ownerPermalink, v), nil
 	case string:
-		if !(strings.HasPrefix(v, "${"+constant.SegConnection+".") && strings.HasSuffix(v, "}")) {
-			return nil, fmt.Errorf(
-				"%w: string setup only supports connection references (${connection.<conn-id>})",
-				errdomain.ErrInvalidArgument,
-			)
+		fetchConn := func(ctx context.Context, id string) (*datamodel.Connection, error) {
+			nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
+			if err != nil {
+				return nil, fmt.Errorf("extracting owner UID: %w", err)
+			}
+
+			return c.repository.GetNamespaceConnectionByID(ctx, nsUID, id)
 		}
 
-		// Since we allow unfinished pipeline recipes, the connection reference
-		// target might not exist. We ignore the error here.
-		id := v[9 : len(v)-1]
-		nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
+		setup, err := recipe.FetchReferencedSetup(ctx, v, fetchConn)
 		if err != nil {
-			return nil, fmt.Errorf("extracting owner UID: %w", err)
-		}
+			if !errors.Is(err, recipe.ErrInvalidConnectionReference) {
+				return nil, fmt.Errorf("resolving connection reference: %w", err)
+			}
 
-		conn, err := c.repository.GetNamespaceConnectionByID(ctx, nsUID, id)
-		if err != nil {
+			// A string setup should reference an existing connection but
+			// unfinished pipeline recipes are allowed, so we ignore the errors
+			// here.
 			return map[string]any{}, nil
 		}
 
-		var rendered map[string]any
-		if err := json.Unmarshal(conn.Setup, &rendered); err != nil {
-			return nil, fmt.Errorf("unmarshalling setup: %w", err)
-		}
-
-		return rendered, nil
+		return setup, nil
 	default:
 		return nil, fmt.Errorf(
 			"%w: setup field can only have string or map[string]any types",

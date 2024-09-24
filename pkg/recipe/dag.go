@@ -12,12 +12,13 @@ import (
 	"go/ast"
 	"go/token"
 
+	"google.golang.org/protobuf/types/known/structpb"
+
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/x/errmsg"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	componentbase "github.com/instill-ai/component/base"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
