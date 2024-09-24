@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.39.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.38.4-beta...v0.39.0-beta) (2024-09-24)
+
+
+### Features
+
+* add `endpoints` field in pipeline response ([#665](https://github.com/instill-ai/pipeline-backend/issues/665)) ([f866aa0](https://github.com/instill-ai/pipeline-backend/commit/f866aa070a8ec9e87d94cf7d30f452581fe32848))
+* **integration:** support OAuth connections ([#661](https://github.com/instill-ai/pipeline-backend/issues/661)) ([a48275b](https://github.com/instill-ai/pipeline-backend/commit/a48275b924442a2395c6c14b1bbb158188e513b4))
+
+
+### Bug Fixes
+
+* **document:** fix bugs about image to text ([#662](https://github.com/instill-ai/pipeline-backend/issues/662)) ([163a9f7](https://github.com/instill-ai/pipeline-backend/commit/163a9f70c35d72f5abdb865743646fc5a489bb32))
+* make the pipeline share-code immutable ([#666](https://github.com/instill-ai/pipeline-backend/issues/666)) ([529de97](https://github.com/instill-ai/pipeline-backend/commit/529de9746ee595fd633b61a8a06d9a82b6ff2021))
+* the pipeline output couldn't reference properties in JSON data ([#664](https://github.com/instill-ai/pipeline-backend/issues/664)) ([698cbf1](https://github.com/instill-ai/pipeline-backend/commit/698cbf10c6e21ea2a9b9cb644284230d29fb7627))
+
 ## [0.38.4-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.38.3-beta...v0.38.4-beta) (2024-09-18)
 
 
