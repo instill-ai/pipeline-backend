@@ -748,25 +748,84 @@ func (w *worker) LoadDAGDataActivity(ctx context.Context, param *LoadDAGDataActi
 
 // PreTriggerActivity clone the trigger memory from Redis to MemoryStore.
 func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivityParam) error {
-
 	logger, _ := logger.GetZapLogger(ctx)
 	logger.Info("PreTriggerActivity started")
 
 	wfm, err := w.memoryStore.LoadWorkflowMemoryFromRedis(ctx, param.WorkflowID)
 	if err != nil {
-		return temporal.NewApplicationErrorWithCause("loading pipeline memory", preTriggerActivityErrorType, err)
+		err := fmt.Errorf("loading pipeline memory: %w", err)
+		if !param.IsStreaming {
+			return err
+		}
+
+		if err := w.memoryStore.SendWorkflowStatusEvent(
+			ctx,
+			param.WorkflowID,
+			memory.Event{Event: string(memory.PipelineClosed)},
+		); err != nil {
+			logger.Error("Failed to send PipelineClosed event", zap.Error(err))
+		}
+
+		return err
 	}
+
+	preTriggerErr := func(err error) error {
+		if param.IsStreaming {
+			updateTime := time.Now()
+			for batchIdx := range wfm.GetBatchSize() {
+				if err := w.memoryStore.SendWorkflowStatusEvent(
+					ctx,
+					param.WorkflowID,
+					memory.Event{
+						Event: string(memory.PipelineStatusUpdated),
+						Data: memory.PipelineStatusUpdatedEventData{
+							PipelineEventData: memory.PipelineEventData{
+								UpdateTime: updateTime,
+								BatchIndex: batchIdx,
+								Status: map[memory.PipelineStatusType]bool{
+									memory.PipelineStatusStarted:   true,
+									memory.PipelineStatusErrored:   true,
+									memory.PipelineStatusCompleted: false,
+								},
+							},
+						},
+					},
+				); err != nil {
+					return fmt.Errorf("sending error event: %s", err)
+				}
+			}
+
+			if err := w.memoryStore.SendWorkflowStatusEvent(
+				ctx,
+				param.WorkflowID,
+				memory.Event{Event: string(memory.PipelineClosed)},
+			); err != nil {
+				logger.Error("Failed to send PipelineClosed event", zap.Error(err))
+			}
+		}
+
+		if err := w.memoryStore.PurgeWorkflowMemory(ctx, param.WorkflowID); err != nil {
+			logger.Error("Failed to purge WorkflowMemory", zap.Error(err))
+		}
+
+		if msg := errmsg.Message(err); msg != "" {
+			return temporal.NewApplicationErrorWithCause(msg, preTriggerActivityErrorType, err)
+		}
+
+		return err
+	}
+
 	var triggerRecipe *datamodel.Recipe
 	if param.SystemVariables.PipelineReleaseUID.IsNil() {
 		pipeline, err := w.repository.GetPipelineByUIDAdmin(ctx, param.SystemVariables.PipelineUID, false, false)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", preTriggerActivityErrorType, err)
+			return preTriggerErr(fmt.Errorf("loading pipeline recipe: %w", err))
 		}
 		triggerRecipe = pipeline.Recipe
 	} else {
 		release, err := w.repository.GetPipelineReleaseByUIDAdmin(ctx, param.SystemVariables.PipelineReleaseUID, false)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline recipe", preTriggerActivityErrorType, err)
+			return preTriggerErr(fmt.Errorf("loading pipeline recipe: %w", err))
 		}
 		triggerRecipe = release.Recipe
 	}
@@ -781,7 +840,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		var secrets []*datamodel.Secret
 		secrets, _, pt, err = w.repository.ListNamespaceSecrets(ctx, ownerPermalink, 100, pt, filtering.Filter{})
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", preTriggerActivityErrorType, err)
+			return preTriggerErr(fmt.Errorf("loading pipeline secret memory: %w", err))
 		}
 
 		for _, secret := range secrets {
@@ -799,11 +858,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		if connRef, ok := comp.Setup.(string); ok {
 			connID, err := recipe.ConnectionIDFromReference(connRef)
 			if err != nil {
-				if msg := errmsg.Message(err); msg != "" {
-					return temporal.NewApplicationErrorWithCause(msg, preTriggerActivityErrorType, err)
-				}
-
-				return fmt.Errorf("resolving connection reference: %w", err)
+				return preTriggerErr(fmt.Errorf("resolving connection reference: %w", err))
 			}
 
 			if _, connAlreadyLoaded := connections.Fields[connID]; connAlreadyLoaded {
@@ -812,27 +867,26 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 
 			nsUID, err := resource.GetRscPermalinkUID(ownerPermalink)
 			if err != nil {
-				return fmt.Errorf("extracting owner UID: %w", err)
+				return preTriggerErr(fmt.Errorf("extracting owner UID: %w", err))
 			}
 
 			conn, err := w.repository.GetNamespaceConnectionByID(ctx, nsUID, connID)
 			if err != nil {
 				if errors.Is(err, errdomain.ErrNotFound) {
-					msg := fmt.Sprintf("Connection %s doesn't exist.", connID)
-					return temporal.NewApplicationErrorWithCause(msg, preTriggerActivityErrorType, err)
+					err = errmsg.AddMessage(err, fmt.Sprintf("Connection %s doesn't exist.", connID))
 				}
 
-				return fmt.Errorf("fetching connection: %w", err)
+				return preTriggerErr(fmt.Errorf("fetching connection: %w", err))
 			}
 
 			var setup map[string]any
 			if err := json.Unmarshal(conn.Setup, &setup); err != nil {
-				return fmt.Errorf("unmarshalling setup: %w", err)
+				return preTriggerErr(fmt.Errorf("unmarshalling setup: %w", err))
 			}
 
 			setupVal, err := data.NewValue(setup)
 			if err != nil {
-				return fmt.Errorf("transforming connection setup to value: %w", err)
+				return preTriggerErr(fmt.Errorf("transforming connection setup to value: %w", err))
 			}
 
 			connections.Fields[connID] = setupVal
@@ -842,7 +896,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 	for idx := range wfm.GetBatchSize() {
 		pipelineSecrets, err := wfm.Get(ctx, idx, constant.SegSecret)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("loading pipeline secret memory", preTriggerActivityErrorType, err)
+			return preTriggerErr(fmt.Errorf("loading pipeline secret memory: %w", err))
 		}
 
 		for _, secret := range nsSecrets {
@@ -852,7 +906,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		}
 
 		if err := wfm.Set(ctx, idx, constant.SegConnection, connections); err != nil {
-			return fmt.Errorf("setting connections in memory: %w", err)
+			return preTriggerErr(fmt.Errorf("setting connections in memory: %w", err))
 		}
 
 		// Init component template
@@ -861,18 +915,18 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 
 			inputVal, err := data.NewValue(comp.Input)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", preTriggerActivityErrorType, err)
+				return preTriggerErr(fmt.Errorf("initializing pipeline input memory: %w", err))
 			}
 			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataInput, inputVal); err != nil {
-				return temporal.NewApplicationErrorWithCause("initializing pipeline input memory", preTriggerActivityErrorType, err)
+				return preTriggerErr(fmt.Errorf("initializing pipeline input memory: %w", err))
 			}
 
 			setupVal, err := data.NewValue(comp.Setup)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", preTriggerActivityErrorType, err)
+				return preTriggerErr(fmt.Errorf("initializing pipeline setup memory: %w", err))
 			}
 			if err := wfm.SetComponentData(ctx, idx, compID, memory.ComponentDataSetup, setupVal); err != nil {
-				return temporal.NewApplicationErrorWithCause("initializing pipeline setup memory", preTriggerActivityErrorType, err)
+				return preTriggerErr(fmt.Errorf("initializing pipeline setup memory: %w", err))
 			}
 		}
 		output := data.NewMap(nil)
@@ -882,7 +936,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		}
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutputTemplate, output)
 		if err != nil {
-			return temporal.NewApplicationErrorWithCause("initializing pipeline memory", preTriggerActivityErrorType, err)
+			return preTriggerErr(fmt.Errorf("initializing pipeline memory: %w", err))
 		}
 	}
 
@@ -907,7 +961,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 				},
 			)
 			if err != nil {
-				return temporal.NewApplicationErrorWithCause("sending event", preTriggerActivityErrorType, err)
+				return preTriggerErr(fmt.Errorf("sending event: %w", err))
 			}
 		}
 	}
