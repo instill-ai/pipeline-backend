@@ -308,6 +308,10 @@ version: v1beta
 variable:
   recipients:
     instill-format: array:string
+output:
+  resp:
+    title: Response
+    value: \${email-0.output.result}
 component:
   email-0:
     type: email
@@ -318,12 +322,8 @@ component:
       subject: "Dummy email"
       message: "Hi I'm testing integrations"
     condition: null
-    setup: \${connection.${connectionID}}
     task: TASK_SEND_EMAIL
-output:
-  resp:
-    title: Response
-    value: \${email-0.output.result}
+    setup: \${connection.${connectionID}}
 `;
 
     const nPipelines = 30;
