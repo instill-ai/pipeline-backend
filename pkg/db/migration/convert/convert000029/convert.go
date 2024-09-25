@@ -32,6 +32,10 @@ func (c *ConvertToArtifactType) migratePipeline() error {
 			isRecipeUpdated := false
 			l := c.Logger.With(zap.String("pipelineUID", p.UID.String()))
 
+			if p.Recipe == nil {
+				continue
+			}
+
 			for id, comp := range p.Recipe.Component {
 				isComponentUpdated, err := c.updateType(comp)
 				if err != nil {
@@ -45,7 +49,7 @@ func (c *ConvertToArtifactType) migratePipeline() error {
 			}
 
 			if isRecipeUpdated {
-				recipeYAML, err := yaml.Marshal(p.Recipe)
+				recipeYAML, err := yaml.Marshal(p.RecipeYAML)
 				if err != nil {
 					return fmt.Errorf("marshalling recipe: %w", err)
 				}
@@ -68,6 +72,10 @@ func (c *ConvertToArtifactType) migratePipelineRelease() error {
 			isRecipeUpdated := false
 			l := c.Logger.With(zap.String("pipelineReleaseUID", pr.UID.String()))
 
+			if pr.Recipe == nil {
+				continue
+			}
+
 			for id, comp := range pr.Recipe.Component {
 				isComponentUpdated, err := c.updateType(comp)
 				if err != nil {
@@ -81,7 +89,7 @@ func (c *ConvertToArtifactType) migratePipelineRelease() error {
 			}
 
 			if isRecipeUpdated {
-				recipeYAML, err := yaml.Marshal(pr.Recipe)
+				recipeYAML, err := yaml.Marshal(pr.RecipeYAML)
 				if err != nil {
 					return fmt.Errorf("marshalling recipe: %w", err)
 				}
