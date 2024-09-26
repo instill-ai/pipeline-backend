@@ -37,7 +37,7 @@ RUN apk add --no-cache \
     font-noto-cjk \
     ffmpeg \
     chromium \
-    ghostscript \
+    qpdf \
     && update-ms-fonts \
     && fc-cache -f \
     && python3 -m venv /opt/venv \
