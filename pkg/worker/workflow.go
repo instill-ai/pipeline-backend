@@ -143,16 +143,17 @@ type WorkFlowSignal struct {
 // The workflow is only responsible for orchestrating the DAG, not processing or reading/writing the data.
 // All data processing should be done in activities.
 func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPipelineWorkflowParam) error {
-
 	eventName := "TriggerPipelineWorkflow"
 	startTime := time.Now()
-	sCtx, span := tracer.Start(context.Background(), eventName,
-		trace.WithSpanKind(trace.SpanKindServer))
+	sCtx, span := tracer.Start(
+		context.Background(),
+		eventName,
+		trace.WithSpanKind(trace.SpanKindServer),
+	)
 	defer span.End()
 
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
-	var err error
 
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
@@ -170,6 +171,19 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	defer workflow.CompleteSession(ctx)
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
+	if param.TriggerFromAPI {
+		cleanupCtx, _ := workflow.NewDisconnectedContext(ctx)
+		defer func() {
+			if err := workflow.ExecuteActivity(
+				cleanupCtx,
+				w.ClosePipelineActivity,
+				workflowID,
+				param.IsStreaming,
+			).Get(cleanupCtx, nil); err != nil {
+				logger.Error("Failed to clean up trigger workflow", zap.Error(err))
+			}
+		}()
+	}
 
 	var ownerType mgmtpb.OwnerType
 	switch param.SystemVariables.PipelineOwnerType {
@@ -753,20 +767,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 
 	wfm, err := w.memoryStore.LoadWorkflowMemoryFromRedis(ctx, param.WorkflowID)
 	if err != nil {
-		err := fmt.Errorf("loading pipeline memory: %w", err)
-		if !param.IsStreaming {
-			return err
-		}
-
-		if err := w.memoryStore.SendWorkflowStatusEvent(
-			ctx,
-			param.WorkflowID,
-			memory.Event{Event: string(memory.PipelineClosed)},
-		); err != nil {
-			logger.Error("Failed to send PipelineClosed event", zap.Error(err))
-		}
-
-		return err
+		return fmt.Errorf("loading pipeline memory: %w", err)
 	}
 
 	preTriggerErr := func(err error) error {
@@ -795,17 +796,6 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 				}
 			}
 
-			if err := w.memoryStore.SendWorkflowStatusEvent(
-				ctx,
-				param.WorkflowID,
-				memory.Event{Event: string(memory.PipelineClosed)},
-			); err != nil {
-				logger.Error("Failed to send PipelineClosed event", zap.Error(err))
-			}
-		}
-
-		if err := w.memoryStore.PurgeWorkflowMemory(ctx, param.WorkflowID); err != nil {
-			logger.Error("Failed to purge WorkflowMemory", zap.Error(err))
 		}
 
 		if msg := errmsg.Message(err); msg != "" {
@@ -1030,11 +1020,6 @@ func (w *worker) PostTriggerActivity(ctx context.Context, param *PostTriggerActi
 		}
 	}
 
-	_ = w.memoryStore.PurgeWorkflowMemory(ctx, param.WorkflowID)
-	if param.IsStreaming {
-		_ = w.memoryStore.SendWorkflowStatusEvent(ctx, param.WorkflowID, memory.Event{Event: string(memory.PipelineClosed)})
-	}
-
 	logger.Info("PostTriggerActivity completed")
 	return nil
 }
@@ -1225,4 +1210,27 @@ func (w *worker) SchedulePipelineWorkflow(wfctx workflow.Context, param *Schedul
 	).Get(wfctx, nil)
 
 	return nil
+}
+
+// ClosePipelineActivity is the last step when triggering a workflow. The activity:
+//   - Sends a PipelineClosed event if the trigger is streamed. If this fails,
+//     the error is saved in order not to block the execution of the next step.
+//   - Purges the workflow memory.
+func (w *worker) ClosePipelineActivity(ctx context.Context, workflowID string, isStreaming bool) error {
+	var errEvent, errPurge error
+	if isStreaming {
+		evt := memory.Event{
+			Event: string(memory.PipelineClosed),
+		}
+
+		if err := w.memoryStore.SendWorkflowStatusEvent(ctx, workflowID, evt); err != nil {
+			errEvent = fmt.Errorf("sending PipelineClosed event: %w", err)
+		}
+	}
+
+	if err := w.memoryStore.PurgeWorkflowMemory(ctx, workflowID); err != nil {
+		errPurge = fmt.Errorf("purging workflow memory: %w", err)
+	}
+
+	return errors.Join(errEvent, errPurge)
 }

@@ -33,6 +33,7 @@ type Worker interface {
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 	PreTriggerActivity(ctx context.Context, param *PreTriggerActivityParam) error
 	PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error
+	ClosePipelineActivity(ctx context.Context, workflowID string, isStreaming bool) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 
 	UpdatePipelineRunActivity(ctx context.Context, param *UpdatePipelineRunActivityParam) error
