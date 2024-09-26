@@ -122,8 +122,8 @@ func (d *Document) GetImages() (mp *Array, err error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := document.ConvertPDFToImage(&document.ConvertPDFToImagesInput{
-		PDF:      dataURL.GetString(),
+	res, err := document.ConvertDocumentToImage(&document.ConvertDocumentToImagesInput{
+		Document: dataURL.GetString(),
 		Filename: d.FileName,
 	})
 	if err != nil {
