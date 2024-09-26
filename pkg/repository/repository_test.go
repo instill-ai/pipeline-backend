@@ -16,6 +16,7 @@ import (
 	"github.com/go-redis/redismock/v9"
 	"github.com/gofrs/uuid"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/stretchr/testify/require"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 	"go.uber.org/zap"
@@ -480,6 +481,7 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 	c.Check(got1.PipelineUID, qt.Equals, p.UID)
 	c.Check(got1.Status, qt.Equals, pipelineRun.Status)
 	c.Check(got1.Source, qt.Equals, pipelineRun.Source)
+	c.Check(got1.Pipeline.UID, qt.Equals, p.UID)
 
 	componentRun := &datamodel.ComponentRun{
 		PipelineTriggerUID: pipelineRun.PipelineTriggerUID,
@@ -611,10 +613,121 @@ func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			if testCase.canView {
 				c.Check(len(response), qt.Equals, 1)
+				// c.Log(response[0].Pipeline.ID)
+				// c.Check(response[0].Pipeline.ID, qt.Equals, p.ID)
 			} else {
 				c.Check(len(response), qt.Equals, 0)
 			}
 		})
 	}
+}
 
+func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
+	c := qt.New(t)
+	ctx := context.Background()
+
+	cache, _ := redismock.NewClientMock()
+
+	t0 := time.Now().UTC()
+
+	mockUIDs := make([]uuid.UUID, 5)
+	for i := range len(mockUIDs) {
+		mockUIDs[i] = uuid.Must(uuid.NewV4())
+	}
+	user1 := mockUIDs[0].String()
+	namespace1 := mockUIDs[1].String()
+	now := time.Now()
+
+	pipelineUID, ownerUID := mockUIDs[2], mockUIDs[3]
+	pipelineUID2 := mockUIDs[4]
+	ownerPermalink := "users/" + ownerUID.String()
+	pipelineID := "test"
+	pipelineID2 := "test2"
+
+	tx := db.Begin()
+	c.Cleanup(func() { tx.Rollback() })
+
+	repo := NewRepository(tx, cache)
+
+	p := &datamodel.Pipeline{
+		Owner: ownerPermalink,
+		ID:    pipelineID,
+		BaseDynamic: datamodel.BaseDynamic{
+			UID:        pipelineUID,
+			CreateTime: t0,
+			UpdateTime: t0,
+		},
+	}
+	err := repo.CreateNamespacePipeline(ctx, p)
+	require.NoError(t, err)
+
+	p2 := &datamodel.Pipeline{
+		Owner: ownerPermalink,
+		ID:    pipelineID2,
+		BaseDynamic: datamodel.BaseDynamic{
+			UID:        pipelineUID2,
+			CreateTime: t0,
+			UpdateTime: t0,
+		},
+	}
+	err = repo.CreateNamespacePipeline(ctx, p2)
+	require.NoError(t, err)
+
+	got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+	require.NoError(t, err)
+	require.Zero(t, got.NumberOfRuns)
+	require.True(t, got.LastRunTime.IsZero())
+
+	got, err = repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID2, true, false)
+	require.NoError(t, err)
+	require.Zero(t, got.NumberOfRuns)
+	require.True(t, got.LastRunTime.IsZero())
+
+	pipelineRun := &datamodel.PipelineRun{
+		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
+		PipelineUID:        p.UID,
+		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
+		TriggeredBy:        user1,
+		Namespace:          namespace1,
+		StartedTime:        now.Add(-1 * time.Hour),
+		TotalDuration:      null.IntFrom(42),
+		Components:         nil,
+	}
+
+	err = repo.UpsertPipelineRun(ctx, pipelineRun)
+	require.NoError(t, err)
+
+	resp, _, err := repo.GetPaginatedPipelineRunsByCreditOwner(ctx, namespace1, now.Add(-3*time.Hour), now.Add(-2*time.Hour), 0, 10, filtering.Filter{}, ordering.OrderBy{})
+	require.NoError(t, err)
+	require.Len(t, resp, 0)
+
+	resp, _, err = repo.GetPaginatedPipelineRunsByCreditOwner(ctx, namespace1, now.Add(-2*time.Hour), now, 0, 10, filtering.Filter{}, ordering.OrderBy{})
+	require.NoError(t, err)
+	require.Len(t, resp, 1)
+	require.Equal(t, resp[0].PipelineTriggerUID, pipelineRun.PipelineTriggerUID)
+	require.Equal(t, resp[0].Pipeline.ID, p.ID)
+
+	pipelineRun2 := &datamodel.PipelineRun{
+		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
+		PipelineUID:        p2.UID,
+		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
+		TriggeredBy:        user1,
+		Namespace:          namespace1,
+		StartedTime:        now.Add(-1 * time.Hour),
+		TotalDuration:      null.IntFrom(42),
+		Components:         nil,
+	}
+
+	err = repo.UpsertPipelineRun(ctx, pipelineRun2)
+	require.NoError(t, err)
+
+	resp, _, err = repo.GetPaginatedPipelineRunsByCreditOwner(ctx, namespace1, now.Add(-2*time.Hour), now, 0, 10, filtering.Filter{}, ordering.OrderBy{})
+	require.NoError(t, err)
+	require.Len(t, resp, 2)
+	require.Equal(t, resp[0].PipelineTriggerUID, pipelineRun.PipelineTriggerUID)
+	require.Equal(t, resp[0].Pipeline.ID, p.ID)
+	require.Equal(t, resp[1].PipelineTriggerUID, pipelineRun2.PipelineTriggerUID)
+	require.Equal(t, resp[1].Pipeline.ID, p2.ID)
 }

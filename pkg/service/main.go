@@ -78,6 +78,7 @@ type Service interface {
 
 	ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest, filter filtering.Filter) (*pb.ListPipelineRunsResponse, error)
 	ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error)
+	ListPipelineRunsByCreditOwner(ctx context.Context, req *pb.ListPipelineRunsByCreditOwnerRequest, filter filtering.Filter) (*pb.ListPipelineRunsByCreditOwnerResponse, error)
 
 	GetIntegration(_ context.Context, id string, _ pb.View) (*pb.Integration, error)
 	ListIntegrations(context.Context, *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error)

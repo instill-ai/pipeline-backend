@@ -14,10 +14,12 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
-	"github.com/instill-ai/x/paginate"
 
 	component "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+
+	"github.com/instill-ai/x/paginate"
+
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 

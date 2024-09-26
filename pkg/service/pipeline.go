@@ -1953,3 +1953,72 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 		PageSize:      int32(pageSize),
 	}, nil
 }
+
+func (s *service) ListPipelineRunsByCreditOwner(ctx context.Context, req *pipelinepb.ListPipelineRunsByCreditOwnerRequest,
+	filter filtering.Filter) (*pipelinepb.ListPipelineRunsByCreditOwnerResponse, error) {
+	page := s.pageInRange(req.GetPage())
+	pageSize := s.pageSizeInRange(req.GetPageSize())
+	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
+
+	log, _ := logger.GetZapLogger(ctx)
+
+	orderBy, err := ordering.ParseOrderBy(req)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now().UTC()
+	startedTimeBegin := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	if req.GetStart().IsValid() {
+		startedTimeBegin = req.GetStart().AsTime()
+	}
+	startedTimeEnd := now
+	if req.GetStop().IsValid() {
+		startedTimeEnd = req.GetStop().AsTime()
+	}
+
+	if startedTimeBegin.After(startedTimeEnd) {
+		return nil, fmt.Errorf("time range end time %s is earlier than start time %s", startedTimeEnd.Format(time.RFC3339), startedTimeBegin.Format(time.RFC3339))
+	}
+	log.Info("ListPipelineRunsByCreditOwner", zap.Time("startedTimeBegin", startedTimeBegin), zap.Time("startedTimeEnd", startedTimeEnd))
+
+	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsByCreditOwner(ctx, requesterUID, startedTimeBegin, startedTimeEnd,
+		page, pageSize, filter, orderBy)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get pipeline runs: %w", err)
+	}
+
+	requesterIDMap := make(map[string]struct{})
+	for _, pipelineRun := range pipelineRuns {
+		requesterIDMap[pipelineRun.TriggeredBy] = struct{}{}
+	}
+
+	runnerMap := make(map[string]*string)
+	for requesterID := range requesterIDMap {
+		runner, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: requesterID})
+		if err != nil {
+			return nil, err
+		}
+		log.Info("CheckNamespaceByUIDAdmin finished", zap.String("RequesterUID", requesterID), zap.String("runnerId", runner.Id))
+		runnerMap[requesterID] = &runner.Id
+	}
+
+	pbPipelineRuns := make([]*pipelinepb.PipelineRun, len(pipelineRuns))
+
+	var pbRun *pipelinepb.PipelineRun
+	for i, run := range pipelineRuns {
+		pbRun, err = s.convertPipelineRunToPB(run)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert pipeline run: %w", err)
+		}
+		pbRun.RunnerId = runnerMap[run.TriggeredBy]
+		pbPipelineRuns[i] = pbRun
+	}
+
+	return &pipelinepb.ListPipelineRunsByCreditOwnerResponse{
+		PipelineRuns: pbPipelineRuns,
+		TotalSize:    int32(totalCount),
+		Page:         int32(page),
+		PageSize:     int32(pageSize),
+	}, nil
+}
