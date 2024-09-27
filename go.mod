@@ -18,7 +18,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
-	github.com/instill-ai/component v0.28.0-beta
+	github.com/instill-ai/component v0.28.0-beta.0.20240926154519-34698241185f
 	github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240922180636-80bd4bf3bb56
 	github.com/instill-ai/usage-client v0.2.4-alpha.0.20240123081026-6c78d9a5197a
 	github.com/instill-ai/x v0.4.0-alpha
@@ -95,7 +95,6 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/gage-technologies/mistral-go v1.1.0 // indirect
-	github.com/gen2brain/go-fitz v1.23.7 // indirect
 	github.com/go-chi/chi/v5 v5.1.0 // indirect
 	github.com/go-openapi/analysis v0.21.2 // indirect
 	github.com/go-openapi/errors v0.22.0 // indirect
