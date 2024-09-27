@@ -180,9 +180,13 @@ var outputOnlyConnectionFields = []string{
 // verifies the setup fulfills its integration's schema.
 // Note that the connection input will be modified.
 func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integration) error {
-	if err := conn.Validate(); err != nil {
-		return err
-	}
+	// https://github.com/instill-ai/protobufs/pull/475 removed
+	// protoc-gen-validate because it broke the generated code used in the
+	// Python SDK.
+	// TODO reintroduce protoc-gen-validate and leverage struct validators.
+	// if err := conn.Validate(); err != nil {
+	// 	return err
+	// }
 
 	switch conn.GetMethod() {
 	case pb.Connection_METHOD_DICTIONARY:
