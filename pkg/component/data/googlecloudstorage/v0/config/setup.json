@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "json-key": {
+      "description": "Contents of the JSON key file with access to the bucket.",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 1,
+      "instillUIMultiline": true,
+      "title": "JSON Key File contents",
+      "type": "string"
+    }
+  },
+  "required": [
+    "json-key"
+  ],
+  "instillEditOnNodeFields": [
+    "json-key"
+  ],
+  "title": "Google Cloud Storage Connection",
+  "type": "object"
+}

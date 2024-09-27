@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "capture-token": {
+      "description": "Fill in your Capture token in the Capture App. To access your tokens, you need a Capture App account and you can sign in with email or wallet to acquire the Capture Token.",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "Capture token",
+      "type": "string"
+    }
+  },
+  "required": [
+    "capture-token"
+  ],
+  "instillEditOnNodeFields": [
+    "capture-token"
+  ],
+  "title": "Numbers Protocol Connection",
+  "type": "object"
+}

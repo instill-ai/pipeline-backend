@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "token": {
+      "description": "Fill in your Asana Personal Access Token (PAT). You can generate one from <a href=\"https://app.asana.com/0/my-apps\">developer console</a>",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "Token",
+      "type": "string"
+    }
+  },
+  "required": [
+    "token"
+  ],
+  "instillEditOnNodeFields": [
+    "token"
+  ],
+  "title": "Asana Connection",
+  "type": "object"
+}

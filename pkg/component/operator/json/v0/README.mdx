@@ -1,0 +1,207 @@
+---
+title: "JSON"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP JSON component https://github.com/instill-ai/instill-core"
+---
+
+The JSON component is an operator component that allows users to manipulate and convert JSON entities.
+It can carry out the following tasks:
+- [Marshal](#marshal)
+- [Unmarshal](#unmarshal)
+- [jq](#jq)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/json/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/json/v0/config/tasks.json) files respectively.
+
+
+
+## Supported Tasks
+
+### Marshal
+
+Convert JSON to a string
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_MARSHAL` |
+| JSON (required) | `json` | any | JSON entity to be marshaled. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| JSON string | `string` | string | String representation of the JSON input |
+</div>
+
+### Unmarshal
+
+Convert a string to JSON
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UNMARSHAL` |
+| String (required) | `string` | string | JSON string to be unmarshaled. It can represent any valid JSON datatype (e.g. number, string, hash, array). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| JSON | `json` | any | JSON entity extracted from the string input |
+</div>
+
+### jq
+
+Process JSON through a `jq` command
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_JQ` |
+| JSON value | `json-value` | any | JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+| Filter (required) | `jq-filter` | string | Filter, in `jq` syntax, that will be applied to the JSON input |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Results | `results` | array | The `jq` command results |
+</div>
+[`jq`](https://jqlang.github.io/jq/) defines a syntax to "transform JSON in
+various ways, by selecting, iterating, reducing and otherwise mangling JSON
+documents". Depending on the command input and the `jq` filter, the type and
+shape of the results may vary.
+
+Here are some examples on how the `jq` syntax works.
+
+| Input JSON | `jq` filter | Output |
+| :--- | :--- | :--- |
+| `{"foo": 128}` | `.foo` | `[128]` |
+| `{"a": {"b": 42}}` | `.a.b` | `[42]` |
+| `{"id": "sample", "10": {"b": 42}}` | `{(.id): .["10"].b}` | `[{ "sample": 42 }]` |
+| `[{"id":1},{"id":2},{"id":3}]` | `.[] \| .id` | `[1, 2, 3]` |
+| `{"a":1,"b":2}` | `.a += 1 \| .b *= 2` | `[{ "a": 2, "b": 4 }]` |
+| `{"a":1} [2] 3` | `. as {$a} ?// [$a] ?// $a \| $a` | `[1, 2, 3]` |
+## Example Recipes
+
+Recipe for the [Resume Screening](https://instill.tech/instill-ai/pipelines/structured-resume-screening/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  json-0:
+    type: json
+    task: TASK_UNMARSHAL
+    input:
+      string: ${openai-0.output.texts[0]}
+  openai-0:
+    type: openai
+    task: TASK_TEXT_GENERATION
+    input:
+      model: gpt-4o-2024-08-06
+      n: 1
+      prompt: |
+        Given an ${variable.resume} and a ${pdf-to-text.output.body}, create an automated system to screen and convert this information into a structured candidate profile. The system should extract key information such as:
+
+        Skills: Identify and list relevant skills mentioned in the resume.
+        Experience: Extract work history including job titles, companies, durations, and responsibilities from the resume.
+        Education: Capture educational background including degrees, institutions, and graduation dates from the resume.
+        Certifications: Identify any professional certifications or additional qualifications in the resume.
+        Fit Score: Calculate a fit score based on the alignment of the candidate's profile with the job description, taking into account required skills, experience level, and education.
+      response-format:
+        json-schema: |-
+          {
+              "name": "resume_response",
+              "strict": true,
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "name": {
+                          "type": "string"
+                      },
+                      "education": {
+                          "type": "string"
+                      },
+                      "score": {
+                          "type": "number"
+                      },
+                      "reasoning": {
+                          "type": "string"
+                      },
+                      "experience": {
+                          "type": "array",
+                          "items": {
+                              "type": "string"
+                          }
+                      },
+                      "skills": {
+                          "type": "array",
+                          "items": {
+                              "type": "string"
+                          }
+                      }
+                  },
+                  "required": [
+                      "name",
+                      "education",
+                      "score",
+                      "reasoning",
+                      "experience",
+                      "skills"
+                  ],
+                  "additionalProperties": false
+              }
+          }
+        type: json_schema
+      system-message: You are a helpful assistant.
+      temperature: 1
+      top-p: 1
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+  pdf-to-text:
+    type: document
+    task: TASK_CONVERT_TO_TEXT
+    input:
+      document: ${variable.resume}
+variable:
+  job-description:
+    title: job description
+    description: The text of the job description.
+    instill-format: string
+  resume:
+    title: resume
+    description: The PDF file of the candidates resume
+    instill-format: "*/*"
+output:
+  output:
+    title: output
+    value: ${json-0.output.json}
+```

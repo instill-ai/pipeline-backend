@@ -1,0 +1,172 @@
+---
+title: "Document"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Document component https://github.com/instill-ai/instill-core"
+---
+
+The Document component is an operator component that allows users to manipulate Document files.
+It can carry out the following tasks:
+- [Convert to Markdown](#convert-to-markdown)
+- [Convert to Text](#convert-to-text)
+- [Convert to Images](#convert-to-images)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/document/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/document/v0/config/tasks.json) files respectively.
+
+
+
+## Supported Tasks
+
+### Convert to Markdown
+
+Convert document to text in Markdown format.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CONVERT_TO_MARKDOWN` |
+| Document (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML/XLSX/XLS/CSV to be converted to text in Markdown format |
+| Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf' |
+| Display Image Tag | `display-image-tag` | boolean | Whether to display image tag in the markdown text. Default is 'false'. It is only applicable for convert-2024-08-28 converter. And, it is only applicable for the type of PPTX/PPT/DOCX/DOC/PDF. |
+| Display All Page Image | `display-all-page-image` | boolean | Whether to respond the whole page as the images if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Body | `body` | string | Markdown text converted from the PDF document |
+| Filename (optional) | `filename` | string | The name of the file |
+| Images (optional) | `images` | array[string] | Images extracted from the document |
+| Error (optional) | `error` | string | Error message if any during the conversion process |
+| All Page Images (optional) | `all-page-images` | array[string] | The image contains all the pages in the document if we detect there could be images in the page. It will only support DOCX/DOC/PPTX/PPT/PDF. |
+</div>
+
+### Convert to Text
+
+Convert document to text.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CONVERT_TO_TEXT` |
+| Document (required) | `document` | string | Base64 encoded PDF/DOC/DOCX/XML/HTML/RTF/MD/PPTX/ODT/TIF/CSV/TXT/PNG document to be converted to plain text |
+| Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf' |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Body | `body` | string | Plain text converted from the document |
+| Filename (optional) | `filename` | string | The name of the file |
+| Meta | `meta` | object | Metadata extracted from the document |
+| MSecs | `msecs` | number | Time taken to convert the document |
+| Error | `error` | string | Error message if any during the conversion process |
+</div>
+
+### Convert to Images
+
+Convert Document to images.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CONVERT_TO_IMAGES` |
+| PDF (required) | `document` | string | Base64 encoded PDF/DOCX/DOC/PPT/PPTX to be converted to images |
+| Filename | `filename` | string | The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf' |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Images | `images` | array[string] | Images converted from the document |
+| Filenames (optional) | `filenames` | array[string] | The filenames of the images. The filenames will be appended with the page number. e.g. 'example-1.jpg' |
+</div>
+## Example Recipes
+
+Recipe for the [Content Reviewer](https://instill.tech/instill-ai/pipelines/contract-reviewer/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  gpt-4-question:
+    type: openai
+    task: TASK_TEXT_GENERATION
+    input:
+      model: gpt-4o
+      prompt: |-
+        Given the contract content:
+        --
+        ${pdf-to-text.output.body}
+        --
+        Please help answer the question: ${variable.question}
+      response-format:
+        type: text
+      system-message: You are a professional and versatile lawyer with diverse lay backgrounds who reviews, investigates and spot pitfalls in a contract.
+      top-p: 1
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+      organization: org-iadti51GxgS0qjX6LJmn75Ti
+  gpt-4-summary:
+    type: openai
+    task: TASK_TEXT_GENERATION
+    input:
+      model: gpt-4o
+      prompt: |-
+        Please help check this contract content and tell me what kind of the contract it is about in one concise, short, and simple sentence such as "it is an NDA", "it is an job agency contract", etc.:
+        ${pdf-to-text.output.body}
+      response-format:
+        type: text
+      system-message: You are a professional and versatile lawyer with diverse lay backgrounds who reviews, investigates and spot pitfalls in a contract.
+      top-p: 1
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+      organization: org-iadti51GxgS0qjX6LJmn75Ti
+  pdf-to-text:
+    type: document
+    task: TASK_CONVERT_TO_TEXT
+    input:
+      document: ${variable.contract_pdf_file}
+variable:
+  contract_pdf_file:
+    title: Contract PDF file
+    instill-format: "*/*"
+  question:
+    title: Question
+    instill-format: string
+
+output:
+  contract_question_answering:
+    title: Contract Question Answering
+    value: ${gpt-4-question.output.texts}
+    instill-ui-order: 1
+  contract_summary:
+    title: Contract Summary
+    value: ${gpt-4-summary.output.texts}
+```

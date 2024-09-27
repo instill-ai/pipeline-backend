@@ -14,8 +14,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
-	componentbase "github.com/instill-ai/component/base"
-	componentstore "github.com/instill-ai/component/store"
+	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
+	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 )
 
 // TaskQueue is the Temporal task queue name for pipeline-backend

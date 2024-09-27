@@ -1,0 +1,114 @@
+---
+title: "Audio"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Audio component https://github.com/instill-ai/instill-core"
+---
+
+The Audio component is an operator component that allows users to extract and manipulate audio from different sources.
+It can carry out the following tasks:
+- [Chunk Audios](#chunk-audios)
+- [Slice Audio](#slice-audio)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/audio/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/audio/v0/config/tasks.json) files respectively.
+
+
+
+## Supported Tasks
+
+### Chunk Audios
+
+Split audio file into chunks
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CHUNK_AUDIOS` |
+| Audio (required) | `audio` | string | Base64 encoded audio file to be split |
+| Chunk count (required) | `chunk-count` | integer | Number of chunks to equally split the audio into |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Audios | `audios` | array[string] | A list of base64 encoded audios |
+</div>
+
+### Slice Audio
+
+Specify a time range to slice an audio file
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SLICE_AUDIO` |
+| Audio (required) | `audio` | string | Base64 encoded audio file to be sliced |
+| Start time (required) | `start-time` | integer | Start time of the slice in seconds |
+| End time (required) | `end-time` | integer | End time of the slice in seconds |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Audio | `audio` | string | Base64 encoded audio slice |
+</div>
+## Example Recipes
+
+Recipe for the [Audio Transcription Generator](https://instill.tech/instill-ai/pipelines/audio-transcription/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  audio-spliter:
+    type: audio
+    task: TASK_SLICE_AUDIO
+    input:
+      audio: ${variable.audio}
+      end-time: ${variable.end_time}
+      start-time: ${variable.start_time}
+  get-transcription:
+    type: openai
+    task: TASK_SPEECH_RECOGNITION
+    input:
+      audio: ${audio-spliter.output.audio}
+      model: whisper-1
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  audio:
+    title: audio
+    description: the audio you want to get the transcription from
+    instill-format: audio/*
+  end_time:
+    title: end-time
+    description: the end time you want to extract in seconds i.e. 2 mins is 120 seconds
+    instill-format: number
+  start_time:
+    title: start-time
+    description: the start time you want to extract in seconds i.e. 2 mins is 120 seconds
+    instill-format: number
+output:
+  result:
+    title: result
+    value: ${get-transcription.output.text}
+```

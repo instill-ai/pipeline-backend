@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "api-key": {
+      "description": "Fill in the API key for the Elasticsearch instance (please use encoded one)",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 1,
+      "title": "API Key",
+      "type": "string"
+    },
+    "cloud-id": {
+      "description": "Fill in the Cloud ID for the Elasticsearch instance",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "Cloud ID",
+      "type": "string"
+    }
+  },
+  "required": [
+    "api-key",
+    "cloud-id"
+  ],
+  "instillEditOnNodeFields": [
+    "api-key",
+    "cloud-id"
+  ],
+  "title": "Elasticsearch Connection",
+  "type": "object"
+}

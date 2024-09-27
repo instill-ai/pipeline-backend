@@ -1,0 +1,172 @@
+---
+title: "Anthropic"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Anthropic component https://github.com/instill-ai/instill-core"
+---
+
+The Anthropic component is an AI component that allows users to connect the AI models served on the Anthropic Platform.
+It can carry out the following tasks:
+- [Text Generation Chat](#text-generation-chat)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/anthropic/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/anthropic/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with Anthropic, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key | `api-key` | string | Fill in your Anthropic API key. To find your keys, visit the Anthropic console page.  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Text Generation Chat
+
+Anthropic's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as "prompts". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how to successfully complete a task.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
+| Model Name (required) | `model-name` | string | The Anthropic model to be used |
+| Prompt (required) | `prompt` | string | The prompt text |
+| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant." |
+| Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support sending images via image-url, use this field instead) |
+| [Chat history](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
+| Seed | `seed` | integer | The seed (Note: Not supported by Anthropic Models) |
+| Temperature | `temperature` | number | The temperature for sampling |
+| Top K | `top-k` | integer | Top k for sampling |
+| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
+</div>
+
+
+<details>
+<summary> Input Objects in Text Generation Chat</summary>
+
+<h4 id="text-generation-chat-chat-history">Chat History</h4>
+
+Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Content](#text-generation-chat-content) | `content` | array | The message content  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
+</div>
+<h4 id="text-generation-chat-content">Content</h4>
+
+The message content
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL  |
+| Text | `text` | string | The text content.  |
+| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+</div>
+<h4 id="text-generation-chat-image-url">Image URL</h4>
+
+The image URL
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | Model Output |
+| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Usage tokens in Anthropic |
+</div>
+
+<details>
+<summary> Output Objects in Text Generation Chat</summary>
+
+<h4 id="text-generation-chat-usage">Usage</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Tokens | `input-tokens` | number | The input tokens used by Anthropic |
+| Output Tokens | `output-tokens` | number | The output tokens used by Anthropic |
+</div>
+</details>
+## Example Recipes
+
+Recipe for the [List GitHub Repo Issues](https://instill.tech/instill-ai/pipelines/github-demo/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  anthropic-0:
+    type: anthropic
+    task: TASK_TEXT_GENERATION_CHAT
+    input:
+      max-new-tokens: 1000
+      model-name: claude-3-5-sonnet-20240620
+      prompt: Summarise and pick the most important issues from this list ${github.output.issues}
+      system-message: You are a helpful assistant.
+      temperature: 0.7
+      top-k: 10
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+  github:
+    type: github
+    task: TASK_LIST_ISSUES
+    input:
+      direction: desc
+      no-pull-request: false
+      owner: ${variable.repository-owner}
+      page: 1
+      per-page: 30
+      repository: ${variable.repository-name}
+      since: "2021-01-01T00:00:00Z"
+      sort: created
+      state: open
+    setup:
+      token: ${secret.github-demo}
+variable:
+  repository-name:
+    title: Repository Name
+    description: Name of the repository i.e. instill-core
+    instill-format: string
+  repository-owner:
+    title: Repository Owner
+    description: Name of the repository owner i.e. instill-ai
+    instill-format: string
+output:
+  result:
+    title: Result
+    value: ${anthropic-0.output.text}
+```

@@ -1,0 +1,714 @@
+{
+  "TASK_QUERY": {
+    "instillShortDescription": "Perform a vector search on a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to perform vector similarity search on",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "vector": {
+          "description": "An array of dimensions for the vector query.",
+          "instillAcceptFormats": [
+            "array:number",
+            "array:integer"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "A dimension of the vector",
+            "example": 0.8167237,
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "Vector",
+          "type": "array"
+        },
+        "n-results": {
+          "description": "The N amount of items to return from the vector search operation",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "N Results",
+          "type": "integer"
+        },
+        "filter": {
+          "description": "The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters)",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Filter",
+          "type": "object",
+          "required": []
+        },
+        "filter-document": {
+          "description": "The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents)",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Filter Document",
+          "type": "string"
+        },
+        "fields": {
+          "description": "The fields to be returned from the vector search operation",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "A field to be returned",
+            "type": "string",
+            "example": "field"
+          },
+          "minItems": 1,
+          "title": "Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection-name",
+        "vector",
+        "n-results"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Vector search status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        },
+        "result": {
+          "description": "Result of the vector search operation",
+          "instillUIOrder": 0,
+          "title": "Result",
+          "type": "object",
+          "properties": {
+            "ids": {
+              "description": "The ids returned from the vector search operation",
+              "instillUIOrder": 0,
+              "title": "IDs",
+              "type": "array",
+              "required": [],
+              "instillFormat": "array:string",
+              "items": {
+                "description": "An id of the item",
+                "type": "string",
+                "example": "c8faa-4b3b-4b3b-4b3b"
+              }
+            },
+            "items": {
+              "description": "The items returned from the vector search operation",
+              "instillUIOrder": 1,
+              "required": [],
+              "title": "Items",
+              "type": "array",
+              "instillFormat": "array:semi-structured/json",
+              "items": {
+                "title": "Point",
+                "format": "semi-structured/json",
+                "type": "object",
+                "required": []
+              }
+            },
+            "vectors": {
+              "description": "The vectors returned from the vector search operation",
+              "instillUIOrder": 2,
+              "title": "Vectors",
+              "type": "array",
+              "required": [],
+              "instillFormat": "array:array",
+              "items": {
+                "description": "The vector from array vectors",
+                "type": "array",
+                "instillFormat": "array:number",
+                "required": [],
+                "items": {
+                  "description": "A dimension of the vector",
+                  "example": 0.8167237,
+                  "type": "number"
+                }
+              }
+            },
+            "metadata": {
+              "description": "The metadata returned from the vector search operation",
+              "instillUIOrder": 3,
+              "title": "Metadata",
+              "type": "array",
+              "required": [],
+              "instillFormat": "array:semi-structured/json",
+              "items": {
+                "title": "Metadatum",
+                "format": "semi-structured/json",
+                "type": "object",
+                "required": []
+              }
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "status",
+        "result"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_BATCH_UPSERT": {
+    "instillShortDescription": "Upsert multiple vector items into a collection, existing items will be updated",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to upsert the item into",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "array-id": {
+          "description": "The array of id",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "An id of the point",
+            "type": "string",
+            "example": 1
+          },
+          "minItems": 1,
+          "title": "Array ID",
+          "type": "array"
+        },
+        "array-metadata": {
+          "description": "The array of vector metadata",
+          "instillAcceptFormats": [
+            "array:semi-structured/*",
+            "array:semi-structured/json",
+            "array:semi-structured/object",
+            "array:object"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "minItems": 1,
+          "title": "Array Metadata",
+          "type": "array",
+          "items": {
+            "description": "The vector metadata",
+            "title": "Metadatum",
+            "type": "object",
+            "required": []
+          }
+        },
+        "array-vector": {
+          "description": "The array of vector values",
+          "instillAcceptFormats": [
+            "array:array"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "An array of dimensions for the vector value",
+            "type": "array",
+            "instillAcceptFormats": [
+              "array:number",
+              "array:integer"
+            ],
+            "items": {
+              "description": "A dimension of the vector",
+              "example": 0.8167237,
+              "type": "number"
+            }
+          },
+          "minItems": 1,
+          "title": "Array Vector",
+          "type": "array"
+        },
+        "array-document": {
+          "description": "The array of document string values",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "A document string value",
+            "type": "string",
+            "example": "document"
+          },
+          "minItems": 1,
+          "title": "Array Document",
+          "type": "array"
+        },
+        "array-uri": {
+          "description": "The array of uri",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "An uri of the point",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Array URI",
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection-name",
+        "array-id",
+        "array-metadata",
+        "array-vector"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Batch add status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UPSERT": {
+    "instillShortDescription": "Upsert a vector item into a collection, existing item will be updated",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to upsert the item into",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "id": {
+          "description": "The ID of the item",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "ID",
+          "type": "string"
+        },
+        "metadata": {
+          "description": "The vector metadata",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Metadata",
+          "type": "object",
+          "required": []
+        },
+        "vector": {
+          "description": "An array of dimensions for the vector value",
+          "instillAcceptFormats": [
+            "array:number",
+            "array:integer"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "A dimension of the vector",
+            "example": 0.8167237,
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "Vector",
+          "type": "array"
+        },
+        "document": {
+          "description": "The document string value",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Document",
+          "type": "string"
+        },
+        "uri": {
+          "description": "The uri of the item",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "URI",
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection-name",
+        "id",
+        "metadata",
+        "vector"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Add status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE": {
+    "instillShortDescription": "Delete vector items from a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to delete the object from",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "id": {
+          "description": "The ID of the item",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "ID",
+          "type": "string"
+        },
+        "filter": {
+          "description": "The metadata filter to be applied to the data with Chroma where filter, please refer to [using-where-filters](https://docs.trychroma.com/guides#using-where-filters)",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Filter",
+          "type": "object",
+          "required": []
+        },
+        "filter-document": {
+          "description": "The document content filter to be applied to the data, please refer to [filtering-by-document-contents](https://docs.trychroma.com/guides#filtering-by-document-contents)",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Filter Document",
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection-name"
+      ],
+      "instillEditOnNodeFields": [
+        "collection-name",
+        "filter"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Delete status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_CREATE_COLLECTION": {
+    "instillShortDescription": "Create a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to create",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "metadata": {
+          "description": "The metadata of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections)",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Config",
+          "type": "object",
+          "required": []
+        },
+        "configuration": {
+          "description": "The configuration of the collection. Please refer to [creating-inspecting-and-deleting-collection](https://docs.trychroma.com/guides#creating,-inspecting,-and-deleting-collections)",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Configuration",
+          "type": "object",
+          "required": []
+        },
+        "get-or-create": {
+          "description": "If true, the collection will be created if it does not exist",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Get or Create",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "collection-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Create collection status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE_COLLECTION": {
+    "instillShortDescription": "Delete a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to delete",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Delete collection status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

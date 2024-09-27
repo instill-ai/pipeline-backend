@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "uri": {
+      "description": "Fill in your MongoDB URI",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "URI",
+      "type": "string"
+    }
+  },
+  "required": [
+    "uri"
+  ],
+  "instillEditOnNodeFields": [
+    "uri"
+  ],
+  "title": "MongoDB Connection",
+  "type": "object"
+}

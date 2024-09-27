@@ -29,12 +29,11 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 
-	componentstore "github.com/instill-ai/component/store"
-	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
-	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
-
+	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
+	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
+	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 var db *gorm.DB

@@ -1,0 +1,312 @@
+---
+title: "Mistral AI"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Mistral AI component https://github.com/instill-ai/instill-core"
+---
+
+The Mistral AI component is an AI component that allows users to connect the AI models served on the Mistral AI Platform.
+It can carry out the following tasks:
+- [Text Generation Chat](#text-generation-chat)
+- [Text Embeddings](#text-embeddings)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/mistralai/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/mistralai/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with Mistral AI, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key | `api-key` | string | Fill in your Mistral API key. To find your keys, visit the Mistral AI platform page.  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Text Generation Chat
+
+Mistral AI's text generation models (often called generative pre-trained transformers or large language models) have been trained to understand natural language, code, and images. The models provide text outputs in response to their inputs. The inputs to these models are also referred to as "prompts". Designing a prompt is essentially how you “program” a large language model model, usually by providing instructions or some examples of how to successfully complete a task
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
+| Model Name (required) | `model-name` | string | The Mistral model to be used |
+| Prompt (required) | `prompt` | string | The prompt text |
+| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant." |
+| Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The Mistral models are not trained to process images, thus images will be omitted) |
+| [Chat history](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\} |
+| Seed | `seed` | integer | The seed |
+| Temperature | `temperature` | number | The temperature for sampling |
+| Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text (Note: The Mistral models does not support top-k sampling) |
+| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
+| Top P | `top-p` | number | Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p (default=0.5) |
+| Safe | `safe` | boolean | Safe generation mode |
+</div>
+
+
+<details>
+<summary> Input Objects in Text Generation Chat</summary>
+
+<h4 id="text-generation-chat-chat-history">Chat History</h4>
+
+Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Content](#text-generation-chat-content) | `content` | array | The message content  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
+</div>
+<h4 id="text-generation-chat-content">Content</h4>
+
+The message content
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL  |
+| Text | `text` | string | The text content.  |
+| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image_url`</li></ul></details>  |
+</div>
+<h4 id="text-generation-chat-image-url">Image URL</h4>
+
+The image URL
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | Model Output |
+| [Usage](#text-generation-chat-usage) (optional) | `usage` | object | Token usage on the Mistral platform text generation models |
+</div>
+
+<details>
+<summary> Output Objects in Text Generation Chat</summary>
+
+<h4 id="text-generation-chat-usage">Usage</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Tokens | `input-tokens` | number | The input tokens used by Mistral models |
+| Output Tokens | `output-tokens` | number | The output tokens generated by Mistral models |
+</div>
+</details>
+
+### Text Embeddings
+
+An embedding is a list of floating point numbers that captures semantic information about the text that it represents.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_EMBEDDINGS` |
+| Model Name (required) | `model-name` | string | The Mistral embed model to be used |
+| Text (required) | `text` | string | The text |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Embedding | `embedding` | array[number] | Embedding of the input text |
+| [Usage](#text-embeddings-usage) (optional) | `usage` | object | Token usage on the Mistral platform embedding models |
+</div>
+
+<details>
+<summary> Output Objects in Text Embeddings</summary>
+
+<h4 id="text-embeddings-usage">Usage</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Token Count | `tokens` | number | The token count used by Mistral models |
+</div>
+</details>
+## Example Recipes
+
+Recipe for the [Short-film Script Writer](https://instill.tech/instill-ai/pipelines/mistral-demo/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  mistral-0:
+    type: mistral-ai
+    task: TASK_TEXT_GENERATION_CHAT
+    input:
+      max-new-tokens: 1500
+      model-name: codestral-latest
+      prompt: |-
+        Generate a short-film movie script with the following placeholders:
+        [THEME]: ${variable.theme}
+        [GENRE]: ${variable.genre}
+        [NUM_ACTORS]: ${variable.num_actors}
+        [SETTING]: ${variable.setting}
+        [TIME_PERIOD]: The era or time frame of the story
+        [DURATION]: ${variable.duration}
+        [CONFLICT]: ${variable.conflict}
+
+        Please create a script that includes:
+
+        A brief synopsis (2-3 sentences)
+        Character descriptions for each main character
+        Scene-by-scene breakdown with dialogue and basic action descriptions
+        A conclusion that resolves the main conflict
+
+        Ensure the script is coherent, engaging, and fits within the specified parameters. Be creative with the storytelling while maintaining the structure of a proper short film script.
+      safe: false
+      system-message: You are a helpful assistant.
+      temperature: 0.7
+      top-k: 10
+      top-p: 0.5
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  conflict:
+    title: Conflict
+    description: The main problem or challenge faced by the characters i.e. existential crisis
+    instill-format: string
+  duration:
+    title: Duration
+    description: Approximate length of the film in minutes i.e. 5
+    instill-format: string
+  genre:
+    title: Genre
+    description: The type of genre for this film i.e. romance, comedy, horror, action, etc.
+    instill-format: string
+  num_actors:
+    title: Num_actors
+    description: The number of actors that will be in this film i.e. 2
+    instill-format: string
+  setting:
+    title: Setting
+    description: |
+      The primary location where the story takes place i.e. Rome
+    instill-format: string
+  theme:
+    title: Theme
+    description: Insert the main theme or central idea of the film i.e. time travelling
+    instill-format: string
+  time-period:
+    title: Time Period
+    description: The era or time frame of the story i.e. stone age, 20th century, etc.
+    instill-format: string
+output:
+  result:
+    title: Result
+    value: ${mistral-0.output.text}
+```
+
+Recipe for the [PicassoAI: Cubist Creations at Your Command!](https://instill.tech/instill-ai/pipelines/picasso-ai/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  mistral-0:
+    type: mistral-ai
+    task: TASK_TEXT_GENERATION_CHAT
+    input:
+      max-new-tokens: 100
+      model-name: open-mixtral-8x22b
+      prompt: |-
+        Generate a Picasso-inspired image based on the following user input:
+
+        ${variable.prompt}
+
+        Using the specified Picasso period: ${variable.period}
+
+
+        Transform this input into a detailed text-to-image prompt by:
+
+        1. Identifying the key elements or subjects in the user's description
+
+        2. Adding artistic elements and techniques specific to the ${variable.period} period of Picasso's work
+
+        3. Including cubist or abstract features characteristic of the ${variable.period}
+
+        4. Suggesting a composition or scene layout typical of Picasso's work from this era
+
+        Enhance the prompt with vivid, descriptive language and specific Picasso-style elements from the ${variable.period}. The final prompt should begin with "Create an image in the style of Picasso's ${variable.period} period:" followed by the enhanced description.
+      safe: false
+      system-message: You are a helpful assistant.
+      temperature: 0.7
+      top-k: 10
+      top-p: 0.5
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+  openai-0:
+    type: openai
+    task: TASK_TEXT_TO_IMAGE
+    input:
+      model: dall-e-3
+      n: 1
+      prompt: |-
+        Using this primary color palette: ${variable.colour}
+
+        ${mistral-0.output.text}
+      quality: standard
+      size: 1024x1024
+      style: vivid
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  colour:
+    title: Colour
+    description: Describe the main colour to use i.e. blue, random
+    instill-format: string
+    instill-ui-order: 1
+  period:
+    title: Period
+    description: |
+      Input different Picasso periods i.e. Blue, Rose, African, Synthetic Cubism, etc.
+    instill-format: string
+  prompt:
+    title: Prompt
+    description: Input prompt here i.e. "A cute baby wombat"
+    instill-format: string
+output:
+  image:
+    title: Image
+    value: ${openai-0.output.results}
+```

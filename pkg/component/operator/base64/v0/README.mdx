@@ -1,0 +1,71 @@
+---
+title: "Base64"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Base64 component https://github.com/instill-ai/instill-core"
+---
+
+The Base64 component is an operator component that allows users to encode or decode a string in Base64 format.
+It can carry out the following tasks:
+- [Encode](#encode)
+- [Decode](#decode)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/base64/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/base64/v0/config/tasks.json) files respectively.
+
+
+
+## Supported Tasks
+
+### Encode
+
+Encode data into base64 string
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_ENCODE` |
+| Data (required) | `data` | string | Data to be encoded |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Data | `data` | string | Data |
+</div>
+
+### Decode
+
+Decode the base64 string.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DECODE` |
+| Data (required) | `data` | string | Base64 string to be decoded |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Data | `data` | string | Data |
+</div>

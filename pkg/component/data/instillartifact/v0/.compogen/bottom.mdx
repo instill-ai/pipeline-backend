@@ -1,0 +1,33 @@
+## Example Recipes
+
+Recipe for the [Ask your Catalog](https://instill.tech/instill-ai/pipelines/ask-your-catalog/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  artifact-0:
+    type: instill-artifact
+    task: TASK_ASK
+    input:
+      catalog-id: ${variable.catalog_name}
+      namespace: ${variable.namespace}
+      question: ${variable.question}
+      top-k: 5
+variable:
+  catalog_name:
+    title: catalog-name
+    description: The name of your catalog i.e. "instill-ai"
+    instill-format: string
+  namespace:
+    title: namespace
+    description: The namespace of your catalog i.e. "instill-ai"
+    instill-format: string
+  question:
+    title: question
+    description: The question to ask your catalog i.e. "What is Instill AI doing?", "What is Artifact?"
+    instill-format: string
+output:
+  answer:
+    title: answer
+    value: ${artifact-0.output.answer}
+```

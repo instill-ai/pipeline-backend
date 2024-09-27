@@ -1,0 +1,18 @@
+{
+  "availableTasks": [
+    "TASK_SUBSAMPLE_VIDEO",
+    "TASK_SUBSAMPLE_VIDEO_FRAMES"
+  ],
+  "documentationUrl": "https://www.instill.tech/docs/component/operator/video",
+  "icon": "assets/video.svg",
+  "id": "video",
+  "public": true,
+  "spec": {},
+  "title": "Video",
+  "type": "COMPONENT_TYPE_OPERATOR",
+  "uid": "f0be2fd3-7266-4eeb-88eb-3bbbcc2a6b32",
+  "version": "0.1.0",
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/video/v0",
+  "description": "Extract and manipulate video from different sources",
+  "releaseStage": "RELEASE_STAGE_ALPHA"
+}

@@ -1,0 +1,176 @@
+---
+title: "Email"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Email component https://github.com/instill-ai/instill-core"
+---
+
+The Email component is an application component that allows users to get and send email from Mail Protocol.
+It can carry out the following tasks:
+- [Send Email](#send-email)
+- [Read Emails](#read-emails)You can connect to different email servers through the Email component.
+Emails are fetched and sent using the IMAP and SMTP protocols, respectively. You can set the server address and port for each protocol in the component configuration.
+
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/application/email/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/application/email/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with the
+external application, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Server Address (required) | `server-address` | string | The address of the email server  |
+| Server Port (required) | `server-port` | integer | The port of the email server  |
+| Email Address (required) | `email-address` | string | The email address of the user  |
+| App Password (required) | `password` | string | The password of the App passwords in Gmail settings  |
+
+</div>
+
+Supported Provider Samples for Sending Email
+
+| Provider | SMTP Server Address | Port | Notes |
+| --- | --- | --- | --- |
+| Gmail | smtp.gmail.com | 587 (TLS) or 465 (SSL) ||
+| Outlook | smtp-mail.outlook.com | 587 ||
+| Yahoo | smtp.mail.yahoo.com | 465 or 587 ||
+| iCloud | smtp.mail.me.com | 587 | If you see an error message when using SSL, try using TLS or STARTTLS instead. |
+
+
+Supported Provider Samples for Receiving Emails
+
+| Provider | IMAP Server Address | Port |
+| --- | --- | --- |
+| Gmail | imap.gmail.com | 993 |
+| Outlook | outlook.office365.com | 993 |
+| Yahoo | imap.mail.yahoo.com | 993 |
+| iCloud | imap.mail.me.com | 993 |
+
+
+For App Password, please follow the steps below:
+ - 1. Please Sign in to your Google Account with link: https://myaccount.google.com/apppasswords
+ - 2. Create a new App Password and save it in a secure place.
+ - 3. Add App Password as a new secret in the Instill Platform by navigating to **Console** > **Settings** > **Secrets**.
+ - 4. Reference the secret in the App Password field in the component configuration.
+
+
+
+## Supported Tasks
+
+### Send Email
+
+Send an email to recipients
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SEND_EMAIL` |
+| Recipient (required) | `recipients` | array[string] | The email addresses of the recipients |
+| Cc | `cc` | array[string] | The email addresses for Carbon Copy |
+| Bcc | `bcc` | array[string] | The email addresses for Blind Carbon Copy |
+| Subject | `subject` | string | The subject of the email |
+| Message (required) | `message` | string | The message to be sent |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Result | `result` | string | The result of sending the email |
+</div>
+
+### Read Emails
+
+Read emails from a mailbox
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_READ_EMAILS` |
+| [Search](#read-emails-search) | `search` | object | The search criteria for the emails |
+</div>
+
+
+<details>
+<summary> Input Objects in Read Emails</summary>
+
+<h4 id="read-emails-search">Search</h4>
+
+The search criteria for the emails
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Search Date | `date` | string | Search for emails with the date the email was sent  |
+| Limit | `limit` | integer | The maximum number of emails to search for  |
+| Mailbox | `mailbox` | string | The mailbox to search for emails  |
+| Search Message | `search-email-message` | string | Search for emails with a specific message  |
+| Search From | `search-from` | string | Search for emails from a specific email address  |
+| Search Subject | `search-subject` | string | Search for emails with a specific subject  |
+| Search To | `search-to` | string | Search for emails to a specific email address  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Emails](#read-emails-emails) | `emails` | array[object] | The emails that match the search criteria |
+</div>
+
+<details>
+<summary> Output Objects in Read Emails</summary>
+
+<h4 id="read-emails-emails">Emails</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Date | `date` | string | The date the email was sent |
+| From | `from` | string | The email address of the sender |
+| Message | `message` | string | The message of the email |
+| Subject | `subject` | string | The subject of the email |
+| To | `to` | array | The email addresses of the recipient |
+</div>
+</details>
+#### Mailbox
+
+You have to confirm what exactly the mailbox name is.
+Take Gmail as an example, the mailbox names are following.
+
+| Mailbox | Mailbox Name to input |
+| :--- | :--- |
+| Inbox | `INBOX` |
+| Sent | `[Gmail]/Sent Mail` |
+| Drafts | `[Gmail]/Drafts` |
+
+
+#### Search From and Search To
+You need to input the exact same email address with `<` as a prefix and `>` as a suffix as the email you want to search for.
+For example, if you want to search for the email from `email@example.com`, you need to input `<email@example.com>`.

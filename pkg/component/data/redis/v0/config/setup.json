@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "host": {
+      "default": "localhost",
+      "description": "Redis host to connect to",
+      "examples": [
+        "localhost,127.0.0.1"
+      ],
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": false,
+      "instillUIOrder": 0,
+      "title": "Host",
+      "type": "string"
+    },
+    "password": {
+      "description": "Password associated with Redis",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 3,
+      "title": "Password",
+      "type": "string"
+    },
+    "port": {
+      "default": 6379,
+      "description": "Port of Redis",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "integer"
+      ],
+      "instillUIOrder": 1,
+      "maximum": 65536,
+      "minimum": 0,
+      "title": "Port",
+      "type": "integer"
+    },
+    "ssl": {
+      "default": false,
+      "description": "Indicates whether SSL encryption protocol will be used to connect to Redis. It is recommended to use SSL connection if possible.",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "boolean"
+      ],
+      "instillUIOrder": 4,
+      "title": "SSL Connection",
+      "type": "boolean"
+    },
+    "username": {
+      "description": "Username associated with Redis",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 2,
+      "title": "Username",
+      "type": "string"
+    }
+  },
+  "required": [
+    "host",
+    "port"
+  ],
+  "instillEditOnNodeFields": [
+    "host",
+    "port"
+  ],
+  "title": "Redis Connection",
+  "type": "object"
+}

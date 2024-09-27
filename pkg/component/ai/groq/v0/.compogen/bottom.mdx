@@ -1,0 +1,35 @@
+## Example Recipes
+
+Recipe for the [Groq Interview Helper](https://instill.tech/instill-ai/pipelines/groq-interview-helper/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  groq-0:
+    type: groq
+    task: TASK_TEXT_GENERATION_CHAT
+    input:
+      max-new-tokens: 300
+      model: llama3-groq-70b-8192-tool-use-preview
+      prompt: |-
+        Rewrite this experience using the STAR (Situation, Task, Action, Result) method for a resume or CV:
+
+        ${variable.experience}
+      system-message: You are a helpful resume assistant.
+      temperature: 0.05
+      top-k: 10
+      top-p: 0.5
+      user: instill-ai
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  experience:
+    title: experience
+    description: describe your work experience
+    instill-format: string
+    instill-ui-multiline: true
+output:
+  resume_format:
+    title: resume_format
+    value: ${groq-0.output.text}
+```

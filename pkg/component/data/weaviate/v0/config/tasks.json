@@ -1,0 +1,646 @@
+{
+  "TASK_VECTOR_SEARCH": {
+    "instillShortDescription": "Perform a vector search on a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to perform vector search on",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "vector": {
+          "description": "An array of dimensions for the vector query, optional. If not provided, all objects will be returned",
+          "instillAcceptFormats": [
+            "array:number",
+            "array:integer"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "A dimension of the vector",
+            "example": 0.8167237,
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "Vector",
+          "type": "array"
+        },
+        "limit": {
+          "description": "The limit of objects, empty for all objects",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Limit",
+          "type": "integer"
+        },
+        "fields": {
+          "description": "The fields to return in the objects. If empty then all fields will be returned",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillShortDescription": "Fields to be returned, empty for all fields",
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Fields",
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "title": "Field",
+            "type": "string"
+          }
+        },
+        "filter": {
+          "description": "The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters).",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Filter",
+          "type": "object",
+          "required": []
+        },
+        "tenant": {
+          "description": "The tenant to perform the vector search on",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Tenant",
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection-name"
+      ],
+      "instillEditOnNodeFields": [
+        "collection-name",
+        "vector",
+        "limit"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Upsert status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        },
+        "result": {
+          "description": "Result of the vector search operation",
+          "instillUIOrder": 0,
+          "title": "Result",
+          "type": "object",
+          "properties": {
+            "ids": {
+              "description": "The ids returned from the vector search operation",
+              "instillUIOrder": 0,
+              "title": "IDs",
+              "type": "array",
+              "required": [],
+              "instillFormat": "array:string",
+              "items": {
+                "description": "An id of the object",
+                "type": "string",
+                "example": "c8faa-4b3b-4b3b-4b3b"
+              }
+            },
+            "objects": {
+              "description": "The objects returned from the vector search operation",
+              "instillUIOrder": 1,
+              "required": [],
+              "title": "Objects",
+              "type": "array",
+              "instillFormat": "array:semi-structured/json",
+              "items": {
+                "title": "Object",
+                "format": "semi-structured/json",
+                "type": "object",
+                "required": []
+              }
+            },
+            "vectors": {
+              "description": "The vectors returned from the vector search operation",
+              "instillUIOrder": 2,
+              "title": "Vectors",
+              "type": "array",
+              "required": [],
+              "instillFormat": "array:array",
+              "items": {
+                "description": "The vector from array vectors",
+                "type": "array",
+                "instillFormat": "array",
+                "required": [],
+                "items": {
+                  "description": "A dimension of the vector",
+                  "example": 0.8167237,
+                  "type": "number"
+                }
+              }
+            },
+            "metadata": {
+              "description": "The metadata returned from the vector search operation",
+              "instillUIOrder": 3,
+              "title": "Metadata",
+              "type": "array",
+              "required": [],
+              "instillFormat": "array:semi-structured/json",
+              "items": {
+                "title": "Metadatum",
+                "format": "semi-structured/json",
+                "type": "object",
+                "required": []
+              }
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "status",
+        "result"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_INSERT": {
+    "instillShortDescription": "Insert a vector object into a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to upsert the object into",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "id": {
+          "description": "The ID of the object",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "ID",
+          "type": "string"
+        },
+        "vector": {
+          "description": "An array of dimensions for the vector value",
+          "instillAcceptFormats": [
+            "array:number",
+            "array:integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "A dimension of the vector",
+            "example": 0.8167237,
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "Vector",
+          "type": "array"
+        },
+        "metadata": {
+          "description": "The vector metadata properties",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Metadata",
+          "type": "object",
+          "required": []
+        }
+      },
+      "required": [
+        "collection-name",
+        "vector",
+        "metadata"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Upsert status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_BATCH_INSERT": {
+    "instillShortDescription": "Insert multiple vector objects into a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to upsert the object into",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "array-id": {
+          "description": "The array of id",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "An id of the object",
+            "type": "string",
+            "example": 1
+          },
+          "minItems": 1,
+          "title": "Array ID",
+          "type": "array"
+        },
+        "array-metadata": {
+          "description": "The array of vector metadata properties",
+          "instillAcceptFormats": [
+            "array:semi-structured/*",
+            "array:semi-structured/json",
+            "array:semi-structured/object",
+            "array:object"
+          ],
+          "instillShortDescription": "The vector metadata properties",
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "minItems": 1,
+          "title": "Array Metadata",
+          "type": "array",
+          "items": {
+            "description": "The vector metadata properties",
+            "title": "Metadatum",
+            "type": "object",
+            "required": []
+          }
+        },
+        "array-vector": {
+          "description": "The array of vector values",
+          "instillAcceptFormats": [
+            "array:array"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "An array of dimensions for the vector value",
+            "type": "array",
+            "instillAcceptFormats": [
+              "array:number",
+              "array:integer"
+            ],
+            "items": {
+              "description": "A dimension of the vector",
+              "example": 0.8167237,
+              "type": "number"
+            }
+          },
+          "minItems": 1,
+          "title": "Array Vector",
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection-name",
+        "array-metadata",
+        "array-vector"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Batch insert status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE": {
+    "instillShortDescription": "Delete vector objects from a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to delete the object from",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "id": {
+          "description": "The ID of the object",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "ID",
+          "type": "string"
+        },
+        "filter": {
+          "description": "The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters).",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Filter",
+          "type": "object",
+          "required": []
+        }
+      },
+      "required": [
+        "collection-name"
+      ],
+      "instillEditOnNodeFields": [
+        "collection-name",
+        "filter"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Delete status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UPDATE": {
+    "instillShortDescription": "Update vector object in a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to update the object in",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        },
+        "id": {
+          "description": "The ID of the object",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "ID",
+          "type": "string"
+        },
+        "update-vector": {
+          "description": "The updated vector value, optional",
+          "instillAcceptFormats": [
+            "array:number",
+            "array:integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "description": "A dimension of the vector",
+            "example": 0.8167237,
+            "type": "number"
+          },
+          "minItems": 1,
+          "title": "Update Vector",
+          "type": "array"
+        },
+        "update-metadata": {
+          "description": "The updated vector metadata properties, optional",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Update Metadata",
+          "type": "object",
+          "required": []
+        }
+      },
+      "required": [
+        "collection-name",
+        "id"
+      ],
+      "instillEditOnNodeFields": [
+        "collection-name",
+        "id",
+        "update-vector",
+        "update-metadata"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Update status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE_COLLECTION": {
+    "instillShortDescription": "Delete a collection",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "collection-name": {
+          "description": "The name of the collection to delete",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Collection Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Delete collection status",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

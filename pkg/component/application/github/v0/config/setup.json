@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "token": {
+      "description": "Fill in your GitHub access token for advanced usages. For more information about how to create tokens, please refer to the <a href=\"https://github.com/settings/tokens\">github settings</a>.",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "Token",
+      "type": "string"
+    }
+  },
+  "required": [
+    "token"
+  ],
+  "instillEditOnNodeFields": [
+    "token"
+  ],
+  "instillOAuthConfig": {
+    "authUrl": "https://github.com/login/oauth/authorize",
+    "accessUrl": "https://github.com/login/oauth/access_token",
+    "scopes": []
+  },
+  "title": "GitHub Connection",
+  "type": "object"
+}

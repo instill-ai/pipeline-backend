@@ -1,0 +1,20 @@
+{
+  "availableTasks": [
+    "TASK_TEXT_GENERATION_CHAT",
+    "TASK_TEXT_EMBEDDINGS"
+  ],
+  "custom": false,
+  "documentationUrl": "https://www.instill.tech/docs/component/ai/fireworksai",
+  "icon": "assets/fireworks-ai.svg",
+  "id": "fireworks-ai",
+  "public": true,
+  "title": "Fireworks AI",
+  "description": "Connect the AI models served on the Fireworks AI Platform",
+  "type": "COMPONENT_TYPE_AI",
+  "uid": "09258316-dad7-4b84-be50-41eb76ba9cf0",
+  "vendor": "Fireworks AI",
+  "vendorAttributes": {},
+  "version": "0.1.0",
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/fireworksai/v0",
+  "releaseStage": "RELEASE_STAGE_ALPHA"
+}

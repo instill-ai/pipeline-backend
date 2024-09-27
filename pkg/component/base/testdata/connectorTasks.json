@@ -1,0 +1,60 @@
+{
+  "TASK_TEXT_EMBEDDINGS": {
+    "instillShortDescription": "Turn text into numbers, unlocking use cases like search.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "model": {
+          "$ref": "additional.json#/components/schemas/CreateEmbeddingRequest/properties/model",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "ID of the model to use",
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Model"
+        },
+        "text": {
+          "description": "The text",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "embedding": {
+          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/embedding",
+          "instillUIOrder": 0,
+          "title": "Embedding"
+        }
+      },
+      "required": [
+        "embedding"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

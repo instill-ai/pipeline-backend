@@ -1,0 +1,146 @@
+## Example Recipes
+
+Recipe for the [Short-film Script Writer](https://instill.tech/instill-ai/pipelines/mistral-demo/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  mistral-0:
+    type: mistral-ai
+    task: TASK_TEXT_GENERATION_CHAT
+    input:
+      max-new-tokens: 1500
+      model-name: codestral-latest
+      prompt: |-
+        Generate a short-film movie script with the following placeholders:
+        [THEME]: ${variable.theme}
+        [GENRE]: ${variable.genre}
+        [NUM_ACTORS]: ${variable.num_actors}
+        [SETTING]: ${variable.setting}
+        [TIME_PERIOD]: The era or time frame of the story
+        [DURATION]: ${variable.duration}
+        [CONFLICT]: ${variable.conflict}
+
+        Please create a script that includes:
+
+        A brief synopsis (2-3 sentences)
+        Character descriptions for each main character
+        Scene-by-scene breakdown with dialogue and basic action descriptions
+        A conclusion that resolves the main conflict
+
+        Ensure the script is coherent, engaging, and fits within the specified parameters. Be creative with the storytelling while maintaining the structure of a proper short film script.
+      safe: false
+      system-message: You are a helpful assistant.
+      temperature: 0.7
+      top-k: 10
+      top-p: 0.5
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  conflict:
+    title: Conflict
+    description: The main problem or challenge faced by the characters i.e. existential crisis
+    instill-format: string
+  duration:
+    title: Duration
+    description: Approximate length of the film in minutes i.e. 5
+    instill-format: string
+  genre:
+    title: Genre
+    description: The type of genre for this film i.e. romance, comedy, horror, action, etc.
+    instill-format: string
+  num_actors:
+    title: Num_actors
+    description: The number of actors that will be in this film i.e. 2
+    instill-format: string
+  setting:
+    title: Setting
+    description: |
+      The primary location where the story takes place i.e. Rome
+    instill-format: string
+  theme:
+    title: Theme
+    description: Insert the main theme or central idea of the film i.e. time travelling
+    instill-format: string
+  time-period:
+    title: Time Period
+    description: The era or time frame of the story i.e. stone age, 20th century, etc.
+    instill-format: string
+output:
+  result:
+    title: Result
+    value: ${mistral-0.output.text}
+```
+
+Recipe for the [PicassoAI: Cubist Creations at Your Command!](https://instill.tech/instill-ai/pipelines/picasso-ai/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  mistral-0:
+    type: mistral-ai
+    task: TASK_TEXT_GENERATION_CHAT
+    input:
+      max-new-tokens: 100
+      model-name: open-mixtral-8x22b
+      prompt: |-
+        Generate a Picasso-inspired image based on the following user input:
+
+        ${variable.prompt}
+
+        Using the specified Picasso period: ${variable.period}
+
+
+        Transform this input into a detailed text-to-image prompt by:
+
+        1. Identifying the key elements or subjects in the user's description
+
+        2. Adding artistic elements and techniques specific to the ${variable.period} period of Picasso's work
+
+        3. Including cubist or abstract features characteristic of the ${variable.period}
+
+        4. Suggesting a composition or scene layout typical of Picasso's work from this era
+
+        Enhance the prompt with vivid, descriptive language and specific Picasso-style elements from the ${variable.period}. The final prompt should begin with "Create an image in the style of Picasso's ${variable.period} period:" followed by the enhanced description.
+      safe: false
+      system-message: You are a helpful assistant.
+      temperature: 0.7
+      top-k: 10
+      top-p: 0.5
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+  openai-0:
+    type: openai
+    task: TASK_TEXT_TO_IMAGE
+    input:
+      model: dall-e-3
+      n: 1
+      prompt: |-
+        Using this primary color palette: ${variable.colour}
+
+        ${mistral-0.output.text}
+      quality: standard
+      size: 1024x1024
+      style: vivid
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  colour:
+    title: Colour
+    description: Describe the main colour to use i.e. blue, random
+    instill-format: string
+    instill-ui-order: 1
+  period:
+    title: Period
+    description: |
+      Input different Picasso periods i.e. Blue, Rose, African, Synthetic Cubism, etc.
+    instill-format: string
+  prompt:
+    title: Prompt
+    description: Input prompt here i.e. "A cute baby wombat"
+    instill-format: string
+output:
+  image:
+    title: Image
+    value: ${openai-0.output.results}
+```

@@ -1,0 +1,224 @@
+---
+title: "Weaviate"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Weaviate component https://github.com/instill-ai/instill-core"
+---
+
+The Weaviate component is a data component that allows users to build and search vector datasets.
+It can carry out the following tasks:
+- [Vector Search](#vector-search)
+- [Batch Insert](#batch-insert)
+- [Insert](#insert)
+- [Update](#update)
+- [Delete](#delete)
+- [Delete Collection](#delete-collection)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/weaviate/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/weaviate/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with Weaviate, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key (required) | `api-key` | string | Fill in your Weaviate API key. Please refer to clusters in Weaviate Console  |
+| Weaviate URL Endpoint (required) | `url` | string | Fill in your Weaviate base URL without https:// or http://. Please refer to clusters in Weaviate Console  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Vector Search
+
+Perform a vector search on a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on |
+| Vector | `vector` | array[number] | An array of dimensions for the vector query, optional. If not provided, all objects will be returned |
+| Limit | `limit` | integer | The limit of objects, empty for all objects |
+| Fields | `fields` | array[string] | The fields to return in the objects. If empty then all fields will be returned |
+| Filter | `filter` | object | The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters). |
+| Tenant | `tenant` | string | The tenant to perform the vector search on |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Result](#vector-search-result) | `result` | object | Result of the vector search operation |
+| Status | `status` | string | Upsert status |
+</div>
+
+<details>
+<summary> Output Objects in Vector Search</summary>
+
+<h4 id="vector-search-result">Result</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| IDs | `ids` | array | The ids returned from the vector search operation |
+| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation |
+| [Objects](#vector-search-objects) | `objects` | array | The objects returned from the vector search operation |
+| Vectors | `vectors` | array | The vectors returned from the vector search operation |
+</div>
+</details>
+
+### Batch Insert
+
+Insert multiple vector objects into a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_BATCH_INSERT` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the object into |
+| Array ID | `array-id` | array[string] | The array of id |
+| [Array Metadata](#batch-insert-array-metadata) (required) | `array-metadata` | array[object] | The array of vector metadata properties |
+| Array Vector (required) | `array-vector` | array[array] | The array of vector values |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Batch insert status |
+</div>
+
+### Insert
+
+Insert a vector object into a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_INSERT` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the object into |
+| ID | `id` | string | The ID of the object |
+| Vector (required) | `vector` | array[number] | An array of dimensions for the vector value |
+| Metadata (required) | `metadata` | object | The vector metadata properties |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Upsert status |
+</div>
+
+### Update
+
+Update vector object in a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UPDATE` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to update the object in |
+| ID (required) | `id` | string | The ID of the object |
+| Update Vector | `update-vector` | array[number] | The updated vector value, optional |
+| Update Metadata | `update-metadata` | object | The updated vector metadata properties, optional |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Update status |
+</div>
+
+### Delete
+
+Delete vector objects from a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete the object from |
+| ID | `id` | string | The ID of the object |
+| Filter | `filter` | object | The properties filter to be applied to the data with GraphQL queries, which starts with WHERE field, please refer to [here](https://weaviate.io/developers/weaviate/search/filters). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete status |
+</div>
+
+### Delete Collection
+
+Delete a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE_COLLECTION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete collection status |
+</div>

@@ -1,0 +1,915 @@
+---
+title: "Hugging Face"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Hugging Face component https://github.com/instill-ai/instill-core"
+---
+
+The Hugging Face component is an AI component that allows users to connect the AI models served on the Hugging Face Platform.
+It can carry out the following tasks:
+- [Text Generation](#text-generation)
+- [Fill Mask](#fill-mask)
+- [Summarization](#summarization)
+- [Text Classification](#text-classification)
+- [Token Classification](#token-classification)
+- [Translation](#translation)
+- [Zero Shot Classification](#zero-shot-classification)
+- [Question Answering](#question-answering)
+- [Table Question Answering](#table-question-answering)
+- [Sentence Similarity](#sentence-similarity)
+- [Conversational](#conversational)
+- [Image Classification](#image-classification)
+- [Image Segmentation](#image-segmentation)
+- [Object Detection](#object-detection)
+- [Image to Text](#image-to-text)
+- [Speech Recognition](#speech-recognition)
+- [Audio Classification](#audio-classification)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/huggingface/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/huggingface/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with Hugging Face, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key (required) | `api-key` | string | Fill in your Hugging face API token. To find your token, visit <a href="https://huggingface.co/settings/tokens">here</a>  |
+| Base URL (required) | `base-url` | string | Hostname for the endpoint. To use Inference API set to <a href="https://api-inference.huggingface.co">here</a>, for Inference Endpoint set to your custom endpoint.  |
+| Is Custom Endpoint (required) | `is-custom-endpoint` | boolean | Fill true if you are using a custom Inference Endpoint and not the Inference API.  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Text Generation
+
+Generating text is the task of producing new text. These models can, for example, fill in incomplete text or paraphrase.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_GENERATION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| String Input (required) | `inputs` | string | String input |
+| [Parameters](#text-generation-parameters) | `parameters` | object | Parameters |
+| [Options](#text-generation-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Text Generation</summary>
+
+<h4 id="text-generation-parameters">Parameters</h4>
+
+Parameters
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Do Sample | `do-sample` | boolean | Whether or not to use sampling, use greedy decoding otherwise.  |
+| Max New Tokens | `max-new-tokens` | integer | The amount of new tokens to be generated, this does not include the input length it is a estimate of the size of generated text you want. Each new tokens slows down the request, so look for balance between response times and length of text generated.  |
+| Max Time | `max-time` | number | The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Use that in combination with max-new-tokens for best results.  |
+| Num Return Sequences | `num-return-sequences` | integer | The number of proposition you want to be returned.  |
+| Repetition Penalty | `repetition-penalty` | number | The more a token is used within generation the more it is penalized to not be picked in successive generation passes.  |
+| Return Full Text | `return-full-text` | boolean | If set to False, the return results will not contain the original query making it easier for prompting.  |
+| Temperature | `temperature` | number | The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.  |
+| Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text.  |
+| Top P | `top-p` | number | Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p.  |
+</div>
+<h4 id="text-generation-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Generated Text | `generated-text` | string | The continuated string |
+</div>
+
+### Fill Mask
+
+Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks. These models are useful when we want to get a statistical understanding of the language in which the model is trained in.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_FILL_MASK` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| String Input (required) | `inputs` | string | a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask) |
+| [Options](#fill-mask-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Fill Mask</summary>
+
+<h4 id="fill-mask-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Results](#fill-mask-results) | `results` | array[object] | Results |
+</div>
+
+<details>
+<summary> Output Objects in Fill Mask</summary>
+
+<h4 id="fill-mask-results">Results</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Score | `score` | number | The probability for this token. |
+| Sequence | `sequence` | string | The actual sequence of tokens that ran against the model (may contain special tokens) |
+| Token | `token` | integer | The id of the token |
+| Token Str | `token-str` | string | The string representation of the token |
+</div>
+</details>
+
+### Summarization
+
+Summarization is the task of producing a shorter version of a document while preserving its important information. Some models can extract text from the original input, while other models can generate entirely new text.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SUMMARIZATION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| String Input (required) | `inputs` | string | String input |
+| [Parameters](#summarization-parameters) | `parameters` | object | Parameters |
+| [Options](#summarization-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Summarization</summary>
+
+<h4 id="summarization-parameters">Parameters</h4>
+
+Parameters
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Max Length | `max-length` | integer | Integer to define the maximum length in tokens of the output summary.  |
+| Max Time | `max-time` | number | The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.  |
+| Min Length | `min-length` | integer | Integer to define the minimum length in tokens of the output summary.  |
+| Repetition Penalty | `repetition-penalty` | number | The more a token is used within generation the more it is penalized to not be picked in successive generation passes.  |
+| Temperature | `temperature` | number | The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.  |
+| Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text.  |
+| Top P | `top-p` | number | Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p.  |
+</div>
+<h4 id="summarization-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Summary Text | `summary-text` | string | The string after summarization |
+</div>
+
+### Text Classification
+
+Text Classification is the task of assigning a label or class to a given text. Some use cases are sentiment analysis, natural language inference, and assessing grammatical correctness.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_CLASSIFICATION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| String Input (required) | `inputs` | string | String input |
+| [Options](#text-classification-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Text Classification</summary>
+
+<h4 id="text-classification-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Results](#text-classification-results) | `results` | array[object] | Results |
+</div>
+
+<details>
+<summary> Output Objects in Text Classification</summary>
+
+<h4 id="text-classification-results">Results</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Label | `label` | string | The label for the class (model specific) |
+| Score | `score` | number | A floats that represents how likely is that the text belongs the this class. |
+</div>
+</details>
+
+### Token Classification
+
+Token classification is a natural language understanding task in which a label is assigned to some tokens in a text. Some popular token classification subtasks are Named Entity Recognition (NER) and Part-of-Speech (PoS) tagging. NER models could be trained to identify specific entities in a text, such as dates, individuals and places; and PoS tagging would identify, for example, which words in a text are verbs, nouns, and punctuation marks.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TOKEN_CLASSIFICATION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| String Input (required) | `inputs` | string | String input |
+| [Parameters](#token-classification-parameters) | `parameters` | object | Parameters |
+| [Options](#token-classification-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Token Classification</summary>
+
+<h4 id="token-classification-parameters">Parameters</h4>
+
+Parameters
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Aggregation Strategy | `aggregation-strategy` | string | There are several aggregation strategies:
+none: Every token gets classified without further aggregation.
+simple: Entities are grouped according to the default schema (B-, I- tags get merged when the tag is similar).
+first: Same as the simple strategy except words cannot end up with different tags. Words will use the tag of the first token when there is ambiguity.
+average: Same as the simple strategy except words cannot end up with different tags. Scores are averaged across tokens and then the maximum label is applied.
+max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.  |
+</div>
+<h4 id="token-classification-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Results](#token-classification-results) | `results` | array[object] | Results |
+</div>
+
+<details>
+<summary> Output Objects in Token Classification</summary>
+
+<h4 id="token-classification-results">Results</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| End | `end` | integer | The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times. |
+| Entity Group | `entity-group` | string | The type for the entity being recognized (model specific). |
+| Score | `score` | number | How likely the entity was recognized. |
+| Start | `start` | integer | The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times. |
+| Word | `word` | string | The string that was captured |
+</div>
+</details>
+
+### Translation
+
+Translation is the task of converting text from one language to another.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TRANSLATION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| String Input (required) | `inputs` | string | String input |
+| [Options](#translation-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Translation</summary>
+
+<h4 id="translation-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Translation Text | `translation-text` | string | The string after translation |
+</div>
+
+### Zero Shot Classification
+
+Zero-shot text classification is a task in natural language processing where a model is trained on a set of labeled examples but is then able to classify new examples from previously unseen classes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_ZERO_SHOT_CLASSIFICATION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| String Input (required) | `inputs` | string | String input |
+| [Parameters](#zero-shot-classification-parameters) | `parameters` | object | Parameters |
+| [Options](#zero-shot-classification-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Zero Shot Classification</summary>
+
+<h4 id="zero-shot-classification-parameters">Parameters</h4>
+
+Parameters
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Candidate Labels | `candidate-labels` | array | a list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate-labels anyway. If you want to keep the exact same, you can simply run multi-label=True and do the scaling on your end. )  |
+| Multi Label | `multi-label` | boolean | Boolean that is set to True if classes can overlap  |
+</div>
+<h4 id="zero-shot-classification-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Scores | `scores` | array[number] | a list of floats that correspond the the probability of label, in the same order as labels. |
+| Labels | `labels` | array[string] | The list of strings for labels that you sent (in order) |
+| Sequence (optional) | `sequence` | string | The string sent as an input |
+</div>
+
+### Question Answering
+
+Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document. Some question answering models can generate answers without context!
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_QUESTION_ANSWERING` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| [Inputs](#question-answering-inputs) (required) | `inputs` | object | Inputs |
+| [Options](#question-answering-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Question Answering</summary>
+
+<h4 id="question-answering-inputs">Inputs</h4>
+
+Inputs
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Context | `context` | string | The context for answering the question.  |
+| Question | `question` | string | The question  |
+</div>
+<h4 id="question-answering-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Answer | `answer` | string | A string that’s the answer within the text. |
+| Stop (optional) | `stop` | integer | The index (string wise) of the stop of the answer within context. |
+| Score (optional) | `score` | number | A float that represents how likely that the answer is correct |
+| Start (optional) | `start` | integer | The index (string wise) of the start of the answer within context. |
+</div>
+
+### Table Question Answering
+
+Table Question Answering (Table QA) is the answering a question about an information on a given table.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TABLE_QUESTION_ANSWERING` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| [Inputs](#table-question-answering-inputs) (required) | `inputs` | object | Inputs |
+| [Options](#table-question-answering-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Table Question Answering</summary>
+
+<h4 id="table-question-answering-inputs">Inputs</h4>
+
+Inputs
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Query | `query` | string | The query in plain text that you want to ask the table  |
+| Table | `table` | object | A table of data represented as a dict of list where entries are headers and the lists are all the values, all lists must have the same size.  |
+</div>
+<h4 id="table-question-answering-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Aggregator (optional) | `aggregator` | string | The aggregator used to get the answer |
+| Answer | `answer` | string | The plaintext answer |
+| Cells (optional) | `cells` | array[string] | a list of coordinates of the cells contents |
+| Coordinates (optional) | `coordinates` | array[array] | a list of coordinates of the cells referenced in the answer |
+</div>
+
+### Sentence Similarity
+
+Sentence Similarity is the task of determining how similar two texts are. Sentence similarity models convert input texts into vectors (embeddings) that capture semantic information and calculate how close (similar) they are between them. This task is particularly useful for information retrieval and clustering/grouping.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SENTENCE_SIMILARITY` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| [Inputs](#sentence-similarity-inputs) (required) | `inputs` | object | Inputs |
+| [Options](#sentence-similarity-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Sentence Similarity</summary>
+
+<h4 id="sentence-similarity-inputs">Inputs</h4>
+
+Inputs
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Sentences | `sentences` | array | A list of strings which will be compared against the source-sentence.  |
+| Source Sentence | `source-sentence` | string | The string that you wish to compare the other strings with. This can be a phrase, sentence, or longer passage, depending on the model being used.  |
+</div>
+<h4 id="sentence-similarity-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Scores | `scores` | array[number] | The associated similarity score for each of the given strings |
+</div>
+
+### Conversational
+
+Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt. These models have applications in chatbots, and as a part of voice assistants
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CONVERSATIONAL` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| [Inputs](#conversational-inputs) (required) | `inputs` | object | Inputs |
+| [Parameters](#conversational-parameters) | `parameters` | object | Parameters |
+| [Options](#conversational-options) | `options` | object | Options for the model |
+</div>
+
+
+<details>
+<summary> Input Objects in Conversational</summary>
+
+<h4 id="conversational-inputs">Inputs</h4>
+
+Inputs
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Generated Responses | `generated-responses` | array | A list of strings corresponding to the earlier replies from the model.  |
+| Past User Inputs | `past-user-inputs` | array | A list of strings corresponding to the earlier replies from the user. Should be of the same length of generated-responses.  |
+| Text | `text` | string | The last input from the user in the conversation.  |
+</div>
+<h4 id="conversational-parameters">Parameters</h4>
+
+Parameters
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Max Length | `max-length` | integer | Integer to define the maximum length in tokens of the output summary.  |
+| Max Time | `max-time` | number | The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.  |
+| Min Length | `min-length` | integer | Integer to define the minimum length in tokens of the output summary.  |
+| Repetition Penalty | `repetition-penalty` | number | The more a token is used within generation the more it is penalized to not be picked in successive generation passes.  |
+| Temperature | `temperature` | number | The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.  |
+| Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text.  |
+| Top P | `top-p` | number | Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p.  |
+</div>
+<h4 id="conversational-options">Options</h4>
+
+Options for the model
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Use Cache | `use-cache` | boolean | There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.  |
+| Wait For Model | `wait-for-model` | boolean | If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Conversation](#conversational-conversation) (optional) | `conversation` | object | A facility dictionary to send back for the next input (with the new user input addition). |
+| Generated Text | `generated-text` | string | The answer of the bot |
+</div>
+
+<details>
+<summary> Output Objects in Conversational</summary>
+
+<h4 id="conversational-conversation">Conversation</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Generated Responses | `generated-responses` | array | List of strings. The last outputs from the model in the conversation, after the model has run. |
+| Past User Inputs | `past-user-inputs` | array | List of strings. The last inputs from the user in the conversation, after the model has run. |
+</div>
+</details>
+
+### Image Classification
+
+Image classification is the task of assigning a label or class to an entire image. Images are expected to have only one class for each image. Image classification models take an image as input and return a prediction about which class the image belongs to.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_IMAGE_CLASSIFICATION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| Image (required) | `image` | string | The image file |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Classes](#image-classification-classes) | `classes` | array[object] | Classes |
+</div>
+
+<details>
+<summary> Output Objects in Image Classification</summary>
+
+<h4 id="image-classification-classes">Classes</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Label | `label` | string | The label for the class (model specific) |
+| Score | `score` | number | A float that represents how likely it is that the image file belongs to this class. |
+</div>
+</details>
+
+### Image Segmentation
+
+Image Segmentation divides an image into segments where each pixel in the image is mapped to an object. This task has multiple variants such as instance segmentation, panoptic segmentation and semantic segmentation.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_IMAGE_SEGMENTATION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| Image (required) | `image` | string | The image file |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Segments](#image-segmentation-segments) | `segments` | array[object] | Segments |
+</div>
+
+<details>
+<summary> Output Objects in Image Segmentation</summary>
+
+<h4 id="image-segmentation-segments">Segments</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Label | `label` | string | The label for the class (model specific) of a segment. |
+| Mask | `mask` | string | A str (base64 str of a single channel black-and-white img) representing the mask of a segment. |
+| Score | `score` | number | A float that represents how likely it is that the segment belongs to the given class. |
+</div>
+</details>
+
+### Object Detection
+
+Object Detection models allow users to identify objects of certain defined classes. Object detection models receive an image as input and output the images with bounding boxes and labels on detected objects.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_OBJECT_DETECTION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| Image (required) | `image` | string | The image file |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Objects](#object-detection-objects) | `objects` | array[object] | Objects |
+</div>
+
+<details>
+<summary> Output Objects in Object Detection</summary>
+
+<h4 id="object-detection-objects">Objects</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Box](#object-detection-box) | `box` | object | A dict (with keys [xmin,ymin,xmax,ymax]) representing the bounding box of a detected object. |
+| Label | `label` | string | The label for the class (model specific) of a detected object. |
+| Score | `score` | number | A float that represents how likely it is that the detected object belongs to the given class. |
+</div>
+
+<h4 id="object-detection-box">Box</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| X Max | `xmax` | number | X max |
+| X Min | `xmin` | number | X min |
+| Y Max | `ymax` | number | Y Max |
+| Y min | `ymin` | number | Y min |
+</div>
+</details>
+
+### Image to Text
+
+Image to text models output a text from a given image. Image captioning or optical character recognition can be considered as the most common applications of image to text.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_IMAGE_TO_TEXT` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| Image (required) | `image` | string | The image file |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | Generated text |
+</div>
+
+### Speech Recognition
+
+Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text. It has many applications, such as voice user interfaces.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SPEECH_RECOGNITION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| Audio (required) | `audio` | string | The audio file |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Text | `text` | string | The string that was recognized within the audio file. |
+</div>
+
+### Audio Classification
+
+Audio classification is the task of assigning a label or class to a given audio. It can be used for recognizing which command a user is giving or the emotion of a statement, as well as identifying a speaker.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_AUDIO_CLASSIFICATION` |
+| Model (required) | `model` | string | The Hugging Face model to be used |
+| Audio (required) | `audio` | string | The audio file |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Classes](#audio-classification-classes) | `classes` | array[object] | Classes |
+</div>
+
+<details>
+<summary> Output Objects in Audio Classification</summary>
+
+<h4 id="audio-classification-classes">Classes</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Label | `label` | string | The label for the class (model specific) |
+| Score | `score` | number | A float that represents how likely it is that the audio file belongs to this class. |
+</div>
+</details>

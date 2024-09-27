@@ -1,0 +1,519 @@
+{
+  "$defs": {
+    "bucket-name": {
+      "description": "Name of the bucket to be used for object storage",
+      "instillUpstreamTypes": [
+        "value",
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": false,
+      "instillUIOrder": 0,
+      "title": "Bucket Name",
+      "type": "string"
+    },
+    "data": {
+      "description": "The data of the object",
+      "instillUIOrder": 0,
+      "instillFormat": "string",
+      "title": "Data",
+      "type": "string"
+    },
+    "attributes": {
+      "description": "The attributes of the object",
+      "properties": {
+        "name": {
+          "description": "The name of the object",
+          "instillUIOrder": 0,
+          "instillFormat": "string",
+          "title": "Object Name",
+          "type": "string"
+        },
+        "content-type": {
+          "description": "The content type of the object",
+          "instillUIOrder": 1,
+          "instillFormat": "string",
+          "title": "Content Type",
+          "type": "string"
+        },
+        "content-language": {
+          "description": "The content language of the object",
+          "instillUIOrder": 2,
+          "instillFormat": "string",
+          "title": "Content Language",
+          "type": "string"
+        },
+        "owner": {
+          "description": "The owner of the object",
+          "instillUIOrder": 3,
+          "instillFormat": "string",
+          "title": "Owner",
+          "type": "string"
+        },
+        "size": {
+          "description": "The size of the object",
+          "instillUIOrder": 4,
+          "instillFormat": "integer",
+          "title": "Size",
+          "type": "integer"
+        },
+        "content-encoding": {
+          "description": "The content encoding of the object",
+          "instillUIOrder": 5,
+          "instillFormat": "string",
+          "title": "Content Encoding",
+          "type": "string"
+        },
+        "content-disposition": {
+          "description": "The content disposition of the object",
+          "instillUIOrder": 6,
+          "instillFormat": "string",
+          "title": "Content Disposition",
+          "type": "string"
+        },
+        "media-link": {
+          "description": "The media link of the object",
+          "instillUIOrder": 7,
+          "instillFormat": "string",
+          "title": "Media Link",
+          "type": "string"
+        },
+        "metadata": {
+          "description": "The object metadata",
+          "instillUIOrder": 8,
+          "instillFormat": "object",
+          "title": "Metadata",
+          "required": [],
+          "type": "object"
+        },
+        "storage-class": {
+          "description": "The storage class of the object",
+          "instillUIOrder": 9,
+          "instillFormat": "string",
+          "title": "Storage Class",
+          "type": "string"
+        }
+      },
+      "instillAcceptFormats": [
+        "object"
+      ],
+      "instillUIMultiline": true,
+      "required": [],
+      "instillUIOrder": 1,
+      "title": "Attributes",
+      "type": "object"
+    }
+  },
+  "TASK_UPLOAD": {
+    "instillShortDescription": "Upload data to Google Cloud Storage.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "bucket-name": {
+          "$ref": "#/$defs/bucket-name"
+        },
+        "data": {
+          "description": "The data to be saved in the object",
+          "instillAcceptFormats": [
+            "*"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Data",
+          "type": "string"
+        },
+        "object-name": {
+          "description": "The name of the object to be created",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Object Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object-name",
+        "bucket-name",
+        "data"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "authenticated-url": {
+          "description": "Only users granted permission can access the object with this link",
+          "format": "uri",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Authenticated URL",
+          "type": "string"
+        },
+        "gsutil-uri": {
+          "description": "File path to this resource in Cloud Storage",
+          "format": "uri",
+          "instillFormat": "string",
+          "instillUIOrder": 1,
+          "title": "Gsutil URI",
+          "type": "string"
+        },
+        "public-access": {
+          "description": "Whether the object is publicly accessible",
+          "instillFormat": "boolean",
+          "instillUIOrder": 2,
+          "title": "Public Access",
+          "type": "boolean"
+        },
+        "public-url": {
+          "description": "Anyone with this link can access the object on the public Internet",
+          "instillFormat": "string",
+          "instillUIOrder": 3,
+          "title": "Public URL",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status of the upload operation",
+          "instillFormat": "string",
+          "instillUIOrder": 4,
+          "title": "Upload Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_READ_OBJECTS": {
+    "instillShortDescription": "Read objects from Google Cloud Storage.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "bucket-name": {
+          "$ref": "#/$defs/bucket-name"
+        },
+        "delimiter": {
+          "description": "The delimiter to use when listing objects",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Delimiter",
+          "type": "string"
+        },
+        "prefix": {
+          "description": "The prefix to use when listing objects",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Prefix",
+          "type": "string"
+        },
+        "versions": {
+          "description": "Whether to list all versions of an object",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Versions",
+          "type": "boolean"
+        },
+        "start-offset": {
+          "description": "The offset to start listing objects from",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Start Offset",
+          "type": "string"
+        },
+        "end-offset": {
+          "description": "The offset to stop listing objects at",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "End Offset",
+          "type": "string"
+        },
+        "include-trailing-delimiter": {
+          "description": "Whether to include the delimiter in the object name",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 6,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Include Trailing Delimiter",
+          "type": "boolean"
+        },
+        "match-glob": {
+          "description": "Whether to match objects using a glob pattern",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 7,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Match Glob",
+          "type": "string"
+        },
+        "include-folders-as-prefixes": {
+          "description": "Whether to include folders as prefixes",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 8,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Include Folders As Prefixes",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bucket-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "text-objects": {
+          "description": "The text objects in the bucket",
+          "instillAcceptFormats": [
+            "array"
+          ],
+          "instillUIOrder": 0,
+          "title": "Text Objects",
+          "type": "array",
+          "items": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data"
+              },
+              "attributes": {
+                "$ref": "#/$defs/attributes"
+              }
+            },
+            "required": [],
+            "type": "object"
+          }
+        },
+        "image-objects": {
+          "description": "The image objects in the bucket",
+          "instillAcceptFormats": [
+            "array"
+          ],
+          "instillUIOrder": 1,
+          "title": "Image Objects",
+          "type": "array",
+          "items": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data"
+              },
+              "attributes": {
+                "$ref": "#/$defs/attributes"
+              }
+            },
+            "required": [],
+            "type": "object"
+          }
+        },
+        "document-objects": {
+          "description": "The document objects in the bucket",
+          "instillAcceptFormats": [
+            "array"
+          ],
+          "instillUIOrder": 2,
+          "title": "Document Objects",
+          "type": "array",
+          "items": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data"
+              },
+              "attributes": {
+                "$ref": "#/$defs/attributes"
+              }
+            },
+            "required": [],
+            "title": "Object",
+            "type": "object"
+          }
+        },
+        "audio-objects": {
+          "description": "The audio objects in the bucket",
+          "instillAcceptFormats": [
+            "array"
+          ],
+          "instillUIOrder": 3,
+          "title": "Audio Objects",
+          "type": "array",
+          "items": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data"
+              },
+              "attributes": {
+                "$ref": "#/$defs/attributes"
+              }
+            },
+            "required": [],
+            "title": "Object",
+            "type": "object"
+          }
+        },
+        "video-objects": {
+          "description": "The video objects in the bucket",
+          "instillAcceptFormats": [
+            "array"
+          ],
+          "instillUIOrder": 4,
+          "title": "Video Objects",
+          "type": "array",
+          "items": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data"
+              },
+              "attributes": {
+                "$ref": "#/$defs/attributes"
+              }
+            },
+            "required": [],
+            "title": "Object",
+            "type": "object"
+          }
+        }
+      },
+      "required": [],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_CREATE_BUCKET": {
+    "instillShortDescription": "Read objects from Google Cloud Storage.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "bucket-name": {
+          "$ref": "#/$defs/bucket-name"
+        },
+        "project-id": {
+          "description": "The project ID to create the bucket in",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Project ID",
+          "type": "string"
+        },
+        "location": {
+          "description": "The location to create the bucket in",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Location",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bucket-name",
+        "project-id"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "result": {
+          "description": "The result of the operation",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Result",
+          "type": "string"
+        },
+        "name": {
+          "description": "The name of the bucket",
+          "instillFormat": "string",
+          "instillUIOrder": 1,
+          "title": "Bucket Name",
+          "type": "string"
+        },
+        "location": {
+          "description": "The location of the bucket",
+          "instillFormat": "string",
+          "instillUIOrder": 2,
+          "title": "Location",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

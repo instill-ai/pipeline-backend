@@ -14,7 +14,7 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/redis/go-redis/v9"
 
-	componentstore "github.com/instill-ai/component/store"
+	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 )
 
 // Config - Global variable to export

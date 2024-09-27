@@ -1,0 +1,56 @@
+{
+  "TASK_MARSHAL": {
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "object"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "object": {
+          "description": "Json object to be marshaled",
+          "instillAcceptFormats": [
+            "object",
+            "semi-structured/*",
+            "structured/*"
+          ],
+          "instillEditOnNodeFields": [],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "required": [],
+          "title": "Object",
+          "type": "object"
+        }
+      },
+      "required": [
+        "object"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "string"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "string": {
+          "description": "Data",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Data",
+          "type": "string"
+        }
+      },
+      "required": [
+        "string"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

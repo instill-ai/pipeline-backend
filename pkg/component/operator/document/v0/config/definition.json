@@ -1,0 +1,20 @@
+{
+  "availableTasks": [
+    "TASK_CONVERT_TO_MARKDOWN",
+    "TASK_CONVERT_TO_TEXT",
+    "TASK_CONVERT_TO_IMAGES"
+  ],
+  "custom": false,
+  "documentationUrl": "https://www.instill.tech/docs/component/operator/document",
+  "icon": "assets/document.svg",
+  "id": "document",
+  "public": true,
+  "spec": {},
+  "title": "Document",
+  "type": "COMPONENT_TYPE_OPERATOR",
+  "uid": "e5b290ae-ad53-47c9-a64e-efbc5358520b",
+  "version": "0.1.1",
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/document/v0",
+  "description": "Manipulate Document files",
+  "releaseStage": "RELEASE_STAGE_ALPHA"
+}

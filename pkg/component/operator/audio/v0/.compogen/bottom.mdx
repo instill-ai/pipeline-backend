@@ -1,0 +1,40 @@
+## Example Recipes
+
+Recipe for the [Audio Transcription Generator](https://instill.tech/instill-ai/pipelines/audio-transcription/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  audio-spliter:
+    type: audio
+    task: TASK_SLICE_AUDIO
+    input:
+      audio: ${variable.audio}
+      end-time: ${variable.end_time}
+      start-time: ${variable.start_time}
+  get-transcription:
+    type: openai
+    task: TASK_SPEECH_RECOGNITION
+    input:
+      audio: ${audio-spliter.output.audio}
+      model: whisper-1
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  audio:
+    title: audio
+    description: the audio you want to get the transcription from
+    instill-format: audio/*
+  end_time:
+    title: end-time
+    description: the end time you want to extract in seconds i.e. 2 mins is 120 seconds
+    instill-format: number
+  start_time:
+    title: start-time
+    description: the start time you want to extract in seconds i.e. 2 mins is 120 seconds
+    instill-format: number
+output:
+  result:
+    title: result
+    value: ${get-transcription.output.text}
+```

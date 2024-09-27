@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "token": {
+      "description": "Fill in your HubSpot private app access token. Go here for [more information](https://developers.hubspot.com/docs/api/private-apps)",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "Token",
+      "type": "string"
+    }
+  },
+  "required": [
+    "token"
+  ],
+  "instillEditOnNodeFields": [
+    "token"
+  ],
+  "title": "HubSpot Connection",
+  "type": "object"
+}

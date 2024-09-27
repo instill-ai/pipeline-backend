@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "api-key": {
+      "description": "Fill in your API key from the vendor's platform.",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillCredential": true,
+      "instillUIOrder": 0,
+      "title": "API Key",
+      "type": "string"
+    },
+    "organization": {
+      "description": "Specify which organization is used for the requests. Usage will count against the specified organization's subscription quota.",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 1,
+      "title": "Organization ID",
+      "type": "string"
+    }
+  },
+  "required": [],
+  "instillEditOnNodeFields": [
+    "api-key"
+  ],
+  "title": "Universal AI Connection",
+  "type": "object"
+}

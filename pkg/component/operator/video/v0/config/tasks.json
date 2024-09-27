@@ -1,0 +1,184 @@
+{
+  "TASK_SUBSAMPLE_VIDEO": {
+    "instillShortDescription": "Subsample video into a new video",
+    "input": {
+      "description": "Factor to be used for sub-sampling the video",
+      "instillEditOnNodeFields": [
+        "video",
+        "fps"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "video": {
+          "description": "Base64 encoded video",
+          "instillAcceptFormats": [
+            "video/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Video",
+          "type": "string"
+        },
+        "fps": {
+          "description": "Frames per second",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "FPS",
+          "type": "number"
+        },
+        "start-time": {
+          "description": "Start time in seconds, format is hh:mm:ss",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Start time",
+          "type": "string"
+        },
+        "duration": {
+          "description": "Duration in seconds, format is hh:mm:ss",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Duration",
+          "type": "string"
+        }
+      },
+      "required": [
+        "video",
+        "fps"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "video": {
+          "description": "Base64 encoded sub-sampled video",
+          "instillFormat": "video/*",
+          "instillUIOrder": 0,
+          "title": "Video",
+          "type": "string"
+        }
+      },
+      "required": [
+        "video"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SUBSAMPLE_VIDEO_FRAMES": {
+    "instillShortDescription": "Subsample video into frames",
+    "input": {
+      "description": "Factor to be used for sub-sampling the video into frame",
+      "instillEditOnNodeFields": [
+        "video",
+        "fps"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "video": {
+          "description": "Base64 encoded video",
+          "instillAcceptFormats": [
+            "video/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Video",
+          "type": "string"
+        },
+        "fps": {
+          "description": "Frames per second",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "FPS",
+          "type": "number"
+        },
+        "start-time": {
+          "description": "Start time in seconds, format is hh:mm:ss",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Start time",
+          "type": "string"
+        },
+        "duration": {
+          "description": "Duration in seconds, format is hh:mm:ss",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Duration",
+          "type": "string"
+        }
+      },
+      "required": [
+        "video",
+        "fps"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "frames": {
+          "description": "Base64 encoded sub-sampled frames",
+          "instillFormat": "array:image/*",
+          "instillUIOrder": 0,
+          "items": {
+            "type": "string",
+            "title": "Frame"
+          },
+          "title": "Frames",
+          "type": "array"
+        }
+      },
+      "required": [
+        "frames"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

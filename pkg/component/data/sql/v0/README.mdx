@@ -1,0 +1,269 @@
+---
+title: "SQL"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP SQL component https://github.com/instill-ai/instill-core"
+---
+
+The SQL component is a data component that allows users to access the SQL database of your choice.
+It can carry out the following tasks:
+- [Insert](#insert)
+- [Insert Many](#insert-many)
+- [Update](#update)
+- [Select](#select)
+- [Delete](#delete)
+- [Create Table](#create-table)
+- [Drop Table](#drop-table)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/sql/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/sql/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with the
+external application, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Engine (required) | `engine` | string | Choose the engine of your database.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`MySQL`</li><li>`PostgreSQL`</li><li>`SQL Server`</li><li>`Oracle`</li><li>`MariaDB`</li><li>`Firebird`</li></ul></details>  |
+| Username (required) | `username` | string | Fill in your account username  |
+| Password (required) | `password` | string | Fill in your account password  |
+| Database Name (required) | `database-name` | string | Fill in the name of your database  |
+| Host (required) | `host` | string | Fill in the host of your database  |
+| Port (required) | `port` | number | Fill in the port of your database  |
+| [SSL/TLS](#ssl-tls) (required) | `ssl-tls` | object | Enable SSL/TLS  |
+
+</div>
+
+
+<details>
+<summary>The <code>ssl-tls</code> Object </summary>
+
+<h4 id="setup-ssl-tls">Ssl Tls</h4>
+
+`ssl-tls` must fulfill one of the following schemas:
+
+<h5 id="setup-no-ssl-tls"><code>No SSL/TLS</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| SSL/TLS Type | `ssl-tls-type` | string |  Must be `"NO TLS"`   |
+</div>
+
+<h5 id="setup-tls"><code>TLS</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file  |
+| SSL/TLS Type | `ssl-tls-type` | string |  Must be `"TLS"`   |
+</div>
+
+<h5 id="setup-mtls"><code>mTLS</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file  |
+| Client Certificate | `ssl-tls-cert` | string |  Base64 encoded client certificate file  |
+| Client Key | `ssl-tls-key` | string |  Base64 encoded client key file  |
+| SSL/TLS Type | `ssl-tls-type` | string |  Must be `"mTLS"`   |
+</div>
+</details>
+
+## Supported Tasks
+
+### Insert
+
+Perform insert operation
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_INSERT` |
+| Table Name (required) | `table-name` | string | The table name in the database to insert data into |
+| Data (required) | `data` | object | The data to be inserted |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Insert status |
+</div>
+
+### Insert Many
+
+Perform insert operation with multiple rows
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_INSERT_MANY` |
+| Table Name (required) | `table-name` | string | The table name in the database to insert data into |
+| [Data](#insert-many-data) (required) | `array-data` | array[object] | The array data to be inserted |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Insert many status |
+</div>
+
+### Update
+
+Perform update operation
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UPDATE` |
+| Table Name (required) | `table-name` | string | The table name in the database to update data into |
+| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause |
+| Update (required) | `update-data` | object | The new data to be updated to |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Update status |
+</div>
+
+### Select
+
+Perform select operation
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SELECT` |
+| Table Name (required) | `table-name` | string | The table name in the database to be selected |
+| Filter | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows |
+| Limit | `limit` | integer | The limit of rows to be selected, empty for all rows |
+| Columns | `columns` | array[string] | The columns to return in the rows. If empty then all columns will be returned |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Rows](#select-rows) | `rows` | array[object] | The rows returned from the select operation |
+| Status | `status` | string | Select status |
+</div>
+
+### Delete
+
+Perform delete operation
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE` |
+| Table Name (required) | `table-name` | string | The table name in the database to be deleted |
+| Filter (required) | `filter` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete status |
+</div>
+
+### Create Table
+
+Create a table in the database
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_TABLE` |
+| Table Name (required) | `table-name` | string | The table name in the database to be created |
+| Columns (required) | `columns-structure` | object | The columns structure to be created in the table, json with value string, e.g \{"name": "VARCHAR(255)", "age": "INT not null"\} |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Create table status |
+</div>
+
+### Drop Table
+
+Drop a table in the database
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DROP_TABLE` |
+| Table Name (required) | `table-name` | string | The table name in the database to be dropped |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Drop table status |
+</div>

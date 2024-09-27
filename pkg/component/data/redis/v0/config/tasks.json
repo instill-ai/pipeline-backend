@@ -1,0 +1,237 @@
+{
+  "TASK_RETRIEVE_CHAT_HISTORY": {
+    "instillShortDescription": "Retrieve chat history from Redis.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "include-system-message": {
+          "default": true,
+          "description": "Include system message in the retrieved conversation turns if exists",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Include System Message If Exists",
+          "type": "boolean"
+        },
+        "latest-k": {
+          "default": 5,
+          "description": "The number of latest conversation turns to retrieve. A conversation turn typically includes one participant speaking or sending a message, and the other participant(s) responding to it.",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "minimum": 1,
+          "title": "Latest K",
+          "type": "integer"
+        },
+        "session-id": {
+          "description": "A unique identifier for the chat session",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Session ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session-id"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "messages": {
+          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/chat-messages",
+          "description": "Messages",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "messages"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_WRITE_CHAT_MESSAGE": {
+    "instillShortDescription": "Write chat message into Redis.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "content": {
+          "description": "The message content",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Content",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "description": "The message metadata",
+          "instillUIOrder": 3,
+          "required": [],
+          "title": "Metadata",
+          "type": "object"
+        },
+        "role": {
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session-id": {
+          "description": "A unique identifier for the chat session",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Session ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session-id",
+        "role",
+        "content"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "The status of the write operation",
+          "instillFormat": "boolean",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_WRITE_MULTI_MODAL_CHAT_MESSAGE": {
+    "instillShortDescription": "Write multi-modal chat message into Redis.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "content": {
+          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/multi-modal-content",
+          "description": "The multi-modal message content",
+          "instillAcceptFormats": [
+            "structured/multi-modal-content"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Content",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "description": "The message metadata",
+          "instillUIOrder": 3,
+          "required": [],
+          "title": "Metadata",
+          "type": "object"
+        },
+        "role": {
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "session-id": {
+          "description": "A unique identifier for the chat session",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Session ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session-id",
+        "role",
+        "content"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "The status of the write operation",
+          "instillFormat": "boolean",
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

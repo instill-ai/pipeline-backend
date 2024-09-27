@@ -1,0 +1,15 @@
+[`jq`](https://jqlang.github.io/jq/) defines a syntax to "transform JSON in
+various ways, by selecting, iterating, reducing and otherwise mangling JSON
+documents". Depending on the command input and the `jq` filter, the type and
+shape of the results may vary.
+
+Here are some examples on how the `jq` syntax works.
+
+| Input JSON | `jq` filter | Output |
+| :--- | :--- | :--- |
+| `{"foo": 128}` | `.foo` | `[128]` |
+| `{"a": {"b": 42}}` | `.a.b` | `[42]` |
+| `{"id": "sample", "10": {"b": 42}}` | `{(.id): .["10"].b}` | `[{ "sample": 42 }]` |
+| `[{"id":1},{"id":2},{"id":3}]` | `.[] \| .id` | `[1, 2, 3]` |
+| `{"a":1,"b":2}` | `.a += 1 \| .b *= 2` | `[{ "a": 2, "b": 4 }]` |
+| `{"a":1} [2] 3` | `. as {$a} ?// [$a] ?// $a \| $a` | `[1, 2, 3]` |

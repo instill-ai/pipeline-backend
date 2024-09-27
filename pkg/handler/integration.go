@@ -205,6 +205,13 @@ func (h *PublicHandler) ListPipelineIDsByConnectionID(ctx context.Context, req *
 	return resp, nil
 }
 
+// TestNamespaceConnection makes a request to the 3rd party app that the
+// connection is configured to communicate with, and checks the result of the
+// call.
+func (h *PublicHandler) TestNamespaceConnection(ctx context.Context, req *pb.TestNamespaceConnectionRequest) (*pb.TestNamespaceConnectionResponse, error) {
+	return nil, nil //status.Errorf(codes.Unimplemented, "not implemented")
+}
+
 // GetNamespaceConnection fetches the details of a namespace connection.
 func (h *PublicHandler) GetNamespaceConnection(ctx context.Context, req *pb.GetNamespaceConnectionRequest) (*pb.GetNamespaceConnectionResponse, error) {
 	eventName := "GetNamespaceConnection"

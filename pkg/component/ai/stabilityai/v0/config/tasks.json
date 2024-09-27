@@ -1,0 +1,480 @@
+{
+  "TASK_IMAGE_TO_IMAGE": {
+    "instillShortDescription": "Modify an image based on a text prompt.",
+    "input": {
+      "additionalProperties": false,
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "prompts",
+        "engine"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "cfg-scale": {
+          "$ref": "stabilityai.json#/components/schemas/CfgScale",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillUIOrder": 6,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Cfg Scale"
+        },
+        "clip-guidance-preset": {
+          "$ref": "stabilityai.json#/components/schemas/ClipGuidancePreset",
+          "description": "Clip guidance preset",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Clip Guidance Preset"
+        },
+        "engine": {
+          "default": "stable-diffusion-xl-1024-v1-0",
+          "description": "Stability AI Engine (model) to be used.",
+          "enum": [
+            "stable-diffusion-xl-1024-v1-0",
+            "stable-diffusion-xl-1024-v0-9",
+            "stable-diffusion-v1-6",
+            "esrgan-v1-x2plus",
+            "stable-diffusion-512-v2-1",
+            "stable-diffusion-xl-beta-v2-2-2"
+          ],
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Engine",
+          "type": "string"
+        },
+        "image-strength": {
+          "$ref": "stabilityai.json#/components/schemas/InitImageStrength",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillShortDescription": "How much influence the `init-image` has on the diffusion process.",
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Image Strength"
+        },
+        "init-image": {
+          "$ref": "stabilityai.json#/components/schemas/InitImage",
+          "instillAcceptFormats": [
+            "image/*"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Init Image"
+        },
+        "init-image-mode": {
+          "$ref": "stabilityai.json#/components/schemas/InitImageMode",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 7,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Init Image Mode"
+        },
+        "prompts": {
+          "description": "An array of prompts to use for generation.",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "items": {
+            "$ref": "stabilityai.json#/components/schemas/TextPrompt/properties/text"
+          },
+          "minItems": 1,
+          "title": "Prompts",
+          "type": "array"
+        },
+        "sampler": {
+          "$ref": "stabilityai.json#/components/schemas/Sampler",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "Which sampler to use for the diffusion process",
+          "instillUIOrder": 8,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Sampler"
+        },
+        "samples": {
+          "$ref": "stabilityai.json#/components/schemas/Samples",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 9,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Samples"
+        },
+        "seed": {
+          "$ref": "stabilityai.json#/components/schemas/Seed",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillUIOrder": 10,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Seed"
+        },
+        "step-schedule-end": {
+          "$ref": "stabilityai.json#/components/schemas/StepScheduleEnd",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillShortDescription": "Skips a proportion of the end of the diffusion steps",
+          "instillUIOrder": 12,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Step Schedule End"
+        },
+        "step-schedule-start": {
+          "$ref": "stabilityai.json#/components/schemas/StepScheduleStart",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillShortDescription": "Skips a proportion of the start of the diffusion steps",
+          "instillUIOrder": 11,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Step Schedule Start"
+        },
+        "steps": {
+          "$ref": "stabilityai.json#/components/schemas/Steps",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 13,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Steps"
+        },
+        "style-preset": {
+          "$ref": "stabilityai.json#/components/schemas/StylePreset",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 14,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Style Preset"
+        },
+        "weights": {
+          "description": "An array of weights to use for generation. If unspecified, the model will automatically assign a default weight of 1.0 to each prompt.",
+          "instillAcceptFormats": [
+            "array:number",
+            "array:integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "items": {
+            "$ref": "stabilityai.json#/components/schemas/TextPrompt/properties/weight"
+          },
+          "minItems": 1,
+          "title": "Weights",
+          "type": "array"
+        }
+      },
+      "required": [
+        "prompts",
+        "engine"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "$ref": "#/TASK_TEXT_TO_IMAGE/output"
+    }
+  },
+  "TASK_TEXT_TO_IMAGE": {
+    "instillShortDescription": "Generate a new image from a text prompt.",
+    "input": {
+      "additionalProperties": false,
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "prompts",
+        "engine"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "cfg-scale": {
+          "$ref": "stabilityai.json#/components/schemas/CfgScale",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "CFG Scale"
+        },
+        "clip-guidance-preset": {
+          "$ref": "stabilityai.json#/components/schemas/ClipGuidancePreset",
+          "description": "Clip guidance preset",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Clip Guidance Preset"
+        },
+        "engine": {
+          "default": "stable-diffusion-xl-1024-v1-0",
+          "description": "Stability AI Engine (model) to be used.",
+          "enum": [
+            "stable-diffusion-xl-1024-v1-0",
+            "stable-diffusion-xl-1024-v0-9",
+            "stable-diffusion-v1-6",
+            "esrgan-v1-x2plus",
+            "stable-diffusion-512-v2-1",
+            "stable-diffusion-xl-beta-v2-2-2"
+          ],
+          "instillCredentialMap": {
+            "values": [
+              "stable-diffusion-xl-1024-v1-0",
+              "stable-diffusion-v1-6"
+            ],
+            "targets": [
+              "setup.api-key"
+            ]
+          },
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Engine",
+          "type": "string"
+        },
+        "height": {
+          "$ref": "stabilityai.json#/components/schemas/DiffuseImageHeight",
+          "description": "The image height",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Height"
+        },
+        "prompts": {
+          "description": "An array of prompts to use for generation.",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "items": {
+            "$ref": "stabilityai.json#/components/schemas/TextPrompt/properties/text"
+          },
+          "minItems": 1,
+          "title": "Prompts",
+          "type": "array"
+        },
+        "sampler": {
+          "$ref": "stabilityai.json#/components/schemas/Sampler",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 6,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Sampler"
+        },
+        "samples": {
+          "$ref": "stabilityai.json#/components/schemas/Samples",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 7,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Samples"
+        },
+        "seed": {
+          "$ref": "stabilityai.json#/components/schemas/Seed",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillUIOrder": 8,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Seed"
+        },
+        "steps": {
+          "$ref": "stabilityai.json#/components/schemas/Steps",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 9,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Steps"
+        },
+        "style-preset": {
+          "$ref": "stabilityai.json#/components/schemas/StylePreset",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 10,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Style Preset"
+        },
+        "weights": {
+          "description": "An array of weights to use for generation.",
+          "instillAcceptFormats": [
+            "array:number",
+            "array:integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "items": {
+            "$ref": "stabilityai.json#/components/schemas/TextPrompt/properties/weight"
+          },
+          "minItems": 1,
+          "title": "Weights",
+          "type": "array"
+        },
+        "width": {
+          "$ref": "stabilityai.json#/components/schemas/DiffuseImageWidth",
+          "description": "The image width",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Width"
+        }
+      },
+      "required": [
+        "prompts",
+        "engine"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "additionalProperties": false,
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "images",
+        "seeds"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "images": {
+          "description": "Generated images",
+          "instillUIOrder": 0,
+          "instillFormat": "array:image/png",
+          "items": {
+            "instillFormat": "image/png",
+            "title": "Image",
+            "type": "string"
+          },
+          "title": "Images",
+          "type": "array"
+        },
+        "seeds": {
+          "description": "Seeds of generated images",
+          "instillUIOrder": 1,
+          "instillFormat": "array:number",
+          "items": {
+            "$ref": "stabilityai.json#/components/schemas/Image/properties/seed",
+            "title": "Seed",
+            "instillFormat": "number"
+          },
+          "title": "Seeds",
+          "type": "array"
+        }
+      },
+      "required": [
+        "images",
+        "seeds"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

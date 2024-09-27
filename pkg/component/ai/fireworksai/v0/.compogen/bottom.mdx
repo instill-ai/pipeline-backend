@@ -1,0 +1,30 @@
+## Example Recipes
+
+Recipe for the [Fireworks Chinese Content Writer](https://instill.tech/instill-ai/pipelines/fireworks-chinese-content-writer/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  fireworks-0:
+    type: fireworks-ai
+    task: TASK_TEXT_GENERATION_CHAT
+    input:
+      max-new-tokens: 200
+      model: qwen2-72b-instruct
+      prompt: ${variable.prompt}
+      system-message: You are a expert social media content writing assistant. Output the result in chinese for 小紅書.
+      temperature: 0.05
+      top-k: 10
+      top-p: 0.5
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  prompt:
+    title: prompt
+    description: input prompt i.e. "寫一份生椰拿鐵文案", "write about horses"
+    instill-format: string
+output:
+  output:
+    title: output
+    value: ${fireworks-0.output.text}
+```

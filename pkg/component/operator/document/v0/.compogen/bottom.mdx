@@ -1,0 +1,62 @@
+## Example Recipes
+
+Recipe for the [Content Reviewer](https://instill.tech/instill-ai/pipelines/contract-reviewer/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  gpt-4-question:
+    type: openai
+    task: TASK_TEXT_GENERATION
+    input:
+      model: gpt-4o
+      prompt: |-
+        Given the contract content:
+        --
+        ${pdf-to-text.output.body}
+        --
+        Please help answer the question: ${variable.question}
+      response-format:
+        type: text
+      system-message: You are a professional and versatile lawyer with diverse lay backgrounds who reviews, investigates and spot pitfalls in a contract.
+      top-p: 1
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+      organization: org-iadti51GxgS0qjX6LJmn75Ti
+  gpt-4-summary:
+    type: openai
+    task: TASK_TEXT_GENERATION
+    input:
+      model: gpt-4o
+      prompt: |-
+        Please help check this contract content and tell me what kind of the contract it is about in one concise, short, and simple sentence such as "it is an NDA", "it is an job agency contract", etc.:
+        ${pdf-to-text.output.body}
+      response-format:
+        type: text
+      system-message: You are a professional and versatile lawyer with diverse lay backgrounds who reviews, investigates and spot pitfalls in a contract.
+      top-p: 1
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+      organization: org-iadti51GxgS0qjX6LJmn75Ti
+  pdf-to-text:
+    type: document
+    task: TASK_CONVERT_TO_TEXT
+    input:
+      document: ${variable.contract_pdf_file}
+variable:
+  contract_pdf_file:
+    title: Contract PDF file
+    instill-format: "*/*"
+  question:
+    title: Question
+    instill-format: string
+
+output:
+  contract_question_answering:
+    title: Contract Question Answering
+    value: ${gpt-4-question.output.texts}
+    instill-ui-order: 1
+  contract_summary:
+    title: Contract Summary
+    value: ${gpt-4-summary.output.texts}
+```

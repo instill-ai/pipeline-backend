@@ -1,0 +1,21 @@
+{
+  "availableTasks": [
+    "TASK_REGISTER"
+  ],
+  "custom": false,
+  "documentationUrl": "https://www.instill.tech/docs/component/application/numbers",
+  "icon": "assets/numbers.svg",
+  "iconUrl": "",
+  "id": "numbers",
+  "public": true,
+  "title": "Numbers Protocol",
+  "description": "Seamlessly integrate third-party blockchain services through the Numbers Protocol, providing security, verifiability and traceability to data management",
+  "tombstone": false,
+  "type": "COMPONENT_TYPE_APPLICATION",
+  "uid": "70d8664a-d512-4517-a5e8-5d4da81756a7",
+  "vendor": "Numbers Protocol",
+  "vendorAttributes": {},
+  "version": "0.1.0",
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/application/numbers/v0",
+  "releaseStage": "RELEASE_STAGE_ALPHA"
+}

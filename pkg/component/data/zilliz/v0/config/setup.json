@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "description": "Fill in your Zilliz public URL endpoint",
+      "instillUpstreamTypes": [
+        "value",
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": false,
+      "instillUIOrder": 0,
+      "title": "Zilliz URL Endpoint",
+      "type": "string"
+    },
+    "api-key": {
+      "description": "Fill in your Zilliz API key",
+      "instillUpstreamTypes": [
+        "value",
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 1,
+      "title": "Zilliz API Key",
+      "type": "string"
+    }
+  },
+  "required": [
+    "url",
+    "api-key"
+  ],
+  "instillEditOnNodeFields": [
+    "url",
+    "api-key"
+  ],
+  "title": "Zilliz Connection",
+  "type": "object"
+}
