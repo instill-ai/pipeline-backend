@@ -68,35 +68,36 @@ export default function (data) {
   }
 
   if (!constant.apiGatewayMode) {
-    pipelinePrivate.CheckList(data)
-    pipelinePrivate.CheckLookUp(data)
+    pipelinePrivate.CheckList(data);
+    pipelinePrivate.CheckLookUp(data);
+    return;
 
-  } else {
-    pipelinePublicWithJwt.CheckCreate(data)
-    pipelinePublicWithJwt.CheckList(data)
-    pipelinePublicWithJwt.CheckGet(data)
-    pipelinePublicWithJwt.CheckUpdate(data)
-    pipelinePublicWithJwt.CheckRename(data)
-    pipelinePublicWithJwt.CheckLookUp(data)
-    pipelinePublic.CheckCreate(data)
-    pipelinePublic.CheckList(data)
-    pipelinePublic.CheckGet(data)
-    pipelinePublic.CheckUpdate(data)
-    pipelinePublic.CheckRename(data)
-    pipelinePublic.CheckLookUp(data)
-
-    trigger.CheckTrigger(data)
-    triggerAsync.CheckTrigger(data)
-
-    connectorDefinition.CheckList(data);
-    connectorDefinition.CheckGet(data);
-    operatorDefinition.CheckList();
-    operatorDefinition.CheckGet();
-    componentDefinition.CheckList(data);
-
-    integration.CheckIntegrations();
-    integration.CheckConnections(data);
   }
+
+  pipelinePublicWithJwt.CheckCreate(data);
+  pipelinePublicWithJwt.CheckList(data);
+  pipelinePublicWithJwt.CheckGet(data);
+  pipelinePublicWithJwt.CheckUpdate(data);
+  pipelinePublicWithJwt.CheckRename(data);
+  pipelinePublicWithJwt.CheckLookUp(data);
+  pipelinePublic.CheckCreate(data);
+  pipelinePublic.CheckList(data);
+  pipelinePublic.CheckGet(data);
+  pipelinePublic.CheckUpdate(data);
+  pipelinePublic.CheckRename(data);
+  pipelinePublic.CheckLookUp(data);
+
+  trigger.CheckTrigger(data);
+  triggerAsync.CheckTrigger(data);
+
+  connectorDefinition.CheckList(data);
+  connectorDefinition.CheckGet(data);
+  operatorDefinition.CheckList();
+  operatorDefinition.CheckGet();
+  componentDefinition.CheckList(data);
+
+  integration.CheckIntegrations();
+  integration.CheckConnections(data);
 }
 
 export function teardown(data) {
