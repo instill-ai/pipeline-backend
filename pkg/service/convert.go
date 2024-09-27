@@ -1012,12 +1012,17 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 
 				}
 				if walk.GetStructValue() != nil && walk.GetStructValue().Fields != nil {
+					// For fields without "instillFormat", we will fall back to using JSON format.
+					instillFormat := walk.GetStructValue().Fields["instillFormat"].GetStringValue()
+					if instillFormat == "" {
+						instillFormat = "json"
+					}
 					m, err = structpb.NewValue(map[string]interface{}{
 						"title":          v.Title,
 						"description":    v.Description,
 						"instillUIOrder": v.InstillUIOrder,
 						"type":           walk.GetStructValue().Fields["type"].GetStringValue(),
-						"instillFormat":  walk.GetStructValue().Fields["instillFormat"].GetStringValue(),
+						"instillFormat":  instillFormat,
 					})
 				}
 
