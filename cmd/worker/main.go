@@ -175,6 +175,7 @@ func main() {
 	w.RegisterActivity(cw.PreTriggerActivity)
 	w.RegisterActivity(cw.LoadDAGDataActivity)
 	w.RegisterActivity(cw.PostTriggerActivity)
+	w.RegisterActivity(cw.ClosePipelineActivity)
 	w.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
 	w.RegisterActivity(cw.UpdatePipelineRunActivity)
 	w.RegisterActivity(cw.UpsertComponentRunActivity)
