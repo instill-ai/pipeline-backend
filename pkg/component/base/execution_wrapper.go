@@ -108,6 +108,7 @@ func (e *ExecutionWrapper) Execute(ctx context.Context, jobs []*Job) (err error)
 	for batchIdx, job := range wrappedJobs {
 		outputs[batchIdx] = job.Output.(*outputWriter).GetOutput()
 	}
+
 	if err := h.Collect(ctx, inputs, outputs); err != nil {
 		return err
 	}

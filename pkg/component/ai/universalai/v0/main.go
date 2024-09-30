@@ -36,11 +36,12 @@ var (
 type component struct {
 	base.Component
 
-	instillAPIKey string
+	instillAPIKey map[string]string
 }
 
 type execution struct {
 	base.ComponentExecution
+
 	usesInstillCredentials bool
 	execute                func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
 }
@@ -59,7 +60,12 @@ func Init(bc base.Component) *component {
 }
 
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
-	resolvedSetup, resolved, err := c.resolveSetup(x.Setup)
+
+	model := getModel(x.GetSetup())
+	vendor := ModelVendorMap[model]
+
+	resolvedSetup, resolved, err := c.resolveSetup(vendor, x.Setup)
+
 	if err != nil {
 		return nil, err
 	}
@@ -92,15 +98,18 @@ func (e *execution) UsesInstillCredentials() bool {
 // WithInstillCredentials loads Instill credentials into the component, which
 // can be used to configure it with globally defined parameters instead of with
 // user-defined credential values.
-func (c *component) WithInstillCredentials(s map[string]any) *component {
-	c.instillAPIKey = base.ReadFromGlobalConfig(cfgAPIKey, s)
+func (c *component) WithInstillCredentials(vendor string, s map[string]any) *component {
+	if c.instillAPIKey == nil {
+		c.instillAPIKey = make(map[string]string)
+	}
+	c.instillAPIKey[vendor] = base.ReadFromGlobalConfig(cfgAPIKey, s)
 	return c
 }
 
 // resolveSetup checks whether the component is configured to use the Instill
 // credentials injected during initialization and, if so, returns a new setup
 // with the secret credential values.
-func (c *component) resolveSetup(setup *structpb.Struct) (*structpb.Struct, bool, error) {
+func (c *component) resolveSetup(vendor string, setup *structpb.Struct) (*structpb.Struct, bool, error) {
 	if setup == nil || setup.Fields == nil {
 		setup = &structpb.Struct{Fields: map[string]*structpb.Value{}}
 	}
@@ -111,10 +120,42 @@ func (c *component) resolveSetup(setup *structpb.Struct) (*structpb.Struct, bool
 		}
 	}
 
-	if c.instillAPIKey == "" {
+	if c.instillAPIKey[vendor] == "" {
 		return nil, false, base.NewUnresolvedCredential(cfgAPIKey)
 	}
 
-	setup.GetFields()[cfgAPIKey] = structpb.NewStringValue(c.instillAPIKey)
+	setup.GetFields()[cfgAPIKey] = structpb.NewStringValue(c.instillAPIKey[vendor])
 	return setup, true, nil
+}
+
+func getModel(setup *structpb.Struct) string {
+	return setup.GetFields()["model"].GetStringValue()
+}
+
+var ModelVendorMap = map[string]string{
+	"o1-preview":             "openai",
+	"o1-mini":                "openai",
+	"gpt-4o-mini":            "openai",
+	"gpt-4o":                 "openai",
+	"gpt-4o-2024-05-13":      "openai",
+	"gpt-4o-2024-08-06":      "openai",
+	"gpt-4-turbo":            "openai",
+	"gpt-4-turbo-2024-04-09": "openai",
+	"gpt-4-0125-preview":     "openai",
+	"gpt-4-turbo-preview":    "openai",
+	"gpt-4-1106-preview":     "openai",
+	"gpt-4-vision-preview":   "openai",
+	"gpt-4":                  "openai",
+	"gpt-4-0314":             "openai",
+	"gpt-4-0613":             "openai",
+	"gpt-4-32k":              "openai",
+	"gpt-4-32k-0314":         "openai",
+	"gpt-4-32k-0613":         "openai",
+	"gpt-3.5-turbo":          "openai",
+	"gpt-3.5-turbo-16k":      "openai",
+	"gpt-3.5-turbo-0301":     "openai",
+	"gpt-3.5-turbo-0613":     "openai",
+	"gpt-3.5-turbo-1106":     "openai",
+	"gpt-3.5-turbo-0125":     "openai",
+	"gpt-3.5-turbo-16k-0613": "openai",
 }
