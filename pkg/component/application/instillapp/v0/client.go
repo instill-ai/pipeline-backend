@@ -21,7 +21,7 @@ func initAppClient(serverURL string) (pbClient appPB.AppPublicServiceClient, con
 	var clientDialOpts grpc.DialOption
 
 	if strings.HasPrefix(serverURL, "https://") {
-		clientDialOpts = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true}))
+		clientDialOpts = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{}))
 	} else {
 		clientDialOpts = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
