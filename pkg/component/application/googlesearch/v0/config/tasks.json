@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "result": {
+      "properties": {
+        "link": {
+          "description": "The full URL to which the search result is pointing, e.g., http://www.example.com/foo/bar.",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillFormat": "string",
+          "instillUIOrder": 1,
+          "title": "Link",
+          "type": "string"
+        },
+        "link-html": {
+          "description": "The scraped raw html of the link associated with this search result",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 4,
+          "title": "Link HTML",
+          "type": "string"
+        },
+        "link-text": {
+          "description": "The scraped text of the link associated with this search result, in plain text",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 3,
+          "title": "Link Text",
+          "type": "string"
+        },
+        "snippet": {
+          "description": "The snippet from the page associated with this search result, in plain text",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 2,
+          "title": "Snippet",
+          "type": "string"
+        },
+        "title": {
+          "description": "The title of a search result, in plain text",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "link",
+        "snippet"
+      ],
+      "title": "Result",
+      "type": "object"
+    }
+  },
+  "TASK_SEARCH": {
+    "instillShortDescription": "Search data via Google Search Engine.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "include-link-html": {
+          "default": false,
+          "description": "Indicate whether to scrape the link and include the raw HTML of the link associated with this search result in the 'link-html' field",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Include Link HTML",
+          "type": "boolean"
+        },
+        "include-link-text": {
+          "default": false,
+          "description": "Indicate whether to scrape the link and include the text of the link associated with this search result in the 'link-text' field",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Include Link Text",
+          "type": "boolean"
+        },
+        "query": {
+          "description": "The search query for Google",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Query",
+          "type": "string"
+        },
+        "top-k": {
+          "default": 10,
+          "description": "The number of results to return for each query",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Top K",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "results": {
+          "description": "The returned search results from Google",
+          "instillUIOrder": 0,
+          "items": {
+            "$ref": "#/$defs/result"
+          },
+          "title": "Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "results"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

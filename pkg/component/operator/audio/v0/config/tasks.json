@@ -1,0 +1,148 @@
+{
+  "TASK_CHUNK_AUDIOS": {
+    "instillShortDescription": "Split audio file into chunks",
+    "input": {
+      "description": "Audio file to split",
+      "instillEditOnNodeFields": [
+        "audio",
+        "chunk-count"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "audio": {
+          "description": "Base64 encoded audio file to be split",
+          "instillAcceptFormats": [
+            "audio/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Audio",
+          "type": "string"
+        },
+        "chunk-count": {
+          "description": "Number of chunks to equally split the audio into",
+          "instillAcceptFormats": [
+            "integer",
+            "number"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "instillUIOrder": 1,
+          "title": "Chunk count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "audio",
+        "chunk-count"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "audios": {
+          "description": "A list of base64 encoded audios",
+          "instillFormat": "array:audio/wav",
+          "instillUIOrder": 0,
+          "items": {
+            "type": "string",
+            "title": "Audio"
+          },
+          "title": "Audios",
+          "type": "array"
+        }
+      },
+      "required": [
+        "audios"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SLICE_AUDIO": {
+    "instillShortDescription": "Specify a time range to slice an audio file",
+    "input": {
+      "description": "Audio file to slice",
+      "instillEditOnNodeFields": [
+        "audio",
+        "start-time",
+        "end-time"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "audio": {
+          "description": "Base64 encoded audio file to be sliced",
+          "instillAcceptFormats": [
+            "audio/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Audio",
+          "type": "string"
+        },
+        "start-time": {
+          "description": "Start time of the slice in seconds",
+          "instillAcceptFormats": [
+            "integer",
+            "number"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "instillUIOrder": 1,
+          "title": "Start time",
+          "type": "integer"
+        },
+        "end-time": {
+          "description": "End time of the slice in seconds",
+          "instillAcceptFormats": [
+            "integer",
+            "number"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "instillUIOrder": 2,
+          "title": "End time",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "audio",
+        "start-time",
+        "end-time"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "audio": {
+          "description": "Base64 encoded audio slice",
+          "instillFormat": "audio/wav",
+          "instillUIOrder": 0,
+          "title": "Audio",
+          "type": "string"
+        }
+      },
+      "required": [
+        "audio"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

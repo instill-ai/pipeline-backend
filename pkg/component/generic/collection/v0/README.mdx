@@ -1,0 +1,148 @@
+---
+title: "Collection"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Collection component https://github.com/instill-ai/instill-core"
+---
+
+The Collection component is a generic component that allows users to manipulate collection-type data.
+It can carry out the following tasks:
+- [Assign](#assign)
+- [Append](#append)
+- [Union](#union)
+- [Intersection](#intersection)
+- [Difference](#difference)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/generic/collection/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/generic/collection/v0/config/tasks.json) files respectively.
+
+
+
+## Supported Tasks
+
+### Assign
+
+Assign the data.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_ASSIGN` |
+| Data (required) | `data` | any | Specify the data you want to assign. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Data | `data` | any | The data you assign. |
+</div>
+
+### Append
+
+Add data to the end of an array.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_APPEND` |
+| Array (required) | `array` | array | Specify the array you want to append to. |
+| Data (required) | `element` | any | Specify the data you want to append. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Array | `array` | array | A updated array with the specified data appended to the end of it. |
+</div>
+
+### Union
+
+Find the union of the sets
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UNION` |
+| Array (required) | `sets` | array | Specify the sets you want to union. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Array | `set` | array | The union set. |
+</div>
+
+### Intersection
+
+Find the intersection of the sets
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_INTERSECTION` |
+| Array (required) | `sets` | array | Specify the sets you want to intersect. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Array | `set` | array | The intersection set. |
+</div>
+
+### Difference
+
+Find the difference between the two sets, i.e. `set-a` \ `set-b`, identifying the elements that are in `set-a` but not in `set-b`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DIFFERENCE` |
+| Array (required) | `set-a` | array | Specify the set-a. |
+| Array (required) | `set-b` | array | Specify the set-b. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Array | `set` | array | The difference set. |
+</div>

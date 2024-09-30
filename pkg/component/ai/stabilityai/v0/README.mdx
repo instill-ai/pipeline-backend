@@ -1,0 +1,117 @@
+---
+title: "Stability AI"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Stability AI component https://github.com/instill-ai/instill-core"
+---
+
+The Stability AI component is an AI component that allows users to connect the AI models served on the Stability AI Platform.
+It can carry out the following tasks:
+- [Text to Image](#text-to-image)
+- [Image to Image](#image-to-image)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/stabilityai/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/stabilityai/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with Stability AI, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key | `api-key` | string | Fill in your Stability AI API key. To find your keys, visit <a href="https://platform.stability.ai/account/keys">here</a>  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Text to Image
+
+Generate a new image from a text prompt.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_TEXT_TO_IMAGE` |
+| Engine (required) | `engine` | string | Stability AI Engine (model) to be used. |
+| Prompts (required) | `prompts` | array[string] | An array of prompts to use for generation. |
+| Weights | `weights` | array[number] | An array of weights to use for generation. |
+| CFG Scale | `cfg-scale` | number | How strictly the diffusion process adheres to the prompt text (higher values keep your image closer to your prompt) |
+| Clip Guidance Preset | `clip-guidance-preset` | string | Clip guidance preset |
+| Height | `height` | integer | The image height |
+| Width | `width` | integer | The image width |
+| Sampler | `sampler` | string | Which sampler to use for the diffusion process. If this value is omitted we'll automatically select an appropriate sampler for you. |
+| Samples | `samples` | integer | Number of images to generate |
+| Seed | `seed` | integer | Random noise seed (omit this option or use `0` for a random seed) |
+| Steps | `steps` | integer | Number of diffusion steps to run. |
+| Style Preset | `style-preset` | string | Pass in a style preset to guide the image model towards a particular style. This list of style presets is subject to change. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Images | `images` | array[string] | Generated images |
+| Seeds | `seeds` | array[number] | Seeds of generated images |
+</div>
+
+### Image to Image
+
+Modify an image based on a text prompt.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_IMAGE_TO_IMAGE` |
+| Engine (required) | `engine` | string | Stability AI Engine (model) to be used. |
+| Prompts (required) | `prompts` | array[string] | An array of prompts to use for generation. |
+| Init Image | `init-image` | string | Image used to initialize the diffusion process, in lieu of random noise. |
+| Weights | `weights` | array[number] | An array of weights to use for generation. If unspecified, the model will automatically assign a default weight of 1.0 to each prompt. |
+| Clip Guidance Preset | `clip-guidance-preset` | string | Clip guidance preset |
+| Image Strength | `image-strength` | number | How much influence the `init_image` has on the diffusion process. Values close to `1` will yield images very similar to the `init_image` while values close to `0` will yield images wildly different than the `init_image`. The behavior of this is meant to mirror DreamStudio's "Image Strength" slider.  <br/> <br/> This parameter is just an alternate way to set `step_schedule_start`, which is done via the calculation `1 - image_strength`. For example, passing in an Image Strength of 35% (`0.35`) would result in a `step_schedule_start` of `0.65`.  |
+| Cfg Scale | `cfg-scale` | number | How strictly the diffusion process adheres to the prompt text (higher values keep your image closer to your prompt) |
+| Init Image Mode | `init-image-mode` | string | Whether to use `image_strength` or `step_schedule_*` to control how much influence the `init_image` has on the result. |
+| Sampler | `sampler` | string | Which sampler to use for the diffusion process. If this value is omitted we'll automatically select an appropriate sampler for you. |
+| Samples | `samples` | integer | Number of images to generate |
+| Seed | `seed` | integer | Random noise seed (omit this option or use `0` for a random seed) |
+| Step Schedule Start | `step-schedule-start` | number | Skips a proportion of the start of the diffusion steps, allowing the init_image to influence the final generated image.  Lower values will result in more influence from the init_image, while higher values will result in more influence from the diffusion steps.  (e.g. a value of `0` would simply return you the init_image, where a value of `1` would return you a completely different image.) |
+| Step Schedule End | `step-schedule-end` | number | Skips a proportion of the end of the diffusion steps, allowing the init_image to influence the final generated image.  Lower values will result in more influence from the init_image, while higher values will result in more influence from the diffusion steps. |
+| Steps | `steps` | integer | Number of diffusion steps to run. |
+| Style Preset | `style-preset` | string | Pass in a style preset to guide the image model towards a particular style. This list of style presets is subject to change. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Images | `images` | array[string] | Generated images |
+| Seeds | `seeds` | array[number] | Seeds of generated images |
+</div>

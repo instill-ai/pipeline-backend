@@ -1,0 +1,202 @@
+{
+  "TASK_MARSHAL": {
+    "instillShortDescription": "Convert JSON to a string",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "json"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "json": {
+          "description": "JSON entity to be marshaled. It can be any valid JSON datatype (e.g. number, string, hash, array).",
+          "instillShortDescription": "JSON entity to be marshaled",
+          "instillAcceptFormats": [
+            "object",
+            "semi-structured/*",
+            "structured/*"
+          ],
+          "instillEditOnNodeFields": [],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "required": [],
+          "title": "JSON"
+        }
+      },
+      "required": [
+        "json"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "string"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "string": {
+          "description": "String representation of the JSON input",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "JSON string",
+          "type": "string"
+        }
+      },
+      "required": [
+        "string"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UNMARSHAL": {
+    "instillShortDescription": "Convert a string to JSON",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "string"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "string": {
+          "description": "JSON string to be unmarshaled. It can represent any valid JSON datatype (e.g. number, string, hash, array).",
+          "instillShortDescription": "JSON string to be unmarshaled",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "String",
+          "type": "string"
+        }
+      },
+      "required": [
+        "string"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "json"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "json": {
+          "description": "JSON entity extracted from the string input",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "semi-structured/json",
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "JSON"
+        }
+      },
+      "required": [
+        "json"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_JQ": {
+    "instillShortDescription": "Process JSON through a `jq` command",
+    "title": "jq",
+    "input": {
+      "description": "Source JSON and `jq` command",
+      "instillUIOrder": 0,
+      "properties": {
+        "json-string": {
+          "deprecated": true,
+          "instillUIOrder": 2,
+          "description": "(DEPRECATED, use 'JSON value' instead) String with the JSON value to be processed. This field allows templated inputs, but the data might require preprocessing (marshalling). This field will be used in absence of 'JSON value' for backwards compatibility reasons.",
+          "instillShortDescription": "(DEPRECATED) JSON string to be processed",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "instillUIMultiline": true,
+          "title": "(DEPRECATED) JSON string",
+          "type": "string"
+        },
+        "json-value": {
+          "instillUIOrder": 0,
+          "description": "JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array).",
+          "instillAcceptFormats": [
+            "object",
+            "structured/*",
+            "semi-structured/*"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "instillUIMultiline": true,
+          "title": "JSON value"
+        },
+        "jq-filter": {
+          "instillUIOrder": 1,
+          "description": "Filter, in `jq` syntax, that will be applied to the JSON input",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "instillUIMultiline": true,
+          "title": "Filter",
+          "type": "string"
+        }
+      },
+      "required": [
+        "jq-filter"
+      ],
+      "instillEditOnNodeFields": [
+        "json-value",
+        "jq-filter"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Results of the `jq` command applied to the input JSON",
+      "instillUIOrder": 0,
+      "properties": {
+        "results": {
+          "description": "The `jq` command results",
+          "instillEditOnNodeFields": [],
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "Results",
+          "type": "array",
+          "instillFormat": "array:semi-structured/json",
+          "items": {
+            "title": "Result",
+            "instillFormat": "semi-structured/json"
+          }
+        }
+      },
+      "required": [
+        "results"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

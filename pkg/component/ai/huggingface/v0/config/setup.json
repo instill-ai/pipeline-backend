@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "api-key": {
+      "description": "Fill in your Hugging face API token. To find your token, visit <a href=\"https://huggingface.co/settings/tokens\">here</a>",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "API Key",
+      "type": "string"
+    },
+    "base-url": {
+      "default": "https://api-inference.huggingface.co",
+      "description": "Hostname for the endpoint. To use Inference API set to <a href=\"https://api-inference.huggingface.co\">here</a>, for Inference Endpoint set to your custom endpoint.",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": false,
+      "instillUIOrder": 1,
+      "title": "Base URL",
+      "type": "string"
+    },
+    "is-custom-endpoint": {
+      "default": false,
+      "description": "Fill true if you are using a custom Inference Endpoint and not the Inference API.",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "boolean"
+      ],
+      "instillSecret": false,
+      "instillUIOrder": 2,
+      "title": "Is Custom Endpoint",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "api-key",
+    "base-url",
+    "is-custom-endpoint"
+  ],
+  "instillEditOnNodeFields": [
+    "api-key",
+    "base-url",
+    "is-custom-endpoint"
+  ],
+  "title": "Hugging Face Connection",
+  "type": "object"
+}

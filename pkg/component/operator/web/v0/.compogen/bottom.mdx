@@ -1,0 +1,24 @@
+## Example Recipes
+
+Recipe for the [Web scraper](https://instill.tech/instill-ai/pipelines/web-scraper/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  scraper:
+    type: web
+    task: TASK_SCRAPE_WEBPAGE
+    input:
+      include-html: false
+      only-main-content: true
+      url: ${variable.url}
+variable:
+  url:
+    title: url
+    description: The url of the web you want to scrape
+    instill-format: string
+output:
+  markdown:
+    title: markdown
+    value: ${scraper.output.markdown}
+```

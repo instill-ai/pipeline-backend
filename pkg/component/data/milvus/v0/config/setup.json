@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "description": "Fill in your Milvus public URL endpoint with port number, e.g http://3.25.202.142:19530",
+      "instillUpstreamTypes": [
+        "value",
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": false,
+      "instillUIOrder": 0,
+      "title": "Milvus URL Endpoint",
+      "type": "string"
+    },
+    "username": {
+      "description": "Fill in your Milvus username",
+      "instillUpstreamTypes": [
+        "value",
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": false,
+      "instillUIOrder": 1,
+      "title": "Milvus Username",
+      "type": "string"
+    },
+    "password": {
+      "description": "Fill in your Milvus password",
+      "instillUpstreamTypes": [
+        "value",
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 2,
+      "title": "Milvus Password",
+      "type": "string"
+    }
+  },
+  "required": [
+    "url",
+    "username",
+    "password"
+  ],
+  "instillEditOnNodeFields": [
+    "url",
+    "username",
+    "password"
+  ],
+  "title": "Milvus Connection",
+  "type": "object"
+}

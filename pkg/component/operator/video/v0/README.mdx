@@ -1,0 +1,77 @@
+---
+title: "Video"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Video component https://github.com/instill-ai/instill-core"
+---
+
+The Video component is an operator component that allows users to extract and manipulate video from different sources.
+It can carry out the following tasks:
+- [Subsample Video](#subsample-video)
+- [Subsample Video Frames](#subsample-video-frames)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/video/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/video/v0/config/tasks.json) files respectively.
+
+
+
+## Supported Tasks
+
+### Subsample Video
+
+Subsample video into a new video
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SUBSAMPLE_VIDEO` |
+| Video (required) | `video` | string | Base64 encoded video |
+| FPS (required) | `fps` | number | Frames per second |
+| Start time | `start-time` | string | Start time in seconds, format is hh:mm:ss |
+| Duration | `duration` | string | Duration in seconds, format is hh:mm:ss |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Video | `video` | string | Base64 encoded sub-sampled video |
+</div>
+
+### Subsample Video Frames
+
+Subsample video into frames
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SUBSAMPLE_VIDEO_FRAMES` |
+| Video (required) | `video` | string | Base64 encoded video |
+| FPS (required) | `fps` | number | Frames per second |
+| Start time | `start-time` | string | Start time in seconds, format is hh:mm:ss |
+| Duration | `duration` | string | Duration in seconds, format is hh:mm:ss |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Frames | `frames` | array[string] | Base64 encoded sub-sampled frames |
+</div>

@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "api-key": {
+      "description": "Fill in your Qdrant API key. Please refer to clusters in Qdrant data access control",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "API Key",
+      "type": "string"
+    },
+    "url": {
+      "description": "Fill in your Qdrant URL endpoint. Please refer to clusters in Qdrant cluster details",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": false,
+      "instillUIOrder": 1,
+      "title": "Qdrant URL Endpoint",
+      "type": "string"
+    }
+  },
+  "required": [
+    "api-key",
+    "url"
+  ],
+  "instillEditOnNodeFields": [
+    "api-key",
+    "url"
+  ],
+  "title": "Qdrant Connection",
+  "type": "object"
+}

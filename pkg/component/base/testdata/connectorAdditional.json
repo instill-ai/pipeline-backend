@@ -1,0 +1,22 @@
+{
+  "components": {
+    "schemas": {
+      "CreateEmbeddingRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "model": {
+            "description": "ID of the model to use",
+            "enum": [
+              "text-embedding-ada-002"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "model"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}

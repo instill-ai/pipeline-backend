@@ -1,0 +1,282 @@
+---
+title: "Zilliz"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Zilliz component https://github.com/instill-ai/instill-core"
+---
+
+The Zilliz component is a data component that allows users to build and search vector datasets.
+It can carry out the following tasks:
+- [Vector Search](#vector-search)
+- [Upsert](#upsert)
+- [Batch Upsert](#batch-upsert)
+- [Delete](#delete)
+- [Create Collection](#create-collection)
+- [Drop Collection](#drop-collection)
+- [Create Partition](#create-partition)
+- [Drop Partition](#drop-partition)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/zilliz/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/zilliz/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with Zilliz, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Zilliz URL Endpoint (required) | `url` | string | Fill in your Zilliz public URL endpoint  |
+| Zilliz API Key (required) | `api-key` | string | Fill in your Zilliz API key  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Vector Search
+
+Perform a vector search on a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_VECTOR_SEARCH` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to perform vector search on |
+| Partition Name | `partition-name` | string | The name of the partition to vector search the data from |
+| Vector (required) | `vector` | array[number] | An array of dimensions for the vector search |
+| Vector Field (required) | `vector-field` | string | The name of the field to perform vector search on |
+| Fields | `fields` | array[string] | The fields to return in the data. If empty then all fields will be returned |
+| Limit (required) | `limit` | integer | The limit of the data to return |
+| Filter | `filter` | string | The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search) |
+| Offset | `offset` | integer | The offset of the data to return |
+| Grouping Field | `grouping-field` | string | The name of the field to group the data by, please refer to [grouping-search](https://docs.zilliz.com/docs/release-notes-290?_highlight=grouping&_highlight=field/docs/release-notes-290#grouping-search) |
+| Search Parameters | `search-params` | object | The search parameters to be applied to the data with zilliz search parameters, please refer to [search-parameters](https://docs.zilliz.com/docs/single-vector-search?_highlight=search&_highlight=params/docs/single-vector-search#search-parameters) |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Result](#vector-search-result) | `result` | object | Result of the vector search operation |
+| Status | `status` | string | Vector search status |
+</div>
+
+<details>
+<summary> Output Objects in Vector Search</summary>
+
+<h4 id="vector-search-result">Result</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Data](#vector-search-data) | `data` | array | The points returned from the vector search operation |
+| IDs | `ids` | array | The ids returned from the vector search operation |
+| [Metadata](#vector-search-metadata) | `metadata` | array | The metadata returned from the vector search operation |
+| Vectors | `vectors` | array | The vectors returned from the vector search operation |
+</div>
+</details>
+
+### Upsert
+
+Insert a vector data into a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_UPSERT` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into |
+| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used |
+| Data (required) | `data` | object | The data |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Upsert status |
+</div>
+
+### Batch Upsert
+
+Insert a batch of vector data into a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_BATCH_UPSERT` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to upsert the data into |
+| Partition Name | `partition-name` | string | The name of the partition to upsert the data from. If empty then default partition will be used |
+| [Array Data](#batch-upsert-array-data) (required) | `array-data` | array[object] | The data |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Batch upsert status |
+</div>
+
+### Delete
+
+Delete vector data from a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DELETE` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to delete the data from |
+| Partition Name | `partition-name` | string | The name of the partition to delete the data from. If empty then default partition will be used |
+| Filter | `filter` | string | The properties filter to be applied to the data with zilliz scalar filter, please refer to [filtered-search](https://docs.zilliz.com/docs/single-vector-search?_highlight=filter/docs/single-vector-search#filtered-search) |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Delete status |
+</div>
+
+### Create Collection
+
+Create a collection, please refer to [create-collection-v2](https://docs.zilliz.com/reference/restful/create-collection-v2)
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_COLLECTION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create |
+| Dimension (required) | `dimension` | integer | The dimension of the collection |
+| ID Type | `id-type` | string | The type of the id |
+| Schema | `schema` | object | The schema of the collection |
+| Auto ID | `auto-id` | boolean | Whether to auto generate id |
+| Metric Type | `metric-type` | string | The metric type of the collection |
+| Index Parameters | `index-params` | object | The index parameters to be applied to the collection with zilliz index parameters, please refer to [index-parameter](https://zilliz.io/docs/single-vector-search.md#Index-parameters) |
+| Parameters | `params` | object | The parameters to be applied to the collection with zilliz parameters, please refer to [parameters](https://zilliz.io/docs/single-vector-search.md#Parameters) |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Create collection status |
+</div>
+
+### Drop Collection
+
+Drop a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DROP_COLLECTION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Drop collection status |
+</div>
+
+### Create Partition
+
+Create a partition in a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CREATE_PARTITION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to create the partition in |
+| Partition Name (required) | `partition-name` | string | The name of the partition to create |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Create partition status |
+</div>
+
+### Drop Partition
+
+Drop a partition from a collection
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_DROP_PARTITION` |
+| Collection Name (required) | `collection-name` | string | The name of the collection to drop the partition from |
+| Partition Name (required) | `partition-name` | string | The name of the partition to drop |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Drop partition status |
+</div>

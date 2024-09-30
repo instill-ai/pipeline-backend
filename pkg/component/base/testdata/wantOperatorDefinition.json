@@ -1,0 +1,139 @@
+{
+  "name": "component-definitions/json",
+  "uid": "28f53d15-6150-46e6-99aa-f76b70a926c0",
+  "id": "json",
+  "title": "JSON",
+  "documentationUrl": "https://www.instill.tech/docs/component/operator/json",
+  "icon": "Instill AI/json.svg",
+  "spec": {
+    "componentSpecification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "oneOf": [
+        {
+          "properties": {
+            "condition": {
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillShortDescription": "config whether the component will be executed or skipped",
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "value",
+                "template"
+              ],
+              "type": "string"
+            },
+            "input": {
+              "description": "Input",
+              "instillEditOnNodeFields": [
+                "object"
+              ],
+              "instillUIOrder": 0,
+              "properties": {
+                "object": {
+                  "anyOf": [
+                    {
+                      "instillUpstreamType": "reference",
+                      "pattern": "^\\{.*\\}$",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Json object to be marshaled",
+                  "instillAcceptFormats": [
+                    "object",
+                    "semi-structured/*",
+                    "structured/*"
+                  ],
+                  "instillShortDescription": "Json object to be marshaled",
+                  "instillUIOrder": 0,
+                  "instillUpstreamTypes": [
+                    "reference"
+                  ],
+                  "title": "Object"
+                }
+              },
+              "required": [
+                "object"
+              ],
+              "title": "Input",
+              "type": "object"
+            },
+            "task": {
+              "const": "TASK_MARSHAL",
+              "title": "Marshal"
+            }
+          },
+          "title": "Marshal",
+          "type": "object"
+        }
+      ],
+      "title": "JSON Component",
+      "type": "object"
+    },
+    "dataSpecifications": {
+      "TASK_MARSHAL": {
+        "input": {
+          "description": "Input",
+          "instillEditOnNodeFields": [
+            "object"
+          ],
+          "instillUIOrder": 0,
+          "properties": {
+            "object": {
+              "description": "Json object to be marshaled",
+              "instillAcceptFormats": [
+                "object",
+                "semi-structured/*",
+                "structured/*"
+              ],
+              "instillEditOnNodeFields": [],
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "reference"
+              ],
+              "required": [],
+              "title": "Object",
+              "type": "object"
+            }
+          },
+          "required": [
+            "object"
+          ],
+          "title": "Input",
+          "type": "object"
+        },
+        "output": {
+          "description": "Output",
+          "instillEditOnNodeFields": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "properties": {
+            "string": {
+              "description": "Data",
+              "instillFormat": "string",
+              "instillShortDescription": "Data",
+              "instillUIOrder": 0,
+              "title": "Data",
+              "type": "string"
+            }
+          },
+          "required": [
+            "string"
+          ],
+          "title": "Output",
+          "type": "object"
+        }
+      }
+    }
+  },
+  "public": true,
+  "version": "1.0.0",
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/base",
+  "tasks": [
+    {
+      "name": "TASK_MARSHAL",
+      "title": "Marshal"
+    }
+  ]
+}

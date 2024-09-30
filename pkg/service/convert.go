@@ -38,8 +38,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 
-	componentbase "github.com/instill-ai/component/base"
-	componentstore "github.com/instill-ai/component/store"
+	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
+	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"

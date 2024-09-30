@@ -25,7 +25,7 @@ import (
 	"github.com/instill-ai/x/checkfield"
 	"github.com/instill-ai/x/errmsg"
 
-	componentbase "github.com/instill-ai/component/base"
+	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -121,6 +121,8 @@ func (s *service) componentDefinitionToIntegration(
 	if !hasIntegration {
 		return nil, errIntegrationConversion
 	}
+
+	// TODO add HelpLink
 
 	integration := &pb.Integration{
 		Uid:         cd.GetUid(),

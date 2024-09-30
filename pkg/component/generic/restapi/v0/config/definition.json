@@ -1,0 +1,27 @@
+{
+  "availableTasks": [
+    "TASK_GET",
+    "TASK_POST",
+    "TASK_PATCH",
+    "TASK_PUT",
+    "TASK_DELETE",
+    "TASK_HEAD",
+    "TASK_OPTIONS"
+  ],
+  "custom": false,
+  "documentationUrl": "https://www.instill.tech/docs/component/generic/restapi",
+  "icon": "assets/restapi.svg",
+  "iconUrl": "",
+  "id": "restapi",
+  "public": true,
+  "title": "REST API",
+  "description": "Make requests to external REST APIs",
+  "tombstone": false,
+  "type": "COMPONENT_TYPE_GENERIC",
+  "uid": "5ee55a5c-6e30-4c7a-80e8-90165a729e0a",
+  "vendor": "",
+  "vendorAttributes": {},
+  "version": "0.1.1",
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/generic/restapi/v0",
+  "releaseStage": "RELEASE_STAGE_ALPHA"
+}

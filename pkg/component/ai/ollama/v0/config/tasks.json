@@ -1,0 +1,316 @@
+{
+  "$defs": {
+    "multi-modal-content": {
+      "instillFormat": "structured/multi-modal-content",
+      "items": {
+        "properties": {
+          "image-url": {
+            "properties": {
+              "url": {
+                "description": "Either a URL of the image or the base64 encoded image data.",
+                "type": "string",
+                "title": "URL",
+                "instillUIOrder": 0
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "title": "Image URL",
+            "description": "The image URL",
+            "instillUIOrder": 0,
+            "type": "object"
+          },
+          "text": {
+            "description": "The text content.",
+            "instillFormat": "string",
+            "title": "Text",
+            "instillUIOrder": 1,
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of the content part.",
+            "enum": [
+              "text",
+              "image_url"
+            ],
+            "instillFormat": "string",
+            "title": "Type",
+            "instillUIOrder": 2,
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "chat-message": {
+      "properties": {
+        "content": {
+          "$ref": "#/$defs/multi-modal-content",
+          "description": "The message content",
+          "instillUIOrder": 1,
+          "title": "Content"
+        },
+        "role": {
+          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "content"
+      ],
+      "title": "Chat Message",
+      "type": "object"
+    }
+  },
+  "TASK_TEXT_GENERATION_CHAT": {
+    "instillShortDescription": "Provide text outputs in response to text/image inputs.",
+    "description": "Open-source large language models (OSS LLMs) are artificial intelligence models with publicly accessible code and architecture, allowing for free use, modification, and distribution. These models can provide performance comparable to proprietary alternatives. Ollama is a tool that enables you to run and interact with OSS LLMs using limited computational resources. You can install Ollama from: [here](https://ollama.com).",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "prompt",
+        "model"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "chat-history": {
+          "description": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
+          "instillAcceptFormats": [
+            "structured/chat-messages"
+          ],
+          "instillShortDescription": "Incorporate external chat history, specifically previous messages within the conversation.",
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "items": {
+            "$ref": "#/$defs/chat-message"
+          },
+          "title": "Chat history",
+          "type": "array"
+        },
+        "max-new-tokens": {
+          "default": 50,
+          "description": "The maximum number of tokens for model to generate",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 6,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Max New Tokens",
+          "type": "integer"
+        },
+        "model": {
+          "example": "moondream",
+          "description": "The OSS model to be used, check [here](https://ollama.com/library) for list of models available",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Model Name",
+          "type": "string"
+        },
+        "prompt": {
+          "description": "The prompt text",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Prompt",
+          "type": "string"
+        },
+        "prompt-images": {
+          "description": "The prompt images",
+          "instillAcceptFormats": [
+            "array:image/*"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "title": "Prompt Images",
+          "type": "array"
+        },
+        "seed": {
+          "description": "The seed",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Seed",
+          "type": "integer"
+        },
+        "system-message": {
+          "default": "You are a helpful assistant.",
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is set using a generic message as \"You are a helpful assistant.\"",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "The system message helps set the behavior of the assistant",
+          "instillUIMultiline": true,
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "System Message",
+          "type": "string"
+        },
+        "temperature": {
+          "default": 0.7,
+          "description": "The temperature for sampling",
+          "instillAcceptFormats": [
+            "number"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Temperature",
+          "type": "number"
+        },
+        "top-k": {
+          "default": 10,
+          "description": "Top k for sampling",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Top K",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "prompt",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillUIOrder": 0,
+      "properties": {
+        "text": {
+          "description": "Model Output",
+          "instillUIOrder": 0,
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_TEXT_EMBEDDINGS": {
+    "instillShortDescription": "Turn text into a vector of numbers that capture its meaning, unlocking use cases like semantic search.",
+    "description": "An embedding is a list of floating point numbers that captures semantic information about the text that it represents.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "model": {
+          "example": "snowflake-arctic-embed:22m",
+          "description": "The OSS model to be used, check [here](https://ollama.com/library) for list of models available",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Model Name",
+          "type": "string"
+        },
+        "text": {
+          "description": "The text",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "model"
+      ],
+      "instillEditOnNodeFields": [
+        "text",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "embedding": {
+          "instillFormat": "array:number",
+          "items": {
+            "instillFormat": "number",
+            "type": "number"
+          },
+          "type": "array",
+          "description": "Embedding of the input text",
+          "instillUIOrder": 0,
+          "title": "Embedding"
+        }
+      },
+      "required": [
+        "embedding"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,67 @@
+## Example Recipes
+
+Recipe for the [Your Project Management Assistant ](https://instill.tech/instill-ai/pipelines/pm-assistant/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  jira-0:
+    type: jira
+    task: TASK_LIST_ISSUES
+    input:
+      board-name: ${variable.board-name}
+      max-results: 50
+      range:
+        range: All
+      start-at: 0
+    setup:
+      base-url: ${variable.base-url}
+      email: ${variable.jira-email}
+      token: ${secret.jira}
+  openai-0:
+    type: openai
+    task: TASK_TEXT_GENERATION
+    input:
+      model: gpt-4o-mini
+      n: 1
+      prompt: |-
+        From this list of issues:
+        ${jira-0.output.issues}
+
+
+        Summarise the next action items and reference the relevant issues.
+
+        Category:
+        [list of relevant issues]
+      response-format:
+        type: text
+      system-message: |-
+        You are an expert project manager. Classify the issues into one of the following categories: ["feature", "bug", "refactor", "cancelled"]
+
+        If anything is a breaking change, make it a top priority.
+      temperature: 1
+      top-p: 1
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  base-url:
+    title: Jira Base URL
+    description: |+
+      Your Jira base URL i.e. https://<_YOUR_COMPANY_>.atlassian.net
+
+    instill-format: string
+  board-name:
+    title: Jira Board Name
+    description: |+
+      The name of your Jira board i.e. "KANBAN board".
+
+    instill-format: string
+  jira-email:
+    title: Jira Email
+    description: The email you are using for Jira i.e. hello@world.com
+    instill-format: string
+output:
+  output:
+    title: Output
+    value: ${openai-0.output.texts}
+```

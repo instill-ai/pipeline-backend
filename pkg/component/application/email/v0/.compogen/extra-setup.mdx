@@ -1,0 +1,25 @@
+Supported Provider Samples for Sending Email
+
+| Provider | SMTP Server Address | Port | Notes |
+| --- | --- | --- | --- |
+| Gmail | smtp.gmail.com | 587 (TLS) or 465 (SSL) ||
+| Outlook | smtp-mail.outlook.com | 587 ||
+| Yahoo | smtp.mail.yahoo.com | 465 or 587 ||
+| iCloud | smtp.mail.me.com | 587 | If you see an error message when using SSL, try using TLS or STARTTLS instead. |
+
+
+Supported Provider Samples for Receiving Emails
+
+| Provider | IMAP Server Address | Port |
+| --- | --- | --- |
+| Gmail | imap.gmail.com | 993 |
+| Outlook | outlook.office365.com | 993 |
+| Yahoo | imap.mail.yahoo.com | 993 |
+| iCloud | imap.mail.me.com | 993 |
+
+
+For App Password, please follow the steps below:
+ - 1. Please Sign in to your Google Account with link: https://myaccount.google.com/apppasswords
+ - 2. Create a new App Password and save it in a secure place.
+ - 3. Add App Password as a new secret in the Instill Platform by navigating to **Console** > **Settings** > **Secrets**.
+ - 4. Reference the secret in the App Password field in the component configuration.

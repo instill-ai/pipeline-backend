@@ -1,0 +1,93 @@
+---
+title: "BigQuery"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP BigQuery component https://github.com/instill-ai/instill-core"
+---
+
+The BigQuery component is a data component that allows users to insert data to BigQuery tables.
+It can carry out the following tasks:
+- [Insert](#insert)
+- [Read](#read)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/bigquery/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/bigquery/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with Google, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| JSON Key File contents (required) | `json-key` | string | Contents of the JSON key file with access to the bucket.  |
+| BigQuery Project ID (required) | `project-id` | string | Fill in your BigQuery Project ID.  |
+| BigQuery Dataset ID (required) | `dataset-id` | string | Fill in your BigQuery Dataset ID.  |
+| BigQuery Table Name (required) | `table-name` | string | Fill in your BigQuery Table Name.  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Insert
+
+Insert data to BigQuery.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_INSERT` |
+| Data | `data` | object | The data to be inserted to BigQuery |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Status | `status` | string | Status of the upload operation |
+</div>
+
+### Read
+
+Read data from BigQuery.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_READ` |
+| Filtering | `filtering` | string | The filter to be applied to the data with SQL syntax, which starts with WHERE clause |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Data](#read-data) | `data` | array[object] | The data to be read from BigQuery |
+</div>

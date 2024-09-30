@@ -19,7 +19,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
-	componentstore "github.com/instill-ai/component/store"
+	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )

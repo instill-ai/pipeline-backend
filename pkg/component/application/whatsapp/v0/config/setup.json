@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "token": {
+      "description": "Fill in your WhatsApp access token. Go [here](https://developers.facebook.com/docs/whatsapp/cloud-api/get-started) for more information",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "Token",
+      "type": "string"
+    }
+  },
+  "required": [
+    "token"
+  ],
+  "instillEditOnNodeFields": [
+    "token"
+  ],
+  "title": "WhatsApp Connection",
+  "type": "object"
+}

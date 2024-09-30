@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "api-key": {
+      "description": "Fill in your Freshdesk API key. To find your key, go to profile settigs and on the right pane, you can get your key once you have completed the captcha verification.",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "title": "API key",
+      "type": "string"
+    },
+    "domain": {
+      "description": "Your Freshdesk domain. You can find this by going to Admin -> Search for \"Portals\" -> Portal URL. Your portal URL will look like \"yourdomain.freshdesk.com\". Please only input your domain and not the whole URL.",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 1,
+      "title": "Domain",
+      "type": "string"
+    }
+  },
+  "required": [
+    "api-key",
+    "domain"
+  ],
+  "instillEditOnNodeFields": [
+    "api-key",
+    "domain"
+  ],
+  "title": "Freshdesk Connection",
+  "type": "object"
+}

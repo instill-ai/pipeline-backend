@@ -1,0 +1,320 @@
+{
+  "TASK_ASSIGN": {
+    "instillShortDescription": "Assign the data.",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "Specify the data you want to assign.",
+          "instillAcceptFormats": [
+            "*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "required": [],
+          "title": "Data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "The data you assign.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "*",
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "Data"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_APPEND": {
+    "instillShortDescription": "Add data to the end of an array.",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "array",
+        "element"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "array": {
+          "description": "Specify the array you want to append to.",
+          "instillAcceptFormats": [
+            "array:*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "items": {},
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        },
+        "element": {
+          "description": "Specify the data you want to append.",
+          "instillAcceptFormats": [
+            "*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "required": [],
+          "title": "Data"
+        }
+      },
+      "required": [
+        "array",
+        "element"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "array"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "array": {
+          "description": "A updated array with the specified data appended to the end of it.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "array:*",
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        }
+      },
+      "required": [
+        "array"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UNION": {
+    "instillShortDescription": "Find the union of the sets",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "sets"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "sets": {
+          "description": "Specify the sets you want to union.",
+          "instillAcceptFormats": [
+            "array:array:*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "items": {},
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        }
+      },
+      "required": [
+        "sets"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "set"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "set": {
+          "description": "The union set.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "array:*",
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        }
+      },
+      "required": [
+        "set"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_INTERSECTION": {
+    "instillShortDescription": "Find the intersection of the sets",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "sets"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "sets": {
+          "description": "Specify the sets you want to intersect.",
+          "instillAcceptFormats": [
+            "array:array:*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "items": {},
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        }
+      },
+      "required": [
+        "sets"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "set"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "set": {
+          "description": "The intersection set.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "array:*",
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        }
+      },
+      "required": [
+        "set"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DIFFERENCE": {
+    "instillShortDescription": "Find the difference between the two sets, i.e. `set-a` \\ `set-b`, identifying the elements that are in `set-a` but not in `set-b`.",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "set-a",
+        "set-b"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "set-a": {
+          "description": "Specify the set-a.",
+          "instillAcceptFormats": [
+            "array:*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "items": {},
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        },
+        "set-b": {
+          "description": "Specify the set-b.",
+          "instillAcceptFormats": [
+            "array:*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "items": {},
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        }
+      },
+      "required": [
+        "set-a",
+        "set-b"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "set"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "set": {
+          "description": "The difference set.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "array:*",
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        }
+      },
+      "required": [
+        "set"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

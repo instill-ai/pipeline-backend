@@ -89,26 +89,26 @@ export default function (data) {
   }
 
   if (!constant.apiGatewayMode) {
-    pipelinePrivate.CheckList(data)
-    pipelinePrivate.CheckLookUp(data)
-
-  } else {
-    pipelineWithJwt.CheckCreate(data)
-    pipelineWithJwt.CheckList(data)
-    pipelineWithJwt.CheckGet(data)
-    pipelineWithJwt.CheckUpdate(data)
-    pipelineWithJwt.CheckRename(data)
-    pipelineWithJwt.CheckLookUp(data)
-    pipeline.CheckCreate(data)
-    pipeline.CheckList(data)
-    pipeline.CheckGet(data)
-    pipeline.CheckUpdate(data)
-    pipeline.CheckRename(data)
-    pipeline.CheckLookUp(data)
-
-    trigger.CheckTrigger(data);
-    triggerAsync.CheckTrigger(data);
+    pipelinePrivate.CheckList(data);
+    pipelinePrivate.CheckLookUp(data);
+    return;
   }
+
+  pipelineWithJwt.CheckCreate(data);
+  pipelineWithJwt.CheckList(data);
+  pipelineWithJwt.CheckGet(data);
+  pipelineWithJwt.CheckUpdate(data);
+  pipelineWithJwt.CheckRename(data);
+  pipelineWithJwt.CheckLookUp(data);
+  pipeline.CheckCreate(data);
+  pipeline.CheckList(data);
+  pipeline.CheckGet(data);
+  pipeline.CheckUpdate(data);
+  pipeline.CheckRename(data);
+  pipeline.CheckLookUp(data);
+
+  trigger.CheckTrigger(data);
+  triggerAsync.CheckTrigger(data);
 }
 
 export function teardown(data) {

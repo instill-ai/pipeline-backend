@@ -1,0 +1,169 @@
+---
+title: "Web"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Web component https://github.com/instill-ai/instill-core"
+---
+
+The Web component is an operator component that allows users to scrape websites.
+It can carry out the following tasks:
+- [Crawl Website](#crawl-website)
+- [Scrape Sitemap](#scrape-sitemap)
+- [Scrape Webpage](#scrape-webpage)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/web/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/web/v0/config/tasks.json) files respectively.
+
+
+
+## Supported Tasks
+
+### Crawl Website
+
+Crawl the website contents and manipulate html with jquery command. The sequence of jquery commands will be executed in the order of only-main-content, remove-tags, and only-include-tags.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CRAWL_WEBSITE` |
+| Query (required) | `target-url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
+| Allowed Domains | `allowed-domains` | array[string] | A list of domains that are allowed to be scraped. If empty, all domains are allowed. |
+| Max Number of Pages (required) | `max-k` | integer | The max number of pages to return. If the number is set to 0, all pages will be returned. If the number is set to a positive integer, at most max k pages will be returned. |
+| Include Link Text | `include-link-text` | boolean | Indicate whether to scrape the link and include the text of the link associated with this page in the 'link-text' field |
+| Include Link HTML | `include-link-html` | boolean | Indicate whether to scrape the link and include the raw HTML of the link associated with this page in the 'link-html' field |
+| Only Main Content | `only-main-content` | boolean | Only return the main content of the page excluding header, nav, footer. |
+| Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. If empty, no tags will be removed. Example: 'script, .ad, #footer' |
+| Only Include Tags | `only-include-tags` | array[string] | A list of tags, classes, and ids to include in the output. If empty, all tags will be included. Example: 'script, .ad, #footer' |
+| Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. |
+| Max Depth | `max-depth` | integer | The max number of depth the crawler will go. If the number is set to 1, the crawler will only scrape the target URL. If the number is set to 0, the crawler will scrape all the pages until the count of pages meets max-k. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Pages](#crawl-website-pages) | `pages` | array[object] | The scraped webpages |
+</div>
+
+<details>
+<summary> Output Objects in Crawl Website</summary>
+
+<h4 id="crawl-website-pages">Pages</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Link | `link` | string | The full URL to which the webpage link is pointing, e.g., http://www.example.com/foo/bar. |
+| Link HTML | `link-html` | string | The scraped raw html of the link associated with this webpage link |
+| Link Text | `link-text` | string | The scraped text of the link associated with this webpage link, in plain text |
+| Title | `title` | string | The title of a webpage link, in plain text |
+</div>
+</details>
+
+### Scrape Sitemap
+
+Scrape the sitemap information
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SCRAPE_SITEMAP` |
+| Sitemap URL (required) | `url` | string | The URL of the sitemap to scrape |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| List | `list` | array | The list of information in a sitemap |
+</div>
+
+### Scrape Webpage
+
+Scrape the webpage contents and manipulate html with jquery command. The sequence of jquery commands will be executed in the order of only-main-content, remove-tags, and only-include-tags.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SCRAPE_WEBPAGE` |
+| URL (required) | `url` | string | The URL to be scrape the webpage contents |
+| Include HTML | `include-html` | boolean | Indicate whether to include the raw HTML of the webpage in the output |
+| Only Main Content | `only-main-content` | boolean | Only return the main content of the page excluding header, nav, footer. |
+| Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. If empty, no tags will be removed. Example: 'script, .ad, #footer' |
+| Only Include Tags | `only-include-tags` | array[string] | A list of tags, classes, and ids to include in the output. If empty, all tags will be included. Example: 'script, .ad, #footer' |
+| Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. Please set it as 0 if you only want to collect static content. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | The scraped plain content without html tags of the webpage |
+| Markdown | `markdown` | string | The scraped markdown of the webpage |
+| HTML (optional) | `html` | string | The scraped html of the webpage |
+| [Metadata](#scrape-webpage-metadata) (optional) | `metadata` | object | The metadata of the webpage |
+| Links on Page (optional) | `links-on-page` | array[string] | The list of links on the webpage |
+</div>
+
+<details>
+<summary> Output Objects in Scrape Webpage</summary>
+
+<h4 id="scrape-webpage-metadata">Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Description | `description` | string | The description of the webpage |
+| Source URL | `source-url` | string | The source URL of the webpage |
+| Title | `title` | string | The title of the webpage |
+</div>
+</details>
+## Example Recipes
+
+Recipe for the [Web scraper](https://instill.tech/instill-ai/pipelines/web-scraper/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  scraper:
+    type: web
+    task: TASK_SCRAPE_WEBPAGE
+    input:
+      include-html: false
+      only-main-content: true
+      url: ${variable.url}
+variable:
+  url:
+    title: url
+    description: The url of the web you want to scrape
+    instill-format: string
+output:
+  markdown:
+    title: markdown
+    value: ${scraper.output.markdown}
+```

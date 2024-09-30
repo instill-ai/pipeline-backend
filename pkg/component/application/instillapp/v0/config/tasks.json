@@ -1,0 +1,348 @@
+{
+  "$defs": {
+    "namespace": {
+      "description": "Fill in your namespace, you can get namespace through the tab of switching namespace.",
+      "instillUpstreamTypes": [
+        "reference",
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 0,
+      "title": "Namespace",
+      "type": "string"
+    },
+    "app-id": {
+      "description": "Fill in your app ID.",
+      "instillUpstreamTypes": [
+        "reference",
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 1,
+      "title": "App ID",
+      "type": "string"
+    },
+    "conversation-id": {
+      "description": "Fill in your conversation ID.",
+      "instillUpstreamTypes": [
+        "reference",
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 2,
+      "title": "Conversation ID",
+      "type": "string"
+    }
+  },
+  "TASK_READ_CHAT_HISTORY": {
+    "instillShortDescription": "Retrieve the chat history from the conversation.",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "app-id": {
+          "$ref": "#/$defs/app-id"
+        },
+        "conversation-id": {
+          "$ref": "#/$defs/conversation-id"
+        },
+        "role": {
+          "description": "The role of the user you want to specify to retrieve in the conversation. The default is all with the blank setting. Now, we support 'user' and 'assistant'.",
+          "instillUIOrder": 3,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "message-type": {
+          "description": "The message type of the chat history you want to retrieve. The default is all with blank setting. Now, we only support 'MESSAGE_TYPE_TEXT'.",
+          "instillUIOrder": 4,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Message Type",
+          "type": "string"
+        },
+        "duration": {
+          "description": "The duration between now and how long ago to retrieve the chat history from. i.e. 2h45m5s. Valid time units are \"ns\", \"us\" (or \"\u00b5s\"), \"ms\", \"s\", \"m\", \"h\".  The default is all with blank setting.",
+          "instillUIOrder": 5,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Duration",
+          "type": "string"
+        },
+        "max-message-count": {
+          "description": "The maximum number of messages to retrieve. The default is all with blank setting.",
+          "instillUIOrder": 6,
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Max Message Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "namespace",
+        "app-id",
+        "conversation-id"
+      ],
+      "instillEditOnNodeFields": [
+        "namespace",
+        "app-id",
+        "conversation-id"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Chat history from the conversation.",
+      "properties": {
+        "messages": {
+          "title": "Chat Messages",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "description": "The message content.",
+                "instillShortDescription": "The message content.",
+                "title": "Content",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "title": "Text Message",
+                          "description": "Text message.",
+                          "instillShortDescription": "Text message.",
+                          "type": "string",
+                          "instillUIOrder": 0
+                        },
+                        "type": {
+                          "title": "Text",
+                          "description": "Text content type.",
+                          "instillShortDescription": "Text content type.",
+                          "type": "string",
+                          "const": "text",
+                          "instillUIOrder": 1
+                        }
+                      },
+                      "required": [
+                        "text",
+                        "type"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "image-url": {
+                          "title": "Image URL",
+                          "description": "Image message URL.",
+                          "instillShortDescription": "Image message URL.",
+                          "type": "string",
+                          "instillUIOrder": 0
+                        },
+                        "type": {
+                          "title": "Image URL",
+                          "description": "Image URL content type",
+                          "instillShortDescription": "Image URL content type",
+                          "type": "string",
+                          "const": "image-url",
+                          "instillUIOrder": 1
+                        }
+                      },
+                      "required": [
+                        "image-url",
+                        "type"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "image-base64": {
+                          "title": "Image File",
+                          "description": "Image base64 encoded string.",
+                          "instillShortDescription": "Image base64 encoded string.",
+                          "type": "string",
+                          "instillUIOrder": 0
+                        },
+                        "type": {
+                          "title": "Image File",
+                          "description": "Image file input content type.",
+                          "instillShortDescription": "Image file input content type.",
+                          "type": "string",
+                          "const": "image-base64",
+                          "instillUIOrder": 1
+                        }
+                      },
+                      "required": [
+                        "image-base64",
+                        "type"
+                      ]
+                    }
+                  ],
+                  "required": []
+                },
+                "instillUIOrder": 0
+              },
+              "role": {
+                "description": "The message role, i.e. 'system', 'user' or 'assistant'.",
+                "instillShortDescription": "The message role, i.e. 'system', 'user' or 'assistant'.",
+                "title": "Role",
+                "type": "string",
+                "instillUIOrder": 1
+              },
+              "name": {
+                "description": "An optional name for the participant. Provides the model information to differentiate between participants of the same role.",
+                "instillShortDescription": "An optional name for the participant. Provides the model information to differentiate between participants of the same role.",
+                "instillAcceptFormats": [
+                  "string"
+                ],
+                "title": "Name",
+                "type": "string",
+                "instillUIOrder": 2
+              }
+            },
+            "required": [
+              "content",
+              "role"
+            ]
+          },
+          "instillUIOrder": 0,
+          "description": "List of chat messages"
+        }
+      },
+      "required": [
+        "messages"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_WRITE_CHAT_MESSAGE": {
+    "instillShortDescription": "Write the chat message into the conversation in catalog.",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "app-id": {
+          "$ref": "#/$defs/app-id"
+        },
+        "conversation-id": {
+          "$ref": "#/$defs/conversation-id"
+        },
+        "message": {
+          "title": "Message",
+          "type": "object",
+          "description": "A chat message to be written into the conversation.",
+          "instillShortDescription": "A chat message to be written into the conversation.",
+          "instillAcceptFormats": [
+            "object"
+          ],
+          "properties": {
+            "content": {
+              "title": "Content",
+              "type": "string",
+              "description": "The contents of the message.",
+              "instillShortDescription": "The contents of the message.",
+              "instillFormat": "string",
+              "instillUIOrder": 0
+            },
+            "role": {
+              "title": "Role",
+              "type": "string",
+              "description": "The role of the author of this message. Now, we support 'user' and 'assistant'.",
+              "instillShortDescription": "The role of the author of this message.",
+              "instillFormat": "string",
+              "instillUIOrder": 1
+            }
+          },
+          "required": [
+            "content"
+          ],
+          "instillUIOrder": 3
+        }
+      },
+      "required": [
+        "namespace",
+        "app-id",
+        "conversation-id",
+        "message"
+      ],
+      "instillEditOnNodeFields": [
+        "namespace",
+        "app-id",
+        "conversation-id",
+        "message"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Chat message from the conversation.",
+      "properties": {
+        "message-uid": {
+          "description": "The unique identifier of the message.",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Message ID",
+          "type": "string"
+        },
+        "create-time": {
+          "description": "The creation time of the message in ISO 8601 format",
+          "instillFormat": "string",
+          "instillUIOrder": 1,
+          "title": "Create Time",
+          "type": "string"
+        },
+        "update-time": {
+          "description": "The update time of the message in ISO 8601 format",
+          "instillFormat": "string",
+          "instillUIOrder": 2,
+          "title": "Update Time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "message-uid",
+        "create-time",
+        "update-time"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

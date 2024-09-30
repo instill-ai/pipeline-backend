@@ -1,0 +1,1946 @@
+{
+  "$defs": {
+    "model": {
+      "description": "The Hugging Face model to be used",
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUpstreamTypes": [
+        "value",
+        "reference",
+        "template"
+      ],
+      "title": "Model",
+      "type": "string"
+    },
+    "options": {
+      "properties": {
+        "use-cache": {
+          "description": "There is a cache layer on the inference API to speedup requests we have already seen. Most models can use those results as is as models are deterministic (meaning the results will be the same anyway). However if you use a non deterministic model, you can set this parameter to prevent the caching mechanism from being used resulting in a real new query.",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillShortDescription": "Enable the cache of inference API",
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Use Cache",
+          "type": "boolean"
+        },
+        "wait-for-model": {
+          "description": "If the model is not ready, wait for it instead of receiving 503. It limits the number of requests required to get your inference done. It is advised to only set this flag to true after receiving a 503 error as it will limit hanging in your application to known places.",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillShortDescription": "Wait for model ready",
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Wait For Model",
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "description": "Options for the model",
+      "title": "Options",
+      "type": "object"
+    },
+    "string-input": {
+      "description": "String input",
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 0,
+      "instillUpstreamTypes": [
+        "value",
+        "reference",
+        "template"
+      ],
+      "title": "String Input",
+      "type": "string"
+    }
+  },
+  "TASK_AUDIO_CLASSIFICATION": {
+    "instillShortDescription": "Audio classification is the task of assigning a label or class to a given audio.",
+    "description": "Audio classification is the task of assigning a label or class to a given audio. It can be used for recognizing which command a user is giving or the emotion of a statement, as well as identifying a speaker.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "audio": {
+          "description": "The audio file",
+          "instillAcceptFormats": [
+            "audio/*"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Audio",
+          "type": "string"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "audio",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "classes": {
+          "instillUIOrder": 0,
+          "items": {
+            "properties": {
+              "label": {
+                "description": "The label for the class (model specific)",
+                "instillFormat": "string",
+                "instillUIOrder": 0,
+                "title": "Label",
+                "type": "string"
+              },
+              "score": {
+                "description": "A float that represents how likely it is that the audio file belongs to this class.",
+                "instillFormat": "number",
+                "instillUIOrder": 1,
+                "title": "Score",
+                "type": "number"
+              }
+            },
+            "required": [
+              "label",
+              "score"
+            ],
+            "description": "Class",
+            "title": "Class",
+            "type": "object"
+          },
+          "description": "Classes",
+          "title": "Classes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "classes"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_CONVERSATIONAL": {
+    "instillShortDescription": "Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt.",
+    "description": "Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt. These models have applications in chatbots, and as a part of voice assistants",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "instillUIOrder": 1,
+          "properties": {
+            "generated-responses": {
+              "description": "A list of strings corresponding to the earlier replies from the model.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "items": {
+                "instillUIMultiline": true,
+                "description": "Items",
+                "type": "string"
+              },
+              "title": "Generated Responses",
+              "type": "array"
+            },
+            "past-user-inputs": {
+              "description": "A list of strings corresponding to the earlier replies from the user. Should be of the same length of generated-responses.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillShortDescription": "A list of strings corresponding to the earlier replies from the user.",
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "items": {
+                "instillUIMultiline": true,
+                "description": "Items",
+                "type": "string"
+              },
+              "title": "Past User Inputs",
+              "type": "array"
+            },
+            "text": {
+              "description": "The last input from the user in the conversation.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIMultiline": true,
+              "instillUIOrder": 2,
+              "instillUpstreamTypes": [
+                "value",
+                "reference",
+                "template"
+              ],
+              "title": "Text",
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "description": "Inputs",
+          "title": "Inputs",
+          "type": "object"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 3
+        },
+        "parameters": {
+          "instillUIOrder": 2,
+          "properties": {
+            "max-length": {
+              "description": "Integer to define the maximum length in tokens of the output summary.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Max Length",
+              "type": "integer"
+            },
+            "max-time": {
+              "description": "The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillShortDescription": "The amount of time in seconds that the query should take maximum.",
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "title": "Max Time",
+              "type": "number"
+            },
+            "min-length": {
+              "description": "Integer to define the minimum length in tokens of the output summary.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 2,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Min Length",
+              "type": "integer"
+            },
+            "repetition-penalty": {
+              "description": "The more a token is used within generation the more it is penalized to not be picked in successive generation passes.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillUIOrder": 3,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "title": "Repetition Penalty",
+              "type": "number"
+            },
+            "temperature": {
+              "default": 1.0,
+              "description": "The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillShortDescription": "The temperature of the sampling operation.",
+              "instillUIOrder": 4,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "title": "Temperature",
+              "type": "number"
+            },
+            "top-k": {
+              "description": "Integer to define the top tokens considered within the sample operation to create new text.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 5,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Top K",
+              "type": "integer"
+            },
+            "top-p": {
+              "description": "Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillShortDescription": "Float to define the tokens that are within the sample operation of text generation.",
+              "instillUIOrder": 6,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Top P",
+              "type": "number"
+            }
+          },
+          "required": [],
+          "description": "Parameters",
+          "title": "Parameters",
+          "type": "object"
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "conversation": {
+          "description": "A facility dictionary to send back for the next input (with the new user input addition).",
+          "instillUIOrder": 0,
+          "properties": {
+            "generated-responses": {
+              "description": "List of strings. The last outputs from the model in the conversation, after the model has run.",
+              "instillUIOrder": 0,
+              "instillFormat": "array:string",
+              "items": {
+                "title": "Generated Response",
+                "instillFormat": "string",
+                "instillUIMultiline": true,
+                "description": "Generated Response",
+                "type": "string"
+              },
+              "title": "Generated Responses",
+              "type": "array"
+            },
+            "past-user-inputs": {
+              "description": "List of strings. The last inputs from the user in the conversation, after the model has run.",
+              "instillUIOrder": 1,
+              "instillFormat": "array:string",
+              "items": {
+                "instillFormat": "string",
+                "instillUIMultiline": true,
+                "title": "Past User Input",
+                "description": "Past User Input",
+                "type": "string"
+              },
+              "title": "Past User Inputs",
+              "type": "array"
+            }
+          },
+          "required": [
+            "generated-responses",
+            "past-user-inputs"
+          ],
+          "title": "Conversation",
+          "type": "object"
+        },
+        "generated-text": {
+          "description": "The answer of the bot",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 1,
+          "title": "Generated Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "generated-text"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_FILL_MASK": {
+    "instillShortDescription": "Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks.",
+    "description": "Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks. These models are useful when we want to get a statistical understanding of the language in which the model is trained in.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "$ref": "#/$defs/string-input",
+          "description": "a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask)",
+          "instillUIOrder": 1
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 2
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "results": {
+          "instillUIOrder": 0,
+          "items": {
+            "properties": {
+              "score": {
+                "description": "The probability for this token.",
+                "instillFormat": "number",
+                "instillUIOrder": 0,
+                "title": "Score",
+                "type": "number"
+              },
+              "sequence": {
+                "description": "The actual sequence of tokens that ran against the model (may contain special tokens)",
+                "instillFormat": "string",
+                "instillUIMultiline": true,
+                "instillUIOrder": 1,
+                "title": "Sequence",
+                "type": "string"
+              },
+              "token": {
+                "description": "The id of the token",
+                "instillFormat": "integer",
+                "instillUIOrder": 2,
+                "title": "Token",
+                "type": "integer"
+              },
+              "token-str": {
+                "description": "The string representation of the token",
+                "instillFormat": "string",
+                "instillUIOrder": 3,
+                "title": "Token Str",
+                "type": "string"
+              }
+            },
+            "description": "Result",
+            "title": "Result",
+            "required": [],
+            "type": "object"
+          },
+          "description": "Results",
+          "title": "Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "results"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_IMAGE_CLASSIFICATION": {
+    "instillShortDescription": "Image classification is the task of assigning a label or class to an entire image.",
+    "description": "Image classification is the task of assigning a label or class to an entire image. Images are expected to have only one class for each image. Image classification models take an image as input and return a prediction about which class the image belongs to.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "The image file",
+          "instillAcceptFormats": [
+            "image/*"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Image",
+          "type": "string"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "image",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "classes": {
+          "instillUIOrder": 0,
+          "items": {
+            "properties": {
+              "label": {
+                "description": "The label for the class (model specific)",
+                "instillFormat": "string",
+                "instillUIOrder": 0,
+                "title": "Label",
+                "type": "string"
+              },
+              "score": {
+                "description": "A float that represents how likely it is that the image file belongs to this class.",
+                "instillFormat": "number",
+                "instillUIOrder": 0,
+                "title": "Score",
+                "type": "number"
+              }
+            },
+            "required": [
+              "label",
+              "score"
+            ],
+            "description": "Class",
+            "title": "Class",
+            "type": "object"
+          },
+          "description": "Classes",
+          "title": "Classes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "classes"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_IMAGE_SEGMENTATION": {
+    "instillShortDescription": "Image Segmentation divides an image into segments where each pixel in the image is mapped to an object.",
+    "description": "Image Segmentation divides an image into segments where each pixel in the image is mapped to an object. This task has multiple variants such as instance segmentation, panoptic segmentation and semantic segmentation.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "The image file",
+          "instillAcceptFormats": [
+            "image/*"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Image",
+          "type": "string"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "image",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "segments": {
+          "instillUIOrder": 0,
+          "items": {
+            "properties": {
+              "label": {
+                "description": "The label for the class (model specific) of a segment.",
+                "instillFormat": "string",
+                "instillUIOrder": 0,
+                "title": "Label",
+                "type": "string"
+              },
+              "mask": {
+                "description": "A str (base64 str of a single channel black-and-white img) representing the mask of a segment.",
+                "instillFormat": "image/png",
+                "instillUIOrder": 1,
+                "title": "Mask",
+                "type": "string"
+              },
+              "score": {
+                "description": "A float that represents how likely it is that the segment belongs to the given class.",
+                "instillFormat": "number",
+                "instillUIOrder": 2,
+                "title": "Score",
+                "type": "number"
+              }
+            },
+            "required": [
+              "label",
+              "mask",
+              "score"
+            ],
+            "description": "Segment",
+            "title": "Segment",
+            "type": "object"
+          },
+          "description": "Segments",
+          "title": "Segments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "segments"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_IMAGE_TO_TEXT": {
+    "instillShortDescription": "Image to text models output a text from a given image.",
+    "description": "Image to text models output a text from a given image. Image captioning or optical character recognition can be considered as the most common applications of image to text.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "The image file",
+          "instillAcceptFormats": [
+            "image/*"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Image",
+          "type": "string"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "image",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "text": {
+          "description": "Generated text",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_OBJECT_DETECTION": {
+    "instillShortDescription": "Object Detection models allow users to identify objects of certain defined classes.",
+    "description": "Object Detection models allow users to identify objects of certain defined classes. Object detection models receive an image as input and output the images with bounding boxes and labels on detected objects.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "The image file",
+          "instillAcceptFormats": [
+            "image/*"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Image",
+          "type": "string"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "image",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "objects": {
+          "instillUIOrder": 0,
+          "items": {
+            "properties": {
+              "box": {
+                "description": "A dict (with keys [xmin,ymin,xmax,ymax]) representing the bounding box of a detected object.",
+                "instillUIOrder": 0,
+                "properties": {
+                  "xmax": {
+                    "description": "X max",
+                    "instillFormat": "number",
+                    "instillUIOrder": 0,
+                    "title": "X Max",
+                    "type": "number"
+                  },
+                  "xmin": {
+                    "description": "X min",
+                    "instillFormat": "number",
+                    "instillUIOrder": 1,
+                    "title": "X Min",
+                    "type": "number"
+                  },
+                  "ymax": {
+                    "description": "Y Max",
+                    "instillFormat": "number",
+                    "instillUIOrder": 2,
+                    "title": "Y Max",
+                    "type": "number"
+                  },
+                  "ymin": {
+                    "description": "Y min",
+                    "instillFormat": "number",
+                    "instillUIOrder": 3,
+                    "title": "Y min",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "xmax",
+                  "xmin",
+                  "ymax",
+                  "ymin"
+                ],
+                "title": "Box",
+                "type": "object"
+              },
+              "label": {
+                "description": "The label for the class (model specific) of a detected object.",
+                "instillFormat": "string",
+                "instillUIOrder": 1,
+                "title": "Label",
+                "type": "string"
+              },
+              "score": {
+                "description": "A float that represents how likely it is that the detected object belongs to the given class.",
+                "instillFormat": "number",
+                "instillUIOrder": 2,
+                "title": "Score",
+                "type": "number"
+              }
+            },
+            "required": [
+              "box",
+              "label",
+              "score"
+            ],
+            "description": "Object",
+            "title": "Object",
+            "type": "object"
+          },
+          "description": "Objects",
+          "title": "Objects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "objects"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_QUESTION_ANSWERING": {
+    "instillShortDescription": "Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document.",
+    "description": "Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document. Some question answering models can generate answers without context!",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "instillUIOrder": 1,
+          "properties": {
+            "context": {
+              "description": "The context for answering the question.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIMultiline": true,
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference",
+                "template"
+              ],
+              "title": "Context",
+              "type": "string"
+            },
+            "question": {
+              "description": "The question",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIMultiline": true,
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "value",
+                "reference",
+                "template"
+              ],
+              "title": "Question",
+              "type": "string"
+            }
+          },
+          "required": [
+            "question",
+            "context"
+          ],
+          "description": "Inputs",
+          "title": "Inputs",
+          "type": "object"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 2
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "answer": {
+          "description": "A string that\u2019s the answer within the text.",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Answer",
+          "type": "string"
+        },
+        "score": {
+          "description": "A float that represents how likely that the answer is correct",
+          "instillFormat": "number",
+          "instillUIOrder": 2,
+          "title": "Score",
+          "type": "number"
+        },
+        "start": {
+          "description": "The index (string wise) of the start of the answer within context.",
+          "instillFormat": "integer",
+          "instillUIOrder": 3,
+          "title": "Start",
+          "type": "integer"
+        },
+        "stop": {
+          "description": "The index (string wise) of the stop of the answer within context.",
+          "instillFormat": "integer",
+          "instillUIOrder": 1,
+          "title": "Stop",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "answer"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SENTENCE_SIMILARITY": {
+    "instillShortDescription": "Sentence Similarity is the task of determining how similar two texts are.",
+    "description": "Sentence Similarity is the task of determining how similar two texts are. Sentence similarity models convert input texts into vectors (embeddings) that capture semantic information and calculate how close (similar) they are between them. This task is particularly useful for information retrieval and clustering/grouping.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "instillUIOrder": 1,
+          "properties": {
+            "sentences": {
+              "description": "A list of strings which will be compared against the source-sentence.",
+              "instillAcceptFormats": [
+                "array:string"
+              ],
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "items": {
+                "description": "Items",
+                "instillUIMultiline": true,
+                "type": "string"
+              },
+              "title": "Sentences",
+              "type": "array"
+            },
+            "source-sentence": {
+              "description": "The string that you wish to compare the other strings with. This can be a phrase, sentence, or longer passage, depending on the model being used.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillShortDescription": "The string that you wish to compare the other strings with.",
+              "instillUIMultiline": true,
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Source Sentence",
+              "type": "string"
+            }
+          },
+          "required": [
+            "source-sentence",
+            "sentences"
+          ],
+          "description": "Inputs",
+          "title": "Inputs",
+          "type": "object"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 2
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "scores": {
+          "description": "The associated similarity score for each of the given strings",
+          "instillUIOrder": 0,
+          "instillFormat": "array:number",
+          "items": {
+            "instillFormat": "number",
+            "description": "The associated similarity score for of the given string",
+            "title": "Score",
+            "type": "number"
+          },
+          "title": "Scores",
+          "type": "array"
+        }
+      },
+      "required": [
+        "scores"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SPEECH_RECOGNITION": {
+    "instillShortDescription": "Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text.",
+    "description": "Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text. It has many applications, such as voice user interfaces.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "audio": {
+          "description": "The audio file",
+          "instillAcceptFormats": [
+            "audio/*"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Audio",
+          "type": "string"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        }
+      },
+      "required": [
+        "audio",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "text": {
+          "description": "The string that was recognized within the audio file.",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SUMMARIZATION": {
+    "instillShortDescription": "Summarization is the task of producing a shorter version of a document while preserving its important information.",
+    "description": "Summarization is the task of producing a shorter version of a document while preserving its important information. Some models can extract text from the original input, while other models can generate entirely new text.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "$ref": "#/$defs/string-input",
+          "instillUIOrder": 1
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 3
+        },
+        "parameters": {
+          "instillUIOrder": 2,
+          "properties": {
+            "max-length": {
+              "description": "Integer to define the maximum length in tokens of the output summary.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Max Length",
+              "type": "integer"
+            },
+            "max-time": {
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "description": "The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.",
+              "title": "Max Time",
+              "type": "number"
+            },
+            "min-length": {
+              "description": "Integer to define the minimum length in tokens of the output summary.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 2,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Min Length",
+              "type": "integer"
+            },
+            "repetition-penalty": {
+              "description": "The more a token is used within generation the more it is penalized to not be picked in successive generation passes.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillUIOrder": 3,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "title": "Repetition Penalty",
+              "type": "number"
+            },
+            "temperature": {
+              "default": 1.0,
+              "description": "The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillShortDescription": "The temperature of the sampling operation.",
+              "instillUIOrder": 4,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "title": "Temperature",
+              "type": "number"
+            },
+            "top-k": {
+              "description": "Integer to define the top tokens considered within the sample operation to create new text.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 5,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Top K",
+              "type": "integer"
+            },
+            "top-p": {
+              "description": "Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillShortDescription": "Float to define the tokens that are within the sample operation of text generation.",
+              "instillUIOrder": 6,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Top P",
+              "type": "number"
+            }
+          },
+          "required": [],
+          "description": "Parameters",
+          "title": "Parameters",
+          "type": "object"
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "summary-text": {
+          "description": "The string after summarization",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Summary Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "summary-text"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_TABLE_QUESTION_ANSWERING": {
+    "instillShortDescription": "Table Question Answering (Table QA) is the answering a question about an information on a given table.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "instillUIOrder": 1,
+          "properties": {
+            "query": {
+              "description": "The query in plain text that you want to ask the table",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIMultiline": true,
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Query",
+              "type": "string"
+            },
+            "table": {
+              "description": "A table of data represented as a dict of list where entries are headers and the lists are all the values, all lists must have the same size.",
+              "instillAcceptFormats": [
+                "*"
+              ],
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "reference",
+                "value"
+              ],
+              "required": [],
+              "title": "Table",
+              "type": "object"
+            }
+          },
+          "required": [
+            "query",
+            "table"
+          ],
+          "description": "Inputs",
+          "title": "Inputs",
+          "type": "object"
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 2
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "aggregator": {
+          "description": "The aggregator used to get the answer",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Aggregator",
+          "type": "string"
+        },
+        "answer": {
+          "description": "The plaintext answer",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 1,
+          "title": "Answer",
+          "type": "string"
+        },
+        "cells": {
+          "description": "a list of coordinates of the cells contents",
+          "instillUIOrder": 2,
+          "instillFormat": "array:string",
+          "items": {
+            "description": "coordinate of the cell content",
+            "instillFormat": "string",
+            "instillUIMultiline": true,
+            "title": "Cell",
+            "type": "string"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "coordinates": {
+          "description": "a list of coordinates of the cells referenced in the answer",
+          "instillUIOrder": 3,
+          "items": {
+            "items": {
+              "instillFormat": "integer",
+              "description": "coordinate of the cell referenced in the answer",
+              "title": "Coordinate",
+              "type": "integer"
+            },
+            "instillFormat": "array:integer",
+            "type": "array"
+          },
+          "title": "Coordinates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "answer"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_TEXT_CLASSIFICATION": {
+    "instillShortDescription": "Text Classification is the task of assigning a label or class to a given text.",
+    "description": "Text Classification is the task of assigning a label or class to a given text. Some use cases are sentiment analysis, natural language inference, and assessing grammatical correctness.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "$ref": "#/$defs/string-input",
+          "instillUIOrder": 1
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 2
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "results": {
+          "instillUIOrder": 0,
+          "items": {
+            "properties": {
+              "label": {
+                "description": "The label for the class (model specific)",
+                "instillFormat": "string",
+                "instillUIOrder": 0,
+                "title": "Label",
+                "type": "string"
+              },
+              "score": {
+                "description": "A floats that represents how likely is that the text belongs the this class.",
+                "instillFormat": "number",
+                "instillUIOrder": 1,
+                "title": "Score",
+                "type": "number"
+              }
+            },
+            "required": [
+              "label",
+              "score"
+            ],
+            "description": "Result",
+            "title": "Result",
+            "type": "object"
+          },
+          "description": "Results",
+          "title": "Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "results"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_TEXT_GENERATION": {
+    "instillShortDescription": "Generating text is the task of producing new text. These models can, for example, fill in incomplete text or paraphrase.",
+    "description": "Generating text is the task of producing new text. These models can, for example, fill in incomplete text or paraphrase.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "$ref": "#/$defs/string-input",
+          "instillUIOrder": 1
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 3
+        },
+        "parameters": {
+          "instillUIOrder": 2,
+          "properties": {
+            "do-sample": {
+              "description": "Whether or not to use sampling, use greedy decoding otherwise.",
+              "instillAcceptFormats": [
+                "boolean"
+              ],
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Do Sample",
+              "type": "boolean"
+            },
+            "max-new-tokens": {
+              "description": "The amount of new tokens to be generated, this does not include the input length it is a estimate of the size of generated text you want. Each new tokens slows down the request, so look for balance between response times and length of text generated.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillShortDescription": "The amount of new tokens to be generated.",
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Max New Tokens",
+              "type": "integer"
+            },
+            "max-time": {
+              "description": "The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Use that in combination with max-new-tokens for best results.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillShortDescription": "The amount of time in seconds that the query should take maximum.",
+              "instillUIOrder": 2,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Max Time",
+              "type": "number"
+            },
+            "num-return-sequences": {
+              "description": "The number of proposition you want to be returned.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 3,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Num Return Sequences",
+              "type": "integer"
+            },
+            "repetition-penalty": {
+              "description": "The more a token is used within generation the more it is penalized to not be picked in successive generation passes.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillUIOrder": 4,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Repetition Penalty",
+              "type": "number"
+            },
+            "return-full-text": {
+              "description": "If set to False, the return results will not contain the original query making it easier for prompting.",
+              "instillAcceptFormats": [
+                "boolean"
+              ],
+              "instillUIOrder": 5,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Return Full Text",
+              "type": "boolean"
+            },
+            "temperature": {
+              "description": "The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillShortDescription": "The temperature of the sampling operation.",
+              "instillUIOrder": 6,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Temperature",
+              "type": "number"
+            },
+            "top-k": {
+              "description": "Integer to define the top tokens considered within the sample operation to create new text.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 7,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Top K",
+              "type": "integer"
+            },
+            "top-p": {
+              "description": "Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top-p.",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillShortDescription": "Float to define the tokens that are within the sample operation of text generation.",
+              "instillUIOrder": 8,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Top P",
+              "type": "number"
+            }
+          },
+          "required": [],
+          "description": "Parameters",
+          "title": "Parameters",
+          "type": "object"
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "generated-text": {
+          "description": "The continuated string",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 1,
+          "title": "Generated Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "generated-text"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_TEXT_TO_IMAGE": {
+    "instillShortDescription": "Generates images from input text.",
+    "description": "Generates images from input text. These models can be used to generate and modify images based on text prompts.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "$ref": "#/$defs/string-input",
+          "instillUIOrder": 1
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 3
+        },
+        "parameters": {
+          "instillUIOrder": 2,
+          "properties": {
+            "guidance-scale": {
+              "description": "Guidance scale",
+              "instillAcceptFormats": [
+                "number",
+                "integer"
+              ],
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Guidance Scale",
+              "type": "number"
+            },
+            "height": {
+              "description": "Image Height",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Height",
+              "type": "integer"
+            },
+            "negative-prompt": {
+              "description": "Negative prompt for generating the image",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIMultiline": true,
+              "instillUIOrder": 2,
+              "instillUpstreamTypes": [
+                "value",
+                "reference",
+                "template"
+              ],
+              "title": "Negative Prompt",
+              "type": "string"
+            },
+            "num-inference-steps": {
+              "description": "Number of inference steps",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 3,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Num Inference Steps",
+              "type": "integer"
+            },
+            "width": {
+              "description": "Image width",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 4,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Width",
+              "type": "integer"
+            }
+          },
+          "required": [],
+          "description": "Parameters",
+          "title": "Parameters",
+          "type": "object"
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "instillFormat": "image/jpeg",
+          "instillUIOrder": 0,
+          "description": "Image",
+          "title": "Image",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_TOKEN_CLASSIFICATION": {
+    "instillShortDescription": "Token classification is a natural language understanding task in which a label is assigned to some tokens in a text.",
+    "description": "Token classification is a natural language understanding task in which a label is assigned to some tokens in a text. Some popular token classification subtasks are Named Entity Recognition (NER) and Part-of-Speech (PoS) tagging. NER models could be trained to identify specific entities in a text, such as dates, individuals and places; and PoS tagging would identify, for example, which words in a text are verbs, nouns, and punctuation marks.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "$ref": "#/$defs/string-input",
+          "instillUIOrder": 1
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 3
+        },
+        "parameters": {
+          "instillUIOrder": 2,
+          "properties": {
+            "aggregation-strategy": {
+              "description": "There are several aggregation strategies:\nnone: Every token gets classified without further aggregation.\nsimple: Entities are grouped according to the default schema (B-, I- tags get merged when the tag is similar).\nfirst: Same as the simple strategy except words cannot end up with different tags. Words will use the tag of the first token when there is ambiguity.\naverage: Same as the simple strategy except words cannot end up with different tags. Scores are averaged across tokens and then the maximum label is applied.\nmax: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillShortDescription": "There are several aggregation strategies: none, simple, first, average, and max.",
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference",
+                "template"
+              ],
+              "title": "Aggregation Strategy",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "description": "Parameters",
+          "title": "Parameters",
+          "type": "object"
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "results": {
+          "instillUIOrder": 0,
+          "items": {
+            "properties": {
+              "end": {
+                "description": "The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times.",
+                "instillFormat": "integer",
+                "instillUIOrder": 0,
+                "title": "End",
+                "type": "integer"
+              },
+              "entity-group": {
+                "description": "The type for the entity being recognized (model specific).",
+                "instillFormat": "string",
+                "instillUIOrder": 1,
+                "title": "Entity Group",
+                "type": "string"
+              },
+              "score": {
+                "description": "How likely the entity was recognized.",
+                "instillFormat": "number",
+                "instillUIOrder": 2,
+                "title": "Score",
+                "type": "number"
+              },
+              "start": {
+                "description": "The offset stringwise where the answer is located. Useful to disambiguate if word occurs multiple times.",
+                "instillFormat": "integer",
+                "instillUIOrder": 3,
+                "title": "Start",
+                "type": "integer"
+              },
+              "word": {
+                "description": "The string that was captured",
+                "instillFormat": "string",
+                "instillUIMultiline": true,
+                "instillUIOrder": 4,
+                "title": "Word",
+                "type": "string"
+              }
+            },
+            "required": [],
+            "title": "Result",
+            "type": "object"
+          },
+          "description": "Results",
+          "title": "Results",
+          "type": "array"
+        }
+      },
+      "required": [
+        "results"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_TRANSLATION": {
+    "instillShortDescription": "Translation is the task of converting text from one language to another.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "$ref": "#/$defs/string-input",
+          "instillUIOrder": 1
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 2
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "translation-text": {
+          "description": "The string after translation",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Translation Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "translation-text"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_ZERO_SHOT_CLASSIFICATION": {
+    "instillShortDescription": "Zero-shot text classification is a task in natural language processing where a model is trained on a set of labeled examples but is then able to classify new examples from previously unseen classes.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "inputs": {
+          "$ref": "#/$defs/string-input",
+          "instillUIOrder": 1
+        },
+        "model": {
+          "$ref": "#/$defs/model",
+          "instillUIOrder": 0
+        },
+        "options": {
+          "$ref": "#/$defs/options",
+          "instillUIOrder": 3
+        },
+        "parameters": {
+          "instillUIOrder": 2,
+          "properties": {
+            "candidate-labels": {
+              "description": "a list of strings that are potential classes for inputs. (max 10 candidate-labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate-labels anyway. If you want to keep the exact same, you can simply run multi-label=True and do the scaling on your end. )",
+              "instillShortDescription": "a list of strings that are potential classes for inputs.",
+              "instillUIOrder": 0,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "items": {
+                "description": "a string that are potential class for inputs.",
+                "title": "candidate-label",
+                "type": "string"
+              },
+              "title": "Candidate Labels",
+              "type": "array"
+            },
+            "multi-label": {
+              "description": "Boolean that is set to True if classes can overlap",
+              "instillAcceptFormats": [
+                "boolean"
+              ],
+              "instillUIOrder": 1,
+              "instillUpstreamTypes": [
+                "value",
+                "reference"
+              ],
+              "title": "Multi Label",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "candidate-labels"
+          ],
+          "description": "Parameters",
+          "title": "Parameters",
+          "type": "object"
+        }
+      },
+      "required": [
+        "inputs",
+        "model"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "labels": {
+          "description": "The list of strings for labels that you sent (in order)",
+          "instillUIOrder": 1,
+          "instillFormat": "array:string",
+          "items": {
+            "instillFormat": "string",
+            "description": "The string for label that you sent (in order)",
+            "title": "Label",
+            "type": "string"
+          },
+          "title": "Labels",
+          "type": "array"
+        },
+        "scores": {
+          "description": "a list of floats that correspond the the probability of label, in the same order as labels.",
+          "instillUIOrder": 0,
+          "instillFormat": "array:number",
+          "items": {
+            "description": "float that correspond the the probability of label.",
+            "instillFormat": "number",
+            "title": "Score",
+            "type": "number"
+          },
+          "title": "Scores",
+          "type": "array"
+        },
+        "sequence": {
+          "description": "The string sent as an input",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 1,
+          "title": "Sequence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "labels",
+        "scores"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

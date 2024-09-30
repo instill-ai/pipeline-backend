@@ -1,0 +1,108 @@
+{
+  "TASK_DECODE": {
+    "instillShortDescription": "Decode the base64 string.",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "Base64 string to be decoded",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Data",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "Data",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Data",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_ENCODE": {
+    "instillShortDescription": "Encode data into base64 string",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "Data to be encoded",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Data",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "data"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "data": {
+          "description": "Data",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "title": "Data",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

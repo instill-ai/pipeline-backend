@@ -1,0 +1,13 @@
+#### Local Ollama Instance
+
+To set up an Ollama instance on your local machine, follow the instructions below:
+
+> Note: These instructions only work for Instill Core CE
+
+1. Follow the tutorial on the official [GitHub repository](https://github.com/ollama/ollama) to install Ollama on your machine.
+2. Follow the instructions in the [FAQ section](https://github.com/ollama/ollama/blob/main/docs/faq.md) to modify the variable `OLLAMA_HOST` to `0.0.0.0`, then restart Ollama.
+3. Get the IP address of your machine on the local network.
+    - On Linux and macOS, open the terminal and type `ifconfig`.
+    - On Windows, open the command prompt and type `ipconfig`.
+4. Suppose the IP address is `192.168.178.88`, then the Ollama hosting endpoint would be `192.168.178.88:11434`.
+5. Enjoy fast LLM inference on your local machine and integration with 💧 Instill VDP.

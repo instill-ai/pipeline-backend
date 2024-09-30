@@ -1,76 +1,78 @@
 # Contributing Guidelines
 
-We appreciate your contribution to this amazing project! Any form of engagement is welcome, including but not limiting to
+We appreciate your contribution to this amazing project! Any form of engagement
+is welcome, including but not limiting to
 - feature request
 - documentation wording
 - bug report
 - roadmap suggestion
 - ...and so on!
 
-Please refer to the [community contributing section](https://github.com/instill-ai/community#contributing) for more details.
+## Development environment and codebase contribution
 
-## Development and codebase contribution
+### Component contribution guide
 
-Before delving into the details to come up with your first PR, please familiarise yourself with the project structure of [Instill Core](https://github.com/instill-ai/community#instill-core).
+The [component](./pkg/component) package contains [a
+guide](./pkg/component/CONTRIBUTING.md) on how to contribute with new
+components.
 
 ### Prerequisites
 
-- [Instill VDP](https://github.com/instill-ai/vdp)
+Before delving into the details to come up with your first PR, please
+familiarise yourself with the project structure of 🔮 [**Instill
+Core**](https://github.com/instill-ai/community#instill-core).
 
 ### Pre-commit hooks
 
-check out `.pre-commit-config.yaml` for the set of hooks that we used
+Check out `.pre-commit-config.yaml` for the set of hooks that we use.
 
 ### Local development
 
-On the local machine, clone `vdp` repository in your workspace, move to the repository folder, and launch all dependent microservices:
+#### Environment setup
+
+On your local machine, clone the `instill-core` repository into your workspace,
+move to the repository folder, and launch all dependent services:
+
 ```bash
 $ cd <your-workspace>
-$ git clone https://github.com/instill-ai/vdp.git
-$ cd vdp
-$ make latest PROFILE=pipeline
+$ git clone https://github.com/instill-ai/instill-core.git
+$ cd instill-core
+$ make latest PROFILE=exclude-pipeline
 ```
 
-Clone `pipeline-backend` repository in your workspace and move to the repository folder:
+Clone `pipeline-backend` repository into your workspace and move to the
+repository folder:
+
 ```bash
 $ cd <your-workspace>
 $ git clone https://github.com/instill-ai/pipeline-backend.git
 $ cd pipeline-backend
+$ make build && make dev
 ```
 
-### Build the dev image
+Now, you have the Go project set up in the container, in which you can compile
+and run the binaries together with the integration test in each container shell.
+
+#### Run the server
 
 ```bash
-$ make build
-```
-
-### Run the dev container
-
-```bash
-$ make dev
-```
-
-Now, you have the Go project set up in the container, in which you can compile and run the binaries together with the integration test in each container shell.
-
-### Run the server
-
-```bash
-$ docker exec -it pipeline-backend /bin/bash
+$ docker exec -it pipeline-backend bash
 $ go run ./cmd/migration
+$ go run ./cmd/init
 $ go run ./cmd/main
 ```
 
-### Run the temporal worker
+#### Run the temporal worker
 
 ```bash
-$ docker exec -it pipeline-backend /bin/bash
+$ docker exec -it pipeline-backend bash
 $ go run ./cmd/worker
 ```
 
-### Run the unit tests
+#### Run the unit tests
 
 ```bash
-$ make coverate DBTEST=true
+$ make coverage DBTEST=true
 ```
 
 The repository tests in `make coverage` run against a real database (in contrast
@@ -79,7 +81,7 @@ will create and migrate a test database to keep these queries isolated from the
 main DB. You can set the database host and name by overriding the `TEST_DBHOST`
 and `TEST_DBNAME` values.
 
-### Run the integration test
+#### Run the integration tests
 
 ```bash
 $ docker exec -it pipeline-backend /bin/bash
@@ -93,22 +95,19 @@ At the end of the tests, some SQL queries are run to clean up the data.
 `DB_HOST` points to the database host so the SQL connection can be established.
 If empty, tests will try to connect to `localhost:5432`.
 
-```bash
-$ make integration-test API_GATEWAY_URL=api-gateway:8080 DB_HOST=pg-sql
-`
-### Stop the dev container
+#### Stop the dev container
 
 ```bash
 $ make stop
 ```
 
-### Remove the dev container
+#### Remove the dev container
 
 ```bash
 $ make rm
 ```
 
-### Sending PRs
+## Sending PRs
 
 Please take these general guidelines into consideration when you are sending a PR:
 
@@ -123,7 +122,7 @@ Please take these general guidelines into consideration when you are sending a P
 
 When you are ready to send a PR, we recommend you to first open a `draft` one. This will trigger a bunch of `tests` [workflows](https://github.com/instill-ai/pipeline-backend/tree/main/.github/workflows) running a thorough test suite on multiple platforms. After the tests are done and passed, you can now mark the PR `open` to notify the codebase owners to review. We appreciate your endeavour to pass the integration test for your PR to make sure the sanity with respect to the entire scope of **Instill Core**.
 
-### CI/CD
+## CI/CD
 
 - **pull_request** to the `main` branch will trigger the **`Integration Test`** workflow running the integration test using the image built on the PR head branch.
 - **push** to the `main` branch will trigger

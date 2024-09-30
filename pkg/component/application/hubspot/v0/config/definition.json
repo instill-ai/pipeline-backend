@@ -1,0 +1,33 @@
+{
+  "availableTasks": [
+    "TASK_GET_CONTACT",
+    "TASK_CREATE_CONTACT",
+    "TASK_GET_DEAL",
+    "TASK_CREATE_DEAL",
+    "TASK_UPDATE_DEAL",
+    "TASK_GET_COMPANY",
+    "TASK_CREATE_COMPANY",
+    "TASK_GET_TICKET",
+    "TASK_CREATE_TICKET",
+    "TASK_UPDATE_TICKET",
+    "TASK_GET_THREAD",
+    "TASK_INSERT_MESSAGE",
+    "TASK_RETRIEVE_ASSOCIATION",
+    "TASK_GET_OWNER",
+    "TASK_GET_ALL"
+  ],
+  "documentationUrl": "https://www.instill.tech/docs/component/application/hubspot",
+  "icon": "assets/hubspot.svg",
+  "id": "hubspot",
+  "public": true,
+  "title": "HubSpot",
+  "description": "Use HubSpot application to do various tasks",
+  "tombstone": false,
+  "type": "COMPONENT_TYPE_APPLICATION",
+  "uid": "0cd80b30-29bc-4f19-91ca-5911de3a3aae",
+  "vendor": "HubSpot",
+  "vendorAttributes": {},
+  "version": "0.1.0",
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/application/hubspot/v0",
+  "releaseStage": "RELEASE_STAGE_ALPHA"
+}

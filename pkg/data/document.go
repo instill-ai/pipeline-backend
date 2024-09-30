@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/instill-ai/component/operator/document/v0"
-	//  "github.com/instill-ai/component/store"
+	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0"
+	//  "github.com/instill-ai/pipeline-backend/pkg/component/store"
 )
 
 type Document struct {

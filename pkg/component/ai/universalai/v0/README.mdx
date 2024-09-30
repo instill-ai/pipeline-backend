@@ -1,0 +1,165 @@
+---
+title: "Universal AI"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Universal AI component https://github.com/instill-ai/instill-core"
+---
+
+The Universal AI component is an AI component that allows users to connect the AI models served on the different platforms with standardized input and output formats..
+It can carry out the following tasks:
+- [Chat](#chat)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/universalai/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/ai/universalai/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with the
+external application, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| API Key | `api-key` | string | Fill in your API key from the vendor's platform.  |
+| Organization ID | `organization` | string | Specify which organization is used for the requests. Usage will count against the specified organization's subscription quota.  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Chat
+
+Generate response base on conversation input
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CHAT` |
+| [Chat Data](#chat-chat-data) (required) | `data` | object | Input data |
+| [Input Parameter](#chat-input-parameter) | `parameter` | object | Input parameter |
+</div>
+
+
+<details>
+<summary> Input Objects in Chat</summary>
+
+<h4 id="chat-chat-data">Chat Data</h4>
+
+Input data
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Chat Messages](#chat-chat-messages) | `messages` | array | List of chat messages  |
+| Model Name | `model` | string | The model to be used. Now, it only supports OpenAI model, and will support more models in the future.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`o1-preview`</li><li>`o1-mini`</li><li>`gpt-4o-mini`</li><li>`gpt-4o`</li><li>`gpt-4o-2024-05-13`</li><li>`gpt-4o-2024-08-06`</li><li>`gpt-4-turbo`</li><li>`gpt-4-turbo-2024-04-09`</li><li>`gpt-4-0125-preview`</li><li>`gpt-4-turbo-preview`</li><li>`gpt-4-1106-preview`</li><li>`gpt-4-vision-preview`</li><li>`gpt-4`</li><li>`gpt-4-0314`</li><li>`gpt-4-0613`</li><li>`gpt-4-32k`</li><li>`gpt-4-32k-0314`</li><li>`gpt-4-32k-0613`</li><li>`gpt-3.5-turbo`</li><li>`gpt-3.5-turbo-16k`</li><li>`gpt-3.5-turbo-0301`</li><li>`gpt-3.5-turbo-0613`</li><li>`gpt-3.5-turbo-1106`</li><li>`gpt-3.5-turbo-0125`</li><li>`gpt-3.5-turbo-16k-0613`</li></ul></details>  |
+</div>
+<h4 id="chat-chat-messages">Chat Messages</h4>
+
+List of chat messages
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Content](#chat-content) | `content` | array | The message content  |
+| Name | `name` | string | An optional name for the participant. Provides the model information to differentiate between participants of the same role.  |
+| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`system`</li><li>`user`</li><li>`assistant`</li></ul></details>  |
+</div>
+<h4 id="chat-input-parameter">Input Parameter</h4>
+
+Input parameter
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Max New Tokens | `max-tokens` | integer | The maximum number of tokens for model to generate  |
+| Number of Choices | `n` | integer | How many chat completion choices to generate for each input message.  |
+| Seed | `seed` | integer | The seed, default is 0  |
+| Stream | `stream` | boolean | If set, partial message deltas will be sent. Tokens will be sent as data-only server-sent events as they become available.  |
+| Temperature | `temperature` | number | The temperature for sampling  |
+| Top P | `top-p` | number | An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Output Data](#chat-output-data) | `data` | object | Output data |
+| [Output Metadata](#chat-output-metadata) (optional) | `metadata` | object | Output metadata |
+</div>
+
+<details>
+<summary> Output Objects in Chat</summary>
+
+<h4 id="chat-output-data">Output Data</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Choices](#chat-choices) | `choices` | array | List of chat completion choices |
+</div>
+
+<h4 id="chat-choices">Choices</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Created | `created` | integer | The Unix timestamp (in seconds) of when the chat completion was created. |
+| Finish Reason | `finish-reason` | string | The reason the model stopped generating tokens. |
+| Index | `index` | integer | The index of the choice in the list of choices. |
+| [Message](#chat-message) | `message` | object | A chat message generated by the model. |
+</div>
+
+<h4 id="chat-message">Message</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | The contents of the message. |
+| Role | `role` | string | The role of the author of this message. |
+</div>
+
+<h4 id="chat-output-metadata">Output Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Usage](#chat-usage) | `usage` | object | Usage statistics for the request. |
+</div>
+
+<h4 id="chat-usage">Usage</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Completion Tokens | `completion-tokens` | integer | Number of tokens in the generated response. |
+| Prompt Tokens | `prompt-tokens` | integer | Number of tokens in the prompt. |
+| Total Tokens | `total-tokens` | integer | Total number of tokens used in the request (prompt + completion). |
+</div>
+</details>

@@ -1,0 +1,110 @@
+## Example Recipes
+
+Recipe for the [PicassoAI: Cubist Creations at Your Command!](https://instill.tech/instill-ai/pipelines/picasso-ai/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  mistral-0:
+    type: mistral-ai
+    task: TASK_TEXT_GENERATION_CHAT
+    input:
+      max-new-tokens: 100
+      model-name: open-mixtral-8x22b
+      prompt: |-
+        Generate a Picasso-inspired image based on the following user input:
+
+        ${variable.prompt}
+
+        Using the specified Picasso period: ${variable.period}
+
+
+        Transform this input into a detailed text-to-image prompt by:
+
+        1. Identifying the key elements or subjects in the user's description
+
+        2. Adding artistic elements and techniques specific to the ${variable.period} period of Picasso's work
+
+        3. Including cubist or abstract features characteristic of the ${variable.period}
+
+        4. Suggesting a composition or scene layout typical of Picasso's work from this era
+
+        Enhance the prompt with vivid, descriptive language and specific Picasso-style elements from the ${variable.period}. The final prompt should begin with "Create an image in the style of Picasso's ${variable.period} period:" followed by the enhanced description.
+      safe: false
+      system-message: You are a helpful assistant.
+      temperature: 0.7
+      top-k: 10
+      top-p: 0.5
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+  openai-0:
+    type: openai
+    task: TASK_TEXT_TO_IMAGE
+    input:
+      model: dall-e-3
+      n: 1
+      prompt: |-
+        Using this primary color palette: ${variable.colour}
+
+        ${mistral-0.output.text}
+      quality: standard
+      size: 1024x1024
+      style: vivid
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  colour:
+    title: Colour
+    description: Describe the main colour to use i.e. blue, random
+    instill-format: string
+    instill-ui-order: 1
+  period:
+    title: Period
+    description: |
+      Input different Picasso periods i.e. Blue, Rose, African, Synthetic Cubism, etc.
+    instill-format: string
+  prompt:
+    title: Prompt
+    description: Input prompt here i.e. "A cute baby wombat"
+    instill-format: string
+output:
+  image:
+    title: Image
+    value: ${openai-0.output.results}
+```
+
+Recipe for the [Explain this topic to me in another language](https://instill.tech/instill-ai/pipelines/gpt-4o-mini-demo/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  openai:
+    type: openai
+    task: TASK_TEXT_GENERATION
+    input:
+      model: gpt-4o-mini
+      n: 1
+      prompt: |-
+        Talk about this topic in ${variable.language}  in a concise and beginner-friendly way:
+        ${variable.prompt}
+      response-format:
+        type: text
+      system-message: You are a helpful assistant.
+      temperature: 1
+      top-p: 1
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+variable:
+  language:
+    title: Language
+    description: Input a language i.e. Chinese, Japanese, French, etc.
+    instill-format: string
+  prompt:
+    title: Prompt
+    description: Write the topic you want to ask about here i.e. "Tell me about small LLMs"
+    instill-format: string
+output:
+  result:
+    title: Result
+    value: ${openai.output.texts}
+```

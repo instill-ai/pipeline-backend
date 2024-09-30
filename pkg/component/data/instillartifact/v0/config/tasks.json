@@ -1,0 +1,1079 @@
+{
+  "$defs": {
+    "file": {
+      "description": "base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog",
+      "instillUIOrder": 2,
+      "instillAcceptFormats": [
+        "*/*"
+      ],
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "title": "File",
+      "type": "string"
+    },
+    "files": {
+      "description": "base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog",
+      "instillUIOrder": 2,
+      "instillAcceptFormats": [
+        "array:*/*"
+      ],
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "file-item": {
+      "properties": {
+        "file-uid": {
+          "description": "The unique identifier of the file",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "File UID",
+          "type": "string"
+        },
+        "file-name": {
+          "description": "The name of the file",
+          "instillFormat": "string",
+          "instillUIOrder": 1,
+          "title": "File Name",
+          "type": "string"
+        },
+        "file-type": {
+          "description": "The type of the file",
+          "instillFormat": "string",
+          "instillUIOrder": 2,
+          "title": "Type",
+          "type": "string"
+        },
+        "create-time": {
+          "description": "The creation time of the file in ISO 8601 format",
+          "instillFormat": "string",
+          "instillUIOrder": 3,
+          "title": "Create Time",
+          "type": "string"
+        },
+        "update-time": {
+          "description": "The update time of the file in ISO 8601 format",
+          "instillFormat": "string",
+          "instillUIOrder": 4,
+          "title": "Update Time",
+          "type": "string"
+        },
+        "size": {
+          "description": "The size of the file in bytes",
+          "instillFormat": "number",
+          "instillUIOrder": 5,
+          "title": "Size",
+          "type": "number"
+        },
+        "catalog-id": {
+          "description": "The ID of the catalog that you upload files",
+          "instillFormat": "string",
+          "instillUIOrder": 8,
+          "title": "Catalog ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "catalog-id"
+      ],
+      "title": "File",
+      "type": "object"
+    },
+    "chunk-item": {
+      "properties": {
+        "chunk-uid": {
+          "description": "The unique identifier of the chunk",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Chunk UID",
+          "type": "string"
+        },
+        "similarity-score": {
+          "description": "The similarity score of the chunk",
+          "instillFormat": "number",
+          "instillUIOrder": 1,
+          "title": "Similarity",
+          "type": "number"
+        },
+        "text-content": {
+          "description": "The text content of the chunk",
+          "instillFormat": "string",
+          "instillUIOrder": 2,
+          "title": "Text Content",
+          "type": "string"
+        },
+        "source-file-name": {
+          "description": "The name of the source file",
+          "instillFormat": "string",
+          "instillUIOrder": 3,
+          "title": "Source File Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "chunk-uid",
+        "similarity-score",
+        "text-content",
+        "source-file-name"
+      ],
+      "title": "Chunk",
+      "type": "object"
+    },
+    "namespace": {
+      "description": "Fill in your namespace, you can get namespace through the tab of switching namespace",
+      "instillUpstreamTypes": [
+        "reference",
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 0,
+      "title": "Namespace",
+      "type": "string"
+    }
+  },
+  "TASK_UPLOAD_FILE": {
+    "instillShortDescription": "Upload and process the files into chunks into Catalog",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "options": {
+          "description": "Choose to upload the files to existing catalog or create a new catalog",
+          "title": "Options",
+          "additionalProperties": true,
+          "type": "object",
+          "instillUIOrder": 0,
+          "required": [
+            "option"
+          ],
+          "oneOf": [
+            {
+              "properties": {
+                "option": {
+                  "const": "existing catalog",
+                  "type": "string",
+                  "title": "Option",
+                  "description": "Existing catalog.",
+                  "instillUIOrder": 0
+                },
+                "namespace": {
+                  "$ref": "#/$defs/namespace"
+                },
+                "catalog-id": {
+                  "description": "Catalog ID that you input in the Catalog",
+                  "instillUIOrder": 1,
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "reference",
+                    "value"
+                  ],
+                  "title": "Catalog ID",
+                  "type": "string"
+                },
+                "file": {
+                  "$ref": "#/$defs/file"
+                },
+                "file-name": {
+                  "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "instillUIOrder": 2,
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "value",
+                    "reference"
+                  ],
+                  "title": "File Name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "option",
+                "namespace",
+                "catalog-id",
+                "file",
+                "file-name"
+              ],
+              "instillEditOnNodeFields": [
+                "option",
+                "namespace",
+                "catalog-id",
+                "file",
+                "file-name"
+              ],
+              "title": "Existing Catalog",
+              "type": "object"
+            },
+            {
+              "properties": {
+                "option": {
+                  "const": "create new catalog",
+                  "type": "string",
+                  "title": "Option",
+                  "description": "Create new catalog.",
+                  "instillUIOrder": 0
+                },
+                "namespace": {
+                  "$ref": "#/$defs/namespace"
+                },
+                "catalog-id": {
+                  "description": "Catalog ID for new catalog you want to create",
+                  "instillUIOrder": 1,
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "reference",
+                    "value"
+                  ],
+                  "title": "Catalog ID",
+                  "type": "string"
+                },
+                "file": {
+                  "$ref": "#/$defs/file"
+                },
+                "file-name": {
+                  "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "instillUIOrder": 3,
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "value",
+                    "reference"
+                  ],
+                  "title": "File Name",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "Description of the catalog",
+                  "instillUIOrder": 4,
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "value",
+                    "reference",
+                    "template"
+                  ],
+                  "title": "Description",
+                  "type": "string"
+                },
+                "tags": {
+                  "description": "Tags for the catalog",
+                  "instillUIOrder": 5,
+                  "instillAcceptFormats": [
+                    "array:string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "value",
+                    "reference"
+                  ],
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Tags",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "option",
+                "namespace",
+                "catalog-id",
+                "file",
+                "file-name"
+              ],
+              "instillEditOnNodeFields": [
+                "option",
+                "namespace",
+                "catalog-id",
+                "file",
+                "file-name",
+                "description",
+                "tags"
+              ],
+              "title": "Create New Catalog",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "required": [
+        "options"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Result of uploading file into catalog",
+      "properties": {
+        "file": {
+          "description": "Result of uploading file into catalog",
+          "instillUIOrder": 0,
+          "properties": {
+            "$ref": "#/$defs/file-item/properties"
+          },
+          "required": [
+            "file-uid",
+            "file-name",
+            "file-type",
+            "create-time",
+            "update-time",
+            "size",
+            "catalog-id"
+          ],
+          "instillFormat": "object",
+          "title": "File",
+          "type": "object"
+        },
+        "status": {
+          "description": "The status of trigger file processing, if succeeded, return true",
+          "instillUIOrder": 1,
+          "instillFormat": "boolean",
+          "title": "Status",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "file",
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UPLOAD_FILES": {
+    "instillShortDescription": "Upload and process the files into chunks into Catalog",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "options": {
+          "description": "Choose to upload the files to existing catalog or create a new catalog",
+          "title": "Options",
+          "additionalProperties": true,
+          "type": "object",
+          "instillUIOrder": 0,
+          "required": [
+            "option"
+          ],
+          "oneOf": [
+            {
+              "properties": {
+                "option": {
+                  "const": "existing catalog",
+                  "type": "string",
+                  "title": "Option",
+                  "description": "Existing catalog.",
+                  "instillUIOrder": 0
+                },
+                "namespace": {
+                  "$ref": "#/$defs/namespace"
+                },
+                "catalog-id": {
+                  "description": "Catalog ID that you input in the Catalog",
+                  "instillUIOrder": 1,
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "reference",
+                    "value"
+                  ],
+                  "title": "Catalog ID",
+                  "type": "string"
+                },
+                "files": {
+                  "$ref": "#/$defs/files"
+                },
+                "file-names": {
+                  "description": "The names of the files, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "instillUIOrder": 2,
+                  "instillAcceptFormats": [
+                    "array:string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "reference"
+                  ],
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "File Names",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "option",
+                "namespace",
+                "catalog-id",
+                "files",
+                "file-names"
+              ],
+              "instillEditOnNodeFields": [
+                "option",
+                "namespace",
+                "catalog-id",
+                "files",
+                "file-names"
+              ],
+              "title": "Existing Catalog",
+              "type": "object"
+            },
+            {
+              "properties": {
+                "option": {
+                  "const": "create new catalog",
+                  "type": "string",
+                  "title": "Option",
+                  "description": "Create new catalog.",
+                  "instillUIOrder": 0
+                },
+                "namespace": {
+                  "$ref": "#/$defs/namespace"
+                },
+                "catalog-id": {
+                  "description": "Catalog ID for new catalog you want to create",
+                  "instillUIOrder": 1,
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "reference",
+                    "value"
+                  ],
+                  "title": "Catalog ID",
+                  "type": "string"
+                },
+                "files": {
+                  "$ref": "#/$defs/files"
+                },
+                "file-names": {
+                  "description": "The names of the files, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "instillUIOrder": 3,
+                  "instillAcceptFormats": [
+                    "array:string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "reference"
+                  ],
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "File Names",
+                  "type": "array"
+                },
+                "description": {
+                  "description": "Description of the catalog",
+                  "instillUIOrder": 4,
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "value",
+                    "reference",
+                    "template"
+                  ],
+                  "title": "Description",
+                  "type": "string"
+                },
+                "tags": {
+                  "description": "Tags for the catalog",
+                  "instillUIOrder": 5,
+                  "instillAcceptFormats": [
+                    "array:string"
+                  ],
+                  "instillUpstreamTypes": [
+                    "value",
+                    "reference"
+                  ],
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Tags",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "option",
+                "namespace",
+                "catalog-id",
+                "files",
+                "file-names"
+              ],
+              "instillEditOnNodeFields": [
+                "option",
+                "namespace",
+                "catalog-id",
+                "files",
+                "file-names",
+                "description",
+                "tags"
+              ],
+              "title": "Create New Catalog",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "required": [
+        "options"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Result of uploading files into catalog",
+      "properties": {
+        "files": {
+          "description": "Files metadata in catalog",
+          "instillUIOrder": 0,
+          "items": {
+            "$ref": "#/$defs/file-item"
+          },
+          "instillFormat": "array:object",
+          "title": "Files",
+          "type": "array"
+        },
+        "status": {
+          "description": "The status of trigger file processing, if ALL succeeded, return true",
+          "instillUIOrder": 1,
+          "instillFormat": "boolean",
+          "title": "Status",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "files",
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_GET_FILES_METADATA": {
+    "instillShortDescription": "get the metadata of the files in the catalog",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "catalog-id": {
+          "description": "Catalog ID that you input to search files in the Catalog",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Catalog ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "catalog-id"
+      ],
+      "instillEditOnNodeFields": [
+        "namespace",
+        "catalog-id"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Files metadata into catalog",
+      "instillUIOrder": 1,
+      "properties": {
+        "files": {
+          "description": "Files metadata in catalog",
+          "instillUIOrder": 0,
+          "items": {
+            "$ref": "#/$defs/file-item"
+          },
+          "instillFormat": "array:object",
+          "title": "Files",
+          "type": "array"
+        }
+      },
+      "required": [
+        "files"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_GET_CHUNKS_METADATA": {
+    "instillShortDescription": "get the metadata of the chunks from a file in the catalog",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "catalog-id": {
+          "description": "Catalog ID that you input to search files in the Catalog",
+          "instillUIOrder": 0,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Catalog ID",
+          "type": "string"
+        },
+        "file-uid": {
+          "description": "The unique identifier of the file",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "File UID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "catalog-id",
+        "file-uid"
+      ],
+      "instillEditOnNodeFields": [
+        "namespace",
+        "catalog-id",
+        "file-uid"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Chunks metadata of the file in catalog",
+      "instillUIOrder": 1,
+      "properties": {
+        "chunks": {
+          "description": "Chunks metadata of the file in catalog",
+          "instillUIOrder": 0,
+          "items": {
+            "properties": {
+              "chunk-uid": {
+                "description": "The unique identifier of the chunk",
+                "instillFormat": "string",
+                "instillUIOrder": 0,
+                "title": "Chunk UID",
+                "type": "string"
+              },
+              "retrievable": {
+                "description": "The retrievable status of the chunk",
+                "instillFormat": "boolean",
+                "instillUIOrder": 1,
+                "title": "Retrievable",
+                "type": "boolean"
+              },
+              "start-position": {
+                "description": "The start position of the chunk in the file",
+                "instillFormat": "integer",
+                "instillUIOrder": 2,
+                "title": "Start Position",
+                "type": "integer"
+              },
+              "end-position": {
+                "description": "The end position of the chunk in the file",
+                "instillFormat": "integer",
+                "instillUIOrder": 3,
+                "title": "End Position",
+                "type": "integer"
+              },
+              "token-count": {
+                "description": "The token count of the chunk",
+                "instillFormat": "integer",
+                "instillUIOrder": 4,
+                "title": "Token Count",
+                "type": "integer"
+              },
+              "create-time": {
+                "description": "The creation time of the chunk in ISO 8601 format",
+                "instillFormat": "string",
+                "instillUIOrder": 5,
+                "title": "Create Time",
+                "type": "string"
+              },
+              "original-file-uid": {
+                "description": "The unique identifier of the file",
+                "instillFormat": "string",
+                "instillUIOrder": 6,
+                "title": "File UID",
+                "type": "string"
+              }
+            },
+            "required": [
+              "chunk-uid",
+              "retrievable",
+              "start-position",
+              "end-position",
+              "token-count",
+              "create-time",
+              "original-file-uid"
+            ],
+            "title": "Chunk",
+            "type": "object"
+          },
+          "instillFormat": "array:object",
+          "title": "Chunks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "chunks"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_GET_FILE_IN_MARKDOWN": {
+    "instillShortDescription": "get the file content in markdown format",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "catalog-id": {
+          "description": "Catalog ID that you input to search files in the Catalog",
+          "instillUIOrder": 0,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Catalog ID",
+          "type": "string"
+        },
+        "file-uid": {
+          "description": "The unique identifier of the file",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "File UID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "catalog-id",
+        "file-uid"
+      ],
+      "instillEditOnNodeFields": [
+        "namespace",
+        "catalog-id",
+        "file-uid"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "File content in markdown format",
+      "instillUIOrder": 1,
+      "properties": {
+        "original-file-uid": {
+          "description": "The unique identifier of the file",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "File UID",
+          "type": "string"
+        },
+        "content": {
+          "description": "The content of the file in markdown format",
+          "instillFormat": "string",
+          "instillUIOrder": 1,
+          "title": "Content",
+          "type": "string"
+        },
+        "create-time": {
+          "description": "The creation time of the source file in ISO 8601 format",
+          "instillFormat": "string",
+          "instillUIOrder": 2,
+          "title": "Create Time",
+          "type": "string"
+        },
+        "update-time": {
+          "description": "The update time of the source file in ISO 8601 format",
+          "instillFormat": "string",
+          "instillUIOrder": 3,
+          "title": "Update Time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "original-file-uid",
+        "content",
+        "create-time",
+        "update-time"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_RETRIEVE": {
+    "instillShortDescription": "search the chunks in the catalog",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "catalog-id": {
+          "description": "Catalog ID that you input to search files in the Catalog",
+          "instillUIOrder": 0,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Catalog ID",
+          "type": "string"
+        },
+        "text-prompt": {
+          "description": "The prompt string to search the chunks",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Text Prompt",
+          "type": "string"
+        },
+        "top-k": {
+          "description": "The number of top chunks to return. The range is from 1~20, and default is 5",
+          "default": 5,
+          "instillUIOrder": 2,
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Top K",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "namespace",
+        "catalog-id",
+        "text-prompt"
+      ],
+      "instillEditOnNodeFields": [
+        "namespace",
+        "catalog-id",
+        "text-prompt"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "chunks": {
+          "description": "Chunks data from smart search",
+          "instillUIOrder": 0,
+          "items": {
+            "$ref": "#/$defs/chunk-item"
+          },
+          "instillFormat": "array:object",
+          "title": "Chunks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "chunks"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_ASK": {
+    "instillShortDescription": "Reply the questions based on the files in the catalog",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "catalog-id": {
+          "description": "Catalog ID that you input to search files in the Catalog",
+          "instillUIOrder": 0,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Catalog ID",
+          "type": "string"
+        },
+        "question": {
+          "description": "The question to reply",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Question",
+          "type": "string"
+        },
+        "top-k": {
+          "description": "The number of top answers to return. The range is from 1~20, and default is 5",
+          "default": 5,
+          "instillUIOrder": 2,
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Top K",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "namespace",
+        "catalog-id",
+        "question"
+      ],
+      "instillEditOnNodeFields": [
+        "namespace",
+        "catalog-id",
+        "question"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "answer": {
+          "description": "Answers data from smart search",
+          "instillUIOrder": 0,
+          "instillFormat": "string",
+          "title": "Answer",
+          "type": "string"
+        },
+        "chunks": {
+          "description": "Chunks data to answer question",
+          "instillUIOrder": 1,
+          "instillFormat": "array:object",
+          "items": {
+            "$ref": "#/$defs/chunk-item"
+          },
+          "title": "Chunks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "answer"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_MATCH_FILE_STATUS": {
+    "instillShortDescription": "Check if the specified file's processing status is done",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "catalog-id": {
+          "description": "Catalog ID that you input to check files' processing status in the Catalog",
+          "instillUIOrder": 0,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Catalog ID",
+          "type": "string"
+        },
+        "file-uid": {
+          "description": "The unique identifier of the file",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "File UID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "catalog-id",
+        "file-uid"
+      ],
+      "instillEditOnNodeFields": [
+        "namespace",
+        "catalog-id",
+        "file-uid"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "succeeded": {
+          "description": "The status of the file processing, if succeeded, return true",
+          "instillUIOrder": 0,
+          "instillFormat": "boolean",
+          "title": "Status",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "succeeded"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

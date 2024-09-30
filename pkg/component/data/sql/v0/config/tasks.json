@@ -1,0 +1,515 @@
+{
+  "TASK_INSERT": {
+    "instillShortDescription": "Perform insert operation",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "table-name": {
+          "description": "The table name in the database to insert data into",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "Database Table Name",
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Table Name",
+          "type": "string"
+        },
+        "data": {
+          "description": "The data to be inserted",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "title": "Object",
+            "instillFormat": "semi-structured/json"
+          },
+          "title": "Data",
+          "type": "object",
+          "required": []
+        }
+      },
+      "required": [
+        "data",
+        "table-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Insert status",
+          "instillFormat": "string",
+          "required": [],
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_INSERT_MANY": {
+    "instillShortDescription": "Perform insert operation with multiple rows",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "table-name": {
+          "description": "The table name in the database to insert data into",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "Database Table Name",
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Table Name",
+          "type": "string"
+        },
+        "array-data": {
+          "description": "The array data to be inserted",
+          "instillAcceptFormats": [
+            "array:semi-structured/*",
+            "array:semi-structured/json",
+            "array:semi-structured/object",
+            "array:object"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Data",
+          "type": "array",
+          "items": {
+            "description": "The data to be inserted",
+            "title": "Data",
+            "type": "object",
+            "required": []
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "array-data",
+        "table-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Insert many status",
+          "instillFormat": "string",
+          "required": [],
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_UPDATE": {
+    "instillShortDescription": "Perform update operation",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "table-name": {
+          "description": "The table name in the database to update data into",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "Database Table Name",
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Table Name",
+          "type": "string"
+        },
+        "filter": {
+          "instillShortDescription": "The filter to be applied to the data",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause",
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "title": "Filter",
+          "type": "string"
+        },
+        "update-data": {
+          "description": "The new data to be updated to",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "items": {
+            "title": "Object",
+            "instillFormat": "semi-structured/json"
+          },
+          "title": "Update",
+          "type": "object",
+          "required": []
+        }
+      },
+      "required": [
+        "filter",
+        "update-data",
+        "table-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Update status",
+          "instillFormat": "string",
+          "required": [],
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SELECT": {
+    "instillShortDescription": "Perform select operation",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "table-name": {
+          "description": "The table name in the database to be selected",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "Database Table Name",
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Table Name",
+          "type": "string"
+        },
+        "filter": {
+          "instillShortDescription": "The filter to be applied to the data. If empty, then all rows will be updated",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause, empty for all rows",
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "title": "Filter",
+          "type": "string"
+        },
+        "limit": {
+          "description": "The limit of rows to be selected, empty for all rows",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillShortDescription": "Limit Rows",
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Limit",
+          "type": "integer"
+        },
+        "columns": {
+          "description": "The columns to return in the rows. If empty then all columns will be returned",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillShortDescription": "Columns to be returned, empty for all columns",
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Columns",
+          "type": "array",
+          "items": {
+            "title": "Column",
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "table-name"
+      ],
+      "instillEditOnNodeFields": [
+        "table-name",
+        "filter"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "json"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "rows": {
+          "description": "The rows returned from the select operation",
+          "instillEditOnNodeFields": [],
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "Rows",
+          "type": "array",
+          "instillFormat": "array:semi-structured/json",
+          "items": {
+            "title": "Row",
+            "instillFormat": "semi-structured/json",
+            "type": "object",
+            "required": []
+          }
+        },
+        "status": {
+          "description": "Select status",
+          "instillFormat": "string",
+          "required": [],
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "rows"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DELETE": {
+    "instillShortDescription": "Perform delete operation",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "table-name": {
+          "description": "The table name in the database to be deleted",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "Database Table Name",
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Table Name",
+          "type": "string"
+        },
+        "filter": {
+          "instillShortDescription": "The filter to be applied to the data",
+          "description": "The filter to be applied to the data with SQL syntax, which starts with WHERE clause",
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "title": "Filter",
+          "type": "string"
+        }
+      },
+      "required": [
+        "filter",
+        "table-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Delete status",
+          "instillFormat": "string",
+          "required": [],
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_CREATE_TABLE": {
+    "instillShortDescription": "Create a table in the database",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "table-name": {
+          "description": "The table name in the database to be created",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "Database Table Name",
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Table Name",
+          "type": "string"
+        },
+        "columns-structure": {
+          "description": "The columns structure to be created in the table, json with value string, e.g {\"name\": \"VARCHAR(255)\", \"age\": \"INT not null\"}",
+          "instillAcceptFormats": [
+            "semi-structured/*",
+            "object"
+          ],
+          "instillShortDescription": "Columns Structure, e.g {\"name\": \"VARCHAR(255)\", \"age\": \"INT not null\"}",
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Columns",
+          "type": "object",
+          "required": []
+        }
+      },
+      "required": [
+        "table-name",
+        "columns-structure"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Create table status",
+          "instillFormat": "string",
+          "required": [],
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DROP_TABLE": {
+    "instillShortDescription": "Drop a table in the database",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "table-name": {
+          "description": "The table name in the database to be dropped",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillShortDescription": "Database Table Name",
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference",
+            "template",
+            "value"
+          ],
+          "title": "Table Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "table-name"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "status": {
+          "description": "Drop table status",
+          "instillFormat": "string",
+          "required": [],
+          "instillUIOrder": 0,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

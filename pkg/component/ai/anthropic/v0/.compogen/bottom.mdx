@@ -1,0 +1,48 @@
+## Example Recipes
+
+Recipe for the [List GitHub Repo Issues](https://instill.tech/instill-ai/pipelines/github-demo/playground) pipeline.
+
+```yaml
+version: v1beta
+component:
+  anthropic-0:
+    type: anthropic
+    task: TASK_TEXT_GENERATION_CHAT
+    input:
+      max-new-tokens: 1000
+      model-name: claude-3-5-sonnet-20240620
+      prompt: Summarise and pick the most important issues from this list ${github.output.issues}
+      system-message: You are a helpful assistant.
+      temperature: 0.7
+      top-k: 10
+    setup:
+      api-key: ${secret.INSTILL_SECRET}
+  github:
+    type: github
+    task: TASK_LIST_ISSUES
+    input:
+      direction: desc
+      no-pull-request: false
+      owner: ${variable.repository-owner}
+      page: 1
+      per-page: 30
+      repository: ${variable.repository-name}
+      since: "2021-01-01T00:00:00Z"
+      sort: created
+      state: open
+    setup:
+      token: ${secret.github-demo}
+variable:
+  repository-name:
+    title: Repository Name
+    description: Name of the repository i.e. instill-core
+    instill-format: string
+  repository-owner:
+    title: Repository Owner
+    description: Name of the repository owner i.e. instill-ai
+    instill-format: string
+output:
+  result:
+    title: Result
+    value: ${anthropic-0.output.text}
+```

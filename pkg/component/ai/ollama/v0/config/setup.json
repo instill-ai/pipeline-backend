@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "endpoint": {
+      "description": "Fill in your Ollama hosting endpoint. ### WARNING ###: As of 2024-07-26, the Ollama component does not support authentication methods. To prevent unauthorized access to your Ollama serving resources, please implement additional security measures such as IP whitelisting.",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "default": "http://localhost:11434",
+      "instillUIOrder": 0,
+      "title": "Endpoint",
+      "type": "string"
+    },
+    "auto-pull": {
+      "description": "Automatically pull the requested models from the Ollama server if the model is not found in the local cache.",
+      "instillUpstreamTypes": [
+        "value",
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "boolean"
+      ],
+      "instillUIOrder": 1,
+      "title": "Model Auto-Pull",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "endpoint",
+    "auto-pull"
+  ],
+  "instillEditOnNodeFields": [
+    "endpoint",
+    "auto-pull"
+  ],
+  "title": "Ollama Connection",
+  "type": "object"
+}

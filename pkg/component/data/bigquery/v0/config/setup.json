@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "dataset-id": {
+      "description": "Fill in your BigQuery Dataset ID.",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 2,
+      "title": "BigQuery Dataset ID",
+      "type": "string"
+    },
+    "json-key": {
+      "description": "Contents of the JSON key file with access to the bucket.",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 0,
+      "instillUIMultiline": true,
+      "title": "JSON Key File contents",
+      "type": "string"
+    },
+    "project-id": {
+      "description": "Fill in your BigQuery Project ID.",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 1,
+      "title": "BigQuery Project ID",
+      "type": "string"
+    },
+    "table-name": {
+      "description": "Fill in your BigQuery Table Name.",
+      "instillUpstreamTypes": [
+        "value"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillUIOrder": 3,
+      "title": "BigQuery Table Name",
+      "type": "string"
+    }
+  },
+  "required": [
+    "json-key",
+    "project-id",
+    "dataset-id",
+    "table-name"
+  ],
+  "instillEditOnNodeFields": [
+    "json-key",
+    "project-id",
+    "dataset-id",
+    "table-name"
+  ],
+  "title": "BigQuery Connection",
+  "type": "object"
+}
