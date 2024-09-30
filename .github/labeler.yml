@@ -1,2 +1,4 @@
 instill vdp:
   - "**"
+instill component:
+  - "pkg/component/**"
