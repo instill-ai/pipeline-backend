@@ -1,4 +1,289 @@
 {
+  "TASK_CONCAT": {
+    "instillShortDescription": "Concatenate images horizontally or vertically. All images must have the same width and height. If `grid-width` and `grid-height` are not provided, the images will be concatenated to a square grid.",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "images": {
+          "description": "Input images",
+          "instillAcceptFormats": [
+            "array:image/*"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Images",
+          "type": "array"
+        },
+        "grid-width": {
+          "description": "Grid width. If `grid-width` is provided, `grid-height` will be ignored.",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Grid Width",
+          "type": "integer"
+        },
+        "grid-height": {
+          "description": "Grid height. If `grid-height` is provided, `grid-width` will be ignored.",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Grid Height",
+          "type": "integer"
+        },
+        "padding": {
+          "description": "Padding between images. If `padding` is provided, it will be applied to all four sides of the image.",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Padding",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "images"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output concatenated image",
+      "instillEditOnNodeFields": [
+        "image"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "Output image",
+          "instillFormat": "image/png",
+          "instillUIOrder": 0,
+          "title": "Image",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_CROP": {
+    "instillShortDescription": "Crop image to the specified size.",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "Input image",
+          "instillAcceptFormats": [
+            "image/*"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Image",
+          "type": "string"
+        },
+        "corner-radius": {
+          "description": "Radius from the corner of the image to crop the image. If `corner-radius` is provided, `circle-radius` will be ignored. If the `corner-radius` is larger than half of min(width, height), the min(width, height) will be applied to `corner-radius` .",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Corner Radius",
+          "type": "integer"
+        },
+        "circle-radius": {
+          "description": "Radius from the center of the circle to crop the image. If `circle-radius` is provided, `corner-radius` will be ignored. If the `circle-radius` is larger than half of min(width, height), the min(width, height) will be applied to `circle-radius`.",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Circle Radius",
+          "type": "integer"
+        },
+        "top-offset": {
+          "description": "Top offset of the crop",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Top Offset",
+          "type": "integer"
+        },
+        "right-offset": {
+          "description": "Right offset of the crop",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 4,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Right Offset",
+          "type": "integer"
+        },
+        "bottom-offset": {
+          "description": "Bottom offset of the crop",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 5,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Bottom Offset",
+          "type": "integer"
+        },
+        "left-offset": {
+          "description": "Left offset of the crop",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 6,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Left Offset",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "image"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output cropped image",
+      "instillEditOnNodeFields": [
+        "image"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "Output image",
+          "instillFormat": "image/png",
+          "instillUIOrder": 0,
+          "title": "Image",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_RESIZE": {
+    "instillShortDescription": "Resize image to the specified size.",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "Input image",
+          "instillAcceptFormats": [
+            "image/*"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Image",
+          "type": "string"
+        },
+        "ratio": {
+          "description": "Resize ratio (e.g., 0.5 for half size, 2 for double size) to resize the image. If ratio is provided, width and height will be ignored.",
+          "instillAcceptFormats": [
+            "number"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Ratio",
+          "type": "number"
+        },
+        "width": {
+          "description": "Width of the output image.",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "description": "Height of the output image.",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "value"
+          ],
+          "title": "Height",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "image"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output resized image",
+      "instillEditOnNodeFields": [
+        "image"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "Output image",
+          "instillFormat": "image/png",
+          "instillUIOrder": 0,
+          "title": "Image",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
   "TASK_DRAW_CLASSIFICATION": {
     "instillShortDescription": "Draw classification result on the image.",
     "input": {
@@ -39,7 +324,7 @@
             "reference"
           ]
         },
-        "showScore": {
+        "show-score": {
           "description": "Show model confidence score on each instance",
           "instillAcceptFormats": [
             "boolean"
@@ -70,7 +355,7 @@
       "properties": {
         "image": {
           "description": "Output image",
-          "instillFormat": "image/jpeg",
+          "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
           "type": "string"
@@ -110,7 +395,7 @@
             "reference"
           ]
         },
-        "showScore": {
+        "show-score": {
           "description": "Show model confidence score on each instance",
           "instillAcceptFormats": [
             "boolean"
@@ -140,77 +425,7 @@
       "properties": {
         "image": {
           "description": "Output image",
-          "instillFormat": "image/jpeg",
-          "instillUIOrder": 0,
-          "title": "Image",
-          "type": "string"
-        }
-      },
-      "required": [
-        "image"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_DRAW_INSTANCE_SEGMENTATION": {
-    "instillShortDescription": "Draw instance segmentation result on the image.",
-    "input": {
-      "description": "Input",
-      "instillUIOrder": 0,
-      "properties": {
-        "image": {
-          "description": "Input image",
-          "instillAcceptFormats": [
-            "image/*"
-          ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
-          "title": "Image",
-          "type": "string"
-        },
-        "objects": {
-          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/instance-segmentation/properties/objects",
-          "instillAcceptFormats": [
-            "array:structured/instance-segmentation-object"
-          ],
-          "instillUpstreamTypes": [
-            "reference"
-          ]
-        },
-        "showScore": {
-          "description": "Show model confidence score on each instance",
-          "instillAcceptFormats": [
-            "boolean"
-          ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Show Score",
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "image",
-        "objects"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output",
-      "instillEditOnNodeFields": [
-        "image"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "image": {
-          "description": "Output image",
-          "instillFormat": "image/jpeg",
+          "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
           "type": "string"
@@ -250,7 +465,7 @@
             "reference"
           ]
         },
-        "showScore": {
+        "show-score": {
           "description": "Show model confidence score on each instance",
           "instillAcceptFormats": [
             "boolean"
@@ -280,7 +495,134 @@
       "properties": {
         "image": {
           "description": "Output image",
-          "instillFormat": "image/jpeg",
+          "instillFormat": "image/png",
+          "instillUIOrder": 0,
+          "title": "Image",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DRAW_SEMANTIC_SEGMENTATION": {
+    "instillShortDescription": "Draw semantic segmentation result on the image.",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "Input image",
+          "instillAcceptFormats": [
+            "image/*"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Image",
+          "type": "string"
+        },
+        "stuffs": {
+          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/semantic-segmentation/properties/stuffs",
+          "instillAcceptFormats": [
+            "array:structured/semantic-segmentation-stuff"
+          ],
+          "instillUpstreamTypes": [
+            "reference"
+          ]
+        }
+      },
+      "required": [
+        "image",
+        "stuffs"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "image"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "Output image",
+          "instillFormat": "image/png",
+          "instillUIOrder": 0,
+          "title": "Image",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_DRAW_INSTANCE_SEGMENTATION": {
+    "instillShortDescription": "Draw instance segmentation result on the image.",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "Input image",
+          "instillAcceptFormats": [
+            "image/*"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Image",
+          "type": "string"
+        },
+        "objects": {
+          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/instance-segmentation/properties/objects",
+          "instillAcceptFormats": [
+            "array:structured/instance-segmentation-object"
+          ],
+          "instillUpstreamTypes": [
+            "reference"
+          ]
+        },
+        "show-score": {
+          "description": "Show model confidence score on each instance",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Show Score",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "image",
+        "objects"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "image"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "image": {
+          "description": "Output image",
+          "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
           "type": "string"
@@ -320,7 +662,7 @@
             "reference"
           ]
         },
-        "showScore": {
+        "show-score": {
           "description": "Show model confidence score on each instance",
           "instillAcceptFormats": [
             "boolean"
@@ -350,77 +692,7 @@
       "properties": {
         "image": {
           "description": "Output image",
-          "instillFormat": "image/jpeg",
-          "instillUIOrder": 0,
-          "title": "Image",
-          "type": "string"
-        }
-      },
-      "required": [
-        "image"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_DRAW_SEMANTIC_SEGMENTATION": {
-    "instillShortDescription": "Draw semantic segmentation result on the image.",
-    "input": {
-      "description": "Input",
-      "instillUIOrder": 0,
-      "properties": {
-        "image": {
-          "description": "Input image",
-          "instillAcceptFormats": [
-            "image/*"
-          ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
-          "title": "Image",
-          "type": "string"
-        },
-        "showScore": {
-          "description": "Show model confidence score on each instance",
-          "instillAcceptFormats": [
-            "boolean"
-          ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Show Score",
-          "type": "boolean"
-        },
-        "stuffs": {
-          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/semantic-segmentation/properties/stuffs",
-          "instillAcceptFormats": [
-            "array:structured/semantic-segmentation-stuff"
-          ],
-          "instillUpstreamTypes": [
-            "reference"
-          ]
-        }
-      },
-      "required": [
-        "image",
-        "stuffs"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output",
-      "instillEditOnNodeFields": [
-        "image"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "image": {
-          "description": "Output image",
-          "instillFormat": "image/jpeg",
+          "instillFormat": "image/png",
           "instillUIOrder": 0,
           "title": "Image",
           "type": "string"

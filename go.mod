@@ -55,6 +55,7 @@ require (
 	github.com/mennanov/fieldmask-utils v1.0.0
 	github.com/minio/minio-go/v7 v7.0.71
 	github.com/nakagami/firebirdsql v0.9.10
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/openfga/api/proto v0.0.0-20240318145204-66b9e5cb403c
 	github.com/pkoukk/tiktoken-go v0.1.7
 	github.com/redis/go-redis/v9 v9.5.1

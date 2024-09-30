@@ -1,214 +1,108 @@
 package image
 
 import (
-	"context"
-	"encoding/json"
+	"image"
+	"image/color"
+	"reflect"
 	"testing"
-
-	_ "embed"
-
-	"google.golang.org/protobuf/types/known/structpb"
-
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-var (
-	//go:embed testdata/cls-dog.json
-	clsDogJSON []byte
-	//go:embed testdata/det-coco-1.json
-	detCOCO1JSON []byte
-	//go:embed testdata/det-coco-2.json
-	detCOCO2JSON []byte
-	//go:embed testdata/kp-coco-1.json
-	kpCOCO1JSON []byte
-	//go:embed testdata/kp-coco-2.json
-	kpCOCO2JSON []byte
-	//go:embed testdata/ocr-mm.json
-	ocrMMJSON []byte
-	//go:embed testdata/inst-seg-coco-1.json
-	instSegCOCO1JSON []byte
-	//go:embed testdata/inst-seg-coco-2.json
-	instSegCOCO2JSON []byte
-	//go:embed testdata/inst-seg-stomata.json
-	instSegStomataJSON []byte
-	//go:embed testdata/sem-seg-cityscape.json
-	semSegCityscapeJSON []byte
-)
-
-// TestDrawClassification tests the drawClassification function
-func TestDrawClassification(t *testing.T) {
-
-	inputDog := &structpb.Struct{}
-	if err := json.Unmarshal(clsDogJSON, inputDog); err != nil {
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	e := &execution{}
-	e.Task = "TASK_DRAW_CLASSIFICATION"
-
-	ir, ow, eh, job := base.GenerateMockJob(t)
-	ir.ReadMock.Return(inputDog, nil)
-	ow.WriteMock.Optional().Return(nil)
-	eh.ErrorMock.Optional()
-
-	if err := e.Execute(context.Background(), []*base.Job{job}); err != nil {
-		t.Fatalf("drawClassification returned an error: %v", err)
+func TestBoundingBoxSize(t *testing.T) {
+	bbox := &boundingBox{Top: 10, Left: 20, Width: 100, Height: 50}
+	expected := 5000
+	if size := bbox.Size(); size != expected {
+		t.Errorf("Expected size %d, but got %d", expected, size)
 	}
 }
 
-// TestDrawDetection tests the drawDetection function
-func TestDrawDetection(t *testing.T) {
-
-	inputCOCO1 := &structpb.Struct{}
-	if err := json.Unmarshal(detCOCO1JSON, inputCOCO1); err != nil {
-		if err != nil {
-			panic(err)
-		}
+func TestIndexUniqueCategories(t *testing.T) {
+	objs := []*detectionObject{
+		{Category: "cat"},
+		{Category: "dog"},
+		{Category: "cat"},
+		{Category: "bird"},
 	}
-
-	inputCOCO2 := &structpb.Struct{}
-	if err := json.Unmarshal(detCOCO2JSON, inputCOCO2); err != nil {
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	e := &execution{}
-	e.Task = "TASK_DRAW_DETECTION"
-
-	ir, ow, eh, job := base.GenerateMockJob(t)
-	ir.ReadMock.Return(inputCOCO1, nil)
-	ow.WriteMock.Optional().Return(nil)
-	eh.ErrorMock.Optional()
-	if err := e.Execute(context.Background(), []*base.Job{job}); err != nil {
-		t.Fatalf("drawDetection returned an error: %v", err)
+	expected := map[string]int{"cat": 0, "dog": 1, "bird": 2}
+	result := indexUniqueCategories(objs)
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected %v, but got %v", expected, result)
 	}
 }
 
-// TestDrawKeypoint tests the drawKeypoint function
-func TestDrawKeypoint(t *testing.T) {
-
-	inputCOCO1 := &structpb.Struct{}
-	if err := json.Unmarshal(kpCOCO1JSON, inputCOCO1); err != nil {
-		if err != nil {
-			panic(err)
-		}
+func TestRandomColor(t *testing.T) {
+	color1 := randomColor(1, 255)
+	color2 := randomColor(1, 255)
+	if color1 != color2 {
+		t.Errorf("Expected same colors for same seed, but got %v and %v", color1, color2)
 	}
 
-	inputCOCO2 := &structpb.Struct{}
-	if err := json.Unmarshal(kpCOCO2JSON, inputCOCO2); err != nil {
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	e := &execution{}
-	e.Task = "TASK_DRAW_KEYPOINT"
-
-	ir, ow, eh, job := base.GenerateMockJob(t)
-	ir.ReadMock.Return(inputCOCO1, nil)
-	ow.WriteMock.Optional().Return(nil)
-	eh.ErrorMock.Optional()
-	if err := e.Execute(context.Background(), []*base.Job{job}); err != nil {
-		t.Fatalf("drawKeypoint returned an error: %v", err)
+	color3 := randomColor(2, 255)
+	if color1 == color3 {
+		t.Errorf("Expected different colors for different seeds, but got %v and %v", color1, color3)
 	}
 }
 
-// TestDrawOCR tests the drawOCR function
-func TestDrawOCR(t *testing.T) {
-
-	inputMM := &structpb.Struct{}
-	if err := json.Unmarshal(ocrMMJSON, inputMM); err != nil {
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	inputCOCO2 := &structpb.Struct{}
-	if err := json.Unmarshal(kpCOCO2JSON, inputCOCO2); err != nil {
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	e := &execution{}
-	e.Task = "TASK_DRAW_OCR"
-
-	ir, ow, eh, job := base.GenerateMockJob(t)
-	ir.ReadMock.Return(inputMM, nil)
-	ow.WriteMock.Optional().Return(nil)
-	eh.ErrorMock.Optional()
-	if err := e.Execute(context.Background(), []*base.Job{job}); err != nil {
-		t.Fatalf("drawKeypoint returned an error: %v", err)
+func TestBlendColors(t *testing.T) {
+	c1 := color.RGBA{R: 255, G: 0, B: 0, A: 255}
+	c2 := color.RGBA{R: 0, G: 255, B: 0, A: 128}
+	expected := color.RGBA{R: 127, G: 128, B: 0, A: 255}
+	result := blendColors(c1, c2)
+	if result != expected {
+		t.Errorf("Expected %v, but got %v", expected, result)
 	}
 }
 
-// TestDrawInstanceSegmentation tests the drawInstanceSegmentation function
-func TestDrawInstanceSegmentation(t *testing.T) {
-
-	inputCOCO1 := &structpb.Struct{}
-	if err := json.Unmarshal(instSegCOCO1JSON, inputCOCO1); err != nil {
-		if err != nil {
-			panic(err)
+func TestHasFalseNeighbor(t *testing.T) {
+	mask := [][]bool{
+		{true, true, false},
+		{true, true, true},
+		{false, true, true},
+	}
+	tests := []struct {
+		x, y     int
+		expected bool
+	}{
+		{1, 1, true},
+		{0, 0, true},
+		{2, 1, true},
+		{1, 1, true},
+	}
+	for _, tt := range tests {
+		result := hasFalseNeighbor(mask, tt.x, tt.y)
+		if result != tt.expected {
+			t.Errorf("For (%d, %d), expected %v, but got %v", tt.x, tt.y, tt.expected, result)
 		}
 	}
-
-	inputCOCO2 := &structpb.Struct{}
-	if err := json.Unmarshal(instSegCOCO2JSON, inputCOCO2); err != nil {
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	inputStomata := &structpb.Struct{}
-	if err := json.Unmarshal(instSegStomataJSON, inputStomata); err != nil {
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	inputs := []*structpb.Struct{
-		inputCOCO1,
-		inputCOCO2,
-		inputStomata,
-	}
-
-	e := &execution{}
-	e.Task = "TASK_DRAW_INSTANCE_SEGMENTATION"
-
-	for _, input := range inputs {
-		ir, ow, eh, job := base.GenerateMockJob(t)
-		ir.ReadMock.Return(input, nil)
-		ow.WriteMock.Optional().Return(nil)
-		eh.ErrorMock.Optional()
-		if err := e.Execute(context.Background(), []*base.Job{job}); err != nil {
-			t.Fatalf("drawInstanceSegmentation returned an error: %v", err)
-		}
-	}
-
 }
 
-// TestDrawSemanticSegmentation tests the drawSemanticSegmentation function
-func TestDrawSemanticSegmentation(t *testing.T) {
-
-	inputCityscape := &structpb.Struct{}
-	if err := json.Unmarshal(semSegCityscapeJSON, inputCityscape); err != nil {
-		if err != nil {
-			panic(err)
-		}
+func TestFindContour(t *testing.T) {
+	mask := [][]bool{
+		{false, true, false},
+		{true, true, true},
+		{false, true, false},
 	}
+	expected := []image.Point{
+		{X: 1, Y: 0},
+		{X: 0, Y: 1},
+		{X: 1, Y: 1},
+		{X: 2, Y: 1},
+		{X: 1, Y: 2},
+	}
+	result := findContour(mask)
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected %v, but got %v", expected, result)
+	}
+}
 
-	e := &execution{}
-	e.Task = "TASK_DRAW_SEMANTIC_SEGMENTATION"
-
-	ir, ow, eh, job := base.GenerateMockJob(t)
-	ir.ReadMock.Return(inputCityscape, nil)
-	ow.WriteMock.Optional().Return(nil)
-	eh.ErrorMock.Optional()
-
-	if err := e.Execute(context.Background(), []*base.Job{job}); err != nil {
-		t.Fatalf("drawSemanticSegmentation returned an error: %v", err)
+func TestRleDecode(t *testing.T) {
+	rle := []int{3, 2, 1}
+	width, height := 3, 2
+	expected := [][]bool{
+		{false, false, true},
+		{false, true, false},
+	}
+	result := rleDecode(rle, width, height)
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected %v, but got %v", expected, result)
 	}
 }
