@@ -10,6 +10,10 @@ GOTEST_FLAGS := CFG_DATABASE_HOST=${TEST_DBHOST} CFG_DATABASE_NAME=${TEST_DBNAME
 ifeq (${DBTEST}, true)
 	GOTEST_TAGS := -tags=dbtest
 endif
+ifeq (${OCR}, true)
+	GOTEST_TAGS := -tags=ocr
+endif
+
 
 #============================================================================
 
@@ -108,7 +112,7 @@ test-ocr:
 # Install tesseract via `brew install tesseract`
 # Setup `export LIBRARY_PATH="/opt/homebrew/lib"` `export CPATH="/opt/homebrew/include"`
 ifeq ($(shell uname), Darwin)
-	@TESSDATA_PREFIX=$(shell dirname $(shell brew list tesseract | grep share/tessdata/eng.traineddata)) go test -v ./... -tags ocr -json | tparse --notests --all
+	@TESSDATA_PREFIX=$(shell dirname $(shell brew list tesseract | grep share/tessdata/eng.traineddata)) ${GOTEST_FLAGS} go test -v ./... -json | tparse --notests --all
 else
 	@echo "This target can only be executed on Darwin (macOS)."
 endif
