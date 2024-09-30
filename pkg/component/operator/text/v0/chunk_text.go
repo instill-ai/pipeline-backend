@@ -163,7 +163,7 @@ func chunkText(input ChunkTextInput) (ChunkTextOutput, error) {
 	return output, nil
 }
 
-func chunkMarkdown(input ChunkTextInput) (ChunkTextOutput, error) {
+func ChunkMarkdown(input ChunkTextInput) (ChunkTextOutput, error) {
 	var output ChunkTextOutput
 	setting := input.Strategy.Setting
 	setting.SetDefault()
