@@ -3,7 +3,9 @@ import json
 import base64
 import sys
 
-# TODO: Deal with the import error when running the code in the docker container
+# TODO chuang8511:
+# Deal with the import error when running the code in the docker container.
+# Now, we combine all python code into one file to avoid the import error.
 # from pdf_to_markdown import PDFTransformer
 
 

@@ -19,8 +19,19 @@ type converterOutput struct {
 
 func convertPDFToMarkdownWithPDFPlumber(base64Text string, displayImageTag bool, displayAllPage bool) (converterOutput, error) {
 
+	var pdfBase64 string
+	var err error
+	if RequiredToRepair(base64Text) {
+		pdfBase64, err = RepairPDF(base64Text)
+		if err != nil {
+			return converterOutput{}, fmt.Errorf("failed to repair PDF: %w", err)
+		}
+	} else {
+		pdfBase64 = base.TrimBase64Mime(base64Text)
+	}
+
 	paramsJSON, err := json.Marshal(map[string]interface{}{
-		"PDF":                    base.TrimBase64Mime(base64Text),
+		"PDF":                    pdfBase64,
 		"display-image-tag":      displayImageTag,
 		"display-all-page-image": displayAllPage,
 	})
