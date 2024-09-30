@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.39.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.39.0-beta...v0.39.1-beta) (2024-09-30)
+
+
+### Features
+
+* **integration:** load only connections present in the recipe and just once ([#671](https://github.com/instill-ai/pipeline-backend/issues/671)) ([99fdbaf](https://github.com/instill-ai/pipeline-backend/commit/99fdbaf313b5ba7b582d44cf858fa8c7e6be9ff1))
+
+
+### Bug Fixes
+
+* **document:** change code for component dependency ([#676](https://github.com/instill-ai/pipeline-backend/issues/676)) ([1f52488](https://github.com/instill-ai/pipeline-backend/commit/1f5248865f7fc1395037da41c3b7f684bd481d1c))
+* **proto:** remove protoc-gen-validate dependencies ([#679](https://github.com/instill-ai/pipeline-backend/issues/679)) ([5e51349](https://github.com/instill-ai/pipeline-backend/commit/5e51349251ee1f8f3540d4c030edbe6ccf0a9c30))
+* **streaming:** close connection and purge workflow memory at the end of the trigger workflow ([#672](https://github.com/instill-ai/pipeline-backend/issues/672)) ([127a68e](https://github.com/instill-ai/pipeline-backend/commit/127a68e00f14f305501910e466b8ff56ece03ce4))
+* the output schema is incorrect when there is an indeterministic instillFormat ([#677](https://github.com/instill-ai/pipeline-backend/issues/677)) ([b4d5be4](https://github.com/instill-ai/pipeline-backend/commit/b4d5be4ee7359be21f0f1272b9c551f4642b355a))
+
+
+### Miscellaneous Chores
+
+* release v0.39.1-beta ([86507bb](https://github.com/instill-ai/pipeline-backend/commit/86507bbecafd6e2549c475e2cc4a42d31511c112))
+
 ## [0.39.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.38.4-beta...v0.39.0-beta) (2024-09-24)
 
 
