@@ -1,5 +1,8 @@
 {
   "availableTasks": [
+    "TASK_CONCAT",
+    "TASK_CROP",
+    "TASK_RESIZE",
     "TASK_DRAW_CLASSIFICATION",
     "TASK_DRAW_DETECTION",
     "TASK_DRAW_KEYPOINT",
