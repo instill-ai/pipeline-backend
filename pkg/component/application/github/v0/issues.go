@@ -177,8 +177,10 @@ func (githubClient *Client) getIssueTask(ctx context.Context, props *structpb.St
 
 type CreateIssueInput struct {
 	RepoInfo
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title     string   `json:"title"`
+	Body      string   `json:"body"`
+	Assignees []string `json:"assignees"`
+	Labels    []string `json:"labels"`
 }
 
 type CreateIssueResp struct {
@@ -196,8 +198,10 @@ func (githubClient *Client) createIssueTask(ctx context.Context, props *structpb
 		return nil, err
 	}
 	issueRequest := &github.IssueRequest{
-		Title: &inputStruct.Title,
-		Body:  &inputStruct.Body,
+		Title:     &inputStruct.Title,
+		Body:      &inputStruct.Body,
+		Assignees: &inputStruct.Assignees,
+		Labels:    &inputStruct.Labels,
 	}
 	issue, _, err := githubClient.Issues.Create(ctx, owner, repository, issueRequest)
 	if err != nil {
