@@ -1,4 +1,4 @@
-package base
+package base_test
 
 import (
 	"context"
@@ -7,18 +7,28 @@ import (
 
 	_ "embed"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	qt "github.com/frankban/quicktest"
-
+	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
+	"google.golang.org/protobuf/types/known/structpb"
+)
+
+var (
+	//go:embed testdata/componentDef.json
+	componentDefJSON []byte
+	//go:embed testdata/componentTasks.json
+	componentTasksJSON []byte
+	//go:embed testdata/componentConfig.json
+	componentConfigJSON []byte
+	//go:embed testdata/componentAdditional.json
+	componentAdditionalJSON []byte
 )
 
 func TestExecutionWrapper_GetComponent(t *testing.T) {
 	c := qt.New(t)
 
 	cmp := &testComp{
-		Component: Component{
+		Component: base.Component{
 			NewUsageHandler: usageHandlerCreator(nil, nil),
 		},
 	}
@@ -29,7 +39,7 @@ func TestExecutionWrapper_GetComponent(t *testing.T) {
 		map[string][]byte{"additional.json": componentAdditionalJSON})
 	c.Assert(err, qt.IsNil)
 
-	x, err := cmp.CreateExecution(ComponentExecution{
+	x, err := cmp.CreateExecution(base.ComponentExecution{
 		Component: cmp,
 		Task:      "TASK_TEXT_EMBEDDINGS",
 	})
@@ -102,7 +112,7 @@ func TestExecutionWrapper_Execute(t *testing.T) {
 	for _, tc := range testcases {
 		c.Run(tc.name, func(c *qt.C) {
 			cmp := &testComp{
-				Component: Component{
+				Component: base.Component{
 					NewUsageHandler: usageHandlerCreator(tc.checkErr, tc.collectErr),
 				},
 				xOut: []map[string]any{tc.out},
@@ -116,13 +126,13 @@ func TestExecutionWrapper_Execute(t *testing.T) {
 				map[string][]byte{"additional.json": componentAdditionalJSON})
 			c.Assert(err, qt.IsNil)
 
-			x, err := cmp.CreateExecution(ComponentExecution{
+			x, err := cmp.CreateExecution(base.ComponentExecution{
 				Component: cmp,
 				Task:      "TASK_TEXT_EMBEDDINGS",
 			})
 			c.Assert(err, qt.IsNil)
 
-			xw := &ExecutionWrapper{x}
+			xw := &base.ExecutionWrapper{x}
 
 			pbin, err := structpb.NewStruct(tc.in)
 			c.Assert(err, qt.IsNil)
@@ -130,7 +140,7 @@ func TestExecutionWrapper_Execute(t *testing.T) {
 			ir := mock.NewInputReaderMock(c)
 			ow := mock.NewOutputWriterMock(c)
 			eh := mock.NewErrorHandlerMock(c)
-			job := &Job{
+			job := &base.Job{
 				Input:  ir,
 				Output: ow,
 				Error:  eh,
@@ -147,7 +157,7 @@ func TestExecutionWrapper_Execute(t *testing.T) {
 			})
 			eh.ErrorMock.Optional()
 
-			err = xw.Execute(ctx, []*Job{job})
+			err = xw.Execute(ctx, []*base.Job{job})
 			if tc.wantErr != "" {
 				c.Check(err, qt.IsNotNil)
 				c.Check(err, qt.ErrorMatches, tc.wantErr)
@@ -160,13 +170,13 @@ func TestExecutionWrapper_Execute(t *testing.T) {
 }
 
 type testExec struct {
-	ComponentExecution
+	base.ComponentExecution
 
 	out []map[string]any
 	err error
 }
 
-func (e *testExec) Execute(ctx context.Context, jobs []*Job) error {
+func (e *testExec) Execute(ctx context.Context, jobs []*base.Job) error {
 	for _, job := range jobs {
 		_, err := job.Input.Read(ctx)
 		if err != nil {
@@ -192,14 +202,14 @@ func (e *testExec) Execute(ctx context.Context, jobs []*Job) error {
 }
 
 type testComp struct {
-	Component
+	base.Component
 
 	// execution output
 	xOut []map[string]any
 	xErr error
 }
 
-func (c *testComp) CreateExecution(x ComponentExecution) (IExecution, error) {
+func (c *testComp) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	return &testExec{
 		ComponentExecution: x,
 
@@ -208,8 +218,8 @@ func (c *testComp) CreateExecution(x ComponentExecution) (IExecution, error) {
 	}, nil
 }
 
-func usageHandlerCreator(checkErr, collectErr error) UsageHandlerCreator {
-	return func(IExecution) (UsageHandler, error) {
+func usageHandlerCreator(checkErr, collectErr error) base.UsageHandlerCreator {
+	return func(base.IExecution) (base.UsageHandler, error) {
 		return &usageHandler{
 			checkErr:   checkErr,
 			collectErr: collectErr,

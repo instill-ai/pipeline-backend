@@ -14,6 +14,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/x/errmsg"
 )
@@ -244,7 +245,7 @@ func testTask(c *qt.C, p taskParams) {
 		c.Assert(err, qt.IsNil)
 		pbIn.Fields["model"] = structpb.NewStringValue(model)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
@@ -343,7 +344,7 @@ func testTask(c *qt.C, p taskParams) {
 			c.Assert(err, qt.IsNil)
 			pbIn.Fields["model"] = structpb.NewStringValue(model)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				c.Check(p.wantResp, qt.JSONEquals, output.AsMap())
