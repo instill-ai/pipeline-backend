@@ -36,14 +36,14 @@ var (
 	comp            *component
 )
 
-// Connector executes queries against StabilityAI.
+// Component executes queries against StabilityAI.
 type component struct {
 	base.Component
 
 	instillAPIKey string
 }
 
-// Init returns an initialized StabilityAI connector.
+// Init returns an initialized StabilityAI component.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -86,7 +86,7 @@ func (c *component) resolveSetup(setup *structpb.Struct) (*structpb.Struct, bool
 	return setup, true, nil
 }
 
-// CreateExecution initializes a connector executor that can be used in a
+// CreateExecution initializes a component executor that can be used in a
 // pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	resolvedSetup, resolved, err := c.resolveSetup(x.Setup)
@@ -188,7 +188,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	return nil
 }
 
-// Test checks the connector state.
+// Test checks the component state.
 func (c *component) Test(sysVars map[string]any, setup *structpb.Struct) error {
 	var engines []Engine
 	req := newClient(setup, c.GetLogger()).R().SetResult(&engines)

@@ -58,7 +58,7 @@ type taskParams struct {
 	contentType string // content type received in Hugging Face
 	wantBody    []byte // expected request body in Hugging Face
 	okResp      string // successful response from Hugging Face
-	wantResp    string // successful response from connector
+	wantResp    string // successful response from component
 }
 
 func wrapArrayInObject(array, key string) string {
@@ -249,7 +249,7 @@ func testTask(c *qt.C, p taskParams) {
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 			c.Check(err, qt.ErrorMatches, ".*no such host")
-			c.Check(errmsg.Message(err), qt.Matches, "Failed to call .*check that the connector configuration is correct.")
+			c.Check(errmsg.Message(err), qt.Matches, "Failed to call .*check that the component configuration is correct.")
 		})
 
 		err = exec.Execute(ctx, []*base.Job{job})

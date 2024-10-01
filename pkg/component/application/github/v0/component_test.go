@@ -779,7 +779,7 @@ func taskTesting[inType any, outType any](testcases []TaskCase[inType, outType],
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	for _, tc := range testcases {
 		c.Run(tc._type+`-`+tc.name, func(c *qt.C) {
@@ -790,7 +790,7 @@ func taskTesting[inType any, outType any](testcases []TaskCase[inType, outType],
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: task},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: task},
 				client:             *MockGithubClient,
 			}
 			switch task {

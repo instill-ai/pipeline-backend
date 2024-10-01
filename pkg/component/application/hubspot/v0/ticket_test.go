@@ -61,7 +61,7 @@ func TestComponent_ExecuteGetTicketTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name     string
@@ -88,7 +88,7 @@ func TestComponent_ExecuteGetTicketTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetTicket},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetTicket},
 			client:             createMockClient(),
 		}
 		e.execute = e.GetTicket
@@ -120,7 +120,7 @@ func TestComponent_ExecuteCreateTicketTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name        string
@@ -144,7 +144,7 @@ func TestComponent_ExecuteCreateTicketTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskCreateTicket},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskCreateTicket},
 			client:             createMockClient(),
 		}
 		e.execute = e.CreateTicket

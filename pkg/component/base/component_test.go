@@ -12,27 +12,27 @@ import (
 )
 
 var (
-	//go:embed testdata/connectorDef.json
-	connectorDefJSON []byte
-	//go:embed testdata/connectorTasks.json
-	connectorTasksJSON []byte
-	//go:embed testdata/connectorConfig.json
-	connectorConfigJSON []byte
-	//go:embed testdata/connectorAdditional.json
-	connectorAdditionalJSON []byte
-	//go:embed testdata/wantConnectorDefinition.json
-	wantConnectorDefinitionJSON []byte
+	//go:embed testdata/componentDef.json
+	componentDefJSON []byte
+	//go:embed testdata/componentTasks.json
+	componentTasksJSON []byte
+	//go:embed testdata/componentConfig.json
+	componentConfigJSON []byte
+	//go:embed testdata/componentAdditional.json
+	componentAdditionalJSON []byte
+	//go:embed testdata/wantComponentDefinition.json
+	wantComponentDefinitionJSON []byte
 )
 
-func TestComponent_ListConnectorDefinitions(t *testing.T) {
+func TestComponent_ListComponentDefinitions(t *testing.T) {
 	c := qt.New(t)
 
 	conn := new(Component)
 	err := conn.LoadDefinition(
-		connectorDefJSON,
-		connectorConfigJSON,
-		connectorTasksJSON,
-		map[string][]byte{"additional.json": connectorAdditionalJSON})
+		componentDefJSON,
+		componentConfigJSON,
+		componentTasksJSON,
+		map[string][]byte{"additional.json": componentAdditionalJSON})
 	c.Assert(err, qt.IsNil)
 
 	got, err := conn.GetDefinition(nil, nil)
@@ -40,8 +40,8 @@ func TestComponent_ListConnectorDefinitions(t *testing.T) {
 	gotJSON, err := protojson.Marshal(got)
 	c.Assert(err, qt.IsNil)
 
-	wantConnectorDefinitionStruct := map[string]any{}
-	err = json.Unmarshal(wantConnectorDefinitionJSON, &wantConnectorDefinitionStruct)
+	wantComponentDefinitionStruct := map[string]any{}
+	err = json.Unmarshal(wantComponentDefinitionJSON, &wantComponentDefinitionStruct)
 	c.Assert(err, qt.IsNil)
-	c.Check(gotJSON, qt.JSONEquals, wantConnectorDefinitionStruct)
+	c.Check(gotJSON, qt.JSONEquals, wantComponentDefinitionStruct)
 }

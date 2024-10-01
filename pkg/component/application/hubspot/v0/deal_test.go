@@ -65,7 +65,7 @@ func TestComponent_ExecuteGetDealTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name     string
@@ -90,7 +90,7 @@ func TestComponent_ExecuteGetDealTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetDeal},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetDeal},
 			client:             createMockClient(),
 		}
 		e.execute = e.GetDeal
@@ -121,7 +121,7 @@ func TestComponent_ExecuteCreateDealTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name      string
@@ -144,7 +144,7 @@ func TestComponent_ExecuteCreateDealTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskCreateDeal},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskCreateDeal},
 			client:             createMockClient(),
 		}
 		e.execute = e.CreateDeal

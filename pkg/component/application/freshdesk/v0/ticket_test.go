@@ -23,7 +23,7 @@ func TestComponent_ExecuteGetTicketTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -92,7 +92,7 @@ func TestComponent_ExecuteGetTicketTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetTicket},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetTicket},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskGetTicket
@@ -123,7 +123,7 @@ func TestComponent_ExecuteCreateTicketTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -174,7 +174,7 @@ func TestComponent_ExecuteCreateTicketTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskCreateTicket},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskCreateTicket},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskCreateTicket
@@ -205,7 +205,7 @@ func TestComponent_ExecuteReplyToTicketTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -245,7 +245,7 @@ func TestComponent_ExecuteReplyToTicketTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskReplyToTicket},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskReplyToTicket},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskReplyToTicket
@@ -276,7 +276,7 @@ func TestComponent_ExecuteCreateTicketNoteTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -320,7 +320,7 @@ func TestComponent_ExecuteCreateTicketNoteTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskCreateTicketNote},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskCreateTicketNote},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskCreateTicketNote
@@ -352,7 +352,7 @@ func TestComponent_ExecuteGetAllConversationsTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -432,7 +432,7 @@ func TestComponent_ExecuteGetAllConversationsTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetAllConversations},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetAllConversations},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskGetAllConversations

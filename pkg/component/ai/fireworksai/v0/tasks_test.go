@@ -19,7 +19,7 @@ func TestComponent_Tasks(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FireworksClientMock := NewFireworksClientInterfaceMock(mc)
@@ -87,7 +87,7 @@ func TestComponent_Tasks(t *testing.T) {
 		setup, err := structpb.NewStruct(map[string]any{})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             FireworksClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat
@@ -114,7 +114,7 @@ func TestComponent_Tasks(t *testing.T) {
 		setup, err := structpb.NewStruct(map[string]any{})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             FireworksClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat
@@ -137,7 +137,7 @@ func TestComponent_Tasks(t *testing.T) {
 		setup, err := structpb.NewStruct(map[string]any{})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
 			client:             FireworksClientMock,
 		}
 		e.execute = e.TaskTextEmbeddings
@@ -164,7 +164,7 @@ func TestComponent_Tasks(t *testing.T) {
 		setup, err := structpb.NewStruct(map[string]any{})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
 			client:             FireworksClientMock,
 		}
 		e.execute = e.TaskTextEmbeddings

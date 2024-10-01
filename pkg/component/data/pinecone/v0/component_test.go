@@ -304,7 +304,7 @@ func TestComponent_Execute(t *testing.T) {
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-			want := "Failed to call http://no-such.host/.*. Please check that the connector configuration is correct."
+			want := "Failed to call http://no-such.host/.*. Please check that the component configuration is correct."
 			c.Check(errmsg.Message(err), qt.Matches, want)
 		})
 

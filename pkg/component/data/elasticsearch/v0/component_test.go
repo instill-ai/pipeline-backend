@@ -185,7 +185,7 @@ func TestComponent_ExecuteSearchTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -229,7 +229,7 @@ func TestComponent_ExecuteSearchTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: tc.task},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: tc.task},
 				client: ESClient{
 					searchClient: func(o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
 						return MockESSearch(tc.wantResp), nil
@@ -270,7 +270,7 @@ func TestComponent_ExecuteVectorSearchTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -327,7 +327,7 @@ func TestComponent_ExecuteVectorSearchTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: tc.task},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: tc.task},
 				client: ESClient{
 					searchClient: func(o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
 						return MockESVectorSearch(tc.wantResp), nil
@@ -368,7 +368,7 @@ func TestComponent_ExecuteIndexTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -397,7 +397,7 @@ func TestComponent_ExecuteIndexTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskIndex},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskIndex},
 				client: ESClient{
 					indexClient: func(index string, body io.Reader, o ...func(*esapi.IndexRequest)) (*esapi.Response, error) {
 						return MockESIndex(tc.wantResp), nil
@@ -435,7 +435,7 @@ func TestComponent_ExecuteMultiIndexTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -467,7 +467,7 @@ func TestComponent_ExecuteMultiIndexTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskMultiIndex},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskMultiIndex},
 				client: ESClient{
 					bulkClient: func(body io.Reader, o ...func(*esapi.BulkRequest)) (*esapi.Response, error) {
 						return MockESMultiIndex(tc.wantResp), nil
@@ -505,7 +505,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -535,7 +535,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskUpdate},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskUpdate},
 				client: ESClient{
 					updateClient: func(index []string, o ...func(*esapi.UpdateByQueryRequest)) (*esapi.Response, error) {
 						return MockESUpdate(tc.wantResp), nil
@@ -576,7 +576,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -605,7 +605,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDelete},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDelete},
 				client: ESClient{
 					deleteClient: func(index []string, body io.Reader, o ...func(*esapi.DeleteByQueryRequest)) (*esapi.Response, error) {
 						return MockESDelete(tc.wantResp), nil
@@ -646,7 +646,7 @@ func TestComponent_ExecuteCreateIndexTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -675,7 +675,7 @@ func TestComponent_ExecuteCreateIndexTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskCreateIndex},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskCreateIndex},
 				client: ESClient{
 					createIndexClient: func(index string, o ...func(*esapi.IndicesCreateRequest)) (*esapi.Response, error) {
 						return MockESCreateIndex(tc.wantResp), nil
@@ -713,7 +713,7 @@ func TestComponent_ExecuteDeleteIndexTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -741,7 +741,7 @@ func TestComponent_ExecuteDeleteIndexTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDeleteIndex},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDeleteIndex},
 				client: ESClient{
 					deleteIndexClient: func(index []string, o ...func(*esapi.IndicesDeleteRequest)) (*esapi.Response, error) {
 						return MockESDeleteIndex(tc.wantResp), nil

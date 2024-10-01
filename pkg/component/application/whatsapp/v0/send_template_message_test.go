@@ -48,7 +48,7 @@ func TestComponent_ExecuteSendTemplateMessageTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{}
-	connector := Init(bc)
+	component := Init(bc)
 
 	wantOutput := TaskSendTemplateMessageOutput{
 		WaID:          "886901234567",
@@ -152,7 +152,7 @@ func TestComponent_ExecuteSendTemplateMessageTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: tc.task},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: tc.task},
 				client:             &MockWhatsappClientSendTemplate{},
 			}
 

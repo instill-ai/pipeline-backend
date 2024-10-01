@@ -79,7 +79,7 @@ type ESSQLTranslate func(body io.Reader, o ...func(*esapi.SQLTranslateRequest)) 
 
 type ESBulk func(body io.Reader, o ...func(*esapi.BulkRequest)) (*esapi.Response, error)
 
-// Init returns an implementation of IConnector that interacts with Elasticsearch.
+// Init returns an implementation of IComponent that interacts with Elasticsearch.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}

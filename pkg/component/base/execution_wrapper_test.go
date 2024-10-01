@@ -23,10 +23,10 @@ func TestExecutionWrapper_GetComponent(t *testing.T) {
 		},
 	}
 	err := cmp.LoadDefinition(
-		connectorDefJSON,
-		connectorConfigJSON,
-		connectorTasksJSON,
-		map[string][]byte{"additional.json": connectorAdditionalJSON})
+		componentDefJSON,
+		componentConfigJSON,
+		componentTasksJSON,
+		map[string][]byte{"additional.json": componentAdditionalJSON})
 	c.Assert(err, qt.IsNil)
 
 	x, err := cmp.CreateExecution(ComponentExecution{
@@ -110,10 +110,10 @@ func TestExecutionWrapper_Execute(t *testing.T) {
 			}
 
 			err := cmp.LoadDefinition(
-				connectorDefJSON,
-				connectorConfigJSON,
-				connectorTasksJSON,
-				map[string][]byte{"additional.json": connectorAdditionalJSON})
+				componentDefJSON,
+				componentConfigJSON,
+				componentTasksJSON,
+				map[string][]byte{"additional.json": componentAdditionalJSON})
 			c.Assert(err, qt.IsNil)
 
 			x, err := cmp.CreateExecution(ComponentExecution{

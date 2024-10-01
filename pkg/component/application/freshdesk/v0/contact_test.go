@@ -18,7 +18,7 @@ func TestComponent_ExecuteGetContactTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -70,7 +70,7 @@ func TestComponent_ExecuteGetContactTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetContact},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetContact},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskGetContact
@@ -101,7 +101,7 @@ func TestComponent_ExecuteCreateContactTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -168,7 +168,7 @@ func TestComponent_ExecuteCreateContactTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskCreateContact},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskCreateContact},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskCreateContact

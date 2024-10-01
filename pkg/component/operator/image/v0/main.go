@@ -44,7 +44,7 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
-// CreateExecution initializes a component execution that can be used in a
+// CreateExecution initializes a component executor that can be used in a
 // pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	e := &execution{ComponentExecution: x}

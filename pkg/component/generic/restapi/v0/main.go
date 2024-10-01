@@ -146,7 +146,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 			continue
 		}
 
-		// An API error is a valid output in this connector.
+		// An API error is a valid output in this component.
 		req := client.R().SetResult(&taskOut.Body).SetError(&taskOut.Body)
 		if taskIn.Body != nil {
 			req.SetBody(taskIn.Body)

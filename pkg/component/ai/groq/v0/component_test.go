@@ -51,7 +51,7 @@ func TestComponent_Tasks(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc).WithInstillCredentials(map[string]any{"apikey": instillSecret})
+	component := Init(bc).WithInstillCredentials(map[string]any{"apikey": instillSecret})
 	ctx := context.Background()
 
 	GroqClientMock := NewGroqClientInterfaceMock(mc)
@@ -121,7 +121,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             GroqClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat
@@ -150,7 +150,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             GroqClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat

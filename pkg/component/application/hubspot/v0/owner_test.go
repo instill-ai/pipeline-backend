@@ -70,7 +70,7 @@ func TestComponent_ExecuteGetOwnerTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name      string
@@ -111,7 +111,7 @@ func TestComponent_ExecuteGetOwnerTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetOwner},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetOwner},
 				client:             createMockClient(),
 			}
 			e.execute = e.GetOwner

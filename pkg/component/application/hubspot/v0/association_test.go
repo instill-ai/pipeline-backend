@@ -58,7 +58,7 @@ func TestComponent_ExecuteRetrieveAssociationTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -101,7 +101,7 @@ func TestComponent_ExecuteRetrieveAssociationTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskRetrieveAssociation},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskRetrieveAssociation},
 				client:             createMockClient(),
 			}
 			e.execute = e.RetrieveAssociation

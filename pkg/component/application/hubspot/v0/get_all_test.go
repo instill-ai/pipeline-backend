@@ -61,7 +61,7 @@ func TestComponent_ExecuteGetAllTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name     string
@@ -83,7 +83,7 @@ func TestComponent_ExecuteGetAllTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetAll},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetAll},
 			client:             createMockClient(),
 		}
 		e.execute = e.GetAll

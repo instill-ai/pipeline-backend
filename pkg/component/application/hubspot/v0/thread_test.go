@@ -71,7 +71,7 @@ func TestComponent_ExecuteGetThreadTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	tc := struct {
 		name     string
 		input    string
@@ -111,7 +111,7 @@ func TestComponent_ExecuteGetThreadTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetThread},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetThread},
 			client:             createMockClient(),
 		}
 		e.execute = e.GetThread
@@ -142,7 +142,7 @@ func TestComponent_ExecuteInsertMessageTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name     string
@@ -169,7 +169,7 @@ func TestComponent_ExecuteInsertMessageTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskInsertMessage},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskInsertMessage},
 			client:             createMockClient(),
 		}
 		e.execute = e.InsertMessage

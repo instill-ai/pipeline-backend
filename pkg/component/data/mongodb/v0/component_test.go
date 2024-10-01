@@ -99,7 +99,7 @@ func TestComponent_ExecuteInsertOneTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -129,7 +129,7 @@ func TestComponent_ExecuteInsertOneTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskInsert},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskInsert},
 				client: &MongoClient{
 					collectionClient: &MockMongoClient{},
 				},
@@ -164,7 +164,7 @@ func TestComponent_ExecuteFindTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -205,7 +205,7 @@ func TestComponent_ExecuteFindTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskFind},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskFind},
 				client: &MongoClient{
 					collectionClient: &MockMongoClient{},
 				},
@@ -240,7 +240,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -270,7 +270,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskUpdate},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskUpdate},
 				client: &MongoClient{
 					collectionClient: &MockMongoClient{},
 				},
@@ -305,7 +305,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -334,7 +334,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDelete},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDelete},
 				client: &MongoClient{
 					collectionClient: &MockMongoClient{},
 				},
@@ -369,7 +369,7 @@ func TestComponent_ExecuteDropCollectionTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -398,7 +398,7 @@ func TestComponent_ExecuteDropCollectionTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDropCollection},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDropCollection},
 				client: &MongoClient{
 					collectionClient: &MockMongoClient{},
 				},
@@ -433,7 +433,7 @@ func TestComponent_ExecuteDropDatabaseTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -462,7 +462,7 @@ func TestComponent_ExecuteDropDatabaseTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDropDatabase},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDropDatabase},
 				client: &MongoClient{
 					databaseClient: &MockMongoClient{},
 				},
@@ -497,7 +497,7 @@ func TestComponent_ExecuteCreateSearchIndexTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -534,7 +534,7 @@ func TestComponent_ExecuteCreateSearchIndexTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskCreateSearchIndex},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskCreateSearchIndex},
 				client: &MongoClient{
 					collectionClient:  &MockMongoClient{},
 					searchIndexClient: &MockMongoClient{},
@@ -570,7 +570,7 @@ func TestComponent_ExecuteDropSearchIndexTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -599,7 +599,7 @@ func TestComponent_ExecuteDropSearchIndexTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDropSearchIndex},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDropSearchIndex},
 				client: &MongoClient{
 					collectionClient:  &MockMongoClient{},
 					searchIndexClient: &MockMongoClient{},
@@ -635,7 +635,7 @@ func TestComponent_ExecuteVectorSearchTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -678,7 +678,7 @@ func TestComponent_ExecuteVectorSearchTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskVectorSearch},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskVectorSearch},
 				client: &MongoClient{
 					collectionClient: &MockMongoClient{},
 				},
@@ -713,7 +713,7 @@ func TestComponent_ExecuteInsertManyTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -745,7 +745,7 @@ func TestComponent_ExecuteInsertManyTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskInsertMany},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskInsertMany},
 				client: &MongoClient{
 					collectionClient: &MockMongoClient{},
 				},

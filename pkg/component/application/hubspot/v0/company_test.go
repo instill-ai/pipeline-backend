@@ -67,7 +67,7 @@ func TestComponent_ExecuteGetCompanyTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name     string
@@ -94,7 +94,7 @@ func TestComponent_ExecuteGetCompanyTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetCompany},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetCompany},
 			client:             createMockClient(),
 		}
 		e.execute = e.GetCompany
@@ -127,7 +127,7 @@ func TestComponent_ExecuteCreateCompanyTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name         string
@@ -150,7 +150,7 @@ func TestComponent_ExecuteCreateCompanyTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskCreateCompany},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskCreateCompany},
 			client:             createMockClient(),
 		}
 		e.execute = e.CreateCompany

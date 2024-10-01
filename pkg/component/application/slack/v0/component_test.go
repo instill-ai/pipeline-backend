@@ -105,7 +105,7 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -144,7 +144,7 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 			// It will increase the modification range if we change the input of CreateExecution.
 			// So, we replaced it with the code below to cover the test for taskFunctions.go
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskWriteMessage},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskWriteMessage},
 				client:             &MockSlackClient{},
 			}
 			e.execute = e.sendMessage
@@ -178,7 +178,7 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{}
-	connector := Init(bc)
+	component := Init(bc)
 
 	mockDateTime, _ := transformTSToDate("1715159449.399879", time.RFC3339)
 	testcases := []struct {
@@ -234,7 +234,7 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 			// It will increase the modification range if we change the input of CreateExecution.
 			// So, we replaced it with the code below to cover the test for taskFunctions.go
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskReadMessage},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskReadMessage},
 				client:             &MockSlackClient{},
 			}
 			e.execute = e.readMessage

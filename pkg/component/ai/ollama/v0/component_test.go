@@ -19,7 +19,7 @@ func TestComponent_Tasks(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	OllamaClientMock := NewOllamaClientInterfaceMock(mc)
@@ -69,7 +69,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             OllamaClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat
@@ -99,7 +99,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             OllamaClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat
@@ -126,7 +126,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
 			client:             OllamaClientMock,
 		}
 		e.execute = e.TaskTextEmbeddings
@@ -156,7 +156,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
 			client:             OllamaClientMock,
 		}
 		e.execute = e.TaskTextEmbeddings
