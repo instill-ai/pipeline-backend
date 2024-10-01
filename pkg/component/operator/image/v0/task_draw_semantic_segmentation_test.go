@@ -7,6 +7,7 @@ import (
 
 	_ "embed"
 
+	"github.com/frankban/quicktest"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -17,22 +18,23 @@ var semSegCityscapeJSON []byte
 
 // TestDrawSemanticSegmentation tests the drawSemanticSegmentation function
 func TestDrawSemanticSegmentation(t *testing.T) {
+	c := quicktest.New(t)
+
 	testCases := []struct {
 		name      string
 		inputJSON []byte
 	}{
 		{
-			name:      "Cityscape Semantic Segmentation",
+			name:      "Semantic Segmentation Cityscape",
 			inputJSON: semSegCityscapeJSON,
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+		c.Run(tc.name, func(c *quicktest.C) {
 			inputData := &structpb.Struct{}
-			if err := json.Unmarshal(tc.inputJSON, inputData); err != nil {
-				t.Fatalf("Failed to unmarshal test data: %v", err)
-			}
+			err := json.Unmarshal(tc.inputJSON, inputData)
+			c.Assert(err, quicktest.IsNil, quicktest.Commentf("Failed to unmarshal test data"))
 
 			bc := base.Component{}
 			component := Init(bc)
@@ -42,17 +44,14 @@ func TestDrawSemanticSegmentation(t *testing.T) {
 				Task:      "TASK_DRAW_SEMANTIC_SEGMENTATION",
 			})
 
-			if err != nil {
-				t.Fatalf("drawSemanticSegmentation create execution returned an error: %v", err)
-			}
+			c.Assert(err, quicktest.IsNil, quicktest.Commentf("drawSemanticSegmentation create execution returned an error"))
 
-			ir, ow, eh, job := base.GenerateMockJob(t)
+			ir, ow, eh, job := base.GenerateMockJob(c)
 			ir.ReadMock.Expect(context.Background()).Return(inputData, nil)
 			ow.WriteMock.Times(1).Return(nil)
 
-			if err := e.Execute(context.Background(), []*base.Job{job}); err != nil {
-				t.Fatalf("drawSemanticSegmentation returned an error: %v", err)
-			}
+			err = e.Execute(context.Background(), []*base.Job{job})
+			c.Assert(err, quicktest.IsNil, quicktest.Commentf("drawSemanticSegmentation returned an error"))
 
 			ir.MinimockFinish()
 			ow.MinimockFinish()

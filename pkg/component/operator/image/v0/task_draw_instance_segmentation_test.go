@@ -7,6 +7,7 @@ import (
 
 	_ "embed"
 
+	"github.com/frankban/quicktest"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -23,30 +24,31 @@ var instSegStomataJSON []byte
 
 // TestDrawInstanceSegmentation tests the drawInstanceSegmentation function
 func TestDrawInstanceSegmentation(t *testing.T) {
+	c := quicktest.New(t)
+
 	testCases := []struct {
 		name      string
 		inputJSON []byte
 	}{
 		{
-			name:      "COCO Instance Segmentation 1",
+			name:      "Instance Segmentation COCO 1",
 			inputJSON: instSegCOCO1JSON,
 		},
 		{
-			name:      "COCO Instance Segmentation 2",
+			name:      "Instance Segmentation COCO 2",
 			inputJSON: instSegCOCO2JSON,
 		},
 		{
-			name:      "Stomata Instance Segmentation",
+			name:      "Instance Segmentation Stomata",
 			inputJSON: instSegStomataJSON,
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+		c.Run(tc.name, func(c *quicktest.C) {
 			inputData := &structpb.Struct{}
-			if err := json.Unmarshal(tc.inputJSON, inputData); err != nil {
-				t.Fatalf("Failed to unmarshal test data: %v", err)
-			}
+			err := json.Unmarshal(tc.inputJSON, inputData)
+			c.Assert(err, quicktest.IsNil, quicktest.Commentf("Failed to unmarshal test data"))
 
 			bc := base.Component{}
 			component := Init(bc)
@@ -56,17 +58,14 @@ func TestDrawInstanceSegmentation(t *testing.T) {
 				Task:      "TASK_DRAW_INSTANCE_SEGMENTATION",
 			})
 
-			if err != nil {
-				t.Fatalf("drawInstanceSegmentation create execution returned an error: %v", err)
-			}
+			c.Assert(err, quicktest.IsNil, quicktest.Commentf("drawInstanceSegmentation create execution returned an error"))
 
-			ir, ow, eh, job := base.GenerateMockJob(t)
+			ir, ow, eh, job := base.GenerateMockJob(c)
 			ir.ReadMock.Expect(context.Background()).Return(inputData, nil)
 			ow.WriteMock.Times(1).Return(nil)
 
-			if err := e.Execute(context.Background(), []*base.Job{job}); err != nil {
-				t.Fatalf("drawInstanceSegmentation returned an error: %v", err)
-			}
+			err = e.Execute(context.Background(), []*base.Job{job})
+			c.Assert(err, quicktest.IsNil, quicktest.Commentf("drawInstanceSegmentation returned an error"))
 
 			ir.MinimockFinish()
 			ow.MinimockFinish()

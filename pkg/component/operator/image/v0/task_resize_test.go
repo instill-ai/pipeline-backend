@@ -5,16 +5,18 @@ import (
 	"image"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
 func TestResize(t *testing.T) {
+	c := quicktest.New(t)
+
 	// Create a sample 100x100 image
 	img := image.NewRGBA(image.Rect(0, 0, 100, 100))
 	base64Img, err := encodeBase64Image(img)
-	assert.NoError(t, err)
+	c.Assert(err, quicktest.IsNil)
 
 	testCases := []struct {
 		name           string
@@ -100,29 +102,28 @@ func TestResize(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+		c.Run(tc.name, func(c *quicktest.C) {
 			inputStruct, err := base.ConvertToStructpb(tc.input)
-			assert.NoError(t, err)
+			c.Assert(err, quicktest.IsNil)
 
 			output, err := resize(inputStruct, nil, context.Background())
 
 			if tc.expectedError != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tc.expectedError)
+				c.Assert(err, quicktest.ErrorMatches, tc.expectedError)
 			} else {
-				assert.NoError(t, err)
+				c.Assert(err, quicktest.IsNil)
 
 				var resizedOutput resizeOutput
 				err = base.ConvertFromStructpb(output, &resizedOutput)
-				assert.NoError(t, err)
+				c.Assert(err, quicktest.IsNil)
 
 				// Decode the output image
 				decodedImg, err := decodeBase64Image(string(resizedOutput.Image)[22:]) // Remove "data:image/png;base64," prefix
-				assert.NoError(t, err)
+				c.Assert(err, quicktest.IsNil)
 
 				// Check if the output image dimensions match the expected dimensions
-				assert.Equal(t, tc.expectedWidth, decodedImg.Bounds().Dx())
-				assert.Equal(t, tc.expectedHeight, decodedImg.Bounds().Dy())
+				c.Assert(decodedImg.Bounds().Dx(), quicktest.Equals, tc.expectedWidth)
+				c.Assert(decodedImg.Bounds().Dy(), quicktest.Equals, tc.expectedHeight)
 			}
 		})
 	}

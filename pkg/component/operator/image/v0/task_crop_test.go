@@ -5,12 +5,14 @@ import (
 	"image"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
 func TestCrop(t *testing.T) {
+	c := quicktest.New(t)
+
 	// Create a sample 100x100 image
 	img := image.NewRGBA(image.Rect(0, 0, 100, 100))
 	for y := 0; y < 100; y++ {
@@ -19,7 +21,7 @@ func TestCrop(t *testing.T) {
 		}
 	}
 	base64Img, err := encodeBase64Image(img)
-	assert.NoError(t, err)
+	c.Assert(err, quicktest.IsNil)
 
 	testCases := []struct {
 		name           string
@@ -83,40 +85,39 @@ func TestCrop(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+		c.Run(tc.name, func(c *quicktest.C) {
 			inputStruct, err := base.ConvertToStructpb(tc.input)
-			assert.NoError(t, err)
+			c.Assert(err, quicktest.IsNil)
 
 			output, err := crop(inputStruct, nil, context.Background())
 
 			if tc.expectedError != "" {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tc.expectedError)
+				c.Assert(err, quicktest.ErrorMatches, tc.expectedError)
 			} else {
-				assert.NoError(t, err)
+				c.Assert(err, quicktest.IsNil)
 
 				var croppedOutput cropOutput
 				err = base.ConvertFromStructpb(output, &croppedOutput)
-				assert.NoError(t, err)
+				c.Assert(err, quicktest.IsNil)
 
 				// Decode the output image as PNG
 				decodedImg, err := decodeBase64Image(string(croppedOutput.Image)[22:]) // Remove "data:image/png;base64," prefix
-				assert.NoError(t, err)
+				c.Assert(err, quicktest.IsNil)
 
 				// Check if the output image dimensions match the expected dimensions
-				assert.Equal(t, tc.expectedWidth, decodedImg.Bounds().Dx())
-				assert.Equal(t, tc.expectedHeight, decodedImg.Bounds().Dy())
+				c.Assert(decodedImg.Bounds().Dx(), quicktest.Equals, tc.expectedWidth)
+				c.Assert(decodedImg.Bounds().Dy(), quicktest.Equals, tc.expectedHeight)
 
 				// For circular and corner radius crop, check if corners are transparent
 				if tc.checkCorners {
-					checkCornerTransparency(t, decodedImg)
+					checkCornerTransparency(c, decodedImg)
 				}
 			}
 		})
 	}
 }
 
-func checkCornerTransparency(t *testing.T, img image.Image) {
+func checkCornerTransparency(c *quicktest.C, img image.Image) {
 	bounds := img.Bounds()
 	corners := []image.Point{
 		{X: bounds.Min.X, Y: bounds.Min.Y},
@@ -127,6 +128,6 @@ func checkCornerTransparency(t *testing.T, img image.Image) {
 
 	for _, corner := range corners {
 		_, _, _, a := img.At(corner.X, corner.Y).RGBA()
-		assert.Equal(t, uint32(0), a, "Corner at (%d, %d) should be transparent", corner.X, corner.Y)
+		c.Assert(a, quicktest.Equals, uint32(0), quicktest.Commentf("Corner at (%d, %d) should be transparent", corner.X, corner.Y))
 	}
 }
