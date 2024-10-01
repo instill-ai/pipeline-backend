@@ -7,6 +7,90 @@ Pipeline (VDP)](https://github.com/instill-ai/vdp) to streamline data from the
 start component, through AI/Data/Application components and to the end
 component.
 
+## Concepts
+
+### Pipeline
+
+In **💧 Instill VDP**, a pipeline is a DAG (Directed Acyclic Graph) consisting
+of multiple **components**.
+
+```mermaid
+flowchart LR
+s[Trigger] --> c1[OpenAI Component]
+c1 --> c2[Stability AI Component]
+c1 --> c3[MySQL Component]
+c1 --> e[Response]
+c2 --> e
+```
+
+### Component
+
+A **Component** serves as an essential building block within a **Pipeline**.
+
+See [the `component` package documentation](./pkg/component/README.md) for more
+details.
+
+### Recipe
+
+A **pipeline recipe** specifies how components are configured and how they are
+interconnected.
+
+Recipes are defined in YAML language:
+
+```yaml
+variable:
+  # pipeline input fields
+output:
+  # pipeline output fields
+component:
+  <component-id>:
+    type: <component-definition-id>
+    task: <task-id>
+    input:
+      # values for the input fields
+    condition: <condition> # conditional statement to execute or bypass the component
+    setup: <setup> # setup specification values required in AI, Data and Application components
+```
+
+The [component development
+guide](./pkg/component/CONTRIBUTING.md#example-recipe) contains a full example
+recipe.
+
+```mermaid
+sequenceDiagram
+participant u as User
+participant gw as api-gateway
+participant p as pipeline-backend
+participant db as pipeline-db
+
+u ->> gw: POST /users/<user>/pipelines
+gw ->> p: forward
+p ->> db: Store pipeline and its recipe
+```
+
+### Trigger
+
+When a pipeline is triggered, the DAG will be computed in order to execute
+components in topological order.
+
+```mermaid
+sequenceDiagram
+
+participant u as User
+participant gw as api-gateway
+participant p as pipeline-backend
+participant db as pipeline-db
+participant c as component
+
+u ->> gw: POST /users/<user>/pipelines/<pipeline-id>/trigger
+gw ->> p: forward
+p ->> db: Get recipe
+db ->> p: Recipe
+loop over topological order of components
+    p->>c: ExecuteWithValidation
+end
+```
+
 ## Contributing
 
 We welcome contributions from the community! Whether you're a developer,
