@@ -242,6 +242,29 @@ For components that need to set up some configuration before execution
 need to set up a connection), `setup.json` can be used to describe these
 configurations. The format is the same as the `input` objects in `tasks.json`.
 
+The setup of a component can be defined within the recipe as key-value fields,
+or as a reference to a **Connection** (see the
+[**Integrations**](https://www.instill.tech/docs/vdp/integration) doc for more
+information). Certain components support OAuth 2.0 integrations. If you want
+your component to support this sort of connection:
+
+- In `setup.json`, add the OAuth information under the  `instillOAuthConfig`
+  property.
+  - `authUrl` contains the address where the authorization code can be
+    requested.
+    - `accessUrl` contains the address where the authorization code can be
+      exchanged for an access token.
+    - `scopes` contains the permissions that will be associated with the access
+      token. Refer to the vendor you want to integrate with in order to identify
+      the scopes that will be required by the different tasks implemented by the
+      component. Note that, if the component is extended later requiring more
+      scopes, users will need to create a new connection in order to leverage
+      the new functionality.
+- The OAuth 2.0 exchange for an access token is implemented in the frontend.
+  Make sure to engage with [Instill
+  Product](https://github.com/orgs/instill-ai/teams/product) in order to
+  prioritise the OAuth support for this component.
+
 ### Implement the component interfaces
 
 Pipeline communicates with components through the `IComponent` interface,
