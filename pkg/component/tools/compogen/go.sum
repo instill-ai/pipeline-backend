@@ -31,8 +31,8 @@ github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0 h1:bkypFPDjIYGfCYD5mRBvpqxfYX1
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0/go.mod h1:P+Lt/0by1T8bfcF3z737NnSbmxQAppXMRziHUxPOC8k=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/instill-ai/pipeline-backend v0.39.1-beta.0.20240930160521-6ce858658cd0 h1:pELb81NJLrEFr8TB93PY1z+lZp0lLSutAtzuI5A+0l0=
-github.com/instill-ai/pipeline-backend v0.39.1-beta.0.20240930160521-6ce858658cd0/go.mod h1:6QpimJAXczpFiH6xMoQ2kt4RdWk1uir+jYNez/S16J8=
+github.com/instill-ai/pipeline-backend v0.40.0-beta h1:jb/D9S/SHZkp8KBiUuvEF2DDq0wYZOIx/15AODJmdoA=
+github.com/instill-ai/pipeline-backend v0.40.0-beta/go.mod h1:Fagywatk2hfwWxDcsbk/UgRO4ADNnoTs6x5HxprW57c=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240922180636-80bd4bf3bb56 h1:CAvgheFIOS+Ryuor4kVv9BHh+ID9Wa1PCzkrr1xJkiI=
 github.com/instill-ai/protogen-go v0.3.3-alpha.0.20240922180636-80bd4bf3bb56/go.mod h1:rf0UY7VpEgpaLudYEcjx5rnbuwlBaaLyD4FQmWLtgAY=
 github.com/instill-ai/x v0.4.0-alpha h1:zQV2VLbSHjMv6gyBN/2mwwrvWk0/mJM6ZKS12AzjfQg=
