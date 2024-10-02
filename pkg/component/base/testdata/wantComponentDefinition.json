@@ -207,5 +207,5 @@
     }
   ],
   "version": "1.0.0",
-  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/base"
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/base"
 }
