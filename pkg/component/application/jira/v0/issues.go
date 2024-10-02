@@ -26,6 +26,8 @@ type Issue struct {
 	Self        string                 `json:"self"`
 	IssueType   string                 `json:"issue-type"`
 	Status      string                 `json:"status"`
+	Labels      []string               `json:"labels"`
+	Assignee    string                 `json:"assignee"`
 }
 
 type GetIssueInput struct {
@@ -47,6 +49,22 @@ func extractIssue(issue *Issue) *Issue {
 		summary, ok := issue.Fields["summary"].(string)
 		if ok {
 			issue.Summary = summary
+		}
+	}
+	if len(issue.Labels) == 0 && issue.Fields["labels"] != nil {
+		if labels, ok := issue.Fields["labels"].([]interface{}); ok {
+			for _, label := range labels {
+				if strLabel, ok := label.(string); ok {
+					issue.Labels = append(issue.Labels, strLabel)
+				}
+			}
+		}
+	}
+	if issue.Assignee == "" && issue.Fields["assignee"] != nil {
+		if assignee, ok := issue.Fields["assignee"].(map[string]interface{}); ok {
+			if name, ok := assignee["name"].(string); ok {
+				issue.Assignee = name
+			}
 		}
 	}
 	if issue.IssueType == "" && issue.Fields["issuetype"] != nil {
@@ -305,6 +323,8 @@ type CreateIssueInput struct {
 	IssueType     IssueType `json:"issue-type"`
 	Summary       string    `json:"summary"`
 	Description   string    `json:"description"`
+	Labels        []string  `json:"labels"`
+	Assignee      string    `json:"assignee"`
 }
 type CreateIssueRequset struct {
 	Fields map[string]interface{}        `json:"fields"`
@@ -339,6 +359,14 @@ func convertCreateIssueRequest(issue *CreateIssueInput) *CreateIssueRequset {
 			"summary":     issue.Summary,
 			"description": issue.Description,
 		},
+	}
+	if len(issue.Labels) > 0 {
+		newRequest.Fields["labels"] = issue.Labels
+	}
+	if issue.Assignee != "" {
+		newRequest.Fields["assignee"] = map[string]string{
+			"name": issue.Assignee,
+		}
 	}
 	if issue.IssueType.ParentKey != "" {
 		newRequest.Fields["parent"] = map[string]interface{}{
