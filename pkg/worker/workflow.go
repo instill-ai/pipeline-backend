@@ -81,7 +81,7 @@ type PreIteratorActivityParam struct {
 	ID              string
 	UpstreamIDs     []string
 	Input           string
-	Range           []int
+	Range           any
 	Index           string
 	SystemVariables recipe.SystemVariables
 }
@@ -635,12 +635,82 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 			elems = input.(*data.Array).Values
 			indexes = make([]int, len(elems))
 		} else {
-			if len(param.Range) < 2 || len(param.Range) > 3 {
-				return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, must be in the form [start, stop[, step]]"), preIteratorActivityErrorType, param.ID)
+
+			// We offer two syntax options for defining `range`.
+
+			// The first is the **array representation**:
+			// ```
+			// range: [0, 5, 2]
+			// ---
+			// range:
+			//   - 0
+			//   - 5
+			//   - 2
+			// ```
+
+			// The second is the **map representation**, which is the
+			// recommended approach for using references in range values:
+			// ```
+			// range:
+			//   start: 0
+			//   stop: ${variable.top-k}
+			//   step: 1
+			// ```
+
+			rangeParam, err := data.NewValue(param.Range)
+			if err != nil {
+				return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error"), preIteratorActivityErrorType, param.ID)
 			}
-			start := param.Range[0]
-			stop := param.Range[1]
-			if len(param.Range) == 2 {
+			useArrayRange := false
+			switch rangeParam.(type) {
+			case *data.Array:
+				useArrayRange = true
+			case *data.Map:
+				useArrayRange = false
+			default:
+				return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error"), preIteratorActivityErrorType, param.ID)
+			}
+
+			renderedRangeParam, err := recipe.Render(ctx, rangeParam, iter, wfm, false)
+			if err != nil {
+				return nil, err
+			}
+
+			var start, stop, step int
+
+			withStep := false
+			if useArrayRange {
+				if l := len(rangeParam.(*data.Array).Values); l < 2 || l > 3 {
+					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, must be in the form [start, stop[, step]]"), preIteratorActivityErrorType, param.ID)
+				} else if l == 3 {
+					withStep = true
+				}
+				start = renderedRangeParam.(*data.Array).Values[0].(*data.Number).GetInteger()
+				stop = renderedRangeParam.(*data.Array).Values[1].(*data.Number).GetInteger()
+				if withStep {
+					step = renderedRangeParam.(*data.Array).Values[2].(*data.Number).GetInteger()
+				}
+			} else {
+				if _, ok := renderedRangeParam.(*data.Map).Fields[rangeStart]; ok {
+					start = renderedRangeParam.(*data.Map).Fields[rangeStart].(*data.Number).GetInteger()
+				} else {
+					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, `start` is missing"), preIteratorActivityErrorType, param.ID)
+				}
+
+				if _, ok := renderedRangeParam.(*data.Map).Fields[rangeStop]; ok {
+					stop = renderedRangeParam.(*data.Map).Fields[rangeStop].(*data.Number).GetInteger()
+				} else {
+					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, `stop` is missing"), preIteratorActivityErrorType, param.ID)
+				}
+
+				if _, ok := renderedRangeParam.(*data.Map).Fields[rangeStep]; ok {
+					withStep = true
+					step = renderedRangeParam.(*data.Map).Fields[rangeStep].(*data.Number).GetInteger()
+				}
+
+			}
+
+			if !withStep {
 				if start > stop {
 					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, the `stop` should be larger then `start`"), preIteratorActivityErrorType, param.ID)
 				}
@@ -649,8 +719,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 					indexes[i] = j
 				}
 
-			} else if len(param.Range) == 3 {
-				step := param.Range[2]
+			} else {
 				if step == 0 {
 					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, the `step` should not be zero"), preIteratorActivityErrorType, param.ID)
 				}

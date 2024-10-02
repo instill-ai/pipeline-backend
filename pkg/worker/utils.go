@@ -27,6 +27,12 @@ func (w *worker) writeNewDataPoint(ctx context.Context, data utils.PipelineUsage
 	return nil
 }
 
+const (
+	rangeStart = "start"
+	rangeStop  = "stop"
+	rangeStep  = "step"
+)
+
 // setIteratorIndex converts the iterator index identifier into a numeric
 // index. For example, it converts `${variable.array[i]}` into
 // `${variable.array[0]}`.

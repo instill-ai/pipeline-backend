@@ -318,7 +318,7 @@ type Component struct {
 	Definition *Definition `json:"definition,omitempty" yaml:"-"`
 
 	// Fields for iterators
-	Range             []int                 `json:"range,omitempty" yaml:"range,omitempty"`
+	Range             any                   `json:"range,omitempty" yaml:"range,omitempty"`
 	Index             string                `json:"index,omitempty" yaml:"index,omitempty"`
 	Component         ComponentMap          `json:"component,omitempty" yaml:"component,omitempty"`
 	OutputElements    map[string]string     `json:"outputElements,omitempty" yaml:"output-elements,omitempty"`
