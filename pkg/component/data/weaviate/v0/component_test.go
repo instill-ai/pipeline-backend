@@ -11,13 +11,14 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 func TestComponent_ExecuteInsertTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -47,7 +48,7 @@ func TestComponent_ExecuteInsertTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskInsert},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskInsert},
 				mockClient:         &MockWeaviateClient{},
 			}
 			e.execute = e.insert
@@ -55,7 +56,7 @@ func TestComponent_ExecuteInsertTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -80,7 +81,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name       string
@@ -111,7 +112,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDelete},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDelete},
 				mockClient: &MockWeaviateClient{
 					Successful: tc.Successful,
 				},
@@ -121,7 +122,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -146,7 +147,7 @@ func TestComponent_ExecuteDeleteCollectionTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -174,7 +175,7 @@ func TestComponent_ExecuteDeleteCollectionTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDeleteCollection},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDeleteCollection},
 				mockClient:         &MockWeaviateClient{},
 			}
 			e.execute = e.deleteCollection
@@ -182,7 +183,7 @@ func TestComponent_ExecuteDeleteCollectionTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -207,7 +208,7 @@ func TestComponent_ExecuteVectorSearchTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name       string
@@ -249,7 +250,7 @@ func TestComponent_ExecuteVectorSearchTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskVectorSearch},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskVectorSearch},
 				mockClient: &MockWeaviateClient{
 					VectorSearch: tc.wantResp.Result,
 					Successful:   tc.Successful,
@@ -260,7 +261,7 @@ func TestComponent_ExecuteVectorSearchTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -285,7 +286,7 @@ func TestComponent_ExecuteBatchInsertTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name       string
@@ -323,7 +324,7 @@ func TestComponent_ExecuteBatchInsertTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskBatchInsert},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskBatchInsert},
 				mockClient: &MockWeaviateClient{
 					Successful: tc.Successful,
 				},
@@ -333,7 +334,7 @@ func TestComponent_ExecuteBatchInsertTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -358,7 +359,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -389,7 +390,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskUpdate},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskUpdate},
 				mockClient:         &MockWeaviateClient{},
 			}
 			e.execute = e.update
@@ -397,7 +398,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)

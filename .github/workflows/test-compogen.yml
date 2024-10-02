@@ -1,0 +1,37 @@
+name: Compogen test
+
+on:
+  pull_request:
+    paths:
+      - 'pkg/component/tools/compogen/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'pkg/component/tools/compogen/**'
+
+jobs:
+  test-compogen:
+    name: test-compogen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load .env file
+        uses: cardinalby/export-env-action@v2
+        with:
+          envFile: .env
+          expand: true
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+
+      - name: Test compogen
+        run: |
+          cd pkg/component/tools/compogen
+          go mod tidy
+          go test -mod=mod -race -cover ./...
+

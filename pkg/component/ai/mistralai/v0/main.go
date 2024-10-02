@@ -62,7 +62,7 @@ func (c *component) WithInstillCredentials(s map[string]any) *component {
 	return c
 }
 
-// CreateExecution initializes a connector executor that can be used in a
+// CreateExecution initializes a component executor that can be used in a
 // pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	resolvedSetup, resolved, err := c.resolveSetup(x.Setup)

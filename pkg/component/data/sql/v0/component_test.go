@@ -15,6 +15,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 type MockSQLClient struct{}
@@ -101,7 +102,7 @@ func TestComponent_ExecuteInsertTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -140,7 +141,7 @@ func TestComponent_ExecuteInsertTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskInsert},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskInsert},
 				client:             &MockSQLClient{},
 			}
 			e.execute = e.insert
@@ -148,7 +149,7 @@ func TestComponent_ExecuteInsertTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -173,7 +174,7 @@ func TestComponent_ExecuteInsertManyTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -211,7 +212,7 @@ func TestComponent_ExecuteInsertManyTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskInsertMany},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskInsertMany},
 				client:             &MockSQLClient{},
 			}
 			e.execute = e.insertMany
@@ -219,7 +220,7 @@ func TestComponent_ExecuteInsertManyTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -244,7 +245,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -284,7 +285,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskInsert},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskInsert},
 				client:             &MockSQLClient{},
 			}
 			e.execute = e.update
@@ -292,7 +293,7 @@ func TestComponent_ExecuteUpdateTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -317,7 +318,7 @@ func TestComponent_ExecuteSelectTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -357,7 +358,7 @@ func TestComponent_ExecuteSelectTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskSelect},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskSelect},
 				client:             &MockSQLClient{},
 			}
 			e.execute = e.selects
@@ -365,7 +366,7 @@ func TestComponent_ExecuteSelectTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -390,7 +391,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -426,7 +427,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDelete},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDelete},
 				client:             &MockSQLClient{},
 			}
 			e.execute = e.delete
@@ -434,7 +435,7 @@ func TestComponent_ExecuteDeleteTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -459,7 +460,7 @@ func TestComponent_ExecuteCreateTableTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -498,7 +499,7 @@ func TestComponent_ExecuteCreateTableTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskCreateTable},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskCreateTable},
 				client:             &MockSQLClient{},
 			}
 			e.execute = e.createTable
@@ -506,7 +507,7 @@ func TestComponent_ExecuteCreateTableTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -531,7 +532,7 @@ func TestComponent_ExecuteDropTableTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -566,7 +567,7 @@ func TestComponent_ExecuteDropTableTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskDropTable},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskDropTable},
 				client:             &MockSQLClient{},
 			}
 			e.execute = e.dropTable
@@ -574,7 +575,7 @@ func TestComponent_ExecuteDropTableTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)

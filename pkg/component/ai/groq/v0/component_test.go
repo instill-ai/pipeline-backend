@@ -13,6 +13,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 const (
@@ -51,7 +52,7 @@ func TestComponent_Tasks(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc).WithInstillCredentials(map[string]any{"apikey": instillSecret})
+	component := Init(bc).WithInstillCredentials(map[string]any{"apikey": instillSecret})
 	ctx := context.Background()
 
 	GroqClientMock := NewGroqClientInterfaceMock(mc)
@@ -121,7 +122,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             GroqClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat
@@ -129,7 +130,7 @@ func TestComponent_Tasks(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(map[string]any{"model": "llama-3.1-405b-reasoning", "prompt": "Tell me a joke"})
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 			wantJSON, err := json.Marshal(TaskTextGenerationChatOuput{Text: "\nWhy did the tomato turn red?\nAnswer: Because it saw the salad dressing", Usage: TaskTextGenerationChatUsage{InputTokens: 24, OutputTokens: 377}})
@@ -150,7 +151,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             GroqClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat
@@ -158,7 +159,7 @@ func TestComponent_Tasks(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(map[string]any{"model": "gemini", "prompt": "Tell me a joke"})
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {

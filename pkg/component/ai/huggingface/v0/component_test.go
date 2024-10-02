@@ -14,6 +14,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/x/errmsg"
 )
@@ -58,7 +59,7 @@ type taskParams struct {
 	contentType string // content type received in Hugging Face
 	wantBody    []byte // expected request body in Hugging Face
 	okResp      string // successful response from Hugging Face
-	wantResp    string // successful response from connector
+	wantResp    string // successful response from component
 }
 
 func wrapArrayInObject(array, key string) string {
@@ -244,12 +245,12 @@ func testTask(c *qt.C, p taskParams) {
 		c.Assert(err, qt.IsNil)
 		pbIn.Fields["model"] = structpb.NewStringValue(model)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 			c.Check(err, qt.ErrorMatches, ".*no such host")
-			c.Check(errmsg.Message(err), qt.Matches, "Failed to call .*check that the connector configuration is correct.")
+			c.Check(errmsg.Message(err), qt.Matches, "Failed to call .*check that the component configuration is correct.")
 		})
 
 		err = exec.Execute(ctx, []*base.Job{job})
@@ -343,7 +344,7 @@ func testTask(c *qt.C, p taskParams) {
 			c.Assert(err, qt.IsNil)
 			pbIn.Fields["model"] = structpb.NewStringValue(model)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				c.Check(p.wantResp, qt.JSONEquals, output.AsMap())

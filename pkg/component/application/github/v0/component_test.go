@@ -12,6 +12,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 var MockGithubClient = &Client{
@@ -779,7 +780,7 @@ func taskTesting[inType any, outType any](testcases []TaskCase[inType, outType],
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	for _, tc := range testcases {
 		c.Run(tc._type+`-`+tc.name, func(c *qt.C) {
@@ -790,7 +791,7 @@ func taskTesting[inType any, outType any](testcases []TaskCase[inType, outType],
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: task},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: task},
 				client:             *MockGithubClient,
 			}
 			switch task {
@@ -819,7 +820,7 @@ func taskTesting[inType any, outType any](testcases []TaskCase[inType, outType],
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)

@@ -12,6 +12,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 const (
@@ -98,7 +99,7 @@ func TestComponent_ExecuteGetContactTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name     string
@@ -125,7 +126,7 @@ func TestComponent_ExecuteGetContactTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetContact},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetContact},
 			client:             createMockClient(),
 		}
 
@@ -137,7 +138,7 @@ func TestComponent_ExecuteGetContactTask(t *testing.T) {
 
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbInput, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 			resJSON, err := protojson.Marshal(output)
@@ -158,7 +159,7 @@ func TestComponent_ExecuteCreateContactTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name     string
@@ -181,7 +182,7 @@ func TestComponent_ExecuteCreateContactTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskCreateContact},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskCreateContact},
 			client:             createMockClient(),
 		}
 		e.execute = e.CreateContact
@@ -190,7 +191,7 @@ func TestComponent_ExecuteCreateContactTask(t *testing.T) {
 
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbInput, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 			resString := output.Fields["contact-id"].GetStringValue()

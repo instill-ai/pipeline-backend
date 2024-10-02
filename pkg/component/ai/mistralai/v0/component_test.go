@@ -13,6 +13,7 @@ import (
 	mistralSDK "github.com/gage-technologies/mistral-go"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 type MockMistralClient struct {
@@ -136,7 +137,7 @@ func TestComponent_Tasks(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(chatTc.input)
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 			wantJSON, err := json.Marshal(chatTc.wantResp)
@@ -173,7 +174,7 @@ func TestComponent_Tasks(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(embeddingTc.input)
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 			wantJSON, err := json.Marshal(embeddingTc.wantResp)

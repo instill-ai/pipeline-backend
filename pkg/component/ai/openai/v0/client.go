@@ -34,7 +34,7 @@ func (e errBody) Message() string {
 }
 
 // getBasePath returns OpenAI's API URL. This configuration param allows us to
-// override the API the connector will point to. It isn't meant to be exposed
+// override the API the component will point to. It isn't meant to be exposed
 // to users. Rather, it can serve to test the logic against a fake server.
 // TODO instead of having the API value hardcoded in the codebase, it should be
 // read from a setup file or environment variable.

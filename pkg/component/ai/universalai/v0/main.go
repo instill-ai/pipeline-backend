@@ -32,7 +32,7 @@ var (
 	comp *component
 )
 
-// Connector executes queries against OpenAI.
+// Component executes queries against OpenAI.
 type component struct {
 	base.Component
 
@@ -45,7 +45,7 @@ type execution struct {
 	execute                func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
 }
 
-// Init returns an initialized AI connector.
+// Init returns an initialized AI component.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}

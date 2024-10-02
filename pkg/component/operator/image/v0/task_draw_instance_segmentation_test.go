@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 //go:embed testdata/inst-seg-coco-1.json
@@ -60,7 +61,7 @@ func TestDrawInstanceSegmentation(t *testing.T) {
 
 			c.Assert(err, quicktest.IsNil, quicktest.Commentf("drawInstanceSegmentation create execution returned an error"))
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Expect(context.Background()).Return(inputData, nil)
 			ow.WriteMock.Times(1).Return(nil)
 

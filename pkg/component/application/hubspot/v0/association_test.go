@@ -11,6 +11,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 // mockClient is in contact_test.go
@@ -58,7 +59,7 @@ func TestComponent_ExecuteRetrieveAssociationTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	testcases := []struct {
 		name     string
@@ -101,7 +102,7 @@ func TestComponent_ExecuteRetrieveAssociationTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskRetrieveAssociation},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskRetrieveAssociation},
 				client:             createMockClient(),
 			}
 			e.execute = e.RetrieveAssociation
@@ -110,7 +111,7 @@ func TestComponent_ExecuteRetrieveAssociationTask(t *testing.T) {
 
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbInput, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				resJSON, err := protojson.Marshal(output)

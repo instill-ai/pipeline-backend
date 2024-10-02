@@ -47,7 +47,7 @@ type execution struct {
 	client  Client
 }
 
-// Init returns an implementation of IConnector that interacts with Slack.
+// Init returns an implementation of IComponent that interacts with Slack.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -60,7 +60,7 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
-// CreateExecution initializes a connector executor that can be used in a
+// CreateExecution initializes a component executor that can be used in a
 // pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	ctx := context.Background()

@@ -14,6 +14,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/asana/v0/mockasana"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 const (
@@ -68,7 +69,7 @@ func taskTesting[inType any, outType any](testcases []taskCase[inType, outType],
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)

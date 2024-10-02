@@ -8,65 +8,55 @@ is welcome, including but not limiting to
 - roadmap suggestion
 - ...and so on!
 
-## Development environment and codebase contribution
-
-### Component contribution guide
-
-The [component](./pkg/component) package contains [a
-guide](./pkg/component/CONTRIBUTING.md) on how to contribute with new
-components.
-
-### Prerequisites
+## Introduction
 
 Before delving into the details to come up with your first PR, please
-familiarise yourself with the project structure of 🔮 [**Instill
-Core**](https://github.com/instill-ai/community#instill-core).
+familiarize yourself with the project structure of 🔮 [**Instill
+Core**](https://github.com/instill-ai/instill-core).
 
-### Pre-commit hooks
+You can also have an overview of the main [concepts](../README.md#concepts) in
+the VDP domain.
 
-Check out `.pre-commit-config.yaml` for the set of hooks that we use.
+If you want to extend a [component](../pkg/component) or contribute with a new
+one, you might want to check the [component contribution
+guide](../pkg/component/CONTRIBUTING.md).
 
-### Local development
+## Local development
 
-#### Environment setup
+### Environment setup
 
-On your local machine, clone the `instill-core` repository into your workspace,
-move to the repository folder, and launch all dependent services:
+If you want to see your changes in action you'll need to build VDP locally.
+First, launch the latest version of 🔮 [**Instill
+Core**](https://github.com/instill-ai/instill-core) suite. Then, build and
+launch the 💧 [**Instill VDP**](https://github.com/instill-ai/pipeline-backend)
+backend with your local changes.
 
-```bash
-$ cd <your-workspace>
-$ git clone https://github.com/instill-ai/instill-core.git
-$ cd instill-core
-$ make latest PROFILE=exclude-pipeline
+#### Building 🔮 Instill Core suite
+
+```sh
+$ cd $MY_WORKSPACE
+$ git clone https://github.com/instill-ai/instill-core && cd instill-core
+$ make latest PROFILE=exclude-pipeline # launch all the dependent services except pipeline-backend
 ```
 
-Clone `pipeline-backend` repository into your workspace and move to the
-repository folder:
+#### Building 💧 Instill VDP backend
 
-```bash
-$ cd <your-workspace>
-$ git clone https://github.com/instill-ai/pipeline-backend.git
-$ cd pipeline-backend
+```sh
+$ cd $MY_WORKSPACE
+$ git clone https://github.com/instill-ai/pipeline-backend && cd pipeline-backend
 $ make build && make dev
 ```
 
 Now, you have the Go project set up in the container, in which you can compile
 and run the binaries together with the integration test in each container shell.
 
-#### Run the server
+#### Run the server and the Temporal worker
 
-```bash
-$ docker exec -it pipeline-backend bash
-$ go run ./cmd/migration
-$ go run ./cmd/init
-$ go run ./cmd/main
-```
-
-#### Run the temporal worker
-
-```bash
-$ docker exec -it pipeline-backend bash
-$ go run ./cmd/worker
+```sh
+$ docker exec pipeline-backend go run ./cmd/migration
+$ docker exec pipeline-backend go run ./cmd/init
+$ docker exec -d pipeline-backend go run ./cmd/worker # run without -d in a separate terminal if you want to access the logs
+$ docker exec pipeline-backend go run ./cmd/main
 ```
 
 #### Run the unit tests
@@ -80,6 +70,12 @@ to a mocked one) in order to increase the confidence of the tests. `DBTEST=true`
 will create and migrate a test database to keep these queries isolated from the
 main DB. You can set the database host and name by overriding the `TEST_DBHOST`
 and `TEST_DBNAME` values.
+
+Certain tests depend on the [`docconv`](https://github.com/sajari/docconv)
+package and aren't run by default. You can trigger them by adding the `OCR=true`
+flag to the coverage command. Make sure to install the [package
+dependencies](https://github.com/sajari/docconv?tab=readme-ov-file#dependencies)
+first.
 
 #### Run the integration tests
 
@@ -107,7 +103,13 @@ $ make stop
 $ make rm
 ```
 
-## Sending PRs
+## Codebase contribution
+
+### Pre-commit hooks
+
+Check out `.pre-commit-config.yaml` for the set of hooks that we use.
+
+### Sending PRs
 
 Please take these general guidelines into consideration when you are sending a PR:
 
@@ -122,7 +124,7 @@ Please take these general guidelines into consideration when you are sending a P
 
 When you are ready to send a PR, we recommend you to first open a `draft` one. This will trigger a bunch of `tests` [workflows](https://github.com/instill-ai/pipeline-backend/tree/main/.github/workflows) running a thorough test suite on multiple platforms. After the tests are done and passed, you can now mark the PR `open` to notify the codebase owners to review. We appreciate your endeavour to pass the integration test for your PR to make sure the sanity with respect to the entire scope of **Instill Core**.
 
-## CI/CD
+### CI/CD
 
 - **pull_request** to the `main` branch will trigger the **`Integration Test`** workflow running the integration test using the image built on the PR head branch.
 - **push** to the `main` branch will trigger

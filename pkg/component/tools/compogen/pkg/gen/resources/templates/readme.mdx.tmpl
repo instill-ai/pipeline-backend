@@ -1,0 +1,186 @@
+---
+title: "{{ .Title }}"
+lang: "en-US"
+draft: {{ .IsDraft }}
+description: "Learn about how to set up a VDP {{ .Title }} component https://github.com/instill-ai/instill-core"
+---
+
+The {{ .Title }} component is {{ .ComponentType.IndefiniteArticle }} {{ .ComponentType }} component that allows users to {{ firstToLower .Description }}.
+It can carry out the following tasks:
+{{- range .Tasks }}
+- [{{ .Title }}](#{{ asAnchor .Title}}){{- end }}
+
+{{- loadExtraContent "intro" }}
+
+## Release Stage
+
+`{{ .ReleaseStage.String }}`
+
+{{- loadExtraContent "release" }}
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json]({{ .SourceURL }}/config/definition.json) and [tasks.json]({{ .SourceURL }}/config/tasks.json) files respectively.
+
+{{- loadExtraContent "config" }}
+{{ if or .SetupConfig.Prerequisites .SetupConfig.Properties }}
+## Setup
+{{ with .SetupConfig.Prerequisites}}
+<InfoBlock type="info" title="Prerequisites">{{ . }}</InfoBlock>
+{{- end }}
+{{ $vendor := .Vendor }}
+{{- with .SetupConfig.Properties }}
+In order to communicate with {{ if $vendor }}{{ $vendor }}{{ else }}the
+external application{{ end }}, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+{{- range . }}
+| {{ anchorSetup . }}{{ if .Required }} (required){{- end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+{{- end }}
+{{- end }}
+
+</div>
+
+{{ loadExtraContent "setup" }}
+{{- end }}
+{{ if .SetupConfig.OneOf -}}
+{{- range $key, $options := .SetupConfig.OneOf -}}
+<details>
+<summary>The <code>{{ $key }}</code> Object </summary>
+
+{{ insertHeaderByObjectKey $key "setup" }}
+
+`{{ $key }}` must fulfill one of the following schemas:
+{{- range $idx, $option := $options }}
+
+{{ insertHeaderByConstValue $option "setup" }}
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+{{- range $propKey, $prop := $option.Properties }}
+| {{ anchorSetup $prop }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }}  {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+{{- end }}
+</div>
+{{- end }}
+</details>
+{{- end }}
+{{- end }}
+
+## Supported Tasks
+{{ range $i, $task := .Tasks}}
+### {{ $task.Title }}
+{{ with $task.Description }}
+{{ . }}
+{{- end }}
+{{ if $task.Input }}
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `{{ $task.ID }}` |
+{{- range $task.Input }}
+| {{ anchorTaskObject . $task }}{{ if .Required }} (required){{ end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} |
+{{- end }}
+</div>
+{{- end }}
+
+
+{{ if $task.InputObjects -}}
+<details>
+<summary> Input Objects in {{ $task.Title }}</summary>
+{{ range $idx, $objectSchemaMap := $task.InputObjects }}
+{{- range $key, $schema := $objectSchemaMap }}
+{{- if $schema.Properties }}
+{{ insertHeaderByObjectKey $key $task }}
+{{ with $schema.Description }}
+{{ . }}
+{{ end }}
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+{{- range $propKey, $prop := $schema.Properties }}
+| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+{{- end }}
+</div>
+{{- end }}
+{{- end }}
+{{- end }}
+</details>
+{{- end }}
+
+{{ if $task.OneOfs -}}
+{{ range $idx, $oneOf := $task.OneOfs -}}
+{{ range $key, $options := $oneOf -}}
+<details>
+<summary>The <code>{{ $key }}</code> Object </summary>
+
+{{ insertHeaderByObjectKey $key $task }}
+
+`{{ $key }}` must fulfill one of the following schemas:
+{{- range $idx, $option := $options }}
+{{ if $option.Properties }}
+{{ insertHeaderByConstValue $option $task }}
+{{ with $option.Description }}
+{{ . }}
+{{ end }}
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+{{- range $propKey, $prop := $option.Properties }}
+| {{ $prop.Title }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ if $prop.Const }} Must be `"{{ $prop.Const }}"` {{ else }} {{ $prop.Description }} {{- end }} {{ if .Enum }} {{ enumValues .Enum }} {{ end }} |
+{{- end }}
+</div>
+{{- end }}
+{{- end }}
+</details>
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{ if $task.Output -}}
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+{{- range $task.Output }}
+| {{ anchorTaskObject . $task }}{{ if not .Required }} (optional){{- end }} | `{{ .ID }}` | {{ .Type }} | {{ .Description }} |
+{{- end }}
+</div>
+{{- end }}
+{{ if $task.OutputObjects }}
+<details>
+<summary> Output Objects in {{ $task.Title }}</summary>
+{{- range $idx, $objectSchemaMap := $task.OutputObjects }}
+{{- range $key, $schema := $objectSchemaMap }}
+{{- if $schema.Properties }}
+
+{{ insertHeaderByObjectKey $key $task }}
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+{{- range $propKey, $prop := $schema.Properties }}
+| {{ anchorTaskObject $prop $task }} | `{{ $propKey }}` | {{ $prop.Type }} | {{ $prop.Description }} |
+{{- end }}
+</div>
+{{- end }}
+{{- end }}
+{{- end }}
+</details>
+{{ end -}}
+{{- loadExtraContent $task.ID -}}
+{{- end -}}
+{{- loadExtraContent "bottom" -}}

@@ -94,7 +94,7 @@ type IClient interface {
 	Transport() (*http.Transport, error)
 }
 
-// Client performs HTTP requests for connectors, implementing error handling
+// Client performs HTTP requests for components, implementing error handling
 // and logging in a consistent way.
 type Client struct {
 	*resty.Client
@@ -192,7 +192,7 @@ func New(name, host string, options ...Option) *Client {
 // WrapURLError is a helper to add an end-user message to trasnport errros.
 //
 // Resty doesn't provide a hook for errors in `http.Client.Do`, e.g. if the
-// connector configuration contains an invalid URL. This wrapper offers
+// component configuration contains an invalid URL. This wrapper offers
 // clients a way to handle such cases:
 //
 //	if _, err := httpclient.New(name, host).R().Post(url); err != nil {
@@ -203,7 +203,7 @@ func WrapURLError(err error) error {
 	if errors.As(err, &uerr) {
 		err = errmsg.AddMessage(
 			err,
-			fmt.Sprintf("Failed to call %s. Please check that the connector configuration is correct.", uerr.URL),
+			fmt.Sprintf("Failed to call %s. Please check that the component configuration is correct.", uerr.URL),
 		)
 	}
 

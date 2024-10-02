@@ -12,13 +12,14 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 func TestComponent_ExecuteGetAgentTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -88,7 +89,7 @@ func TestComponent_ExecuteGetAgentTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetAgent},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetAgent},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskGetAgent
@@ -96,7 +97,7 @@ func TestComponent_ExecuteGetAgentTask(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(tc.input)
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 
@@ -119,7 +120,7 @@ func TestComponent_ExecuteGetRoleTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -163,7 +164,7 @@ func TestComponent_ExecuteGetRoleTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetRole},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetRole},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskGetRole
@@ -171,7 +172,7 @@ func TestComponent_ExecuteGetRoleTask(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(tc.input)
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 
@@ -194,7 +195,7 @@ func TestComponent_ExecuteGetGroupTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -246,7 +247,7 @@ func TestComponent_ExecuteGetGroupTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetGroup},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetGroup},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskGetGroup
@@ -254,7 +255,7 @@ func TestComponent_ExecuteGetGroupTask(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(tc.input)
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 
@@ -277,7 +278,7 @@ func TestComponent_ExecuteGetSkillTask(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	FreshdeskClientMock := NewFreshdeskInterfaceMock(mc)
@@ -354,7 +355,7 @@ func TestComponent_ExecuteGetSkillTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetSkill},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetSkill},
 			client:             FreshdeskClientMock,
 		}
 		e.execute = e.TaskGetSkill
@@ -362,7 +363,7 @@ func TestComponent_ExecuteGetSkillTask(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(tc.input)
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 

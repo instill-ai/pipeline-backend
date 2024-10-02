@@ -22,7 +22,7 @@ var (
 	openAIKey = "invalid-key"
 	openAIOrg = "no-such-org"
 
-	emptyOptions = ConnectorOptions{}
+	emptyOptions = ComponentOptions{}
 )
 
 func TestOpenAITextGeneration(t *testing.T) {
@@ -43,7 +43,7 @@ func TestOpenAITextGeneration(t *testing.T) {
 	logger := zap.NewNop()
 	conn := Init(logger, emptyOptions)
 
-	def, err := conn.GetConnectorDefinitionByID("openai", nil)
+	def, err := conn.GetComponentDefinitionByID("openai", nil)
 	c.Assert(err, qt.IsNil)
 
 	uid, err := uuid.FromString(def.GetUid())

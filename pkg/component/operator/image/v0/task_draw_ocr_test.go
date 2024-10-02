@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 //go:embed testdata/ocr-mm.json
@@ -48,7 +49,7 @@ func TestDrawOCR(t *testing.T) {
 				c.Fatal(err)
 			}
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Expect(context.Background()).Return(inputData, nil)
 			ow.WriteMock.Times(1).Return(nil)
 

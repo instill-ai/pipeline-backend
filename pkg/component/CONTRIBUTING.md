@@ -1,94 +1,8 @@
 # Contributing Guidelines
 
-## Concepts
+## Introduction
 
-Before delving into the details to come up with your first PR, please
-familiarize yourself with the project structure of 🔮 [**Instill
-Core**](https://github.com/instill-ai/community#instill-core).
-
-### Pipeline
-
-In **💧 Instill VDP**, a pipeline is a DAG (Directed Acyclic Graph) consisting of multiple
-**components**.
-
-```mermaid
-flowchart LR
-    s[Trigger] --> c1[OpenAI Component]
-    c1 --> c2[Stability AI Component]
-    c1 --> c3[MySQL Component]
-    c1 --> e[Response]
-    c2 --> e
-```
-
-### Component
-
-A **Component** serves as an essential building block within a **Pipeline**.
-
-See [README](./README.md) for more details.
-
-### Recipe
-
-A **pipeline recipe** specifies how components are configured and how they are
-interconnected.
-
-Recipes are defined in YAML language:
-
-```yaml
-variable:
-  # pipeline input fields
-output:
-  # pipeline output fields
-component:
-  <component-id>:
-    type: <component-definition-id>
-    task: <task-id>
-    input:
-      # values for the input fields
-    condition: <condition> # conditional statement to execute or bypass the component
-    setup: <setup> # setup specification values required in AI, Data and Application components
-```
-
-You can see an example recipe in the [component development
-guide](#example-recipe)
-
-```mermaid
-sequenceDiagram
-participant u as User
-participant gw as api-gateway
-participant p as pipeline-backend
-participant db as pipeline-db
-
-u ->> gw: POST /users/<user>/pipelines
-gw ->> p: forward
-p ->> db: Store pipeline and its recipe
-```
-
-### Trigger
-
-When a pipeline is triggered, the DAG will be computed in order to execute
-components in topological order.
-
-```mermaid
-sequenceDiagram
-
-participant u as User
-participant gw as api-gateway
-participant p as pipeline-backend
-participant db as pipeline-db
-participant c as component
-
-u ->> gw: POST /users/<user>/pipelines/<pipeline-id>/trigger
-gw ->> p: forward
-p ->> db: Get recipe
-db ->> p: Recipe
-loop over topological order of components
-    p->>c: ExecuteWithValidation
-end
-```
-
-## Development
-
-This section will guide you through the steps to contribute with a new
+This document will guide you through the steps to contribute with a new
 component. You'll add and test an operator that takes a string `target` as input
 and returns a `"Hello, ${target}!"` string as the component output
 
@@ -102,40 +16,26 @@ In order to add a new component, you need to:
 - Initialize the component, i.e., include the implementation of the component
   interfaces as a dependency in the `pipeline-backend` execution.
 
-### Environment setup
+### Prerequisites
 
-Although all the development will be done in this repository, if you want to
-[see your component in action](#use-the-component-in-vdp), you'll need to build
-VDP locally. First, launch the latest version of 🔮 [**Instill
-Core**](https://github.com/instill-ai/instill-core) suite. Then, build and
-launch 💧 [**Instill VDP**](https://github.com/instill-ai/pipeline-backend)
-backend with your local changes.
+This guide builds on top of other documents:
 
-If you want to know more, you can refer to the documentation in these
-repositories, which explains in detail how to set up the development
-environment. In short, here's what we'll need to do for this guide:
-
-#### Building 🔮 Instill Core suite
-
-```sh
-$ git clone https://github.com/instill-ai/instill-core && cd instill-core
-$ make latest PROFILE=exclude-pipeline
-```
-
-#### Building 💧 Instill VDP backend
-
-```sh
-$ git clone https://github.com/instill-ai/pipeline-backend && cd pipeline-backend
-$ make build && make dev
-$ docker exec -d pipeline-backend go run ./cmd/worker # run without -d in a separate terminal if you want to access the logs
-$ docker exec pipeline-backend go run ./cmd/main
-```
+- `pipeline-backend`'s [README](../../README.md) explains the basic concepts in
+  the VDP domain.
+- `component`'s [README](./README.md) digs deeper into the **Component** entity,
+  its structure and functionalities.
+- The repository's [contribution guidelines](../../.github/CONTRIBUTING.md)
+  document the conventions you'll need to follow when contributing to this
+  repository. They also contain a guide on how to set your development
+  environment, in case you want to [see your component in
+  action](#use-the-component-in-vdp).
+- If you find yourself wanting to know more, visit the [Instill
+  Docs](https://www.instill.tech/docs).
 
 ### Create the component package
 
 ```sh
-$ # From <workspace>/pipeline-backend:
-$ cd ./pkg/component
+$ cd $MY_WORKSPACE/pipeline-backend/pkg/component
 $ mkdir -p operator/hello/v0 && cd $_
 ```
 
@@ -157,7 +57,7 @@ operator/hello/v0
  │  ├──definition.json
  │  └──tasks.json
  ├──main.go
- ├──operator_test.go
+ ├──main_test.go
  └──README.mdx
  ```
 
@@ -185,7 +85,7 @@ component.
   "documentationUrl": "https://www.instill.tech/docs/component/operator/hello",
   "icon": "assets/hello.svg",
   "version": "0.1.0",
-  "sourceUrl": "https://github.com/instill-ai/component/blob/main/operator/hello/v0",
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/hello/v0",
   "releaseStage": "RELEASE_STAGE_ALPHA",
   "public": true
 }
@@ -337,10 +237,33 @@ the recipe of a pipeline when configured to use this operator.
 
 #### `setup.json`
 
-For components that need to set up some configuration before execution, such as
-the `api-key` required by the component, `setup.json` can be used to describe
-these configurations. The format is the same as the `input` objects in
-`tasks.json`.
+For components that need to set up some configuration before execution
+(typically, components that connect with 3rd party applications or services that
+need to set up a connection), `setup.json` can be used to describe these
+configurations. The format is the same as the `input` objects in `tasks.json`.
+
+The setup of a component can be defined within the recipe as key-value fields,
+or as a reference to a **Connection** (see the
+[**Integrations**](https://www.instill.tech/docs/vdp/integration) doc for more
+information). Certain components support OAuth 2.0 integrations. If you want
+your component to support this sort of connection:
+
+- In `setup.json`, add the OAuth information under the  `instillOAuthConfig`
+  property.
+  - `authUrl` contains the address where the authorization code can be
+    requested.
+    - `accessUrl` contains the address where the authorization code can be
+      exchanged for an access token.
+    - `scopes` contains the permissions that will be associated with the access
+      token. Refer to the vendor you want to integrate with in order to identify
+      the scopes that will be required by the different tasks implemented by the
+      component. Note that, if the component is extended later requiring more
+      scopes, users will need to create a new connection in order to leverage
+      the new functionality.
+- The OAuth 2.0 exchange for an access token is implemented in the frontend.
+  Make sure to engage with [Instill
+  Product](https://github.com/orgs/instill-ai/teams/product) in order to
+  prioritise the OAuth support for this component.
 
 ### Implement the component interfaces
 
@@ -370,56 +293,56 @@ import (
     "go.uber.org/zap"
     "google.golang.org/protobuf/types/known/structpb"
 
-    "github.com/instill-ai/component/base"
+    "github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
 const (
-	taskGreet = "TASK_GREET"
+  taskGreet = "TASK_GREET"
 )
 
 var (
-	//go:embed config/definition.json
-	definitionJSON []byte
-	//go:embed config/tasks.json
-	tasksJSON []byte
+  //go:embed config/definition.json
+  definitionJSON []byte
+  //go:embed config/tasks.json
+  tasksJSON []byte
 
-	once   sync.Once
-	comp   *component
+  once   sync.Once
+  comp   *component
 )
 
 type component struct {
-	base.Component
-}
-
-type execution struct {
-	base.ComponentExecution
+  base.Component
 }
 
 // Init returns an implementation of IComponent that implements the greeting
 // task.
 func Init(bc base.Component) *component {
-	once.Do(func() {
-		comp = &component{Component: bc}
-		err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil)
-		if err != nil {
-			panic(err)
-		}
-	})
-	return comp
+  once.Do(func() {
+    comp = &component{Component: bc}
+    err := comp.LoadDefinition(definitionJSON, nil, tasksJSON, nil)
+    if err != nil {
+      panic(err)
+    }
+  })
+  return comp
+}
+
+type execution struct {
+    base.ComponentExecution
 }
 
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
-	e := &execution{ ComponentExecution: x }
+  e := &execution{ ComponentExecution: x }
 
-	if x.Task != taskGreet {
-		return nil, fmt.Errorf("unsupported task")
-	}
+  if x.Task != taskGreet {
+    return nil, fmt.Errorf("unsupported task")
+  }
 
-	return e, nil
+  return e, nil
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return nil
+  return nil
 }
 ```
 
@@ -432,60 +355,60 @@ Let's modify the following methods:
 
 ```go
 type execution struct {
-	base.ComponentExecution
-	execute func(*structpb.Struct) (*structpb.Struct, error)
+  base.ComponentExecution
+  execute func(*structpb.Struct) (*structpb.Struct, error)
 }
 
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
-	e := &execution{ ComponentExecution: x }
+  e := &execution{ ComponentExecution: x }
 
-	// A simple if statement would be enough in a component with a single task.
-	// If the number of task grows, here is where the execution task would be
-	// selected.
-	switch x.Task {
-	case taskGreet:
-		e.execute = e.greet
-	default:
-		return nil, fmt.Errorf("unsupported task")
-	}
+  // A simple if statement would be enough in a component with a single task.
+  // If the number of task grows, here is where the execution task would be
+  // selected.
+  switch x.Task {
+  case taskGreet:
+    e.execute = e.greet
+  default:
+    return nil, fmt.Errorf("unsupported task")
+  }
 
-	return e, nil
+  return e, nil
 }
-func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
-	// An execution  might take several inputs. One result will be returned for
-	// each one of them, containing the execution output for that set of
-	// parameters.
-	for i, job := range jobs {
+func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
+  // An execution  might take several inputs. One result will be returned for
+  // each one of them, containing the execution output for that set of
+  // parameters.
+  for _, job := range jobs {
     input, err := job.Input.Read(ctx)
     if err != nil {
       return err
     }
-		output, err := e.execute(input)
-		if err != nil {
-			return err
-		}
+  output, err := e.execute(input)
+  if err != nil {
+    return err
+  }
 
-		err = job.Output.Write(ctx, output)
+  err = job.Output.Write(ctx, output)
     if err != nil {
-			return err
-		}
-	}
+      return err
+    }
+  }
 
-	return nil
+  return nil
 }
 
 func (e *execution) greet(in *structpb.Struct) (*structpb.Struct, error) {
-	out := new(structpb.Struct)
+  out := new(structpb.Struct)
 
-	target := in.Fields["target"].GetStringValue()
-	greeting := "Hello, " + target + "!"
+  target := in.Fields["target"].GetStringValue()
+  greeting := "Hello, " + target + "!"
 
-	out.Fields = map[string]*structpb.Value{
-		"greeting": structpb.NewStringValue(greeting),
-	}
+  out.Fields = map[string]*structpb.Value{
+    "greeting": structpb.NewStringValue(greeting),
+  }
 
-	return out, nil
+  return out, nil
 }
 ```
 
@@ -496,20 +419,20 @@ us to attach messages to our errors.
 
 ```go
 func (e *execution) greet(in *structpb.Struct) (*structpb.Struct, error) {
-	out := new(structpb.Struct)
+  out := new(structpb.Struct)
 
-	greetee := in.Fields["target"].GetStringValue()
-	if greetee == "Voldemort" {
-		return nil, errmsg.AddMessage(fmt.Errorf("invalid greetee"), "He-Who-Must-Not-Be-Named can't be greeted.")
-	}
+  greetee := in.Fields["target"].GetStringValue()
+  if greetee == "Voldemort" {
+    return nil, errmsg.AddMessage(fmt.Errorf("invalid greetee"), "He-Who-Must-Not-Be-Named can't be greeted.")
+  }
 
-	greeting := "Hello, " + greetee + "!"
+  greeting := "Hello, " + greetee + "!"
 
-	out.Fields = map[string]*structpb.Value{
-		"greeting": structpb.NewStringValue(greeting),
-	}
+  out.Fields = map[string]*structpb.Value{
+    "greeting": structpb.NewStringValue(greeting),
+  }
 
-	return out, nil
+  return out, nil
 }
 ```
 
@@ -518,40 +441,43 @@ to return a human-friendly errors to the API clients and console users.
 
 #### Unit tests
 
-Before initializing testing your component in **💧 Instill VDP**, we can unit test its
-behaviour. The following covers the newly added logic by replicating how the
-`pipeline-backend` workers execute the component logic:
+Before initializing testing your component in **💧 Instill VDP**, we can unit
+test its behaviour. The following code covers the newly added logic by
+replicating how the `pipeline-backend` workers execute the component logic.
+Create a `main_test.go` file containing the following code:
 
 ```go
 package hello
 
 import (
-	"context"
-	"testing"
+  "context"
+  "testing"
 
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/structpb"
+  "go.uber.org/zap"
+  "google.golang.org/protobuf/types/known/structpb"
 
-	qt "github.com/frankban/quicktest"
-	"github.com/instill-ai/component/base"
+  qt "github.com/frankban/quicktest"
+
+  "github.com/instill-ai/pipeline-backend/pkg/component/base"
+  "github.com/instill-ai/x/errmsg"
 )
 
 func TestOperator_Execute(t *testing.T) {
-	c := qt.New(t)
-	ctx := context.Background()
+  c := qt.New(t)
+  ctx := context.Background()
 
-	bc := base.Component{Logger: zap.NewNop()}
-	component := Init(bc)
+  bc := base.Component{Logger: zap.NewNop()}
+  component := Init(bc)
 
-	c.Run("ok - greet", func(c *qt.C) {
-		exec, err := component.CreateExecution(base.ComponentExecution{
-			Component: component,
-			Task:      taskGreet,
-		})
-		c.Assert(err, qt.IsNil)
+  c.Run("ok - greet", func(c *qt.C) {
+    exec, err := component.CreateExecution(base.ComponentExecution{
+      Component: component,
+      Task:      taskGreet,
+    })
+    c.Assert(err, qt.IsNil)
 
-		pbIn, err := structpb.NewStruct(map[string]any{"target": "bolero-wombat"})
-		c.Assert(err, qt.IsNil)
+    pbIn, err := structpb.NewStruct(map[string]any{"target": "bolero-wombat"})
+    c.Assert(err, qt.IsNil)
 
     ir, ow, eh, job := base.GenerateMockJob(c)
     ir.ReadMock.Return(&pbIn, nil)
@@ -565,57 +491,81 @@ func TestOperator_Execute(t *testing.T) {
 
     err = execution.Execute(ctx, []*base.Job{job})
     c.Assert(err, qt.IsNil)
+  })
 
-	})
+  c.Run("nok - invalid greetee", func(c *qt.C) {
+    x, err := comp.CreateExecution(base.ComponentExecution{
+      Component: comp,
+      Task:      taskGreet,
+    })
+    c.Assert(err, qt.IsNil)
+
+    pbIn, err := structpb.NewStruct(map[string]any{"target": "Voldemort"})
+    c.Assert(err, qt.IsNil)
+
+    ir, ow, eh, job := base.GenerateMockJob(c)
+    ir.ReadMock.Return(pbIn, nil)
+    ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
+      // Check JSON in the output string.
+      greeting := output.Fields["greeting"].GetStringValue()
+      c.Check(greeting, qt.Equals, "Hello, bolero-wombat!")
+      return nil
+    })
+    eh.ErrorMock.Optional()
+
+    err = x.Execute(ctx, []*base.Job{job})
+    c.Assert(err, qt.ErrorMatches, "invalid greetee")
+    c.Assert(errmsg.Message(err), qt.Matches, "He-Who-Must-Not-Be-Named can't be greeted.")
+  })
 }
 
 func TestOperator_CreateExecution(t *testing.T) {
-	c := qt.New(t)
+  c := qt.New(t)
 
-	bc := base.Component{Logger: zap.NewNop()}
-	operator := Init(bc)
+  bc := base.Component{Logger: zap.NewNop()}
+  operator := Init(bc)
 
-	c.Run("nok - unsupported task", func(c *qt.C) {
-		task := "FOOBAR"
+  c.Run("nok - unsupported task", func(c *qt.C) {
+    task := "FOOBAR"
 
-		_, err := operator.CreateExecution(base.ComponentExecution{
-			Component: component,
-			Task: task,
-		})
-		c.Check(err, qt.ErrorMatches, "unsupported task")
-	})
+    _, err := operator.CreateExecution(base.ComponentExecution{
+      Component: component,
+      Task: task,
+    })
+    c.Check(err, qt.ErrorMatches, "unsupported task")
+  })
 }
 ```
 
 ### Initialize the component
 
-The last step before being able to use the component in **💧 Instill VDP** is loading the
-`hello` operator. This is done in the `Init` function in
-[`component.go`](../component.go):
+The last step before being able to use the component in **💧 Instill VDP** is
+loading the `hello` operator. This is done in the `Init` function in
+[`store.go`](./store/store.go):
 
 ```go
-package operator
+package store
 
 import (
-	// ...
-	"github.com/instill-ai/component/operator/hello/v0"
+  // ...
+  "github.com/instill-ai/pipeline-backend/pkg/component/operator/hello/v0"
 )
 
 // ...
 
 func Init(logger *zap.Logger) *Store {
-	baseComp := base.component{Logger: logger}
+  baseComp := base.component{Logger: logger}
 
-	once.Do(func() {
-		store = &Store{
-			componentUIDMap: map[uuid.UUID]*component{},
-			componentIDMap:  map[string]*component{},
-		}
-		// ...
-		store.Import(hello.Init(baseComp))
-	})
+  once.Do(func() {
+    compStore = &Store{
+      componentUIDMap: map[uuid.UUID]*component{},
+      componentIDMap:  map[string]*component{},
+    }
+    // ...
+    compStore.Import(hello.Init(baseComp))
+  })
 
-	return store
+  return compStore
 }
 ```
 
@@ -625,6 +575,7 @@ Re-run your local `pipeline-backend` build:
 
 ```sh
 $ make stop && make dev
+$ docker exec pipeline-backend go run ./cmd/init # this will load the new component into the database
 $ docker exec -d pipeline-backend go run ./cmd/worker # run without -d in a separate terminal if you want to access the logs
 $ docker exec pipeline-backend go run ./cmd/main
 ```
@@ -632,37 +583,36 @@ $ docker exec pipeline-backend go run ./cmd/main
 Head to the console at http://localhost:3000/ (default password is `password`)
 and create a pipeline.
 
-- In the **trigger** component, add a `who` text field.
-- Create a **hello** operator and reference the **trigger** input field by
-  adding `${trigger.who}` to the `target` field.
-- In the **response** component, add a `greeting` output value that references
-  the **hello** output by introducing `${hello-0.output.greeting}`.
+- In the **variable** component, add a `who` text field.
+- Create a **hello** operator and reference the **variable** input field by
+  adding `${variable.who}` to the `target` field.
+- In the **output** component, add a `greeting` output value that references the
+  **hello** output by introducing `${hello-0.output.greeting}`.
 
-If you introduce a `Wombat` string value in the **trigger** component and
-**Run** the pipeline, you should see `Hello, Wombat!` in the response.
+You can copy the recipe from the [example](#example-recipe).
+
+If you introduce a `Wombat` string value in the **Input** form and **Run** the
+pipeline, you should see `Hello, Wombat!` in the response.
 
 #### Example recipe
 
-The created pipeline will have the following recipe:
-
-```json
+```yaml
 variable:
   who:
-  title: Who
-  description: Who should be greeted?
-  instill-format: string
-output:
-  greeting:
-  title: Greeting
-  description:
-  value: ${hello-0.output.greeting}
+    title: Who
+    description: Who should be greeted?
+    instill-format: string
 component:
   hello-0:
-  type: hello
-  task: TASK_GREET
-  input:
-    target: ${variable.who}
-  condition:
+    type: hello
+    task: TASK_GREET
+    input:
+      target: ${variable.who}
+output:
+  greeting:
+    title: Greeting
+    description: The output greeting
+    value: ${hello-0.output.greeting}
 ```
 
 ### Document the component
@@ -679,10 +629,10 @@ document, just add the following line on top of `operator/hello/v0/main.go`:
 //go:generate compogen readme ./config ./README.mdx
 ```
 
-Then, go to the base of the `component` repository and run:
+Then, go to the base of the `pipeline-backend` repository and run:
 
 ```sh
-$ make build-doc && make gen-doc
+$ make gen-component-doc
 ```
 
 #### Adding extra sections
@@ -752,39 +702,3 @@ this:
 | 0.3.1   | `RELEASE_STAGE_BETA`  |
 | 0.4.0   | `RELEASE_STAGE_BETA`  |
 | 1.0.0   | `RELEASE_STAGE_GA`    |
-
-## Sending PRs
-
-Please take these general guidelines into consideration when you are sending a
-PR:
-
-1. **Fork the Repository:** Begin by forking the repository to your GitHub
-   account.
-2. **Create a New Branch:** Create a new branch to house your work. Use a clear
-   and descriptive name, like `<your-github-username>/<what-your-pr-about>`.
-3. **Make and Commit Changes:** Implement your changes and commit them. We
-   encourage you to follow these best practices for commits to ensure an
-   efficient review process:
-   - Adhere to the [conventional commits
-     guidelines](https://www.conventionalcommits.org/) for meaningful commit
-     messages.
-   - Follow the [7 rules of commit
-     messages](https://chris.beams.io/posts/git-commit/) for well-structured and
-     informative commits.
-   - Rearrange commits to squash trivial changes together, if possible. Utilize
-     [git
-     rebase](http://gitready.com/advanced/2009/03/20/reorder-commits-with-rebase.html)
-     for this purpose.
-4. **Push to Your Branch:** Push your branch to your GitHub repository: `git
-   push origin feat/<your-feature-name>`.
-5. **Open a Pull Request:** Initiate a pull request to our repository. Our team
-   will review your changes and collaborate with you on any necessary
-   refinements.
-
-When you are ready to send a PR, we recommend you to first open a `draft` one.
-This will trigger a bunch of `tests`
-[workflows](https://github.com/instill-ai/component/tree/main/.github/workflows)
-running a thorough test suite on multiple platforms. After the tests are done
-and passed, you can now mark the PR `open` to notify the codebase owners to
-review. We appreciate your endeavour to pass the integration test for your PR to
-make sure the sanity with respect to the entire scope of **🔮 Instill Core**.

@@ -13,13 +13,14 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 func TestComponent_Tasks(t *testing.T) {
 	mc := minimock.NewController(t)
 	c := qt.New(t)
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 	ctx := context.Background()
 
 	OllamaClientMock := NewOllamaClientInterfaceMock(mc)
@@ -69,7 +70,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             OllamaClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat
@@ -77,7 +78,7 @@ func TestComponent_Tasks(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(map[string]any{"model": "moondream", "prompt": "Tell me a joke"})
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 			wantJSON, err := json.Marshal(TaskTextGenerationChatOuput{Text: "\nWhy did the tomato turn red?\nAnswer: Because it saw the salad dressing"})
@@ -99,7 +100,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextGenerationChat},
 			client:             OllamaClientMock,
 		}
 		e.execute = e.TaskTextGenerationChat
@@ -107,7 +108,7 @@ func TestComponent_Tasks(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(map[string]any{"model": "gemini", "prompt": "Tell me a joke"})
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
@@ -126,7 +127,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
 			client:             OllamaClientMock,
 		}
 		e.execute = e.TaskTextEmbeddings
@@ -134,7 +135,7 @@ func TestComponent_Tasks(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(map[string]any{"model": "snowflake-arctic-embed:22m", "text": "The United Kingdom, made up of England, Scotland, Wales and Northern Ireland, is an island nation in northwestern Europe."})
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 			wantJSON, err := json.Marshal(TaskTextEmbeddingsOutput{Embedding: []float32{0.1, 0.2, 0.3, 0.4, 0.5}})
@@ -156,7 +157,7 @@ func TestComponent_Tasks(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: TaskTextEmbeddings},
 			client:             OllamaClientMock,
 		}
 		e.execute = e.TaskTextEmbeddings
@@ -164,7 +165,7 @@ func TestComponent_Tasks(t *testing.T) {
 		pbIn, err := base.ConvertToStructpb(map[string]any{"model": "snowflake-arctic-embed:23m", "text": "The United Kingdom, made up of England, Scotland, Wales and Northern Ireland, is an island nation in northwestern Europe."})
 		c.Assert(err, qt.IsNil)
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {

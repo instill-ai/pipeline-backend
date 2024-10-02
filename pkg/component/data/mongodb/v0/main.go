@@ -81,7 +81,7 @@ type execution struct {
 	client  *MongoClient
 }
 
-// Init returns an implementation of IConnector that interacts with MongoDB.
+// Init returns an implementation of IComponent that interacts with MongoDB.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}

@@ -12,6 +12,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 // mockClient is in contact_test.go
@@ -61,7 +62,7 @@ func TestComponent_ExecuteGetAllTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{Logger: zap.NewNop()}
-	connector := Init(bc)
+	component := Init(bc)
 
 	tc := struct {
 		name     string
@@ -83,7 +84,7 @@ func TestComponent_ExecuteGetAllTask(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		e := &execution{
-			ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: taskGetAll},
+			ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskGetAll},
 			client:             createMockClient(),
 		}
 		e.execute = e.GetAll
@@ -92,7 +93,7 @@ func TestComponent_ExecuteGetAllTask(t *testing.T) {
 			"object-type": tc.input,
 		})
 
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbInput, nil)
 		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 			if tc.name == "error case" {

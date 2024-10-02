@@ -137,6 +137,12 @@ gen-mock:
 	@go install github.com/gojuno/minimock/v3/cmd/minimock@v3.4.0
 	@go generate -run minimock ./...
 
+.PHONY: gen-component-doc
+gen-doc:					## Generate component docs
+	@rm -f $$(find ./pkg/component -name README.mdx | paste -d ' ' -s -)
+	@cd ./pkg/component/tools/compogen && go install .
+	@go generate -run compogen ./pkg/component/...
+
 .PHONY: help
 help:       	 				## Show this help
 	@echo "\nMakefile for local development"

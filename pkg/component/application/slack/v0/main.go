@@ -51,7 +51,7 @@ type SlackClient interface {
 	GetUsersInfo(users ...string) (*[]slack.User, error)
 }
 
-// Init returns an implementation of IConnector that interacts with Slack.
+// Init returns an implementation of IComponent that interacts with Slack.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}

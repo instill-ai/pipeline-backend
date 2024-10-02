@@ -11,6 +11,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 const (
@@ -48,7 +49,7 @@ func TestComponent_ExecuteSendTemplateMessageTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{}
-	connector := Init(bc)
+	component := Init(bc)
 
 	wantOutput := TaskSendTemplateMessageOutput{
 		WaID:          "886901234567",
@@ -152,7 +153,7 @@ func TestComponent_ExecuteSendTemplateMessageTask(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: connector, SystemVariables: nil, Setup: setup, Task: tc.task},
+				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: tc.task},
 				client:             &MockWhatsappClientSendTemplate{},
 			}
 
@@ -170,7 +171,7 @@ func TestComponent_ExecuteSendTemplateMessageTask(t *testing.T) {
 			pbIn, err := base.ConvertToStructpb(tc.input)
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 

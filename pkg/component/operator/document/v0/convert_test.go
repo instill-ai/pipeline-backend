@@ -16,6 +16,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 // TestConvertToText tests the convert to text task
@@ -99,7 +100,7 @@ func TestConvertToText(t *testing.T) {
 
 			if test.name == "Convert xlsx file" {
 
-				ir, ow, eh, job := base.GenerateMockJob(c)
+				ir, ow, eh, job := mock.GenerateMockJob(c)
 				ir.ReadMock.Return(input, nil)
 				ow.WriteMock.Optional().Return(nil)
 				eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
@@ -111,7 +112,7 @@ func TestConvertToText(t *testing.T) {
 				return
 			}
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(input, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				c.Assert(output.Fields["body"].GetStringValue(), qt.Not(qt.Equals), "")

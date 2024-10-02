@@ -13,6 +13,7 @@ import (
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
 	"github.com/instill-ai/x/errmsg"
 )
@@ -113,7 +114,7 @@ func TestComponent_ExecuteImageFromText(t *testing.T) {
 			})
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -143,7 +144,7 @@ func TestComponent_ExecuteImageFromText(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		pbIn := new(structpb.Struct)
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
@@ -230,7 +231,7 @@ func TestComponent_ExecuteImageFromImage(t *testing.T) {
 			})
 			c.Assert(err, qt.IsNil)
 
-			ir, ow, eh, job := base.GenerateMockJob(c)
+			ir, ow, eh, job := mock.GenerateMockJob(c)
 			ir.ReadMock.Return(pbIn, nil)
 			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
 				wantJSON, err := json.Marshal(tc.wantResp)
@@ -260,7 +261,7 @@ func TestComponent_ExecuteImageFromImage(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 
 		pbIn := new(structpb.Struct)
-		ir, ow, eh, job := base.GenerateMockJob(c)
+		ir, ow, eh, job := mock.GenerateMockJob(c)
 		ir.ReadMock.Return(pbIn, nil)
 		ow.WriteMock.Optional().Return(nil)
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {

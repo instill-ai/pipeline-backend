@@ -49,14 +49,14 @@ var (
 	comp *component
 )
 
-// Connector executes queries against OpenAI.
+// Component executes queries against OpenAI.
 type component struct {
 	base.Component
 
 	instillAPIKey string
 }
 
-// Init returns an initialized OpenAI connector.
+// Init returns an initialized OpenAI component.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -77,7 +77,7 @@ func (c *component) WithInstillCredentials(s map[string]any) *component {
 	return c
 }
 
-// CreateExecution initializes a connector executor that can be used in a
+// CreateExecution initializes a component executor that can be used in a
 // pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	resolvedSetup, resolved, err := c.resolveSetup(x.Setup)
@@ -631,7 +631,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	return nil
 }
 
-// Test checks the connector state.
+// Test checks the component state.
 func (c *component) Test(_ map[string]any, setup *structpb.Struct) error {
 	models := ListModelsResponse{}
 	req := newClient(setup, c.GetLogger()).R().SetResult(&models)
