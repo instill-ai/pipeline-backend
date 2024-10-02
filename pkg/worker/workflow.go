@@ -81,6 +81,8 @@ type PreIteratorActivityParam struct {
 	ID              string
 	UpstreamIDs     []string
 	Input           string
+	Range           []int
+	Index           string
 	SystemVariables recipe.SystemVariables
 }
 
@@ -301,10 +303,17 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 				preIteratorResult := &PreIteratorActivityResult{}
 				if err = workflow.ExecuteActivity(ctx, w.PreIteratorActivity, &PreIteratorActivityParam{
-					WorkflowID:      workflowID,
-					ID:              compID,
-					UpstreamIDs:     upstreamIDs,
-					Input:           comp.Input.(string),
+					WorkflowID:  workflowID,
+					ID:          compID,
+					UpstreamIDs: upstreamIDs,
+					Input: func(c *datamodel.Component) string {
+						if c.Input != nil {
+							return c.Input.(string)
+						}
+						return ""
+					}(comp),
+					Range:           comp.Range,
+					Index:           comp.Index,
 					SystemVariables: param.SystemVariables,
 				}).Get(ctx, &preIteratorResult); err != nil {
 					if err != nil {
@@ -612,35 +621,85 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		childWorkflowID := fmt.Sprintf("%s:%d:%s:%s:%s", param.WorkflowID, iter, constant.SegComponent, param.ID, constant.SegIteration)
 		childWorkflowIDs[iter] = childWorkflowID
 
-		input, err := recipe.Render(ctx, data.NewString(param.Input), iter, wfm, false)
-		if err != nil {
-			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		// If `input` is provided, the iteration will be performed over it;
+		// otherwise, the iteration will be based on the `range` setup.
+		useInput := param.Input != ""
+
+		var indexes []int
+		var elems []data.Value
+		if useInput {
+			input, err := recipe.Render(ctx, data.NewString(param.Input), iter, wfm, false)
+			if err != nil {
+				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+			}
+			elems = input.(*data.Array).Values
+			indexes = make([]int, len(elems))
+		} else {
+			if len(param.Range) < 2 || len(param.Range) > 3 {
+				return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, must be in the form [start, stop[, step]]"), preIteratorActivityErrorType, param.ID)
+			}
+			start := param.Range[0]
+			stop := param.Range[1]
+			if len(param.Range) == 2 {
+				if start > stop {
+					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, the `stop` should be larger then `start`"), preIteratorActivityErrorType, param.ID)
+				}
+				indexes = make([]int, stop-start)
+				for i, j := 0, start; j < stop; i, j = i+1, j+1 {
+					indexes[i] = j
+				}
+
+			} else if len(param.Range) == 3 {
+				step := param.Range[2]
+				if step == 0 {
+					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, the `step` should not be zero"), preIteratorActivityErrorType, param.ID)
+				}
+				if start > stop {
+					if step > 0 {
+						return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, the `step` should be negative"), preIteratorActivityErrorType, param.ID)
+					}
+					for j := start; j > stop; j = j + step {
+						indexes = append(indexes, j)
+					}
+				}
+				if start < stop {
+					if step < 0 {
+						return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, the `step` should be positive"), preIteratorActivityErrorType, param.ID)
+					}
+					for j := start; j < stop; j = j + step {
+						indexes = append(indexes, j)
+					}
+				}
+			}
 		}
 
-		elems := input.(*data.Array).Values
-		elementSize := len(elems)
-		result.ElementSize[iter] = elementSize
-
+		result.ElementSize[iter] = len(indexes)
 		iteratorRecipe := &datamodel.Recipe{
 			Component: wfm.GetRecipe().Component[param.ID].Component,
 		}
 
-		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowIDs[iter], iteratorRecipe, elementSize)
+		childWFM, err := w.memoryStore.NewWorkflowMemory(ctx, childWorkflowIDs[iter], iteratorRecipe, len(indexes))
 		if err != nil {
 			return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 		}
 
-		for e := range elementSize {
-
-			iteratorElem := data.NewMap(
-				map[string]data.Value{
-					"element": elems[e],
-				},
-			)
-			err = childWFM.Set(ctx, e, param.ID, iteratorElem)
-			if err != nil {
-				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+		// When iterating over `input`, each element in the array is processed
+		// and stored in memory.
+		if useInput {
+			for e := range len(indexes) {
+				iteratorElem := data.NewMap(
+					map[string]data.Value{
+						"element": elems[e],
+					},
+				)
+				err = childWFM.Set(ctx, e, param.ID, iteratorElem)
+				if err != nil {
+					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+				}
 			}
+		}
+
+		for e, rangeIndex := range indexes {
 			variable, err := wfm.Get(ctx, iter, constant.SegVariable)
 			if err != nil {
 				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
@@ -678,6 +737,8 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 				}
 				childWFM.InitComponent(ctx, e, compID)
+
+				inputVal = setIteratorIndex(inputVal, param.Index, rangeIndex)
 				if err := childWFM.SetComponentData(ctx, e, compID, memory.ComponentDataInput, inputVal); err != nil {
 					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 				}

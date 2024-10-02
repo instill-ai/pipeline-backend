@@ -566,7 +566,9 @@ func GenerateDAG(componentMap datamodel.ComponentMap) (*dag, error) {
 			template, _ := json.Marshal(component.Input)
 			parents = append(parents, FindReferenceParent(string(template))...)
 		case datamodel.Iterator:
-			parents = append(parents, FindReferenceParent(component.Input.(string))...)
+			if component.Input != nil {
+				parents = append(parents, FindReferenceParent(component.Input.(string))...)
+			}
 			nestedComponentIDs := []string{id}
 			for nestedID := range component.Component {
 				nestedComponentIDs = append(nestedComponentIDs, nestedID)
