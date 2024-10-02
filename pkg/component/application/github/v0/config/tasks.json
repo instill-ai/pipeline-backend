@@ -1241,6 +1241,38 @@
             "template"
           ],
           "instillUIOrder": 4
+        },
+        "assignees": {
+          "$ref": "#/$defs/issue/properties/assignees",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "items": {
+            "instillUIMultiline": false,
+            "type": "string"
+          },
+          "title": "Assignees",
+          "instillUIOrder": 5
+        },
+        "labels": {
+          "$ref": "#/$defs/issue/properties/labels",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "items": {
+            "instillUIMultiline": false,
+            "type": "string"
+          },
+          "title": "Labels",
+          "instillUIOrder": 6
         }
       },
       "required": [
