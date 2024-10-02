@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.40.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.39.1-beta...v0.40.0-beta) (2024-10-01)
+
+
+### Features
+
+* **image:** add basic operation tasks ([#684](https://github.com/instill-ai/pipeline-backend/issues/684)) ([2a2ce6c](https://github.com/instill-ai/pipeline-backend/commit/2a2ce6ca0e1e56fefe5bff6da07cfaa909ea7a09))
+
 ## [0.39.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.39.0-beta...v0.39.1-beta) (2024-09-30)
 
 
