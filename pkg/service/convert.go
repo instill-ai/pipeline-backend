@@ -939,13 +939,13 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 			}
 
 			if upstreamCompID != "" || compID == constant.SegVariable {
-				seg := ""
-				seg, str, _ = strings.Cut(str, "][")
-				seg = seg[1 : len(seg)-1] // remove ""
 				var walk *structpb.Value
 				if compID == constant.SegVariable {
 					walk = structpb.NewStructValue(dataInput)
 				} else {
+					seg := ""
+					seg, str, _ = strings.Cut(str, "][")
+					seg = seg[1 : len(seg)-1] // remove ""
 					comp := compsOrigin[upstreamCompID]
 
 					switch comp.Type {
@@ -1012,9 +1012,18 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 
 				}
 				if walk.GetStructValue() != nil && walk.GetStructValue().Fields != nil {
-					// For fields without "instillFormat", we will fall back to using JSON format.
+					// For fields without valid "instillFormat", we will fall back to using JSON format.
 					instillFormat := walk.GetStructValue().Fields["instillFormat"].GetStringValue()
-					if instillFormat == "" {
+					switch instillFormat {
+					case "boolean", "array:boolean":
+					case "string", "array:string":
+					case "integer", "array:integer":
+					case "number", "array:number":
+					case "image", "image/*", "array:image", "array:image/*":
+					case "audio", "audio/*", "array:audio", "array:audio/*":
+					case "video", "video/*", "array:video", "array:video/*":
+					case "document", "*/*", "array:document", "array:*/*":
+					default:
 						instillFormat = "json"
 					}
 					m, err = structpb.NewValue(map[string]interface{}{

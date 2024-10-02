@@ -2,7 +2,6 @@ package base
 
 import (
 	"encoding/base64"
-	"fmt"
 	"mime"
 	"strings"
 
@@ -31,7 +30,6 @@ type InstillAcceptFormatsSchema []string
 func (s InstillAcceptFormatsSchema) Validate(ctx jsonschema.ValidationContext, v interface{}) error {
 
 	// TODO: We should design a better approach to validate the Base64 data.
-	fmt.Println("Validate")
 	switch v := v.(type) {
 
 	case []any:
@@ -40,6 +38,9 @@ func (s InstillAcceptFormatsSchema) Validate(ctx jsonschema.ValidationContext, v
 		ok := false
 		for _, instillAcceptFormat := range s {
 			if strings.HasPrefix(instillAcceptFormat, "array:") {
+				ok = true
+			}
+			if instillAcceptFormat == "semi-structured/*" || instillAcceptFormat == "semi-structured/json" || instillAcceptFormat == "json" {
 				ok = true
 			}
 		}
