@@ -77,6 +77,7 @@ component.
   "id": "hello",
   "uid": "e05d3d71-779c-45f8-904d-e90a050ca3b2",
   "title": "Hello",
+  "type": "COMPONENT_TYPE_OPERATOR",
   "description": "'Hello, world' operator used as a template for adding components",
   "spec": {},
   "availableTasks": [
