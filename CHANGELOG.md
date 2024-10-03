@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.41.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.40.0-beta...v0.41.0-beta) (2024-10-03)
+
+
+### Features
+
+* add `range` support for iterator implementation ([#693](https://github.com/instill-ai/pipeline-backend/issues/693)) ([47fafdd](https://github.com/instill-ai/pipeline-backend/commit/47fafdd60a3fe4f8e6bfb176147db78f13c8b0a3))
+* Add assignees and labels support for create issue task in GitHub component ([#686](https://github.com/instill-ai/pipeline-backend/issues/686)) ([c1c2517](https://github.com/instill-ai/pipeline-backend/commit/c1c2517c96e0e52eafe8bbeefedab95777354041))
+* **component:** add scopes to OAuth integrations ([#696](https://github.com/instill-ai/pipeline-backend/issues/696)) ([8fd9149](https://github.com/instill-ai/pipeline-backend/commit/8fd9149c6c470550f2f832b7158f6cbe5584f48b))
+* **component:** update contribution guidelines ([#685](https://github.com/instill-ai/pipeline-backend/issues/685)) ([6c42b71](https://github.com/instill-ai/pipeline-backend/commit/6c42b71bcdc166f2325d6da5b0ae30e0de9f8d0f))
+* support map representation for `range` in iterator ([#695](https://github.com/instill-ai/pipeline-backend/issues/695)) ([956b1d1](https://github.com/instill-ai/pipeline-backend/commit/956b1d1fb2389d0e51e7039f390b51f1e5020594))
+
+
+### Bug Fixes
+
+* **component:** update source URL in component definition ([#694](https://github.com/instill-ai/pipeline-backend/issues/694)) ([90ad5ce](https://github.com/instill-ai/pipeline-backend/commit/90ad5ce2fe53a0d90c08819bdf0ed497c7e19ed1))
+* the fallback mechanism for handling Instill Format with subtypes ([#697](https://github.com/instill-ai/pipeline-backend/issues/697)) ([9844756](https://github.com/instill-ai/pipeline-backend/commit/9844756d1166386479dff3b63bd9259813153192))
+
 ## [0.40.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.39.1-beta...v0.40.0-beta) (2024-10-01)
 
 
