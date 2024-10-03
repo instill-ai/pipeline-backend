@@ -30,7 +30,11 @@ func (e *execution) ExecuteTextChat(input *structpb.Struct, job *base.Job, ctx c
 		return nil, err
 	}
 
-	vendor := ModelVendorMap[model]
+	vendor, ok := ModelVendorMap[model]
+
+	if !ok {
+		return nil, fmt.Errorf("unsupported vendor for model: %s", model)
+	}
 
 	client, err := newClient(x.GetSetup(), x.GetLogger(), vendor)
 
