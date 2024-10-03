@@ -32,6 +32,7 @@ RUN apk add --no-cache \
     python3-dev \
     libffi-dev \
     libreoffice \
+    qpdf \
     msttcorefonts-installer \
     font-noto \
     font-noto-cjk \
