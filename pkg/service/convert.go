@@ -904,7 +904,7 @@ func checkInstillFormat(instillFormat string) string {
 		return "array:document"
 	}
 
-	// Remove wildcard *, for example, image/* -> image
+	// Remove subtype, for example, image/jpeg -> image
 	instillFormat, _, _ = strings.Cut(instillFormat, "/")
 	if slices.Contains(supportedInstillFormats, instillFormat) {
 		return instillFormat
