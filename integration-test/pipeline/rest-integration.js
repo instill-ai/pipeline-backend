@@ -45,7 +45,7 @@ export function CheckIntegrations() {
     var oAuthConfig = {
       authUrl: "https://slack.com/oauth/v2/authorize",
       accessUrl: "https://slack.com/api/oauth.v2.access",
-      scopes: []
+      scopes: ["channels:history", "groups:history", "chat:write"],
     };
 
     // Basic view
@@ -137,7 +137,7 @@ export function CheckConnections(data) {
         integrationId: integrationID,
         method: "METHOD_OAUTH",
         setup: setup,
-        scopes: ["commands", "incoming-webhook"],
+        scopes: ["channels:history", "groups:history", "chat:write"],
         oAuthAccessDetails: {
           ok: true,
           access_token: "xoxb-17653672481-19874698323-pdFZKVeTuE8sk7oOcBrzbqgy",
@@ -209,7 +209,7 @@ export function CheckConnections(data) {
         integrationId: integrationID,
         method: "METHOD_DICTIONARY",
         setup: {"token": "valid"},
-        scopes: ["commands", "incoming-webhook"],
+        scopes: ["channels:history", "groups:history", "chat:write"],
       }),
       data.header
     );

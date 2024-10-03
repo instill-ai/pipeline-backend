@@ -25,7 +25,11 @@
   "instillOAuthConfig": {
     "authUrl": "https://slack.com/oauth/v2/authorize",
     "accessUrl": "https://slack.com/api/oauth.v2.access",
-    "scopes": []
+    "scopes": [
+      "channels:history",
+      "groups:history",
+      "chat:write"
+    ]
   },
   "title": "Slack Connection",
   "type": "object"

@@ -53,7 +53,7 @@ func (githubClient *Client) extractPullRequestInformation(ctx context.Context, o
 	if originalPr.GetCommitsURL() != "" {
 		commits, _, err := githubClient.PullRequests.ListCommits(ctx, owner, repository, resp.Number, nil)
 		if err != nil {
-			return PullRequest{}, err
+			return PullRequest{}, addErrMsgToClientError(err)
 		}
 		resp.Commits = make([]Commit, len(commits))
 		for idx, commit := range commits {
@@ -97,7 +97,7 @@ func (githubClient *Client) listPullRequestsTask(ctx context.Context, props *str
 	}
 	prs, _, err := githubClient.PullRequests.List(ctx, owner, repository, opts)
 	if err != nil {
-		return nil, err
+		return nil, addErrMsgToClientError(err)
 	}
 	PullRequests := make([]PullRequest, len(prs))
 	for idx, pr := range prs {
@@ -142,7 +142,7 @@ func (githubClient *Client) getPullRequestTask(ctx context.Context, props *struc
 		if err != nil {
 			// err includes the rate limit, 404 not found, etc.
 			// if the connection is not authorized, it's easy to get rate limit error in large scale usage.
-			return nil, err
+			return nil, addErrMsgToClientError(err)
 		}
 		pullRequest = pr
 	} else {
@@ -160,7 +160,7 @@ func (githubClient *Client) getPullRequestTask(ctx context.Context, props *struc
 		if err != nil {
 			// err includes the rate limit.
 			// if the connection is not authorized, it's easy to get rate limit error in large scale usage.
-			return nil, err
+			return nil, addErrMsgToClientError(err)
 		}
 		if len(prs) == 0 {
 			return nil, errmsg.AddMessage(
@@ -174,7 +174,7 @@ func (githubClient *Client) getPullRequestTask(ctx context.Context, props *struc
 		if err != nil {
 			// err includes the rate limit, 404 not found, etc.
 			// if the connection is not authorized, it's easy to get rate limit error in large scale usage.
-			return nil, err
+			return nil, addErrMsgToClientError(err)
 		}
 		pullRequest = pr
 	}

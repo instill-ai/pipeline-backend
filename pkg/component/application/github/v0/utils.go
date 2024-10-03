@@ -12,22 +12,6 @@ type PageOptions struct {
 	PerPage int `json:"per-page"`
 }
 
-func middleWare(req string) int {
-	if req == "rate_limit" {
-		return 403
-	}
-	if req == "not_found" {
-		return 404
-	}
-	if req == "unprocessable_entity" {
-		return 422
-	}
-	if req == "no_pr" {
-		return 201
-	}
-	return 200
-}
-
 func parseTime(since string) (*time.Time, error) {
 	sinceTime, err := time.Parse(time.RFC3339, since)
 	if err != nil {

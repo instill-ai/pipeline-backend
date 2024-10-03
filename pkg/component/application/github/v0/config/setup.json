@@ -25,7 +25,10 @@
   "instillOAuthConfig": {
     "authUrl": "https://github.com/login/oauth/authorize",
     "accessUrl": "https://github.com/login/oauth/access_token",
-    "scopes": []
+    "scopes": [
+      "repo:status",
+      "write:repo_hook"
+    ]
   },
   "title": "GitHub Connection",
   "type": "object"

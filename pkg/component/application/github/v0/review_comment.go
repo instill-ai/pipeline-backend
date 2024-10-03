@@ -2,13 +2,11 @@ package github
 
 import (
 	"context"
-	"strings"
 
 	"github.com/google/go-github/v62/github"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
 )
 
 type ReviewComment struct {
@@ -66,18 +64,7 @@ func (githubClient *Client) listReviewCommentsTask(ctx context.Context, props *s
 	number := inputStruct.PrNumber
 	comments, _, err := githubClient.PullRequests.ListComments(ctx, owner, repository, number, opts)
 	if err != nil {
-		errMessage := strings.Split(err.Error(), ": ")
-		if len(errMessage) < 2 {
-			return nil, err
-		}
-		errType := strings.TrimSpace(errMessage[1])
-		if strings.Contains(errType, "404 Not Found") {
-			return nil, errmsg.AddMessage(
-				err,
-				"Pull request not found. Ensure the pull request number is correct, the repository is public, and fill in the correct GitHub token.",
-			)
-		}
-		return nil, err
+		return nil, addErrMsgToClientError(err)
 	}
 
 	reviewComments := make([]ReviewComment, len(comments))
@@ -126,24 +113,7 @@ func (githubClient *Client) createReviewCommentTask(ctx context.Context, props *
 	}
 	comment, _, err := githubClient.PullRequests.CreateComment(ctx, owner, repository, number, commentReqs)
 	if err != nil {
-		errMessage := strings.Split(err.Error(), ": ")
-		if len(errMessage) < 2 {
-			return nil, err
-		}
-		errType := strings.TrimSpace(errMessage[1])
-		if strings.Contains(errType, "404 Not Found") {
-			return nil, errmsg.AddMessage(
-				err,
-				"Pull request not found. Ensure the pull request number is correct, the repository is public, and fill in the correct GitHub token.",
-			)
-		}
-		if strings.Contains(errType, "422 Validation Failed") {
-			return nil, errmsg.AddMessage(
-				err,
-				"Invalid comment. Ensure the comment is not empty and the line numbers and sides are correct.",
-			)
-		}
-		return nil, err
+		return nil, addErrMsgToClientError(err)
 	}
 
 	reviewComment := extractReviewCommentInformation(comment)

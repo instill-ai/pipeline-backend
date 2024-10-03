@@ -59,7 +59,7 @@ func extractLabels(labels []*github.Label) []string {
 func (githubClient *Client) getIssue(ctx context.Context, owner, repository string, issueNumber int) (*github.Issue, error) {
 	issue, _, err := githubClient.Issues.Get(ctx, owner, repository, issueNumber)
 	if err != nil {
-		return nil, err
+		return nil, addErrMsgToClientError(err)
 	}
 	return issue, nil
 }
@@ -118,7 +118,7 @@ func (githubClient *Client) listIssuesTask(ctx context.Context, props *structpb.
 
 	issues, _, err := githubClient.Issues.ListByRepo(ctx, owner, repository, opts)
 	if err != nil {
-		return nil, err
+		return nil, addErrMsgToClientError(err)
 	}
 
 	issueList := make([]Issue, len(issues))
@@ -205,7 +205,7 @@ func (githubClient *Client) createIssueTask(ctx context.Context, props *structpb
 	}
 	issue, _, err := githubClient.Issues.Create(ctx, owner, repository, issueRequest)
 	if err != nil {
-		return nil, err
+		return nil, addErrMsgToClientError(err)
 	}
 
 	issueResp := githubClient.extractIssue(issue)
