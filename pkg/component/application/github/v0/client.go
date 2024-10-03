@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -26,7 +27,7 @@ func (info RepoInfo) getOwner() (string, error) {
 	if info.Owner == "" {
 		return "", errmsg.AddMessage(
 			fmt.Errorf("owner not provided"),
-			"owner not provided",
+			"Owner not provided.",
 		)
 	}
 	return info.Owner, nil
@@ -35,7 +36,7 @@ func (info RepoInfo) getRepository() (string, error) {
 	if info.Repository == "" {
 		return "", errmsg.AddMessage(
 			fmt.Errorf("repository not provided"),
-			"repository not provided",
+			"Repository not provided.",
 		)
 	}
 	return info.Repository, nil
@@ -70,22 +71,40 @@ func newClient(ctx context.Context, setup *structpb.Struct) Client {
 
 func parseTargetRepo(info RepoInfoInterface) (string, string, error) {
 	owner, ownerErr := info.getOwner()
-	repository, RepoErr := info.getRepository()
-	if ownerErr != nil && RepoErr != nil {
-		return "", "", errmsg.AddMessage(
-			fmt.Errorf("owner and repository not provided"),
-			"owner and repository not provided",
-		)
+	repository, repoErr := info.getRepository()
+	if err := errors.Join(ownerErr, repoErr); err != nil {
+		return "", "", err
 	}
-	if ownerErr != nil {
-		return "", "", ownerErr
-	}
-	if RepoErr != nil {
-		return "", "", RepoErr
-	}
+
 	return owner, repository, nil
 }
 
 func getToken(setup *structpb.Struct) string {
 	return setup.GetFields()["token"].GetStringValue()
+}
+
+// addErrMsgToClientError extracts the GitHub response information from an
+// error. If this information is present, an end-user message is added to the
+// error.
+func addErrMsgToClientError(err error) error {
+	var ghErr *github.ErrorResponse
+	if errors.As(err, &ghErr) {
+		if ghErr.Response != nil {
+			msg := fmt.Sprintf("GitHub responded with %d %v.", ghErr.Response.StatusCode, ghErr.Message)
+			switch ghErr.Response.StatusCode {
+			case http.StatusNotFound:
+				msg += " Check that the repository exists and you have permissions to access it."
+			case http.StatusUnprocessableEntity:
+				for _, e := range ghErr.Errors {
+					if e.Message != "" {
+						msg = fmt.Sprintf("%s %s.", msg, e.Message)
+					}
+				}
+			}
+
+			return errmsg.AddMessage(err, msg)
+		}
+	}
+
+	return err
 }

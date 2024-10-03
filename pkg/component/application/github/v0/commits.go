@@ -78,7 +78,7 @@ func (githubClient *Client) extractCommitInformation(ctx context.Context, owner,
 
 func (githubClient *Client) getCommit(ctx context.Context, owner string, repository string, sha string) (*github.RepositoryCommit, error) {
 	commit, _, err := githubClient.Repositories.GetCommit(ctx, owner, repository, sha, nil)
-	return commit, err
+	return commit, addErrMsgToClientError(err)
 }
 
 type GetCommitInput struct {

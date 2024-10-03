@@ -85,7 +85,7 @@ func (githubClient *Client) createWebhookTask(ctx context.Context, props *struct
 
 	hook, _, err = githubClient.Repositories.CreateHook(ctx, owner, repository, hook)
 	if err != nil {
-		return nil, err
+		return nil, addErrMsgToClientError(err)
 	}
 
 	var resp CreateWebHookResp
