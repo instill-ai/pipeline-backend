@@ -891,6 +891,7 @@ var supportedInstillFormats = []string{
 	"audio", "array:audio",
 	"video", "array:video",
 	"document", "array:document",
+	"file", "array:file",
 }
 
 // For fields without valid "instillFormat", we will fall back to using JSON format.

@@ -864,12 +864,12 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					}
 				}
 				variable.Fields[k] = array
-			case "document", "*/*":
+			case "document", "file", "*/*":
 				variable.Fields[k], err = data.NewDocumentFromURL(v.GetStringValue())
 				if err != nil {
 					return err
 				}
-			case "array:document", "array:*/*":
+			case "array:document", "array:file", "array:*/*":
 				array := data.NewArray(make([]data.Value, len(v.GetListValue().Values)))
 				for idx, val := range v.GetListValue().Values {
 					array.Values[idx], err = data.NewDocumentFromURL(val.GetStringValue())

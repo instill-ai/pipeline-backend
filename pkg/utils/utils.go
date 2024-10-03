@@ -197,6 +197,8 @@ func ConvertInstillFormat(f string) string {
 		return "video/*"
 	case "document":
 		return "*/*"
+	case "file":
+		return "*/*"
 	case "json":
 		return "semi-structured/json"
 	case "array:image":
@@ -206,6 +208,8 @@ func ConvertInstillFormat(f string) string {
 	case "array:video":
 		return "array:video/*"
 	case "array:document":
+		return "array:*/*"
+	case "array:file":
 		return "array:*/*"
 	case "array:json":
 		return "array:semi-structured/json"
