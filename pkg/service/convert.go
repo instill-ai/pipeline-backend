@@ -12,6 +12,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -880,6 +881,38 @@ func (c *converter) ConvertPipelineReleasesToPB(ctx context.Context, dbPipeline 
 	return pbPipelineReleases, nil
 }
 
+var supportedInstillFormats = []string{
+	"boolean", "array:boolean",
+	"boolean", "array:boolean",
+	"string", "array:string",
+	"integer", "array:integer",
+	"number", "array:number",
+	"image", "array:image",
+	"audio", "array:audio",
+	"video", "array:video",
+	"document", "array:document",
+}
+
+// For fields without valid "instillFormat", we will fall back to using JSON format.
+func checkInstillFormat(instillFormat string) string {
+
+	// We used */* to present document in the past.
+	if instillFormat == "*/*" {
+		return "document"
+	}
+	if instillFormat == "array:*/*" {
+		return "array:document"
+	}
+
+	// Remove wildcard *, for example, image/* -> image
+	instillFormat, _, _ = strings.Cut(instillFormat, "/")
+	if slices.Contains(supportedInstillFormats, instillFormat) {
+		return instillFormat
+	}
+
+	return "json"
+}
+
 // TODO: refactor these codes
 func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Variable, outputs map[string]*datamodel.Output, compsOrigin datamodel.ComponentMap) (pipelineDataSpec *pb.DataSpecification, err error) {
 
@@ -902,7 +935,7 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 		p := &structpb.Struct{}
 		_ = protojson.Unmarshal(b, p)
 		if _, ok := p.Fields["instillFormat"]; ok {
-			p.Fields["instillFormat"] = structpb.NewStringValue(utils.ConvertInstillFormat(p.Fields["instillFormat"].GetStringValue()))
+			p.Fields["instillFormat"] = structpb.NewStringValue(checkInstillFormat(utils.ConvertInstillFormat(p.Fields["instillFormat"].GetStringValue())))
 		}
 		dataInput.Fields["properties"].GetStructValue().Fields[k] = structpb.NewStructValue(p)
 	}
@@ -1012,26 +1045,13 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 
 				}
 				if walk.GetStructValue() != nil && walk.GetStructValue().Fields != nil {
-					// For fields without valid "instillFormat", we will fall back to using JSON format.
 					instillFormat := walk.GetStructValue().Fields["instillFormat"].GetStringValue()
-					switch instillFormat {
-					case "boolean", "array:boolean":
-					case "string", "array:string":
-					case "integer", "array:integer":
-					case "number", "array:number":
-					case "image", "image/*", "array:image", "array:image/*":
-					case "audio", "audio/*", "array:audio", "array:audio/*":
-					case "video", "video/*", "array:video", "array:video/*":
-					case "document", "*/*", "array:document", "array:*/*":
-					default:
-						instillFormat = "json"
-					}
 					m, err = structpb.NewValue(map[string]interface{}{
 						"title":          v.Title,
 						"description":    v.Description,
 						"instillUIOrder": v.InstillUIOrder,
 						"type":           walk.GetStructValue().Fields["type"].GetStringValue(),
-						"instillFormat":  instillFormat,
+						"instillFormat":  checkInstillFormat(instillFormat),
 					})
 				}
 
