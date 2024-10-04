@@ -194,6 +194,9 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 	switch conn.GetMethod() {
 	case pb.Connection_METHOD_DICTIONARY:
 		err := fmt.Errorf("%w: invalid payload in dictionary connection", errdomain.ErrInvalidArgument)
+		if integration.GetOAuthConfig() != nil {
+			return errmsg.AddMessage(err, integration.GetTitle()+" connection only accepts METHOD_OAUTH.")
+		}
 		if len(conn.GetScopes()) > 0 {
 			return errmsg.AddMessage(err, "Scopes only apply to OAuth connections.")
 		}

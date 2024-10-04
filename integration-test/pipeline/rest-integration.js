@@ -117,7 +117,9 @@ export function CheckConnections(data) {
       pipelinePublicHost + path,
       JSON.stringify({
         id: connectionID,
-        integrationId: integrationID,
+        // Needs to be an integration that doesn't support OAuth. Once it's
+        // supported, it's the only method allowed.
+        integrationId: "asana",
         method: "METHOD_DICTIONARY",
         setup: setup,
       }),
