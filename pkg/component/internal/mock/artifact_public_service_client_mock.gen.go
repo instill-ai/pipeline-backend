@@ -60,6 +60,13 @@ type ArtifactPublicServiceClientMock struct {
 	beforeListCatalogFilesCounter uint64
 	ListCatalogFilesMock          mArtifactPublicServiceClientMockListCatalogFiles
 
+	funcListCatalogRuns          func(ctx context.Context, in *mm_artifactv1alpha.ListCatalogRunsRequest, opts ...grpc.CallOption) (lp1 *mm_artifactv1alpha.ListCatalogRunsResponse, err error)
+	funcListCatalogRunsOrigin    string
+	inspectFuncListCatalogRuns   func(ctx context.Context, in *mm_artifactv1alpha.ListCatalogRunsRequest, opts ...grpc.CallOption)
+	afterListCatalogRunsCounter  uint64
+	beforeListCatalogRunsCounter uint64
+	ListCatalogRunsMock          mArtifactPublicServiceClientMockListCatalogRuns
+
 	funcListCatalogs          func(ctx context.Context, in *mm_artifactv1alpha.ListCatalogsRequest, opts ...grpc.CallOption) (lp1 *mm_artifactv1alpha.ListCatalogsResponse, err error)
 	funcListCatalogsOrigin    string
 	inspectFuncListCatalogs   func(ctx context.Context, in *mm_artifactv1alpha.ListCatalogsRequest, opts ...grpc.CallOption)
@@ -156,6 +163,9 @@ func NewArtifactPublicServiceClientMock(t minimock.Tester) *ArtifactPublicServic
 
 	m.ListCatalogFilesMock = mArtifactPublicServiceClientMockListCatalogFiles{mock: m}
 	m.ListCatalogFilesMock.callArgs = []*ArtifactPublicServiceClientMockListCatalogFilesParams{}
+
+	m.ListCatalogRunsMock = mArtifactPublicServiceClientMockListCatalogRuns{mock: m}
+	m.ListCatalogRunsMock.callArgs = []*ArtifactPublicServiceClientMockListCatalogRunsParams{}
 
 	m.ListCatalogsMock = mArtifactPublicServiceClientMockListCatalogs{mock: m}
 	m.ListCatalogsMock.callArgs = []*ArtifactPublicServiceClientMockListCatalogsParams{}
@@ -2433,6 +2443,380 @@ func (m *ArtifactPublicServiceClientMock) MinimockListCatalogFilesInspect() {
 	if !m.ListCatalogFilesMock.invocationsDone() && afterListCatalogFilesCounter > 0 {
 		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.ListCatalogFiles at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.ListCatalogFilesMock.expectedInvocations), m.ListCatalogFilesMock.expectedInvocationsOrigin, afterListCatalogFilesCounter)
+	}
+}
+
+type mArtifactPublicServiceClientMockListCatalogRuns struct {
+	optional           bool
+	mock               *ArtifactPublicServiceClientMock
+	defaultExpectation *ArtifactPublicServiceClientMockListCatalogRunsExpectation
+	expectations       []*ArtifactPublicServiceClientMockListCatalogRunsExpectation
+
+	callArgs []*ArtifactPublicServiceClientMockListCatalogRunsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceClientMockListCatalogRunsExpectation specifies expectation struct of the ArtifactPublicServiceClient.ListCatalogRuns
+type ArtifactPublicServiceClientMockListCatalogRunsExpectation struct {
+	mock               *ArtifactPublicServiceClientMock
+	params             *ArtifactPublicServiceClientMockListCatalogRunsParams
+	paramPtrs          *ArtifactPublicServiceClientMockListCatalogRunsParamPtrs
+	expectationOrigins ArtifactPublicServiceClientMockListCatalogRunsExpectationOrigins
+	results            *ArtifactPublicServiceClientMockListCatalogRunsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceClientMockListCatalogRunsParams contains parameters of the ArtifactPublicServiceClient.ListCatalogRuns
+type ArtifactPublicServiceClientMockListCatalogRunsParams struct {
+	ctx  context.Context
+	in   *mm_artifactv1alpha.ListCatalogRunsRequest
+	opts []grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockListCatalogRunsParamPtrs contains pointers to parameters of the ArtifactPublicServiceClient.ListCatalogRuns
+type ArtifactPublicServiceClientMockListCatalogRunsParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_artifactv1alpha.ListCatalogRunsRequest
+	opts *[]grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockListCatalogRunsResults contains results of the ArtifactPublicServiceClient.ListCatalogRuns
+type ArtifactPublicServiceClientMockListCatalogRunsResults struct {
+	lp1 *mm_artifactv1alpha.ListCatalogRunsResponse
+	err error
+}
+
+// ArtifactPublicServiceClientMockListCatalogRunsOrigins contains origins of expectations of the ArtifactPublicServiceClient.ListCatalogRuns
+type ArtifactPublicServiceClientMockListCatalogRunsExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) Optional() *mArtifactPublicServiceClientMockListCatalogRuns {
+	mmListCatalogRuns.optional = true
+	return mmListCatalogRuns
+}
+
+// Expect sets up expected params for ArtifactPublicServiceClient.ListCatalogRuns
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) Expect(ctx context.Context, in *mm_artifactv1alpha.ListCatalogRunsRequest, opts ...grpc.CallOption) *mArtifactPublicServiceClientMockListCatalogRuns {
+	if mmListCatalogRuns.mock.funcListCatalogRuns != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by Set")
+	}
+
+	if mmListCatalogRuns.defaultExpectation == nil {
+		mmListCatalogRuns.defaultExpectation = &ArtifactPublicServiceClientMockListCatalogRunsExpectation{}
+	}
+
+	if mmListCatalogRuns.defaultExpectation.paramPtrs != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by ExpectParams functions")
+	}
+
+	mmListCatalogRuns.defaultExpectation.params = &ArtifactPublicServiceClientMockListCatalogRunsParams{ctx, in, opts}
+	mmListCatalogRuns.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmListCatalogRuns.expectations {
+		if minimock.Equal(e.params, mmListCatalogRuns.defaultExpectation.params) {
+			mmListCatalogRuns.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmListCatalogRuns.defaultExpectation.params)
+		}
+	}
+
+	return mmListCatalogRuns
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceClient.ListCatalogRuns
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceClientMockListCatalogRuns {
+	if mmListCatalogRuns.mock.funcListCatalogRuns != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by Set")
+	}
+
+	if mmListCatalogRuns.defaultExpectation == nil {
+		mmListCatalogRuns.defaultExpectation = &ArtifactPublicServiceClientMockListCatalogRunsExpectation{}
+	}
+
+	if mmListCatalogRuns.defaultExpectation.params != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by Expect")
+	}
+
+	if mmListCatalogRuns.defaultExpectation.paramPtrs == nil {
+		mmListCatalogRuns.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockListCatalogRunsParamPtrs{}
+	}
+	mmListCatalogRuns.defaultExpectation.paramPtrs.ctx = &ctx
+	mmListCatalogRuns.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmListCatalogRuns
+}
+
+// ExpectInParam2 sets up expected param in for ArtifactPublicServiceClient.ListCatalogRuns
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) ExpectInParam2(in *mm_artifactv1alpha.ListCatalogRunsRequest) *mArtifactPublicServiceClientMockListCatalogRuns {
+	if mmListCatalogRuns.mock.funcListCatalogRuns != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by Set")
+	}
+
+	if mmListCatalogRuns.defaultExpectation == nil {
+		mmListCatalogRuns.defaultExpectation = &ArtifactPublicServiceClientMockListCatalogRunsExpectation{}
+	}
+
+	if mmListCatalogRuns.defaultExpectation.params != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by Expect")
+	}
+
+	if mmListCatalogRuns.defaultExpectation.paramPtrs == nil {
+		mmListCatalogRuns.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockListCatalogRunsParamPtrs{}
+	}
+	mmListCatalogRuns.defaultExpectation.paramPtrs.in = &in
+	mmListCatalogRuns.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmListCatalogRuns
+}
+
+// ExpectOptsParam3 sets up expected param opts for ArtifactPublicServiceClient.ListCatalogRuns
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) ExpectOptsParam3(opts ...grpc.CallOption) *mArtifactPublicServiceClientMockListCatalogRuns {
+	if mmListCatalogRuns.mock.funcListCatalogRuns != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by Set")
+	}
+
+	if mmListCatalogRuns.defaultExpectation == nil {
+		mmListCatalogRuns.defaultExpectation = &ArtifactPublicServiceClientMockListCatalogRunsExpectation{}
+	}
+
+	if mmListCatalogRuns.defaultExpectation.params != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by Expect")
+	}
+
+	if mmListCatalogRuns.defaultExpectation.paramPtrs == nil {
+		mmListCatalogRuns.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockListCatalogRunsParamPtrs{}
+	}
+	mmListCatalogRuns.defaultExpectation.paramPtrs.opts = &opts
+	mmListCatalogRuns.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmListCatalogRuns
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceClient.ListCatalogRuns
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) Inspect(f func(ctx context.Context, in *mm_artifactv1alpha.ListCatalogRunsRequest, opts ...grpc.CallOption)) *mArtifactPublicServiceClientMockListCatalogRuns {
+	if mmListCatalogRuns.mock.inspectFuncListCatalogRuns != nil {
+		mmListCatalogRuns.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceClientMock.ListCatalogRuns")
+	}
+
+	mmListCatalogRuns.mock.inspectFuncListCatalogRuns = f
+
+	return mmListCatalogRuns
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceClient.ListCatalogRuns
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) Return(lp1 *mm_artifactv1alpha.ListCatalogRunsResponse, err error) *ArtifactPublicServiceClientMock {
+	if mmListCatalogRuns.mock.funcListCatalogRuns != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by Set")
+	}
+
+	if mmListCatalogRuns.defaultExpectation == nil {
+		mmListCatalogRuns.defaultExpectation = &ArtifactPublicServiceClientMockListCatalogRunsExpectation{mock: mmListCatalogRuns.mock}
+	}
+	mmListCatalogRuns.defaultExpectation.results = &ArtifactPublicServiceClientMockListCatalogRunsResults{lp1, err}
+	mmListCatalogRuns.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmListCatalogRuns.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceClient.ListCatalogRuns method
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) Set(f func(ctx context.Context, in *mm_artifactv1alpha.ListCatalogRunsRequest, opts ...grpc.CallOption) (lp1 *mm_artifactv1alpha.ListCatalogRunsResponse, err error)) *ArtifactPublicServiceClientMock {
+	if mmListCatalogRuns.defaultExpectation != nil {
+		mmListCatalogRuns.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceClient.ListCatalogRuns method")
+	}
+
+	if len(mmListCatalogRuns.expectations) > 0 {
+		mmListCatalogRuns.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceClient.ListCatalogRuns method")
+	}
+
+	mmListCatalogRuns.mock.funcListCatalogRuns = f
+	mmListCatalogRuns.mock.funcListCatalogRunsOrigin = minimock.CallerInfo(1)
+	return mmListCatalogRuns.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceClient.ListCatalogRuns which will trigger the result defined by the following
+// Then helper
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) When(ctx context.Context, in *mm_artifactv1alpha.ListCatalogRunsRequest, opts ...grpc.CallOption) *ArtifactPublicServiceClientMockListCatalogRunsExpectation {
+	if mmListCatalogRuns.mock.funcListCatalogRuns != nil {
+		mmListCatalogRuns.mock.t.Fatalf("ArtifactPublicServiceClientMock.ListCatalogRuns mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceClientMockListCatalogRunsExpectation{
+		mock:               mmListCatalogRuns.mock,
+		params:             &ArtifactPublicServiceClientMockListCatalogRunsParams{ctx, in, opts},
+		expectationOrigins: ArtifactPublicServiceClientMockListCatalogRunsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmListCatalogRuns.expectations = append(mmListCatalogRuns.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceClient.ListCatalogRuns return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceClientMockListCatalogRunsExpectation) Then(lp1 *mm_artifactv1alpha.ListCatalogRunsResponse, err error) *ArtifactPublicServiceClientMock {
+	e.results = &ArtifactPublicServiceClientMockListCatalogRunsResults{lp1, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceClient.ListCatalogRuns should be invoked
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) Times(n uint64) *mArtifactPublicServiceClientMockListCatalogRuns {
+	if n == 0 {
+		mmListCatalogRuns.mock.t.Fatalf("Times of ArtifactPublicServiceClientMock.ListCatalogRuns mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmListCatalogRuns.expectedInvocations, n)
+	mmListCatalogRuns.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmListCatalogRuns
+}
+
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) invocationsDone() bool {
+	if len(mmListCatalogRuns.expectations) == 0 && mmListCatalogRuns.defaultExpectation == nil && mmListCatalogRuns.mock.funcListCatalogRuns == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmListCatalogRuns.mock.afterListCatalogRunsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmListCatalogRuns.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// ListCatalogRuns implements mm_artifactv1alpha.ArtifactPublicServiceClient
+func (mmListCatalogRuns *ArtifactPublicServiceClientMock) ListCatalogRuns(ctx context.Context, in *mm_artifactv1alpha.ListCatalogRunsRequest, opts ...grpc.CallOption) (lp1 *mm_artifactv1alpha.ListCatalogRunsResponse, err error) {
+	mm_atomic.AddUint64(&mmListCatalogRuns.beforeListCatalogRunsCounter, 1)
+	defer mm_atomic.AddUint64(&mmListCatalogRuns.afterListCatalogRunsCounter, 1)
+
+	mmListCatalogRuns.t.Helper()
+
+	if mmListCatalogRuns.inspectFuncListCatalogRuns != nil {
+		mmListCatalogRuns.inspectFuncListCatalogRuns(ctx, in, opts...)
+	}
+
+	mm_params := ArtifactPublicServiceClientMockListCatalogRunsParams{ctx, in, opts}
+
+	// Record call args
+	mmListCatalogRuns.ListCatalogRunsMock.mutex.Lock()
+	mmListCatalogRuns.ListCatalogRunsMock.callArgs = append(mmListCatalogRuns.ListCatalogRunsMock.callArgs, &mm_params)
+	mmListCatalogRuns.ListCatalogRunsMock.mutex.Unlock()
+
+	for _, e := range mmListCatalogRuns.ListCatalogRunsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.lp1, e.results.err
+		}
+	}
+
+	if mmListCatalogRuns.ListCatalogRunsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmListCatalogRuns.ListCatalogRunsMock.defaultExpectation.Counter, 1)
+		mm_want := mmListCatalogRuns.ListCatalogRunsMock.defaultExpectation.params
+		mm_want_ptrs := mmListCatalogRuns.ListCatalogRunsMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceClientMockListCatalogRunsParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmListCatalogRuns.t.Errorf("ArtifactPublicServiceClientMock.ListCatalogRuns got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListCatalogRuns.ListCatalogRunsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmListCatalogRuns.t.Errorf("ArtifactPublicServiceClientMock.ListCatalogRuns got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListCatalogRuns.ListCatalogRunsMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmListCatalogRuns.t.Errorf("ArtifactPublicServiceClientMock.ListCatalogRuns got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListCatalogRuns.ListCatalogRunsMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmListCatalogRuns.t.Errorf("ArtifactPublicServiceClientMock.ListCatalogRuns got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmListCatalogRuns.ListCatalogRunsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmListCatalogRuns.ListCatalogRunsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmListCatalogRuns.t.Fatal("No results are set for the ArtifactPublicServiceClientMock.ListCatalogRuns")
+		}
+		return (*mm_results).lp1, (*mm_results).err
+	}
+	if mmListCatalogRuns.funcListCatalogRuns != nil {
+		return mmListCatalogRuns.funcListCatalogRuns(ctx, in, opts...)
+	}
+	mmListCatalogRuns.t.Fatalf("Unexpected call to ArtifactPublicServiceClientMock.ListCatalogRuns. %v %v %v", ctx, in, opts)
+	return
+}
+
+// ListCatalogRunsAfterCounter returns a count of finished ArtifactPublicServiceClientMock.ListCatalogRuns invocations
+func (mmListCatalogRuns *ArtifactPublicServiceClientMock) ListCatalogRunsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListCatalogRuns.afterListCatalogRunsCounter)
+}
+
+// ListCatalogRunsBeforeCounter returns a count of ArtifactPublicServiceClientMock.ListCatalogRuns invocations
+func (mmListCatalogRuns *ArtifactPublicServiceClientMock) ListCatalogRunsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmListCatalogRuns.beforeListCatalogRunsCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceClientMock.ListCatalogRuns.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmListCatalogRuns *mArtifactPublicServiceClientMockListCatalogRuns) Calls() []*ArtifactPublicServiceClientMockListCatalogRunsParams {
+	mmListCatalogRuns.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceClientMockListCatalogRunsParams, len(mmListCatalogRuns.callArgs))
+	copy(argCopy, mmListCatalogRuns.callArgs)
+
+	mmListCatalogRuns.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockListCatalogRunsDone returns true if the count of the ListCatalogRuns invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceClientMock) MinimockListCatalogRunsDone() bool {
+	if m.ListCatalogRunsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.ListCatalogRunsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.ListCatalogRunsMock.invocationsDone()
+}
+
+// MinimockListCatalogRunsInspect logs each unmet expectation
+func (m *ArtifactPublicServiceClientMock) MinimockListCatalogRunsInspect() {
+	for _, e := range m.ListCatalogRunsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.ListCatalogRuns at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterListCatalogRunsCounter := mm_atomic.LoadUint64(&m.afterListCatalogRunsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.ListCatalogRunsMock.defaultExpectation != nil && afterListCatalogRunsCounter < 1 {
+		if m.ListCatalogRunsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.ListCatalogRuns at\n%s", m.ListCatalogRunsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.ListCatalogRuns at\n%s with params: %#v", m.ListCatalogRunsMock.defaultExpectation.expectationOrigins.origin, *m.ListCatalogRunsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcListCatalogRuns != nil && afterListCatalogRunsCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.ListCatalogRuns at\n%s", m.funcListCatalogRunsOrigin)
+	}
+
+	if !m.ListCatalogRunsMock.invocationsDone() && afterListCatalogRunsCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.ListCatalogRuns at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.ListCatalogRunsMock.expectedInvocations), m.ListCatalogRunsMock.expectedInvocationsOrigin, afterListCatalogRunsCounter)
 	}
 }
 
@@ -6192,6 +6576,8 @@ func (m *ArtifactPublicServiceClientMock) MinimockFinish() {
 
 			m.MinimockListCatalogFilesInspect()
 
+			m.MinimockListCatalogRunsInspect()
+
 			m.MinimockListCatalogsInspect()
 
 			m.MinimockListChunksInspect()
@@ -6240,6 +6626,7 @@ func (m *ArtifactPublicServiceClientMock) minimockDone() bool {
 		m.MinimockGetFileCatalogDone() &&
 		m.MinimockGetSourceFileDone() &&
 		m.MinimockListCatalogFilesDone() &&
+		m.MinimockListCatalogRunsDone() &&
 		m.MinimockListCatalogsDone() &&
 		m.MinimockListChunksDone() &&
 		m.MinimockLivenessDone() &&

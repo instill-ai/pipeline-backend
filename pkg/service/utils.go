@@ -114,23 +114,6 @@ func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb
 		result.CompleteTime = timestamppb.New(run.CompletedTime.Time)
 	}
 
-	for _, fileReference := range run.Inputs {
-		result.InputsReference = append(result.InputsReference, &pipelinepb.FileReference{
-			Name: fileReference.Name,
-			Type: fileReference.Type,
-			Size: fileReference.Size,
-			Url:  fileReference.URL,
-		})
-	}
-	for _, fileReference := range run.Outputs {
-		result.OutputsReference = append(result.OutputsReference, &pipelinepb.FileReference{
-			Name: fileReference.Name,
-			Type: fileReference.Type,
-			Size: fileReference.Size,
-			Url:  fileReference.URL,
-		})
-	}
-
 	return result, nil
 }
 

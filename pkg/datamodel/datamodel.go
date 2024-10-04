@@ -619,6 +619,7 @@ type Connection struct {
 	NamespaceUID       uuid.UUID
 	IntegrationUID     uuid.UUID
 	Method             ConnectionMethod
+	Identity           sql.NullString
 	Setup              datatypes.JSON      `gorm:"type:jsonb"`
 	Scopes             pq.StringArray      `gorm:"type:text[]"`
 	OAuthAccessDetails datatypes.JSON      `gorm:"type:jsonb"`

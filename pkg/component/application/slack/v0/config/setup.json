@@ -28,7 +28,10 @@
     "scopes": [
       "channels:history",
       "groups:history",
-      "chat:write"
+      "chat:write",
+      "users:read",
+      "users:read.email",
+      "users.profile:read"
     ]
   },
   "title": "Slack Connection",
