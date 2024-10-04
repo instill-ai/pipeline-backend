@@ -141,6 +141,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 
 	switch e.Task {
 	case TextGenerationTask:
+		client.SetTimeout(30 * time.Minute)
 		inputStruct := TextCompletionInput{}
 		err := base.ConvertFromStructpb(input, &inputStruct)
 		if err != nil {
