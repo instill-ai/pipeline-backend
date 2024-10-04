@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -75,20 +76,62 @@ func getDocAfterRequestURL(url string, timeout int) (*goquery.Document, error) {
 	if timeout > 0 {
 		return requestToWebpage(url, timeout)
 	} else {
-		return httpRequest(url)
+		return getStaticContent(url)
 	}
 
+}
+
+func getStaticContent(url string) (*goquery.Document, error) {
+
+	doc, _ := httpRequest(url)
+
+	if doc != nil {
+		return doc, nil
+	}
+
+	// TODO: Investigate the root cause of the handshake error and remove this temporary solution.
+	// We got handshake error when using http request, so we use curl request instead.
+	doc, err := curlRequest(url)
+
+	if err != nil {
+		return nil, fmt.Errorf("error getting static content: %v", err)
+	}
+
+	return doc, nil
 }
 
 func httpRequest(url string) (*goquery.Document, error) {
 	client := &http.Client{}
 	res, err := client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make request to %s: %v", url, err)
+		log.Printf("failed to make request to %s: %v", url, err)
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse HTML from %s: %v", url, err)
+	}
+
+	return doc, nil
+}
+
+// TODO: Investigate the root cause of the handshake error and remove this temporary solution.
+// We got handshake error when using http request, so we use curl request instead.
+func curlRequest(url string) (*goquery.Document, error) {
+	cmd := exec.Command("curl", "-s", url)
+
+	output, err := cmd.Output()
+
+	if err != nil {
+		return nil, fmt.Errorf("error running curl command: %v", err)
+	}
+
+	htmlReader := strings.NewReader(string(output))
+
+	doc, err := goquery.NewDocumentFromReader(htmlReader)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse HTML from %s: %v", url, err)
 	}
@@ -113,7 +156,7 @@ func requestToWebpage(url string, timeout int) (*goquery.Document, error) {
 	)
 	if err != nil {
 		log.Println("Cannot get dynamic content, so scrape the static content only", err)
-		return httpRequest(url)
+		return getStaticContent(url)
 	}
 
 	htmlReader := strings.NewReader(htmlContent)
