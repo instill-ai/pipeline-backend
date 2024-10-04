@@ -84,7 +84,8 @@ func httpRequest(url string) (*goquery.Document, error) {
 	client := &http.Client{}
 	res, err := client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make request to %s: %v", url, err)
+		log.Printf("failed to make request to %s: %v", url, err)
+		return nil, err
 	}
 	defer res.Body.Close()
 
@@ -98,10 +99,7 @@ func httpRequest(url string) (*goquery.Document, error) {
 
 func requestToWebpage(url string, timeout int) (*goquery.Document, error) {
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Millisecond)
-	defer cancel()
-
-	ctx, cancelBrowser := chromedp.NewContext(ctx)
+	ctx, cancelBrowser := chromedp.NewContext(context.Background())
 	defer cancelBrowser()
 
 	var htmlContent string
@@ -109,11 +107,19 @@ func requestToWebpage(url string, timeout int) (*goquery.Document, error) {
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
 		chromedp.WaitReady("body"),
+		// Temporary solution for dynamic content.
+		// There are different ways to get the dynamic content.
+		// Now, we default it to scroll down the page.
+		scrollDown(ctx, timeout),
 		chromedp.OuterHTML("html", &htmlContent),
 	)
+
 	if err != nil {
 		log.Println("Cannot get dynamic content, so scrape the static content only", err)
-		return httpRequest(url)
+		log.Println("htmlContent: ", htmlContent)
+		if htmlContent == "" {
+			return httpRequest(url)
+		}
 	}
 
 	htmlReader := strings.NewReader(htmlContent)
@@ -124,6 +130,34 @@ func requestToWebpage(url string, timeout int) (*goquery.Document, error) {
 	}
 
 	return doc, nil
+}
+
+func scrollDown(ctx context.Context, timeout int) chromedp.Action {
+	return chromedp.ActionFunc(func(ctx context.Context) error {
+		// Scroll delay is the time to wait before the next scroll
+		// It is usually set 500 to 1000 milliseconds.
+		// We set it to 500 milliseconds as a default value for first version.
+		scrollDelay := 500 * time.Millisecond
+
+		scrollCount := 0
+		// Now, we cannot find a proper way to cancel the context for chromedp.
+		// So, we set the max scrolls according to the timeout users set.
+		maxScrolls := timeout / int(scrollDelay.Milliseconds())
+
+		for scrollCount < maxScrolls {
+			log.Println("Scrolling down...")
+
+			if err := chromedp.Evaluate(`window.scrollBy(0, window.innerHeight);`, nil).Do(ctx); err != nil {
+				return err
+			}
+			scrollCount++
+			time.Sleep(scrollDelay)
+			if ctx.Err() != nil {
+				break
+			}
+		}
+		return nil
+	})
 }
 
 func getRemovedTagsHTML(doc *goquery.Document, input ScrapeWebpageInput) string {

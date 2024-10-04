@@ -110,7 +110,7 @@ Scrape the webpage contents and manipulate html with jquery command. The sequenc
 | Only Main Content | `only-main-content` | boolean | Only return the main content of the page excluding header, nav, footer. |
 | Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. If empty, no tags will be removed. Example: 'script, .ad, #footer' |
 | Only Include Tags | `only-include-tags` | array[string] | A list of tags, classes, and ids to include in the output. If empty, all tags will be included. Example: 'script, .ad, #footer' |
-| Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. Please set it as 0 if you only want to collect static content. |
+| Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. Please set it as 0 if you only want to collect static content. Please notice that if the timeout is set a small value, the page may not be fully loaded. |
 </div>
 
 
@@ -143,6 +143,20 @@ Scrape the webpage contents and manipulate html with jquery command. The sequenc
 | Title | `title` | string | The title of the webpage |
 </div>
 </details>
+
+
+#### Scraping Support for Dynamic Content
+This function provides scraping support to fetch dynamic content from web pages while simulating user behaviors, such as scrolling down. The initial implementation includes the following capabilities:
+
+Scrolling:
+- Mimics user scrolling down the page to load additional content dynamically.
+
+Future enhancements will include additional user interactions, such as:
+- Clicking: Simulate mouse clicks on specified elements.
+- Taking Screenshots: Capture screenshots of the current view.
+- Keyboard Actions: Simulate key presses and other keyboard interactions.
+
+This function aims to provide a robust framework for interacting with web pages and extracting dynamic content effectively.
 ## Example Recipes
 
 Recipe for the [Web scraper](https://instill.tech/instill-ai/pipelines/web-scraper/playground) pipeline.
