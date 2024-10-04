@@ -32,6 +32,10 @@ RUN chown -R nobody:nogroup /go
 ENV GOCACHE /go/.cache/go-build
 ENV GOENV /go/.config/go/env
 
+# Go 1.22 has dropped support for some TLS versions. This configuration is
+# required to restore compatibility with those versions.
+ENV GODEBUG tlsrsakex=1
+
 USER nobody:nogroup
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]
