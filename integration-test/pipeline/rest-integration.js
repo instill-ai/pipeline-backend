@@ -45,7 +45,7 @@ export function CheckIntegrations() {
     var oAuthConfig = {
       authUrl: "https://slack.com/oauth/v2/authorize",
       accessUrl: "https://slack.com/api/oauth.v2.access",
-      scopes: ["channels:history", "groups:history", "chat:write"],
+      scopes: ["channels:history", "groups:history", "chat:write", "users:read", "users:read.email", "users.profile:read"],
     };
 
     // Basic view
