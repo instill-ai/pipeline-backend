@@ -15,7 +15,7 @@ import (
 
 type ReadChatHistoryInput struct {
 	Namespace       string `json:"namespace"`
-	AppUID          string `json:"app-id"`
+	AppID           string `json:"app-id"`
 	ConversationID  string `json:"conversation-id"`
 	Role            string `json:"role"`
 	MessageType     string `json:"message-type"`
@@ -117,7 +117,7 @@ func (e *execution) readChatHistory(input *structpb.Struct) (*structpb.Struct, e
 
 	res, err := appClient.ListMessages(ctx, &appPB.ListMessagesRequest{
 		NamespaceId:           inputStruct.Namespace,
-		AppId:                 inputStruct.AppUID,
+		AppId:                 inputStruct.AppID,
 		ConversationId:        inputStruct.ConversationID,
 		IncludeSystemMessages: true,
 	})
@@ -135,7 +135,7 @@ func (e *execution) readChatHistory(input *structpb.Struct) (*structpb.Struct, e
 	for res.NextPageToken != "" || (len(output.Messages) < inputStruct.MaxMessageCount && inputStruct.MaxMessageCount > 0) {
 		res, err = appClient.ListMessages(ctx, &appPB.ListMessagesRequest{
 			NamespaceId:           inputStruct.Namespace,
-			AppId:                 inputStruct.AppUID,
+			AppId:                 inputStruct.AppID,
 			ConversationId:        inputStruct.ConversationID,
 			IncludeSystemMessages: true,
 			PageToken:             res.NextPageToken,
@@ -154,7 +154,7 @@ func (e *execution) readChatHistory(input *structpb.Struct) (*structpb.Struct, e
 
 type WriteChatMessageInput struct {
 	Namespace      string       `json:"namespace"`
-	AppUID         string       `json:"app-id"`
+	AppID          string       `json:"app-id"`
 	ConversationID string       `json:"conversation-id"`
 	Message        WriteMessage `json:"message"`
 }
@@ -200,20 +200,57 @@ func (e *execution) writeChatMessage(input *structpb.Struct) (*structpb.Struct, 
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
+	apps, err := appClient.ListApps(ctx, &appPB.ListAppsRequest{
+		NamespaceId: inputStruct.Namespace,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to list apps: %w", err)
+	}
+
+	found := false
+
+	for _, app := range apps.Apps {
+		if app.AppId == inputStruct.AppID {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		_, err = appClient.CreateApp(ctx, &appPB.CreateAppRequest{
+			NamespaceId: inputStruct.Namespace,
+			Id:          inputStruct.AppID,
+		})
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to create app: %w", err)
+		}
+	}
+
 	conversations, err := appClient.ListConversations(ctx, &appPB.ListConversationsRequest{
-		NamespaceId:    inputStruct.Namespace,
-		AppId:          inputStruct.AppUID,
-		ConversationId: inputStruct.ConversationID,
+		NamespaceId: inputStruct.Namespace,
+		AppId:       inputStruct.AppID,
+		IfAll:       true,
 	})
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to list conversations: %w", err)
 	}
 
-	if len(conversations.Conversations) == 0 {
+	found = false
+
+	for _, conversation := range conversations.Conversations {
+		if conversation.Id == inputStruct.ConversationID {
+			found = true
+			break
+		}
+	}
+
+	if !found {
 		_, err = appClient.CreateConversation(ctx, &appPB.CreateConversationRequest{
 			NamespaceId:    inputStruct.Namespace,
-			AppId:          inputStruct.AppUID,
+			AppId:          inputStruct.AppID,
 			ConversationId: inputStruct.ConversationID,
 		})
 
@@ -224,7 +261,7 @@ func (e *execution) writeChatMessage(input *structpb.Struct) (*structpb.Struct, 
 
 	res, err := appClient.CreateMessage(ctx, &appPB.CreateMessageRequest{
 		NamespaceId:    inputStruct.Namespace,
-		AppId:          inputStruct.AppUID,
+		AppId:          inputStruct.AppID,
 		ConversationId: inputStruct.ConversationID,
 		Role:           inputStruct.Message.Role,
 		Type:           appPB.Message_MessageType(appPB.Message_MessageType_value["MESSAGE_TYPE_TEXT"]),
