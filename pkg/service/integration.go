@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -199,7 +200,14 @@ func (s *service) validateConnection(conn *pb.Connection, integration *pb.Integr
 		if conn.GetOAuthAccessDetails() != nil {
 			return errmsg.AddMessage(err, "OAuth access details only apply to OAuth connections.")
 		}
+		if conn.Identity != nil {
+			return errmsg.AddMessage(err, "Identity only applies OAuth connections.")
+		}
 	case pb.Connection_METHOD_OAUTH:
+		err := fmt.Errorf("%w: invalid payload in OAuth connection", errdomain.ErrInvalidArgument)
+		if conn.GetIdentity() == "" {
+			return errmsg.AddMessage(err, "Identity must be provided in OAuth connections.")
+		}
 	default:
 		err := fmt.Errorf("%w: unsupported method", errdomain.ErrInvalidArgument)
 		return errmsg.AddMessage(err, "Invalid method "+conn.GetMethod().String()+".")
@@ -359,12 +367,19 @@ func (s *service) CreateNamespaceConnection(ctx context.Context, conn *pb.Connec
 		}
 	}
 
+	identity := sql.NullString{}
+	if conn.Identity != nil {
+		identity.Valid = true
+		identity.String = *conn.Identity
+	}
+
 	inserted, err := s.repository.CreateNamespaceConnection(ctx, &datamodel.Connection{
 		ID:                 conn.GetId(),
 		NamespaceUID:       ns.NsUID,
 		IntegrationUID:     uuid.FromStringOrNil(integration.GetUid()),
 		Method:             datamodel.ConnectionMethod(conn.GetMethod()),
 		Setup:              datatypes.JSON(jsonSetup),
+		Identity:           identity,
 		Scopes:             conn.GetScopes(),
 		OAuthAccessDetails: jsonOAuth,
 	})
@@ -426,11 +441,18 @@ func (s *service) UpdateNamespaceConnection(ctx context.Context, req *pb.UpdateN
 		}
 	}
 
+	identity := sql.NullString{}
+	if destConn.Identity != nil {
+		identity.Valid = true
+		identity.String = *destConn.Identity
+	}
+
 	updated, err := s.repository.UpdateNamespaceConnectionByUID(ctx, inDB.UID, &datamodel.Connection{
 		ID:                 destConn.GetId(),
 		Method:             datamodel.ConnectionMethod(destConn.GetMethod()),
 		Setup:              datatypes.JSON(jsonSetup),
 		Scopes:             destConn.GetScopes(),
+		Identity:           identity,
 		OAuthAccessDetails: jsonOAuth,
 	})
 	if err != nil {
@@ -474,6 +496,10 @@ func (s *service) connectionToPB(conn *datamodel.Connection, nsID string, view p
 		View:             view,
 		CreateTime:       timestamppb.New(conn.CreateTime),
 		UpdateTime:       timestamppb.New(conn.UpdateTime),
+	}
+
+	if conn.Identity.Valid {
+		pbConn.Identity = &conn.Identity.String
 	}
 
 	if view != pb.View_VIEW_FULL {

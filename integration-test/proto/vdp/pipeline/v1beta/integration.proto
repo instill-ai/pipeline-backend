@@ -8,8 +8,6 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
-// protoc-gen-validate message validators
-import "validate/validate.proto";
 // VDP definitions
 import "../../../vdp/pipeline/v1beta/common.proto";
 
@@ -28,10 +26,7 @@ message Connection {
     METHOD_OAUTH = 2;
   }
   // UUID-formatted unique identifier.
-  string uid = 1 [
-    (validate.rules).string.uuid = true,
-    (google.api.field_behavior) = OUTPUT_ONLY
-  ];
+  string uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // ID.
   string id = 2 [(google.api.field_behavior) = REQUIRED];
   // ID of the namespace owning the connection.
@@ -55,8 +50,24 @@ message Connection {
   // Connection details. This field is required on creation, optional on view.
   // When viewing the connection details, the setup values will be redacted.
   google.protobuf.Struct setup = 7 [(google.api.field_behavior) = REQUIRED];
-  // View defines how the integration is presented. The `setup` field is only
-  // showed in the FULL view.
+  // A list of scopes that identify the resources that the connection will be
+  // able to access on the user's behalf. This is typically passed on creation
+  // when the setup has been generated through an OAuth flow with a limited set
+  // of scopes.
+  repeated string scopes = 11 [(google.api.field_behavior) = OPTIONAL];
+  // When the connection method is METHOD_OAUTH, this field will hold the
+  // identity (e.g., email, username) with which the access token has been
+  // generated.
+  optional string identity = 13 [(google.api.field_behavior) = OPTIONAL];
+  // When the connection method is METHOD_OAUTH, the access token might come
+  // with some extra information that might vary across vendors. This
+  // information is passed as connection metadata.
+  optional google.protobuf.Struct o_auth_access_details = 12 [(google.api.field_behavior) = OPTIONAL];
+  // View defines how the connection is presented. The following fields are
+  // only shown in the FULL view:
+  // - setup
+  // - scopes
+  // - oAuthAccessDetails
   View view = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Creation timestamp.
   google.protobuf.Timestamp create_time = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -69,21 +80,18 @@ message Connection {
 message ListNamespaceConnectionsRequest {
   // Namespace ID.
   string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
-  // The maximum number of items to return. The default and cap values are 10
-  // and 100, respectively.
+  // The maximum number of items to return. The default and cap values are 10 and 100, respectively.
   optional int32 page_size = 2 [(google.api.field_behavior) = OPTIONAL];
   // Page token. By default, the first page will be returned.
   optional string page_token = 3 [(google.api.field_behavior) = OPTIONAL];
-  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
-  // expression.
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter expression.
   // The following filters are supported:
   // - `integrationId`
   // - `qConnection` (fuzzy search on connection ID, integration title or vendor)
-  // Examples:
-  // - List connections where app name, vendor or connection ID match `googl`:
-  // `q="googl"`.
-  // - List connections where the component type is `openai` (e.g. to setup a
-  // connector within a pipeline): `integration_id="openai"`.
+  //
+  // **Examples**:
+  // - List connections where app name, vendor or connection ID match `googl`: `q="googl"`.
+  // - List connections where the component type is `openai` (e.g. to setup a connector within a pipeline): `integrationId="openai"`.
   optional string filter = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
@@ -175,15 +183,6 @@ message TestNamespaceConnectionResponse {}
 // Integration contains the parameters to create a connection between
 // components and 3rd party apps.
 message Integration {
-  // SetupSchema defines the schema for a connection setup.
-  message SetupSchema {
-    // The connection method, which will define the fields in the schema.
-    Connection.Method method = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-    // The connection setup field definitions. Each integration will require
-    // different data to connect to the 3rd party app.
-    google.protobuf.Struct schema = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-  }
-
   // Link contains the information to display an reference to an external URL.
   message Link {
     // Text contains the message to display.
@@ -192,11 +191,22 @@ message Integration {
     string url = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
   }
 
+  // OAuthConfig contains the configuration parameters for fetching an access
+  // token via an OAuth 2.0 flow.
+  message OAuthConfig {
+    // The URL of the OAuth server to initiate the authentication and
+    // authorization process.
+    string auth_url = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // The URL of the OAuth server to exchange the authorization code for an
+    // access token.
+    string access_url = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // A list of scopes that identify the resources that the connection will be
+    // able to access on the user's behalf.
+    repeated string scopes = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  }
+
   // UUID-formatted unique identifier. It references a component definition.
-  string uid = 1 [
-    (validate.rules).string.uuid = true,
-    (google.api.field_behavior) = OUTPUT_ONLY
-  ];
+  string uid = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Identifier of the integration, which references a component definition.
   // Components with that definition ID will be able to use the connections
   // produced by this integration.
@@ -214,12 +224,45 @@ message Integration {
   // information.
   string icon = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
   // Reference to the vendor's documentation to expand the integration details.
-  optional string help_link = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // Schemas defines the supported schemas for the connection setup.
-  repeated SetupSchema schemas = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
-  // View defines how the integration is presented. The `spec` field is only
-  // showed in the FULL view.
+  optional Link help_link = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // The connection setup field definitions. Each integration will require
+  // different data to connect to the 3rd party app.
+  google.protobuf.Struct setup_schema = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Configuration parameters required for the OAuth setup flow. This field
+  // will be present only if the integration supports OAuth 2.0.
+  optional OAuthConfig o_auth_config = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // View defines how the integration is presented. The following fields are
+  // only shown in the FULL view:
+  // - schemas
+  // - setupSchema
+  // - oAuthConfig
   View view = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // SetupSchema defines the schema for a connection setup.
+  // This message is deprecated.
+  message SetupSchema {
+    // The connection method, which will define the fields in the schema.
+    Connection.Method method = 1 [
+      deprecated = true,
+      (google.api.field_behavior) = OUTPUT_ONLY
+    ];
+    // The connection setup field definitions. Each integration will require
+    // different data to connect to the 3rd party app.
+    google.protobuf.Struct schema = 2 [
+      deprecated = true,
+      (google.api.field_behavior) = OUTPUT_ONLY
+    ];
+  }
+
+  // Schemas defines the supported schemas for the connection setup.
+  // We haven't found a case for a schema that changes on the connection method
+  // (components don't care about how the connection was built), so the schema
+  // will be provided in the setupSchema field and the OAuth support and
+  // configuration will be provided in oAuthConfig.
+  repeated SetupSchema schemas = 8 [
+    deprecated = true,
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
 }
 
 // ListPipelineIDsByConnectionIDRequest represents a request to list the
@@ -229,13 +272,11 @@ message ListPipelineIDsByConnectionIDRequest {
   string namespace_id = 1 [(google.api.field_behavior) = REQUIRED];
   // Connection ID.
   string connection_id = 2 [(google.api.field_behavior) = REQUIRED];
-  // The maximum number of items to return. The default and cap values are 10
-  // and 100, respectively.
+  // The maximum number of items to return. The default and cap values are 10 and 100, respectively.
   optional int32 page_size = 3 [(google.api.field_behavior) = OPTIONAL];
   // Page token. By default, the first page will be returned.
   optional string page_token = 4 [(google.api.field_behavior) = OPTIONAL];
-  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
-  // expression.
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter expression.
   // The following filters are supported:
   // - `q` (fuzzy search on pipeline ID)
   optional string filter = 5 [(google.api.field_behavior) = OPTIONAL];
@@ -254,16 +295,15 @@ message ListPipelineIDsByConnectionIDResponse {
 // ListIntegrationsRequest represents a request to list the available
 // integrations.
 message ListIntegrationsRequest {
-  // The maximum number of items to return. The default and cap values are 10
-  // and 100, respectively.
+  // The maximum number of items to return. The default and cap values are 10 and 100, respectively.
   optional int32 page_size = 1 [(google.api.field_behavior) = OPTIONAL];
   // Page token. By default, the first page will be returned.
   optional string page_token = 2 [(google.api.field_behavior) = OPTIONAL];
-  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter
-  // expression.
+  // Filter can hold an [AIP-160](https://google.aip.dev/160)-compliant filter expression.
   // The following filters are supported:
   // - `qIntegration` (fuzzy search on title or vendor)
-  // Examples:
+  //
+  // **Examples**:
   // - List integrations where app name or vendor match `googl`: `q="googl"`.
   optional string filter = 3 [(google.api.field_behavior) = OPTIONAL];
 }

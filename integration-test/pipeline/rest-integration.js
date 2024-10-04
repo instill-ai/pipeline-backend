@@ -106,6 +106,7 @@ export function CheckConnections(data) {
   var integrationID = "slack";
 
   var setup = {"token": "one2THREE"};
+  var identity = "identitti";
 
   group("Integration API: Create connection", () => {
     var path = collectionPath;
@@ -128,7 +129,7 @@ export function CheckConnections(data) {
       [`POST ${path} (dictionary) has a creation time`]: (r) => new Date(r.json().connection.createTime).getTime() > new Date().setTime(0),
     });
 
-    // Successful creation: dictionary
+    // Successful creation: OAuth
     var oAuthReq = http.request(
       "POST",
       pipelinePublicHost + path,
@@ -138,6 +139,7 @@ export function CheckConnections(data) {
         method: "METHOD_OAUTH",
         setup: setup,
         scopes: ["channels:history", "groups:history", "chat:write"],
+        identity: identity,
         oAuthAccessDetails: {
           ok: true,
           access_token: "xoxb-17653672481-19874698323-pdFZKVeTuE8sk7oOcBrzbqgy",
@@ -166,6 +168,7 @@ export function CheckConnections(data) {
     check(oAuthReq, {
       [`POST ${path} (OAuth) response status is 201`]: (r) => r.status === 201,
       [`POST ${path} (OAuth) has a UID`]: (r) => r.json().connection.uid.length > 0,
+      [`POST ${path} (OAuth) has an identity`]: (r) => r.json().connection.identity === identity,
       [`POST ${path} (OAuth) has a creation time`]: (r) => new Date(r.json().connection.createTime).getTime() > new Date().setTime(0),
     });
 
@@ -232,6 +235,7 @@ export function CheckConnections(data) {
       [`GET ${path} has setup hidden`]: (r) => r.json().connection.setup === null,
       [`GET ${path} has integration ID`]: (r) => r.json().connection.integrationId === integrationID,
       [`GET ${path} has integration title`]: (r) => r.json().connection.integrationTitle === "Slack",
+      [`GET ${path} has an identity`]: (r) => r.json().connection.identity === identity,
     });
 
     // Full view
@@ -386,6 +390,7 @@ component:
     ).json().connection;
 
     var newToken = "new-token";
+    var newIdentity = "nivedita";
     var newID = dbIDPrefix + "my-new-id";
     var newMethod = "METHOD_OAUTH";
     var scopes = ["foo"];
@@ -401,6 +406,7 @@ component:
         // Fields with an underlying structpb.Struct type (setup,
         // oAuthAccessDetails) will be updated in block.
         setup: {"token": newToken},
+        identity: newIdentity,
         oAuthAccessDetails: {
           token_type: "bot",
           enterprise: {
@@ -416,6 +422,7 @@ component:
       [`PATCH ${path} response status 200`]: (r) => r.status === 200,
       [`PATCH ${path} contains new ID`]: (r) => r.json().connection.id === newID,
       [`PATCH ${path} contains new method`]: (r) => r.json().connection.method === newMethod,
+      [`PATCH ${path} contains new identity`]: (r) => r.json().connection.identity === newIdentity,
       [`PATCH ${path} contains new setup`]: (r) => r.json().connection.setup.token === newToken,
       [`PATCH ${path} contains scopes`]: (r) => r.json().connection.scopes[0] === scopes[0],
       [`PATCH ${path} didn't modify UID`]: (r) => r.json().connection.uid === originalConn.uid,
@@ -428,6 +435,7 @@ component:
       [`GET ${path + "?view=VIEW_FULL"} response status is 200`]: (r) => r.status === 200,
       [`GET ${path + "?view=VIEW_FULL"} has new ID value`]: (r) => r.json().connection.id === newID,
       [`GET ${path + "?view=VIEW_FULL"} has new method`]: (r) => r.json().connection.method === newMethod,
+      [`GET ${path + "?view=VIEW_FULL"} has new identity`]: (r) => r.json().connection.identity === newIdentity,
       [`GET ${path + "?view=VIEW_FULL"} has scopes`]: (r) => r.json().connection.setup.token === newToken,
       [`GET ${path + "?view=VIEW_FULL"} has scopes`]: (r) =>
         r.json().connection.scopes[0] === scopes[0],

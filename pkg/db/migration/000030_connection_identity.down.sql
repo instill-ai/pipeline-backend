@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE connection DROP COLUMN IF EXISTS identity;
+
+COMMIT;
