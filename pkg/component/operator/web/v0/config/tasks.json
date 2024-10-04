@@ -387,7 +387,7 @@
         },
         "timeout": {
           "default": 1000,
-          "description": "The time to wait for the page to load in milliseconds. Min 0, Max 60000. Please set it as 0 if you only want to collect static content.",
+          "description": "The time to wait for the page to load in milliseconds. Min 0, Max 60000. Please set it as 0 if you only want to collect static content. Please notice that if the timeout is set a small value, the page may not be fully loaded.",
           "instillAcceptFormats": [
             "integer"
           ],
