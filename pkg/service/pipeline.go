@@ -1885,7 +1885,7 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 
 	return &pipelinepb.ListPipelineRunsResponse{
 		PipelineRuns: pbPipelineRuns,
-		TotalSize:    totalCount,
+		TotalSize:    int32(totalCount),
 		Page:         int32(page),
 		PageSize:     int32(pageSize),
 	}, nil
@@ -1985,7 +1985,7 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 
 	return &pipelinepb.ListComponentRunsResponse{
 		ComponentRuns: pbComponentRuns,
-		TotalSize:     totalCount,
+		TotalSize:     int32(totalCount),
 		Page:          int32(page),
 		PageSize:      int32(pageSize),
 	}, nil
