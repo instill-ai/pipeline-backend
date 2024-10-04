@@ -13,3 +13,11 @@ Here are some examples on how the `jq` syntax works.
 | `[{"id":1},{"id":2},{"id":3}]` | `.[] \| .id` | `[1, 2, 3]` |
 | `{"a":1,"b":2}` | `.a += 1 \| .b *= 2` | `[{ "a": 2, "b": 4 }]` |
 | `{"a":1} [2] 3` | `. as {$a} ?// [$a] ?// $a \| $a` | `[1, 2, 3]` |
+
+There's a common pitfall in `jq`, which doesn't support the dash (`-`)
+character in dictionary key names and interprets them as a subtraction. The way
+to access such fields in a `jq` filter is by wrapping the key in double quotes:
+
+| Input JSON | `jq` filter | Output |
+| :--- | :--- | :--- |
+| `[{"key-a": "value1"}, {"key-a": "value2"}]` | `.[] \| ."key-a"` | `["value1", "value2"]` |
