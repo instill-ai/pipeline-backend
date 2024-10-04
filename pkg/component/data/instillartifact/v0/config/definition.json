@@ -10,7 +10,7 @@
     "TASK_ASK"
   ],
   "documentationUrl": "https://www.instill.tech/docs/component/data/instillartifact",
-  "icon": "assets/instill_artifact.svg",
+  "icon": "assets/instill-artifact.svg",
   "id": "instill-artifact",
   "public": true,
   "title": "Instill Artifact",

@@ -4,7 +4,7 @@
     "TASK_WRITE_CHAT_MESSAGE"
   ],
   "documentationUrl": "https://www.instill.tech/docs/component/application/instillapp",
-  "icon": "assets/instill_app.svg",
+  "icon": "assets/instill-app.svg",
   "id": "instill-app",
   "public": true,
   "title": "Instill App",
