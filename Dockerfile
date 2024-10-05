@@ -12,10 +12,10 @@ RUN go get github.com/otiai10/gosseract/v2
 
 ARG SERVICE_NAME TARGETOS TARGETARCH
 
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH GODEBUG=tlsrsakex=1 CGO_ENABLED=1 go build -tags=ocr,musl -o /${SERVICE_NAME} ./cmd/main
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH GODEBUG=tlsrsakex=1 CGO_ENABLED=1 go build -tags=ocr,musl -o /${SERVICE_NAME}-worker ./cmd/worker
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH GODEBUG=tlsrsakex=1 go build -tags=musl -o /${SERVICE_NAME}-migrate ./cmd/migration
-RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH GODEBUG=tlsrsakex=1 go build -tags=musl -o /${SERVICE_NAME}-init ./cmd/init
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=1 go build -tags=ocr,musl -o /${SERVICE_NAME} ./cmd/main
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=1 go build -tags=ocr,musl -o /${SERVICE_NAME}-worker ./cmd/worker
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags=musl -o /${SERVICE_NAME}-migrate ./cmd/migration
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags=musl -o /${SERVICE_NAME}-init ./cmd/init
 
 FROM alpine:3.19
 
@@ -58,6 +58,8 @@ USER nobody:nogroup
 ARG SERVICE_NAME
 
 WORKDIR /${SERVICE_NAME}
+
+ENV GODEBUG tlsrsakex=1
 
 COPY --from=build --chown=nobody:nogroup /src/config ./config
 COPY --from=build --chown=nobody:nogroup /src/release-please ./release-please
