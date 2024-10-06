@@ -504,37 +504,37 @@ func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.N
 	return s.repository.DeleteNamespacePipelineByID(ctx, ownerPermalink, id)
 }
 
-func (s *service) generateCloneTargetNamespace(ctx context.Context, target string) (resource.Namespace, error) {
+func (s *service) generateCloneTargetNamespace(ctx context.Context, target string) (resource.Namespace, string, error) {
 	targetNamespace, targetID, ok := strings.Cut(target, "/")
 	if !ok {
-		return resource.Namespace{}, errdomain.ErrInvalidCloneTarget
+		return resource.Namespace{}, "", errdomain.ErrInvalidCloneTarget
 	}
 
 	resp, err := s.mgmtPrivateServiceClient.CheckNamespaceAdmin(ctx, &mgmtpb.CheckNamespaceAdminRequest{
 		Id: targetNamespace,
 	})
 	if err != nil {
-		return resource.Namespace{}, err
+		return resource.Namespace{}, "", err
 	}
 
 	var targetNS resource.Namespace
 	if resp.Type == mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_USER {
 		targetNS = resource.Namespace{
 			NsType: resource.User,
-			NsID:   targetID,
+			NsID:   targetNamespace,
 			NsUID:  uuid.FromStringOrNil(resp.Uid),
 		}
 	} else if resp.Type == mgmtpb.CheckNamespaceAdminResponse_NAMESPACE_ORGANIZATION {
 		targetNS = resource.Namespace{
 			NsType: resource.Organization,
-			NsID:   targetID,
+			NsID:   targetNamespace,
 			NsUID:  uuid.FromStringOrNil(resp.Uid),
 		}
 	} else {
-		return resource.Namespace{}, errdomain.ErrInvalidCloneTarget
+		return resource.Namespace{}, "", errdomain.ErrInvalidCloneTarget
 	}
 
-	return targetNS, nil
+	return targetNS, targetID, nil
 }
 
 func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id string, target string, description string, sharing *pipelinepb.Sharing) (*pipelinepb.Pipeline, error) {
@@ -542,16 +542,16 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 	if err != nil {
 		return nil, err
 	}
-	targetNS, err := s.generateCloneTargetNamespace(ctx, target)
+	targetNS, targetID, err := s.generateCloneTargetNamespace(ctx, target)
 	if err != nil {
 		return nil, err
 	}
 
 	newPipeline := &pipelinepb.Pipeline{
-		Id:          targetNS.NsID,
+		Id:          targetID,
 		Description: &description,
 		Sharing:     sharing,
-		Recipe:      sourcePipeline.Recipe,
+		RawRecipe:   sourcePipeline.RawRecipe,
 		Metadata:    sourcePipeline.Metadata,
 	}
 
@@ -571,16 +571,16 @@ func (s *service) CloneNamespacePipelineRelease(ctx context.Context, ns resource
 	if err != nil {
 		return nil, err
 	}
-	targetNS, err := s.generateCloneTargetNamespace(ctx, target)
+	targetNS, targetID, err := s.generateCloneTargetNamespace(ctx, target)
 	if err != nil {
 		return nil, err
 	}
 
 	newPipeline := &pipelinepb.Pipeline{
-		Id:          targetNS.NsID,
+		Id:          targetID,
 		Description: &description,
 		Sharing:     sharing,
-		Recipe:      sourcePipelineRelease.Recipe,
+		RawRecipe:   sourcePipelineRelease.RawRecipe,
 		Metadata:    sourcePipelineRelease.Metadata,
 	}
 
