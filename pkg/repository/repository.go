@@ -398,9 +398,12 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 }
 
 func (r *repository) ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error) {
+	// Note: Preset pipelines are ignored in `GET /pipelines` requests. These
+	// pipelines are used by the artifact backend and should not be directly
+	// exposed to users.
 	return r.listPipelines(ctx,
-		"",
-		[]interface{}{},
+		"(owner != ?)",
+		[]interface{}{fmt.Sprintf("organizations/%s", constant.PresetNamespaceUID)},
 		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 }
 func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error) {
