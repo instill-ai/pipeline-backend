@@ -31,11 +31,6 @@ import (
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-// The ID and UID within the preset namespace must consistently match between
-// mgmt and pipeline-backend.
-const PresetNamespaceID = "preset"
-const PresetNamespaceUID = "63196cec-1c95-49e8-9bf6-9f9497a15f72"
-
 func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) error {
 	// In Instill Cloud, we have a special organization called `preset`, which
 	// stores all the preset pipelines that users can use or clone. We also want
@@ -124,14 +119,14 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 
 	ns := resource.Namespace{
 		NsType: resource.Organization,
-		NsID:   PresetNamespaceID,
-		NsUID:  uuid.FromStringOrNil(PresetNamespaceUID),
+		NsID:   constant.PresetNamespaceID,
+		NsUID:  uuid.FromStringOrNil(constant.PresetNamespaceUID),
 	}
 	pageToken := ""
 	for {
 		//nolint:staticcheck
 		resp, err := cloudPipelineClient.ListOrganizationPipelines(ctx, &pipelinepb.ListOrganizationPipelinesRequest{
-			Parent:    fmt.Sprintf("organizations/%s", PresetNamespaceID),
+			Parent:    fmt.Sprintf("organizations/%s", constant.PresetNamespaceUID),
 			View:      pipelinepb.Pipeline_VIEW_RECIPE.Enum(),
 			PageToken: &pageToken,
 		})
@@ -188,7 +183,7 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 			for {
 				//nolint:staticcheck
 				releaseResp, err := cloudPipelineClient.ListOrganizationPipelineReleases(ctx, &pipelinepb.ListOrganizationPipelineReleasesRequest{
-					Parent:    fmt.Sprintf("organizations/%s/pipelines/%s", PresetNamespaceID, dbPipeline.ID),
+					Parent:    fmt.Sprintf("organizations/%s/pipelines/%s", constant.PresetNamespaceUID, dbPipeline.ID),
 					View:      pipelinepb.Pipeline_VIEW_RECIPE.Enum(),
 					PageToken: &releasePageToken,
 				})
