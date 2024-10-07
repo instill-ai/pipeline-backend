@@ -1485,6 +1485,7 @@ func (r *repository) ListPipelineIDsByConnectionID(
 	queryBuilder := db.Table("pipeline").
 		Where(where, whereArgs...).
 		Where("recipe_yaml LIKE ?", reference).
+		Where("delete_time IS NULL").
 		Where("owner = ?", p.Owner.Permalink())
 
 	var count int64
