@@ -504,17 +504,13 @@ func (s *service) DeleteNamespacePipelineByID(ctx context.Context, ns resource.N
 	return s.repository.DeleteNamespacePipelineByID(ctx, ownerPermalink, id)
 }
 
-func (s *service) generateCloneTargetNamespace(ctx context.Context, target string) (resource.Namespace, string, error) {
-	targetNamespace, targetID, ok := strings.Cut(target, "/")
-	if !ok {
-		return resource.Namespace{}, "", errdomain.ErrInvalidCloneTarget
-	}
+func (s *service) generateCloneTargetNamespace(ctx context.Context, targetNamespace string) (resource.Namespace, error) {
 
 	resp, err := s.mgmtPrivateServiceClient.CheckNamespaceAdmin(ctx, &mgmtpb.CheckNamespaceAdminRequest{
 		Id: targetNamespace,
 	})
 	if err != nil {
-		return resource.Namespace{}, "", err
+		return resource.Namespace{}, err
 	}
 
 	var targetNS resource.Namespace
@@ -531,24 +527,24 @@ func (s *service) generateCloneTargetNamespace(ctx context.Context, target strin
 			NsUID:  uuid.FromStringOrNil(resp.Uid),
 		}
 	} else {
-		return resource.Namespace{}, "", errdomain.ErrInvalidCloneTarget
+		return resource.Namespace{}, errdomain.ErrInvalidCloneTarget
 	}
 
-	return targetNS, targetID, nil
+	return targetNS, nil
 }
 
-func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id string, target string, description string, sharing *pipelinepb.Sharing) (*pipelinepb.Pipeline, error) {
+func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id, targetNamespaceID, targetPipelineID, description string, sharing *pipelinepb.Sharing) (*pipelinepb.Pipeline, error) {
 	sourcePipeline, err := s.GetNamespacePipelineByID(ctx, ns, id, pipelinepb.Pipeline_VIEW_RECIPE)
 	if err != nil {
 		return nil, err
 	}
-	targetNS, targetID, err := s.generateCloneTargetNamespace(ctx, target)
+	targetNS, err := s.generateCloneTargetNamespace(ctx, targetNamespaceID)
 	if err != nil {
 		return nil, err
 	}
 
 	newPipeline := &pipelinepb.Pipeline{
-		Id:          targetID,
+		Id:          targetPipelineID,
 		Description: &description,
 		Sharing:     sharing,
 		RawRecipe:   sourcePipeline.RawRecipe,
@@ -566,18 +562,18 @@ func (s *service) CloneNamespacePipeline(ctx context.Context, ns resource.Namesp
 	return pipeline, nil
 }
 
-func (s *service) CloneNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, target string, description string, sharing *pipelinepb.Sharing) (*pipelinepb.Pipeline, error) {
+func (s *service) CloneNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id, targetNamespaceID, targetPipelineID, description string, sharing *pipelinepb.Sharing) (*pipelinepb.Pipeline, error) {
 	sourcePipelineRelease, err := s.GetNamespacePipelineReleaseByID(ctx, ns, pipelineUID, id, pipelinepb.Pipeline_VIEW_RECIPE)
 	if err != nil {
 		return nil, err
 	}
-	targetNS, targetID, err := s.generateCloneTargetNamespace(ctx, target)
+	targetNS, err := s.generateCloneTargetNamespace(ctx, targetNamespaceID)
 	if err != nil {
 		return nil, err
 	}
 
 	newPipeline := &pipelinepb.Pipeline{
-		Id:          targetID,
+		Id:          targetPipelineID,
 		Description: &description,
 		Sharing:     sharing,
 		RawRecipe:   sourcePipelineRelease.RawRecipe,
