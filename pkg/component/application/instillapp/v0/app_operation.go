@@ -81,7 +81,7 @@ func (out *ReadChatHistoryOutput) Filter(inputStruct ReadChatHistoryInput, messa
 
 		content := []Content{
 			{
-				Type: message.Type.String(),
+				Type: convertPBTypeToJSONType(message.Type.String()),
 				Text: message.Content,
 			},
 		}
@@ -90,6 +90,15 @@ func (out *ReadChatHistoryOutput) Filter(inputStruct ReadChatHistoryInput, messa
 			Content: content,
 			Role:    message.Role,
 		})
+	}
+}
+
+func convertPBTypeToJSONType(pbType string) string {
+	switch pbType {
+	case "MESSAGE_TYPE_TEXT":
+		return "text"
+	default:
+		return "unknown"
 	}
 }
 
@@ -147,6 +156,8 @@ func (e *execution) readChatHistory(input *structpb.Struct) (*structpb.Struct, e
 
 		output.Filter(inputStruct, res.Messages)
 	}
+
+	fmt.Println("== output", output)
 
 	return base.ConvertToStructpb(output)
 
