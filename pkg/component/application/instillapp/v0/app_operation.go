@@ -13,6 +13,7 @@ import (
 	appPB "github.com/instill-ai/protogen-go/app/app/v1alpha"
 )
 
+// ReadChatHistoryInput is the input struct for the ReadChatHistory operation
 type ReadChatHistoryInput struct {
 	Namespace       string `json:"namespace"`
 	AppID           string `json:"app-id"`
@@ -23,16 +24,22 @@ type ReadChatHistoryInput struct {
 	MaxMessageCount int    `json:"max-message-count"`
 }
 
+// ReadChatHistoryOutput is the output struct for the ReadChatHistory operation
 type ReadChatHistoryOutput struct {
 	Messages []Message `json:"messages"`
 }
 
+// Message is the struct for a message
 type Message struct {
 	Content []Content `json:"content"`
-	Role    string    `json:"role"`
-	Name    string    `json:"name,omitempty"`
+	// Role can be either 'user' or 'assistant'
+	Role string `json:"role"`
+	Name string `json:"name,omitempty"`
 }
 
+// Content is the struct for the content of a message.
+// It can be either text, image_url, or image_base64.
+// Only one of the fields should be set, and Type should be set to the type of the content.
 type Content struct {
 	Type        string `json:"type"`
 	Text        string `json:"text,omitempty"`
@@ -40,7 +47,7 @@ type Content struct {
 	ImageBase64 string `json:"image-base64,omitempty"`
 }
 
-func (in *ReadChatHistoryInput) Validate() error {
+func (in *ReadChatHistoryInput) validate() error {
 	if in.Role != "" && in.Role != "user" && in.Role != "assistant" {
 		return fmt.Errorf("role must be either 'user' or 'assistant'")
 	}
@@ -58,7 +65,7 @@ func (in *ReadChatHistoryInput) Validate() error {
 	return nil
 }
 
-func (out *ReadChatHistoryOutput) Filter(inputStruct ReadChatHistoryInput, messages []*appPB.Message) {
+func (out *ReadChatHistoryOutput) filter(inputStruct ReadChatHistoryInput, messages []*appPB.Message) {
 	for _, message := range messages {
 
 		if inputStruct.Role != "" && inputStruct.Role != message.Role {
@@ -111,7 +118,7 @@ func (e *execution) readChatHistory(input *structpb.Struct) (*structpb.Struct, e
 		return nil, fmt.Errorf("failed to convert input struct: %w", err)
 	}
 
-	err = inputStruct.Validate()
+	err = inputStruct.validate()
 	if err != nil {
 		return nil, fmt.Errorf("invalid input: %w", err)
 	}
@@ -139,7 +146,7 @@ func (e *execution) readChatHistory(input *structpb.Struct) (*structpb.Struct, e
 		Messages: make([]Message, 0),
 	}
 
-	output.Filter(inputStruct, res.Messages)
+	output.filter(inputStruct, res.Messages)
 
 	for res.NextPageToken != "" || (len(output.Messages) < inputStruct.MaxMessageCount && inputStruct.MaxMessageCount > 0) {
 		res, err = appClient.ListMessages(ctx, &appPB.ListMessagesRequest{
@@ -154,10 +161,8 @@ func (e *execution) readChatHistory(input *structpb.Struct) (*structpb.Struct, e
 			return nil, fmt.Errorf("failed to list messages: %w", err)
 		}
 
-		output.Filter(inputStruct, res.Messages)
+		output.filter(inputStruct, res.Messages)
 	}
-
-	fmt.Println("== output", output)
 
 	return base.ConvertToStructpb(output)
 
@@ -181,7 +186,7 @@ type WriteChatMessageOutput struct {
 	UpdateTime string `json:"update-time"`
 }
 
-func (in *WriteChatMessageInput) Validate() error {
+func (in *WriteChatMessageInput) validate() error {
 	role := in.Message.Role
 	if role != "" && role != "user" && role != "assistant" {
 		return fmt.Errorf("role must be either 'user' or 'assistant'")
@@ -197,7 +202,7 @@ func (e *execution) writeChatMessage(input *structpb.Struct) (*structpb.Struct, 
 		return nil, fmt.Errorf("failed to convert input struct: %w", err)
 	}
 
-	err = inputStruct.Validate()
+	err = inputStruct.validate()
 
 	if err != nil {
 		return nil, fmt.Errorf("invalid input: %w", err)
