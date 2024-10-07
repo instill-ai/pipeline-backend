@@ -4,7 +4,9 @@ repos:
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
+        exclude: (?i).*testdata/
       - id: trailing-whitespace
+        exclude: (?i).*testdata/
   - repo: https://github.com/dnephin/pre-commit-golang
     rev: v0.5.1
     hooks:
