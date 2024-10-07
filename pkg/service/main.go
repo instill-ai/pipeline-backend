@@ -37,7 +37,7 @@ type Service interface {
 	DeleteNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) error
 	ValidateNamespacePipelineByID(ctx context.Context, ns resource.Namespace, id string) ([]*pb.ErrPipelineValidation, error)
 	GetNamespacePipelineLatestReleaseUID(ctx context.Context, ns resource.Namespace, id string) (uuid.UUID, error)
-	CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id string, target string, description string, sharing *pb.Sharing) (*pb.Pipeline, error)
+	CloneNamespacePipeline(ctx context.Context, ns resource.Namespace, id, targetNamespaceID, targetPipelineID, description string, sharing *pb.Sharing) (*pb.Pipeline, error)
 
 	ListPipelinesAdmin(ctx context.Context, pageSize int32, pageToken string, view pb.Pipeline_View, filter filtering.Filter, showDeleted bool) ([]*pb.Pipeline, int32, string, error)
 	GetPipelineByUIDAdmin(ctx context.Context, uid uuid.UUID, view pb.Pipeline_View) (*pb.Pipeline, error)
@@ -49,7 +49,7 @@ type Service interface {
 	DeleteNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string) error
 	RestoreNamespacePipelineReleaseByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string) error
 	UpdateNamespacePipelineReleaseIDByID(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, newID string) (*pb.PipelineRelease, error)
-	CloneNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id string, target string, description string, sharing *pb.Sharing) (*pb.Pipeline, error)
+	CloneNamespacePipelineRelease(ctx context.Context, ns resource.Namespace, pipelineUID uuid.UUID, id, targetNamespaceID, targetPipelineID, description string, sharing *pb.Sharing) (*pb.Pipeline, error)
 
 	CreateNamespaceSecret(ctx context.Context, ns resource.Namespace, secret *pb.Secret) (*pb.Secret, error)
 	ListNamespaceSecrets(ctx context.Context, ns resource.Namespace, pageSize int32, pageToken string, filter filtering.Filter) ([]*pb.Secret, int32, string, error)

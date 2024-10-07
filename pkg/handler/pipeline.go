@@ -851,32 +851,6 @@ func (h *PublicHandler) RenameNamespacePipeline(ctx context.Context, req *pb.Ren
 	return &pb.RenameNamespacePipelineResponse{Pipeline: pbPipeline}, nil
 }
 
-func (h *PublicHandler) CloneUserPipeline(ctx context.Context, req *pb.CloneUserPipelineRequest) (resp *pb.CloneUserPipelineResponse, err error) {
-	_, err = h.CloneNamespacePipeline(ctx, &pb.CloneNamespacePipelineRequest{
-		NamespaceId: strings.Split(req.Name, "/")[1],
-		PipelineId:  strings.Split(req.Name, "/")[3],
-		Target:      req.Target,
-		Description: req.Description,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &pb.CloneUserPipelineResponse{}, nil
-}
-
-func (h *PublicHandler) CloneOrganizationPipeline(ctx context.Context, req *pb.CloneOrganizationPipelineRequest) (resp *pb.CloneOrganizationPipelineResponse, err error) {
-	_, err = h.CloneNamespacePipeline(ctx, &pb.CloneNamespacePipelineRequest{
-		NamespaceId: strings.Split(req.Name, "/")[1],
-		PipelineId:  strings.Split(req.Name, "/")[3],
-		Target:      req.Target,
-		Description: req.Description,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &pb.CloneOrganizationPipelineResponse{}, nil
-}
-
 func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.CloneNamespacePipelineRequest) (*pb.CloneNamespacePipelineResponse, error) {
 
 	eventName := "CloneNamespacePipeline"
@@ -899,7 +873,15 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.Clon
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.CloneNamespacePipeline(ctx, ns, req.PipelineId, req.GetTarget(), req.GetDescription(), req.GetSharing())
+	pbPipeline, err := h.service.CloneNamespacePipeline(
+		ctx,
+		ns,
+		req.PipelineId,
+		req.GetTargetNamespaceId(),
+		req.GetTargetPipelineId(),
+		req.GetDescription(),
+		req.GetSharing(),
+	)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
@@ -913,34 +895,6 @@ func (h *PublicHandler) CloneNamespacePipeline(ctx context.Context, req *pb.Clon
 		customotel.SetEventResource(pbPipeline),
 	)))
 	return &pb.CloneNamespacePipelineResponse{}, nil
-}
-
-func (h *PublicHandler) CloneUserPipelineRelease(ctx context.Context, req *pb.CloneUserPipelineReleaseRequest) (resp *pb.CloneUserPipelineReleaseResponse, err error) {
-	_, err = h.CloneNamespacePipelineRelease(ctx, &pb.CloneNamespacePipelineReleaseRequest{
-		NamespaceId: strings.Split(req.Name, "/")[1],
-		PipelineId:  strings.Split(req.Name, "/")[3],
-		ReleaseId:   strings.Split(req.Name, "/")[5],
-		Target:      req.Target,
-		Description: req.Description,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &pb.CloneUserPipelineReleaseResponse{}, nil
-}
-
-func (h *PublicHandler) CloneOrganizationPipelineRelease(ctx context.Context, req *pb.CloneOrganizationPipelineReleaseRequest) (resp *pb.CloneOrganizationPipelineReleaseResponse, err error) {
-	_, err = h.CloneNamespacePipelineRelease(ctx, &pb.CloneNamespacePipelineReleaseRequest{
-		NamespaceId: strings.Split(req.Name, "/")[1],
-		PipelineId:  strings.Split(req.Name, "/")[3],
-		ReleaseId:   strings.Split(req.Name, "/")[5],
-		Target:      req.Target,
-		Description: req.Description,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &pb.CloneOrganizationPipelineReleaseResponse{}, nil
 }
 
 func (h *PublicHandler) CloneNamespacePipelineRelease(ctx context.Context, req *pb.CloneNamespacePipelineReleaseRequest) (*pb.CloneNamespacePipelineReleaseResponse, error) {
@@ -968,7 +922,16 @@ func (h *PublicHandler) CloneNamespacePipelineRelease(ctx context.Context, req *
 		return nil, err
 	}
 
-	pbPipeline, err := h.service.CloneNamespacePipelineRelease(ctx, ns, uuid.FromStringOrNil(pipeline.Uid), req.ReleaseId, req.GetTarget(), req.GetDescription(), req.GetSharing())
+	pbPipeline, err := h.service.CloneNamespacePipelineRelease(
+		ctx,
+		ns,
+		uuid.FromStringOrNil(pipeline.Uid),
+		req.ReleaseId,
+		req.GetTargetNamespaceId(),
+		req.GetTargetPipelineId(),
+		req.GetDescription(),
+		req.GetSharing(),
+	)
 	if err != nil {
 		span.SetStatus(1, err.Error())
 		return nil, err
