@@ -275,7 +275,15 @@ func ConvertToPDF(base64Encoded, fileExtension string) (string, error) {
 	base64PDF, err := encodeFileToBase64(tempPDFName)
 
 	if err != nil {
-		return "", fmt.Errorf("failed to encode file to base64: %w", err)
+		// In the different containers, we have the different versions of LibreOffice, which means the behavior of LibreOffice may be different.
+		// So, we need to handle the case when the generated PDF is not in the temp directory.
+		if fileExtension == "pdf" {
+			base64PDF, err := encodeFileToBase64(inputFileName)
+			if err != nil {
+				return "", fmt.Errorf("failed to encode file to base64: %w", err)
+			}
+			return base64PDF, nil
+		}
 	}
 	return base64PDF, nil
 }

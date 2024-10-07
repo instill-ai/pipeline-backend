@@ -5,7 +5,9 @@ from collections import Counter
 import pdfplumber
 from pdfplumber.page import Page
 
-# TODO: Deal with the import error when running the code in the docker container
+# TODO chuang8511:
+# Deal with the import error when running the code in the docker container.
+# Now, we combine all python code into one file to avoid the import error.
 # from page_image_processor import PageImageProcessor
 
 

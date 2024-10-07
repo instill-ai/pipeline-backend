@@ -45,8 +45,18 @@ func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesInput) (*Convert
 		base64PDF = strings.Split(inputStruct.Document, ",")[1]
 	}
 
+	var base64PDFWithoutMime string
+	if RequiredToRepair(base64PDF) {
+		base64PDFWithoutMime, err = RepairPDF(base64PDF)
+		if err != nil {
+			return nil, fmt.Errorf("failed to repair PDF: %w", err)
+		}
+	} else {
+		base64PDFWithoutMime = base.TrimBase64Mime(base64PDF)
+	}
+
 	paramsJSON := map[string]interface{}{
-		"PDF":      base.TrimBase64Mime(base64PDF),
+		"PDF":      base64PDFWithoutMime,
 		"filename": inputStruct.Filename,
 	}
 

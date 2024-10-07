@@ -36,6 +36,9 @@ var (
 	//go:embed execution/task_convert_to_images.py
 	taskConvertToImagesExecution string
 
+	//go:embed execution/pdf_checker.py
+	pdfChecker string
+
 	once sync.Once
 	comp *component
 )
