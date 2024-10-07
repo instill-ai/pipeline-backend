@@ -13,20 +13,33 @@ import (
 	openaiv1 "github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v1"
 )
 
-func (e *execution) ExecuteTextChat(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func (e *execution) executeTextChat(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+
+	x := e.ComponentExecution
+	model := getModel(x.GetSetup())
+
+	err := insertModel(input, model)
+
+	if err != nil {
+		return nil, err
+	}
+
 	inputStruct := ai.TextChatInput{}
 
 	if err := base.ConvertFromStructpb(input, &inputStruct); err != nil {
-		return nil, fmt.Errorf("failed to convert input to TextChatInput: %w", err)
+		return nil, err
 	}
 
-	x := e.ComponentExecution
-	vendor := ModelVendorMap[inputStruct.Data.Model]
+	vendor, ok := modelVendorMap[model]
+
+	if !ok {
+		return nil, fmt.Errorf("unsupported vendor for model: %s", model)
+	}
 
 	client, err := newClient(x.GetSetup(), x.GetLogger(), vendor)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create client: %w", err)
+		return nil, err
 	}
 
 	switch vendor {
@@ -37,30 +50,22 @@ func (e *execution) ExecuteTextChat(input *structpb.Struct, job *base.Job, ctx c
 	}
 }
 
-var ModelVendorMap = map[string]string{
-	"o1-preview":             "openai",
-	"o1-mini":                "openai",
-	"gpt-4o-mini":            "openai",
-	"gpt-4o":                 "openai",
-	"gpt-4o-2024-05-13":      "openai",
-	"gpt-4o-2024-08-06":      "openai",
-	"gpt-4-turbo":            "openai",
-	"gpt-4-turbo-2024-04-09": "openai",
-	"gpt-4-0125-preview":     "openai",
-	"gpt-4-turbo-preview":    "openai",
-	"gpt-4-1106-preview":     "openai",
-	"gpt-4-vision-preview":   "openai",
-	"gpt-4":                  "openai",
-	"gpt-4-0314":             "openai",
-	"gpt-4-0613":             "openai",
-	"gpt-4-32k":              "openai",
-	"gpt-4-32k-0314":         "openai",
-	"gpt-4-32k-0613":         "openai",
-	"gpt-3.5-turbo":          "openai",
-	"gpt-3.5-turbo-16k":      "openai",
-	"gpt-3.5-turbo-0301":     "openai",
-	"gpt-3.5-turbo-0613":     "openai",
-	"gpt-3.5-turbo-1106":     "openai",
-	"gpt-3.5-turbo-0125":     "openai",
-	"gpt-3.5-turbo-16k-0613": "openai",
+// In the implementation, the model is more like the input of execution than the setup of the component.
+// However, we should set the model in setup to be able to resolve the setup for the key in the vendor map.
+// To avoid users inputting the model in the setup and params, we insert the model into input data.
+func insertModel(input *structpb.Struct, model string) error {
+
+	inputData, ok := input.Fields["data"]
+	if !ok {
+		return fmt.Errorf("failed to get data from input: no 'data' field found")
+	}
+
+	dataStruct, ok := inputData.GetKind().(*structpb.Value_StructValue)
+	if !ok {
+		return fmt.Errorf("data field is not a struct")
+	}
+
+	dataStruct.StructValue.Fields["model"] = structpb.NewStringValue(model)
+
+	return nil
 }
