@@ -225,8 +225,7 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 		}
 
 		// Temporary solution to filter out the instill-app component for local-ce:dev edition
-		// In the future, when it is a confirmed requirement, we can add a new field in the
-		// component definition to mark it as hidden.
+		// In the future the non-CE definitions shouldn't be in the CE repositories and Cloud should extend the CE component store to initialize the private components.
 		if skipComponentInCE(def.GetId()) {
 			continue
 		}
