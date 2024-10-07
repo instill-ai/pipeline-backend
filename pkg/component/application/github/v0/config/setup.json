@@ -26,7 +26,7 @@
     "authUrl": "https://github.com/login/oauth/authorize",
     "accessUrl": "https://github.com/login/oauth/access_token",
     "scopes": [
-      "repo:status",
+      "repo",
       "write:repo_hook"
     ]
   },
