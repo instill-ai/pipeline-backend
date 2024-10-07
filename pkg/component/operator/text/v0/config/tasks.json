@@ -408,5 +408,147 @@
       "title": "Output",
       "type": "object"
     }
+  },
+  "TASK_CLEAN_DATA": {
+    "instillShortDescription": "Clean data by removing unwanted text in the input of the array by using the given pattern.",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "texts": {
+          "description": "Array of text to be cleaned.",
+          "instillUIOrder": 0,
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "title": "Texts",
+          "type": "array"
+        },
+        "setting": {
+          "description": "The rules to clean the text.",
+          "instillUIOrder": 1,
+          "type": "object",
+          "title": "Setting",
+          "oneOf": [
+            {
+              "properties": {
+                "clean-method": {
+                  "const": "Regex",
+                  "type": "string",
+                  "title": "Clean Method",
+                  "description": "Cleaning based on regular expression.",
+                  "instillUIOrder": 0
+                },
+                "exclude-patterns": {
+                  "description": "When the text is matched, it will be removed from the array of text.",
+                  "instillAcceptFormats": [
+                    "array:string"
+                  ],
+                  "items": {
+                    "type": "string"
+                  },
+                  "instillUIOrder": 1,
+                  "type": "array",
+                  "title": "Exclude Patterns"
+                },
+                "include-patterns": {
+                  "description": "When the text is matched, it will be remained in the array of text.",
+                  "instillAcceptFormats": [
+                    "array:string"
+                  ],
+                  "items": {
+                    "type": "string"
+                  },
+                  "instillUIOrder": 2,
+                  "type": "array",
+                  "title": "Include Patterns"
+                }
+              },
+              "required": [
+                "clean-method"
+              ],
+              "title": "Regex",
+              "type": "object"
+            },
+            {
+              "properties": {
+                "clean-method": {
+                  "const": "Substring",
+                  "type": "string",
+                  "title": "Clean Method",
+                  "description": "Cleaning based on substring. Regex is more powerful than Substring. However, Substring is easier to use.",
+                  "instillUIOrder": 0
+                },
+                "exclude-substring": {
+                  "description": "When the text contains the substring, it will be removed from the array of text.",
+                  "instillAcceptFormats": [
+                    "array:string"
+                  ],
+                  "items": {
+                    "type": "string"
+                  },
+                  "instillUIOrder": 1,
+                  "type": "array",
+                  "title": "Exclude Substring"
+                },
+                "include-substring": {
+                  "description": "When the text contains the substring, it will be remained in the array of text.",
+                  "instillAcceptFormats": [
+                    "array:string"
+                  ],
+                  "items": {
+                    "type": "string"
+                  },
+                  "instillUIOrder": 2,
+                  "type": "array",
+                  "title": "Include Substring"
+                },
+                "case-sensitive": {
+                  "description": "A flag indicating whether the substring matching is case-sensitive. When it is true, the matching is case-sensitive. When it is false, the matching is case-insensitive. The default value is false. For example, when it is case-sensitive, cat would only match 'cat' but not 'Cat' or 'CAT'. When cat is case-insensitive, on the other hand, would match 'cat', 'Cat', 'CAT', or any other variation of uppercase and lowercase letters.",
+                  "instillAcceptFormats": [
+                    "boolean"
+                  ],
+                  "instillUIOrder": 3,
+                  "title": "Case Sensitive",
+                  "type": "boolean"
+                }
+              }
+            }
+          ],
+          "required": [
+            "clean-method"
+          ]
+        }
+      },
+      "required": [
+        "texts",
+        "setting"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillUIOrder": 0,
+      "properties": {
+        "texts": {
+          "description": "Array of cleaned text.",
+          "instillUIOrder": 0,
+          "items": {
+            "type": "string"
+          },
+          "title": "Cleaned Texts",
+          "type": "array"
+        }
+      },
+      "required": [
+        "texts"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
   }
 }
