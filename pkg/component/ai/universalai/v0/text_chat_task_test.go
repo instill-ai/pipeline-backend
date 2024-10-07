@@ -100,7 +100,7 @@ func TestExecuteTextChat(t *testing.T) {
 
 			execution := e.(*execution)
 
-			_, err = execution.ExecuteTextChat(input, job, ctx)
+			_, err = execution.executeTextChat(input, job, ctx)
 
 			c.Assert(err.Error(), qt.Contains, tc.wantErrMsg)
 

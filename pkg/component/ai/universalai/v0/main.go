@@ -62,7 +62,7 @@ func Init(bc base.Component) *component {
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 
 	model := getModel(x.GetSetup())
-	vendor := ModelVendorMap[model]
+	vendor := modelVendorMap[model]
 
 	resolvedSetup, resolved, err := c.resolveSetup(vendor, x.Setup)
 
@@ -79,7 +79,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 	switch x.Task {
 	case TextChatTask:
-		e.execute = e.ExecuteTextChat
+		e.execute = e.executeTextChat
 	default:
 		return nil, fmt.Errorf("unknown task: %s", x.Task)
 	}
@@ -132,7 +132,7 @@ func getModel(setup *structpb.Struct) string {
 	return setup.GetFields()["model"].GetStringValue()
 }
 
-var ModelVendorMap = map[string]string{
+var modelVendorMap = map[string]string{
 	"o1-preview":             "openai",
 	"o1-mini":                "openai",
 	"gpt-4o-mini":            "openai",

@@ -13,7 +13,7 @@ import (
 	openaiv1 "github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v1"
 )
 
-func (e *execution) ExecuteTextChat(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func (e *execution) executeTextChat(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
 
 	x := e.ComponentExecution
 	model := getModel(x.GetSetup())
@@ -30,7 +30,7 @@ func (e *execution) ExecuteTextChat(input *structpb.Struct, job *base.Job, ctx c
 		return nil, err
 	}
 
-	vendor, ok := ModelVendorMap[model]
+	vendor, ok := modelVendorMap[model]
 
 	if !ok {
 		return nil, fmt.Errorf("unsupported vendor for model: %s", model)
