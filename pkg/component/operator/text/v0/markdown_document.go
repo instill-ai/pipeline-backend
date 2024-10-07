@@ -356,6 +356,7 @@ func parseListFromBlock(block string, currentPosition int) []List {
 		} else {
 			if len(lists) > 0 {
 				lists[len(lists)-1].Text += "\n" + line
+				lists[len(lists)-1].EndPosition += sizeOfString(line) + 1
 			}
 		}
 		currentPosition += sizeOfString(line) + 1
