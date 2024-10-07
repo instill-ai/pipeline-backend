@@ -455,7 +455,7 @@
                   "title": "Exclude Patterns"
                 },
                 "include-patterns": {
-                  "description": "When the text is matched, it will be remained in the array of text.",
+                  "description": "When the text is matched, it will be remained in the array of text. And, the exclude-patterns will be executed first.",
                   "instillAcceptFormats": [
                     "array:string"
                   ],
@@ -482,8 +482,8 @@
                   "description": "Cleaning based on substring. Regex is more powerful than Substring. However, Substring is easier to use.",
                   "instillUIOrder": 0
                 },
-                "exclude-substring": {
-                  "description": "When the text contains the substring, it will be removed from the array of text.",
+                "exclude-substrings": {
+                  "description": "When the text contains the substrings, it will be removed from the array of text.",
                   "instillAcceptFormats": [
                     "array:string"
                   ],
@@ -494,8 +494,8 @@
                   "type": "array",
                   "title": "Exclude Substring"
                 },
-                "include-substring": {
-                  "description": "When the text contains the substring, it will be remained in the array of text.",
+                "include-substrings": {
+                  "description": "When the text contains the substrings, it will be remained in the array of text. And, the exclude-substrings will be executed first.",
                   "instillAcceptFormats": [
                     "array:string"
                   ],
@@ -515,7 +515,12 @@
                   "title": "Case Sensitive",
                   "type": "boolean"
                 }
-              }
+              },
+              "required": [
+                "clean-method"
+              ],
+              "title": "Substring",
+              "type": "object"
             }
           ],
           "required": [

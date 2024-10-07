@@ -8,6 +8,7 @@ description: "Learn about how to set up a VDP Text component https://github.com/
 The Text component is an operator component that allows users to extract and manipulate text from different sources.
 It can carry out the following tasks:
 - [Chunk Text](#chunk-text)
+- [Clean Data](#clean-data)
 
 ## Release Stage
 
@@ -130,3 +131,57 @@ This text splitter is specially designed for Markdown format.
 | Token Count | `token-count` | integer | Count of tokens in a chunk |
 </div>
 </details>
+
+### Clean Data
+
+Clean data by removing unwanted text in the input of the array by using the given pattern.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CLEAN_DATA` |
+| Texts (required) | `texts` | array[string] | Array of text to be cleaned. |
+| [Setting](#clean-data-setting) (required) | `setting` | object | The rules to clean the text. |
+</div>
+
+
+
+
+<details>
+<summary>The <code>setting</code> Object </summary>
+
+<h4 id="clean-data-setting">Setting</h4>
+
+`setting` must fulfill one of the following schemas:
+
+<h5 id="clean-data-regex"><code>Regex</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Clean Method | `clean-method` | string |  Must be `"Regex"`   |
+| Exclude Patterns | `exclude-patterns` | array |  When the text is matched, it will be removed from the array of text.  |
+| Include Patterns | `include-patterns` | array |  When the text is matched, it will be remained in the array of text. And, the exclude-patterns will be executed first.  |
+</div>
+
+<h5 id="clean-data-substring"><code>Substring</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Case Sensitive | `case-sensitive` | boolean |  A flag indicating whether the substring matching is case-sensitive. When it is true, the matching is case-sensitive. When it is false, the matching is case-insensitive. The default value is false. For example, when it is case-sensitive, cat would only match 'cat' but not 'Cat' or 'CAT'. When cat is case-insensitive, on the other hand, would match 'cat', 'Cat', 'CAT', or any other variation of uppercase and lowercase letters.  |
+| Clean Method | `clean-method` | string |  Must be `"Substring"`   |
+| Exclude Substring | `exclude-substrings` | array |  When the text contains the substrings, it will be removed from the array of text.  |
+| Include Substring | `include-substrings` | array |  When the text contains the substrings, it will be remained in the array of text. And, the exclude-substrings will be executed first.  |
+</div>
+</details>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Cleaned Texts | `texts` | array[string] | Array of cleaned text. |
+</div>
