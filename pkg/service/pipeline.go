@@ -929,10 +929,9 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		}
 
 	}
-
-	err = s.memory.WriteWorkflowMemoryToRedis(ctx, pipelineTriggerID)
-	if err != nil {
-		return err
+	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
+	if isStreaming {
+		wfm.EnableStreaming()
 	}
 	return nil
 }
@@ -1180,7 +1179,6 @@ func (s *service) triggerPipeline(
 
 	defer func() {
 		_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
-		_ = s.memory.PurgeWorkflowMemoryFromRedis(ctx, pipelineTriggerID)
 	}()
 	err := s.preTriggerPipeline(ctx, ns, r, pipelineTriggerID, pipelineData)
 	if err != nil {
@@ -1220,7 +1218,8 @@ func (s *service) triggerPipeline(
 				PipelineRequesterUID: requesterUID,
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
 			},
-			Mode: mgmtpb.Mode_MODE_SYNC,
+			Mode:      mgmtpb.Mode_MODE_SYNC,
+			WorkerUID: s.workerUID,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1258,7 +1257,11 @@ func (s *service) triggerAsyncPipeline(
 	returnTraces bool) (*longrunningpb.Operation, error) {
 
 	defer func() {
-		_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
+		go func() {
+			// We only retain the memory for a maximum of 60 minutes.
+			time.Sleep(60 * time.Minute)
+			_ = s.memory.PurgeWorkflowMemory(ctx, pipelineTriggerID)
+		}()
 	}()
 	err := s.preTriggerPipeline(ctx, ns, r, pipelineTriggerID, pipelineData)
 	if err != nil {
@@ -1281,7 +1284,6 @@ func (s *service) triggerAsyncPipeline(
 	if requesterUID.IsNil() {
 		requesterUID = userUID
 	}
-	isStreaming := resource.GetRequestSingleHeader(ctx, constant.HeaderAccept) == "text/event-stream"
 
 	we, err := s.temporalClient.ExecuteWorkflow(
 		ctx,
@@ -1302,7 +1304,7 @@ func (s *service) triggerAsyncPipeline(
 			},
 			Mode:           mgmtpb.Mode_MODE_ASYNC,
 			TriggerFromAPI: true,
-			IsStreaming:    isStreaming,
+			WorkerUID:      s.workerUID,
 		})
 	if err != nil {
 		logger.Error(fmt.Sprintf("unable to execute workflow: %s", err.Error()))
@@ -1345,7 +1347,7 @@ func (s *service) triggerAsyncPipeline(
 
 func (s *service) getOutputsAndMetadata(ctx context.Context, pipelineTriggerID string, returnTraces bool) ([]*structpb.Struct, *pipelinepb.TriggerMetadata, error) {
 
-	wfm, err := s.memory.LoadWorkflowMemoryFromRedis(ctx, pipelineTriggerID)
+	wfm, err := s.memory.GetWorkflowMemory(ctx, pipelineTriggerID)
 	if err != nil {
 		return nil, nil, err
 	}

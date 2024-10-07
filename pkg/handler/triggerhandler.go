@@ -2,10 +2,8 @@
 package handler
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
-	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,7 +13,6 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
-	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -205,7 +202,7 @@ func convertFormData(ctx context.Context, req *http.Request) ([]*pb.TriggerData,
 }
 
 // HandleTrigger
-func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, rc *redis.Client) {
+func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, ms memory.MemoryStore) {
 
 	ctx := req.Context()
 
@@ -213,10 +210,14 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
 		sh = func(triggerID string) (err error) {
 
-			pubsub := rc.Subscribe(ctx, triggerID)
-			defer pubsub.Close()
-
-			ch := pubsub.Channel()
+			wfm, err := ms.GetWorkflowMemory(ctx, triggerID)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				_ = ms.PurgeWorkflowMemory(ctx, triggerID)
+			}()
+			ch := wfm.ListenEvent(ctx)
 
 			w.Header().Set("Content-Type", "text/event-stream")
 			w.Header().Set("Cache-Control", "no-cache")
@@ -229,14 +230,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 				// Check if the main context is canceled to stop the goroutine
 				case <-ctx.Done():
 					return nil
-				case msg := <-ch:
-					event := memory.Event{}
-					buf := bytes.NewBufferString(msg.Payload)
-					dec := gob.NewDecoder(buf)
-					err := dec.Decode(&event)
-					if err != nil {
-						return err
-					}
+				case event := <-ch:
 					if event.Event == string(memory.PipelineClosed) {
 						closed = true
 						break
@@ -295,7 +289,7 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 }
 
 // HandleTriggerAsync
-func HandleTriggerAsync(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, rc *redis.Client) {
+func HandleTriggerAsync(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, _ memory.MemoryStore) {
 
 	ctx := req.Context()
 
@@ -523,17 +517,21 @@ func request_PipelinePublicService_TriggerAsyncNamespacePipeline_0_form(ctx cont
 }
 
 // HandleTrigger
-func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, rc *redis.Client) {
+func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, ms memory.MemoryStore) {
 
 	ctx := req.Context()
 	var sh streamingHandlerFunc
 	if req.Header.Get(constant.HeaderAccept) == "text/event-stream" {
 		sh = func(triggerID string) (err error) {
 
-			pubsub := rc.Subscribe(ctx, triggerID)
-			defer pubsub.Close()
-
-			ch := pubsub.Channel()
+			wfm, err := ms.GetWorkflowMemory(ctx, triggerID)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				_ = ms.PurgeWorkflowMemory(ctx, triggerID)
+			}()
+			ch := wfm.ListenEvent(ctx)
 
 			w.Header().Set("Content-Type", "text/event-stream")
 			w.Header().Set("Cache-Control", "no-cache")
@@ -545,14 +543,7 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 				// Check if the main context is canceled to stop the goroutine
 				case <-ctx.Done():
 					return nil
-				case msg := <-ch:
-					event := memory.Event{}
-					buf := bytes.NewBufferString(msg.Payload)
-					dec := gob.NewDecoder(buf)
-					err := dec.Decode(&event)
-					if err != nil {
-						return err
-					}
+				case event := <-ch:
 					if event.Event == string(memory.PipelineClosed) {
 						closed = true
 						break
@@ -611,7 +602,7 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 }
 
 // HandleTriggerAsync
-func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, rc *redis.Client) {
+func HandleTriggerAsyncRelease(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient, w http.ResponseWriter, req *http.Request, pathParams map[string]string, _ memory.MemoryStore) {
 
 	ctx := req.Context()
 

@@ -106,6 +106,7 @@ type service struct {
 	minioClient              minio.MinioI
 	memory                   memory.MemoryStore
 	log                      *zap.Logger
+	workerUID                uuid.UUID
 }
 
 // NewService initiates a service instance
@@ -117,6 +118,9 @@ func NewService(
 	c Converter,
 	m mgmtpb.MgmtPrivateServiceClient,
 	minioClient minio.MinioI,
+	cs *componentstore.Store,
+	memory memory.MemoryStore,
+	workerUID uuid.UUID,
 ) Service {
 	zapLogger, _ := logger.GetZapLogger(context.Background())
 
@@ -125,11 +129,12 @@ func NewService(
 		redisClient:              rc,
 		temporalClient:           t,
 		mgmtPrivateServiceClient: m,
-		component:                componentstore.Init(zapLogger, nil, nil),
+		component:                cs,
 		aclClient:                acl,
 		converter:                c,
 		minioClient:              minioClient,
-		memory:                   memory.NewMemoryStore(rc),
+		memory:                   memory,
 		log:                      zapLogger,
+		workerUID:                workerUID,
 	}
 }
