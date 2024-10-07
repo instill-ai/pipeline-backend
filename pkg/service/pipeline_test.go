@@ -10,10 +10,13 @@ import (
 	"github.com/gojuno/minimock/v3"
 	"go.temporal.io/sdk/client"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
+	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -60,6 +63,9 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 	converter := mock.NewConverterMock(mc)
 	mgmtPrivateClient := mock.NewMgmtPrivateServiceClientMock(mc)
 
+	compStore := componentstore.Init(nil, config.Config.Connector.Secrets, nil)
+
+	workerUID, _ := uuid.NewV4()
 	service := NewService(
 		repo,
 		redisClient,
@@ -68,6 +74,9 @@ func TestService_UpdateNamespacePipelineByID(t *testing.T) {
 		converter,
 		mgmtPrivateClient,
 		nil,
+		compStore,
+		memory.NewMemoryStore(),
+		workerUID,
 	)
 
 	aclClient.CheckPermissionMock.Return(true, nil)

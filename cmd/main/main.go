@@ -9,16 +9,20 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
+	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/worker"
 	"go.uber.org/zap"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -39,6 +43,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/handler"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
+	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/middleware"
 	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
@@ -47,10 +52,15 @@ import (
 	"github.com/instill-ai/x/temporal"
 	"github.com/instill-ai/x/zapadapter"
 
+	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
+	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
+
+const gracefulShutdownWaitPeriod = 15 * time.Second
+const gracefulShutdownTimeout = 60 * time.Minute
 
 var propagator propagation.TextMapPropagator
 
@@ -237,22 +247,28 @@ func main() {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
 
-	repository := repository.NewRepository(db, redisClient)
+	repo := repository.NewRepository(db, redisClient)
+	ms := memory.NewMemoryStore()
 
 	// Initialize Minio client
 	minioClient, err := minio.NewMinioClientAndInitBucket(ctx, &config.Config.Minio)
 	if err != nil {
 		logger.Fatal("failed to create minio client", zap.Error(err))
 	}
+	workerUID, _ := uuid.NewV4()
+	compStore := componentstore.Init(logger, config.Config.Connector.Secrets, nil)
 
 	service := service.NewService(
-		repository,
+		repo,
 		redisClient,
 		temporalClient,
 		&aclClient,
-		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repository, config.Config.Server.InstillCoreHost),
+		service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo, config.Config.Server.InstillCoreHost),
 		mgmtPrivateServiceClient,
 		minioClient,
+		compStore,
+		ms,
+		workerUID,
 	)
 
 	privateGrpcS := grpc.NewServer(grpcServerOpts...)
@@ -266,9 +282,10 @@ func main() {
 		handler.NewPrivateHandler(ctx, service),
 	)
 
+	ph := handler.NewPublicHandler(ctx, service)
 	pb.RegisterPipelinePublicServiceServer(
 		publicGrpcS,
-		handler.NewPublicHandler(ctx, service),
+		ph,
 	)
 
 	privateServeMux := runtime.NewServeMux(
@@ -310,7 +327,7 @@ func main() {
 			logger.Info("try to start usage reporter")
 			go func() {
 				for {
-					usg = usage.NewUsage(ctx, repository, mgmtPrivateServiceClient, redisClient, usageServiceClient)
+					usg = usage.NewUsage(ctx, repo, mgmtPrivateServiceClient, redisClient, usageServiceClient)
 					if usg != nil {
 						usg.StartReporter(ctx)
 						logger.Info("usage reporter started")
@@ -339,19 +356,19 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 
-	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger, redisClient)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTrigger, ms)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync, redisClient)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsync, ms)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerRelease, redisClient)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/trigger", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerRelease, ms)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease, redisClient)); err != nil {
+	if err := publicServeMux.HandlePath("POST", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/releases/{releaseID=*}/triggerAsync", middleware.AppendCustomHeaderMiddleware(publicServeMux, pipelinePublicServiceClient, handler.HandleTriggerAsyncRelease, ms)); err != nil {
 		logger.Fatal(err.Error())
 	}
-	if err := publicServeMux.HandlePath("GET", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/image", middleware.HandleProfileImage(service, repository)); err != nil {
+	if err := publicServeMux.HandlePath("GET", "/v1beta/*/{namespaceID=*}/pipelines/{pipelineID=*}/image", middleware.HandleProfileImage(service, repo)); err != nil {
 		logger.Fatal(err.Error())
 	}
 
@@ -399,20 +416,145 @@ func main() {
 	span.End()
 	logger.Info("gRPC server is running.")
 
+	// for only local temporal cluster
+	if config.Config.Temporal.Ca == "" && config.Config.Temporal.Cert == "" && config.Config.Temporal.Key == "" {
+		initTemporalNamespace(ctx, temporalClient)
+	}
+
+	timeseries := repository.MustNewInfluxDB(ctx)
+	defer timeseries.Close()
+
+	cw := pipelineworker.NewWorker(
+		repo,
+		redisClient,
+		timeseries.WriteAPI(),
+		compStore,
+		minioClient,
+		ms,
+		workerUID,
+	)
+
+	w := worker.New(temporalClient, pipelineworker.TaskQueue, worker.Options{
+		WorkflowPanicPolicy: worker.BlockWorkflow,
+		WorkerStopTimeout:   gracefulShutdownTimeout,
+	})
+
+	lw := worker.New(temporalClient, workerUID.String(), worker.Options{
+		WorkflowPanicPolicy: worker.BlockWorkflow,
+		WorkerStopTimeout:   gracefulShutdownTimeout,
+	})
+
+	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
+	w.RegisterWorkflow(cw.SchedulePipelineWorkflow)
+
+	lw.RegisterActivity(cw.ComponentActivity)
+	lw.RegisterActivity(cw.OutputActivity)
+	lw.RegisterActivity(cw.PreIteratorActivity)
+	lw.RegisterActivity(cw.PostIteratorActivity)
+	lw.RegisterActivity(cw.PreTriggerActivity)
+	lw.RegisterActivity(cw.LoadDAGDataActivity)
+	lw.RegisterActivity(cw.PostTriggerActivity)
+	lw.RegisterActivity(cw.ClosePipelineActivity)
+	lw.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
+	lw.RegisterActivity(cw.UpdatePipelineRunActivity)
+	lw.RegisterActivity(cw.UpsertComponentRunActivity)
+	lw.RegisterActivity(cw.UploadInputsToMinioActivity)
+	lw.RegisterActivity(cw.UploadOutputsToMinioActivity)
+	lw.RegisterActivity(cw.UploadRecipeToMinioActivity)
+	lw.RegisterActivity(cw.UploadComponentInputsActivity)
+	lw.RegisterActivity(cw.UploadComponentOutputsActivity)
+
+	err = w.Start()
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("Unable to start worker: %s", err))
+	}
+	err = lw.Start()
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("Unable to start local worker: %s", err))
+	}
+	logger.Info("worker is running.")
+
 	// kill (no param) default send syscall.SIGTERM
 	// kill -2 is syscall.SIGINT
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
 	signal.Notify(quitSig, syscall.SIGINT, syscall.SIGTERM)
-
+	ph.(*handler.PublicHandler).SetReadiness(true)
 	select {
 	case err := <-errSig:
 		logger.Error(fmt.Sprintf("Fatal error: %v\n", err))
 	case <-quitSig:
+		// When the server receives a SIGTERM, Kubernetes services may still
+		// consider it available. To handle this properly, we should:
+		// 1. Set the readiness probe to false to signal the server is no longer
+		// ready to receive traffic.
+		// 2. Sleep for a brief period to allow Kubernetes to stop forwarding
+		// requests.
+		// 3. Continue processing any in-flight requests.
+		// 4. After Kubernetes stops sending new traffic, initiate the server's
+		// shutdown process.
+
+		logger.Info("Shutting down server...")
+		ph.(*handler.PublicHandler).SetReadiness(false)
+		logger.Info("Stop receiving request...")
+		time.Sleep(gracefulShutdownWaitPeriod)
 		if config.Config.Server.Usage.Enabled && usg != nil {
 			usg.TriggerSingleReporter(ctx)
 		}
-		logger.Info("Shutting down server...")
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), gracefulShutdownTimeout)
+		defer shutdownCancel()
+
+		logger.Info("Shutting down worker...")
+		w.Stop()
+		lw.Stop()
+
+		logger.Info("Shutting down HTTP server...")
+		_ = privateHTTPServer.Shutdown(shutdownCtx)
+		_ = publicHTTPServer.Shutdown(shutdownCtx)
+		logger.Info("Shutting down gRPC server...")
 		privateGrpcS.GracefulStop()
 		publicGrpcS.GracefulStop()
+
+	}
+}
+
+func initTemporalNamespace(ctx context.Context, client client.Client) {
+	logger, _ := logger.GetZapLogger(ctx)
+
+	resp, err := client.WorkflowService().ListNamespaces(ctx, &workflowservice.ListNamespacesRequest{})
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("Unable to list namespaces: %s", err))
+	}
+
+	found := false
+	for _, n := range resp.GetNamespaces() {
+		if n.NamespaceInfo.Name == config.Config.Temporal.Namespace {
+			found = true
+		}
+	}
+
+	if !found {
+		if _, err := client.WorkflowService().RegisterNamespace(ctx,
+			&workflowservice.RegisterNamespaceRequest{
+				Namespace: config.Config.Temporal.Namespace,
+				WorkflowExecutionRetentionPeriod: func() *time.Duration {
+					// Check if the string ends with "d" for day.
+					s := config.Config.Temporal.Retention
+					if strings.HasSuffix(s, "d") {
+						// Parse the number of days.
+						days, err := strconv.Atoi(s[:len(s)-1])
+						if err != nil {
+							logger.Fatal(fmt.Sprintf("Unable to parse retention period in day: %s", err))
+						}
+						// Convert days to hours and then to a duration.
+						t := time.Hour * 24 * time.Duration(days)
+						return &t
+					}
+					logger.Fatal(fmt.Sprintf("Unable to parse retention period in day: %s", err))
+					return nil
+				}(),
+			},
+		); err != nil {
+			logger.Fatal(fmt.Sprintf("Unable to register namespace: %s", err))
+		}
 	}
 }

@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 
+	"github.com/gofrs/uuid"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/redis/go-redis/v9"
 	"go.temporal.io/sdk/workflow"
@@ -14,7 +15,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
-	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 )
 
@@ -33,7 +33,7 @@ type Worker interface {
 	PostIteratorActivity(ctx context.Context, param *PostIteratorActivityParam) error
 	PreTriggerActivity(ctx context.Context, param *PreTriggerActivityParam) error
 	PostTriggerActivity(ctx context.Context, param *PostTriggerActivityParam) error
-	ClosePipelineActivity(ctx context.Context, workflowID string, isStreaming bool) error
+	ClosePipelineActivity(ctx context.Context, workflowID string) error
 	IncreasePipelineTriggerCountActivity(context.Context, recipe.SystemVariables) error
 
 	UpdatePipelineRunActivity(ctx context.Context, param *UpdatePipelineRunActivityParam) error
@@ -54,6 +54,7 @@ type worker struct {
 	minioClient         minio.MinioI
 	log                 *zap.Logger
 	memoryStore         memory.MemoryStore
+	workerUID           uuid.UUID
 }
 
 // NewWorker initiates a temporal worker for workflow and activity definition
@@ -61,19 +62,20 @@ func NewWorker(
 	r repository.Repository,
 	rc *redis.Client,
 	i api.WriteAPI,
-	cs componentstore.ComponentSecrets,
-	uh componentbase.UsageHandlerCreator,
+	cs *componentstore.Store,
 	minioClient minio.MinioI,
+	m memory.MemoryStore,
+	workerUID uuid.UUID,
 ) Worker {
 	logger, _ := logger.GetZapLogger(context.Background())
-	m := memory.NewMemoryStore(rc)
 	return &worker{
 		repository:          r,
 		redisClient:         rc,
 		memoryStore:         m,
 		influxDBWriteClient: i,
-		component:           componentstore.Init(logger, cs, uh),
+		component:           cs,
 		minioClient:         minioClient,
 		log:                 logger,
+		workerUID:           workerUID,
 	}
 }
