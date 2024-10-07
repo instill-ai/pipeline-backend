@@ -758,6 +758,17 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 				}
 			}
+		} else {
+			for e, rangeIndex := range indexes {
+				identifier := defaultRangeIdentifier
+				if param.Index != "" {
+					identifier = param.Index
+				}
+				err = childWFM.Set(ctx, e, identifier, data.NewNumberFromInteger(rangeIndex))
+				if err != nil {
+					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
+				}
+			}
 		}
 
 		for e, rangeIndex := range indexes {
