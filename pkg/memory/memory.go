@@ -473,7 +473,7 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 			if err != nil {
 				return err
 			}
-			var data map[string]any
+			var data any
 			err = json.Unmarshal(b, &data)
 			if err != nil {
 				return err
