@@ -545,7 +545,7 @@ func (w *worker) ComponentActivity(ctx context.Context, param *ComponentActivity
 		for idx, originalIdx := range conditionMap {
 			jobs[idx] = &componentbase.Job{
 				Input:  NewInputReader(wfm, param.ID, originalIdx),
-				Output: NewOutputWriter(wfm, param.ID, originalIdx, param.Streaming),
+				Output: NewOutputWriter(wfm, param.ID, originalIdx, wfm.IsStreaming()),
 				Error:  NewErrorHandler(wfm, param.ID, originalIdx),
 			}
 		}
