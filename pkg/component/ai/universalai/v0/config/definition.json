@@ -8,7 +8,7 @@
   "id": "universal-ai",
   "public": true,
   "title": "Universal AI",
-  "description": "Connect the AI models served on the different platforms with standardized input and output formats.",
+  "description": "Connect the AI models served on the different platforms with standardized input and output formats",
   "type": "COMPONENT_TYPE_AI",
   "uid": "7656cb11-d504-4ca0-b481-6ef80964f2c9",
   "vendorAttributes": {},
