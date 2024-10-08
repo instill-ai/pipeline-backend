@@ -1,0 +1,80 @@
+
+
+## Example Recipes
+
+```yaml
+version: v1beta
+variable:
+  prompt:
+    title: Prompt
+    description: "User input message to be sent to the AI model."
+    instill-format: string
+
+  namespace:
+    title: Namespace
+    description: "The namespace where the application is running."
+    instill-format: string
+
+  app-id:
+    title: App ID
+    description: "ID of the application."
+    instill-format: string
+
+  conversation-id:
+    title: Conversation ID
+    description: "ID of the ongoing conversation session."
+    instill-format: string
+
+output:
+  ai-output:
+    title: AI Output
+    value: "${ai-assistant.output.data.choices[0]}"
+
+component:
+  ai-assistant:
+    type: universal-ai
+    input:
+      parameter:
+        n: 1
+        stream: false
+      data:
+        messages: "${chat-history.output.messages}"
+    setup:
+      model: gpt-4o
+    task: TASK_CHAT
+
+  chat-history:
+    type: instill-app
+    input:
+      namespace: "${variable.namespace}"
+      app-id: "${variable.app-id}"
+      conversation-id: "${variable.conversation-id}"
+      role:
+      message-type:
+      duration:
+      max-message-count: 10
+    task: TASK_READ_CHAT_HISTORY
+
+  write-ai-response:
+    type: instill-app
+    input:
+      namespace: "${variable.namespace}"
+      app-id: "${variable.app-id}"
+      conversation-id: "${variable.conversation-id}"
+      message:
+        content: "${ai-assistant.output.data.choices[0].message.content}"
+        role: "assistant"
+    task: TASK_WRITE_CHAT_MESSAGE
+
+  write-prompt:
+    type: instill-app
+    input:
+      namespace: "${variable.namespace}"
+      app-id: "${variable.app-id}"
+      conversation-id: "${variable.conversation-id}"
+      message:
+        content: "${variable.prompt}"
+        role: "user"
+    condition:
+    task: TASK_WRITE_CHAT_MESSAGE
+```
