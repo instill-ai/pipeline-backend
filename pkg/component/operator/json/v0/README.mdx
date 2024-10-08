@@ -10,6 +10,8 @@ It can carry out the following tasks:
 - [Marshal](#marshal)
 - [Unmarshal](#unmarshal)
 - [jq](#jq)
+- [Edit Values](#edit-values)
+- [Rename Fields](#rename-fields)
 
 ## Release Stage
 
@@ -118,6 +120,86 @@ to access such fields in a `jq` filter is by wrapping the key in double quotes:
 | Input JSON | `jq` filter | Output |
 | :--- | :--- | :--- |
 | `[{"key-a": "value1"}, {"key-a": "value2"}]` | `.[] \| ."key-a"` | `["value1", "value2"]` |
+
+### Edit Values
+
+Edit values in a JSON object.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_EDIT_VALUES` |
+| JSON (required) | `json` | any | JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+| [Updates](#edit-values-updates) | `updates` | array[object] | Array of updates to be applied to the JSON object. |
+| Conflict Resolution | `conflict-resolution` | string | Defines how to handle cases where the field does not exist in the data. |
+</div>
+
+
+<details>
+<summary> Input Objects in Edit Values</summary>
+
+<h4 id="edit-values-updates">Updates</h4>
+
+Array of updates to be applied to the JSON object.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Field | `field` | string | The field in the original data whose value needs to be updated, it supports nested paths with using dot. For example, 'a.b.c' to get the data in the 'c' field of the 'b' field of the 'a' field.  |
+| Value | `value` | string | The new value that will replace the current value at the specified field.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| JSON | `json` | any | JSON object with the updated values |
+</div>
+
+### Rename Fields
+
+Rename fields in a JSON object.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_RENAME_FIELDS` |
+| JSON (required) | `json` | any | JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+| [Fields](#rename-fields-fields) (required) | `fields` | array[object] | An array of objects specifying the fields to be renamed. |
+| Conflict Resolution | `conflict-resolution` | string | Defines how conflicts are handled when the newField already exists in the data. |
+</div>
+
+
+<details>
+<summary> Input Objects in Rename Fields</summary>
+
+<h4 id="rename-fields-fields">Fields</h4>
+
+An array of objects specifying the fields to be renamed.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| From | `from` | string | The field in the original data that needs to be renamed.  |
+| To | `to` | string | The new name for the field.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| JSON | `json` | any | JSON object with the renamed fields. |
+</div>
 ## Example Recipes
 
 Recipe for the [Resume Screening](https://instill.tech/instill-ai/pipelines/structured-resume-screening/playground) pipeline.

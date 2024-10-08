@@ -198,5 +198,208 @@
       "title": "Output",
       "type": "object"
     }
+  },
+  "TASK_EDIT_VALUES": {
+    "instillShortDescription": "Edit values in a JSON object.",
+    "title": "Edit Values",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "json": {
+          "description": "JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array).",
+          "instillShortDescription": "JSON object to be edited.",
+          "instillAcceptFormats": [
+            "object",
+            "semi-structured/*",
+            "structured/*"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "required": [],
+          "title": "JSON"
+        },
+        "updates": {
+          "description": "Array of updates to be applied to the JSON object.",
+          "instillShortDescription": "Array of updates to be applied.",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "array:object"
+          ],
+          "items": {
+            "description": "Update to be applied to the JSON object.",
+            "instillShortDescription": "Update to be applied.",
+            "properties": {
+              "field": {
+                "description": "The field in the original data whose value needs to be updated, it supports nested paths with using dot. For example, 'a.b.c' to get the data in the 'c' field of the 'b' field of the 'a' field.",
+                "instillShortDescription": "Path to the value to be updated.",
+                "instillAcceptFormats": [
+                  "string",
+                  "array"
+                ],
+                "instillUIOrder": 0,
+                "title": "Field",
+                "type": "string"
+              },
+              "value": {
+                "description": "The new value that will replace the current value at the specified field.",
+                "instillShortDescription": "New value to be set.",
+                "instillAcceptFormats": [
+                  "*/*"
+                ],
+                "instillUIOrder": 1,
+                "title": "Value",
+                "type": "string"
+              }
+            },
+            "required": [
+              "field",
+              "value"
+            ],
+            "title": "Update",
+            "type": "object"
+          },
+          "title": "Updates",
+          "type": "array"
+        },
+        "conflict-resolution": {
+          "description": "Defines how to handle cases where the field does not exist in the data.",
+          "instillShortDescription": "Conflict resolution strategy.",
+          "instillUIOrder": 2,
+          "title": "Conflict Resolution",
+          "type": "string",
+          "enum": ["create", "skip", "error"],
+          "default": "skip"
+        }
+      },
+      "required": [
+        "json",
+        "update-values"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillUIOrder": 1,
+      "properties": {
+        "json": {
+          "description": "JSON object with the updated values",
+          "instillFormat": "semi-structured/json",
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "JSON"
+        }
+      },
+      "required": [
+        "json"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_RENAME_FIELDS": {
+    "instillShortDescription": "Rename fields in a JSON object.",
+    "title": "Rename Fields",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "json": {
+          "description": "JSON object to be edited. It can be any valid JSON datatype (e.g. number, string, hash, array).",
+          "instillShortDescription": "JSON object to be edited.",
+          "instillAcceptFormats": [
+            "object",
+            "semi-structured/*",
+            "structured/*"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "required": [],
+          "title": "JSON"
+        },
+        "fields": {
+          "description": "An array of objects specifying the fields to be renamed.",
+          "instillShortDescription": "Array of fields to be renamed.",
+          "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "array:object"
+          ],
+          "items": {
+            "description": "Field to be renamed.",
+            "instillShortDescription": "Field to be renamed.",
+            "properties": {
+              "from": {
+                "description": "The field in the original data that needs to be renamed.",
+                "instillShortDescription": "Field to be renamed.",
+                "instillAcceptFormats": [
+                  "string"
+                ],
+                "instillUIOrder": 0,
+                "title": "From",
+                "type": "string"
+              },
+              "to": {
+                "description": "The new name for the field.",
+                "instillShortDescription": "New name for the field.",
+                "instillAcceptFormats": [
+                  "string"
+                ],
+                "instillUIOrder": 1,
+                "title": "To",
+                "type": "string"
+              }
+            },
+            "required": [
+              "from",
+              "to"
+            ],
+            "title": "Field",
+            "type": "object"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "conflict-resolution": {
+          "description": "Defines how conflicts are handled when the newField already exists in the data.",
+          "instillShortDescription": "Conflict resolution strategy.",
+          "instillUIOrder": 2,
+          "title": "Conflict Resolution",
+          "type": "string",
+          "enum": ["overwrite", "skip", "error"],
+          "default": "overwrite"
+        }
+      },
+      "required": [
+        "json",
+        "fields"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillUIOrder": 1,
+      "properties": {
+        "json": {
+          "description": "JSON object with the renamed fields.",
+          "instillFormat": "semi-structured/json",
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "JSON"
+        }
+      },
+      "required": [
+        "json"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
   }
 }
