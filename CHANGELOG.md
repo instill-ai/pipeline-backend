@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.42.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.42.0-beta...v0.42.1-beta) (2024-10-08)
+
+
+### Bug Fixes
+
+* fix event for iterator input updates was not being sent ([#721](https://github.com/instill-ai/pipeline-backend/issues/721)) ([046d532](https://github.com/instill-ai/pipeline-backend/commit/046d53278e82d91f766d384f7e8fdd15a234de3e))
+
 ## [0.42.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.41.0-beta...v0.42.0-beta) (2024-10-08)
 
 
