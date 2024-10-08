@@ -26,7 +26,7 @@ export function CheckIntegrations() {
       "GET /v1beta/integrations/document response contains end-user message": (r) => r.json().message === "Integration does not exist.",
     });
 
-    var id = "slack";
+    var id = "github";
     var cdef = http.request("GET", `${pipelinePublicHost}/v1beta/connector-definitions/${id}`, null, null).
       json().connectorDefinition;
 
@@ -43,9 +43,9 @@ export function CheckIntegrations() {
     };
 
     var oAuthConfig = {
-      authUrl: "https://slack.com/oauth/v2/authorize",
-      accessUrl: "https://slack.com/api/oauth.v2.access",
-      scopes: ["channels:history", "groups:history", "chat:write", "users:read", "users:read.email", "users.profile:read"],
+      authUrl: "https://github.com/login/oauth/authorize",
+      accessUrl: "https://github.com/login/oauth/access_token",
+      scopes: ["repo", "write:repo_hook"],
     };
 
     // Basic view
@@ -103,7 +103,7 @@ export function CheckConnections(data) {
   var connectionID = dbIDPrefix + randomString(8);
   var collectionPath = `/v1beta/namespaces/${defaultUsername}/connections`;
   var resourcePath = `${collectionPath}/${connectionID}`;
-  var integrationID = "slack";
+  var integrationID = "github";
 
   var setup = {"token": "one2THREE"};
   var identity = "identitti";
@@ -140,29 +140,12 @@ export function CheckConnections(data) {
         integrationId: integrationID,
         method: "METHOD_OAUTH",
         setup: setup,
-        scopes: ["channels:history", "groups:history", "chat:write"],
+        scopes: ["repo", "write:repo_hook"],
         identity: identity,
         oAuthAccessDetails: {
-          ok: true,
-          access_token: "xoxb-17653672481-19874698323-pdFZKVeTuE8sk7oOcBrzbqgy",
-          token_type: "bot",
-          scope: "commands,incoming-webhook",
-          bot_user_id: "U0KRQLJ9H",
-          app_id: "A0KRD7HC3",
-          team: {
-              name: "Slack Pickleball Team",
-              id: "T9TK3CUKW"
-          },
-          enterprise: {
-              name: "slack-pickleball",
-              id: "E12345678"
-          },
-          authed_user: {
-              id: "U1234",
-              scope: "chat:write",
-              access_token: "xoxp-1234",
-              token_type: "user"
-          }
+          access_token: "one2THREE",
+          scope: "repo,write:repo_hook",
+          token_type: "bearer",
         }
       }),
       data.header
@@ -182,8 +165,10 @@ export function CheckConnections(data) {
       JSON.stringify({
         id: invalidID,
         integrationId: integrationID,
-        method: "METHOD_DICTIONARY",
-        setup: {"token": "foo"},
+        method: "METHOD_OAUTH",
+        setup: setup,
+        scopes: ["repo", "write:repo_hook"],
+        identity: identity,
       }),
       data.header
     );
@@ -195,10 +180,12 @@ export function CheckConnections(data) {
       "POST",
       pipelinePublicHost + path,
       JSON.stringify({
-        id: dbIDPrefix + randomString(16),
+        id: invalidID,
         integrationId: integrationID,
-        method: "METHOD_DICTIONARY",
+        method: "METHOD_OAUTH",
         setup: {"token": 234},
+        scopes: ["repo", "write:repo_hook"],
+        identity: identity,
       }),
       data.header
     );
@@ -210,11 +197,12 @@ export function CheckConnections(data) {
       "POST",
       pipelinePublicHost + path,
       JSON.stringify({
-        id: dbIDPrefix + randomString(16),
+        id: invalidID,
         integrationId: integrationID,
         method: "METHOD_DICTIONARY",
-        setup: {"token": "valid"},
-        scopes: ["channels:history", "groups:history", "chat:write"],
+        setup: {"token": 234},
+        scopes: ["repo", "write:repo_hook"],
+        identity: identity,
       }),
       data.header
     );
@@ -236,7 +224,7 @@ export function CheckConnections(data) {
       [`GET ${path} has basic view`]: (r) => r.json().connection.view === "VIEW_BASIC",
       [`GET ${path} has setup hidden`]: (r) => r.json().connection.setup === null,
       [`GET ${path} has integration ID`]: (r) => r.json().connection.integrationId === integrationID,
-      [`GET ${path} has integration title`]: (r) => r.json().connection.integrationTitle === "Slack",
+      [`GET ${path} has integration title`]: (r) => r.json().connection.integrationTitle === "GitHub",
       [`GET ${path} has an identity`]: (r) => r.json().connection.identity === identity,
     });
 
@@ -410,12 +398,10 @@ component:
         setup: {"token": newToken},
         identity: newIdentity,
         oAuthAccessDetails: {
-          token_type: "bot",
-          enterprise: {
-            name: "slack-pickleball",
-            id: "E12345678"
-          },
-        },
+          access_token: newToken,
+          scope: scopes[0],
+          token_type: "bearer",
+        }
       }),
       data.header
     );
