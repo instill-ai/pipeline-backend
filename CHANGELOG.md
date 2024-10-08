@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.42.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.42.1-beta...v0.42.2-beta) (2024-10-08)
+
+
+### Bug Fixes
+
+* fix he pipeline output streaming was not functioning properly ([#723](https://github.com/instill-ai/pipeline-backend/issues/723)) ([6ca5060](https://github.com/instill-ai/pipeline-backend/commit/6ca50603f7bd96c0c1b085b186ac8dcc7b644bc3))
+
 ## [0.42.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.42.0-beta...v0.42.1-beta) (2024-10-08)
 
 
