@@ -154,7 +154,15 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 	logger, _ := logger.GetZapLogger(sCtx)
 	logger.Info("TriggerPipelineWorkflow started")
 
+	// Options for activity worker
 	ao := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
+		},
+	}
+	// Options for MinIO activity worker
+	mo := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Duration(config.Config.Server.Workflow.MaxWorkflowTimeout) * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
 			MaximumAttempts: config.Config.Server.Workflow.MaxActivityRetry,
@@ -164,11 +172,14 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 
 	if param.WorkerUID == uuid.Nil {
 		ao.TaskQueue = w.workerUID.String()
+		mo.TaskQueue = w.workerUID.String()
 	} else {
 		ao.TaskQueue = param.WorkerUID.String()
+		mo.TaskQueue = fmt.Sprintf("%s-minio", param.WorkerUID.String())
 	}
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
+	minioCtx := workflow.WithActivityOptions(ctx, mo)
 
 	workflowID := workflow.GetInfo(ctx).WorkflowExecution.ID
 	if param.TriggerFromAPI {
@@ -227,11 +238,11 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 		}
 	}
 
-	_ = workflow.ExecuteActivity(ctx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
+	_ = workflow.ExecuteActivity(minioCtx, w.UploadRecipeToMinioActivity, &UploadRecipeToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 	}).Get(ctx, nil)
 
-	_ = workflow.ExecuteActivity(ctx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
+	_ = workflow.ExecuteActivity(minioCtx, w.UploadInputsToMinioActivity, &UploadInputsToMinioActivityParam{
 		PipelineTriggerID: param.SystemVariables.PipelineTriggerID,
 	}).Get(ctx, nil)
 
@@ -285,7 +296,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 					SystemVariables: param.SystemVariables,
 				}
 
-				componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(ctx, w.UploadComponentInputsActivity, args))
+				componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentInputsActivity, args))
 
 				futures = append(futures, workflow.ExecuteActivity(ctx, w.ComponentActivity, args))
 				futureArgs = append(futureArgs, args)
@@ -374,7 +385,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			// the error here prevents the client from accessing the error
 			// message from the activity.
 			// return err
-			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(ctx, w.UploadComponentOutputsActivity, futureArgs[idx]))
+			componentRunFutures = append(componentRunFutures, workflow.ExecuteActivity(minioCtx, w.UploadComponentOutputsActivity, futureArgs[idx]))
 
 		}
 
@@ -391,7 +402,7 @@ func (w *worker) TriggerPipelineWorkflow(ctx workflow.Context, param *TriggerPip
 			return err
 		}
 
-		if err := workflow.ExecuteActivity(ctx, w.UploadOutputsToMinioActivity, &UploadOutputsToMinioActivityParam{
+		if err := workflow.ExecuteActivity(minioCtx, w.UploadOutputsToMinioActivity, &UploadOutputsToMinioActivityParam{
 			PipelineTriggerID: workflowID,
 		}).Get(ctx, nil); err != nil {
 			return err

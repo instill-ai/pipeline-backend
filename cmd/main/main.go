@@ -435,13 +435,19 @@ func main() {
 	)
 
 	w := worker.New(temporalClient, pipelineworker.TaskQueue, worker.Options{
-		WorkflowPanicPolicy: worker.BlockWorkflow,
-		WorkerStopTimeout:   gracefulShutdownTimeout,
+		WorkflowPanicPolicy:                    worker.BlockWorkflow,
+		WorkerStopTimeout:                      gracefulShutdownTimeout,
+		MaxConcurrentWorkflowTaskExecutionSize: 100,
 	})
-
 	lw := worker.New(temporalClient, workerUID.String(), worker.Options{
-		WorkflowPanicPolicy: worker.BlockWorkflow,
-		WorkerStopTimeout:   gracefulShutdownTimeout,
+		WorkflowPanicPolicy:                worker.BlockWorkflow,
+		WorkerStopTimeout:                  gracefulShutdownTimeout,
+		MaxConcurrentActivityExecutionSize: 100,
+	})
+	mw := worker.New(temporalClient, fmt.Sprintf("%s-minio", workerUID.String()), worker.Options{
+		WorkflowPanicPolicy:                worker.BlockWorkflow,
+		WorkerStopTimeout:                  gracefulShutdownTimeout,
+		MaxConcurrentActivityExecutionSize: 50,
 	})
 
 	w.RegisterWorkflow(cw.TriggerPipelineWorkflow)
@@ -458,11 +464,12 @@ func main() {
 	lw.RegisterActivity(cw.IncreasePipelineTriggerCountActivity)
 	lw.RegisterActivity(cw.UpdatePipelineRunActivity)
 	lw.RegisterActivity(cw.UpsertComponentRunActivity)
-	lw.RegisterActivity(cw.UploadInputsToMinioActivity)
-	lw.RegisterActivity(cw.UploadOutputsToMinioActivity)
-	lw.RegisterActivity(cw.UploadRecipeToMinioActivity)
-	lw.RegisterActivity(cw.UploadComponentInputsActivity)
-	lw.RegisterActivity(cw.UploadComponentOutputsActivity)
+
+	mw.RegisterActivity(cw.UploadInputsToMinioActivity)
+	mw.RegisterActivity(cw.UploadOutputsToMinioActivity)
+	mw.RegisterActivity(cw.UploadRecipeToMinioActivity)
+	mw.RegisterActivity(cw.UploadComponentInputsActivity)
+	mw.RegisterActivity(cw.UploadComponentOutputsActivity)
 
 	err = w.Start()
 	if err != nil {
@@ -471,6 +478,10 @@ func main() {
 	err = lw.Start()
 	if err != nil {
 		logger.Fatal(fmt.Sprintf("Unable to start local worker: %s", err))
+	}
+	err = mw.Start()
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("Unable to start minio worker: %s", err))
 	}
 	logger.Info("worker is running.")
 
@@ -494,7 +505,6 @@ func main() {
 		// shutdown process.
 
 		logger.Info("Shutting down server...")
-		ph.(*handler.PublicHandler).SetReadiness(false)
 		logger.Info("Stop receiving request...")
 		time.Sleep(gracefulShutdownWaitPeriod)
 		if config.Config.Server.Usage.Enabled && usg != nil {
@@ -506,6 +516,7 @@ func main() {
 		logger.Info("Shutting down worker...")
 		w.Stop()
 		lw.Stop()
+		mw.Stop()
 
 		logger.Info("Shutting down HTTP server...")
 		_ = privateHTTPServer.Shutdown(shutdownCtx)
