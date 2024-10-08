@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.42.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.41.0-beta...v0.42.0-beta) (2024-10-08)
+
+
+### Features
+
+* **document:** repair pdf with libreoffice ([#683](https://github.com/instill-ai/pipeline-backend/issues/683)) ([b6a738f](https://github.com/instill-ai/pipeline-backend/commit/b6a738f7633125e04797a7fa975febb7280f17f9))
+* **integration:** add identity to OAuth connections ([#699](https://github.com/instill-ai/pipeline-backend/issues/699)) ([e2e9237](https://github.com/instill-ai/pipeline-backend/commit/e2e92376583283c2f7178bb6226f586ef407c1e3))
+* merge worker into main process and optimize graceful shutdown mechanism ([#713](https://github.com/instill-ai/pipeline-backend/issues/713)) ([69b64a0](https://github.com/instill-ai/pipeline-backend/commit/69b64a02e0aff2873521c6291eb6f1b046d4b36a))
+* **universalai:** add instill credit function for universal ai component ([#680](https://github.com/instill-ai/pipeline-backend/issues/680)) ([9ce10b5](https://github.com/instill-ai/pipeline-backend/commit/9ce10b5f6cbc75a444fef1937dd97dfc0439c8ff))
+* use explicit parameter for target namespace when cloning pipeline ([#711](https://github.com/instill-ai/pipeline-backend/issues/711)) ([ab2e3a6](https://github.com/instill-ai/pipeline-backend/commit/ab2e3a6ad51f6801fcb689a0d5b836a967fb99a3))
+* **web:** fix bug and add mock users' behaviours by chromedp ([#701](https://github.com/instill-ai/pipeline-backend/issues/701)) ([ca312fe](https://github.com/instill-ai/pipeline-backend/commit/ca312feb5ac0e908a8f667e4447526c7eae83a15))
+
+
+### Bug Fixes
+
+* **component:** use kebab-case for icon name ([#703](https://github.com/instill-ai/pipeline-backend/issues/703)) ([cd587e2](https://github.com/instill-ai/pipeline-backend/commit/cd587e2df22134afd05a1da1a403f1cc87689d91))
+* **document:** catch the error if the bbox is out of boundary ([#718](https://github.com/instill-ai/pipeline-backend/issues/718)) ([4fe03e6](https://github.com/instill-ai/pipeline-backend/commit/4fe03e6d5a94dd4dac36d361caf020efa8ba4e1b))
+* fix the component render error was not being returned ([#707](https://github.com/instill-ai/pipeline-backend/issues/707)) ([931f067](https://github.com/instill-ai/pipeline-backend/commit/931f067dd82d68f05233eaa72bb8d34784f4284f))
+* fix the wrong target namespace when cloning pipeline ([#706](https://github.com/instill-ai/pipeline-backend/issues/706)) ([75a757b](https://github.com/instill-ai/pipeline-backend/commit/75a757b4c4ae65218e9ae670ffb5a7a35bf0a966))
+* **integration:** update GitHub scopes to read/write repository issues ([#709](https://github.com/instill-ai/pipeline-backend/issues/709)) ([c1cf4ce](https://github.com/instill-ai/pipeline-backend/commit/c1cf4ce08b1e5917260b9e23f362dfa2751eb7ae))
+* **text:** fix the bug about the list position ([#712](https://github.com/instill-ai/pipeline-backend/issues/712)) ([49aed28](https://github.com/instill-ai/pipeline-backend/commit/49aed286b413c9e37b664e32e195c108d4e1adeb))
+
 ## [0.41.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.40.0-beta...v0.41.0-beta) (2024-10-03)
 
 
