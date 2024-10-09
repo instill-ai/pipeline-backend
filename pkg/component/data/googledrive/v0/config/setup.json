@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "access-token": {
-      "description": "Access token for the Google Drive API. For more information about how to create tokens, please refer to the <a href=\"https://developers.google.com/drive/api/v3/about-auth\">Google Drive API documentation</a> and <a href\"https://developers.google.com/identity/protocols/oauth2\" >OAuth 2.0 documentation</a>.",
+      "description": "Access token for the Google Drive API. For more information about how to create tokens, please refer to the <a href=\"https://developers.google.com/drive/api/v3/about-auth\">Google Drive API documentation</a> and <a href=\"https://developers.google.com/identity/protocols/oauth2\" >OAuth 2.0 documentation</a>.",
       "instillUpstreamTypes": [
         "reference"
       ],
@@ -15,7 +15,7 @@
       "type": "string"
     },
     "refresh-token": {
-      "description": "Refresh token for the Google Drive API. For more information about how to create tokens, please refer to the <a href=\"https://developers.google.com/drive/api/v3/about-auth\">Google Drive API documentation</a> and <a href\"https://developers.google.com/identity/protocols/oauth2\" >OAuth 2.0 documentation</a>.",
+      "description": "Refresh token for the Google Drive API. For more information about how to create tokens, please refer to the <a href=\"https://developers.google.com/drive/api/v3/about-auth\">Google Drive API documentation</a> and <a href=\"https://developers.google.com/identity/protocols/oauth2\" >OAuth 2.0 documentation</a>.",
       "instillUpstreamTypes": [
         "reference"
         ],
