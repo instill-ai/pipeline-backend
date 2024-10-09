@@ -1,0 +1,129 @@
+---
+title: "HTML"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP HTML component https://github.com/instill-ai/instill-core"
+---
+
+The HTML component is an operator component that allows users to hTML operator for rendering HTML content.
+It can carry out the following tasks:
+- [Extract Values](#extract-values)
+- [Filter Data](#filter-data)
+- [Convert to Markdown](#convert-to-markdown)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/html/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/html/v0/config/tasks.json) files respectively.
+
+
+
+## Supported Tasks
+
+### Extract Values
+
+Extract values from the HTML content.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_EXTRACT_VALUES` |
+| HTML (required) | `html` | string | The HTML content to extract values from. It can be .html file or raw HTML string. |
+| Selector (required) | `selector` | string | The CSS selector to extract values from the HTML content. Please check [CSS Selector Examples](#css-selector-examples). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Values | `values` | array | The extracted values from the HTML content. |
+</div>
+
+### Filter Data
+
+Filter data based on the given selectors.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_FILTER_DATA` |
+| HTML (required) | `html` | string | The HTML content to filter data from. It can be .html file or raw HTML string. |
+| Selectors (required) | `selectors` | array | The CSS selectors to filter data from the HTML content. Please check [CSS Selector Examples](#css-selector-examples). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| HTML | `html` | string | The html that has been filtered based on the given selectors. |
+</div>
+
+### Convert to Markdown
+
+Convert HTML content to Markdown with filtering data by given selectors.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CONVERT_TO_MARKDOWN` |
+| HTML (required) | `html` | string | The HTML content to convert to Markdown. It can be .html file or raw HTML string. |
+| Selectors | `selectors` | array | The CSS selectors to filter data from the HTML content. Please check [CSS Selector Examples](#css-selector-examples). |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Markdown | `markdown` | string | The Markdown content converted from the filtered HTML content. |
+</div>
+
+
+
+<h2 id="css-selector-examples">CSS Selector Examples</h2>
+
+
+- **Element Selector**: Targets all instances of a specific HTML tag.
+
+  **Example**: `div`  
+  Extracts all `<div>` elements.
+
+- **ID Selector**: Targets a single element by its unique `id` attribute.
+
+  **Example**: `#header`  
+  Extracts the element with the `id` of `header`.
+
+- **Class Selector**: Targets all elements with a specific class name.
+
+  **Example**: `.button`  
+  Extracts all elements with the class `button`.
+
+- **Attribute Selector**: Targets elements based on the presence or value of an attribute.
+
+  **Example**: `[type="text"]`  
+  Extracts all elements with a `type` attribute equal to `text`.
+
+- **Descendant Selector**: Targets elements that are nested within other elements.
+
+  **Example**: `div p`  
+  Extracts all `<p>` elements that are inside `<div>` elements.

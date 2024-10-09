@@ -1,0 +1,18 @@
+{
+  "availableTasks": [
+    "TASK_EXTRACT_VALUES",
+    "TASK_FILTER_DATA",
+    "TASK_CONVERT_TO_MARKDOWN"
+  ],
+  "documentationUrl": "https://www.instill.tech/docs/component/operator/html",
+  "icon": "assets/html.svg",
+  "id": "html",
+  "public": true,
+  "title": "HTML",
+  "type": "COMPONENT_TYPE_OPERATOR",
+  "uid": "71432132-02e9-4c90-8eef-6b96f8514de2",
+  "version": "0.1.0",
+  "sourceUrl": "https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/html/v0",
+  "description": "HTML operator for rendering HTML content",
+  "releaseStage": "RELEASE_STAGE_ALPHA"
+}

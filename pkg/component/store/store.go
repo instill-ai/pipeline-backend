@@ -49,6 +49,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/audio/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/base64/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/operator/html/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/image/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/json/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/text/v0"
@@ -104,6 +105,7 @@ func Init(
 		compStore.Import(document.Init(baseComp))
 		compStore.Import(audio.Init(baseComp))
 		compStore.Import(video.Init(baseComp))
+		compStore.Import(html.Init(baseComp))
 
 		compStore.Import(github.Init(baseComp))
 		{

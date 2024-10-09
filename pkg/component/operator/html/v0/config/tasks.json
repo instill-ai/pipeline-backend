@@ -1,0 +1,169 @@
+{
+  "TASK_EXTRACT_VALUES": {
+    "instillShortDescription": "Extract values from the HTML content.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "html": {
+          "instillUIOrder": 0,
+          "description": "The HTML content to extract values from. It can be .html file or raw HTML string.",
+          "instillAcceptFormats": [
+            "*/*"
+          ],
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "HTML",
+          "type": "string"
+        },
+        "selector": {
+          "instillUIOrder": 1,
+          "description": "The CSS selector to extract values from the HTML content. Please check [CSS Selector Examples](#css-selector-examples).",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Selector",
+          "type": "string"
+        }
+      },
+      "required": [
+        "html",
+        "selector"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "values": {
+          "instillUIOrder": 0,
+          "description": "The extracted values from the HTML content.",
+          "instillFormat": "array:string",
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "values"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_FILTER_DATA": {
+    "instillShortDescription": "Filter data based on the given selectors.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "html": {
+          "instillUIOrder": 0,
+          "description": "The HTML content to filter data from. It can be .html file or raw HTML string.",
+          "instillAcceptFormats": [
+            "*/*"
+          ],
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "HTML",
+          "type": "string"
+        },
+        "selectors": {
+          "instillUIOrder": 1,
+          "description": "The CSS selectors to filter data from the HTML content. Please check [CSS Selector Examples](#css-selector-examples).",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Selectors",
+          "type": "array"
+        }
+      },
+      "required": [
+        "html",
+        "selectors"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "html": {
+          "instillUIOrder": 0,
+          "description": "The html that has been filtered based on the given selectors.",
+          "instillFormat": "string",
+          "title": "HTML",
+          "type": "string"
+        }
+      },
+      "required": [
+        "html"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_CONVERT_TO_MARKDOWN": {
+    "instillShortDescription": "Convert HTML content to Markdown with filtering data by given selectors.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "html": {
+          "instillUIOrder": 0,
+          "description": "The HTML content to convert to Markdown. It can be .html file or raw HTML string.",
+          "instillAcceptFormats": [
+            "*/*"
+          ],
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "HTML",
+          "type": "string"
+        },
+        "selectors": {
+          "instillUIOrder": 1,
+          "description": "The CSS selectors to filter data from the HTML content. Please check [CSS Selector Examples](#css-selector-examples).",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Selectors",
+          "type": "array"
+        }
+      },
+      "required": [
+        "html"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "markdown": {
+          "instillUIOrder": 0,
+          "description": "The Markdown content converted from the filtered HTML content.",
+          "instillFormat": "string",
+          "title": "Markdown",
+          "type": "string"
+        }
+      },
+      "required": [
+        "markdown"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}
