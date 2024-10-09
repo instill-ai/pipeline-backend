@@ -1,0 +1,216 @@
+{
+  "$defs": {
+    "file": {
+      "description": "File in Google Drive.",
+      "instillUIOrder": 0,
+      "properties": {
+        "name": {
+          "description": "Name of the file.",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Name",
+          "type": "string"
+        },
+        "content": {
+          "description": "Content of the file.",
+          "instillFormat": "string",
+          "instillUIMultiline": true,
+          "instillUIOrder": 1,
+          "title": "Content",
+          "type": "string"
+        },
+        "created-time": {
+          "description": "Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ`",
+          "instillFormat": "string",
+          "instillUIOrder": 2,
+          "title": "Created time",
+          "type": "string"
+        },
+        "modified-time": {
+          "description": "Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ`",
+          "instillFormat": "string",
+          "instillUIOrder": 3,
+          "title": "Modified time",
+          "type": "string"
+        },
+        "size": {
+          "description": "Size of the file in bytes.",
+          "instillFormat": "integer",
+          "instillUIOrder": 4,
+          "title": "Size",
+          "type": "integer"
+        },
+        "mime-type": {
+          "description": "MIME type of the file.",
+          "instillFormat": "string",
+          "instillUIOrder": 5,
+          "title": "MIME type",
+          "type": "string"
+        },
+        "md5-checksum": {
+          "description": "MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user.",
+          "instillFormat": "string",
+          "instillUIOrder": 6,
+          "title": "MD5 checksum",
+          "type": "string"
+        },
+        "version": {
+          "description": "Version of the file.",
+          "instillFormat": "string",
+          "instillUIOrder": 7,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "created-time",
+        "modified-time",
+        "size",
+        "mime-type",
+        "version"
+      ],
+      "title": "File",
+      "type": "object"
+    }
+  },
+  "TASK_READ_FILE": {
+    "instillShortDescription": "Read a file from Google Drive. It is recommended to use this task to read a single file when you watch a specific file in Google Drive.",
+    "input": {
+      "description": "Please provide the name of the file to read from Google Drive.",
+      "instillUIOrder": 0,
+      "properties": {
+        "file-id": {
+          "description": "ID of the file to read.",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "File ID",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file-id"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "file": {
+          "$ref": "#/$defs/file"
+        }
+      },
+      "required": [
+        "file"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_READ_FILES": {
+    "instillShortDescription": "Read files from Google Drive.",
+    "input": {
+      "description": "Please provide the list of file names to read from Google Drive.",
+      "instillUIOrder": 0,
+      "properties": {
+        "file-names": {
+          "description": "List of file names to read.",
+          "instillAcceptFormats": [
+            "array:string"
+          ],
+          "items": {
+            "title": "File Name",
+            "type": "string"
+          },
+          "instillUIOrder": 0,
+          "title": "File Names",
+          "type": "array"
+        },
+        "read-content": {
+          "description": "Read content of the files.",
+          "instillShortDescription": "Read content of the files.",
+          "instillAcceptFormats": [
+            "boolean"
+          ],
+          "instillUIOrder": 1,
+          "title": "Read Content",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "file-names",
+        "read-content"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "files": {
+          "description": "List of files read from Google Drive.",
+          "instillUIOrder": 0,
+          "instillFormat": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "title": "Files",
+          "type": "array"
+        }
+      },
+      "required": [
+        "files"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_READ_DRIVE": {
+    "instillShortDescription": "Read the metadata of files and folders in Google Drive. It is recommended to use this task to read the metadata of files and folders in Google Drive when you watch a change in Google Drive.",
+    "input": {
+      "description": "Please input the query params to read the metadata of files and folders in Google Drive.",
+      "instillUIOrder": 0,
+      "properties": {
+        "order-by": {
+          "description": "The keys of the properties to sort the results by, separated by commas. The default sort order is ascending. e.g. modifiedTime desc, name",
+          "instillFormat": "string",
+          "instillUIOrder": 0,
+          "title": "Order By",
+          "type": "string"
+        },
+        "limit": {
+          "default": 10,
+          "description": "The maximum number of files to return. Default is 10.",
+          "instillFormat": "integer",
+          "instillUIOrder": 1,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": [],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 1,
+      "properties": {
+        "files": {
+          "description": "List of files and folders in Google Drive.",
+          "instillUIOrder": 0,
+          "instillFormat": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          },
+          "title": "Files",
+          "type": "array"
+        }
+      },
+      "required": [
+        "files"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  }
+}

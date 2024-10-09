@@ -1,0 +1,178 @@
+---
+title: "Google Drive"
+lang: "en-US"
+draft: false
+description: "Learn about how to set up a VDP Google Drive component https://github.com/instill-ai/instill-core"
+---
+
+The Google Drive component is a data component that allows users to google Drive is a file storage and synchronization service developed by Google. It allows users to store files in the cloud, synchronize files across devices, and share files..
+It can carry out the following tasks:
+- [Read File](#read-file)
+- [Read Files](#read-files)
+- [Read Drive](#read-drive)
+
+## Release Stage
+
+`Alpha`
+
+## Configuration
+
+The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googledrive/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googledrive/v0/config/tasks.json) files respectively.
+
+## Setup
+
+
+In order to communicate with Google, the following connection details need to be
+provided. You may specify them directly in a pipeline recipe as key-value pairs
+within the component's `setup` block, or you can create a **Connection** from
+the [**Integration Settings**](https://www.instill.tech/docs/vdp/integration)
+page and reference the whole `setup` as `setup:
+${connection.<my-connection-id>}`.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Access Token | `access-token` | string | Access token for the Google Drive API. For more information about how to create tokens, please refer to the <a href="https://developers.google.com/drive/api/v3/about-auth">Google Drive API documentation</a> and <a href"https://developers.google.com/identity/protocols/oauth2" >OAuth 2.0 documentation</a>.  |
+| Refresh Token | `refresh-token` | string | Refresh token for the Google Drive API. For more information about how to create tokens, please refer to the <a href="https://developers.google.com/drive/api/v3/about-auth">Google Drive API documentation</a> and <a href"https://developers.google.com/identity/protocols/oauth2" >OAuth 2.0 documentation</a>.  |
+
+</div>
+
+
+
+
+## Supported Tasks
+
+### Read File
+
+Read a file from Google Drive. It is recommended to use this task to read a single file when you watch a specific file in Google Drive.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_READ_FILE` |
+| File ID (required) | `file-id` | string | ID of the file to read. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [File](#read-file-file) | `file` | object | File in Google Drive. |
+</div>
+
+<details>
+<summary> Output Objects in Read File</summary>
+
+<h4 id="read-file-file">File</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | Content of the file. |
+| Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ` |
+| MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user. |
+| MIME type | `mime-type` | string | MIME type of the file. |
+| Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ` |
+| Name | `name` | string | Name of the file. |
+| Size | `size` | integer | Size of the file in bytes. |
+| Version | `version` | string | Version of the file. |
+</div>
+</details>
+
+### Read Files
+
+Read files from Google Drive.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_READ_FILES` |
+| File Names (required) | `file-names` | array[string] | List of file names to read. |
+| Read Content (required) | `read-content` | boolean | Read content of the files. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Files](#read-files-files) | `files` | array[object] | List of files read from Google Drive. |
+</div>
+
+<details>
+<summary> Output Objects in Read Files</summary>
+
+<h4 id="read-files-files">Files</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | Content of the file. |
+| Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ` |
+| MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user. |
+| MIME type | `mime-type` | string | MIME type of the file. |
+| Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ` |
+| Name | `name` | string | Name of the file. |
+| Size | `size` | integer | Size of the file in bytes. |
+| Version | `version` | string | Version of the file. |
+</div>
+</details>
+
+### Read Drive
+
+Read the metadata of files and folders in Google Drive. It is recommended to use this task to read the metadata of files and folders in Google Drive when you watch a change in Google Drive.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_READ_DRIVE` |
+| Order By | `order-by` | string | The keys of the properties to sort the results by, separated by commas. The default sort order is ascending. e.g. modifiedTime desc, name |
+| Limit | `limit` | integer | The maximum number of files to return. Default is 10. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Files](#read-drive-files) | `files` | array[object] | List of files and folders in Google Drive. |
+</div>
+
+<details>
+<summary> Output Objects in Read Drive</summary>
+
+<h4 id="read-drive-files">Files</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | Content of the file. |
+| Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ` |
+| MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user. |
+| MIME type | `mime-type` | string | MIME type of the file. |
+| Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ` |
+| Name | `name` | string | Name of the file. |
+| Size | `size` | integer | Size of the file in bytes. |
+| Version | `version` | string | Version of the file. |
+</div>
+</details>
