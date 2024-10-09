@@ -35,6 +35,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/chroma/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/elasticsearch/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/googlecloudstorage/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/data/googledrive/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/instillartifact/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/milvus/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/mongodb/v0"
@@ -197,6 +198,7 @@ func Init(
 		compStore.Import(whatsapp.Init(baseComp))
 		compStore.Import(freshdesk.Init(baseComp))
 		compStore.Import(asana.Init(baseComp))
+		compStore.Import(googledrive.Init(baseComp))
 	})
 	return compStore
 }
