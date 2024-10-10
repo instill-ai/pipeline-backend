@@ -218,7 +218,7 @@
         },
         "system-message": {
           "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is using a generic message as \"You are a helpful assistant.\"",
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\"",
           "instillAcceptFormats": [
             "string"
           ],
@@ -377,7 +377,7 @@
         },
         "system-message": {
           "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model\u2019s behavior is using a generic message as \"You are a helpful assistant.\"",
+          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\"",
           "instillAcceptFormats": [
             "string"
           ],
@@ -576,5 +576,246 @@
   "TASK_CHAT": {
     "instillShortDescription": "Generate texts from input text prompts and chat history.",
     "$ref": "#/TASK_TEXT_GENERATION_CHAT"
+  },
+  "TASK_EMBEDDING": {
+    "title": "Embedding",
+    "instillShortDescription": "Generate embeddings based on input data",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Embedding input",
+      "description": "Input schema of the embedding task",
+      "instillShortDescription": "Input schema of the embedding task",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "Input data",
+          "instillShortDescription": "Input data",
+          "type": "object",
+          "properties": {
+            "model": {
+              "description": "The model to be used for generating embeddings.",
+              "instillShortDescription": "The model to be used.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "title": "Model Name",
+              "type": "string"
+            },
+            "embeddings": {
+              "title": "Embedding Input",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "title": "Text content",
+                        "description": "Text content to be embedded",
+                        "instillShortDescription": "Text content",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string"
+                      },
+                      "type": {
+                        "title": "Text",
+                        "description": "Text input content type.",
+                        "instillShortDescription": "Text input content type.",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string",
+                        "const": "text"
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "type"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "image-url": {
+                        "title": "Image URL",
+                        "description": "Image content with URL.",
+                        "instillShortDescription": "Image content URL.",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string"
+                      },
+                      "type": {
+                        "title": "Image URL",
+                        "description": "Image URL input content type",
+                        "instillShortDescription": "Image URL input content type",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string",
+                        "const": "image-url"
+                      }
+                    },
+                    "required": [
+                      "image-url",
+                      "type"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "image-base64": {
+                        "title": "Image file",
+                        "description": "Image file input.",
+                        "instillShortDescription": "Image file input.",
+                        "instillAcceptFormats": [
+                          "image/*"
+                        ],
+                        "type": "string"
+                      },
+                      "type": {
+                        "title": "Image file",
+                        "description": "Image file input content type",
+                        "instillShortDescription": "Image file input content type",
+                        "instillAcceptFormats": [
+                          "string"
+                        ],
+                        "type": "string",
+                        "const": "image-base64"
+                      }
+                    },
+                    "required": [
+                      "image-base64",
+                      "type"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "model",
+            "embeddings"
+          ]
+        },
+        "parameter": {
+          "description": "Input parameter",
+          "instillShortDescription": "Input parameter",
+          "type": "object",
+          "properties": {
+            "format": {
+              "title": "Data format",
+              "type": "string",
+              "description": "The data format of the embeddings. Defaults to float.",
+              "instillShortDescription": "Data format",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "enum": [
+                "float",
+                "base64"
+              ],
+              "default": "float"
+            },
+            "dimensions": {
+              "title": "Dimensions",
+              "type": "integer",
+              "description": "Number of dimensions in the output embedding vectors.",
+              "instillShortDescription": "Number of dimensions",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "default": 512
+            },
+            "input-type": {
+              "title": "Input type",
+              "type": "string",
+              "description": "The type of input data to be embedded (e.g., query, document).",
+              "instillShortDescription": "Type of input data",
+              "instillAcceptFormats": [
+                "string"
+              ]
+            },
+            "truncate": {
+              "title": "Truncate",
+              "type": "string",
+              "description": "How to handle inputs longer than the max token length. Defaults to 'End'.",
+              "instillShortDescription": "Truncation handling",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "enum": [
+                "None",
+                "End",
+                "Start"
+              ],
+              "default": "End"
+            }
+          }
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Embedding output",
+      "description": "Output schema of the embedding task",
+      "instillShortDescription": "Output schema of the embedding task",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "Output data",
+          "instillShortDescription": "Output data",
+          "type": "object",
+          "properties": {
+            "embeddings": {
+              "title": "Embeddings",
+              "type": "array",
+              "description": "List of generated embeddings.",
+              "instillShortDescription": "List of embeddings",
+              "instillFormat": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "index": {
+                    "title": "Index",
+                    "type": "integer",
+                    "description": "The index of the embedding vector in the array.",
+                    "instillShortDescription": "Index in the array",
+                    "instillFormat": "integer"
+                  },
+                  "vector": {
+                    "title": "Embedding Vector",
+                    "type": "array",
+                    "description": "The embedding vector.",
+                    "instillShortDescription": "Embedding vector",
+                    "instillFormat": "array"
+                  },
+                  "created": {
+                    "title": "Created",
+                    "type": "integer",
+                    "description": "The Unix timestamp (in seconds) of when the embedding was created.",
+                    "instillShortDescription": "Timestamp of creation",
+                    "instillFormat": "integer"
+                  }
+                },
+                "required": [
+                  "index",
+                  "vector",
+                  "created"
+                ]
+              }
+            }
+          },
+          "required": [
+            "embeddings"
+          ]
+        }
+      }
+    }
   }
 }
