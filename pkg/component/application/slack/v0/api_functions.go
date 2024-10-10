@@ -11,14 +11,14 @@ import (
 
 var types = []string{"private_channel", "public_channel"}
 
-func loopChannelListAPI(e *execution, channelName string) (string, error) {
+func loopChannelListAPI(client SlackClient, channelName string) (string, error) {
 	var apiParams slack.GetConversationsParameters
 	apiParams.Types = types
 
 	var targetChannelID string
 	for {
 
-		slackChannels, nextCur, err := e.client.GetConversations(&apiParams)
+		slackChannels, nextCur, err := client.GetConversations(&apiParams)
 		if err != nil {
 			return "", err
 		}
@@ -50,13 +50,13 @@ func getChannelID(channelName string, channels []slack.Channel) (channelID strin
 	return ""
 }
 
-func getConversationHistory(e *execution, channelID string, nextCur string) (*slack.GetConversationHistoryResponse, error) {
+func getConversationHistory(client SlackClient, channelID string, nextCur string) (*slack.GetConversationHistoryResponse, error) {
 	apiHistoryParams := slack.GetConversationHistoryParameters{
 		ChannelID: channelID,
 		Cursor:    nextCur,
 	}
 
-	historiesResp, err := e.client.GetConversationHistory(&apiHistoryParams)
+	historiesResp, err := client.GetConversationHistory(&apiHistoryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -68,12 +68,12 @@ func getConversationHistory(e *execution, channelID string, nextCur string) (*sl
 	return historiesResp, nil
 }
 
-func getConversationReply(e *execution, channelID string, ts string) ([]slack.Message, error) {
+func getConversationReply(client SlackClient, channelID string, ts string) ([]slack.Message, error) {
 	apiParams := slack.GetConversationRepliesParameters{
 		ChannelID: channelID,
 		Timestamp: ts,
 	}
-	msgs, _, nextCur, err := e.client.GetConversationReplies(&apiParams)
+	msgs, _, nextCur, err := client.GetConversationReplies(&apiParams)
 
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func getConversationReply(e *execution, channelID string, ts string) ([]slack.Me
 
 	for nextCur != "" {
 		apiParams.Cursor = nextCur
-		msgs, _, nextCur, err = e.client.GetConversationReplies(&apiParams)
+		msgs, _, nextCur, err = client.GetConversationReplies(&apiParams)
 		if err != nil {
 			return nil, err
 		}

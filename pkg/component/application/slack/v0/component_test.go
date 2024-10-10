@@ -95,10 +95,6 @@ func (m *MockSlackClient) GetUsersInfo(users ...string) (*[]slack.User, error) {
 	return resp, nil
 }
 
-const (
-	apiKey = "testkey"
-)
-
 func TestComponent_ExecuteWriteTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
@@ -107,13 +103,16 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 
 	testcases := []struct {
 		name       string
+		botClient  SlackClient
+		userClient SlackClient
 		input      UserInputWriteTask
 		wantResp   WriteTaskResp
 		wantErr    string
 		wantErrMsg string
 	}{
 		{
-			name: "ok to write",
+			name:      "ok - as bot",
+			botClient: new(MockSlackClient),
 			input: UserInputWriteTask{
 				ChannelName: "test_channel",
 				Message:     "I am unit test",
@@ -123,29 +122,57 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 			},
 		},
 		{
-			name: "fail to write",
+			name:       "ok - as user",
+			userClient: new(MockSlackClient),
+			input: UserInputWriteTask{
+				ChannelName: "test_channel",
+				Message:     "I am unit test",
+				AsUser:      true,
+			},
+			wantResp: WriteTaskResp{
+				Result: "succeed",
+			},
+		},
+		{
+			name:      "nok - missing user token",
+			botClient: new(MockSlackClient),
+			input: UserInputWriteTask{
+				ChannelName: "test_channel",
+				Message:     "I am unit test",
+				AsUser:      true,
+			},
+			wantErr:    "empty user token",
+			wantErrMsg: "To send messages on behalf of the user, fill the user-token field in the component setup.",
+		},
+		{
+			name:      "nok - missing channel",
+			botClient: new(MockSlackClient),
 			input: UserInputWriteTask{
 				ChannelName: "test_channel_1",
 				Message:     "I am unit test",
 			},
-			wantErr:    `fetching channel ID: couldn't find channel by name`,
+			wantErr:    "fetching channel ID: couldn't find channel by name",
 			wantErrMsg: "Couldn't find channel [test_channel_1].",
 		},
 	}
 
 	for _, tc := range testcases {
 		c.Run(tc.name, func(c *qt.C) {
+			setup := new(structpb.Struct)
 
-			setup, err := structpb.NewStruct(map[string]any{
-				"api-key": apiKey,
-			})
-			c.Assert(err, qt.IsNil)
-
-			// It will increase the modification range if we change the input of CreateExecution.
-			// So, we replaced it with the code below to cover the test for taskFunctions.go
+			// It will increase the modification range if we change the input
+			// of CreateExecution. So, we replaced it with the code below to
+			// cover the test for taskFunctions.go
+			x := base.ComponentExecution{
+				Component:       component,
+				SystemVariables: nil,
+				Setup:           setup,
+				Task:            taskWriteMessage,
+			}
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskWriteMessage},
-				client:             &MockSlackClient{},
+				ComponentExecution: x,
+				botClient:          tc.botClient,
+				userClient:         tc.userClient,
 			}
 			e.execute = e.sendMessage
 
@@ -230,16 +257,20 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 
 	for _, tc := range testcases {
 		c.Run(tc.name, func(c *qt.C) {
-			setup, err := structpb.NewStruct(map[string]any{
-				"api-key": apiKey,
-			})
-			c.Assert(err, qt.IsNil)
+			setup := new(structpb.Struct)
 
-			// It will increase the modification range if we change the input of CreateExecution.
-			// So, we replaced it with the code below to cover the test for taskFunctions.go
+			// It will increase the modification range if we change the input
+			// of CreateExecution. So, we replaced it with the code below to
+			// cover the test for taskFunctions.go
+			x := base.ComponentExecution{
+				Component:       component,
+				SystemVariables: nil,
+				Setup:           setup,
+				Task:            taskReadMessage,
+			}
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskReadMessage},
-				client:             &MockSlackClient{},
+				ComponentExecution: x,
+				botClient:          new(MockSlackClient),
 			}
 			e.execute = e.readMessage
 

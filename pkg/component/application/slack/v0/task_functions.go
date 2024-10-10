@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/x/errmsg"
 )
 
 type UserInputReadTask struct {
@@ -42,6 +43,7 @@ type ThreadReplyMessage struct {
 type UserInputWriteTask struct {
 	ChannelName string `json:"channel-name"`
 	Message     string `json:"message"`
+	AsUser      bool   `json:"as-user"`
 }
 
 type WriteTaskResp struct {
@@ -49,18 +51,20 @@ type WriteTaskResp struct {
 }
 
 func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
+	client := e.botClient
+
 	params := UserInputReadTask{}
 	if err := base.ConvertFromStructpb(in, &params); err != nil {
 		return nil, fmt.Errorf("converting task input: %w", err)
 	}
 
-	targetChannelID, err := loopChannelListAPI(e, params.ChannelName)
+	targetChannelID, err := loopChannelListAPI(client, params.ChannelName)
 
 	if err != nil {
 		return nil, fmt.Errorf("fetching channel ID: %w", err)
 	}
 
-	resp, err := getConversationHistory(e, targetChannelID, "")
+	resp, err := getConversationHistory(client, targetChannelID, "")
 	if err != nil {
 		return nil, fmt.Errorf("fetching channel history: %w", err)
 	}
@@ -91,7 +95,7 @@ func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
 			wg.Add(1)
 			go func(readTaskResp *ReadTaskResp, idx int) {
 				defer wg.Done()
-				replies, _ := getConversationReply(e, targetChannelID, readTaskResp.Conversations[idx].TS)
+				replies, _ := getConversationReply(client, targetChannelID, readTaskResp.Conversations[idx].TS)
 				// TODO: to be discussed about this error handdling
 				// fail? or not fail?
 				// if err != nil {
@@ -127,7 +131,7 @@ func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
 		}
 	}
 
-	users, err := e.client.GetUsersInfo(removeDuplicateUserIDs(userIDs)...)
+	users, err := client.GetUsersInfo(removeDuplicateUserIDs(userIDs)...)
 	if err != nil {
 		return nil, fmt.Errorf("fetching user information: %w", err)
 	}
@@ -158,13 +162,27 @@ func (e *execution) sendMessage(in *structpb.Struct) (*structpb.Struct, error) {
 		return nil, fmt.Errorf("converting task input: %w", err)
 	}
 
-	targetChannelID, err := loopChannelListAPI(e, params.ChannelName)
+	var client SlackClient
+	switch {
+	case params.AsUser:
+		client = e.userClient
+		if client == nil {
+			return nil, errmsg.AddMessage(
+				fmt.Errorf("empty user token"),
+				"To send messages on behalf of the user, fill the user-token field in the component setup.",
+			)
+		}
+	default:
+		client = e.botClient
+	}
+
+	targetChannelID, err := loopChannelListAPI(client, params.ChannelName)
 	if err != nil {
 		return nil, fmt.Errorf("fetching channel ID: %w", err)
 	}
 
 	message := strings.Replace(params.Message, "\\n", "\n", -1)
-	_, _, err = e.client.PostMessage(targetChannelID, slack.MsgOptionText(message, false))
+	_, _, err = client.PostMessage(targetChannelID, slack.MsgOptionText(message, false))
 	if err != nil {
 		return nil, fmt.Errorf("posting message: %w", err)
 	}
