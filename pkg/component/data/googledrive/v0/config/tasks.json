@@ -181,7 +181,8 @@
         },
         "limit": {
           "default": 10,
-          "description": "The maximum number of files to return. Default is 10.",
+          "maximum": 100,
+          "description": "The maximum number of files to return. Default is 10. Maximum is 100.",
           "instillFormat": "integer",
           "instillUIOrder": 1,
           "title": "Limit",
