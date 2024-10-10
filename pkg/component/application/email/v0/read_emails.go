@@ -6,7 +6,8 @@ import (
 	"log"
 	"strings"
 	"time"
-
+	"cmp"
+	"reflect"
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
 	"github.com/emersion/go-message/mail"
@@ -101,6 +102,74 @@ func initIMAPClient(serverAddress string, serverPort float64) (*imapclient.Clien
 	return c, nil
 }
 
+func fetchEmail(c *imapclient.Client, search Search, seqSet imap.SeqSet, fetchOptions imap.FetchOptions, ch chan Email, errChan chan<- error) {
+	email := Email{}
+	fetchCmd := c.Fetch(seqSet, &fetchOptions)
+	msg := fetchCmd.Next()
+	var bodySection imapclient.FetchItemDataBodySection
+	var ok bool
+
+	for {
+		item := msg.Next()
+		if item == nil {
+			break
+		}
+		bodySection, ok = item.(imapclient.FetchItemDataBodySection)
+		if ok {
+			break
+		}
+	}
+
+	if !ok {
+		errChan <- fmt.Errorf("FETCH command did not return body section")
+		return
+	}
+
+	mr, err := mail.CreateReader(bodySection.Literal)
+
+	if err != nil {
+		errChan <- fmt.Errorf("FETCH command did not return body section")
+		return
+	}
+
+	h := mr.Header
+	setEnvelope(&email, h)
+
+	if !checkEnvelopeCondition(email, search) {
+		if err := fetchCmd.Close(); err != nil {
+			errChan <- err
+			return
+		}
+		errChan <- nil
+		ch <- Email{}
+		return
+	}
+
+	for {
+		p, err := mr.NextPart()
+		if err == io.EOF {
+			break
+		}
+		inlineHeader, ok := p.Header.(*mail.InlineHeader)
+		if ok && !isHTMLType(inlineHeader) {
+			b, _ := io.ReadAll(p.Body)
+			email.Message += string(b)
+		}
+	}
+
+	if !checkMessageCondition(email, search) {
+		if err := fetchCmd.Close(); err != nil {
+			errChan <- err
+		} else {
+			errChan <- nil
+			ch <- Email{}
+		}
+	} else {
+		errChan <- fetchCmd.Close()
+		ch <- email
+	}
+}
+
 func fetchEmails(c *imapclient.Client, search Search) ([]Email, error) {
 
 	selectedMbox, err := c.Select(search.Mailbox, nil).Wait()
@@ -108,85 +177,31 @@ func fetchEmails(c *imapclient.Client, search Search) ([]Email, error) {
 		return nil, err
 	}
 
-	emails := []Email{}
-
 	if selectedMbox.NumMessages == 0 {
-		return emails, nil
+		return []Email{}, nil
 	}
 
-	if search.Limit == 0 {
-		search.Limit = EmailReadingDefaultCapacity
+	emails := make([]Email, cmp.Or(search.Limit, EmailReadingDefaultCapacity))
+	ch := make(chan Email)
+	errChan := make(chan error)
+	fetchOptions := &imap.FetchOptions{
+		BodySection: []*imap.FetchItemBodySection{{}},
 	}
-	limit := search.Limit
 
-	// TODO: chuang8511, Research how to fetch emails by filter and concurrency.
-	// It will be done before 2024-07-26.
-	for i := selectedMbox.NumMessages; limit > 0; i-- {
-		limit--
-		email := Email{}
+	for i := 0; i < len(emails); i++ {
 		var seqSet imap.SeqSet
-		seqSet.AddNum(i)
-
-		fetchOptions := &imap.FetchOptions{
-			BodySection: []*imap.FetchItemBodySection{{}},
-		}
-		fetchCmd := c.Fetch(seqSet, fetchOptions)
-		msg := fetchCmd.Next()
-		var bodySection imapclient.FetchItemDataBodySection
-		var ok bool
-		for {
-			item := msg.Next()
-			if item == nil {
-				break
-			}
-			bodySection, ok = item.(imapclient.FetchItemDataBodySection)
-			if ok {
-				break
-			}
-		}
-		if !ok {
-			return nil, fmt.Errorf("FETCH command did not return body section")
-		}
-
-		mr, err := mail.CreateReader(bodySection.Literal)
-		if err != nil {
-			return nil, fmt.Errorf("FETCH command did not return body section")
-		}
-
-		h := mr.Header
-		setEnvelope(&email, h)
-
-		if !checkEnvelopeCondition(email, search) {
-			if err := fetchCmd.Close(); err != nil {
-				return nil, err
-			}
-			continue
-		}
-
-		for {
-			p, err := mr.NextPart()
-			if err == io.EOF {
-				break
-			}
-			inlineHeader, ok := p.Header.(*mail.InlineHeader)
-			if ok && !isHTMLType(inlineHeader) {
-				b, _ := io.ReadAll(p.Body)
-				email.Message += string(b)
-			}
-		}
-
-		if !checkMessageCondition(email, search) {
-			if err := fetchCmd.Close(); err != nil {
-				return nil, err
-			}
-			continue
-		}
-
-		if err := fetchCmd.Close(); err != nil {
+		seqSet.AddNum(uint32(len(emails) - i))
+		go fetchEmail(c, search, seqSet, *fetchOptions, ch, errChan)
+	}
+        index := 0
+	for i := 0; i < len(emails); i++ {
+		if err := <-errChan; err != nil {
 			return nil, err
 		}
-
-		emails = append(emails, email)
+		emails[index] = <-ch
+		if (!reflect.DeepEqual(emails[index], Email{})) {
+			index++ // ignore empty emails
+		}
 	}
 
 	return emails, nil
