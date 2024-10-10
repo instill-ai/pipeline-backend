@@ -3,6 +3,8 @@ package googledrive
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"sync"
 
@@ -19,9 +21,10 @@ import (
 )
 
 const (
-	taskReadFile  = "TASK_READ_FILE"
-	taskReadFiles = "TASK_READ_FILES"
-	taskReadDrive = "TASK_READ_DRIVE"
+	taskReadFile       = "TASK_READ_FILE"
+	taskReadFiles      = "TASK_READ_FILES"
+	taskReadDrive      = "TASK_READ_DRIVE"
+	cfgOAuthCredential = "oauth-credentials"
 )
 
 var (
@@ -38,6 +41,8 @@ var (
 
 type component struct {
 	base.Component
+	// The JSON string of OAuth credentials encoded by base64.
+	instillAICredentials string
 }
 
 type execution struct {
@@ -66,7 +71,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 	ctx := context.Background()
 
-	drive, err := getDriveService(ctx, x.Setup)
+	drive, err := getDriveService(ctx, x.Setup, c)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get drive service: %w", err)
@@ -93,19 +98,23 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	return e, nil
 }
 
-func getDriveService(ctx context.Context, setup *structpb.Struct) (*drive.Service, error) {
-	accessToken := setup.GetFields()["access-token"].GetStringValue()
-	refreshToken := setup.GetFields()["refresh-token"].GetStringValue()
+func getDriveService(ctx context.Context, setup *structpb.Struct, c *component) (*drive.Service, error) {
 
-	config := &oauth2.Config{
-		ClientID:     getClientID(),
-		ClientSecret: getClientSecret(),
-		Scopes:       getScopes(setup),
-		Endpoint:     google.Endpoint,
+	decodedBytes, err := base64.StdEncoding.DecodeString(c.instillAICredentials)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode Instill AI credentials: %w", err)
 	}
 
+	config, err := google.ConfigFromJSON(decodedBytes, getConfigScopes()...)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get Google config from JSON: %w", err)
+	}
+
+	refreshToken := setup.GetFields()["refresh-token"].GetStringValue()
+
 	tok := &oauth2.Token{
-		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}
 
@@ -120,22 +129,23 @@ func getDriveService(ctx context.Context, setup *structpb.Struct) (*drive.Servic
 	return srv, nil
 }
 
-// TODO: Need to get from env variables
-func getClientID() string {
-	return ""
+func getConfigScopes() []string {
+	type setupConfig struct {
+		InstillOAuthConfig struct {
+			Scopes []string `json:"scopes"`
+		} `json:"instillOAuthConfig"`
+	}
+	var setup setupConfig
+	json.Unmarshal(setupJSON, &setup)
+	return setup.InstillOAuthConfig.Scopes
 }
 
-// TODO: Need to get from env variables
-func getClientSecret() string {
-	return ""
-}
-
-// TODO: Need to get the scopes from the token.json
+// Need to get the scopes from the token.json that received from the OAuth2
 // Temporarily, it will be same as the scopes in setup.json.
 // So, we get it from setup.json first. Later, we will get it from token.json
 // after we confirm how we retrieve the scopes from token.json.
 func getScopes(setup *structpb.Struct) []string {
-	return []string{}
+	return getConfigScopes()
 }
 
 // Execute reads the input from the job, executes the task, and writes the output
@@ -162,4 +172,9 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	}
 
 	return nil
+}
+
+func (c *component) WithOAuthCredentials(s map[string]any) *component {
+	c.instillAICredentials = base.ReadFromGlobalConfig(cfgOAuthCredential, s)
+	return c
 }
