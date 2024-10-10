@@ -49,22 +49,20 @@ type WriteTaskResp struct {
 }
 
 func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
-
 	params := UserInputReadTask{}
-
 	if err := base.ConvertFromStructpb(in, &params); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting task input: %w", err)
 	}
 
 	targetChannelID, err := loopChannelListAPI(e, params.ChannelName)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("fetching channel ID: %w", err)
 	}
 
 	resp, err := getConversationHistory(e, targetChannelID, "")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("fetching channel history: %w", err)
 	}
 
 	if params.StartToReadDate == "" {
@@ -129,11 +127,9 @@ func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
 		}
 	}
 
-	userIDs = removeDuplicateUserIDs(userIDs)
-	users, err := e.client.GetUsersInfo(userIDs...)
-
+	users, err := e.client.GetUsersInfo(removeDuplicateUserIDs(userIDs)...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("fetching user information: %w", err)
 	}
 
 	userIDNameMap := createUserIDNameMap(*users)
@@ -150,7 +146,7 @@ func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
 
 	out, err := base.ConvertToStructpb(readTaskResp)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting task output: %w", err)
 	}
 
 	return out, nil
@@ -158,28 +154,26 @@ func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
 
 func (e *execution) sendMessage(in *structpb.Struct) (*structpb.Struct, error) {
 	params := UserInputWriteTask{}
-
 	if err := base.ConvertFromStructpb(in, &params); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting task input: %w", err)
 	}
 
 	targetChannelID, err := loopChannelListAPI(e, params.ChannelName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("fetching channel ID: %w", err)
 	}
 
 	message := strings.Replace(params.Message, "\\n", "\n", -1)
 	_, _, err = e.client.PostMessage(targetChannelID, slack.MsgOptionText(message, false))
-
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("posting message: %w", err)
 	}
 
 	out, err := base.ConvertToStructpb(WriteTaskResp{
 		Result: "succeed",
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting task output: %w", err)
 	}
 
 	return out, nil

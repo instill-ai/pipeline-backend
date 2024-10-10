@@ -13,12 +13,12 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
+	"github.com/instill-ai/x/errmsg"
 )
 
 type MockSlackClient struct{}
 
 func (m *MockSlackClient) GetConversations(params *slack.GetConversationsParameters) ([]slack.Channel, string, error) {
-
 	var channels []slack.Channel
 	nextCursor := ""
 	fakeChannel := slack.Channel{
@@ -35,12 +35,10 @@ func (m *MockSlackClient) GetConversations(params *slack.GetConversationsParamet
 }
 
 func (m *MockSlackClient) PostMessage(channelID string, options ...slack.MsgOption) (string, string, error) {
-
 	return "", "", nil
 }
 
 func (m *MockSlackClient) GetConversationHistory(params *slack.GetConversationHistoryParameters) (*slack.GetConversationHistoryResponse, error) {
-
 	fakeResp := slack.GetConversationHistoryResponse{
 		SlackResponse: slack.SlackResponse{
 			Ok: true,
@@ -61,7 +59,6 @@ func (m *MockSlackClient) GetConversationHistory(params *slack.GetConversationHi
 }
 
 func (m *MockSlackClient) GetConversationReplies(params *slack.GetConversationRepliesParameters) ([]slack.Message, bool, string, error) {
-
 	fakeMessages := []slack.Message{
 		{
 			Msg: slack.Msg{
@@ -109,10 +106,11 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 	component := Init(bc)
 
 	testcases := []struct {
-		name     string
-		input    UserInputWriteTask
-		wantResp WriteTaskResp
-		wantErr  string
+		name       string
+		input      UserInputWriteTask
+		wantResp   WriteTaskResp
+		wantErr    string
+		wantErrMsg string
 	}{
 		{
 			name: "ok to write",
@@ -130,7 +128,8 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 				ChannelName: "test_channel_1",
 				Message:     "I am unit test",
 			},
-			wantErr: `there is no match name in slack channel \[test_channel_1\]`,
+			wantErr:    `fetching channel ID: couldn't find channel by name`,
+			wantErrMsg: "Couldn't find channel [test_channel_1].",
 		},
 	}
 
@@ -165,6 +164,9 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 				if tc.wantErr != "" {
 					c.Assert(err, qt.ErrorMatches, tc.wantErr)
 				}
+				if tc.wantErrMsg != "" {
+					c.Assert(errmsg.Message(err), qt.Equals, tc.wantErrMsg)
+				}
 			})
 
 			err = e.Execute(ctx, []*base.Job{job})
@@ -175,7 +177,6 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 }
 
 func TestComponent_ExecuteReadTask(t *testing.T) {
-
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{}
@@ -183,10 +184,11 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 
 	mockDateTime, _ := transformTSToDate("1715159449.399879", time.RFC3339)
 	testcases := []struct {
-		name     string
-		input    UserInputReadTask
-		wantResp ReadTaskResp
-		wantErr  string
+		name       string
+		input      UserInputReadTask
+		wantResp   ReadTaskResp
+		wantErr    string
+		wantErrMsg string
 	}{
 		{
 			name: "ok to read",
@@ -221,7 +223,8 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 			input: UserInputReadTask{
 				ChannelName: "test_channel_1",
 			},
-			wantErr: `there is no match name in slack channel \[test_channel_1\]`,
+			wantErr:    `fetching channel ID: couldn't find channel by name`,
+			wantErrMsg: "Couldn't find channel [test_channel_1].",
 		},
 	}
 
@@ -255,13 +258,14 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 				if tc.wantErr != "" {
 					c.Assert(err, qt.ErrorMatches, tc.wantErr)
 				}
+				if tc.wantErrMsg != "" {
+					c.Assert(errmsg.Message(err), qt.Equals, tc.wantErrMsg)
+				}
 			})
 
 			err = e.Execute(ctx, []*base.Job{job})
 			c.Assert(err, qt.IsNil)
 
 		})
-
 	}
-
 }

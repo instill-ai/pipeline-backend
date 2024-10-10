@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/instill-ai/x/errmsg"
 	"github.com/slack-go/slack"
 )
 
@@ -29,8 +30,10 @@ func loopChannelListAPI(e *execution, channelName string) (string, error) {
 		}
 
 		if targetChannelID == "" && nextCur == "" {
-			err := fmt.Errorf("there is no match name in slack channel [%v]", channelName)
-			return "", err
+			return "", errmsg.AddMessage(
+				fmt.Errorf("couldn't find channel by name"),
+				fmt.Sprintf("Couldn't find channel [%s].", channelName),
+			)
 		}
 
 		apiParams.Cursor = nextCur
