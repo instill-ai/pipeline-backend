@@ -172,6 +172,18 @@ func Init(
 			compStore.Import(conn)
 		}
 
+		{
+			conn := googledrive.Init(baseComp)
+			conn = conn.WithOAuthCredentials(secrets["google"])
+			compStore.Import(conn)
+		}
+
+		{
+			conn := googledrive.Init(baseComp)
+			conn = conn.WithOAuthCredentials(secrets["google"])
+			compStore.Import(conn)
+		}
+
 		compStore.Import(instillapp.Init(baseComp))
 		compStore.Import(bigquery.Init(baseComp))
 		compStore.Import(googlecloudstorage.Init(baseComp))
@@ -209,7 +221,6 @@ func Init(
 		compStore.Import(whatsapp.Init(baseComp))
 		compStore.Import(freshdesk.Init(baseComp))
 		compStore.Import(asana.Init(baseComp))
-		compStore.Import(googledrive.Init(baseComp))
 	})
 	return compStore
 }
