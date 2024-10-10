@@ -70,7 +70,7 @@ func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
 	if params.StartToReadDate == "" {
 		currentTime := time.Now()
 		sevenDaysAgo := currentTime.AddDate(0, 0, -7)
-		sevenDaysAgoString := sevenDaysAgo.Format("2006-01-02")
+		sevenDaysAgoString := sevenDaysAgo.Format(time.DateOnly)
 		params.StartToReadDate = sevenDaysAgoString
 	}
 

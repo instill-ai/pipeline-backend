@@ -102,12 +102,12 @@ func setAPIRespToReadTaskResp(apiResp []slack.Message, readTaskResp *ReadTaskRes
 			return err
 		}
 
-		startReadDate, err := time.Parse("2006-01-02", startReadDateString)
+		startReadDate, err := time.Parse(time.DateOnly, startReadDateString)
 		if err != nil {
 			return err
 		}
 
-		formatedDate, err := time.Parse("2006-01-02", formatedDateString)
+		formatedDate, err := time.Parse(time.DateOnly, formatedDateString)
 		if err != nil {
 			return err
 		}
@@ -132,7 +132,7 @@ func setAPIRespToReadTaskResp(apiResp []slack.Message, readTaskResp *ReadTaskRes
 
 func setRepliedToConversation(resp *ReadTaskResp, replies []slack.Message, idx int) error {
 	c := resp.Conversations[idx]
-	lastDay, err := time.Parse("2006-01-02", c.LastDate)
+	lastDay, err := time.Parse(time.DateOnly, c.LastDate)
 	if err != nil {
 		return err
 	}
@@ -157,13 +157,13 @@ func setRepliedToConversation(resp *ReadTaskResp, replies []slack.Message, idx i
 			return err
 		}
 
-		replyDate, err := time.Parse("2006-01-02", foramtedDate)
+		replyDate, err := time.Parse(time.DateOnly, foramtedDate)
 		if err != nil {
 			return err
 		}
 
 		if replyDate.After(lastDay) {
-			replyDateString := replyDate.Format("2006-01-02")
+			replyDateString := replyDate.Format(time.DateOnly)
 			resp.Conversations[idx].LastDate = replyDateString
 		}
 		resp.Conversations[idx].ThreadReplyMessage = append(resp.Conversations[idx].ThreadReplyMessage, reply)
