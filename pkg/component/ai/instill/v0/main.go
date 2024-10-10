@@ -126,6 +126,8 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 		result, err = e.executeTextGeneration(gRPCClient, nsID, modelID, version, inputs)
 	case "TASK_TEXT_GENERATION_CHAT", "TASK_VISUAL_QUESTION_ANSWERING", "TASK_CHAT":
 		result, err = e.executeTextGenerationChat(gRPCClient, nsID, modelID, version, inputs)
+	case "TASK_EMBEDDING":
+		result, err = e.executeEmbedding(gRPCClient, nsID, modelID, version, inputs)
 	default:
 		return fmt.Errorf("unsupported task: %s", e.Task)
 	}
