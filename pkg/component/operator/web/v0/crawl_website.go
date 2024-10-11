@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/PuerkitoBio/goquery"
+
 	colly "github.com/gocolly/colly/v2"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -25,8 +26,8 @@ type PageInfo struct {
 	LinkHTML string `json:"link-html"`
 }
 
-// ScrapeWebsiteInput defines the input of the scrape website task
-type ScrapeWebsiteInput struct {
+// CrawlWebsiteInput defines the input of the scrape website task
+type CrawlWebsiteInput struct {
 	// TargetURL: The URL of the website to scrape.
 	TargetURL string `json:"target-url"`
 	// AllowedDomains: The list of allowed domains to scrape.
@@ -49,7 +50,7 @@ type ScrapeWebsiteInput struct {
 	MaxDepth int `json:"max-depth"`
 }
 
-func (inputStruct *ScrapeWebsiteInput) Preset() {
+func (inputStruct *CrawlWebsiteInput) Preset() {
 	if inputStruct.IncludeLinkHTML == nil {
 		b := false
 		inputStruct.IncludeLinkHTML = &b
@@ -73,7 +74,7 @@ const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // Scrape crawls a webpage and returns a slice of PageInfo
 func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, error) {
-	inputStruct := ScrapeWebsiteInput{}
+	inputStruct := CrawlWebsiteInput{}
 	err := base.ConvertFromStructpb(input, &inputStruct)
 
 	if err != nil {
@@ -144,6 +145,8 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 			return
 		}
 
+		html = getRemovedTagsHTML(doc, inputStruct)
+
 		title := util.ScrapeWebpageTitle(doc)
 		page.Title = title
 
@@ -213,7 +216,7 @@ func stripQueryAndTrailingSlash(u *url.URL) *url.URL {
 	return u
 }
 
-func initColly(inputStruct ScrapeWebsiteInput) *colly.Collector {
+func initColly(inputStruct CrawlWebsiteInput) *colly.Collector {
 	c := colly.NewCollector(
 		colly.MaxDepth(inputStruct.MaxDepth),
 		colly.Async(true),
