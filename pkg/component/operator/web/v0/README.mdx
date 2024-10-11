@@ -67,7 +67,7 @@ Crawling involves navigating through the website, starting from a designated pag
 
 ### Scrape Page
 
-Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags. Please check the [jQuery Syntax Examples](jquery-syntax-examples).
+Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -77,8 +77,8 @@ Scraping involves extracting specific data from a targeted webpage by parsing it
 | URL (required) | `url` | string | The URL to be scrape the webpage contents. |
 | Include HTML | `include-html` | boolean | Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true. |
 | Only Main Content | `only-main-content` | boolean | Only return the main content of the page by excluding the content of the tag of header, nav, footer. |
-| Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to remove data. If empty, no tags will be removed. Example: 'script, .ad, #footer'. |
-| Only Include Tags | `only-include-tags` | array[string] | A list of tags, classes, and ids to include in the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to include data. If empty, all tags will be included. Example: 'script, .ad, #footer' |
+| Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to remove data. If empty, no tags will be removed. Example: 'script, .ad, #footer'. Please check the [jQuery Syntax Examples](#jquery-syntax-examples). |
+| Only Include Tags | `only-include-tags` | array[string] | A list of tags, classes, and ids to include in the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to include data. If empty, all tags will be included. Example: 'script, .ad, #footer'. Please check the [jQuery Syntax Examples](#jquery-syntax-examples). |
 | Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. Please set it as 0 if you only want to collect static content. Please notice that if the timeout is set a small value, the page may not be fully loaded. |
 </div>
 

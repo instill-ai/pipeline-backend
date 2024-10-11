@@ -221,7 +221,7 @@
     }
   },
   "TASK_SCRAPE_PAGE": {
-    "instillShortDescription": "Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags. Please check the [jQuery Syntax Examples](jquery-syntax-examples).",
+    "instillShortDescription": "Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -265,7 +265,7 @@
           "type": "boolean"
         },
         "remove-tags": {
-          "description": "A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to remove data. If empty, no tags will be removed. Example: 'script, .ad, #footer'.",
+          "description": "A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to remove data. If empty, no tags will be removed. Example: 'script, .ad, #footer'. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -281,7 +281,7 @@
           "type": "array"
         },
         "only-include-tags": {
-          "description": "A list of tags, classes, and ids to include in the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to include data. If empty, all tags will be included. Example: 'script, .ad, #footer'",
+          "description": "A list of tags, classes, and ids to include in the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to include data. If empty, all tags will be included. Example: 'script, .ad, #footer'. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).",
           "instillAcceptFormats": [
             "array:string"
           ],
