@@ -25,23 +25,23 @@ The component definition and tasks are defined in the [definition.json](https://
 
 ### Crawl Website
 
-Crawl the website contents and manipulate html with jquery command. The sequence of jquery commands will be executed in the order of only-main-content, remove-tags, and only-include-tags.
+Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve content from other pages. The crawler scans each webpage, collecting the HTML structure and other resources (such as text, images, and metadata). Once the HTML content is crawled and collected, the next step is manipulating the HTML using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRAWL_WEBSITE` |
-| Query (required) | `target-url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
+| URL (required) | `target-url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
 | Allowed Domains | `allowed-domains` | array[string] | A list of domains that are allowed to be scraped. If empty, all domains are allowed. |
-| Max Number of Pages (required) | `max-k` | integer | The max number of pages to return. If the number is set to 0, all pages will be returned. If the number is set to a positive integer, at most max k pages will be returned. |
+| Max Number of Pages (required) | `max-k` | integer | Max-K specifies the maximum number of pages to return. If max-k is set to 0, all available pages will be returned, up to a maximum of 100. If max-k is set to a positive number, the result will include up to max-k pages, but no more than that. |
 | Include Link Text | `include-link-text` | boolean | Indicate whether to scrape the link and include the text of the link associated with this page in the 'link-text' field |
 | Include Link HTML | `include-link-html` | boolean | Indicate whether to scrape the link and include the raw HTML of the link associated with this page in the 'link-html' field |
 | Only Main Content | `only-main-content` | boolean | Only return the main content of the page excluding header, nav, footer. |
 | Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. If empty, no tags will be removed. Example: 'script, .ad, #footer' |
 | Only Include Tags | `only-include-tags` | array[string] | A list of tags, classes, and ids to include in the output. If empty, all tags will be included. Example: 'script, .ad, #footer' |
 | Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. |
-| Max Depth | `max-depth` | integer | The max number of depth the crawler will go. If the number is set to 1, the crawler will only scrape the target URL. If the number is set to 0, the crawler will scrape all the pages until the count of pages meets max-k. |
+| Max Depth | `max-depth` | integer | Max Depth specifies how deep the crawler will navigate from the target URL. If max depth is set to 1, the crawler will only scrape the target URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many pages to scrape. |
 </div>
 
 
@@ -98,7 +98,7 @@ Scrape the sitemap information
 
 ### Scrape Webpage
 
-Scrape the webpage contents and manipulate html with jquery command. The sequence of jquery commands will be executed in the order of only-main-content, remove-tags, and only-include-tags.
+Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page (or a small set of pages) to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -157,6 +157,8 @@ Future enhancements will include additional user interactions, such as:
 - Keyboard Actions: Simulate key presses and other keyboard interactions.
 
 This function aims to provide a robust framework for interacting with web pages and extracting dynamic content effectively.
+
+
 ## Example Recipes
 
 Recipe for the [Web scraper](https://instill.tech/instill-ai/pipelines/web-scraper/playground) pipeline.

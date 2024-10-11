@@ -42,7 +42,7 @@
     }
   },
   "TASK_CRAWL_WEBSITE": {
-    "instillShortDescription": "Crawl the website contents and manipulate html with jquery command. The sequence of jquery commands will be executed in the order of only-main-content, remove-tags, and only-include-tags.",
+    "instillShortDescription": "Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve content from other pages. The crawler scans each webpage, collecting the HTML structure and other resources (such as text, images, and metadata). Once the HTML content is crawled and collected, the next step is manipulating the HTML using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
@@ -92,7 +92,7 @@
         },
         "max-k": {
           "default": 10,
-          "description": "The max number of pages to return. If the number is set to 0, all pages will be returned. If the number is set to a positive integer, at most max k pages will be returned.",
+          "description": "Max-K specifies the maximum number of pages to return. If max-k is set to 0, all available pages will be returned, up to a maximum of 100. If max-k is set to a positive number, the result will include up to max-k pages, but no more than that.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -118,7 +118,7 @@
             "reference",
             "template"
           ],
-          "title": "Query",
+          "title": "URL",
           "type": "string"
         },
         "only-main-content": {
@@ -184,7 +184,7 @@
         },
         "max-depth": {
           "default": 0,
-          "description": "The max number of depth the crawler will go. If the number is set to 1, the crawler will only scrape the target URL. If the number is set to 0, the crawler will scrape all the pages until the count of pages meets max-k.",
+          "description": "Max Depth specifies how deep the crawler will navigate from the target URL. If max depth is set to 1, the crawler will only scrape the target URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many pages to scrape.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -310,7 +310,7 @@
     }
   },
   "TASK_SCRAPE_WEBPAGE": {
-    "instillShortDescription": "Scrape the webpage contents and manipulate html with jquery command. The sequence of jquery commands will be executed in the order of only-main-content, remove-tags, and only-include-tags.",
+    "instillShortDescription": "Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page (or a small set of pages) to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
