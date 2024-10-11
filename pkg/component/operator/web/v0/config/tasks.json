@@ -26,7 +26,7 @@
     }
   },
   "TASK_CRAWL_SITE": {
-    "instillShortDescription": "Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve titles and links from other pages. Please notice that the crawler will not fetch the content of the pages. If you want to scrape the content of the pages, please use the 'TASK_SCRAPE_PAGE'.",
+    "instillShortDescription": "Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve titles and links from other pages. Please notice that the crawler will not fetch the content of the pages. If you want to scrape the content of the pages, please use the `TASK_SCRAPE_PAGE`.",
     "input": {
       "instillUIOrder": 0,
       "properties": {

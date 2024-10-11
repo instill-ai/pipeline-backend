@@ -25,7 +25,7 @@ The component definition and tasks are defined in the [definition.json](https://
 
 ### Crawl Site
 
-Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve titles and links from other pages. Please notice that the crawler will not fetch the content of the pages. If you want to scrape the content of the pages, please use the 'TASK_SCRAPE_PAGE'.
+Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve titles and links from other pages. Please notice that the crawler will not fetch the content of the pages. If you want to scrape the content of the pages, please use the `TASK_SCRAPE_PAGE`.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -112,6 +112,45 @@ Scraping involves extracting specific data from a targeted webpage by parsing it
 | Title | `title` | string | The title of the webpage. |
 </div>
 </details>
+
+
+<h4 id="jquery-syntax-examples">jQuery Syntax Examples</h4>
+
+- **Element Selector**: Targets all instances of a specific HTML tag.
+  **Example**: `div`
+  Extracts all `<div>` elements.
+
+- **ID Selector**: Targets a single element by its unique `id` attribute.
+  **Example**: `#header`
+  Extracts the element with the `id` of `header`.
+
+- **Class Selector**: Targets all elements with a specific class name.
+  **Example**: `.button`
+  Extracts all elements with the class `button`.
+
+- **Attribute Selector**: Targets elements based on the presence or value of an attribute.
+  **Example**: `[type="text"]`
+  Extracts all elements with a `type` attribute equal to `text`.
+
+- **Descendant Selector**: Targets elements that are nested within other elements.
+  **Example**: `div p`
+  Extracts all `<p>` elements that are inside `<div>` elements.
+
+
+
+
+#### About Dynamic Content
+`TASK_SCRAPE_PAGE` supports to fetch dynamic content from web pages while simulating user behaviors, such as scrolling down. The initial implementation includes the following capabilities:
+
+Scrolling:
+- Mimics user scrolling down the page to load additional content dynamically.
+
+Future enhancements will include additional user interactions, such as:
+- Clicking: Simulate mouse clicks on specified elements.
+- Taking Screenshots: Capture screenshots of the current view.
+- Keyboard Actions: Simulate key presses and other keyboard interactions.
+
+This function aims to provide a robust framework for interacting with web pages and extracting dynamic content effectively.
 
 ### Scrape Sitemap
 
