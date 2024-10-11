@@ -1,4 +1,4 @@
-//go:generate compogen readme ./config ./README.mdx
+//go:generate compogen readme ./config ./README.mdx --extraContents setup=.compogen/extra-setup.mdx
 package slack
 
 import (

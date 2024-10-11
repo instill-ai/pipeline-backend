@@ -11,6 +11,8 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert"
+
+	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
 )
 
 const batchSize = 100
@@ -40,13 +42,14 @@ func (c *SlackSetupConverter) Migrate() error {
 
 func (c *SlackSetupConverter) migrateConnection() error {
 	// fetch slack component ID
-	cd := new(datamodel.ComponentDefinition)
-	if err := c.DB.Model(cd).Where("id = ?", "slack").First(cd).Error; err != nil {
+	cds := componentstore.Init(c.Logger, nil, nil)
+	cd, err := cds.GetDefinitionByID("slack", nil, nil)
+	if err != nil {
 		return fmt.Errorf("fetching slack component UID")
 	}
 
 	q := c.DB.Select("uid", "setup").
-		Where("integration_uid = ?", cd.UID.String()).
+		Where("integration_uid = ?", cd.Uid).
 		Where("delete_time IS NULL")
 
 	connections := make([]*datamodel.Connection, 0, batchSize)
