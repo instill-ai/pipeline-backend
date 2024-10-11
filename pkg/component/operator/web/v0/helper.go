@@ -13,28 +13,28 @@ type scrapeInput interface {
 	onlyIncludeTags() []string
 }
 
-func (s ScrapeWebpageInput) onlyMainContent() bool {
-	return s.OnlyMainContent
+func (i ScrapeWebpageInput) onlyMainContent() bool {
+	return i.OnlyMainContent
 }
 
-func (s ScrapeWebpageInput) removeTags() []string {
-	return s.RemoveTags
+func (i ScrapeWebpageInput) removeTags() []string {
+	return i.RemoveTags
 }
 
-func (s ScrapeWebpageInput) onlyIncludeTags() []string {
-	return s.OnlyIncludeTags
+func (i ScrapeWebpageInput) onlyIncludeTags() []string {
+	return i.OnlyIncludeTags
 }
 
-func (s CrawlWebsiteInput) onlyMainContent() bool {
-	return s.OnlyMainContent
+func (i CrawlWebsiteInput) onlyMainContent() bool {
+	return i.OnlyMainContent
 }
 
-func (s CrawlWebsiteInput) removeTags() []string {
-	return s.RemoveTags
+func (i CrawlWebsiteInput) removeTags() []string {
+	return i.RemoveTags
 }
 
-func (s CrawlWebsiteInput) onlyIncludeTags() []string {
-	return s.OnlyIncludeTags
+func (i CrawlWebsiteInput) onlyIncludeTags() []string {
+	return i.OnlyIncludeTags
 }
 
 func getRemovedTagsHTML[T scrapeInput](doc *goquery.Document, input T) string {

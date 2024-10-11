@@ -50,17 +50,17 @@ type CrawlWebsiteInput struct {
 	MaxDepth int `json:"max-depth"`
 }
 
-func (inputStruct *CrawlWebsiteInput) Preset() {
-	if inputStruct.IncludeLinkHTML == nil {
+func (i *CrawlWebsiteInput) Preset() {
+	if i.IncludeLinkHTML == nil {
 		b := false
-		inputStruct.IncludeLinkHTML = &b
+		i.IncludeLinkHTML = &b
 	}
-	if inputStruct.IncludeLinkText == nil {
+	if i.IncludeLinkText == nil {
 		b := false
-		inputStruct.IncludeLinkText = &b
+		i.IncludeLinkText = &b
 	}
-	if inputStruct.MaxK < 0 {
-		inputStruct.MaxK = 0
+	if i.MaxK < 0 {
+		i.MaxK = 0
 	}
 }
 
