@@ -13,7 +13,7 @@ import (
 	"github.com/instill-ai/x/errmsg"
 )
 
-type UserInputReadTask struct {
+type userInputReadTask struct {
 	ChannelName     string `json:"channel-name"`
 	StartToReadDate string `json:"start-to-read-date"`
 }
@@ -53,7 +53,7 @@ type WriteTaskResp struct {
 func (e *execution) readMessage(in *structpb.Struct) (*structpb.Struct, error) {
 	client := e.botClient
 
-	params := UserInputReadTask{}
+	params := userInputReadTask{}
 	if err := base.ConvertFromStructpb(in, &params); err != nil {
 		return nil, fmt.Errorf("converting task input: %w", err)
 	}

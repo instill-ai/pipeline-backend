@@ -212,14 +212,14 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 	mockDateTime, _ := transformTSToDate("1715159449.399879", time.RFC3339)
 	testcases := []struct {
 		name       string
-		input      UserInputReadTask
+		input      userInputReadTask
 		wantResp   ReadTaskResp
 		wantErr    string
 		wantErrMsg string
 	}{
 		{
 			name: "ok to read",
-			input: UserInputReadTask{
+			input: userInputReadTask{
 				ChannelName:     "test_channel",
 				StartToReadDate: "2024-05-05",
 			},
@@ -247,7 +247,7 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 		},
 		{
 			name: "fail to read",
-			input: UserInputReadTask{
+			input: userInputReadTask{
 				ChannelName: "test_channel_1",
 			},
 			wantErr:    `fetching channel ID: couldn't find channel by name`,
