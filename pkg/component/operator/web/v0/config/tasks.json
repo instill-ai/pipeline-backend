@@ -9,24 +9,8 @@
           "title": "Link",
           "type": "string"
         },
-        "link-html": {
-          "description": "The scraped raw html of the link associated with this webpage link",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 3,
-          "title": "Link HTML",
-          "type": "string"
-        },
-        "link-text": {
-          "description": "The scraped text of the link associated with this webpage link, in plain text",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "title": "Link Text",
-          "type": "string"
-        },
         "title": {
-          "description": "The title of a webpage link, in plain text",
+          "description": "The title of a webpage link in plain text.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 1,
@@ -41,11 +25,26 @@
       "type": "object"
     }
   },
-  "TASK_CRAWL_WEBSITE": {
-    "instillShortDescription": "Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve content from other pages. The crawler scans each webpage, collecting the HTML structure and other resources (such as text, images, and metadata). Once the HTML content is crawled and collected, the next step is manipulating the HTML using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags.",
+  "TASK_CRAWL_SITE": {
+    "instillShortDescription": "Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve titles and links from other pages. Please notice that the crawler will not fetch the content of the pages. If you want to scrape the content of the pages, please use the 'TASK_SCRAPE_PAGE'.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
+        "root-url": {
+          "description": "The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on.",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Root URL",
+          "type": "string"
+        },
         "allowed-domains": {
           "description": "A list of domains that are allowed to be scraped. If empty, all domains are allowed.",
           "instillAcceptFormats": [
@@ -61,34 +60,6 @@
           },
           "title": "Allowed Domains",
           "type": "array"
-        },
-        "include-link-html": {
-          "default": false,
-          "description": "Indicate whether to scrape the link and include the raw HTML of the link associated with this page in the 'link-html' field",
-          "instillAcceptFormats": [
-            "boolean"
-          ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Include Link HTML",
-          "type": "boolean"
-        },
-        "include-link-text": {
-          "default": false,
-          "description": "Indicate whether to scrape the link and include the text of the link associated with this page in the 'link-text' field",
-          "instillAcceptFormats": [
-            "boolean"
-          ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Include Link Text",
-          "type": "boolean"
         },
         "max-k": {
           "default": 10,
@@ -106,73 +77,13 @@
           "title": "Max Number of Pages",
           "type": "integer"
         },
-        "target-url": {
-          "description": "The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on.",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "URL",
-          "type": "string"
-        },
-        "only-main-content": {
-          "description": "Only return the main content of the page excluding header, nav, footer.",
-          "instillAcceptFormats": [
-            "boolean"
-          ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Only Main Content",
-          "type": "boolean"
-        },
-        "remove-tags": {
-          "description": "A list of tags, classes, and ids to remove from the output. If empty, no tags will be removed. Example: 'script, .ad, #footer'",
-          "instillAcceptFormats": [
-            "array:string"
-          ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "title": "Remove Tags",
-          "type": "array"
-        },
-        "only-include-tags": {
-          "description": "A list of tags, classes, and ids to include in the output. If empty, all tags will be included. Example: 'script, .ad, #footer'",
-          "instillAcceptFormats": [
-            "array:string"
-          ],
-          "instillUIOrder": 7,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "title": "Only Include Tags",
-          "type": "array"
-        },
         "timeout": {
           "default": 1000,
           "description": "The time to wait for the page to load in milliseconds. Min 0, Max 60000.",
           "instillAcceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 8,
+          "instillUIOrder": 3,
           "instillUpstreamTypes": [
             "value",
             "reference"
@@ -184,11 +95,11 @@
         },
         "max-depth": {
           "default": 0,
-          "description": "Max Depth specifies how deep the crawler will navigate from the target URL. If max depth is set to 1, the crawler will only scrape the target URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many pages to scrape.",
+          "description": "Max Depth specifies how deep the crawler will navigate from the root URL. If max depth is set to 1, the crawler will only scrape the root URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many pages to scrape.",
           "instillAcceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 9,
+          "instillUIOrder": 4,
           "instillUpstreamTypes": [
             "value",
             "reference"
@@ -199,7 +110,7 @@
         }
       },
       "required": [
-        "target-url",
+        "root-url",
         "max-k"
       ],
       "title": "Input",
@@ -209,7 +120,7 @@
       "instillUIOrder": 0,
       "properties": {
         "pages": {
-          "description": "The scraped webpages",
+          "description": "The link and title of webpages crawled by the crawler.",
           "instillUIOrder": 0,
           "items": {
             "$ref": "#/$defs/page-info",
@@ -309,13 +220,13 @@
       "type": "object"
     }
   },
-  "TASK_SCRAPE_WEBPAGE": {
-    "instillShortDescription": "Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page (or a small set of pages) to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags.",
+  "TASK_SCRAPE_PAGE": {
+    "instillShortDescription": "Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags. Please check the [jQuery Syntax Examples](jquery-syntax-examples).",
     "input": {
       "instillUIOrder": 0,
       "properties": {
         "url": {
-          "description": "The URL to be scrape the webpage contents",
+          "description": "The URL to be scrape the webpage contents.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -328,7 +239,7 @@
           "type": "string"
         },
         "include-html": {
-          "description": "Indicate whether to include the raw HTML of the webpage in the output",
+          "description": "Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -341,7 +252,7 @@
           "type": "boolean"
         },
         "only-main-content": {
-          "description": "Only return the main content of the page excluding header, nav, footer.",
+          "description": "Only return the main content of the page by excluding the content of the tag of header, nav, footer.",
           "instillAcceptFormats": [
             "boolean"
           ],
@@ -354,7 +265,7 @@
           "type": "boolean"
         },
         "remove-tags": {
-          "description": "A list of tags, classes, and ids to remove from the output. If empty, no tags will be removed. Example: 'script, .ad, #footer'",
+          "description": "A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to remove data. If empty, no tags will be removed. Example: 'script, .ad, #footer'.",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -370,7 +281,7 @@
           "type": "array"
         },
         "only-include-tags": {
-          "description": "A list of tags, classes, and ids to include in the output. If empty, all tags will be included. Example: 'script, .ad, #footer'",
+          "description": "A list of tags, classes, and ids to include in the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to include data. If empty, all tags will be included. Example: 'script, .ad, #footer'",
           "instillAcceptFormats": [
             "array:string"
           ],
@@ -412,21 +323,21 @@
       "instillUIOrder": 0,
       "properties": {
         "content": {
-          "description": "The scraped plain content without html tags of the webpage",
+          "description": "The scraped plain content without html tags of the webpage.",
           "instillFormat": "string",
           "instillUIOrder": 0,
           "title": "Content",
           "type": "string"
         },
         "markdown": {
-          "description": "The scraped markdown of the webpage",
+          "description": "The scraped markdown of the webpage.",
           "instillFormat": "string",
           "instillUIOrder": 1,
           "title": "Markdown",
           "type": "string"
         },
         "html": {
-          "description": "The scraped html of the webpage",
+          "description": "The scraped html of the webpage.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 2,
@@ -434,26 +345,26 @@
           "type": "string"
         },
         "metadata": {
-          "description": "The metadata of the webpage",
+          "description": "The metadata of the webpage.",
           "instillFormat": "object",
           "instillUIOrder": 3,
           "properties": {
             "title": {
-              "description": "The title of the webpage",
+              "description": "The title of the webpage.",
               "instillFormat": "string",
               "title": "Title",
               "instillUIOrder": 0,
               "type": "string"
             },
             "description": {
-              "description": "The description of the webpage",
+              "description": "The description of the webpage.",
               "instillFormat": "string",
               "title": "Description",
               "instillUIOrder": 1,
               "type": "string"
             },
             "source-url": {
-              "description": "The source URL of the webpage",
+              "description": "The source URL of the webpage.",
               "instillFormat": "string",
               "title": "Source URL",
               "instillUIOrder": 2,
@@ -468,7 +379,7 @@
           "type": "object"
         },
         "links-on-page": {
-          "description": "The list of links on the webpage",
+          "description": "The list of links on the webpage.",
           "instillUIOrder": 4,
           "instillFormat": "array:string",
           "items": {

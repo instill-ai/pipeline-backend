@@ -1,8 +1,8 @@
 {
   "availableTasks": [
-    "TASK_CRAWL_WEBSITE",
-    "TASK_SCRAPE_SITEMAP",
-    "TASK_SCRAPE_WEBPAGE"
+    "TASK_CRAWL_SITE",
+    "TASK_SCRAPE_PAGE",
+    "TASK_SCRAPE_SITEMAP"
   ],
   "documentationUrl": "https://www.instill.tech/docs/component/operator/web",
   "icon": "assets/web.svg",

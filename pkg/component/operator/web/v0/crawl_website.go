@@ -20,30 +20,18 @@ import (
 )
 
 type PageInfo struct {
-	Link     string `json:"link"`
-	Title    string `json:"title"`
-	LinkText string `json:"link-text"`
-	LinkHTML string `json:"link-html"`
+	Link  string `json:"link"`
+	Title string `json:"title"`
 }
 
 // CrawlWebsiteInput defines the input of the scrape website task
 type CrawlWebsiteInput struct {
-	// TargetURL: The URL of the website to scrape.
-	TargetURL string `json:"target-url"`
+	// RootURL: The URL of the website to scrape.
+	RootURL string `json:"root-url"`
 	// AllowedDomains: The list of allowed domains to scrape.
 	AllowedDomains []string `json:"allowed-domains"`
 	// MaxK: The maximum number of pages to scrape.
 	MaxK int `json:"max-k"`
-	// IncludeLinkText: Whether to include the scraped text of the scraped web page.
-	IncludeLinkText *bool `json:"include-link-text"`
-	// IncludeLinkHTML: Whether to include the scraped HTML of the scraped web page.
-	IncludeLinkHTML *bool `json:"include-link-html"`
-	// OnlyMainContent: Whether to scrape only the main content of the web page. If true, the scraped text wull exclude the header, nav, footer.
-	OnlyMainContent bool `json:"only-main-content"`
-	// RemoveTags: The list of tags to remove from the scraped text.
-	RemoveTags []string `json:"remove-tags"`
-	// OnlyIncludeTags: The list of tags to include in the scraped text.
-	OnlyIncludeTags []string `json:"only-include-tags"`
 	// Timeout: The number of milliseconds to wait before scraping the web page. Min 0, Max 60000.
 	Timeout int `json:"timeout"`
 	// MaxDepth: The maximum depth of the pages to scrape.
@@ -51,14 +39,6 @@ type CrawlWebsiteInput struct {
 }
 
 func (i *CrawlWebsiteInput) Preset() {
-	if i.IncludeLinkHTML == nil {
-		b := false
-		i.IncludeLinkHTML = &b
-	}
-	if i.IncludeLinkText == nil {
-		b := false
-		i.IncludeLinkText = &b
-	}
 	if i.MaxK < 0 {
 		i.MaxK = 0
 	}
@@ -72,7 +52,7 @@ type ScrapeWebsiteOutput struct {
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-// Scrape crawls a webpage and returns a slice of PageInfo
+// CrawlWebsite navigates through a website and return the links and titles of the pages
 func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, error) {
 	inputStruct := CrawlWebsiteInput{}
 	err := base.ConvertFromStructpb(input, &inputStruct)
@@ -145,32 +125,8 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 			return
 		}
 
-		html = getRemovedTagsHTML(doc, inputStruct)
-
 		title := util.ScrapeWebpageTitle(doc)
 		page.Title = title
-
-		if *inputStruct.IncludeLinkHTML {
-			page.LinkHTML = html
-		}
-
-		if *inputStruct.IncludeLinkText {
-			domain, err := util.GetDomainFromURL(strippedURL.String())
-
-			if err != nil {
-				log.Printf("Error getting domain from %s: %v", strippedURL.String(), err)
-				return
-			}
-
-			markdown, err := util.ScrapeWebpageHTMLToMarkdown(html, domain)
-
-			if err != nil {
-				log.Printf("Error scraping text from %s: %v", strippedURL.String(), err)
-				return
-			}
-
-			page.LinkText = markdown
-		}
 
 		defer mu.Unlock()
 		mu.Lock()
@@ -181,10 +137,10 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 	})
 
 	// Start scraping
-	if !strings.HasPrefix(inputStruct.TargetURL, "http://") && !strings.HasPrefix(inputStruct.TargetURL, "https://") {
-		inputStruct.TargetURL = "https://" + inputStruct.TargetURL
+	if !strings.HasPrefix(inputStruct.RootURL, "http://") && !strings.HasPrefix(inputStruct.RootURL, "https://") {
+		inputStruct.RootURL = "https://" + inputStruct.RootURL
 	}
-	_ = c.Visit(inputStruct.TargetURL)
+	_ = c.Visit(inputStruct.RootURL)
 	c.Wait()
 
 	outputStruct, err := base.ConvertToStructpb(output)

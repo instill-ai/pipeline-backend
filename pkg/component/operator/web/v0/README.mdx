@@ -7,9 +7,9 @@ description: "Learn about how to set up a VDP Web component https://github.com/i
 
 The Web component is an operator component that allows users to scrape websites.
 It can carry out the following tasks:
-- [Crawl Website](#crawl-website)
+- [Crawl Site](#crawl-site)
+- [Scrape Page](#scrape-page)
 - [Scrape Sitemap](#scrape-sitemap)
-- [Scrape Webpage](#scrape-webpage)
 
 ## Release Stage
 
@@ -23,25 +23,20 @@ The component definition and tasks are defined in the [definition.json](https://
 
 ## Supported Tasks
 
-### Crawl Website
+### Crawl Site
 
-Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve content from other pages. The crawler scans each webpage, collecting the HTML structure and other resources (such as text, images, and metadata). Once the HTML content is crawled and collected, the next step is manipulating the HTML using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags.
+Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve titles and links from other pages. Please notice that the crawler will not fetch the content of the pages. If you want to scrape the content of the pages, please use the 'TASK_SCRAPE_PAGE'.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CRAWL_WEBSITE` |
-| URL (required) | `target-url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
+| Task ID (required) | `task` | string | `TASK_CRAWL_SITE` |
+| Root URL (required) | `root-url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
 | Allowed Domains | `allowed-domains` | array[string] | A list of domains that are allowed to be scraped. If empty, all domains are allowed. |
 | Max Number of Pages (required) | `max-k` | integer | Max-K specifies the maximum number of pages to return. If max-k is set to 0, all available pages will be returned, up to a maximum of 100. If max-k is set to a positive number, the result will include up to max-k pages, but no more than that. |
-| Include Link Text | `include-link-text` | boolean | Indicate whether to scrape the link and include the text of the link associated with this page in the 'link-text' field |
-| Include Link HTML | `include-link-html` | boolean | Indicate whether to scrape the link and include the raw HTML of the link associated with this page in the 'link-html' field |
-| Only Main Content | `only-main-content` | boolean | Only return the main content of the page excluding header, nav, footer. |
-| Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. If empty, no tags will be removed. Example: 'script, .ad, #footer' |
-| Only Include Tags | `only-include-tags` | array[string] | A list of tags, classes, and ids to include in the output. If empty, all tags will be included. Example: 'script, .ad, #footer' |
 | Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. |
-| Max Depth | `max-depth` | integer | Max Depth specifies how deep the crawler will navigate from the target URL. If max depth is set to 1, the crawler will only scrape the target URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many pages to scrape. |
+| Max Depth | `max-depth` | integer | Max Depth specifies how deep the crawler will navigate from the root URL. If max depth is set to 1, the crawler will only scrape the root URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many pages to scrape. |
 </div>
 
 
@@ -53,22 +48,68 @@ Crawling involves navigating through the website, starting from a designated pag
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Pages](#crawl-website-pages) | `pages` | array[object] | The scraped webpages |
+| [Pages](#crawl-site-pages) | `pages` | array[object] | The link and title of webpages crawled by the crawler. |
 </div>
 
 <details>
-<summary> Output Objects in Crawl Website</summary>
+<summary> Output Objects in Crawl Site</summary>
 
-<h4 id="crawl-website-pages">Pages</h4>
+<h4 id="crawl-site-pages">Pages</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Link | `link` | string | The full URL to which the webpage link is pointing, e.g., http://www.example.com/foo/bar. |
-| Link HTML | `link-html` | string | The scraped raw html of the link associated with this webpage link |
-| Link Text | `link-text` | string | The scraped text of the link associated with this webpage link, in plain text |
-| Title | `title` | string | The title of a webpage link, in plain text |
+| Title | `title` | string | The title of a webpage link in plain text. |
+</div>
+</details>
+
+### Scrape Page
+
+Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags. Please check the [jQuery Syntax Examples](jquery-syntax-examples).
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SCRAPE_PAGE` |
+| URL (required) | `url` | string | The URL to be scrape the webpage contents. |
+| Include HTML | `include-html` | boolean | Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true. |
+| Only Main Content | `only-main-content` | boolean | Only return the main content of the page by excluding the content of the tag of header, nav, footer. |
+| Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to remove data. If empty, no tags will be removed. Example: 'script, .ad, #footer'. |
+| Only Include Tags | `only-include-tags` | array[string] | A list of tags, classes, and ids to include in the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to include data. If empty, all tags will be included. Example: 'script, .ad, #footer' |
+| Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. Please set it as 0 if you only want to collect static content. Please notice that if the timeout is set a small value, the page may not be fully loaded. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | The scraped plain content without html tags of the webpage. |
+| Markdown | `markdown` | string | The scraped markdown of the webpage. |
+| HTML (optional) | `html` | string | The scraped html of the webpage. |
+| [Metadata](#scrape-page-metadata) (optional) | `metadata` | object | The metadata of the webpage. |
+| Links on Page (optional) | `links-on-page` | array[string] | The list of links on the webpage. |
+</div>
+
+<details>
+<summary> Output Objects in Scrape Page</summary>
+
+<h4 id="scrape-page-metadata">Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Description | `description` | string | The description of the webpage. |
+| Source URL | `source-url` | string | The source URL of the webpage. |
+| Title | `title` | string | The title of the webpage. |
 </div>
 </details>
 
@@ -96,90 +137,46 @@ Scrape the sitemap information
 | List | `list` | array | The list of information in a sitemap |
 </div>
 
-### Scrape Webpage
-
-Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page (or a small set of pages) to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_SCRAPE_WEBPAGE` |
-| URL (required) | `url` | string | The URL to be scrape the webpage contents |
-| Include HTML | `include-html` | boolean | Indicate whether to include the raw HTML of the webpage in the output |
-| Only Main Content | `only-main-content` | boolean | Only return the main content of the page excluding header, nav, footer. |
-| Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. If empty, no tags will be removed. Example: 'script, .ad, #footer' |
-| Only Include Tags | `only-include-tags` | array[string] | A list of tags, classes, and ids to include in the output. If empty, all tags will be included. Example: 'script, .ad, #footer' |
-| Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. Please set it as 0 if you only want to collect static content. Please notice that if the timeout is set a small value, the page may not be fully loaded. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Content | `content` | string | The scraped plain content without html tags of the webpage |
-| Markdown | `markdown` | string | The scraped markdown of the webpage |
-| HTML (optional) | `html` | string | The scraped html of the webpage |
-| [Metadata](#scrape-webpage-metadata) (optional) | `metadata` | object | The metadata of the webpage |
-| Links on Page (optional) | `links-on-page` | array[string] | The list of links on the webpage |
-</div>
-
-<details>
-<summary> Output Objects in Scrape Webpage</summary>
-
-<h4 id="scrape-webpage-metadata">Metadata</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Description | `description` | string | The description of the webpage |
-| Source URL | `source-url` | string | The source URL of the webpage |
-| Title | `title` | string | The title of the webpage |
-</div>
-</details>
-
-
-#### Scraping Support for Dynamic Content
-This function provides scraping support to fetch dynamic content from web pages while simulating user behaviors, such as scrolling down. The initial implementation includes the following capabilities:
-
-Scrolling:
-- Mimics user scrolling down the page to load additional content dynamically.
-
-Future enhancements will include additional user interactions, such as:
-- Clicking: Simulate mouse clicks on specified elements.
-- Taking Screenshots: Capture screenshots of the current view.
-- Keyboard Actions: Simulate key presses and other keyboard interactions.
-
-This function aims to provide a robust framework for interacting with web pages and extracting dynamic content effectively.
-
 
 ## Example Recipes
 
-Recipe for the [Web scraper](https://instill.tech/instill-ai/pipelines/web-scraper/playground) pipeline.
-
 ```yaml
 version: v1beta
-component:
-  scraper:
-    type: web
-    task: TASK_SCRAPE_WEBPAGE
-    input:
-      include-html: false
-      only-main-content: true
-      url: ${variable.url}
+
 variable:
   url:
     title: url
-    description: The url of the web you want to scrape
     instill-format: string
+
+component:
+  crawler:
+    type: web
+    input:
+      root-url: ${variable.url}
+      allowed-domains:
+      max-k: 10
+      timeout: 0
+      max-depth: 0
+    condition:
+    task: TASK_CRAWL_SITE
+
+  scraper:
+    type: web
+    input:
+      url: ${crawler.output.pages[0].link}
+      include-html: false
+      only-main-content: true
+      remove-tags:
+      only-include-tags:
+      timeout: 1000
+    condition:
+    task: TASK_SCRAPE_PAGE
+
 output:
   markdown:
-    title: markdown
+    title: Markdown
     value: ${scraper.output.markdown}
+  links:
+    title: links
+    value: ${scraper.output.links-on-page}
 ```

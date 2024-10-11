@@ -3,10 +3,11 @@ package web
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
 	"io"
 	"sync"
+
+	_ "embed"
 
 	"github.com/PuerkitoBio/goquery"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -15,9 +16,9 @@ import (
 )
 
 const (
-	taskCrawlWebsite  = "TASK_CRAWL_WEBSITE"
+	taskCrawlWebsite  = "TASK_CRAWL_SITE"
+	taskScrapeWebpage = "TASK_SCRAPE_PAGE"
 	taskScrapeSitemap = "TASK_SCRAPE_SITEMAP"
-	taskScrapeWebpage = "TASK_SCRAPE_WEBPAGE"
 )
 
 var (

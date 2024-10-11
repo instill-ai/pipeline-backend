@@ -7,6 +7,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+// Now, we decide that we do not make crawler to have the ability to scrape the website.
+// However, the decision could be reverted when needed.
+// So, I remain this interface design here for the future usage.
 type scrapeInput interface {
 	onlyMainContent() bool
 	removeTags() []string
@@ -22,18 +25,6 @@ func (i ScrapeWebpageInput) removeTags() []string {
 }
 
 func (i ScrapeWebpageInput) onlyIncludeTags() []string {
-	return i.OnlyIncludeTags
-}
-
-func (i CrawlWebsiteInput) onlyMainContent() bool {
-	return i.OnlyMainContent
-}
-
-func (i CrawlWebsiteInput) removeTags() []string {
-	return i.RemoveTags
-}
-
-func (i CrawlWebsiteInput) onlyIncludeTags() []string {
 	return i.OnlyIncludeTags
 }
 

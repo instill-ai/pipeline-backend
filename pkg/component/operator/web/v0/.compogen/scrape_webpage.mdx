@@ -1,7 +1,25 @@
 
 
-#### Scraping Support for Dynamic Content
-This function provides scraping support to fetch dynamic content from web pages while simulating user behaviors, such as scrolling down. The initial implementation includes the following capabilities:
+<h4 id="jquery-syntax-examples">jQuery Syntax Examples</h4>
+- **Element Selector**: Targets all instances of a specific HTML tag.
+  **Example**: `div`
+  Extracts all `<div>` elements.
+- **ID Selector**: Targets a single element by its unique `id` attribute.
+  **Example**: `#header`
+  Extracts the element with the `id` of `header`.
+- **Class Selector**: Targets all elements with a specific class name.
+  **Example**: `.button`
+  Extracts all elements with the class `button`.
+- **Attribute Selector**: Targets elements based on the presence or value of an attribute.
+  **Example**: `[type="text"]`
+  Extracts all elements with a `type` attribute equal to `text`.
+- **Descendant Selector**: Targets elements that are nested within other elements.
+  **Example**: `div p`
+  Extracts all `<p>` elements that are inside `<div>` elements.
+
+
+#### About Dynamic Content
+TASK_SCRAPE_PAGE supports to fetch dynamic content from web pages while simulating user behaviors, such as scrolling down. The initial implementation includes the following capabilities:
 
 Scrolling:
 - Mimics user scrolling down the page to load additional content dynamically.
