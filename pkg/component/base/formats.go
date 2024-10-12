@@ -40,7 +40,8 @@ func (s InstillAcceptFormatsSchema) Validate(ctx jsonschema.ValidationContext, v
 			if strings.HasPrefix(instillAcceptFormat, "array:") {
 				ok = true
 			}
-			if instillAcceptFormat == "semi-structured/*" || instillAcceptFormat == "semi-structured/json" || instillAcceptFormat == "json" {
+			if instillAcceptFormat == "semi-structured/*" || instillAcceptFormat == "semi-structured/json" || instillAcceptFormat == "json" ||
+				instillAcceptFormat == "*" || instillAcceptFormat == "*/*" {
 				ok = true
 			}
 		}
