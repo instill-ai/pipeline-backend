@@ -46,7 +46,7 @@ type Repository interface {
 	CheckPinnedUser(_ context.Context, _ *gorm.DB, table string) *gorm.DB
 
 	GetHubStats(uidAllowList []uuid.UUID) (*datamodel.HubStats, error)
-	ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error)
+	ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) ([]*datamodel.Pipeline, int64, string, error)
 	GetPipelineByUID(ctx context.Context, uid uuid.UUID, isBasicView bool, embedReleases bool) (*datamodel.Pipeline, error)
 
 	CreateNamespacePipeline(ctx context.Context, pipeline *datamodel.Pipeline) error
@@ -397,13 +397,13 @@ func (r *repository) listPipelines(ctx context.Context, where string, whereArgs 
 	return pipelines, totalSize, nextPageToken, nil
 }
 
-func (r *repository) ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error) {
+func (r *repository) ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) ([]*datamodel.Pipeline, int64, string, error) {
 	// Note: Preset pipelines are ignored in `GET /pipelines` requests. These
 	// pipelines are used by the artifact backend and should not be directly
 	// exposed to users.
 	return r.listPipelines(ctx,
 		"(owner != ?)",
-		[]interface{}{fmt.Sprintf("organizations/%s", constant.PresetNamespaceUID)},
+		[]interface{}{fmt.Sprintf("organizations/%s", presetNamespaceUID)},
 		pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
 }
 func (r *repository) ListNamespacePipelines(ctx context.Context, ownerPermalink string, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) ([]*datamodel.Pipeline, int64, string, error) {

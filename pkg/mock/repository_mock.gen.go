@@ -269,9 +269,9 @@ type RepositoryMock struct {
 	beforeListPipelineTagsCounter uint64
 	ListPipelineTagsMock          mRepositoryMockListPipelineTags
 
-	funcListPipelines          func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)
+	funcListPipelines          func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)
 	funcListPipelinesOrigin    string
-	inspectFuncListPipelines   func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy)
+	inspectFuncListPipelines   func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID)
 	afterListPipelinesCounter  uint64
 	beforeListPipelinesCounter uint64
 	ListPipelinesMock          mRepositoryMockListPipelines
@@ -14271,28 +14271,30 @@ type RepositoryMockListPipelinesExpectation struct {
 
 // RepositoryMockListPipelinesParams contains parameters of the Repository.ListPipelines
 type RepositoryMockListPipelinesParams struct {
-	ctx           context.Context
-	pageSize      int64
-	pageToken     string
-	isBasicView   bool
-	filter        filtering.Filter
-	uidAllowList  []uuid.UUID
-	showDeleted   bool
-	embedReleases bool
-	order         ordering.OrderBy
+	ctx                context.Context
+	pageSize           int64
+	pageToken          string
+	isBasicView        bool
+	filter             filtering.Filter
+	uidAllowList       []uuid.UUID
+	showDeleted        bool
+	embedReleases      bool
+	order              ordering.OrderBy
+	presetNamespaceUID uuid.UUID
 }
 
 // RepositoryMockListPipelinesParamPtrs contains pointers to parameters of the Repository.ListPipelines
 type RepositoryMockListPipelinesParamPtrs struct {
-	ctx           *context.Context
-	pageSize      *int64
-	pageToken     *string
-	isBasicView   *bool
-	filter        *filtering.Filter
-	uidAllowList  *[]uuid.UUID
-	showDeleted   *bool
-	embedReleases *bool
-	order         *ordering.OrderBy
+	ctx                *context.Context
+	pageSize           *int64
+	pageToken          *string
+	isBasicView        *bool
+	filter             *filtering.Filter
+	uidAllowList       *[]uuid.UUID
+	showDeleted        *bool
+	embedReleases      *bool
+	order              *ordering.OrderBy
+	presetNamespaceUID *uuid.UUID
 }
 
 // RepositoryMockListPipelinesResults contains results of the Repository.ListPipelines
@@ -14305,16 +14307,17 @@ type RepositoryMockListPipelinesResults struct {
 
 // RepositoryMockListPipelinesOrigins contains origins of expectations of the Repository.ListPipelines
 type RepositoryMockListPipelinesExpectationOrigins struct {
-	origin              string
-	originCtx           string
-	originPageSize      string
-	originPageToken     string
-	originIsBasicView   string
-	originFilter        string
-	originUidAllowList  string
-	originShowDeleted   string
-	originEmbedReleases string
-	originOrder         string
+	origin                   string
+	originCtx                string
+	originPageSize           string
+	originPageToken          string
+	originIsBasicView        string
+	originFilter             string
+	originUidAllowList       string
+	originShowDeleted        string
+	originEmbedReleases      string
+	originOrder              string
+	originPresetNamespaceUID string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -14328,7 +14331,7 @@ func (mmListPipelines *mRepositoryMockListPipelines) Optional() *mRepositoryMock
 }
 
 // Expect sets up expected params for Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) Expect(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) *mRepositoryMockListPipelines {
+func (mmListPipelines *mRepositoryMockListPipelines) Expect(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
@@ -14341,7 +14344,7 @@ func (mmListPipelines *mRepositoryMockListPipelines) Expect(ctx context.Context,
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by ExpectParams functions")
 	}
 
-	mmListPipelines.defaultExpectation.params = &RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order}
+	mmListPipelines.defaultExpectation.params = &RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID}
 	mmListPipelines.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmListPipelines.expectations {
 		if minimock.Equal(e.params, mmListPipelines.defaultExpectation.params) {
@@ -14559,8 +14562,31 @@ func (mmListPipelines *mRepositoryMockListPipelines) ExpectOrderParam9(order ord
 	return mmListPipelines
 }
 
+// ExpectPresetNamespaceUIDParam10 sets up expected param presetNamespaceUID for Repository.ListPipelines
+func (mmListPipelines *mRepositoryMockListPipelines) ExpectPresetNamespaceUIDParam10(presetNamespaceUID uuid.UUID) *mRepositoryMockListPipelines {
+	if mmListPipelines.mock.funcListPipelines != nil {
+		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
+	}
+
+	if mmListPipelines.defaultExpectation == nil {
+		mmListPipelines.defaultExpectation = &RepositoryMockListPipelinesExpectation{}
+	}
+
+	if mmListPipelines.defaultExpectation.params != nil {
+		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Expect")
+	}
+
+	if mmListPipelines.defaultExpectation.paramPtrs == nil {
+		mmListPipelines.defaultExpectation.paramPtrs = &RepositoryMockListPipelinesParamPtrs{}
+	}
+	mmListPipelines.defaultExpectation.paramPtrs.presetNamespaceUID = &presetNamespaceUID
+	mmListPipelines.defaultExpectation.expectationOrigins.originPresetNamespaceUID = minimock.CallerInfo(1)
+
+	return mmListPipelines
+}
+
 // Inspect accepts an inspector function that has same arguments as the Repository.ListPipelines
-func (mmListPipelines *mRepositoryMockListPipelines) Inspect(f func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy)) *mRepositoryMockListPipelines {
+func (mmListPipelines *mRepositoryMockListPipelines) Inspect(f func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID)) *mRepositoryMockListPipelines {
 	if mmListPipelines.mock.inspectFuncListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("Inspect function is already set for RepositoryMock.ListPipelines")
 	}
@@ -14585,7 +14611,7 @@ func (mmListPipelines *mRepositoryMockListPipelines) Return(ppa1 []*datamodel.Pi
 }
 
 // Set uses given function f to mock the Repository.ListPipelines method
-func (mmListPipelines *mRepositoryMockListPipelines) Set(f func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)) *RepositoryMock {
+func (mmListPipelines *mRepositoryMockListPipelines) Set(f func(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error)) *RepositoryMock {
 	if mmListPipelines.defaultExpectation != nil {
 		mmListPipelines.mock.t.Fatalf("Default expectation is already set for the Repository.ListPipelines method")
 	}
@@ -14601,14 +14627,14 @@ func (mmListPipelines *mRepositoryMockListPipelines) Set(f func(ctx context.Cont
 
 // When sets expectation for the Repository.ListPipelines which will trigger the result defined by the following
 // Then helper
-func (mmListPipelines *mRepositoryMockListPipelines) When(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) *RepositoryMockListPipelinesExpectation {
+func (mmListPipelines *mRepositoryMockListPipelines) When(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) *RepositoryMockListPipelinesExpectation {
 	if mmListPipelines.mock.funcListPipelines != nil {
 		mmListPipelines.mock.t.Fatalf("RepositoryMock.ListPipelines mock is already set by Set")
 	}
 
 	expectation := &RepositoryMockListPipelinesExpectation{
 		mock:               mmListPipelines.mock,
-		params:             &RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order},
+		params:             &RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID},
 		expectationOrigins: RepositoryMockListPipelinesExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmListPipelines.expectations = append(mmListPipelines.expectations, expectation)
@@ -14643,17 +14669,17 @@ func (mmListPipelines *mRepositoryMockListPipelines) invocationsDone() bool {
 }
 
 // ListPipelines implements mm_repository.Repository
-func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) {
+func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, pageSize int64, pageToken string, isBasicView bool, filter filtering.Filter, uidAllowList []uuid.UUID, showDeleted bool, embedReleases bool, order ordering.OrderBy, presetNamespaceUID uuid.UUID) (ppa1 []*datamodel.Pipeline, i1 int64, s1 string, err error) {
 	mm_atomic.AddUint64(&mmListPipelines.beforeListPipelinesCounter, 1)
 	defer mm_atomic.AddUint64(&mmListPipelines.afterListPipelinesCounter, 1)
 
 	mmListPipelines.t.Helper()
 
 	if mmListPipelines.inspectFuncListPipelines != nil {
-		mmListPipelines.inspectFuncListPipelines(ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
+		mmListPipelines.inspectFuncListPipelines(ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID)
 	}
 
-	mm_params := RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order}
+	mm_params := RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID}
 
 	// Record call args
 	mmListPipelines.ListPipelinesMock.mutex.Lock()
@@ -14672,7 +14698,7 @@ func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, pageSi
 		mm_want := mmListPipelines.ListPipelinesMock.defaultExpectation.params
 		mm_want_ptrs := mmListPipelines.ListPipelinesMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order}
+		mm_got := RepositoryMockListPipelinesParams{ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID}
 
 		if mm_want_ptrs != nil {
 
@@ -14721,6 +14747,11 @@ func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, pageSi
 					mmListPipelines.ListPipelinesMock.defaultExpectation.expectationOrigins.originOrder, *mm_want_ptrs.order, mm_got.order, minimock.Diff(*mm_want_ptrs.order, mm_got.order))
 			}
 
+			if mm_want_ptrs.presetNamespaceUID != nil && !minimock.Equal(*mm_want_ptrs.presetNamespaceUID, mm_got.presetNamespaceUID) {
+				mmListPipelines.t.Errorf("RepositoryMock.ListPipelines got unexpected parameter presetNamespaceUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmListPipelines.ListPipelinesMock.defaultExpectation.expectationOrigins.originPresetNamespaceUID, *mm_want_ptrs.presetNamespaceUID, mm_got.presetNamespaceUID, minimock.Diff(*mm_want_ptrs.presetNamespaceUID, mm_got.presetNamespaceUID))
+			}
+
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
 			mmListPipelines.t.Errorf("RepositoryMock.ListPipelines got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
 				mmListPipelines.ListPipelinesMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
@@ -14733,9 +14764,9 @@ func (mmListPipelines *RepositoryMock) ListPipelines(ctx context.Context, pageSi
 		return (*mm_results).ppa1, (*mm_results).i1, (*mm_results).s1, (*mm_results).err
 	}
 	if mmListPipelines.funcListPipelines != nil {
-		return mmListPipelines.funcListPipelines(ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
+		return mmListPipelines.funcListPipelines(ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID)
 	}
-	mmListPipelines.t.Fatalf("Unexpected call to RepositoryMock.ListPipelines. %v %v %v %v %v %v %v %v %v", ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order)
+	mmListPipelines.t.Fatalf("Unexpected call to RepositoryMock.ListPipelines. %v %v %v %v %v %v %v %v %v %v", ctx, pageSize, pageToken, isBasicView, filter, uidAllowList, showDeleted, embedReleases, order, presetNamespaceUID)
 	return
 }
 
