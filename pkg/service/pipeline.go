@@ -102,7 +102,12 @@ func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken s
 		}
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view <= pipelinepb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true, order)
+	presetOrgResp, err := s.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtpb.GetOrganizationAdminRequest{OrganizationId: constant.PresetNamespaceID})
+	if err != nil {
+		return nil, 0, "", err
+	}
+	presetNamespaceUID := uuid.FromStringOrNil(presetOrgResp.Organization.Uid)
+	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view <= pipelinepb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true, order, presetNamespaceUID)
 	if err != nil {
 		return nil, 0, "", err
 	}

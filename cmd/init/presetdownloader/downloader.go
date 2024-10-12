@@ -28,6 +28,7 @@ import (
 	"github.com/instill-ai/x/zapadapter"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -98,6 +99,10 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 	if mgmtPrivateServiceClientConn != nil {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
+	presetOrgResp, err := mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtpb.GetOrganizationAdminRequest{OrganizationId: constant.PresetNamespaceID})
+	if err != nil {
+		return err
+	}
 
 	converter := service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo, "")
 
@@ -120,7 +125,7 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 	ns := resource.Namespace{
 		NsType: resource.Organization,
 		NsID:   constant.PresetNamespaceID,
-		NsUID:  uuid.FromStringOrNil(constant.PresetNamespaceUID),
+		NsUID:  uuid.FromStringOrNil(presetOrgResp.Organization.Uid),
 	}
 	pageToken := ""
 	for {
