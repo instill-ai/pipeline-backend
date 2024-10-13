@@ -279,17 +279,17 @@
                       "$ref": "#/$defs/model-name"
                     },
                     "code-blocks": {
-                      "description": "A flag indicating whether code blocks should be treated as a single unit",
+                      "description": "A flag indicating whether code blocks should be treated as a single unit during chunking.",
                       "instillAcceptFormats": [
                         "boolean"
                       ],
-                      "instillUIOrder": 3,
+                      "instillUIOrder": 4,
                       "instillUpstreamTypes": [
                         "value",
                         "reference",
                         "template"
                       ],
-                      "title": "Code Blocks",
+                      "title": "Treat Code Blocks as Single Unit",
                       "type": "boolean"
                     }
                   },
@@ -305,255 +305,140 @@
                   ],
                   "title": "Markdown",
                   "type": "object",
-                  "description": "This text splitter is specially designed for Markdown format."
+                  "description": "This is a more specialized splitter for markdown documents. It tries to respect the structure of markdown to create semantically meaningful chunks."
+                },
+                {
+                  "properties": {
+                    "chunk-method": {
+                      "const": "Regex",
+                      "type": "string",
+                      "title": "Chunk Method",
+                      "description": "Chunking based on regular expressions.",
+                      "instillUIOrder": 0
+                    },
+                    "chunk-size": {
+                      "$ref": "#/$defs/chunk-size"
+                    },
+                    "chunk-overlap": {
+                      "$ref": "#/$defs/chunk-overlap"
+                    },
+                    "model-name": {
+                      "$ref": "#/$defs/model-name"
+                    },
+                    "pattern": {
+                      "description": "Regular expression pattern used for splitting.",
+                      "instillAcceptFormats": [
+                        "string"
+                      ],
+                      "instillUIOrder": 3,
+                      "instillUpstreamTypes": [
+                        "value",
+                        "reference",
+                        "template"
+                      ],
+                      "title": "Regex Pattern",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "chunk-method",
+                    "pattern"
+                  ],
+                  "instillEditOnNodeFields": [
+                    "chunk-method",
+                    "chunk-size",
+                    "chunk-overlap",
+                    "model-name",
+                    "pattern"
+                  ],
+                  "title": "Regex",
+                  "type": "object",
+                  "description": "This method allows for custom chunking based on regular expression patterns."
+                },
+                {
+                  "properties": {
+                    "chunk-method": {
+                      "const": "Substring",
+                      "type": "string",
+                      "title": "Chunk Method",
+                      "description": "Chunking based on substring positions.",
+                      "instillUIOrder": 0
+                    },
+                    "chunk-size": {
+                      "$ref": "#/$defs/chunk-size"
+                    },
+                    "chunk-overlap": {
+                      "$ref": "#/$defs/chunk-overlap"
+                    },
+                    "model-name": {
+                      "$ref": "#/$defs/model-name"
+                    },
+                    "start-index": {
+                      "description": "The starting index for the substring.",
+                      "instillAcceptFormats": [
+                        "integer"
+                      ],
+                      "instillUIOrder": 3,
+                      "instillUpstreamTypes": [
+                        "value",
+                        "reference",
+                        "template"
+                      ],
+                      "title": "Start Index",
+                      "type": "integer"
+                    },
+                    "end-index": {
+                      "description": "The ending index for the substring.",
+                      "instillAcceptFormats": [
+                        "integer"
+                      ],
+                      "instillUIOrder": 4,
+                      "instillUpstreamTypes": [
+                        "value",
+                        "reference",
+                        "template"
+                      ],
+                      "title": "End Index",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "chunk-method",
+                    "start-index",
+                    "end-index"
+                  ],
+                  "instillEditOnNodeFields": [
+                    "chunk-method",
+                    "chunk-size",
+                    "chunk-overlap",
+                    "model-name",
+                    "start-index",
+                    "end-index"
+                  ],
+                  "title": "Substring",
+                  "type": "object",
+                  "description": "This method allows chunking based on specified start and end indices."
                 }
               ]
             }
           },
-          "title": "Strategy",
           "required": [
-            "setting"
+            "text",
+            "strategy"
           ],
           "type": "object"
         }
       },
-      "required": [
-        "text",
-        "strategy"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output",
-      "instillUIOrder": 0,
-      "properties": {
-        "chunk-num": {
-          "description": "Total number of output text chunks",
-          "instillUIOrder": 2,
-          "instillFormat": "integer",
-          "title": "Number of Text Chunks",
-          "type": "integer"
+      "output": {
+        "description": "Output",
+        "instillUIOrder": 0,
+        "type": "array",
+        "items": {
+          "type": "string"
         },
-        "text-chunks": {
-          "description": "Text chunks after splitting",
-          "instillUIOrder": 1,
-          "items": {
-            "title": "Text Chunk",
-            "description": "Text chunk after splitting",
-            "properties": {
-              "text": {
-                "title": "Text",
-                "description": "Text chunk after splitting",
-                "instillFormat": "string",
-                "instillUIMultiline": true,
-                "instillUIOrder": 0,
-                "type": "string"
-              },
-              "start-position": {
-                "title": "Start Position",
-                "description": "The starting position of the chunk in the original text",
-                "instillFormat": "integer",
-                "instillUIOrder": 1,
-                "type": "integer"
-              },
-              "end-position": {
-                "title": "End Position",
-                "description": "The ending position of the chunk in the original text",
-                "instillFormat": "integer",
-                "instillUIOrder": 2,
-                "type": "integer"
-              },
-              "token-count": {
-                "title": "Token Count",
-                "description": "Count of tokens in a chunk",
-                "instillFormat": "integer",
-                "instillUIOrder": 3,
-                "type": "integer"
-              }
-            },
-            "required": [
-              "text",
-              "start-position",
-              "end-position",
-              "token-count"
-            ],
-            "instillUIMultiline": true,
-            "type": "object"
-          },
-          "title": "Text Chunks",
-          "type": "array"
-        },
-        "token-count": {
-          "description": "Total count of tokens in the original input text",
-          "instillUIOrder": 0,
-          "instillFormat": "integer",
-          "title": "Token Count",
-          "type": "integer"
-        },
-        "chunks-token-count": {
-          "description": "Total count of tokens in the output text chunks",
-          "instillUIOrder": 3,
-          "instillFormat": "integer",
-          "title": "Token Count Chunks",
-          "type": "integer"
-        }
-      },
-      "required": [
-        "text-chunks",
-        "chunk-num",
-        "token-count",
-        "chunks-token-count"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_CLEAN_DATA": {
-    "instillShortDescription": "Clean data by removing unwanted text in the input of the array by using the given pattern.",
-    "input": {
-      "description": "Input",
-      "instillUIOrder": 0,
-      "properties": {
-        "texts": {
-          "description": "Array of text to be cleaned.",
-          "instillUIOrder": 0,
-          "instillAcceptFormats": [
-            "array:string"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "title": "Texts",
-          "type": "array"
-        },
-        "setting": {
-          "description": "The rules to clean the text.",
-          "instillUIOrder": 1,
-          "type": "object",
-          "title": "Setting",
-          "oneOf": [
-            {
-              "properties": {
-                "clean-method": {
-                  "const": "Regex",
-                  "type": "string",
-                  "title": "Clean Method",
-                  "description": "Cleaning based on regular expression.",
-                  "instillUIOrder": 0
-                },
-                "exclude-patterns": {
-                  "description": "When the text is matched, it will be removed from the array of text.",
-                  "instillAcceptFormats": [
-                    "array:string"
-                  ],
-                  "items": {
-                    "type": "string"
-                  },
-                  "instillUIOrder": 1,
-                  "type": "array",
-                  "title": "Exclude Patterns"
-                },
-                "include-patterns": {
-                  "description": "When the text is matched, it will be remained in the array of text. And, the exclude-patterns will be executed first.",
-                  "instillAcceptFormats": [
-                    "array:string"
-                  ],
-                  "items": {
-                    "type": "string"
-                  },
-                  "instillUIOrder": 2,
-                  "type": "array",
-                  "title": "Include Patterns"
-                }
-              },
-              "required": [
-                "clean-method"
-              ],
-              "title": "Regex",
-              "type": "object"
-            },
-            {
-              "properties": {
-                "clean-method": {
-                  "const": "Substring",
-                  "type": "string",
-                  "title": "Clean Method",
-                  "description": "Cleaning based on substring. Regex is more powerful than Substring. However, Substring is easier to use.",
-                  "instillUIOrder": 0
-                },
-                "exclude-substrings": {
-                  "description": "When the text contains the substrings, it will be removed from the array of text.",
-                  "instillAcceptFormats": [
-                    "array:string"
-                  ],
-                  "items": {
-                    "type": "string"
-                  },
-                  "instillUIOrder": 1,
-                  "type": "array",
-                  "title": "Exclude Substring"
-                },
-                "include-substrings": {
-                  "description": "When the text contains the substrings, it will be remained in the array of text. And, the exclude-substrings will be executed first.",
-                  "instillAcceptFormats": [
-                    "array:string"
-                  ],
-                  "items": {
-                    "type": "string"
-                  },
-                  "instillUIOrder": 2,
-                  "type": "array",
-                  "title": "Include Substring"
-                },
-                "case-sensitive": {
-                  "description": "A flag indicating whether the substring matching is case-sensitive. When it is true, the matching is case-sensitive. When it is false, the matching is case-insensitive. The default value is false. For example, when it is case-sensitive, cat would only match 'cat' but not 'Cat' or 'CAT'. When cat is case-insensitive, on the other hand, would match 'cat', 'Cat', 'CAT', or any other variation of uppercase and lowercase letters.",
-                  "instillAcceptFormats": [
-                    "boolean"
-                  ],
-                  "instillUIOrder": 3,
-                  "title": "Case Sensitive",
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "clean-method"
-              ],
-              "title": "Substring",
-              "type": "object"
-            }
-          ],
-          "required": [
-            "clean-method"
-          ]
-        }
-      },
-      "required": [
-        "texts",
-        "setting"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output",
-      "instillUIOrder": 0,
-      "properties": {
-        "texts": {
-          "description": "Array of cleaned text.",
-          "instillUIOrder": 0,
-          "items": {
-            "type": "string"
-          },
-          "title": "Cleaned Texts",
-          "type": "array"
-        }
-      },
-      "required": [
-        "texts"
-      ],
-      "title": "Output",
-      "type": "object"
+        "title": "Output"
+      }
     }
   }
 }
+
