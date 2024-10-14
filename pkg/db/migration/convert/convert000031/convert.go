@@ -94,16 +94,18 @@ func (c *SlackSetupConverter) migratePipeline() error {
 			isRecipeUpdated := false
 			l := c.Logger.With(zap.String("pipelineUID", p.UID.String()))
 
-			for id, comp := range p.Recipe.Component {
-				isComponentUpdated, err := c.updateSlackSetup(comp)
-				if err != nil {
-					l.With(zap.String("componentID", id), zap.Error(err)).
-						Error("Failed to update pipeline.")
+			if p.Recipe != nil {
+				for id, comp := range p.Recipe.Component {
+					isComponentUpdated, err := c.updateSlackSetup(comp)
+					if err != nil {
+						l.With(zap.String("componentID", id), zap.Error(err)).
+							Error("Failed to update pipeline.")
 
-					return fmt.Errorf("updating pipeline component: %w", err)
+						return fmt.Errorf("updating pipeline component: %w", err)
+					}
+
+					isRecipeUpdated = isComponentUpdated || isRecipeUpdated
 				}
-
-				isRecipeUpdated = isComponentUpdated || isRecipeUpdated
 			}
 
 			if isRecipeUpdated {
@@ -134,16 +136,18 @@ func (c *SlackSetupConverter) migratePipelineRelease() error {
 			isRecipeUpdated := false
 			l := c.Logger.With(zap.String("pipelineReleaseUID", pr.UID.String()))
 
-			for id, comp := range pr.Recipe.Component {
-				isComponentUpdated, err := c.updateSlackSetup(comp)
-				if err != nil {
-					l.With(zap.String("componentID", id), zap.Error(err)).
-						Error("Failed to update pipeline release.")
+			if pr.Recipe != nil {
+				for id, comp := range pr.Recipe.Component {
+					isComponentUpdated, err := c.updateSlackSetup(comp)
+					if err != nil {
+						l.With(zap.String("componentID", id), zap.Error(err)).
+							Error("Failed to update pipeline release.")
 
-					return fmt.Errorf("updating pipeline release component: %w", err)
+						return fmt.Errorf("updating pipeline release component: %w", err)
+					}
+
+					isRecipeUpdated = isComponentUpdated || isRecipeUpdated
 				}
-
-				isRecipeUpdated = isComponentUpdated || isRecipeUpdated
 			}
 
 			if isRecipeUpdated {
