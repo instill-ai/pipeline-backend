@@ -2,8 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "properties": {
-    "token": {
-      "description": "Fill in your Slack app access token. For more information about how to access to create app tokens, please refer to the Slack API documentation.",
+    "bot-token": {
+      "description": "Token associated to the application bot",
       "instillUpstreamTypes": [
         "reference"
       ],
@@ -12,12 +12,25 @@
       ],
       "instillSecret": true,
       "instillUIOrder": 0,
-      "title": "Token",
+      "title": "Bot OAuth Token",
+      "type": "string"
+    },
+    "user-token": {
+      "description": "Token to act on behalf of a Slack user",
+      "instillUpstreamTypes": [
+        "reference"
+      ],
+      "instillAcceptFormats": [
+        "string"
+      ],
+      "instillSecret": true,
+      "instillUIOrder": 1,
+      "title": "User OAuth Token",
       "type": "string"
     }
   },
   "required": [
-    "token"
+    "bot-token"
   ],
   "instillEditOnNodeFields": [
     "token"

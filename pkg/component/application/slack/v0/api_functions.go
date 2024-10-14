@@ -5,19 +5,20 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/instill-ai/x/errmsg"
 	"github.com/slack-go/slack"
 )
 
 var types = []string{"private_channel", "public_channel"}
 
-func loopChannelListAPI(e *execution, channelName string) (string, error) {
+func loopChannelListAPI(client SlackClient, channelName string) (string, error) {
 	var apiParams slack.GetConversationsParameters
 	apiParams.Types = types
 
 	var targetChannelID string
 	for {
 
-		slackChannels, nextCur, err := e.client.GetConversations(&apiParams)
+		slackChannels, nextCur, err := client.GetConversations(&apiParams)
 		if err != nil {
 			return "", err
 		}
@@ -29,8 +30,10 @@ func loopChannelListAPI(e *execution, channelName string) (string, error) {
 		}
 
 		if targetChannelID == "" && nextCur == "" {
-			err := fmt.Errorf("there is no match name in slack channel [%v]", channelName)
-			return "", err
+			return "", errmsg.AddMessage(
+				fmt.Errorf("couldn't find channel by name"),
+				fmt.Sprintf("Couldn't find channel [%s].", channelName),
+			)
 		}
 
 		apiParams.Cursor = nextCur
@@ -47,13 +50,13 @@ func getChannelID(channelName string, channels []slack.Channel) (channelID strin
 	return ""
 }
 
-func getConversationHistory(e *execution, channelID string, nextCur string) (*slack.GetConversationHistoryResponse, error) {
+func getConversationHistory(client SlackClient, channelID string, nextCur string) (*slack.GetConversationHistoryResponse, error) {
 	apiHistoryParams := slack.GetConversationHistoryParameters{
 		ChannelID: channelID,
 		Cursor:    nextCur,
 	}
 
-	historiesResp, err := e.client.GetConversationHistory(&apiHistoryParams)
+	historiesResp, err := client.GetConversationHistory(&apiHistoryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -65,12 +68,12 @@ func getConversationHistory(e *execution, channelID string, nextCur string) (*sl
 	return historiesResp, nil
 }
 
-func getConversationReply(e *execution, channelID string, ts string) ([]slack.Message, error) {
+func getConversationReply(client SlackClient, channelID string, ts string) ([]slack.Message, error) {
 	apiParams := slack.GetConversationRepliesParameters{
 		ChannelID: channelID,
 		Timestamp: ts,
 	}
-	msgs, _, nextCur, err := e.client.GetConversationReplies(&apiParams)
+	msgs, _, nextCur, err := client.GetConversationReplies(&apiParams)
 
 	if err != nil {
 		return nil, err
@@ -84,7 +87,7 @@ func getConversationReply(e *execution, channelID string, ts string) ([]slack.Me
 
 	for nextCur != "" {
 		apiParams.Cursor = nextCur
-		msgs, _, nextCur, err = e.client.GetConversationReplies(&apiParams)
+		msgs, _, nextCur, err = client.GetConversationReplies(&apiParams)
 		if err != nil {
 			return nil, err
 		}
@@ -102,12 +105,12 @@ func setAPIRespToReadTaskResp(apiResp []slack.Message, readTaskResp *ReadTaskRes
 			return err
 		}
 
-		startReadDate, err := time.Parse("2006-01-02", startReadDateString)
+		startReadDate, err := time.Parse(time.DateOnly, startReadDateString)
 		if err != nil {
 			return err
 		}
 
-		formatedDate, err := time.Parse("2006-01-02", formatedDateString)
+		formatedDate, err := time.Parse(time.DateOnly, formatedDateString)
 		if err != nil {
 			return err
 		}
@@ -132,7 +135,7 @@ func setAPIRespToReadTaskResp(apiResp []slack.Message, readTaskResp *ReadTaskRes
 
 func setRepliedToConversation(resp *ReadTaskResp, replies []slack.Message, idx int) error {
 	c := resp.Conversations[idx]
-	lastDay, err := time.Parse("2006-01-02", c.LastDate)
+	lastDay, err := time.Parse(time.DateOnly, c.LastDate)
 	if err != nil {
 		return err
 	}
@@ -157,13 +160,13 @@ func setRepliedToConversation(resp *ReadTaskResp, replies []slack.Message, idx i
 			return err
 		}
 
-		replyDate, err := time.Parse("2006-01-02", foramtedDate)
+		replyDate, err := time.Parse(time.DateOnly, foramtedDate)
 		if err != nil {
 			return err
 		}
 
 		if replyDate.After(lastDay) {
-			replyDateString := replyDate.Format("2006-01-02")
+			replyDateString := replyDate.Format(time.DateOnly)
 			resp.Conversations[idx].LastDate = replyDateString
 		}
 		resp.Conversations[idx].ThreadReplyMessage = append(resp.Conversations[idx].ThreadReplyMessage, reply)

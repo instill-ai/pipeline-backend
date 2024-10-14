@@ -1,4 +1,4 @@
-//go:generate compogen readme ./config ./README.mdx
+//go:generate compogen readme ./config ./README.mdx --extraContents setup=.compogen/extra-setup.mdx
 package slack
 
 import (
@@ -32,6 +32,18 @@ var (
 	comp *component
 )
 
+// SlackClient implements the methods we'll need to interact with Slack.
+// TODO jvallesm: instead of using an interface and mocking it in the tests,
+// create a client with the Slack SDK and use OptionAPIURL to test the
+// component.
+type SlackClient interface {
+	GetConversations(params *slack.GetConversationsParameters) ([]slack.Channel, string, error)
+	PostMessage(channelID string, options ...slack.MsgOption) (string, string, error)
+	GetConversationHistory(params *slack.GetConversationHistoryParameters) (*slack.GetConversationHistoryResponse, error)
+	GetConversationReplies(params *slack.GetConversationRepliesParameters) ([]slack.Message, bool, string, error)
+	GetUsersInfo(users ...string) (*[]slack.User, error)
+}
+
 type component struct {
 	base.Component
 }
@@ -39,16 +51,17 @@ type component struct {
 type execution struct {
 	base.ComponentExecution
 
-	execute func(*structpb.Struct) (*structpb.Struct, error)
-	client  SlackClient
+	botClient  SlackClient
+	userClient SlackClient
+	execute    func(*structpb.Struct) (*structpb.Struct, error)
 }
 
-type SlackClient interface {
-	GetConversations(params *slack.GetConversationsParameters) ([]slack.Channel, string, error)
-	PostMessage(channelID string, options ...slack.MsgOption) (string, string, error)
-	GetConversationHistory(params *slack.GetConversationHistoryParameters) (*slack.GetConversationHistoryResponse, error)
-	GetConversationReplies(params *slack.GetConversationRepliesParameters) ([]slack.Message, bool, string, error)
-	GetUsersInfo(users ...string) (*[]slack.User, error)
+func (e *execution) botToken() string {
+	return e.Setup.GetFields()["bot-token"].GetStringValue()
+}
+
+func (e *execution) userToken() string {
+	return e.Setup.GetFields()["user-token"].GetStringValue()
 }
 
 // Init returns an implementation of IComponent that interacts with Slack.
@@ -65,9 +78,21 @@ func Init(bc base.Component) *component {
 }
 
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
-	e := &execution{
-		ComponentExecution: x,
-		client:             newClient(x.Setup),
+	e := &execution{ComponentExecution: x}
+
+	// TODO jvallesm: this should be replaced by a validation at the recipe
+	// level. The recipe and the setup schema have enough information so the
+	// trigger can be aborted earlier.
+	if e.botToken() == "" {
+		return nil, errmsg.AddMessage(
+			fmt.Errorf("missing bot token"),
+			"Bot token is a required setup field.",
+		)
+	}
+
+	e.botClient = newClient(e.botToken())
+	if e.userToken() != "" {
+		e.userClient = newClient(e.userToken())
 	}
 
 	switch x.Task {
