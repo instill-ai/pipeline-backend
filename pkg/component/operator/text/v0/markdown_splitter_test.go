@@ -82,7 +82,7 @@ func Test_PositionChecker(t *testing.T) {
 
 	testCases := []struct {
 		input        ChunkTextInput
-		fileName    string
+		fileName     string
 		outputChunks []ContentChunk
 	}{
 		{
@@ -147,5 +147,4 @@ func Test_PositionChecker(t *testing.T) {
 			}
 		})
 	}
-
 }
