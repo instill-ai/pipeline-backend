@@ -35,14 +35,8 @@ func (c *ConvertToWeb) migratePipeline() error {
 
 			updatedRecipeYAML, isUpdate := c.updateRecipeYAML(recipeYAML)
 
-			l.Info("Updated Recipe YAML: \n", zap.String("updatedRecipeYAML", updatedRecipeYAML))
-
-			l.Info("Is Update: ", zap.Bool("isUpdate", isUpdate))
-
 			if isUpdate {
 				result := tx.Model(p).Where("uid = ?", p.UID).Update("recipe_yaml", updatedRecipeYAML)
-				l.Info("=== Updating Pipeline ===")
-
 				if result.Error != nil {
 					l.Error("Failed to update pipeline release.")
 					return fmt.Errorf("updating pipeline recipe: %w", result.Error)
@@ -66,7 +60,6 @@ func (c *ConvertToWeb) migratePipelineRelease() error {
 
 			if isUpdate {
 				result := tx.Model(p).Where("uid = ?", p.UID).Update("recipe_yaml", updatedRecipeYAML)
-				l.Info("=== Updating PipelineRelease ===")
 				if result.Error != nil {
 					l.Error("Failed to update pipeline release.")
 					return fmt.Errorf("updating pipeline recipe: %w", result.Error)
