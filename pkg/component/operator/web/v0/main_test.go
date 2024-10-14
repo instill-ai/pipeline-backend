@@ -69,7 +69,7 @@ func TestScrapeWebpage(t *testing.T) {
 	c.Run("ScrapeWebpage", func(c *quicktest.C) {
 		component := Init(base.Component{})
 		e := &execution{
-			ComponentExecution:    base.ComponentExecution{Component: component, SystemVariables: nil, Setup: nil, Task: taskScrapeWebpage},
+			ComponentExecution:    base.ComponentExecution{Component: component, SystemVariables: nil, Setup: nil, Task: taskScrapePage},
 			getDocAfterRequestURL: fakeHTTPRequest,
 		}
 
