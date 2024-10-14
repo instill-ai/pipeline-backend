@@ -26,11 +26,11 @@
     }
   },
   "TASK_CRAWL_SITE": {
-    "instillShortDescription": "Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve titles and links from other pages. Please notice that the crawler will not fetch the content of the pages. If you want to scrape the content of the pages, please use the `TASK_SCRAPE_PAGE`.",
+    "instillShortDescription": "This task involves systematically navigating through a website, starting from a designated page (typically the homepage), and following internal links to discover and retrieve page titles and URLs. Note that this process only gathers links and titles from multiple pages; it does not extract the content of the pages themselves. If you need to collect specific content from individual pages, please use the [Scrape Page](#scrape-page) task instead.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
-        "root-url": {
+        "url": {
           "description": "The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on.",
           "instillAcceptFormats": [
             "string"
@@ -42,7 +42,7 @@
             "reference",
             "template"
           ],
-          "title": "Root URL",
+          "title": "URL",
           "type": "string"
         },
         "allowed-domains": {
@@ -138,7 +138,7 @@
     }
   },
   "TASK_SCRAPE_SITEMAP": {
-    "instillShortDescription": "Scrape the sitemap information",
+    "instillShortDescription": "This task extracts data directly from a website’s sitemap. A sitemap is typically an XML file that lists all URLs and other relevant metadata, providing a structured overview of the site’s pages. This method efficiently gathers key information from the sitemap without navigating through the site’s internal pages.",
     "input": {
       "description": "The URL contains sitemap",
       "instillUIOrder": 0,
@@ -154,7 +154,7 @@
             "reference",
             "template"
           ],
-          "title": "Sitemap URL",
+          "title": "URL",
           "type": "string"
         }
       },
@@ -221,12 +221,12 @@
     }
   },
   "TASK_SCRAPE_PAGE": {
-    "instillShortDescription": "Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).",
+    "instillShortDescription": "This task focuses on extracting specific data from a single targeted webpage by parsing its HTML structure. Unlike crawling, which navigates across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`. Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
         "url": {
-          "description": "The URL to be scrape the webpage contents.",
+          "description": "The URL to scrape the webpage contents.",
           "instillAcceptFormats": [
             "string"
           ],

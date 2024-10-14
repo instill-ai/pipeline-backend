@@ -25,14 +25,14 @@ The component definition and tasks are defined in the [definition.json](https://
 
 ### Crawl Site
 
-Crawling involves navigating through the website, starting from a designated page (often the homepage) and systematically following links to explore and retrieve titles and links from other pages. Please notice that the crawler will not fetch the content of the pages. If you want to scrape the content of the pages, please use the `TASK_SCRAPE_PAGE`.
+This task involves systematically navigating through a website, starting from a designated page (typically the homepage), and following internal links to discover and retrieve page titles and URLs. Note that this process only gathers links and titles from multiple pages; it does not extract the content of the pages themselves. If you need to collect specific content from individual pages, please use the [Scrape Page](#scrape-page) task instead.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRAWL_SITE` |
-| Root URL (required) | `root-url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
+| URL | `url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
 | Allowed Domains | `allowed-domains` | array[string] | A list of domains that are allowed to be scraped. If empty, all domains are allowed. |
 | Max Number of Pages (required) | `max-k` | integer | Max-K specifies the maximum number of pages to return. If max-k is set to 0, all available pages will be returned, up to a maximum of 100. If max-k is set to a positive number, the result will include up to max-k pages, but no more than that. |
 | Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. |
@@ -67,14 +67,14 @@ Crawling involves navigating through the website, starting from a designated pag
 
 ### Scrape Page
 
-Scraping involves extracting specific data from a targeted webpage by parsing its HTML structure. Unlike crawling, which involves navigating across multiple pages, scraping focuses on a single page to retrieve only the relevant information. Once the specific content is scraped, the next step is manipulating it using [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of only-main-content, remove-tags, and only-include-tags. Please check the [jQuery Syntax Examples](#jquery-syntax-examples).
+This task focuses on extracting specific data from a single targeted webpage by parsing its HTML structure. Unlike crawling, which navigates across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`. Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SCRAPE_PAGE` |
-| URL (required) | `url` | string | The URL to be scrape the webpage contents. |
+| URL (required) | `url` | string | The URL to scrape the webpage contents. |
 | Include HTML | `include-html` | boolean | Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true. |
 | Only Main Content | `only-main-content` | boolean | Only return the main content of the page by excluding the content of the tag of header, nav, footer. |
 | Remove Tags | `remove-tags` | array[string] | A list of tags, classes, and ids to remove from the output. You can use [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) to remove data. If empty, no tags will be removed. Example: 'script, .ad, #footer'. Please check the [jQuery Syntax Examples](#jquery-syntax-examples). |
@@ -140,7 +140,7 @@ Scraping involves extracting specific data from a targeted webpage by parsing it
 
 
 #### About Dynamic Content
-`TASK_SCRAPE_PAGE` supports to fetch dynamic content from web pages while simulating user behaviors, such as scrolling down. The initial implementation includes the following capabilities:
+`TASK_SCRAPE_PAGE` supports fetching dynamic content from web pages by simulating user behaviours, such as scrolling down. The initial implementation includes the following capabilities:
 
 Scrolling:
 - Mimics user scrolling down the page to load additional content dynamically.
@@ -150,18 +150,18 @@ Future enhancements will include additional user interactions, such as:
 - Taking Screenshots: Capture screenshots of the current view.
 - Keyboard Actions: Simulate key presses and other keyboard interactions.
 
-This function aims to provide a robust framework for interacting with web pages and extracting dynamic content effectively.
+`TASK_SCRAPE_PAGE` aims to provide a robust framework for interacting with web pages and extracting dynamic content effectively.
 
 ### Scrape Sitemap
 
-Scrape the sitemap information
+This task extracts data directly from a website’s sitemap. A sitemap is typically an XML file that lists all URLs and other relevant metadata, providing a structured overview of the site’s pages. This method efficiently gathers key information from the sitemap without navigating through the site’s internal pages.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SCRAPE_SITEMAP` |
-| Sitemap URL (required) | `url` | string | The URL of the sitemap to scrape |
+| URL (required) | `url` | string | The URL of the sitemap to scrape |
 </div>
 
 
