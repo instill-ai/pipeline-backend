@@ -10,7 +10,8 @@
     "TASK_TEXT_GENERATION_CHAT",
     "TASK_TEXT_TO_IMAGE",
     "TASK_VISUAL_QUESTION_ANSWERING",
-    "TASK_CHAT"
+    "TASK_CHAT",
+    "TASK_EMBEDDING"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/ai/instill-model",
