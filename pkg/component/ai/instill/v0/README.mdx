@@ -626,13 +626,49 @@ Input parameter.
 </div>
 </details>
 
+<details>
+<summary>The <code>embeddings</code> Object </summary>
 
+<h4 id="embedding-embeddings">Embeddings</h4>
+
+`embeddings` must fulfill one of the following schemas:
+
+<h5 id="embedding-text"><code>Text</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Text Content | `text` | string |  When the input is text, the raw text is tokenized and processed into a dense, fixed-length vector that captures semantic information such as word meanings and relationships. These text embeddings enable tasks like sentiment analysis, search, or classification.  |
+| Text | `type` | string |  Must be `"text"`   |
+</div>
+
+<h5 id="embedding-image-url"><code>Image URL</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Image URL | `image-url` | string |  When the input is an image from a URL, the image is first fetched from the URL and then decoded into its original format. It is then processed into a fixed-length vector representing essential visual features like shapes and colors. These image embeddings are useful for tasks like image classification or similarity search, providing structured numerical data for complex visual inputs.  |
+| Image URL | `type` | string |  Must be `"image-url"`   |
+</div>
+
+<h5 id="embedding-image-base64"><code>Image Base64</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Image File | `image-base64` | string |  When the input is an image in base64 format, the base64-encoded data is first decoded into its original image form. The image is then processed and transformed into a dense, fixed-length numerical vector, capturing key visual features like shapes, colors, or textures.  |
+| Image File | `type` | string |  Must be `"image-base64"`   |
+</div>
+</details>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Data](#embedding-data) (optional) | `data` | object | Output data. |
+| [Data](#embedding-data) | `data` | object | Output data. |
 </div>
 
 <details>

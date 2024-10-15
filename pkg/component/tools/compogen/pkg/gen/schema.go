@@ -15,6 +15,7 @@ type property struct {
 	Items struct {
 		Type       string              `json:"type"`
 		Properties map[string]property `json:"properties" validate:"omitempty,dive"`
+		OneOf []objectSchema `json:"oneOf" validate:"dive"`
 	} `json:"items"`
 
 	Properties map[string]property `json:"properties" validate:"omitempty,dive"`
