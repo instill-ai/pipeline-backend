@@ -157,6 +157,7 @@
                           "instillUIOrder": 1
                         }
                       },
+                      "title": "Text",
                       "required": [
                         "text",
                         "type"
@@ -181,6 +182,7 @@
                           "instillUIOrder": 1
                         }
                       },
+                      "title": "Image URL",
                       "required": [
                         "image-url",
                         "type"
@@ -205,6 +207,7 @@
                           "instillUIOrder": 1
                         }
                       },
+                      "title": "Image Base64",
                       "required": [
                         "image-base64",
                         "type"
