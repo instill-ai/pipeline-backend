@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.43.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.0-beta...v0.43.1-beta) (2024-10-15)
+
+
+### Bug Fixes
+
+* **web:** fix bug ([#742](https://github.com/instill-ai/pipeline-backend/issues/742)) ([6dbaf6e](https://github.com/instill-ai/pipeline-backend/commit/6dbaf6ee1bcf26cea44ded69ecfe69d5495315a8))
+
 ## [0.43.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.42.2-beta...v0.43.0-beta) (2024-10-15)
 
 
