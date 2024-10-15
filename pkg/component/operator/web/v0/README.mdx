@@ -32,7 +32,7 @@ This task involves systematically navigating through a website, starting from a 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CRAWL_SITE` |
-| URL | `url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
+| URL (required) | `url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
 | Allowed Domains | `allowed-domains` | array[string] | A list of domains that are allowed to be scraped. If empty, all domains are allowed. |
 | Max Number of Pages (required) | `max-k` | integer | Max-K specifies the maximum number of pages to return. If max-k is set to 0, all available pages will be returned, up to a maximum of 100. If max-k is set to a positive number, the result will include up to max-k pages, but no more than that. |
 | Timeout | `timeout` | integer | The time to wait for the page to load in milliseconds. Min 0, Max 60000. |

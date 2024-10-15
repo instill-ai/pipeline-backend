@@ -110,7 +110,7 @@
         }
       },
       "required": [
-        "root-url",
+        "url",
         "max-k"
       ],
       "title": "Input",
