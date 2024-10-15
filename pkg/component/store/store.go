@@ -26,7 +26,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/github/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/googlesearch/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/hubspot/v0"
-	"github.com/instill-ai/pipeline-backend/pkg/component/application/instillapp/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/jira/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/numbers/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/application/slack/v0"
@@ -172,7 +171,7 @@ func Init(
 			compStore.Import(conn)
 		}
 
-		compStore.Import(instillapp.Init(baseComp))
+		// compStore.Import(instillapp.Init(baseComp))
 		compStore.Import(bigquery.Init(baseComp))
 		compStore.Import(googlecloudstorage.Init(baseComp))
 		compStore.Import(googlesearch.Init(baseComp))
