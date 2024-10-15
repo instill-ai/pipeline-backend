@@ -26,8 +26,8 @@ type PageInfo struct {
 
 // CrawlWebsiteInput defines the input of the scrape website task
 type CrawlWebsiteInput struct {
-	// RootURL: The URL of the website to scrape.
-	RootURL string `json:"root-url"`
+	// URL: The URL of the website to scrape.
+	URL string `json:"url"`
 	// AllowedDomains: The list of allowed domains to scrape.
 	AllowedDomains []string `json:"allowed-domains"`
 	// MaxK: The maximum number of pages to scrape.
@@ -137,10 +137,10 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 	})
 
 	// Start scraping
-	if !strings.HasPrefix(inputStruct.RootURL, "http://") && !strings.HasPrefix(inputStruct.RootURL, "https://") {
-		inputStruct.RootURL = "https://" + inputStruct.RootURL
+	if !strings.HasPrefix(inputStruct.URL, "http://") && !strings.HasPrefix(inputStruct.URL, "https://") {
+		inputStruct.URL = "https://" + inputStruct.URL
 	}
-	_ = c.Visit(inputStruct.RootURL)
+	_ = c.Visit(inputStruct.URL)
 	c.Wait()
 
 	outputStruct, err := base.ConvertToStructpb(output)
