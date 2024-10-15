@@ -281,6 +281,11 @@ func HandleTrigger(mux *runtime.ServeMux, client pb.PipelinePublicServiceClient,
 			return
 		}
 	}
+	// When using `streamHandler`, we should directly close the response once
+	// the event stream is completed to prevent redundant events.
+	if sh != nil {
+		return
+	}
 
 	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 
@@ -593,6 +598,11 @@ func HandleTriggerRelease(mux *runtime.ServeMux, client pb.PipelinePublicService
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
+	}
+	// When using `streamHandler`, we should directly close the response once
+	// the event stream is completed to prevent redundant events.
+	if sh != nil {
+		return
 	}
 
 	annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
