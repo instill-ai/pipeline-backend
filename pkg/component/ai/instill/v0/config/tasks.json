@@ -618,7 +618,8 @@
                         "instillAcceptFormats": [
                           "string"
                         ],
-                        "type": "string"
+                        "type": "string",
+                        "instillUIOrder": 1
                       },
                       "type": {
                         "title": "Text",
@@ -628,9 +629,11 @@
                           "string"
                         ],
                         "type": "string",
-                        "const": "text"
+                        "const": "text",
+                        "instillUIOrder": 0
                       }
                     },
+                    "title": "Text",
                     "required": [
                       "text",
                       "type"
@@ -646,7 +649,8 @@
                         "instillAcceptFormats": [
                           "string"
                         ],
-                        "type": "string"
+                        "type": "string",
+                        "instillUIOrder": 1
                       },
                       "type": {
                         "title": "Image URL",
@@ -656,9 +660,11 @@
                           "string"
                         ],
                         "type": "string",
-                        "const": "image-url"
+                        "const": "image-url",
+                        "instillUIOrder": 0
                       }
                     },
+                    "title": "Image URL",
                     "required": [
                       "image-url",
                       "type"
@@ -674,7 +680,8 @@
                         "instillAcceptFormats": [
                           "image/*"
                         ],
-                        "type": "string"
+                        "type": "string",
+                        "instillUIOrder": 1
                       },
                       "type": {
                         "title": "Image File",
@@ -684,15 +691,24 @@
                           "string"
                         ],
                         "type": "string",
-                        "const": "image-base64"
+                        "const": "image-base64",
+                        "instillUIOrder": 0
                       }
                     },
+                    "title": "Image Base64",
                     "required": [
                       "image-base64",
                       "type"
                     ]
                   }
+                ],
+                "title": "Embedding",
+                "description": "Input data to be embedded.",
+                "instillUIOrder": 0,
+                "required": [
+                  "type"
                 ]
+
               },
               "description": "List of input data to be embedded.",
               "instillUIOrder": 1
@@ -764,7 +780,8 @@
             }
           },
           "title": "Parameter",
-          "instillUIOrder": 1
+          "instillUIOrder": 1,
+          "required": []
         }
       },
       "required": [
@@ -835,7 +852,10 @@
           "instillUIOrder": 0,
           "title": "Data"
         }
-      }
+      },
+      "required": [
+        "data"
+      ]
     }
   }
 }
