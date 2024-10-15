@@ -172,7 +172,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	}, nil)
 
 	mockMinio := mock.NewMinioIMock(mc)
-	mockMinio.GetFilesByPathsMock.Return(nil, nil)
+	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some errors"))
 
 	for i, testCase := range testCases {
 		c.Run(fmt.Sprintf("get pipeline run with permissions test case %d %s", i+1, testCase.description), func(c *qt.C) {
@@ -396,7 +396,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	}, nil)
 
 	mockMinio := mock.NewMinioIMock(mc)
-	mockMinio.GetFilesByPathsMock.Return(nil, nil)
+	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some error happens"))
 
 	for i, testCase := range testCases {
 		c.Run(fmt.Sprintf("get pipeline run with permissions test case %d %s", i+1, testCase.description), func(c *qt.C) {
