@@ -172,7 +172,8 @@ func CompileInstillAcceptFormats(sch *structpb.Struct) error {
 			itemInstillAcceptFormats := []interface{}{}
 			for _, item := range v.GetListValue().AsSlice() {
 				if strings.HasPrefix(item.(string), "array:") {
-					itemInstillAcceptFormats = append(itemInstillAcceptFormats, strings.Split(item.(string), ":")[1])
+					_, itemInstillAcceptFormat, _ := strings.Cut(item.(string), ":")
+					itemInstillAcceptFormats = append(itemInstillAcceptFormats, itemInstillAcceptFormat)
 				}
 			}
 			if len(itemInstillAcceptFormats) > 0 {
@@ -201,7 +202,7 @@ func CompileInstillFormat(sch *structpb.Struct) error {
 		}
 		if k == "instillFormat" {
 			if strings.HasPrefix(v.GetStringValue(), "array:") {
-				itemInstillFormat := strings.Split(v.GetStringValue(), ":")[1]
+				_, itemInstillFormat, _ := strings.Cut(v.GetStringValue(), ":")
 				sch.Fields["items"] = structpb.NewStructValue(&structpb.Struct{Fields: make(map[string]*structpb.Value)})
 				sch.Fields["items"].GetStructValue().Fields["instillFormat"], err = structpb.NewValue(itemInstillFormat)
 				if err != nil {
