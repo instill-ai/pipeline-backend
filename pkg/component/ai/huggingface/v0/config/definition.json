@@ -19,7 +19,7 @@
     "TASK_AUDIO_CLASSIFICATION"
   ],
   "custom": false,
-  "documentationUrl": "https://www.instill.tech/docs/component/ai/huggingface",
+  "documentationUrl": "https://www.instill.tech/docs/component/ai/hugging-face",
   "icon": "assets/hugging-face.svg",
   "iconUrl": "",
   "id": "hugging-face",

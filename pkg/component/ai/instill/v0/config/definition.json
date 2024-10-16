@@ -13,7 +13,7 @@
     "TASK_CHAT"
   ],
   "custom": false,
-  "documentationUrl": "https://www.instill.tech/docs/component/ai/instill",
+  "documentationUrl": "https://www.instill.tech/docs/component/ai/instill-model",
   "icon": "assets/instill-model.svg",
   "iconUrl": "",
   "id": "instill-model",

@@ -78,6 +78,7 @@ type Service interface {
 
 	ListPipelineRuns(ctx context.Context, req *pb.ListPipelineRunsRequest, filter filtering.Filter) (*pb.ListPipelineRunsResponse, error)
 	ListComponentRuns(ctx context.Context, req *pb.ListComponentRunsRequest, filter filtering.Filter) (*pb.ListComponentRunsResponse, error)
+	ListPipelineRunsByRequester(ctx context.Context, req *pb.ListPipelineRunsByCreditOwnerRequest) (*pb.ListPipelineRunsByCreditOwnerResponse, error)
 
 	GetIntegration(_ context.Context, id string, _ pb.View) (*pb.Integration, error)
 	ListIntegrations(context.Context, *pb.ListIntegrationsRequest) (*pb.ListIntegrationsResponse, error)
@@ -106,6 +107,7 @@ type service struct {
 	minioClient              minio.MinioI
 	memory                   memory.MemoryStore
 	log                      *zap.Logger
+	workerUID                uuid.UUID
 }
 
 // NewService initiates a service instance
@@ -117,6 +119,9 @@ func NewService(
 	c Converter,
 	m mgmtpb.MgmtPrivateServiceClient,
 	minioClient minio.MinioI,
+	cs *componentstore.Store,
+	memory memory.MemoryStore,
+	workerUID uuid.UUID,
 ) Service {
 	zapLogger, _ := logger.GetZapLogger(context.Background())
 
@@ -125,11 +130,12 @@ func NewService(
 		redisClient:              rc,
 		temporalClient:           t,
 		mgmtPrivateServiceClient: m,
-		component:                componentstore.Init(zapLogger, nil, nil),
+		component:                cs,
 		aclClient:                acl,
 		converter:                c,
 		minioClient:              minioClient,
-		memory:                   memory.NewMemoryStore(rc),
+		memory:                   memory,
 		log:                      zapLogger,
+		workerUID:                workerUID,
 	}
 }

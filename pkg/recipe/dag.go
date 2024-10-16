@@ -219,6 +219,8 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 			switch v := v.(type) {
 			case *data.String:
 				val += v.GetString()
+			case *data.Number:
+				val += strconv.FormatFloat(v.GetFloat(), 'f', -1, 64)
 			default:
 				b, err := json.Marshal(v)
 				if err != nil {

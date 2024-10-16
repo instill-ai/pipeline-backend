@@ -1,8 +1,8 @@
 {
   "availableTasks": [
-    "TASK_CRAWL_WEBSITE",
-    "TASK_SCRAPE_SITEMAP",
-    "TASK_SCRAPE_WEBPAGE"
+    "TASK_CRAWL_SITE",
+    "TASK_SCRAPE_PAGE",
+    "TASK_SCRAPE_SITEMAP"
   ],
   "documentationUrl": "https://www.instill.tech/docs/component/operator/web",
   "icon": "assets/web.svg",
@@ -11,7 +11,7 @@
   "title": "Web",
   "type": "COMPONENT_TYPE_OPERATOR",
   "uid": "98909958-db7d-4dfe-9858-7761904be17e",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "sourceUrl": "https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/web/v0",
   "description": "Scrape websites",
   "releaseStage": "RELEASE_STAGE_ALPHA"

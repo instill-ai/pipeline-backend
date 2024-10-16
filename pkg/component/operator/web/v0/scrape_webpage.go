@@ -160,44 +160,6 @@ func scrollDown(ctx context.Context, timeout int) chromedp.Action {
 	})
 }
 
-func getRemovedTagsHTML(doc *goquery.Document, input ScrapeWebpageInput) string {
-	if input.OnlyMainContent {
-		removeSelectors := []string{"header", "nav", "footer"}
-		for _, selector := range removeSelectors {
-			doc.Find(selector).Remove()
-		}
-	}
-
-	if input.RemoveTags != nil || len(input.RemoveTags) > 0 {
-		for _, tag := range input.RemoveTags {
-			doc.Find(tag).Remove()
-		}
-	}
-
-	if len(input.OnlyIncludeTags) == 0 {
-		html, err := doc.Html()
-		if err != nil {
-			log.Println("error getting HTML: ", err)
-			return ""
-		}
-		return html
-	}
-
-	combinedHTML := ""
-
-	tags := buildTags(input.OnlyIncludeTags)
-	doc.Find(tags).Each(func(i int, s *goquery.Selection) {
-		html, err := s.Html()
-		if err != nil {
-			log.Println("error getting HTML: ", err)
-			combinedHTML += "\n"
-		}
-		combinedHTML += fmt.Sprintf("<%s>%s</%s>\n", s.Nodes[0].Data, html, s.Nodes[0].Data)
-	})
-
-	return combinedHTML
-}
-
 func buildTags(tags []string) string {
 	tagsString := ""
 	for i, tag := range tags {

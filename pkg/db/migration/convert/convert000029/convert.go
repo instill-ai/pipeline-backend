@@ -8,13 +8,13 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert"
 )
 
 const batchSize = 100
 
 type ConvertToArtifactType struct {
-	DB     *gorm.DB
-	Logger *zap.Logger
+	convert.Basic
 }
 
 func (c *ConvertToArtifactType) Migrate() error {

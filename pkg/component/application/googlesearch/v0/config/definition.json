@@ -3,7 +3,7 @@
     "TASK_SEARCH"
   ],
   "custom": false,
-  "documentationUrl": "https://www.instill.tech/docs/component/application/googlesearch",
+  "documentationUrl": "https://www.instill.tech/docs/component/application/google-search",
   "icon": "assets/google-search.svg",
   "iconUrl": "",
   "id": "google-search",

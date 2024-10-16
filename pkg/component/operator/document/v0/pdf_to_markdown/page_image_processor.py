@@ -48,7 +48,7 @@ class PageImageProcessor:
         # (x0, top, x1, bottom)
         blocks = self.calculate_blank_blocks(page=page)
 
-        for _, block in enumerate(blocks):
+        for i, block in enumerate(blocks):
             block_dict = self.get_block_dict(block)
             block_image = {
                 "page_number": int,
@@ -71,7 +71,11 @@ class PageImageProcessor:
             if self.low_possibility_to_be_image(block=block):
                 continue
 
-            cropped_page = page.crop(block)
+            try:
+                cropped_page = page.crop(block)
+            except Exception as e:
+                self.errors.append(f"image {i} got error: {str(e)}, do not convert the images.")
+                continue
 
             im = cropped_page.to_image(resolution=200)
 

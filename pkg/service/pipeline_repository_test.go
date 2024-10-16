@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	qt "github.com/frankban/quicktest"
 	"github.com/go-redis/redismock/v9"
 	"github.com/gofrs/uuid"
 	"github.com/gojuno/minimock/v3"
@@ -20,6 +19,8 @@ import (
 	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
 
+	qt "github.com/frankban/quicktest"
+
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
@@ -27,7 +28,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
-
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -172,7 +172,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 	}, nil)
 
 	mockMinio := mock.NewMinioIMock(mc)
-	mockMinio.GetFilesByPathsMock.Return(nil, nil)
+	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some errors"))
 
 	for i, testCase := range testCases {
 		c.Run(fmt.Sprintf("get pipeline run with permissions test case %d %s", i+1, testCase.description), func(c *qt.C) {
@@ -190,6 +190,9 @@ func TestService_ListPipelineRuns(t *testing.T) {
 				mockConverter,
 				mgmtPrivateClient,
 				mockMinio,
+				nil,
+				nil,
+				uuid.UUID{},
 			)
 
 			ctx := context.Background()
@@ -393,7 +396,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 	}, nil)
 
 	mockMinio := mock.NewMinioIMock(mc)
-	mockMinio.GetFilesByPathsMock.Return(nil, nil)
+	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some error happens"))
 
 	for i, testCase := range testCases {
 		c.Run(fmt.Sprintf("get pipeline run with permissions test case %d %s", i+1, testCase.description), func(c *qt.C) {
@@ -411,6 +414,9 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 				mockConverter,
 				mgmtPrivateClient,
 				mockMinio,
+				nil,
+				nil,
+				uuid.UUID{},
 			)
 
 			ctx := context.Background()

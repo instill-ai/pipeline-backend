@@ -56,9 +56,8 @@ const ContentTypeJSON = "application/json"
 // with its global secret when it finds this keyword.
 const GlobalSecretKey = "INSTILL_SECRET"
 
-// The ID and UID within the preset namespace must consistently match between
+// The ID within the preset namespace must consistently match between
 // mgmt and pipeline-backend.
 const (
-	PresetNamespaceID  = "preset"
-	PresetNamespaceUID = "63196cec-1c95-49e8-9bf6-9f9497a15f72"
+	PresetNamespaceID = "preset"
 )

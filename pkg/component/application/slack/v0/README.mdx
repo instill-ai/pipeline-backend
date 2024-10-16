@@ -32,10 +32,24 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Token (required) | `token` | string | Fill in your Slack app access token. For more information about how to access to create app tokens, please refer to the Slack API documentation.  |
+| Bot OAuth Token (required) | `bot-token` | string | Token associated to the application bot  |
+| User OAuth Token | `user-token` | string | Token to act on behalf of a Slack user  |
 
 </div>
 
+### Connecting through a Slack App
+
+The Slack component connects with your workspace via a [Slack
+App](https://api.slack.com/docs/apps). In order to read / write messages from / to Slack, you'll need to:
+
+- [Add the
+  app](https://slack.com/intl/en-gb/help/articles/202035138-Add-apps-to-your-Slack-workspace)
+  to your workspace.
+- Add the app to the channels you want to interact with.
+
+On **Instill Cloud**, the `instill-ai` app will be used fo connect with Slack.
+On **Instill Core**, you can provide the client ID and client secret of your
+app in order to connect with your workspace.
 
 
 
@@ -50,8 +64,8 @@ Get the latest message since specific date
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_MESSAGE` |
-| Channel Name (required) | `channel-name` | string | A channel name display in Slack |
-| Start to read date | `start-to-read-date` | string | earliest date in all read messages |
+| Channel Name (required) | `channel-name` | string | Channel name, as displayed on Slack |
+| Start to read date | `start-to-read-date` | string | Date (in `YYYY-MM-DD` format) from which messages will start to be fetched |
 </div>
 
 
@@ -105,8 +119,9 @@ send message to a specific channel
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_WRITE_MESSAGE` |
-| Channel Name (required) | `channel-name` | string | A channel name display in Slack |
-| Message (required) | `message` | string | message to be sent to the target channel |
+| Channel Name (required) | `channel-name` | string | Channel name, as displayed on Slack |
+| Message (required) | `message` | string | The message to be sent to the target channel |
+| Send As User | `as-user` | boolean | Send the message on behalf of the user identified by the <code>setup.user-token</code> field |
 </div>
 
 
@@ -118,5 +133,5 @@ send message to a specific channel
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Result | `result` | string | result for sending message |
+| Result | `result` | string | Result of the message delivery |
 </div>

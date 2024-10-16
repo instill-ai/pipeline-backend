@@ -3,7 +3,7 @@
     "TASK_READ_CHAT_HISTORY",
     "TASK_WRITE_CHAT_MESSAGE"
   ],
-  "documentationUrl": "https://www.instill.tech/docs/component/application/instillapp",
+  "documentationUrl": "https://www.instill.tech/docs/component/application/instill-app",
   "icon": "assets/instill-app.svg",
   "id": "instill-app",
   "public": true,

@@ -1,24 +1,44 @@
-## Example Recipes
 
-Recipe for the [Web scraper](https://instill.tech/instill-ai/pipelines/web-scraper/playground) pipeline.
+
+## Example Recipes
 
 ```yaml
 version: v1beta
-component:
-  scraper:
-    type: web
-    task: TASK_SCRAPE_WEBPAGE
-    input:
-      include-html: false
-      only-main-content: true
-      url: ${variable.url}
+
 variable:
   url:
     title: url
-    description: The url of the web you want to scrape
     instill-format: string
+
+component:
+  crawler:
+    type: web
+    input:
+      root-url: ${variable.url}
+      allowed-domains:
+      max-k: 10
+      timeout: 0
+      max-depth: 0
+    condition:
+    task: TASK_CRAWL_SITE
+
+  scraper:
+    type: web
+    input:
+      url: ${crawler.output.pages[0].link}
+      include-html: false
+      only-main-content: true
+      remove-tags:
+      only-include-tags:
+      timeout: 1000
+    condition:
+    task: TASK_SCRAPE_PAGE
+
 output:
   markdown:
-    title: markdown
+    title: Markdown
     value: ${scraper.output.markdown}
+  links:
+    title: links
+    value: ${scraper.output.links-on-page}
 ```

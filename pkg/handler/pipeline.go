@@ -26,12 +26,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/x/checkfield"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-
-	"github.com/instill-ai/x/checkfield"
-
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -1993,6 +1991,23 @@ func (h *PublicHandler) ListComponentRuns(ctx context.Context, req *pb.ListCompo
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to list component runs. error: %s", err.Error()))
 	}
+
+	return resp, nil
+}
+
+// todo: rename function to ListPipelineRunsByRequester in protobuf and update message names here
+func (h *PublicHandler) ListPipelineRunsByCreditOwner(ctx context.Context, req *pb.ListPipelineRunsByCreditOwnerRequest) (*pb.ListPipelineRunsByCreditOwnerResponse, error) {
+	logger, _ := logger.GetZapLogger(ctx)
+	logUUID, _ := uuid.NewV4()
+	logger.Info("ListPipelineRunsByRequester starts", zap.String("logUUID", logUUID.String()))
+
+	resp, err := h.service.ListPipelineRunsByRequester(ctx, req)
+	if err != nil {
+		logger.Error("failed in ListPipelineRunsByRequester", zap.String("logUUID", logUUID.String()), zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to list pipeline runs")
+	}
+
+	logger.Info("ListPipelineRunsByRequester finished", zap.String("logUUID", logUUID.String()))
 
 	return resp, nil
 }

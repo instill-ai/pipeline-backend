@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
+	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/x/paginate"
@@ -222,6 +223,13 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 		if req.GetView() != pb.ComponentDefinition_VIEW_FULL {
 			def.Spec = nil
 		}
+
+		// Temporary solution to filter out the instill-app component for local-ce:dev edition
+		// In the future the non-CE definitions shouldn't be in the CE repositories and Cloud should extend the CE component store to initialize the private components.
+		if skipComponentInCE(def.GetId()) {
+			continue
+		}
+
 		defs[i] = def
 	}
 
@@ -233,6 +241,17 @@ func (s *service) ListComponentDefinitions(ctx context.Context, req *pb.ListComp
 	}
 
 	return resp, nil
+}
+
+var skipComponentsInCE = map[string]bool{
+	"instill-app": true,
+}
+
+func skipComponentInCE(componentID string) bool {
+	if skipComponentsInCE[componentID] && config.Config.Server.Edition == "local-ce:dev" {
+		return true
+	}
+	return false
 }
 
 var implementedReleaseStages = map[pb.ComponentDefinition_ReleaseStage]bool{

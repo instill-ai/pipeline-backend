@@ -28,9 +28,10 @@ func (w *worker) writeNewDataPoint(ctx context.Context, data utils.PipelineUsage
 }
 
 const (
-	rangeStart = "start"
-	rangeStop  = "stop"
-	rangeStep  = "step"
+	rangeStart             = "start"
+	rangeStop              = "stop"
+	rangeStep              = "step"
+	defaultRangeIdentifier = "i"
 )
 
 // setIteratorIndex converts the iterator index identifier into a numeric
@@ -38,7 +39,7 @@ const (
 // `${variable.array[0]}`.
 func setIteratorIndex(v data.Value, identifier string, index int) data.Value {
 	if identifier == "" {
-		identifier = "i"
+		identifier = defaultRangeIdentifier
 	}
 	switch v := v.(type) {
 	case *data.String:

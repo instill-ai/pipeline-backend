@@ -22,7 +22,7 @@
       "instillUIOrder": 0,
       "properties": {
         "channel-name": {
-          "description": "A channel name display in Slack",
+          "description": "Channel name, as displayed on Slack",
           "instillAcceptFormats": [
             "string"
           ],
@@ -37,7 +37,7 @@
           "type": "string"
         },
         "start-to-read-date": {
-          "description": "earliest date in all read messages",
+          "description": "Date (in `YYYY-MM-DD` format) from which messages will start to be fetched",
           "instillAcceptFormats": [
             "string"
           ],
@@ -162,7 +162,7 @@
       "instillUIOrder": 0,
       "properties": {
         "channel-name": {
-          "description": "A channel name display in Slack",
+          "description": "Channel name, as displayed on Slack",
           "instillAcceptFormats": [
             "string"
           ],
@@ -177,7 +177,7 @@
           "type": "string"
         },
         "message": {
-          "description": "message to be sent to the target channel",
+          "description": "The message to be sent to the target channel",
           "instillAcceptFormats": [
             "string"
           ],
@@ -190,6 +190,16 @@
           ],
           "title": "Message",
           "type": "string"
+        },
+        "as-user": {
+          "default": false,
+          "description": "Send the message on behalf of the user identified by the <code>setup.user-token</code> field",
+          "instillUIOrder": 2,
+          "title": "Send As User",
+          "instillFormat": "boolean",
+          "instillAcceptFormats": ["boolean"],
+          "instillUpstreamTypes": ["value"],
+          "type": "boolean"
         }
       },
       "required": [
@@ -204,7 +214,7 @@
       "instillUIOrder": 0,
       "properties": {
         "result": {
-          "description": "result for sending message",
+          "description": "Result of the message delivery",
           "instillEditOnNodeFields": [],
           "instillUIOrder": 0,
           "required": [],

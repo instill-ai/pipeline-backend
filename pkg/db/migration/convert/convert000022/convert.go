@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
@@ -12,8 +13,7 @@ import (
 const batchSize = 100
 
 type ConvertWebsiteToWebConverter struct {
-	DB     *gorm.DB
-	Logger *zap.Logger
+	convert.Basic
 }
 
 func (c *ConvertWebsiteToWebConverter) Migrate() error {

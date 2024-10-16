@@ -28,6 +28,7 @@ import (
 	"github.com/instill-ai/x/zapadapter"
 
 	database "github.com/instill-ai/pipeline-backend/pkg/db"
+	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -98,6 +99,10 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 	if mgmtPrivateServiceClientConn != nil {
 		defer mgmtPrivateServiceClientConn.Close()
 	}
+	presetOrgResp, err := mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtpb.GetOrganizationAdminRequest{OrganizationId: constant.PresetNamespaceID})
+	if err != nil {
+		return err
+	}
 
 	converter := service.NewConverter(mgmtPrivateServiceClient, redisClient, &aclClient, repo, "")
 
@@ -120,13 +125,13 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 	ns := resource.Namespace{
 		NsType: resource.Organization,
 		NsID:   constant.PresetNamespaceID,
-		NsUID:  uuid.FromStringOrNil(constant.PresetNamespaceUID),
+		NsUID:  uuid.FromStringOrNil(presetOrgResp.Organization.Uid),
 	}
 	pageToken := ""
 	for {
 		//nolint:staticcheck
 		resp, err := cloudPipelineClient.ListOrganizationPipelines(ctx, &pipelinepb.ListOrganizationPipelinesRequest{
-			Parent:    fmt.Sprintf("organizations/%s", constant.PresetNamespaceUID),
+			Parent:    fmt.Sprintf("organizations/%s", constant.PresetNamespaceID),
 			View:      pipelinepb.Pipeline_VIEW_RECIPE.Enum(),
 			PageToken: &pageToken,
 		})
@@ -183,7 +188,7 @@ func DownloadPresetPipelines(ctx context.Context, repo repository.Repository) er
 			for {
 				//nolint:staticcheck
 				releaseResp, err := cloudPipelineClient.ListOrganizationPipelineReleases(ctx, &pipelinepb.ListOrganizationPipelineReleasesRequest{
-					Parent:    fmt.Sprintf("organizations/%s/pipelines/%s", constant.PresetNamespaceUID, dbPipeline.ID),
+					Parent:    fmt.Sprintf("organizations/%s/pipelines/%s", constant.PresetNamespaceID, dbPipeline.ID),
 					View:      pipelinepb.Pipeline_VIEW_RECIPE.Enum(),
 					PageToken: &releasePageToken,
 				})

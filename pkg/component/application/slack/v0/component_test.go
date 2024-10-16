@@ -13,12 +13,12 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
+	"github.com/instill-ai/x/errmsg"
 )
 
 type MockSlackClient struct{}
 
 func (m *MockSlackClient) GetConversations(params *slack.GetConversationsParameters) ([]slack.Channel, string, error) {
-
 	var channels []slack.Channel
 	nextCursor := ""
 	fakeChannel := slack.Channel{
@@ -35,12 +35,10 @@ func (m *MockSlackClient) GetConversations(params *slack.GetConversationsParamet
 }
 
 func (m *MockSlackClient) PostMessage(channelID string, options ...slack.MsgOption) (string, string, error) {
-
 	return "", "", nil
 }
 
 func (m *MockSlackClient) GetConversationHistory(params *slack.GetConversationHistoryParameters) (*slack.GetConversationHistoryResponse, error) {
-
 	fakeResp := slack.GetConversationHistoryResponse{
 		SlackResponse: slack.SlackResponse{
 			Ok: true,
@@ -61,7 +59,6 @@ func (m *MockSlackClient) GetConversationHistory(params *slack.GetConversationHi
 }
 
 func (m *MockSlackClient) GetConversationReplies(params *slack.GetConversationRepliesParameters) ([]slack.Message, bool, string, error) {
-
 	fakeMessages := []slack.Message{
 		{
 			Msg: slack.Msg{
@@ -98,10 +95,6 @@ func (m *MockSlackClient) GetUsersInfo(users ...string) (*[]slack.User, error) {
 	return resp, nil
 }
 
-const (
-	apiKey = "testkey"
-)
-
 func TestComponent_ExecuteWriteTask(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
@@ -109,13 +102,17 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 	component := Init(bc)
 
 	testcases := []struct {
-		name     string
-		input    UserInputWriteTask
-		wantResp WriteTaskResp
-		wantErr  string
+		name       string
+		botClient  SlackClient
+		userClient SlackClient
+		input      UserInputWriteTask
+		wantResp   WriteTaskResp
+		wantErr    string
+		wantErrMsg string
 	}{
 		{
-			name: "ok to write",
+			name:      "ok - as bot",
+			botClient: new(MockSlackClient),
 			input: UserInputWriteTask{
 				ChannelName: "test_channel",
 				Message:     "I am unit test",
@@ -125,28 +122,57 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 			},
 		},
 		{
-			name: "fail to write",
+			name:       "ok - as user",
+			userClient: new(MockSlackClient),
+			input: UserInputWriteTask{
+				ChannelName: "test_channel",
+				Message:     "I am unit test",
+				AsUser:      true,
+			},
+			wantResp: WriteTaskResp{
+				Result: "succeed",
+			},
+		},
+		{
+			name:      "nok - missing user token",
+			botClient: new(MockSlackClient),
+			input: UserInputWriteTask{
+				ChannelName: "test_channel",
+				Message:     "I am unit test",
+				AsUser:      true,
+			},
+			wantErr:    "empty user token",
+			wantErrMsg: "To send messages on behalf of the user, fill the user-token field in the component setup.",
+		},
+		{
+			name:      "nok - missing channel",
+			botClient: new(MockSlackClient),
 			input: UserInputWriteTask{
 				ChannelName: "test_channel_1",
 				Message:     "I am unit test",
 			},
-			wantErr: `there is no match name in slack channel \[test_channel_1\]`,
+			wantErr:    "fetching channel ID: couldn't find channel by name",
+			wantErrMsg: "Couldn't find channel [test_channel_1].",
 		},
 	}
 
 	for _, tc := range testcases {
 		c.Run(tc.name, func(c *qt.C) {
+			setup := new(structpb.Struct)
 
-			setup, err := structpb.NewStruct(map[string]any{
-				"api-key": apiKey,
-			})
-			c.Assert(err, qt.IsNil)
-
-			// It will increase the modification range if we change the input of CreateExecution.
-			// So, we replaced it with the code below to cover the test for taskFunctions.go
+			// It will increase the modification range if we change the input
+			// of CreateExecution. So, we replaced it with the code below to
+			// cover the test for taskFunctions.go
+			x := base.ComponentExecution{
+				Component:       component,
+				SystemVariables: nil,
+				Setup:           setup,
+				Task:            taskWriteMessage,
+			}
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskWriteMessage},
-				client:             &MockSlackClient{},
+				ComponentExecution: x,
+				botClient:          tc.botClient,
+				userClient:         tc.userClient,
 			}
 			e.execute = e.sendMessage
 
@@ -165,6 +191,9 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 				if tc.wantErr != "" {
 					c.Assert(err, qt.ErrorMatches, tc.wantErr)
 				}
+				if tc.wantErrMsg != "" {
+					c.Assert(errmsg.Message(err), qt.Equals, tc.wantErrMsg)
+				}
 			})
 
 			err = e.Execute(ctx, []*base.Job{job})
@@ -175,7 +204,6 @@ func TestComponent_ExecuteWriteTask(t *testing.T) {
 }
 
 func TestComponent_ExecuteReadTask(t *testing.T) {
-
 	c := qt.New(t)
 	ctx := context.Background()
 	bc := base.Component{}
@@ -183,14 +211,15 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 
 	mockDateTime, _ := transformTSToDate("1715159449.399879", time.RFC3339)
 	testcases := []struct {
-		name     string
-		input    UserInputReadTask
-		wantResp ReadTaskResp
-		wantErr  string
+		name       string
+		input      userInputReadTask
+		wantResp   ReadTaskResp
+		wantErr    string
+		wantErrMsg string
 	}{
 		{
 			name: "ok to read",
-			input: UserInputReadTask{
+			input: userInputReadTask{
 				ChannelName:     "test_channel",
 				StartToReadDate: "2024-05-05",
 			},
@@ -218,25 +247,30 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 		},
 		{
 			name: "fail to read",
-			input: UserInputReadTask{
+			input: userInputReadTask{
 				ChannelName: "test_channel_1",
 			},
-			wantErr: `there is no match name in slack channel \[test_channel_1\]`,
+			wantErr:    `fetching channel ID: couldn't find channel by name`,
+			wantErrMsg: "Couldn't find channel [test_channel_1].",
 		},
 	}
 
 	for _, tc := range testcases {
 		c.Run(tc.name, func(c *qt.C) {
-			setup, err := structpb.NewStruct(map[string]any{
-				"api-key": apiKey,
-			})
-			c.Assert(err, qt.IsNil)
+			setup := new(structpb.Struct)
 
-			// It will increase the modification range if we change the input of CreateExecution.
-			// So, we replaced it with the code below to cover the test for taskFunctions.go
+			// It will increase the modification range if we change the input
+			// of CreateExecution. So, we replaced it with the code below to
+			// cover the test for taskFunctions.go
+			x := base.ComponentExecution{
+				Component:       component,
+				SystemVariables: nil,
+				Setup:           setup,
+				Task:            taskReadMessage,
+			}
 			e := &execution{
-				ComponentExecution: base.ComponentExecution{Component: component, SystemVariables: nil, Setup: setup, Task: taskReadMessage},
-				client:             &MockSlackClient{},
+				ComponentExecution: x,
+				botClient:          new(MockSlackClient),
 			}
 			e.execute = e.readMessage
 
@@ -255,13 +289,14 @@ func TestComponent_ExecuteReadTask(t *testing.T) {
 				if tc.wantErr != "" {
 					c.Assert(err, qt.ErrorMatches, tc.wantErr)
 				}
+				if tc.wantErrMsg != "" {
+					c.Assert(errmsg.Message(err), qt.Equals, tc.wantErrMsg)
+				}
 			})
 
 			err = e.Execute(ctx, []*base.Job{job})
 			c.Assert(err, qt.IsNil)
 
 		})
-
 	}
-
 }

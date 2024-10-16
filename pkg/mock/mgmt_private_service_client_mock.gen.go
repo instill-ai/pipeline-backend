@@ -3,14 +3,17 @@
 package mock
 
 import (
-	context "context"
 	"sync"
+
+	context "context"
 	mm_atomic "sync/atomic"
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
-	mm_mgmtv1beta "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
+
 	grpc "google.golang.org/grpc"
+
+	mm_mgmtv1beta "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
 
 // MgmtPrivateServiceClientMock implements mm_mgmtv1beta.MgmtPrivateServiceClient

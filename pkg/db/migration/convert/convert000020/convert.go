@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert"
 
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 )
@@ -18,8 +19,7 @@ const batchSize = 100
 // NamespaceIDMigrator migrate the existing owner field to new namespace_id and
 // namespace_type field.
 type NamespaceIDMigrator struct {
-	DB         *gorm.DB
-	Logger     *zap.Logger
+	convert.Basic
 	MgmtClient mgmtpb.MgmtPrivateServiceClient
 }
 

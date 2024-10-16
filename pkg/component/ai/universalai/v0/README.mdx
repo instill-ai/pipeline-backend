@@ -5,7 +5,7 @@ draft: false
 description: "Learn about how to set up a VDP Universal AI component https://github.com/instill-ai/instill-core"
 ---
 
-The Universal AI component is an AI component that allows users to connect the AI models served on the different platforms with standardized input and output formats..
+The Universal AI component is an AI component that allows users to connect the AI models served on the different platforms with standardized input and output formats.
 It can carry out the following tasks:
 - [Chat](#chat)
 
@@ -32,6 +32,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
+| Model Name (required) | `model` | string | The model to be used. Now, it only supports OpenAI model, and will support more models in the future.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`o1-preview`</li><li>`o1-mini`</li><li>`gpt-4o-mini`</li><li>`gpt-4o`</li><li>`gpt-4o-2024-05-13`</li><li>`gpt-4o-2024-08-06`</li><li>`gpt-4-turbo`</li><li>`gpt-4-turbo-2024-04-09`</li><li>`gpt-4-0125-preview`</li><li>`gpt-4-turbo-preview`</li><li>`gpt-4-1106-preview`</li><li>`gpt-4-vision-preview`</li><li>`gpt-4`</li><li>`gpt-4-0314`</li><li>`gpt-4-0613`</li><li>`gpt-4-32k`</li><li>`gpt-4-32k-0314`</li><li>`gpt-4-32k-0613`</li><li>`gpt-3.5-turbo`</li><li>`gpt-3.5-turbo-16k`</li><li>`gpt-3.5-turbo-0301`</li><li>`gpt-3.5-turbo-0613`</li><li>`gpt-3.5-turbo-1106`</li><li>`gpt-3.5-turbo-0125`</li><li>`gpt-3.5-turbo-16k-0613`</li></ul></details>  |
 | API Key | `api-key` | string | Fill in your API key from the vendor's platform.  |
 | Organization ID | `organization` | string | Specify which organization is used for the requests. Usage will count against the specified organization's subscription quota.  |
 
@@ -68,7 +69,6 @@ Input data
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Chat Messages](#chat-chat-messages) | `messages` | array | List of chat messages  |
-| Model Name | `model` | string | The model to be used. Now, it only supports OpenAI model, and will support more models in the future.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`o1-preview`</li><li>`o1-mini`</li><li>`gpt-4o-mini`</li><li>`gpt-4o`</li><li>`gpt-4o-2024-05-13`</li><li>`gpt-4o-2024-08-06`</li><li>`gpt-4-turbo`</li><li>`gpt-4-turbo-2024-04-09`</li><li>`gpt-4-0125-preview`</li><li>`gpt-4-turbo-preview`</li><li>`gpt-4-1106-preview`</li><li>`gpt-4-vision-preview`</li><li>`gpt-4`</li><li>`gpt-4-0314`</li><li>`gpt-4-0613`</li><li>`gpt-4-32k`</li><li>`gpt-4-32k-0314`</li><li>`gpt-4-32k-0613`</li><li>`gpt-3.5-turbo`</li><li>`gpt-3.5-turbo-16k`</li><li>`gpt-3.5-turbo-0301`</li><li>`gpt-3.5-turbo-0613`</li><li>`gpt-3.5-turbo-1106`</li><li>`gpt-3.5-turbo-0125`</li><li>`gpt-3.5-turbo-16k-0613`</li></ul></details>  |
 </div>
 <h4 id="chat-chat-messages">Chat Messages</h4>
 

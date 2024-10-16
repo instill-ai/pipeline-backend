@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert"
 )
 
 const batchSize = 100
@@ -15,8 +16,7 @@ const batchSize = 100
 // ConvertToTextTaskConverter executes code along with the 21st database
 // schema revision.
 type ConvertToTextTaskConverter struct {
-	DB     *gorm.DB
-	Logger *zap.Logger
+	convert.Basic
 }
 
 // Migrate `TASK_CONVERT_TO_TEXT` from the Text operator to the Document operator

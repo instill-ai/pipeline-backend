@@ -94,5 +94,6 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
+	defer e.connection.Close()
 	return base.SequentialExecutor(ctx, jobs, e.execute)
 }

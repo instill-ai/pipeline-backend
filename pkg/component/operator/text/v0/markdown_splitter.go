@@ -72,6 +72,9 @@ func (sp *MarkdownTextSplitter) SplitText() ([]ContentChunk, error) {
 
 func appendUniqueChunksMap(chunks *[]ContentChunk, newChunks []ContentChunk, chunkMap *map[string]bool) {
 	for _, newChunk := range newChunks {
+		if newChunk.ContentStartPosition == newChunk.ContentEndPosition || len(newChunk.Chunk) == 0 {
+			continue
+		}
 		key := fmt.Sprintf("%d-%d", newChunk.ContentStartPosition, newChunk.ContentEndPosition)
 		if _, exists := (*chunkMap)[key]; !exists {
 			*chunks = append(*chunks, newChunk)

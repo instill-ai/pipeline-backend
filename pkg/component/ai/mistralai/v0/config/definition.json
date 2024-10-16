@@ -4,7 +4,7 @@
     "TASK_TEXT_EMBEDDINGS"
   ],
   "custom": false,
-  "documentationUrl": "https://www.instill.tech/docs/component/ai/mistralai",
+  "documentationUrl": "https://www.instill.tech/docs/component/ai/mistral-ai",
   "icon": "assets/mistral-ai.svg",
   "id": "mistral-ai",
   "public": true,
