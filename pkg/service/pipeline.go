@@ -39,12 +39,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
-
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-
 	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -65,8 +63,8 @@ func (s *service) GetHubStats(ctx context.Context) (*pipelinepb.GetHubStatsRespo
 	}
 
 	return &pipelinepb.GetHubStatsResponse{
-		NumberOfPublicPipelines:   int32(hubStats.NumberOfPublicPipelines),
-		NumberOfFeaturedPipelines: int32(hubStats.NumberOfFeaturedPipelines),
+		NumberOfPublicPipelines:   hubStats.NumberOfPublicPipelines,
+		NumberOfFeaturedPipelines: hubStats.NumberOfFeaturedPipelines,
 	}, nil
 }
 
@@ -1792,7 +1790,6 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
 	if err != nil {
 		log.Error("failed to get files from minio", zap.Error(err))
-		return nil, err
 	}
 
 	metadataMap := make(map[string][]byte)
@@ -1826,60 +1823,30 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 
 		if CanViewPrivateData(run.Namespace, requesterUID) {
 			if len(run.Inputs) == 1 {
-				md, ok := metadataMap[run.Inputs[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load input metadata. pipeline UID: %s input reference ID: %s", run.PipelineUID.String(), run.Inputs[0].Name)
-				}
-				pbRun.Inputs = make([]*structpb.Struct, 0)
-				err = json.Unmarshal(md, &pbRun.Inputs)
+				key := run.Inputs[0].Name
+				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
 				if err != nil {
-					return nil, err
+					log.Error("Failed to load input metadata", zap.Error(err), zap.String("pipelineUID", run.PipelineUID.String()),
+						zap.String("inputReferenceID", key))
 				}
-
 			}
+
 			if len(run.Outputs) == 1 {
-				md, ok := metadataMap[run.Outputs[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load output metadata. pipeline UID: %s output reference ID: %s", run.PipelineUID.String(), run.Outputs[0].Name)
-				}
-				pbRun.Outputs = make([]*structpb.Struct, 0)
-				err = json.Unmarshal(md, &pbRun.Outputs)
+				key := run.Outputs[0].Name
+				pbRun.Outputs, err = parseMetadataToStructArray(metadataMap, key)
 				if err != nil {
-					return nil, err
+					log.Error("Failed to load output metadata", zap.Error(err), zap.String("pipelineUID", run.PipelineUID.String()),
+						zap.String("outputReferenceID", key))
 				}
 			}
+
 			if len(run.RecipeSnapshot) == 1 {
-				md, ok := metadataMap[run.RecipeSnapshot[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load recipe metadata. pipeline UID: %s recipe reference ID: %s", run.PipelineUID.String(), run.RecipeSnapshot[0].Name)
-				}
-				r := make(map[string]any)
-				err = json.Unmarshal(md, &r)
+				key := run.RecipeSnapshot[0].Name
+				pbRun.RecipeSnapshot, pbRun.DataSpecification, err = parseRecipeMetadata(ctx, metadataMap, s.converter, key)
 				if err != nil {
-					return nil, fmt.Errorf("failed to load recipe metadata. pipeline UID: %s recipe reference ID: %s", run.PipelineUID.String(), run.RecipeSnapshot[0].Name)
+					log.Error("Failed to load recipe snapshot", zap.Error(err), zap.String("pipelineUID", run.PipelineUID.String()),
+						zap.String("recipeReferenceID", key))
 				}
-				pbRun.RecipeSnapshot, err = structpb.NewStruct(r)
-				if err != nil {
-					return nil, err
-				}
-
-				dbRecipe := &datamodel.Recipe{}
-				err = json.Unmarshal(md, dbRecipe)
-				if err != nil {
-					return nil, fmt.Errorf("failed to load recipe metadata. pipeline UID: %s recipe reference ID: %s", run.PipelineUID.String(), run.RecipeSnapshot[0].Name)
-				}
-
-				err = s.converter.IncludeDetailInRecipe(ctx, "", dbRecipe, false)
-				if err != nil {
-					return nil, fmt.Errorf("failed to load recipe metadata. pipeline UID: %s recipe reference ID: %s", run.PipelineUID.String(), run.RecipeSnapshot[0].Name)
-				}
-				pbRun.DataSpecification, err = s.converter.GeneratePipelineDataSpec(dbRecipe.Variable, dbRecipe.Output, dbRecipe.Component)
-				if err != nil {
-					// Some recipes cannot generate a DataSpecification, so we
-					// can skip them.
-					pbRun.DataSpecification = nil
-				}
-
 			}
 		}
 
@@ -1942,7 +1909,6 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
 	if err != nil {
 		log.Error("failed to get files from minio", zap.Error(err))
-		return nil, err
 	}
 
 	metadataMap := make(map[string][]byte)
@@ -1960,27 +1926,21 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 
 		if CanViewPrivateData(dbPipelineRun.Namespace, requesterUID) {
 			if len(run.Inputs) == 1 {
-				md, ok := metadataMap[run.Inputs[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load input metadata. component UID: %s input reference ID: %s", run.ComponentID, run.Inputs[0].Name)
-				}
-				pbRun.Inputs = make([]*structpb.Struct, 0)
-				err = json.Unmarshal(md, &pbRun.Inputs)
+				key := run.Inputs[0].Name
+				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
 				if err != nil {
-					return nil, err
+					log.Error("Failed to load input metadata", zap.Error(err), zap.String("ComponentID", run.ComponentID),
+						zap.String("inputReferenceID", key))
 				}
-
 			}
 			if len(run.Outputs) == 1 {
-				md, ok := metadataMap[run.Outputs[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load output metadata. component UID: %s output reference ID: %s", run.ComponentID, run.Outputs[0].Name)
-				}
-				pbRun.Outputs = make([]*structpb.Struct, 0)
-				err = json.Unmarshal(md, &pbRun.Outputs)
+				key := run.Outputs[0].Name
+				pbRun.Outputs, err = parseMetadataToStructArray(metadataMap, key)
 				if err != nil {
-					return nil, err
+					log.Error("Failed to load output metadata", zap.Error(err), zap.String("ComponentID", run.ComponentID),
+						zap.String("outputReferenceID", key))
 				}
+
 			}
 		}
 		pbComponentRuns[i] = pbRun
