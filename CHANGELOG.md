@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.43.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.1-beta...v0.43.2-beta) (2024-10-16)
+
+
+### Bug Fixes
+
+* fix InstillFormat validate function ([#745](https://github.com/instill-ai/pipeline-backend/issues/745)) ([b2e0705](https://github.com/instill-ai/pipeline-backend/commit/b2e070591c1d6795a70f27ac37a4b82629d2d6a3))
+
 ## [0.43.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.0-beta...v0.43.1-beta) (2024-10-15)
 
 
