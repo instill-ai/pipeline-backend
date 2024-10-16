@@ -1954,13 +1954,26 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 	}, nil
 }
 
-func (s *service) ListPipelineRunsByCreditOwner(ctx context.Context, req *pipelinepb.ListPipelineRunsByCreditOwnerRequest,
-	filter filtering.Filter) (*pipelinepb.ListPipelineRunsByCreditOwnerResponse, error) {
+func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipelinepb.ListPipelineRunsByCreditOwnerRequest) (*pipelinepb.ListPipelineRunsByCreditOwnerResponse, error) {
 	page := s.pageInRange(req.GetPage())
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
 
 	log, _ := logger.GetZapLogger(ctx)
+
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareIdent("status", filtering.TypeString),
+		filtering.DeclareIdent("source", filtering.TypeString),
+	}...)
+	if err != nil {
+		return nil, err
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return nil, err
+	}
 
 	orderBy, err := ordering.ParseOrderBy(req)
 	if err != nil {
@@ -1980,9 +1993,8 @@ func (s *service) ListPipelineRunsByCreditOwner(ctx context.Context, req *pipeli
 	if startedTimeBegin.After(startedTimeEnd) {
 		return nil, fmt.Errorf("time range end time %s is earlier than start time %s", startedTimeEnd.Format(time.RFC3339), startedTimeBegin.Format(time.RFC3339))
 	}
-	log.Info("ListPipelineRunsByCreditOwner", zap.Time("startedTimeBegin", startedTimeBegin), zap.Time("startedTimeEnd", startedTimeEnd))
 
-	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsByCreditOwner(ctx, requesterUID, startedTimeBegin, startedTimeEnd,
+	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsByRequester(ctx, requesterUID, startedTimeBegin, startedTimeEnd,
 		page, pageSize, filter, orderBy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pipeline runs: %w", err)

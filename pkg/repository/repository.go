@@ -104,7 +104,7 @@ type Repository interface {
 
 	GetPaginatedPipelineRunsWithPermissions(ctx context.Context, requesterUID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, isOwner bool) ([]datamodel.PipelineRun, int64, error)
 	GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.ComponentRun, int64, error)
-	GetPaginatedPipelineRunsByCreditOwner(ctx context.Context, requesterUID string, startTime, endTime time.Time, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.PipelineRun, int64, error)
+	GetPaginatedPipelineRunsByRequester(ctx context.Context, requesterUID string, startTime, endTime time.Time, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.PipelineRun, int64, error)
 }
 
 type repository struct {
@@ -1270,7 +1270,7 @@ func (r *repository) GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx
 	return componentRuns, totalRows, nil
 }
 
-func (r *repository) GetPaginatedPipelineRunsByCreditOwner(ctx context.Context, requesterUID string, startTimeBegin, startTimeEnd time.Time, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.PipelineRun, int64, error) {
+func (r *repository) GetPaginatedPipelineRunsByRequester(ctx context.Context, requesterUID string, startTimeBegin, startTimeEnd time.Time, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.PipelineRun, int64, error) {
 	var pipelineRuns []datamodel.PipelineRun
 	var totalRows int64
 

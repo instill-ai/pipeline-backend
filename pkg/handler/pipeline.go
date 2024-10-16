@@ -1995,36 +1995,19 @@ func (h *PublicHandler) ListComponentRuns(ctx context.Context, req *pb.ListCompo
 	return resp, nil
 }
 
+// todo: rename function to ListPipelineRunsByRequester in protobuf and update message names here
 func (h *PublicHandler) ListPipelineRunsByCreditOwner(ctx context.Context, req *pb.ListPipelineRunsByCreditOwnerRequest) (*pb.ListPipelineRunsByCreditOwnerResponse, error) {
 	logger, _ := logger.GetZapLogger(ctx)
 	logUUID, _ := uuid.NewV4()
-	logger.Info("ListPipelineRunsByCreditOwner starts", zap.String("logUUID", logUUID.String()))
+	logger.Info("ListPipelineRunsByRequester starts", zap.String("logUUID", logUUID.String()))
 
-	if req.GetStart().IsValid() && req.GetStop().IsValid() && req.GetStart().AsTime().After(req.GetStop().AsTime()) {
-		return nil, fmt.Errorf("input stop time earlier than start time")
-	}
-
-	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
-		filtering.DeclareStandardFunctions(),
-		filtering.DeclareIdent("status", filtering.TypeString),
-		filtering.DeclareIdent("source", filtering.TypeString),
-	}...)
+	resp, err := h.service.ListPipelineRunsByRequester(ctx, req)
 	if err != nil {
-		return nil, err
-	}
-
-	filter, err := filtering.ParseFilter(req, declarations)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := h.service.ListPipelineRunsByCreditOwner(ctx, req, filter)
-	if err != nil {
-		logger.Error("failed in ListPipelineRunsByCreditOwner", zap.String("logUUID", logUUID.String()), zap.Error(err))
+		logger.Error("failed in ListPipelineRunsByRequester", zap.String("logUUID", logUUID.String()), zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to list pipeline runs")
 	}
 
-	logger.Info("ListPipelineRunsByCreditOwner finished", zap.String("logUUID", logUUID.String()))
+	logger.Info("ListPipelineRunsByRequester finished", zap.String("logUUID", logUUID.String()))
 
 	return resp, nil
 }

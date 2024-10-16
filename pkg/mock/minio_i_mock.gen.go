@@ -5,12 +5,15 @@ package mock
 import (
 	"context"
 	"sync"
+
 	mm_atomic "sync/atomic"
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
-	mm_minio "github.com/instill-ai/pipeline-backend/pkg/minio"
+
 	minio "github.com/minio/minio-go/v7"
+
+	mm_minio "github.com/instill-ai/pipeline-backend/pkg/minio"
 )
 
 // MinioIMock implements mm_minio.MinioI

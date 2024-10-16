@@ -613,8 +613,6 @@ func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			if testCase.canView {
 				c.Check(len(response), qt.Equals, 1)
-				// c.Log(response[0].Pipeline.ID)
-				// c.Check(response[0].Pipeline.ID, qt.Equals, p.ID)
 			} else {
 				c.Check(len(response), qt.Equals, 0)
 			}
@@ -698,11 +696,11 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 	err = repo.UpsertPipelineRun(ctx, pipelineRun)
 	require.NoError(t, err)
 
-	resp, _, err := repo.GetPaginatedPipelineRunsByCreditOwner(ctx, namespace1, now.Add(-3*time.Hour), now.Add(-2*time.Hour), 0, 10, filtering.Filter{}, ordering.OrderBy{})
+	resp, _, err := repo.GetPaginatedPipelineRunsByRequester(ctx, namespace1, now.Add(-3*time.Hour), now.Add(-2*time.Hour), 0, 10, filtering.Filter{}, ordering.OrderBy{})
 	require.NoError(t, err)
 	require.Len(t, resp, 0)
 
-	resp, _, err = repo.GetPaginatedPipelineRunsByCreditOwner(ctx, namespace1, now.Add(-2*time.Hour), now, 0, 10, filtering.Filter{}, ordering.OrderBy{})
+	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, namespace1, now.Add(-2*time.Hour), now, 0, 10, filtering.Filter{}, ordering.OrderBy{})
 	require.NoError(t, err)
 	require.Len(t, resp, 1)
 	require.Equal(t, resp[0].PipelineTriggerUID, pipelineRun.PipelineTriggerUID)
@@ -723,7 +721,7 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 	err = repo.UpsertPipelineRun(ctx, pipelineRun2)
 	require.NoError(t, err)
 
-	resp, _, err = repo.GetPaginatedPipelineRunsByCreditOwner(ctx, namespace1, now.Add(-2*time.Hour), now, 0, 10, filtering.Filter{}, ordering.OrderBy{})
+	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, namespace1, now.Add(-2*time.Hour), now, 0, 10, filtering.Filter{}, ordering.OrderBy{})
 	require.NoError(t, err)
 	require.Len(t, resp, 2)
 	require.Equal(t, resp[0].PipelineTriggerUID, pipelineRun.PipelineTriggerUID)
