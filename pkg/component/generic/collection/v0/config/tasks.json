@@ -316,5 +316,62 @@
       "title": "Output",
       "type": "object"
     }
+  },
+  "TASK_CONCAT": {
+    "instillShortDescription": "Concat the arrays. e.g. `[1, 2] + [3, 4] = [1, 2, 3, 4]`",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "arrays"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "arrays": {
+          "description": "Specify the arrays you want to concat.",
+          "instillAcceptFormats": [
+            "array:array:*"
+          ],
+          "instillUIMultiline": true,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "items": {},
+          "required": [],
+          "title": "Arrays",
+          "type": "array"
+        }
+      },
+      "required": [
+        "arrays"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillEditOnNodeFields": [
+        "array"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "array": {
+          "description": "The union set.",
+          "instillEditOnNodeFields": [],
+          "instillFormat": "array:*",
+          "instillUIOrder": 0,
+          "required": [],
+          "title": "Array",
+          "type": "array"
+        }
+      },
+      "required": [
+        "array"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
   }
 }

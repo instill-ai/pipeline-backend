@@ -23,6 +23,7 @@ const (
 	taskIntersection = "TASK_INTERSECTION"
 	taskDifference   = "TASK_DIFFERENCE"
 	taskAppend       = "TASK_APPEND"
+	taskConcat       = "TASK_CONCAT"
 )
 
 var (
@@ -73,6 +74,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = e.difference
 	case taskAppend:
 		e.execute = e.append
+	case taskConcat:
+		e.execute = e.concat
 	default:
 		return nil, errmsg.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),
@@ -80,6 +83,19 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		)
 	}
 	return e, nil
+}
+
+func (e *execution) concat(in *structpb.Struct) (*structpb.Struct, error) {
+	arrays := in.Fields["arrays"].GetListValue().Values
+	concat := &structpb.ListValue{Values: []*structpb.Value{}}
+
+	for _, a := range arrays {
+		concat.Values = append(concat.Values, a.GetListValue().Values...)
+	}
+
+	out := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+	out.Fields["array"] = structpb.NewListValue(concat)
+	return out, nil
 }
 
 func (e *execution) union(in *structpb.Struct) (*structpb.Struct, error) {

@@ -12,6 +12,7 @@ It can carry out the following tasks:
 - [Union](#union)
 - [Intersection](#intersection)
 - [Difference](#difference)
+- [Concat](#concat)
 
 ## Release Stage
 
@@ -145,4 +146,28 @@ Find the difference between the two sets, i.e. `set-a` \ `set-b`, identifying th
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Array | `set` | array | The difference set. |
+</div>
+
+### Concat
+
+Concat the arrays. e.g. `[1, 2] + [3, 4] = [1, 2, 3, 4]`
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CONCAT` |
+| Arrays (required) | `arrays` | array | Specify the arrays you want to concat. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Array | `array` | array | The union set. |
 </div>
