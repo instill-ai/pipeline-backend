@@ -26,12 +26,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
+	"github.com/instill-ai/x/checkfield"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
-
-	"github.com/instill-ai/x/checkfield"
-
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 

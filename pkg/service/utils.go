@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -162,54 +161,47 @@ func CanViewPrivateData(namespace, requesterUID string) bool {
 	return namespace == requesterUID
 }
 
-func parseMetadataToStructArray(metadataMap map[string][]byte, log *zap.Logger, key string, metadataType string, logFields ...zap.Field) []*structpb.Struct {
+func parseMetadataToStructArray(metadataMap map[string][]byte, key string) ([]*structpb.Struct, error) {
 	md, ok := metadataMap[key]
 	if !ok {
-		log.Error(fmt.Sprintf("failed to load %s metadata", metadataType), logFields...)
-		return nil
+		return nil, fmt.Errorf("key doesn't exist")
 	}
 
 	structArr := make([]*structpb.Struct, 0)
 	if err := json.Unmarshal(md, &structArr); err != nil {
-		log.Error(fmt.Sprintf("failed to parse %s metadata", metadataType), logFields...)
-		return nil
+		return nil, err
 	}
 
-	return structArr
+	return structArr, nil
 }
 
-func parseRecipeMetadata(metadataMap map[string][]byte, log *zap.Logger, converter Converter, key string, metadataType string, logFields ...zap.Field) (*structpb.Struct, *pipelinepb.DataSpecification) {
+func parseRecipeMetadata(ctx context.Context, metadataMap map[string][]byte, converter Converter, key string) (*structpb.Struct, *pipelinepb.DataSpecification, error) {
 	md, ok := metadataMap[key]
 	if !ok {
-		log.Error(fmt.Sprintf("failed to load %s metadata", metadataType), logFields...)
-		return nil, nil
+		return nil, nil, fmt.Errorf("key doesn't exist")
 	}
 
 	r := make(map[string]any)
 	err := json.Unmarshal(md, &r)
 	if err != nil {
-		log.Error(fmt.Sprintf("failed to unmarshal %s metadata to map", metadataType), logFields...)
-		return nil, nil
+		return nil, nil, err
 	}
 
 	pbStruct, err := structpb.NewStruct(r)
 	if err != nil {
-		log.Error(fmt.Sprintf("failed to convert %s metadata to struct", metadataType), logFields...)
-		return nil, nil
+		return nil, nil, err
 	}
 
 	dbRecipe := &datamodel.Recipe{}
 	if err = json.Unmarshal(md, dbRecipe); err != nil {
-		log.Error(fmt.Sprintf("failed to unmarshal %s metadata to datamodel", metadataType), logFields...)
-		return nil, nil
+		return pbStruct, nil, err
 	}
-	
-	if err = converter.IncludeDetailInRecipe(context.Background(), "", dbRecipe, false); err != nil {
-		log.Error("IncludeDetailInRecipe failed", logFields...)
-		return nil, nil
+
+	if err = converter.IncludeDetailInRecipe(ctx, "", dbRecipe, false); err != nil {
+		return pbStruct, nil, err
 	}
 
 	// Some recipes cannot generate a DataSpecification, so we can ignore the error.
 	dataSpec, _ := converter.GeneratePipelineDataSpec(dbRecipe.Variable, dbRecipe.Output, dbRecipe.Component)
-	return pbStruct, dataSpec
+	return pbStruct, dataSpec, nil
 }

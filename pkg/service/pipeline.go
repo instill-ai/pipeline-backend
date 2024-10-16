@@ -1824,20 +1824,29 @@ func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipe
 		if CanViewPrivateData(run.Namespace, requesterUID) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
-				pbRun.Inputs = parseMetadataToStructArray(metadataMap, log, key, "input",
-					zap.String("pipelineUID", run.PipelineUID.String()), zap.String("inputReferenceID", key))
+				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
+				if err != nil {
+					log.Error("Failed to load input metadata", zap.Error(err), zap.String("pipelineUID", run.PipelineUID.String()),
+						zap.String("inputReferenceID", key))
+				}
 			}
 
 			if len(run.Outputs) == 1 {
 				key := run.Outputs[0].Name
-				pbRun.Outputs = parseMetadataToStructArray(metadataMap, log, key, "output",
-					zap.String("pipelineUID", run.PipelineUID.String()), zap.String("outputReferenceID", key))
+				pbRun.Outputs, err = parseMetadataToStructArray(metadataMap, key)
+				if err != nil {
+					log.Error("Failed to load output metadata", zap.Error(err), zap.String("pipelineUID", run.PipelineUID.String()),
+						zap.String("outputReferenceID", key))
+				}
 			}
 
 			if len(run.RecipeSnapshot) == 1 {
 				key := run.RecipeSnapshot[0].Name
-				pbRun.RecipeSnapshot, pbRun.DataSpecification = parseRecipeMetadata(metadataMap, log, s.converter, key, "recipe",
-					zap.String("pipelineUID", run.PipelineUID.String()), zap.String("recipeReferenceID", key))
+				pbRun.RecipeSnapshot, pbRun.DataSpecification, err = parseRecipeMetadata(ctx, metadataMap, s.converter, key)
+				if err != nil {
+					log.Error("Failed to load recipe snapshot", zap.Error(err), zap.String("pipelineUID", run.PipelineUID.String()),
+						zap.String("recipeReferenceID", key))
+				}
 			}
 		}
 
@@ -1918,13 +1927,20 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 		if CanViewPrivateData(dbPipelineRun.Namespace, requesterUID) {
 			if len(run.Inputs) == 1 {
 				key := run.Inputs[0].Name
-				pbRun.Inputs = parseMetadataToStructArray(metadataMap, log, key, "input",
-					zap.String("ComponentID", run.ComponentID), zap.String("inputReferenceID", key))
+				pbRun.Inputs, err = parseMetadataToStructArray(metadataMap, key)
+				if err != nil {
+					log.Error("Failed to load input metadata", zap.Error(err), zap.String("ComponentID", run.ComponentID),
+						zap.String("inputReferenceID", key))
+				}
 			}
 			if len(run.Outputs) == 1 {
 				key := run.Outputs[0].Name
-				pbRun.Outputs = parseMetadataToStructArray(metadataMap, log, key, "output",
-					zap.String("ComponentID", run.ComponentID), zap.String("outputReferenceID", key))
+				pbRun.Outputs, err = parseMetadataToStructArray(metadataMap, key)
+				if err != nil {
+					log.Error("Failed to load output metadata", zap.Error(err), zap.String("ComponentID", run.ComponentID),
+						zap.String("outputReferenceID", key))
+				}
+
 			}
 		}
 		pbComponentRuns[i] = pbRun
