@@ -1960,8 +1960,6 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipeline
 	pageSize := s.pageSizeInRange(req.GetPageSize())
 	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
 
-	log, _ := logger.GetZapLogger(ctx)
-
 	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
 		filtering.DeclareStandardFunctions(),
 		filtering.DeclareIdent("status", filtering.TypeString),
@@ -1992,7 +1990,6 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipeline
 	}
 
 	if startedTimeBegin.After(startedTimeEnd) {
-		log.Error("time range end time is earlier than start time", zap.Time("startedTimeEnd", startedTimeEnd), zap.Time("startedTimeBegin", startedTimeBegin))
 		return nil, fmt.Errorf("time range end time is earlier than start time")
 	}
 
