@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/tmc/langchaingo/textsplitter"
-
 	tiktoken "github.com/pkoukk/tiktoken-go"
 )
 
@@ -233,14 +232,11 @@ type ChunkPositionCalculator interface {
 type PositionCalculator struct{}
 
 func (PositionCalculator) getChunkPositions(rawText, chunk []rune, startScanPosition int) (startPosition int, endPosition int) {
-
 	for i := startScanPosition; i < len(rawText); i++ {
 		if rawText[i] == chunk[0] {
-
 			if i+len(chunk) > len(rawText) {
 				break
 			}
-
 			if reflect.DeepEqual(rawText[i:i+len(chunk)], chunk) {
 				startPosition = i
 				endPosition = len(chunk) + i - 1
