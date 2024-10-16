@@ -4,7 +4,7 @@
     "TASK_TEXT_EMBEDDINGS"
   ],
   "custom": false,
-  "documentationUrl": "https://www.instill.tech/docs/component/ai/fireworksai",
+  "documentationUrl": "https://www.instill.tech/docs/component/ai/fireworks-ai",
   "icon": "assets/fireworks-ai.svg",
   "id": "fireworks-ai",
   "public": true,

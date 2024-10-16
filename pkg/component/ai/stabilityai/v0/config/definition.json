@@ -4,7 +4,7 @@
     "TASK_IMAGE_TO_IMAGE"
   ],
   "custom": false,
-  "documentationUrl": "https://www.instill.tech/docs/component/ai/stabilityai",
+  "documentationUrl": "https://www.instill.tech/docs/component/ai/stability-ai",
   "icon": "assets/stability-ai.svg",
   "iconUrl": "",
   "id": "stability-ai",

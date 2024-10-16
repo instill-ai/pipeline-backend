@@ -37,7 +37,7 @@
           "type": "string"
         },
         "start-to-read-date": {
-          "description": "Date (in <code>YYYY-MM-DD<code> format) from which messages will start to be fetched",
+          "description": "Date (in `YYYY-MM-DD` format) from which messages will start to be fetched",
           "instillAcceptFormats": [
             "string"
           ],
