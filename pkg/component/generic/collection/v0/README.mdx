@@ -171,3 +171,67 @@ Concat the arrays. e.g. `[1, 2] + [3, 4] = [1, 2, 3, 4]`
 | :--- | :--- | :--- | :--- |
 | Array | `array` | array | The union set. |
 </div>
+
+
+## Example Recipes
+
+In this example, we are combining two arrays of strings using the `union` and `concat` components.
+```yaml
+variable:
+  texts:
+    instill-format: array:string
+    title: Text
+  texts-2:
+    instill-format: array:string
+    title: Text
+
+component:
+  union:
+    type: collection
+    input:
+      sets:
+        - ${variable.texts}
+        - ${variable.texts-2}
+    condition:
+    task: TASK_UNION
+  concat:
+    type: collection
+    input:
+      arrays:
+        - ${variable.texts}
+        - ${variable.texts-2}
+    condition:
+    task: TASK_CONCAT
+
+output:
+  union-result:
+    title: Union Result
+    value: ${union.output.set}
+  concat-result:
+    title: Concat Result
+    value: ${concat.output.array}
+```
+
+
+In this example, we are creating an object from a string.
+```yaml
+variable:
+  text:
+    instill-format: string
+    title: Text
+
+component:
+  text-object:
+    type: collection
+    input:
+      data:
+        type: text
+        text: ${variable.text}
+    condition:
+    task: TASK_ASSIGN
+
+output:
+  result:
+    title: Object
+    value: ${text-object.output.data}
+```
