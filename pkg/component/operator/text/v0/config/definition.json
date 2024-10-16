@@ -1,6 +1,7 @@
 {
   "availableTasks": [
-    "TASK_CHUNK_TEXT"
+    "TASK_CHUNK_TEXT",
+    "TASK_CLEAN_DATA"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/operator/text",

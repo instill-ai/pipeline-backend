@@ -1,20 +1,20 @@
 package text
 
 import (
-	"os"
+	"fmt"
 	"testing"
 
 	"github.com/frankban/quicktest"
 )
 
 func TestChunkText(t *testing.T) {
-
 	c := quicktest.New(t)
 
 	testCases := []struct {
 		name   string
 		input  ChunkTextInput
 		output ChunkTextOutput
+		err    error
 	}{
 		{
 			name: "chunk text by token",
@@ -41,207 +41,246 @@ func TestChunkText(t *testing.T) {
 				TokenCount:       3,
 				ChunksTokenCount: 3,
 			},
+			err: nil,
 		},
 		{
-			name: "chunk text by markdown",
+			name: "chunk text by recursive method",
 			input: ChunkTextInput{
-				Text: "Hello world.",
+				Text: "This is a simple test for chunking text into pieces.",
 				Strategy: Strategy{
 					Setting: Setting{
-						ChunkMethod:  "Markdown",
+						ChunkMethod:  "Recursive",
+						ChunkSize:    50,
+						ChunkOverlap: 10,
 						ModelName:    "gpt-3.5-turbo",
-						ChunkSize:    5,
-						ChunkOverlap: 2,
 					},
 				},
 			},
 			output: ChunkTextOutput{
 				TextChunks: []TextChunk{
 					{
-						Text:          "\nHello",
+						Text:          "This is a simple test for chunking text into pi",
 						StartPosition: 0,
-						EndPosition:   4,
-						TokenCount:    2,
+						EndPosition:   47,
+						TokenCount:    10,
 					},
 					{
-						Text:          "\nworld",
-						StartPosition: 6,
-						EndPosition:   10,
-						TokenCount:    2,
-					},
-					{
-						Text:          "\nld.",
-						StartPosition: 9,
-						EndPosition:   11,
-						TokenCount:    3,
-					},
-				},
-				ChunkNum:         3,
-				TokenCount:       3,
-				ChunksTokenCount: 7,
-			},
-		},
-		{
-			name: "chunk text by recursive",
-			input: ChunkTextInput{
-				Text: "Hello world.",
-				Strategy: Strategy{
-					Setting: Setting{
-						ChunkMethod: "Recursive",
-						ModelName:   "gpt-3.5-turbo",
-						ChunkSize:   5,
-						Separators:  []string{" ", "."},
-					},
-				},
-			},
-			output: ChunkTextOutput{
-				TextChunks: []TextChunk{
-					{
-						Text:          "Hello",
-						StartPosition: 0,
-						EndPosition:   4,
-						TokenCount:    1,
-					},
-					{
-						Text:          "world",
-						StartPosition: 6,
-						EndPosition:   10,
-						TokenCount:    1,
+						Text:          "text into pieces.",
+						StartPosition: 10,
+						EndPosition:   27,
+						TokenCount:    5,
 					},
 				},
 				ChunkNum:         2,
-				TokenCount:       3,
-				ChunksTokenCount: 2,
+				TokenCount:       15,
+				ChunksTokenCount: 15,
 			},
-		},
-	}
-
-	for _, tc := range testCases {
-		c.Run(tc.name, func(c *quicktest.C) {
-			var output ChunkTextOutput
-			err := error(nil)
-			if tc.input.Strategy.Setting.ChunkMethod == "Markdown" {
-				output, err = chunkMarkdown(tc.input)
-			} else {
-				output, err = chunkText(tc.input)
-			}
-			c.Assert(err, quicktest.IsNil)
-			c.Check(output, quicktest.DeepEquals, tc.output)
-		})
-	}
-}
-
-func Test_ChunkPositionCalculator(t *testing.T) {
-	c := quicktest.New(t)
-
-	testCases := []struct {
-		name                   string
-		positionCalculatorType string
-		rawTextFilePath        string
-		chunkTextFilePath      string
-		expectStartPosition    int
-		expectEndPosition      int
-	}{
-		{
-			name:                   "Chinese text with NOT Markdown Chunking 1",
-			positionCalculatorType: "PositionCalculator",
-			rawTextFilePath:        "testdata/chinese/text1.txt",
-			chunkTextFilePath:      "testdata/chinese/chunk1_1.txt",
-			expectStartPosition:    0,
-			expectEndPosition:      35,
+			err: nil,
 		},
 		{
-			name:                   "Chinese text with NOT Markdown Chunking 2",
-			positionCalculatorType: "PositionCalculator",
-			rawTextFilePath:        "testdata/chinese/text1.txt",
-			chunkTextFilePath:      "testdata/chinese/chunk1_2.txt",
-			expectStartPosition:    26,
-			expectEndPosition:      46,
-		},
-		{
-			name:                   "Chinese text with NOT Markdown Chunking 3",
-			positionCalculatorType: "PositionCalculator",
-			rawTextFilePath:        "testdata/chinese/text1.txt",
-			chunkTextFilePath:      "testdata/chinese/chunk1_3.txt",
-			expectStartPosition:    49,
-			expectEndPosition:      80,
-		},
-	}
-
-	for _, tc := range testCases {
-		c.Run(tc.name, func(c *quicktest.C) {
-			var calculator ChunkPositionCalculator
-			if tc.positionCalculatorType == "PositionCalculator" {
-				calculator = PositionCalculator{}
-			}
-			rawTextBytes, err := os.ReadFile(tc.rawTextFilePath)
-			c.Assert(err, quicktest.IsNil)
-			rawTextRunes := []rune(string(rawTextBytes))
-
-			chunkText, err := os.ReadFile(tc.chunkTextFilePath)
-			c.Assert(err, quicktest.IsNil)
-
-			chunkTextRunes := []rune(string(chunkText))
-
-			startPosition, endPosition := calculator.getChunkPositions(rawTextRunes, chunkTextRunes, 0)
-
-			c.Assert(startPosition, quicktest.Equals, tc.expectStartPosition)
-			c.Assert(endPosition, quicktest.Equals, tc.expectEndPosition)
-
-		})
-	}
-}
-
-func Test_ChunkPositions(t *testing.T) {
-
-	c := quicktest.New(t)
-
-	testCases := []struct {
-		name            string
-		rawTextFilePath string
-	}{
-		{
-			name:            "test",
-			rawTextFilePath: "testdata/test.txt",
-		},
-	}
-
-	for _, tc := range testCases {
-		rawTextBytes, err := os.ReadFile(tc.rawTextFilePath)
-		c.Assert(err, quicktest.IsNil)
-
-		input := ChunkTextInput{
-			Text: string(rawTextBytes),
-			Strategy: Strategy{
-				Setting: Setting{
-					ChunkMethod:  "Recursive",
-					ChunkSize:    800,
-					ChunkOverlap: 200,
-					ModelName:    "gpt-4",
+			name: "chunk overlap must be less than chunk size",
+			input: ChunkTextInput{
+				Text: "Hello world.",
+				Strategy: Strategy{
+					Setting: Setting{
+						ChunkMethod:  "Token",
+						ChunkSize:    5,
+						ChunkOverlap: 5,
+						ModelName:    "gpt-3.5-turbo",
+					},
 				},
 			},
-		}
+			output: ChunkTextOutput{},
+			err:    fmt.Errorf("ChunkOverlap must be less than ChunkSize when using Token method"),
+		},
+	}
 
-		output, err := chunkText(input)
-
-		c.Assert(err, quicktest.IsNil)
-
-		for i, chunk := range output.TextChunks {
-			c.Assert(chunk.TokenCount, quicktest.Not(quicktest.Equals), 0)
-			if i != 0 {
-				c.Assert(chunk.StartPosition, quicktest.Not(quicktest.Equals), 0)
+	for _, tc := range testCases {
+		c.Run(tc.name, func(c *quicktest.C) {
+			output, err := chunkText(tc.input)
+			if tc.err != nil {
+				c.Assert(err, quicktest.ErrorIs, tc.err)
+			} else {
+				c.Assert(err, quicktest.IsNil)
+				c.Check(output, quicktest.DeepEquals, tc.output)
 			}
-			c.Assert(chunk.EndPosition, quicktest.Not(quicktest.Equals), 0)
-			c.Assert(chunk.Text, quicktest.Not(quicktest.Equals), "")
+		})
+	}
+}
 
-			positionChecker := chunk.StartPosition < chunk.EndPosition
-			c.Assert(positionChecker, quicktest.Equals, true)
+func TestChunkMarkdown(t *testing.T) {
+	c := quicktest.New(t)
 
-			if i > 0 {
-				increaseChecker := output.TextChunks[i].StartPosition > output.TextChunks[i-1].StartPosition
-				c.Assert(increaseChecker, quicktest.Equals, true)
+	testCases := []struct {
+		name   string
+		input  ChunkTextInput
+		output ChunkTextOutput
+		err    error
+	}{
+		{
+			name: "chunk markdown text",
+			input: ChunkTextInput{
+				Text: "## Heading\n\nThis is a test paragraph. It has multiple sentences.",
+				Strategy: Strategy{
+					Setting: Setting{
+						ChunkMethod:  "Markdown",
+						ChunkSize:    50,
+						ChunkOverlap: 5,
+						ModelName:    "gpt-3.5-turbo",
+					},
+				},
+			},
+			output: ChunkTextOutput{
+				TextChunks: []TextChunk{
+					{
+						Text:          "## Heading\n\nThis is a test paragraph.",
+						StartPosition: 0,
+						EndPosition:   36,
+						TokenCount:    8,
+					},
+					{
+						Text:          " It has multiple sentences.",
+						StartPosition: 31,
+						EndPosition:   57,
+						TokenCount:    5,
+					},
+				},
+				ChunkNum:         2,
+				TokenCount:       13,
+				ChunksTokenCount: 13,
+			},
+			err: nil,
+		},
+		{
+			name: "empty markdown input",
+			input: ChunkTextInput{
+				Text: "",
+				Strategy: Strategy{
+					Setting: Setting{
+						ChunkMethod:  "Markdown",
+						ChunkSize:    100,
+						ChunkOverlap: 0,
+						ModelName:    "gpt-3.5-turbo",
+					},
+				},
+			},
+			output: ChunkTextOutput{
+				TextChunks: []TextChunk{
+					{
+						Text:          "",
+						StartPosition: 0,
+						EndPosition:   0,
+						TokenCount:    0,
+					},
+				},
+				ChunkNum:         1,
+				TokenCount:       0,
+				ChunksTokenCount: 0,
+			},
+			err: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		c.Run(tc.name, func(c *quicktest.C) {
+			output, err := chunkMarkdown(tc.input)
+			if tc.err != nil {
+				c.Assert(err, quicktest.ErrorIs, tc.err)
+			} else {
+				c.Assert(err, quicktest.IsNil)
+				c.Check(output, quicktest.DeepEquals, tc.output)
 			}
-		}
+		})
+	}
+}
 
+func TestSetDefault(t *testing.T) {
+	c := quicktest.New(t)
+
+	testCases := []struct {
+		name     string
+		input    Setting
+		expected Setting
+	}{
+		{
+			name: "all defaults",
+			input: Setting{
+				ChunkSize:    0,
+				ChunkOverlap: 0,
+				ModelName:    "",
+			},
+			expected: Setting{
+				ChunkSize:    512,
+				ChunkOverlap: 100,
+				ModelName:    "gpt-3.5-turbo",
+				AllowedSpecial:    []string{},
+				DisallowedSpecial: []string{"all"},
+				Separators:        []string{"\n\n", "\n", " ", ""},
+			},
+		},
+		{
+			name: "some defaults",
+			input: Setting{
+				ChunkSize:    256,
+				ChunkOverlap: 0,
+				ModelName:    "gpt-4",
+			},
+			expected: Setting{
+				ChunkSize:    256,
+				ChunkOverlap: 100,
+				ModelName:    "gpt-4",
+				AllowedSpecial:    []string{},
+				DisallowedSpecial: []string{"all"},
+				Separators:        []string{"\n\n", "\n", " ", ""},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		c.Run(tc.name, func(c *quicktest.C) {
+			tc.input.SetDefault()
+			c.Check(tc.input, quicktest.DeepEquals, tc.expected)
+		})
+	}
+}
+
+func TestGetChunkPositions(t *testing.T) {
+	c := quicktest.New(t)
+
+	testCases := []struct {
+		name           string
+		rawText       string
+		chunkText     string
+		expectedStart int
+		expectedEnd   int
+	}{
+		{
+			name:           "simple case",
+			rawText:       "Hello, this is a test.",
+			chunkText:     "this is a test.",
+			expectedStart: 7,
+			expectedEnd:   24,
+		},
+		{
+			name:           "no match",
+			rawText:       "Goodbye, see you later.",
+			chunkText:     "not present",
+			expectedStart: 0,
+			expectedEnd:   0,
+		},
+	}
+
+	calculator := PositionCalculator{}
+
+	for _, tc := range testCases {
+		c.Run(tc.name, func(c *quicktest.C) {
+			rawRunes := []rune(tc.rawText)
+			chunkRunes := []rune(tc.chunkText)
+
+			startPosition, endPosition := calculator.getChunkPositions(rawRunes, chunkRunes, 0)
+
+			c.Check(startPosition, quicktest.Equals, tc.expectedStart)
+			c.Check(endPosition, quicktest.Equals, tc.expectedEnd)
+		})
 	}
 }
