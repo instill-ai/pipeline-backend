@@ -181,7 +181,7 @@ func fetchEmails(c *imapclient.Client, search Search) ([]Email, error) {
 		return []Email{}, nil
 	}
 
-	emails := make([]Email, cmp.Or(search.Limit, EmailReadingDefaultCapacity))
+	emails := make([]Email, cmp.Or(search.Limit, EmailReadingDefaultCapacity) + 1)
 	ch := make(chan Email)
 	errChan := make(chan error)
 	fetchOptions := &imap.FetchOptions{
@@ -198,13 +198,16 @@ func fetchEmails(c *imapclient.Client, search Search) ([]Email, error) {
 		if err := <-errChan; err != nil {
 			return nil, err
 		}
-		emails[index] = <-ch
-		if (!reflect.DeepEqual(emails[index], Email{})) {
-			index++ // ignore empty emails
+		emails[0] = <-ch
+		if (!reflect.DeepEqual(emails[0], Email{})) {
+			index++;
+			for j := index; j > 0; j-- {
+				emails[j] = emails[j - 1]
+			}
 		}
 	}
 
-	return emails, nil
+	return emails[1:], nil
 }
 
 func setEnvelope(email *Email, h mail.Header) {
