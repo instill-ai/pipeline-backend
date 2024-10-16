@@ -318,7 +318,7 @@
     }
   },
   "TASK_CONCAT": {
-    "instillShortDescription": "Concat the arrays. e.g. `[1, 2] + [3, 4] = [1, 2, 3, 4]`",
+    "instillShortDescription": "Concat the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`",
     "input": {
       "description": "Input",
       "instillEditOnNodeFields": [
