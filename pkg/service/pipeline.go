@@ -36,6 +36,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
@@ -1991,13 +1992,21 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipeline
 	}
 
 	if startedTimeBegin.After(startedTimeEnd) {
-		return nil, fmt.Errorf("time range end time %s is earlier than start time %s", startedTimeEnd.Format(time.RFC3339), startedTimeBegin.Format(time.RFC3339))
+		log.Error("time range end time is earlier than start time", zap.Time("startedTimeEnd", startedTimeEnd), zap.Time("startedTimeBegin", startedTimeBegin))
+		return nil, fmt.Errorf("time range end time is earlier than start time")
 	}
 
-	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsByRequester(ctx, requesterUID, startedTimeBegin, startedTimeEnd,
-		page, pageSize, filter, orderBy)
+	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsByRequester(ctx, repository.GetPipelineRunsByRequesterParams{
+		RequesterUID:   requesterUID,
+		StartTimeBegin: startedTimeBegin,
+		StartTimeEnd:   startedTimeEnd,
+		Page:           page,
+		PageSize:       pageSize,
+		Filter:         filter,
+		Order:          orderBy,
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get pipeline runs: %w", err)
+		return nil, fmt.Errorf("getting pipeline runs by requester: %w", err)
 	}
 
 	requesterIDMap := make(map[string]struct{})
@@ -2011,7 +2020,6 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipeline
 		if err != nil {
 			return nil, err
 		}
-		log.Info("CheckNamespaceByUIDAdmin finished", zap.String("RequesterUID", requesterID), zap.String("runnerId", runner.Id))
 		runnerMap[requesterID] = &runner.Id
 	}
 
@@ -2021,7 +2029,7 @@ func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipeline
 	for i, run := range pipelineRuns {
 		pbRun, err = s.convertPipelineRunToPB(run)
 		if err != nil {
-			return nil, fmt.Errorf("failed to convert pipeline run: %w", err)
+			return nil, fmt.Errorf("converting pipeline run: %w", err)
 		}
 		pbRun.RunnerId = runnerMap[run.TriggeredBy]
 		pbPipelineRuns[i] = pbRun

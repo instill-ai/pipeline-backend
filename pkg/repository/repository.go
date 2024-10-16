@@ -104,7 +104,7 @@ type Repository interface {
 
 	GetPaginatedPipelineRunsWithPermissions(ctx context.Context, requesterUID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, isOwner bool) ([]datamodel.PipelineRun, int64, error)
 	GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.ComponentRun, int64, error)
-	GetPaginatedPipelineRunsByRequester(ctx context.Context, requesterUID string, startTime, endTime time.Time, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.PipelineRun, int64, error)
+	GetPaginatedPipelineRunsByRequester(ctx context.Context, params GetPipelineRunsByRequesterParams) ([]datamodel.PipelineRun, int64, error)
 }
 
 type repository struct {
@@ -1270,16 +1270,26 @@ func (r *repository) GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx
 	return componentRuns, totalRows, nil
 }
 
-func (r *repository) GetPaginatedPipelineRunsByRequester(ctx context.Context, requesterUID string, startTimeBegin, startTimeEnd time.Time, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.PipelineRun, int64, error) {
+type GetPipelineRunsByRequesterParams struct {
+	RequesterUID   string
+	StartTimeBegin time.Time
+	StartTimeEnd   time.Time
+	Page           int
+	PageSize       int
+	Filter         filtering.Filter
+	Order          ordering.OrderBy
+}
+
+func (r *repository) GetPaginatedPipelineRunsByRequester(ctx context.Context, params GetPipelineRunsByRequesterParams) ([]datamodel.PipelineRun, int64, error) {
 	var pipelineRuns []datamodel.PipelineRun
 	var totalRows int64
 
 	whereConditions := []string{"namespace = ? and started_time >= ? and started_time <= ?"}
-	whereArgs := []any{requesterUID, startTimeBegin, startTimeEnd}
+	whereArgs := []any{params.RequesterUID, params.StartTimeBegin, params.StartTimeEnd}
 
 	var expr *clause.Expr
 	var err error
-	if expr, err = r.TranspileFilter(filter); err != nil {
+	if expr, err = r.TranspileFilter(params.Filter); err != nil {
 		return nil, 0, err
 	}
 	if expr != nil {
@@ -1301,6 +1311,7 @@ func (r *repository) GetPaginatedPipelineRunsByRequester(ctx context.Context, re
 
 	queryBuilder := r.db.Preload(clause.Associations).Where(where, whereArgs...)
 
+	order := params.Order
 	if len(order.Fields) == 0 {
 		order.Fields = append(order.Fields, ordering.Field{
 			Path: "started_time",
@@ -1315,7 +1326,7 @@ func (r *repository) GetPaginatedPipelineRunsByRequester(ctx context.Context, re
 
 	// Retrieve paginated results with permissions
 	err = queryBuilder.
-		Offset(page * pageSize).Limit(pageSize).
+		Offset(params.Page * params.PageSize).Limit(params.PageSize).
 		Find(&pipelineRuns).Error
 	if err != nil {
 		return nil, 0, err

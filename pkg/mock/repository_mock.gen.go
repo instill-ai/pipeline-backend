@@ -5,7 +5,6 @@ package mock
 import (
 	"context"
 	"sync"
-	"time"
 
 	mm_atomic "sync/atomic"
 	mm_time "time"
@@ -175,9 +174,9 @@ type RepositoryMock struct {
 	beforeGetPaginatedComponentRunsByPipelineRunIDWithPermissionsCounter uint64
 	GetPaginatedComponentRunsByPipelineRunIDWithPermissionsMock          mRepositoryMockGetPaginatedComponentRunsByPipelineRunIDWithPermissions
 
-	funcGetPaginatedPipelineRunsByRequester          func(ctx context.Context, requesterUID string, startTime time.Time, endTime time.Time, page int, pageSize int, filter filtering.Filter, order ordering.OrderBy) (pa1 []datamodel.PipelineRun, i1 int64, err error)
+	funcGetPaginatedPipelineRunsByRequester          func(ctx context.Context, params mm_repository.GetPipelineRunsByRequesterParams) (pa1 []datamodel.PipelineRun, i1 int64, err error)
 	funcGetPaginatedPipelineRunsByRequesterOrigin    string
-	inspectFuncGetPaginatedPipelineRunsByRequester   func(ctx context.Context, requesterUID string, startTime time.Time, endTime time.Time, page int, pageSize int, filter filtering.Filter, order ordering.OrderBy)
+	inspectFuncGetPaginatedPipelineRunsByRequester   func(ctx context.Context, params mm_repository.GetPipelineRunsByRequesterParams)
 	afterGetPaginatedPipelineRunsByRequesterCounter  uint64
 	beforeGetPaginatedPipelineRunsByRequesterCounter uint64
 	GetPaginatedPipelineRunsByRequesterMock          mRepositoryMockGetPaginatedPipelineRunsByRequester
@@ -8514,26 +8513,14 @@ type RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation struct {
 
 // RepositoryMockGetPaginatedPipelineRunsByRequesterParams contains parameters of the Repository.GetPaginatedPipelineRunsByRequester
 type RepositoryMockGetPaginatedPipelineRunsByRequesterParams struct {
-	ctx          context.Context
-	requesterUID string
-	startTime    time.Time
-	endTime      time.Time
-	page         int
-	pageSize     int
-	filter       filtering.Filter
-	order        ordering.OrderBy
+	ctx    context.Context
+	params mm_repository.GetPipelineRunsByRequesterParams
 }
 
 // RepositoryMockGetPaginatedPipelineRunsByRequesterParamPtrs contains pointers to parameters of the Repository.GetPaginatedPipelineRunsByRequester
 type RepositoryMockGetPaginatedPipelineRunsByRequesterParamPtrs struct {
-	ctx          *context.Context
-	requesterUID *string
-	startTime    *time.Time
-	endTime      *time.Time
-	page         *int
-	pageSize     *int
-	filter       *filtering.Filter
-	order        *ordering.OrderBy
+	ctx    *context.Context
+	params *mm_repository.GetPipelineRunsByRequesterParams
 }
 
 // RepositoryMockGetPaginatedPipelineRunsByRequesterResults contains results of the Repository.GetPaginatedPipelineRunsByRequester
@@ -8545,15 +8532,9 @@ type RepositoryMockGetPaginatedPipelineRunsByRequesterResults struct {
 
 // RepositoryMockGetPaginatedPipelineRunsByRequesterOrigins contains origins of expectations of the Repository.GetPaginatedPipelineRunsByRequester
 type RepositoryMockGetPaginatedPipelineRunsByRequesterExpectationOrigins struct {
-	origin             string
-	originCtx          string
-	originRequesterUID string
-	originStartTime    string
-	originEndTime      string
-	originPage         string
-	originPageSize     string
-	originFilter       string
-	originOrder        string
+	origin       string
+	originCtx    string
+	originParams string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -8567,7 +8548,7 @@ func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipeline
 }
 
 // Expect sets up expected params for Repository.GetPaginatedPipelineRunsByRequester
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) Expect(ctx context.Context, requesterUID string, startTime time.Time, endTime time.Time, page int, pageSize int, filter filtering.Filter, order ordering.OrderBy) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
+func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) Expect(ctx context.Context, params mm_repository.GetPipelineRunsByRequesterParams) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
 	if mmGetPaginatedPipelineRunsByRequester.mock.funcGetPaginatedPipelineRunsByRequester != nil {
 		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Set")
 	}
@@ -8580,7 +8561,7 @@ func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipeline
 		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by ExpectParams functions")
 	}
 
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.params = &RepositoryMockGetPaginatedPipelineRunsByRequesterParams{ctx, requesterUID, startTime, endTime, page, pageSize, filter, order}
+	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.params = &RepositoryMockGetPaginatedPipelineRunsByRequesterParams{ctx, params}
 	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmGetPaginatedPipelineRunsByRequester.expectations {
 		if minimock.Equal(e.params, mmGetPaginatedPipelineRunsByRequester.defaultExpectation.params) {
@@ -8614,8 +8595,8 @@ func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipeline
 	return mmGetPaginatedPipelineRunsByRequester
 }
 
-// ExpectRequesterUIDParam2 sets up expected param requesterUID for Repository.GetPaginatedPipelineRunsByRequester
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) ExpectRequesterUIDParam2(requesterUID string) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
+// ExpectParamsParam2 sets up expected param params for Repository.GetPaginatedPipelineRunsByRequester
+func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) ExpectParamsParam2(params mm_repository.GetPipelineRunsByRequesterParams) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
 	if mmGetPaginatedPipelineRunsByRequester.mock.funcGetPaginatedPipelineRunsByRequester != nil {
 		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Set")
 	}
@@ -8631,152 +8612,14 @@ func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipeline
 	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs == nil {
 		mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs = &RepositoryMockGetPaginatedPipelineRunsByRequesterParamPtrs{}
 	}
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs.requesterUID = &requesterUID
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.expectationOrigins.originRequesterUID = minimock.CallerInfo(1)
-
-	return mmGetPaginatedPipelineRunsByRequester
-}
-
-// ExpectStartTimeParam3 sets up expected param startTime for Repository.GetPaginatedPipelineRunsByRequester
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) ExpectStartTimeParam3(startTime time.Time) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
-	if mmGetPaginatedPipelineRunsByRequester.mock.funcGetPaginatedPipelineRunsByRequester != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Set")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation = &RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation{}
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.params != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Expect")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs = &RepositoryMockGetPaginatedPipelineRunsByRequesterParamPtrs{}
-	}
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs.startTime = &startTime
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.expectationOrigins.originStartTime = minimock.CallerInfo(1)
-
-	return mmGetPaginatedPipelineRunsByRequester
-}
-
-// ExpectEndTimeParam4 sets up expected param endTime for Repository.GetPaginatedPipelineRunsByRequester
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) ExpectEndTimeParam4(endTime time.Time) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
-	if mmGetPaginatedPipelineRunsByRequester.mock.funcGetPaginatedPipelineRunsByRequester != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Set")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation = &RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation{}
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.params != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Expect")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs = &RepositoryMockGetPaginatedPipelineRunsByRequesterParamPtrs{}
-	}
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs.endTime = &endTime
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.expectationOrigins.originEndTime = minimock.CallerInfo(1)
-
-	return mmGetPaginatedPipelineRunsByRequester
-}
-
-// ExpectPageParam5 sets up expected param page for Repository.GetPaginatedPipelineRunsByRequester
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) ExpectPageParam5(page int) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
-	if mmGetPaginatedPipelineRunsByRequester.mock.funcGetPaginatedPipelineRunsByRequester != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Set")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation = &RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation{}
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.params != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Expect")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs = &RepositoryMockGetPaginatedPipelineRunsByRequesterParamPtrs{}
-	}
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs.page = &page
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.expectationOrigins.originPage = minimock.CallerInfo(1)
-
-	return mmGetPaginatedPipelineRunsByRequester
-}
-
-// ExpectPageSizeParam6 sets up expected param pageSize for Repository.GetPaginatedPipelineRunsByRequester
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) ExpectPageSizeParam6(pageSize int) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
-	if mmGetPaginatedPipelineRunsByRequester.mock.funcGetPaginatedPipelineRunsByRequester != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Set")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation = &RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation{}
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.params != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Expect")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs = &RepositoryMockGetPaginatedPipelineRunsByRequesterParamPtrs{}
-	}
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs.pageSize = &pageSize
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.expectationOrigins.originPageSize = minimock.CallerInfo(1)
-
-	return mmGetPaginatedPipelineRunsByRequester
-}
-
-// ExpectFilterParam7 sets up expected param filter for Repository.GetPaginatedPipelineRunsByRequester
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) ExpectFilterParam7(filter filtering.Filter) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
-	if mmGetPaginatedPipelineRunsByRequester.mock.funcGetPaginatedPipelineRunsByRequester != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Set")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation = &RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation{}
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.params != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Expect")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs = &RepositoryMockGetPaginatedPipelineRunsByRequesterParamPtrs{}
-	}
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs.filter = &filter
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.expectationOrigins.originFilter = minimock.CallerInfo(1)
-
-	return mmGetPaginatedPipelineRunsByRequester
-}
-
-// ExpectOrderParam8 sets up expected param order for Repository.GetPaginatedPipelineRunsByRequester
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) ExpectOrderParam8(order ordering.OrderBy) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
-	if mmGetPaginatedPipelineRunsByRequester.mock.funcGetPaginatedPipelineRunsByRequester != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Set")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation = &RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation{}
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.params != nil {
-		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Expect")
-	}
-
-	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs == nil {
-		mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs = &RepositoryMockGetPaginatedPipelineRunsByRequesterParamPtrs{}
-	}
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs.order = &order
-	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.expectationOrigins.originOrder = minimock.CallerInfo(1)
+	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.paramPtrs.params = &params
+	mmGetPaginatedPipelineRunsByRequester.defaultExpectation.expectationOrigins.originParams = minimock.CallerInfo(1)
 
 	return mmGetPaginatedPipelineRunsByRequester
 }
 
 // Inspect accepts an inspector function that has same arguments as the Repository.GetPaginatedPipelineRunsByRequester
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) Inspect(f func(ctx context.Context, requesterUID string, startTime time.Time, endTime time.Time, page int, pageSize int, filter filtering.Filter, order ordering.OrderBy)) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
+func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) Inspect(f func(ctx context.Context, params mm_repository.GetPipelineRunsByRequesterParams)) *mRepositoryMockGetPaginatedPipelineRunsByRequester {
 	if mmGetPaginatedPipelineRunsByRequester.mock.inspectFuncGetPaginatedPipelineRunsByRequester != nil {
 		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("Inspect function is already set for RepositoryMock.GetPaginatedPipelineRunsByRequester")
 	}
@@ -8801,7 +8644,7 @@ func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipeline
 }
 
 // Set uses given function f to mock the Repository.GetPaginatedPipelineRunsByRequester method
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) Set(f func(ctx context.Context, requesterUID string, startTime time.Time, endTime time.Time, page int, pageSize int, filter filtering.Filter, order ordering.OrderBy) (pa1 []datamodel.PipelineRun, i1 int64, err error)) *RepositoryMock {
+func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) Set(f func(ctx context.Context, params mm_repository.GetPipelineRunsByRequesterParams) (pa1 []datamodel.PipelineRun, i1 int64, err error)) *RepositoryMock {
 	if mmGetPaginatedPipelineRunsByRequester.defaultExpectation != nil {
 		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("Default expectation is already set for the Repository.GetPaginatedPipelineRunsByRequester method")
 	}
@@ -8817,14 +8660,14 @@ func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipeline
 
 // When sets expectation for the Repository.GetPaginatedPipelineRunsByRequester which will trigger the result defined by the following
 // Then helper
-func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) When(ctx context.Context, requesterUID string, startTime time.Time, endTime time.Time, page int, pageSize int, filter filtering.Filter, order ordering.OrderBy) *RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation {
+func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipelineRunsByRequester) When(ctx context.Context, params mm_repository.GetPipelineRunsByRequesterParams) *RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation {
 	if mmGetPaginatedPipelineRunsByRequester.mock.funcGetPaginatedPipelineRunsByRequester != nil {
 		mmGetPaginatedPipelineRunsByRequester.mock.t.Fatalf("RepositoryMock.GetPaginatedPipelineRunsByRequester mock is already set by Set")
 	}
 
 	expectation := &RepositoryMockGetPaginatedPipelineRunsByRequesterExpectation{
 		mock:               mmGetPaginatedPipelineRunsByRequester.mock,
-		params:             &RepositoryMockGetPaginatedPipelineRunsByRequesterParams{ctx, requesterUID, startTime, endTime, page, pageSize, filter, order},
+		params:             &RepositoryMockGetPaginatedPipelineRunsByRequesterParams{ctx, params},
 		expectationOrigins: RepositoryMockGetPaginatedPipelineRunsByRequesterExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmGetPaginatedPipelineRunsByRequester.expectations = append(mmGetPaginatedPipelineRunsByRequester.expectations, expectation)
@@ -8859,17 +8702,17 @@ func (mmGetPaginatedPipelineRunsByRequester *mRepositoryMockGetPaginatedPipeline
 }
 
 // GetPaginatedPipelineRunsByRequester implements mm_repository.Repository
-func (mmGetPaginatedPipelineRunsByRequester *RepositoryMock) GetPaginatedPipelineRunsByRequester(ctx context.Context, requesterUID string, startTime time.Time, endTime time.Time, page int, pageSize int, filter filtering.Filter, order ordering.OrderBy) (pa1 []datamodel.PipelineRun, i1 int64, err error) {
+func (mmGetPaginatedPipelineRunsByRequester *RepositoryMock) GetPaginatedPipelineRunsByRequester(ctx context.Context, params mm_repository.GetPipelineRunsByRequesterParams) (pa1 []datamodel.PipelineRun, i1 int64, err error) {
 	mm_atomic.AddUint64(&mmGetPaginatedPipelineRunsByRequester.beforeGetPaginatedPipelineRunsByRequesterCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetPaginatedPipelineRunsByRequester.afterGetPaginatedPipelineRunsByRequesterCounter, 1)
 
 	mmGetPaginatedPipelineRunsByRequester.t.Helper()
 
 	if mmGetPaginatedPipelineRunsByRequester.inspectFuncGetPaginatedPipelineRunsByRequester != nil {
-		mmGetPaginatedPipelineRunsByRequester.inspectFuncGetPaginatedPipelineRunsByRequester(ctx, requesterUID, startTime, endTime, page, pageSize, filter, order)
+		mmGetPaginatedPipelineRunsByRequester.inspectFuncGetPaginatedPipelineRunsByRequester(ctx, params)
 	}
 
-	mm_params := RepositoryMockGetPaginatedPipelineRunsByRequesterParams{ctx, requesterUID, startTime, endTime, page, pageSize, filter, order}
+	mm_params := RepositoryMockGetPaginatedPipelineRunsByRequesterParams{ctx, params}
 
 	// Record call args
 	mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.mutex.Lock()
@@ -8888,7 +8731,7 @@ func (mmGetPaginatedPipelineRunsByRequester *RepositoryMock) GetPaginatedPipelin
 		mm_want := mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.params
 		mm_want_ptrs := mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.paramPtrs
 
-		mm_got := RepositoryMockGetPaginatedPipelineRunsByRequesterParams{ctx, requesterUID, startTime, endTime, page, pageSize, filter, order}
+		mm_got := RepositoryMockGetPaginatedPipelineRunsByRequesterParams{ctx, params}
 
 		if mm_want_ptrs != nil {
 
@@ -8897,39 +8740,9 @@ func (mmGetPaginatedPipelineRunsByRequester *RepositoryMock) GetPaginatedPipelin
 					mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
-			if mm_want_ptrs.requesterUID != nil && !minimock.Equal(*mm_want_ptrs.requesterUID, mm_got.requesterUID) {
-				mmGetPaginatedPipelineRunsByRequester.t.Errorf("RepositoryMock.GetPaginatedPipelineRunsByRequester got unexpected parameter requesterUID, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.expectationOrigins.originRequesterUID, *mm_want_ptrs.requesterUID, mm_got.requesterUID, minimock.Diff(*mm_want_ptrs.requesterUID, mm_got.requesterUID))
-			}
-
-			if mm_want_ptrs.startTime != nil && !minimock.Equal(*mm_want_ptrs.startTime, mm_got.startTime) {
-				mmGetPaginatedPipelineRunsByRequester.t.Errorf("RepositoryMock.GetPaginatedPipelineRunsByRequester got unexpected parameter startTime, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.expectationOrigins.originStartTime, *mm_want_ptrs.startTime, mm_got.startTime, minimock.Diff(*mm_want_ptrs.startTime, mm_got.startTime))
-			}
-
-			if mm_want_ptrs.endTime != nil && !minimock.Equal(*mm_want_ptrs.endTime, mm_got.endTime) {
-				mmGetPaginatedPipelineRunsByRequester.t.Errorf("RepositoryMock.GetPaginatedPipelineRunsByRequester got unexpected parameter endTime, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.expectationOrigins.originEndTime, *mm_want_ptrs.endTime, mm_got.endTime, minimock.Diff(*mm_want_ptrs.endTime, mm_got.endTime))
-			}
-
-			if mm_want_ptrs.page != nil && !minimock.Equal(*mm_want_ptrs.page, mm_got.page) {
-				mmGetPaginatedPipelineRunsByRequester.t.Errorf("RepositoryMock.GetPaginatedPipelineRunsByRequester got unexpected parameter page, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.expectationOrigins.originPage, *mm_want_ptrs.page, mm_got.page, minimock.Diff(*mm_want_ptrs.page, mm_got.page))
-			}
-
-			if mm_want_ptrs.pageSize != nil && !minimock.Equal(*mm_want_ptrs.pageSize, mm_got.pageSize) {
-				mmGetPaginatedPipelineRunsByRequester.t.Errorf("RepositoryMock.GetPaginatedPipelineRunsByRequester got unexpected parameter pageSize, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.expectationOrigins.originPageSize, *mm_want_ptrs.pageSize, mm_got.pageSize, minimock.Diff(*mm_want_ptrs.pageSize, mm_got.pageSize))
-			}
-
-			if mm_want_ptrs.filter != nil && !minimock.Equal(*mm_want_ptrs.filter, mm_got.filter) {
-				mmGetPaginatedPipelineRunsByRequester.t.Errorf("RepositoryMock.GetPaginatedPipelineRunsByRequester got unexpected parameter filter, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.expectationOrigins.originFilter, *mm_want_ptrs.filter, mm_got.filter, minimock.Diff(*mm_want_ptrs.filter, mm_got.filter))
-			}
-
-			if mm_want_ptrs.order != nil && !minimock.Equal(*mm_want_ptrs.order, mm_got.order) {
-				mmGetPaginatedPipelineRunsByRequester.t.Errorf("RepositoryMock.GetPaginatedPipelineRunsByRequester got unexpected parameter order, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.expectationOrigins.originOrder, *mm_want_ptrs.order, mm_got.order, minimock.Diff(*mm_want_ptrs.order, mm_got.order))
+			if mm_want_ptrs.params != nil && !minimock.Equal(*mm_want_ptrs.params, mm_got.params) {
+				mmGetPaginatedPipelineRunsByRequester.t.Errorf("RepositoryMock.GetPaginatedPipelineRunsByRequester got unexpected parameter params, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetPaginatedPipelineRunsByRequester.GetPaginatedPipelineRunsByRequesterMock.defaultExpectation.expectationOrigins.originParams, *mm_want_ptrs.params, mm_got.params, minimock.Diff(*mm_want_ptrs.params, mm_got.params))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
@@ -8944,9 +8757,9 @@ func (mmGetPaginatedPipelineRunsByRequester *RepositoryMock) GetPaginatedPipelin
 		return (*mm_results).pa1, (*mm_results).i1, (*mm_results).err
 	}
 	if mmGetPaginatedPipelineRunsByRequester.funcGetPaginatedPipelineRunsByRequester != nil {
-		return mmGetPaginatedPipelineRunsByRequester.funcGetPaginatedPipelineRunsByRequester(ctx, requesterUID, startTime, endTime, page, pageSize, filter, order)
+		return mmGetPaginatedPipelineRunsByRequester.funcGetPaginatedPipelineRunsByRequester(ctx, params)
 	}
-	mmGetPaginatedPipelineRunsByRequester.t.Fatalf("Unexpected call to RepositoryMock.GetPaginatedPipelineRunsByRequester. %v %v %v %v %v %v %v %v", ctx, requesterUID, startTime, endTime, page, pageSize, filter, order)
+	mmGetPaginatedPipelineRunsByRequester.t.Fatalf("Unexpected call to RepositoryMock.GetPaginatedPipelineRunsByRequester. %v %v", ctx, params)
 	return
 }
 

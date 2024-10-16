@@ -16,7 +16,6 @@ import (
 	"github.com/go-redis/redismock/v9"
 	"github.com/gofrs/uuid"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/stretchr/testify/require"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 	"go.uber.org/zap"
@@ -657,7 +656,7 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 		},
 	}
 	err := repo.CreateNamespacePipeline(ctx, p)
-	require.NoError(t, err)
+	c.Check(err, qt.IsNil)
 
 	p2 := &datamodel.Pipeline{
 		Owner: ownerPermalink,
@@ -669,17 +668,17 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 		},
 	}
 	err = repo.CreateNamespacePipeline(ctx, p2)
-	require.NoError(t, err)
+	c.Check(err, qt.IsNil)
 
 	got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
-	require.NoError(t, err)
-	require.Zero(t, got.NumberOfRuns)
-	require.True(t, got.LastRunTime.IsZero())
+	c.Check(err, qt.IsNil)
+	c.Check(got.NumberOfRuns, qt.Equals, 0)
+	c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
 
 	got, err = repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID2, true, false)
-	require.NoError(t, err)
-	require.Zero(t, got.NumberOfRuns)
-	require.True(t, got.LastRunTime.IsZero())
+	c.Check(err, qt.IsNil)
+	c.Check(got.NumberOfRuns, qt.Equals, 0)
+	c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
 
 	pipelineRun := &datamodel.PipelineRun{
 		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
@@ -694,17 +693,33 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 	}
 
 	err = repo.UpsertPipelineRun(ctx, pipelineRun)
-	require.NoError(t, err)
+	c.Check(err, qt.IsNil)
 
-	resp, _, err := repo.GetPaginatedPipelineRunsByRequester(ctx, namespace1, now.Add(-3*time.Hour), now.Add(-2*time.Hour), 0, 10, filtering.Filter{}, ordering.OrderBy{})
-	require.NoError(t, err)
-	require.Len(t, resp, 0)
+	resp, _, err := repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
+		RequesterUID:   namespace1,
+		StartTimeBegin: now.Add(-3 * time.Hour),
+		StartTimeEnd:   now.Add(-2 * time.Hour),
+		Page:           0,
+		PageSize:       10,
+		Filter:         filtering.Filter{},
+		Order:          ordering.OrderBy{},
+	})
+	c.Check(err, qt.IsNil)
+	c.Check(resp, qt.HasLen, 0)
 
-	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, namespace1, now.Add(-2*time.Hour), now, 0, 10, filtering.Filter{}, ordering.OrderBy{})
-	require.NoError(t, err)
-	require.Len(t, resp, 1)
-	require.Equal(t, resp[0].PipelineTriggerUID, pipelineRun.PipelineTriggerUID)
-	require.Equal(t, resp[0].Pipeline.ID, p.ID)
+	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
+		RequesterUID:   namespace1,
+		StartTimeBegin: now.Add(-2 * time.Hour),
+		StartTimeEnd:   now,
+		Page:           0,
+		PageSize:       10,
+		Filter:         filtering.Filter{},
+		Order:          ordering.OrderBy{},
+	})
+	c.Check(err, qt.IsNil)
+	c.Check(resp, qt.HasLen, 1)
+	c.Check(resp[0].PipelineTriggerUID, qt.Equals, pipelineRun.PipelineTriggerUID)
+	c.Check(resp[0].Pipeline.ID, qt.Equals, p.ID)
 
 	pipelineRun2 := &datamodel.PipelineRun{
 		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
@@ -719,13 +734,21 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 	}
 
 	err = repo.UpsertPipelineRun(ctx, pipelineRun2)
-	require.NoError(t, err)
+	c.Check(err, qt.IsNil)
 
-	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, namespace1, now.Add(-2*time.Hour), now, 0, 10, filtering.Filter{}, ordering.OrderBy{})
-	require.NoError(t, err)
-	require.Len(t, resp, 2)
-	require.Equal(t, resp[0].PipelineTriggerUID, pipelineRun.PipelineTriggerUID)
-	require.Equal(t, resp[0].Pipeline.ID, p.ID)
-	require.Equal(t, resp[1].PipelineTriggerUID, pipelineRun2.PipelineTriggerUID)
-	require.Equal(t, resp[1].Pipeline.ID, p2.ID)
+	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
+		RequesterUID:   namespace1,
+		StartTimeBegin: now.Add(-2 * time.Hour),
+		StartTimeEnd:   now,
+		Page:           0,
+		PageSize:       10,
+		Filter:         filtering.Filter{},
+		Order:          ordering.OrderBy{},
+	})
+	c.Check(err, qt.IsNil)
+	c.Check(resp, qt.HasLen, 2)
+	c.Check(resp[0].PipelineTriggerUID, qt.Equals, pipelineRun.PipelineTriggerUID)
+	c.Check(resp[0].Pipeline.ID, qt.Equals, p.ID)
+	c.Check(resp[1].PipelineTriggerUID, qt.Equals, pipelineRun2.PipelineTriggerUID)
+	c.Check(resp[1].Pipeline.ID, qt.Equals, p2.ID)
 }
