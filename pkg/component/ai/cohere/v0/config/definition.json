@@ -4,7 +4,7 @@
     "TASK_TEXT_EMBEDDINGS",
     "TASK_TEXT_RERANKING"
   ],
-  "documentationUrl": "https://www.instill.tech/docs/latest/vdp/ai/cohere",
+  "documentationUrl": "https://www.instill.tech/docs/component/ai/cohere",
   "icon": "assets/cohere.svg",
   "id": "cohere",
   "public": true,

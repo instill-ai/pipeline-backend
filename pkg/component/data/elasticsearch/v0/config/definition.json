@@ -9,7 +9,7 @@
     "TASK_CREATE_INDEX",
     "TASK_DELETE_INDEX"
   ],
-  "documentationUrl": "https://www.instill.tech/docs/component/application/elasticsearch",
+  "documentationUrl": "https://www.instill.tech/docs/component/data/elasticsearch",
   "icon": "assets/elasticsearch.svg",
   "id": "elasticsearch",
   "public": true,
