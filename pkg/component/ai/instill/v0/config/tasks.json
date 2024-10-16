@@ -593,7 +593,7 @@
           "type": "object",
           "properties": {
             "model": {
-              "description": "The model to be used for generating embeddings.",
+              "description": "The model to be used for generating embeddings. It should be `namespace/model-name/version`. i.e. `abrc/yolov7-stomata/v0.1.0`. You can see the version from the Versions tab of Model page.",
               "instillShortDescription": "The model to be used.",
               "instillAcceptFormats": [
                 "string"
