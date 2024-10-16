@@ -67,6 +67,7 @@ func (j *JSONB) Scan(value interface{}) error {
 type PipelineRun struct {
 	PipelineTriggerUID uuid.UUID      `gorm:"primaryKey" json:"pipeline-trigger-uid"`                                        // Unique identifier for each run
 	PipelineUID        uuid.UUID      `gorm:"type:uuid;index" json:"pipeline-uid"`                                           // Pipeline unique ID used in the run
+	Pipeline           Pipeline       `gorm:"foreignKey:PipelineUID;references:UID"`                                         // Pipeline instance referenced in the run
 	PipelineVersion    string         `gorm:"type:varchar(255)" json:"pipeline-version"`                                     // Pipeline version used in the run
 	Status             RunStatus      `gorm:"type:valid_trigger_status;index" json:"status"`                                 // Current status of the run (e.g., Running, Completed, Failed)
 	Source             RunSource      `gorm:"type:valid_trigger_source" json:"source"`                                       // Origin of the run (e.g., Web click, API)

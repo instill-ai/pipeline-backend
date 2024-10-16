@@ -24,11 +24,9 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
-
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-
 	"github.com/instill-ai/x/paginate"
 
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
@@ -106,6 +104,7 @@ type Repository interface {
 
 	GetPaginatedPipelineRunsWithPermissions(ctx context.Context, requesterUID, pipelineUID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy, isOwner bool) ([]datamodel.PipelineRun, int64, error)
 	GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx context.Context, pipelineRunID string, page, pageSize int, filter filtering.Filter, order ordering.OrderBy) ([]datamodel.ComponentRun, int64, error)
+	GetPaginatedPipelineRunsByRequester(ctx context.Context, params GetPipelineRunsByRequesterParams) ([]datamodel.PipelineRun, int64, error)
 }
 
 type repository struct {
@@ -1130,7 +1129,7 @@ func (r *repository) AddPipelineClones(ctx context.Context, pipelineUID uuid.UUI
 
 func (r *repository) GetPipelineRunByUID(ctx context.Context, pipelineTriggerUID uuid.UUID) (*datamodel.PipelineRun, error) {
 	pipelineRun := &datamodel.PipelineRun{PipelineTriggerUID: pipelineTriggerUID}
-	err := r.db.First(pipelineRun).Error
+	err := r.db.Preload(clause.Associations).First(pipelineRun).Error
 	if err != nil {
 		return nil, err
 	}
@@ -1269,6 +1268,71 @@ func (r *repository) GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx
 	}
 
 	return componentRuns, totalRows, nil
+}
+
+type GetPipelineRunsByRequesterParams struct {
+	RequesterUID   string
+	StartTimeBegin time.Time
+	StartTimeEnd   time.Time
+	Page           int
+	PageSize       int
+	Filter         filtering.Filter
+	Order          ordering.OrderBy
+}
+
+func (r *repository) GetPaginatedPipelineRunsByRequester(ctx context.Context, params GetPipelineRunsByRequesterParams) ([]datamodel.PipelineRun, int64, error) {
+	var pipelineRuns []datamodel.PipelineRun
+	var totalRows int64
+
+	whereConditions := []string{"namespace = ? and started_time >= ? and started_time <= ?"}
+	whereArgs := []any{params.RequesterUID, params.StartTimeBegin, params.StartTimeEnd}
+
+	var expr *clause.Expr
+	var err error
+	if expr, err = r.TranspileFilter(params.Filter); err != nil {
+		return nil, 0, err
+	}
+	if expr != nil {
+		whereConditions = append(whereConditions, "(?)")
+		whereArgs = append(whereArgs, expr)
+	}
+
+	var where string
+	if len(whereConditions) > 0 {
+		where = strings.Join(whereConditions, " and ")
+	}
+
+	err = r.db.Model(&datamodel.PipelineRun{}).
+		Where(where, whereArgs...).
+		Count(&totalRows).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	queryBuilder := r.db.Preload(clause.Associations).Where(where, whereArgs...)
+
+	order := params.Order
+	if len(order.Fields) == 0 {
+		order.Fields = append(order.Fields, ordering.Field{
+			Path: "started_time",
+			Desc: true,
+		})
+	}
+
+	for _, field := range order.Fields {
+		orderString := strcase.ToSnake(field.Path) + transformBoolToDescString(field.Desc)
+		queryBuilder.Order(orderString)
+	}
+
+	// Retrieve paginated results with permissions
+	err = queryBuilder.
+		Offset(params.Page * params.PageSize).Limit(params.PageSize).
+		Find(&pipelineRuns).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return pipelineRuns, totalRows, nil
 }
 
 func (r *repository) CreateNamespaceConnection(ctx context.Context, conn *datamodel.Connection) (*datamodel.Connection, error) {

@@ -36,6 +36,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
+	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
@@ -1951,5 +1952,90 @@ func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListCom
 		TotalSize:     int32(totalCount),
 		Page:          int32(page),
 		PageSize:      int32(pageSize),
+	}, nil
+}
+
+func (s *service) ListPipelineRunsByRequester(ctx context.Context, req *pipelinepb.ListPipelineRunsByCreditOwnerRequest) (*pipelinepb.ListPipelineRunsByCreditOwnerResponse, error) {
+	page := s.pageInRange(req.GetPage())
+	pageSize := s.pageSizeInRange(req.GetPageSize())
+	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
+
+	declarations, err := filtering.NewDeclarations([]filtering.DeclarationOption{
+		filtering.DeclareStandardFunctions(),
+		filtering.DeclareIdent("status", filtering.TypeString),
+		filtering.DeclareIdent("source", filtering.TypeString),
+	}...)
+	if err != nil {
+		return nil, err
+	}
+
+	filter, err := filtering.ParseFilter(req, declarations)
+	if err != nil {
+		return nil, err
+	}
+
+	orderBy, err := ordering.ParseOrderBy(req)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now().UTC()
+	startedTimeBegin := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	if req.GetStart().IsValid() {
+		startedTimeBegin = req.GetStart().AsTime()
+	}
+	startedTimeEnd := now
+	if req.GetStop().IsValid() {
+		startedTimeEnd = req.GetStop().AsTime()
+	}
+
+	if startedTimeBegin.After(startedTimeEnd) {
+		return nil, fmt.Errorf("time range end time is earlier than start time")
+	}
+
+	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsByRequester(ctx, repository.GetPipelineRunsByRequesterParams{
+		RequesterUID:   requesterUID,
+		StartTimeBegin: startedTimeBegin,
+		StartTimeEnd:   startedTimeEnd,
+		Page:           page,
+		PageSize:       pageSize,
+		Filter:         filter,
+		Order:          orderBy,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("getting pipeline runs by requester: %w", err)
+	}
+
+	requesterIDMap := make(map[string]struct{})
+	for _, pipelineRun := range pipelineRuns {
+		requesterIDMap[pipelineRun.TriggeredBy] = struct{}{}
+	}
+
+	runnerMap := make(map[string]*string)
+	for requesterID := range requesterIDMap {
+		runner, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: requesterID})
+		if err != nil {
+			return nil, err
+		}
+		runnerMap[requesterID] = &runner.Id
+	}
+
+	pbPipelineRuns := make([]*pipelinepb.PipelineRun, len(pipelineRuns))
+
+	var pbRun *pipelinepb.PipelineRun
+	for i, run := range pipelineRuns {
+		pbRun, err = s.convertPipelineRunToPB(run)
+		if err != nil {
+			return nil, fmt.Errorf("converting pipeline run: %w", err)
+		}
+		pbRun.RunnerId = runnerMap[run.TriggeredBy]
+		pbPipelineRuns[i] = pbRun
+	}
+
+	return &pipelinepb.ListPipelineRunsByCreditOwnerResponse{
+		PipelineRuns: pbPipelineRuns,
+		TotalSize:    int32(totalCount),
+		Page:         int32(page),
+		PageSize:     int32(pageSize),
 	}, nil
 }
