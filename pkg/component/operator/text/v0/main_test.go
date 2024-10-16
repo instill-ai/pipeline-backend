@@ -1,89 +1,91 @@
-package hello
+package text
 
 import (
 	"context"
 	"testing"
 
-	"go.uber.org/zap"
+	"github.com/frankban/quicktest"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	qt "github.com/frankban/quicktest"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
-	"github.com/instill-ai/x/errmsg"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
-func TestOperator_Execute(t *testing.T) {
-	c := qt.New(t)
+func TestOperator(t *testing.T) {
+	c := quicktest.New(t)
+
+	// Define test cases for chunking text and error scenarios
+	testcases := []struct {
+		name  string
+		task  string
+		input structpb.Struct
+	}{
+		{
+			name: "chunk texts successfully",
+			task: "TASK_CHUNK_TEXT",
+			input: structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"text": {Kind: &structpb.Value_StringValue{StringValue: "Hello world. This is a test."}},
+					"strategy": {Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{
+						Fields: map[string]*structpb.Value{
+							"setting": {Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{
+								Fields: map[string]*structpb.Value{
+									"chunk-method": {Kind: &structpb.Value_StringValue{StringValue: "Token"}},
+								},
+							}}},
+						},
+					}}},
+				},
+			},
+		},
+		{
+			name:  "error case - unsupported task",
+			task:  "FAKE_TASK",
+			input: structpb.Struct{},
+		},
+	}
+
+	// Initialize the base component
+	bc := base.Component{}
 	ctx := context.Background()
 
-	bc := base.Component{Logger: zap.NewNop()}
-	component := Init(bc)
+	for _, tc := range testcases {
+		c.Run(tc.name, func(c *quicktest.C) {
+			// Initialize the component
+			component := Init(bc)
+			c.Assert(component, quicktest.IsNotNil)
 
-	c.Run("ok - greet", func(c *qt.C) {
-		exec, err := component.CreateExecution(base.ComponentExecution{
-			Component: component,
-			Task:      taskGreet,
+			// Create an execution for the task
+			execution, err := component.CreateExecution(base.ComponentExecution{
+				Component: component,
+				Task:      tc.task,
+			})
+			c.Assert(err, quicktest.IsNil)
+			c.Assert(execution, quicktest.IsNotNil)
+
+			// Mock inputs and outputs
+			ir, ow, eh, job := mock.GenerateMockJob(c)
+			ir.ReadMock.Return(&tc.input, nil)
+
+			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) error {
+				if tc.name == "error case - unsupported task" {
+					c.Assert(output, quicktest.IsNil)
+					return nil
+				}
+				// Validate output for chunking texts
+				c.Assert(output.Fields["chunks"], quicktest.IsNotNil) // Assuming the output has a field "chunks"
+				return nil
+			})
+
+			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
+				if tc.name == "error case - unsupported task" {
+					c.Assert(err, quicktest.ErrorMatches, "not supported task: FAKE_TASK")
+				}
+			})
+
+			// Execute the job and assert the results
+			err = execution.Execute(ctx, []*base.Job{job})
+			c.Assert(err, quicktest.IsNil)
 		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn, err := structpb.NewStruct(map[string]any{"target": "bolero-wombat"})
-		c.Assert(err, qt.IsNil)
-
-		ir, ow, eh, job := base.GenerateMockJob(c)
-		ir.ReadMock.Return(&pbIn, nil)
-		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) error {
-			// Check JSON in the output string.
-			greeting := output.Fields["greeting"].GetStringValue()
-			c.Check(greeting, qt.Equals, "Hello, bolero-wombat!")
-			return nil
-		})
-		eh.ErrorMock.Optional()
-
-		err = exec.Execute(ctx, []*base.Job{job})
-		c.Assert(err, qt.IsNil)
-	})
-
-	c.Run("nok - invalid greetee", func(c *qt.C) {
-		x, err := component.CreateExecution(base.ComponentExecution{
-			Component: component,
-			Task:      taskGreet,
-		})
-		c.Assert(err, qt.IsNil)
-
-		pbIn, err := structpb.NewStruct(map[string]any{"target": "Voldemort"})
-		c.Assert(err, qt.IsNil)
-
-		ir, ow, eh, job := base.GenerateMockJob(c)
-		ir.ReadMock.Return(pbIn, nil)
-		ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) error {
-			// Check JSON in the output string.
-			greeting := output.Fields["greeting"].GetStringValue()
-			c.Check(greeting, qt.Equals, "Hello, bolero-wombat!")
-			return nil
-		})
-		eh.ErrorMock.Optional()
-
-		err = x.Execute(ctx, []*base.Job{job})
-		c.Assert(err, qt.ErrorMatches, "invalid greetee")
-		c.Assert(errmsg.Message(err), qt.Matches, "He-Who-Must-Not-Be-Named can't be greeted.")
-	})
+	}
 }
-
-func TestOperator_CreateExecution(t *testing.T) {
-	c := qt.New(t)
-
-	bc := base.Component{Logger: zap.NewNop()}
-	operator := Init(bc)
-
-	c.Run("nok - unsupported task", func(c *qt.C) {
-		task := "FOOBAR"
-
-		_, err := operator.CreateExecution(base.ComponentExecution{
-			Component: operator,
-			Task:      task,
-		})
-		c.Check(err, qt.ErrorMatches, "unsupported task")
-	})
-}
-
