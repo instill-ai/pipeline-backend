@@ -207,7 +207,7 @@ func fetchEmails(c *imapclient.Client, search Search) ([]Email, error) {
 		}
 	}
 
-	return emails[1:], nil
+	return emails[1:index + 1], nil
 }
 
 func setEnvelope(email *Email, h mail.Header) {
