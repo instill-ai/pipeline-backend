@@ -1,0 +1,71 @@
+## Example Recipes
+
+### Combine 2 arrays using `TASK_UNION` and `TASK_CONCAT`
+
+```yaml
+variable:
+  texts:
+    instill-format: array:string
+    title: Text
+  texts-2:
+    instill-format: array:string
+    title: Text
+
+component:
+
+# This component combines two arrays of strings in a union, ensuring that no duplicates are included.
+# Examples:
+# ["foo", "bar"], ["foo", "bat"] -> ["foo", "bar", "bat"]
+  union:
+    type: collection
+    input:
+      sets:
+        - ${variable.texts}
+        - ${variable.texts-2}
+    condition:
+    task: TASK_UNION
+
+# This component concatenates two arrays of strings.
+# Examples:
+# ["foo", "bar"], ["zot", "bat"] -> ["foo", "bar", "zot", "bat"]
+  concat:
+    type: collection
+    input:
+      arrays:
+        - ${variable.texts}
+        - ${variable.texts-2}
+    condition:
+    task: TASK_CONCAT
+
+output:
+  union-result:
+    title: Union Result
+    value: ${union.output.set}
+  concat-result:
+    title: Concat Result
+    value: ${concat.output.array}
+```
+
+
+### Use `TASK_ASSIGN` to create an object with `type` and `text` keys
+```yaml
+variable:
+  text:
+    instill-format: string
+    title: Text
+
+component:
+  text-object:
+    type: collection
+    input:
+      data:
+        type: text
+        text: ${variable.text}
+    condition:
+    task: TASK_ASSIGN
+
+output:
+  result:
+    title: Object
+    value: ${text-object.output.data}
+```

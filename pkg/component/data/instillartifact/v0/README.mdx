@@ -16,6 +16,8 @@ It can carry out the following tasks:
 - [Retrieve](#retrieve)
 - [Ask](#ask)
 
+
+
 To use Artifact Component, you will need to set up the OpenAI API key for self-hosted deployment of Instill Core.
 You can do this by setting the `OPENAI_API_KEY` environment variable.
 Please refer to [configuring-the-embedding-feature](https://www.instill.tech/docs/core/configuration#configuring-the-embedding-feature)
@@ -25,9 +27,14 @@ p.s. In Instill Cloud case, you do not need to set up the OpenAI API key.
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/instillartifact/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/instillartifact/v0/config/tasks.json) files respectively.
+
+
+
 
 
 
@@ -419,6 +426,8 @@ Reply the questions based on the files in the catalog
 | Text Content | `text-content` | string | The text content of the chunk |
 </div>
 </details>
+
+
 ## Example Recipes
 
 Recipe for the [Ask your Catalog](https://instill.tech/instill-ai/pipelines/ask-your-catalog/playground) pipeline.
