@@ -318,7 +318,7 @@
     }
   },
   "TASK_CONCAT": {
-    "instillShortDescription": "Concat the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`",
+    "instillShortDescription": "Concatenate the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`",
     "input": {
       "description": "Input",
       "instillEditOnNodeFields": [
@@ -327,7 +327,7 @@
       "instillUIOrder": 0,
       "properties": {
         "arrays": {
-          "description": "Specify the arrays you want to concat.",
+          "description": "The arrays to be concatenated.",
           "instillAcceptFormats": [
             "array:array:*"
           ],
@@ -358,7 +358,7 @@
       "instillUIOrder": 0,
       "properties": {
         "array": {
-          "description": "The union set.",
+          "description": "The concatenated arrays.",
           "instillEditOnNodeFields": [],
           "instillFormat": "array:*",
           "instillUIOrder": 0,

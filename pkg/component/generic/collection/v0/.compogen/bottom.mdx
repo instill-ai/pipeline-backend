@@ -1,6 +1,7 @@
 ## Example Recipes
 
-In this example, we are combining two arrays of strings using the `union` and `concat` components.
+### Combine 2 arrays using `TASK_UNION` and `TASK_CONCAT`
+
 ```yaml
 variable:
   texts:
@@ -11,6 +12,10 @@ variable:
     title: Text
 
 component:
+
+# This component combines two arrays of strings in a union, ensuring that no duplicates are included.
+# Examples:
+# ["foo", "bar"], ["foo", "bat"] -> ["foo", "bar", "bat"]
   union:
     type: collection
     input:
@@ -19,6 +24,10 @@ component:
         - ${variable.texts-2}
     condition:
     task: TASK_UNION
+
+# This component concatenates two arrays of strings.
+# Examples:
+# ["foo", "bar"], ["zot", "bat"] -> ["foo", "bar", "zot", "bat"]
   concat:
     type: collection
     input:
@@ -38,7 +47,7 @@ output:
 ```
 
 
-In this example, we are creating an object with keys `type` and `text` from a string.
+### Use `TASK_ASSIGN` to create an object with `type` and `text` keys
 ```yaml
 variable:
   text:
