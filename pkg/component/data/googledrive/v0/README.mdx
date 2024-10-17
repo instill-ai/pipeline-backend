@@ -8,8 +8,7 @@ description: "Learn about how to set up a VDP Google Drive component https://git
 The Google Drive component is a data component that allows users to google Drive is a file storage and synchronization service developed by Google. It allows users to store files in the cloud, synchronize files across devices, and share files..
 It can carry out the following tasks:
 - [Read File](#read-file)
-- [Read Files](#read-files)
-- [Read Drive](#read-drive)
+- [Read Folder](#read-folder)
 
 ## Release Stage
 
@@ -44,14 +43,14 @@ ${connection.<my-connection-id>}`.
 
 ### Read File
 
-Read a file from Google Drive. It is recommended to use this task to read a single file when you watch a specific file in Google Drive.
+Read a file content and metadata from Google Drive.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_READ_FILE` |
-| File ID (required) | `file-id` | string | ID of the file to read. |
+| File ID (required) | `shared-link` | string | Shared link of the file. You can get the shared link by right-clicking on the file and selecting `Copy link`. |
 </div>
 
 
@@ -77,26 +76,29 @@ Read a file from Google Drive. It is recommended to use this task to read a sing
 | :--- | :--- | :--- | :--- |
 | Content | `content` | string | Content of the file. |
 | Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ` |
+| ID | `id` | string | ID of the file. |
 | MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user. |
 | MIME type | `mime-type` | string | MIME type of the file. |
 | Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ` |
 | Name | `name` | string | Name of the file. |
 | Size | `size` | integer | Size of the file in bytes. |
 | Version | `version` | string | Version of the file. |
+| Web Content Link | `web-content-link` | string | Link for downloading the content of the file in a browser. |
+| Web View Link | `web-view-link` | string | Link for opening the file in a relevant Google editor or viewer in a browser. Usually, web view link is same as shared link. |
 </div>
 </details>
 
-### Read Files
+### Read Folder
 
-Read files from Google Drive.
+Read metadata and content of files under the specified folder in Google Drive.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_READ_FILES` |
-| File Names (required) | `file-names` | array[string] | List of file names to read. |
-| Read Content (required) | `read-content` | boolean | Read content of the files. |
+| Task ID (required) | `task` | string | `TASK_READ_FOLDER` |
+| File ID (required) | `shared-link` | string | Shared link of the file. You can get the shared link by right-clicking on the file and selecting `Copy link`. |
+| Read Content | `read-content` | boolean | Whether to read the content of the files under the folder. |
 </div>
 
 
@@ -108,13 +110,13 @@ Read files from Google Drive.
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| [Files](#read-files-files) | `files` | array[object] | List of files read from Google Drive. |
+| [Files](#read-folder-files) | `files` | array[object] | List of files under the specified folder. |
 </div>
 
 <details>
-<summary> Output Objects in Read Files</summary>
+<summary> Output Objects in Read Folder</summary>
 
-<h4 id="read-files-files">Files</h4>
+<h4 id="read-folder-files">Files</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -122,56 +124,14 @@ Read files from Google Drive.
 | :--- | :--- | :--- | :--- |
 | Content | `content` | string | Content of the file. |
 | Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ` |
+| ID | `id` | string | ID of the file. |
 | MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user. |
 | MIME type | `mime-type` | string | MIME type of the file. |
 | Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ` |
 | Name | `name` | string | Name of the file. |
 | Size | `size` | integer | Size of the file in bytes. |
 | Version | `version` | string | Version of the file. |
-</div>
-</details>
-
-### Read Drive
-
-Read the metadata of files and folders in Google Drive. It is recommended to use this task to read the metadata of files and folders in Google Drive when you watch a change in Google Drive.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_READ_DRIVE` |
-| Order By | `order-by` | string | The keys of the properties to sort the results by, separated by commas. The default sort order is ascending. e.g. modifiedTime desc, name |
-| Limit | `limit` | integer | The maximum number of files to return. Default is 10. Maximum is 100. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Files](#read-drive-files) | `files` | array[object] | List of files and folders in Google Drive. |
-</div>
-
-<details>
-<summary> Output Objects in Read Drive</summary>
-
-<h4 id="read-drive-files">Files</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Content | `content` | string | Content of the file. |
-| Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ` |
-| MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user. |
-| MIME type | `mime-type` | string | MIME type of the file. |
-| Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ` |
-| Name | `name` | string | Name of the file. |
-| Size | `size` | integer | Size of the file in bytes. |
-| Version | `version` | string | Version of the file. |
+| Web Content Link | `web-content-link` | string | Link for downloading the content of the file in a browser. |
+| Web View Link | `web-view-link` | string | Link for opening the file in a relevant Google editor or viewer in a browser. Usually, web view link is same as shared link. |
 </div>
 </details>
