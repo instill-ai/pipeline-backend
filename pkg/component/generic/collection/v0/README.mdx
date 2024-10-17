@@ -14,13 +14,20 @@ It can carry out the following tasks:
 - [Difference](#difference)
 - [Concat](#concat)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/generic/collection/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/generic/collection/v0/config/tasks.json) files respectively.
+
+
+
 
 
 
@@ -150,14 +157,14 @@ Find the difference between the two sets, i.e. `set-a` \ `set-b`, identifying th
 
 ### Concat
 
-Concat the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`
+Concatenate the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CONCAT` |
-| Arrays (required) | `arrays` | array | Specify the arrays you want to concat. |
+| Arrays (required) | `arrays` | array | The arrays to be concatenated. |
 </div>
 
 
@@ -169,13 +176,14 @@ Concat the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Array | `array` | array | The union set. |
+| Array | `array` | array | The concatenated arrays. |
 </div>
 
 
 ## Example Recipes
 
-In this example, we are combining two arrays of strings using the `union` and `concat` components.
+### Combine 2 arrays using `TASK_UNION` and `TASK_CONCAT`
+
 ```yaml
 variable:
   texts:
@@ -186,6 +194,10 @@ variable:
     title: Text
 
 component:
+
+# This component combines two arrays of strings in a union, ensuring that no duplicates are included.
+# Examples:
+# ["foo", "bar"], ["foo", "bat"] -> ["foo", "bar", "bat"]
   union:
     type: collection
     input:
@@ -194,6 +206,10 @@ component:
         - ${variable.texts-2}
     condition:
     task: TASK_UNION
+
+# This component concatenates two arrays of strings.
+# Examples:
+# ["foo", "bar"], ["zot", "bat"] -> ["foo", "bar", "zot", "bat"]
   concat:
     type: collection
     input:
@@ -213,7 +229,7 @@ output:
 ```
 
 
-In this example, we are creating an object with keys `type` and `text` from a string.
+### Use `TASK_ASSIGN` to create an object with `type` and `text` keys
 ```yaml
 variable:
   text:

@@ -204,6 +204,7 @@ The component definition and tasks are defined in the [definition.json](https://
 
 
 
+
 ## Supported Tasks
 
 ### Dummy
@@ -275,6 +276,8 @@ This task is dummier than `TASK_DUMMY`.
 | Tincidunt tortor | `tortor` | string | Tincidunt tortor aliquam nulla |
 </div>
 </details>
+
+
 ## Final words
 
 Thanks for reaching this point! No one really reads documentation thoroughly (:

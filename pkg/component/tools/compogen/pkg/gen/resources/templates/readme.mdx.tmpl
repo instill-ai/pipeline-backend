@@ -23,6 +23,7 @@ It can carry out the following tasks:
 The component definition and tasks are defined in the [definition.json]({{ .SourceURL }}/config/definition.json) and [tasks.json]({{ .SourceURL }}/config/tasks.json) files respectively.
 
 {{ loadExtraContent "config" }}
+
 {{ if or .SetupConfig.Prerequisites .SetupConfig.Properties }}
 ## Setup
 {{ with .SetupConfig.Prerequisites}}
@@ -182,5 +183,6 @@ ${connection.<my-connection-id>}`.
 </details>
 {{ end -}}
 {{ loadExtraContent $task.ID -}}
-{{- end -}}
+{{- end }}
+
 {{ loadExtraContent "bottom" -}}
