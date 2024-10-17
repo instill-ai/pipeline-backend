@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	"github.com/instill-ai/pipeline-backend/pkg/component/ai"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
@@ -101,12 +102,46 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 		defer gRPCCientConn.Close()
 	}
 
+	var result []*structpb.Struct
+
+	// We will refactor the component soon to align the data structure with Instill Model.
+	// For now, we move out `TASK_EMBEDDING` to a separate section.
+	if e.Task == "TASK_EMBEDDING" {
+		var inputStruct ai.EmbeddingInput
+		err := base.ConvertFromStructpb(inputs[0], &inputStruct)
+		if err != nil {
+			return fmt.Errorf("convert to defined struct: %w", err)
+		}
+
+		model := inputStruct.Data.Model
+		modelNameSplits := strings.Split(model, "/")
+
+		nsID := modelNameSplits[0]
+		modelID := modelNameSplits[1]
+		version := modelNameSplits[2]
+
+		result, err = e.executeEmbedding(gRPCClient, nsID, modelID, version, inputs)
+
+		if err != nil {
+			return fmt.Errorf("execute embedding: %w", err)
+		}
+
+		for idx, job := range jobs {
+			err = job.Output.Write(ctx, result[idx])
+			if err != nil {
+				job.Error.Error(ctx, err)
+				continue
+			}
+		}
+		return nil
+	}
+
 	modelNameSplits := strings.Split(inputs[0].GetFields()["model-name"].GetStringValue(), "/")
 
 	nsID := modelNameSplits[0]
 	modelID := modelNameSplits[1]
 	version := modelNameSplits[2]
-	var result []*structpb.Struct
+
 	switch e.Task {
 	case "TASK_CLASSIFICATION":
 		result, err = e.executeVisionTask(gRPCClient, nsID, modelID, version, inputs)

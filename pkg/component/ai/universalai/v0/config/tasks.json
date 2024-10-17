@@ -39,7 +39,8 @@
                               "instillAcceptFormats": [
                                 "string"
                               ],
-                              "type": "string"
+                              "type": "string",
+                              "instillUIOrder": 1
                             },
                             "type": {
                               "title": "Text",
@@ -49,13 +50,15 @@
                                 "string"
                               ],
                               "type": "string",
-                              "const": "text"
+                              "const": "text",
+                              "instillUIOrder": 0
                             }
                           },
                           "required": [
                             "text",
                             "type"
-                          ]
+                          ],
+                          "title": "Text"
                         },
                         {
                           "type": "object",
@@ -67,7 +70,8 @@
                               "instillAcceptFormats": [
                                 "string"
                               ],
-                              "type": "string"
+                              "type": "string",
+                              "instillUIOrder": 1
                             },
                             "type": {
                               "title": "Image URL",
@@ -77,25 +81,28 @@
                                 "string"
                               ],
                               "type": "string",
-                              "const": "image-url"
+                              "const": "image-url",
+                              "instillUIOrder": 0
                             }
                           },
                           "required": [
                             "image-url",
                             "type"
-                          ]
+                          ],
+                          "title": "Image URL"
                         },
                         {
                           "type": "object",
                           "properties": {
                             "image-base64": {
-                              "title": "Image File",
+                              "title": "Image Base64",
                               "description": "Image base64 encoded string.",
                               "instillShortDescription": "Image base64 encoded string.",
                               "instillAcceptFormats": [
                                 "image/*"
                               ],
-                              "type": "string"
+                              "type": "string",
+                              "instillUIOrder": 1
                             },
                             "type": {
                               "title": "Image File",
@@ -105,13 +112,15 @@
                                 "string"
                               ],
                               "type": "string",
-                              "const": "image-base64"
+                              "const": "image-base64",
+                              "instillUIOrder": 0
                             }
                           },
                           "required": [
                             "image-base64",
                             "type"
-                          ]
+                          ],
+                          "title": "Image Base64"
                         }
                       ],
                       "required": []
