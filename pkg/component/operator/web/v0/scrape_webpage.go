@@ -17,29 +17,50 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
+// ScrapeWebpageInput defines the input of the scrape webpage task
 type ScrapeWebpageInput struct {
-	URL             string   `json:"url"`
-	IncludeHTML     bool     `json:"include-html"`
-	OnlyMainContent bool     `json:"only-main-content"`
-	RemoveTags      []string `json:"remove-tags,omitempty"`
+	// URL: The URL of the webpage to scrape.
+	URL string `json:"url"`
+	// ScrapeMethod: The method to scrape the webpage. It can be "http" or "chromedp".
+	ScrapeMethod string `json:"scrape-method"`
+	// IncludeHTML: Whether to include the HTML content of the webpage.
+	IncludeHTML bool `json:"include-html"`
+	// OnlyMainContent: Whether to scrape only the main content of the webpage.
+	OnlyMainContent bool `json:"only-main-content"`
+	// RemoveTags: The list of tags to remove from the HTML content.
+	RemoveTags []string `json:"remove-tags,omitempty"`
+	// OnlyIncludeTags: The list of tags to include in the HTML content.
 	OnlyIncludeTags []string `json:"only-include-tags,omitempty"`
-	Timeout         int      `json:"timeout,omitempty"`
+	// Timeout: The number of milliseconds to wait before scraping the web page. Min 0, Max 60000.
+	Timeout int `json:"timeout,omitempty"`
 }
 
+
+// ScrapeWebpageOutput defines the output of the scrape webpage task
 type ScrapeWebpageOutput struct {
+	// Content: The plain text content of the webpage.
 	Content     string   `json:"content"`
+	// Markdown: The markdown content of the webpage.
 	Markdown    string   `json:"markdown"`
+	// HTML: The HTML content of the webpage.
 	HTML        string   `json:"html"`
+	// Metadata: The metadata of the webpage.
 	Metadata    Metadata `json:"metadata"`
+	// LinksOnPage: The list of links on the webpage.
 	LinksOnPage []string `json:"links-on-page"`
 }
 
+// Metadata defines the metadata of the webpage
 type Metadata struct {
+	// Title: The title of the webpage.
 	Title       string `json:"title"`
+	// Description: The description of the webpage.
 	Description string `json:"description,omitempty"`
+	// SourceURL: The source URL of the webpage.
 	SourceURL   string `json:"source-url"`
 }
 
+// ScrapeWebpage scrapes the content of a webpage
 func (e *execution) ScrapeWebpage(input *structpb.Struct) (*structpb.Struct, error) {
 
 	inputStruct := ScrapeWebpageInput{}
@@ -52,7 +73,7 @@ func (e *execution) ScrapeWebpage(input *structpb.Struct) (*structpb.Struct, err
 
 	output := ScrapeWebpageOutput{}
 
-	doc, err := e.getDocAfterRequestURL(inputStruct.URL, inputStruct.Timeout)
+	doc, err := e.getDocAfterRequestURL(inputStruct.URL, inputStruct.Timeout, inputStruct.ScrapeMethod)
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting HTML page doc: %v", err)
@@ -70,14 +91,12 @@ func (e *execution) ScrapeWebpage(input *structpb.Struct) (*structpb.Struct, err
 
 }
 
-func getDocAfterRequestURL(url string, timeout int) (*goquery.Document, error) {
+func getDocAfterRequestURL(url string, timeout int, scrapeMethod string) (*goquery.Document, error) {
 
-	if timeout > 0 {
-		return requestToWebpage(url, timeout)
-	} else {
+	if scrapeMethod == "http" {
 		return httpRequest(url)
 	}
-
+	return requestToWebpage(url, timeout)
 }
 
 func httpRequest(url string) (*goquery.Document, error) {
