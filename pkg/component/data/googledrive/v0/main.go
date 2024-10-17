@@ -22,8 +22,7 @@ import (
 
 const (
 	taskReadFile       = "TASK_READ_FILE"
-	taskReadFiles      = "TASK_READ_FILES"
-	taskReadDrive      = "TASK_READ_DRIVE"
+	taskReadFolder     = "TASK_READ_FOLDER"
 	cfgOAuthCredential = "oauth-credentials"
 )
 
@@ -85,10 +84,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	switch x.Task {
 	case taskReadFile:
 		e.execute = e.readFile
-	case taskReadFiles:
-		e.execute = e.readFiles
-	case taskReadDrive:
-		e.execute = e.readDrive
+	case taskReadFolder:
+		e.execute = e.readFolder
 	default:
 		return nil, errmsg.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),

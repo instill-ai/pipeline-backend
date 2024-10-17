@@ -7,7 +7,7 @@ import (
 )
 
 type readFileInput struct {
-	FileID string `json:"file-id"`
+	SharedLink string `json:"shared-link"`
 }
 
 type readFileOutput struct {
@@ -15,42 +15,32 @@ type readFileOutput struct {
 }
 
 type file struct {
-	Name         string `json:"name"`
-	Content      string `json:"content"`
-	CreatedTime  string `json:"created-time"`
-	ModifiedTime string `json:"modified-time"`
-	Size         int64  `json:"size"`
-	MimeType     string `json:"mime-type"`
-	Md5Checksum  string `json:"md5-checksum,omitempty"`
-	Version      string `json:"version"`
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Content        string `json:"content"`
+	CreatedTime    string `json:"created-time"`
+	ModifiedTime   string `json:"modified-time"`
+	Size           int64  `json:"size"`
+	MimeType       string `json:"mime-type"`
+	Md5Checksum    string `json:"md5-checksum,omitempty"`
+	Version        string `json:"version"`
+	WebViewLink    string `json:"web-view-link"`
+	WebContentLink string `json:"web-content-link,omitempty"`
 }
 
 func (e *execution) readFile(ctx context.Context, input *structpb.Struct) (*structpb.Struct, error) {
 	return nil, nil
 }
 
-type readFilesInput struct {
-	FileNames   []string `json:"file-names"`
-	ReadContent bool     `json:"read-content"`
+type readFolderInput struct {
+	SharedLink  string `json:"shared-link"`
+	ReadContent bool   `json:"read-content"`
 }
 
-type readFilesOutput struct {
+type readFolderOutput struct {
 	Files []file `json:"files"`
 }
 
-func (e *execution) readFiles(ctx context.Context, input *structpb.Struct) (*structpb.Struct, error) {
-	return nil, nil
-}
-
-type readDriveInput struct {
-	OrderBy string `json:"order-by"`
-	Limit   int    `json:"limit"`
-}
-
-type readDriveOutput struct {
-	Files []file `json:"files"`
-}
-
-func (e *execution) readDrive(ctx context.Context, input *structpb.Struct) (*structpb.Struct, error) {
+func (e *execution) readFolder(ctx context.Context, input *structpb.Struct) (*structpb.Struct, error) {
 	return nil, nil
 }

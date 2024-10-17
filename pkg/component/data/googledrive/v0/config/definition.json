@@ -1,11 +1,10 @@
 {
   "availableTasks": [
     "TASK_READ_FILE",
-    "TASK_READ_FILES",
-    "TASK_READ_DRIVE"
+    "TASK_READ_FOLDER"
   ],
   "custom": false,
-  "documentationUrl": "https://www.instill.tech/docs/component/data/googledrive",
+  "documentationUrl": "https://www.instill.tech/docs/component/data/google-drive",
   "icon": "assets/google-drive.svg",
   "id": "google-drive",
   "public": true,
