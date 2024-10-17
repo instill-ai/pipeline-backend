@@ -288,13 +288,19 @@ The Dummy component is a data component that allows users to perform an action.
 It can carry out the following tasks:
 - [Dummy](#dummy)
 
+
+
 ## Release Stage
 
 `Coming Soon`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/data/dummy/v0/config/tasks.json) files respectively.
+
+
 
 ## Setup
 

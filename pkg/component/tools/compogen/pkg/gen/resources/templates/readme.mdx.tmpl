@@ -10,19 +10,19 @@ It can carry out the following tasks:
 {{- range .Tasks }}
 - [{{ .Title }}](#{{ asAnchor .Title}}){{- end }}
 
-{{- loadExtraContent "intro" }}
+{{ loadExtraContent "intro" }}
 
 ## Release Stage
 
 `{{ .ReleaseStage.String }}`
 
-{{- loadExtraContent "release" }}
+{{ loadExtraContent "release" }}
 
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json]({{ .SourceURL }}/config/definition.json) and [tasks.json]({{ .SourceURL }}/config/tasks.json) files respectively.
 
-{{- loadExtraContent "config" }}
+{{ loadExtraContent "config" }}
 {{ if or .SetupConfig.Prerequisites .SetupConfig.Properties }}
 ## Setup
 {{ with .SetupConfig.Prerequisites}}
@@ -181,6 +181,6 @@ ${connection.<my-connection-id>}`.
 {{- end }}
 </details>
 {{ end -}}
-{{- loadExtraContent $task.ID -}}
+{{ loadExtraContent $task.ID -}}
 {{- end -}}
-{{- loadExtraContent "bottom" -}}
+{{ loadExtraContent "bottom" -}}
