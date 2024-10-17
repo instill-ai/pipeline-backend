@@ -105,7 +105,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	var result []*structpb.Struct
 
 	// We will refactor the component soon to align the data structure with Instill Model.
-	// For now, we will use the task field to determine the task.
+	// For now, we move out `TASK_EMBEDDING` to a separate section.
 	if e.Task == "TASK_EMBEDDING" {
 		var inputStruct ai.EmbeddingInput
 		err := base.ConvertFromStructpb(inputs[0], &inputStruct)
