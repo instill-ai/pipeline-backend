@@ -291,7 +291,6 @@ import (
 
     _ "embed"
 
-    "go.uber.org/zap"
     "google.golang.org/protobuf/types/known/structpb"
 
     "github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -575,7 +574,7 @@ func Init(logger *zap.Logger) *Store {
 Re-run your local `pipeline-backend` build:
 
 ```sh
-$ make stop && make dev
+$ make rm && make dev
 $ docker exec pipeline-backend go run ./cmd/init # this will load the new component into the database
 $ docker exec -d pipeline-backend go run ./cmd/worker # run without -d in a separate terminal if you want to access the logs
 $ docker exec pipeline-backend go run ./cmd/main
