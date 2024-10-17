@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.44.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.2-beta...v0.44.0-beta) (2024-10-17)
+
+
+### Features
+
+* **component:** update documentation URL to component ID ([#749](https://github.com/instill-ai/pipeline-backend/issues/749)) ([d4083c2](https://github.com/instill-ai/pipeline-backend/commit/d4083c262801f302ad705c830db2907c1273560a))
+* **run:** run logging data list by requester API ([#730](https://github.com/instill-ai/pipeline-backend/issues/730)) ([e1e844b](https://github.com/instill-ai/pipeline-backend/commit/e1e844b4f6db226a29ba2937f0f05005a5899d49))
+
+
+### Bug Fixes
+
+* **groq:** use credential-supported model in example ([#752](https://github.com/instill-ai/pipeline-backend/issues/752)) ([fc90435](https://github.com/instill-ai/pipeline-backend/commit/fc904350c978dd5c57fbe24aaf32be8945f3b9f5))
+* **run:** not return minio error in list pipeline run ([#744](https://github.com/instill-ai/pipeline-backend/issues/744)) ([4d0afa1](https://github.com/instill-ai/pipeline-backend/commit/4d0afa16baa0ddcfe29371d8d3106eb7d066574f))
+
 ## [0.43.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.1-beta...v0.43.2-beta) (2024-10-16)
 
 
