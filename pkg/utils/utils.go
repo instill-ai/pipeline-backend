@@ -28,7 +28,7 @@ const (
 	RenameEvent     string = "Rename"
 	ExecuteEvent    string = "Execute"
 
-	pipelineMeasurement = "pipeline.trigger.v1"
+	pipelineMeasurement = "pipeline.trigger"
 )
 
 func IsAuditEvent(eventName string) bool {
@@ -104,33 +104,6 @@ func NewPipelineDataPoint(data PipelineUsageMetricData) *write.Point {
 	}
 
 	return influxdb2.NewPoint(pipelineMeasurement, tags, fields, time.Now())
-}
-
-// DeprecatedNewPipelineDatapoint transforms the information of a pipeline
-// triger into an InfluxDB datapoint. This measurement is deprecated and will
-// be retired with the new dashboard implementation.
-func DeprecatedNewPipelineDatapoint(data PipelineUsageMetricData) *write.Point {
-	return influxdb2.NewPoint(
-		"pipeline.trigger",
-		map[string]string{
-			"status":       data.Status.String(),
-			"trigger_mode": data.TriggerMode.String(),
-		},
-		map[string]any{
-			"owner_uid":             data.OwnerUID,
-			"owner_type":            data.OwnerType,
-			"user_uid":              data.UserUID,
-			"user_type":             data.UserType,
-			"pipeline_id":           data.PipelineID,
-			"pipeline_uid":          data.PipelineUID,
-			"pipeline_release_id":   data.PipelineReleaseID,
-			"pipeline_release_uid":  data.PipelineReleaseUID,
-			"pipeline_trigger_id":   data.PipelineTriggerUID,
-			"trigger_time":          data.TriggerTime,
-			"compute_time_duration": data.ComputeTimeDuration,
-		},
-		time.Now(),
-	)
 }
 
 type ConnectorUsageMetricData struct {
