@@ -43,7 +43,10 @@ type CrawlWebsiteInput struct {
 
 func (i *CrawlWebsiteInput) preset() {
 	if i.MaxK <= 0 {
-		i.MaxK = 1
+		// When the users set to 0, it means infinite.
+		// However, there is performance issue when we set it to infinite.
+		// So, we set the default value to solve performance issue easily.
+		i.MaxK = 8000
 	}
 }
 
@@ -169,7 +172,6 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		}
 		mu.Unlock()
 		cancel()
-		return
 
 	})
 
@@ -179,9 +181,8 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 	}
 
 	go func() {
-		c.Visit(inputStruct.URL)
+		_ = c.Visit(inputStruct.URL)
 		c.Wait()
-		return
 	}()
 
 	<-ctx.Done()

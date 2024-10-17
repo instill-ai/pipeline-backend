@@ -62,8 +62,8 @@
           "type": "array"
         },
         "max-k": {
-          "default": 1,
-          "description": "Max-K sets a limit on the number of pages to fetch. If Max-K is large and all pages cannot be fetched within the time limit, the fetching process will continue for up to 120 seconds. If Max-K is a positive number, the fetch will return up to that many pages, but no more.",
+          "default": 10,
+          "description": "Max-K sets a limit on the number of pages to fetch. If Max-K is set to 0, all available pages will be fetched within the time limit of 120 seconds. If Max-K is a positive number, the fetch will return up to that many pages, but no more.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -72,7 +72,7 @@
             "value",
             "reference"
           ],
-          "minimum": 1,
+          "minimum": 0,
           "title": "Max Number of Pages",
           "type": "integer"
         },

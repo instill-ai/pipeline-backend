@@ -34,7 +34,7 @@ This task involves systematically navigating through a website, starting from a 
 | Task ID (required) | `task` | string | `TASK_CRAWL_SITE` |
 | URL (required) | `url` | string | The root URL to scrape. All links on this page will be scraped, and all links on those pages, and so on. |
 | Allowed Domains | `allowed-domains` | array[string] | A list of domains that are allowed to be scraped. If empty, all domains are allowed. |
-| Max Number of Pages (required) | `max-k` | integer | Max-K sets a limit on the number of pages to fetch. If Max-K is large and all pages cannot be fetched within the time limit, the fetching process will continue for up to 120 seconds. If Max-K is a positive number, the fetch will return up to that many pages, but no more. |
+| Max Number of Pages (required) | `max-k` | integer | Max-K sets a limit on the number of pages to fetch. If Max-K is set to 0, all available pages will be fetched within the time limit of 120 seconds. If Max-K is a positive number, the fetch will return up to that many pages, but no more. |
 | Timeout | `timeout` | integer | The time to wait for a page to load in milliseconds. Min 0, Max 60000. Please notice the timeout here is set for each page rather than the whole crawl task. |
 | Max Depth | `max-depth` | integer | Max Depth specifies how deep the crawler will navigate from the root URL. If max depth is set to 1, the crawler will only scrape the root URL and will not follow any links to other pages. If max depth is set to 0, the crawler will scrape all reachable pages until the total number of scraped pages reaches max-k. If both max-k and max depth are defined, the crawler will prioritize the max-k setting when determining how many pages to scrape. |
 </div>
