@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	taskChunkText    string = "TASK_CHUNK_TEXT"
-	taskDataCleansing string = "TASK_DATA_CLEANSING"
+	taskChunkText      string = "TASK_CHUNK_TEXT"
+	taskDataCleansing  string = "TASK_CLEAN_DATA" // Ensure this matches your requirement
 )
 
 var (
@@ -210,7 +210,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 				job.Error.Error(ctx, err)
 				continue
 			}
-		case taskDataCleansing:
+		case taskDataCleansing: // Use the correct task constant
 			cleanDataInput := CleanDataInput{}
 			err := base.ConvertFromStructpb(input, &cleanDataInput)
 			if err != nil {
@@ -236,3 +236,4 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	}
 	return nil
 }
+
