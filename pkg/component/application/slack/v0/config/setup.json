@@ -33,8 +33,22 @@
     "bot-token"
   ],
   "instillEditOnNodeFields": [
-    "token"
+    "bot-token"
   ],
+  "instillOAuthConfig": {
+    "authUrl": "https://slack.com/oauth/v2/authorize",
+    "accessUrl": "https://slack.com/api/oauth.v2.access",
+    "scopes": [
+      "channels:history",
+      "channels:read",
+      "groups:history",
+      "groups:read",
+      "chat:write",
+      "users:read",
+      "users:read.email",
+      "users.profile:read"
+    ]
+  },
   "title": "Slack Connection",
   "type": "object"
 }
