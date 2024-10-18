@@ -3,14 +3,17 @@
 package mock
 
 import (
-	context "context"
 	"sync"
+
+	context "context"
 	mm_atomic "sync/atomic"
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
-	mm_artifactv1alpha "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+
 	grpc "google.golang.org/grpc"
+
+	mm_artifactv1alpha "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
 )
 
 // ArtifactPublicServiceClientMock implements mm_artifactv1alpha.ArtifactPublicServiceClient
@@ -45,6 +48,20 @@ type ArtifactPublicServiceClientMock struct {
 	afterGetFileCatalogCounter  uint64
 	beforeGetFileCatalogCounter uint64
 	GetFileCatalogMock          mArtifactPublicServiceClientMockGetFileCatalog
+
+	funcGetObjectDownloadURL          func(ctx context.Context, in *mm_artifactv1alpha.GetObjectDownloadURLRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectDownloadURLResponse, err error)
+	funcGetObjectDownloadURLOrigin    string
+	inspectFuncGetObjectDownloadURL   func(ctx context.Context, in *mm_artifactv1alpha.GetObjectDownloadURLRequest, opts ...grpc.CallOption)
+	afterGetObjectDownloadURLCounter  uint64
+	beforeGetObjectDownloadURLCounter uint64
+	GetObjectDownloadURLMock          mArtifactPublicServiceClientMockGetObjectDownloadURL
+
+	funcGetObjectUploadURL          func(ctx context.Context, in *mm_artifactv1alpha.GetObjectUploadURLRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectUploadURLResponse, err error)
+	funcGetObjectUploadURLOrigin    string
+	inspectFuncGetObjectUploadURL   func(ctx context.Context, in *mm_artifactv1alpha.GetObjectUploadURLRequest, opts ...grpc.CallOption)
+	afterGetObjectUploadURLCounter  uint64
+	beforeGetObjectUploadURLCounter uint64
+	GetObjectUploadURLMock          mArtifactPublicServiceClientMockGetObjectUploadURL
 
 	funcGetSourceFile          func(ctx context.Context, in *mm_artifactv1alpha.GetSourceFileRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetSourceFileResponse, err error)
 	funcGetSourceFileOrigin    string
@@ -157,6 +174,12 @@ func NewArtifactPublicServiceClientMock(t minimock.Tester) *ArtifactPublicServic
 
 	m.GetFileCatalogMock = mArtifactPublicServiceClientMockGetFileCatalog{mock: m}
 	m.GetFileCatalogMock.callArgs = []*ArtifactPublicServiceClientMockGetFileCatalogParams{}
+
+	m.GetObjectDownloadURLMock = mArtifactPublicServiceClientMockGetObjectDownloadURL{mock: m}
+	m.GetObjectDownloadURLMock.callArgs = []*ArtifactPublicServiceClientMockGetObjectDownloadURLParams{}
+
+	m.GetObjectUploadURLMock = mArtifactPublicServiceClientMockGetObjectUploadURL{mock: m}
+	m.GetObjectUploadURLMock.callArgs = []*ArtifactPublicServiceClientMockGetObjectUploadURLParams{}
 
 	m.GetSourceFileMock = mArtifactPublicServiceClientMockGetSourceFile{mock: m}
 	m.GetSourceFileMock.callArgs = []*ArtifactPublicServiceClientMockGetSourceFileParams{}
@@ -1695,6 +1718,754 @@ func (m *ArtifactPublicServiceClientMock) MinimockGetFileCatalogInspect() {
 	if !m.GetFileCatalogMock.invocationsDone() && afterGetFileCatalogCounter > 0 {
 		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.GetFileCatalog at\n%s but found %d calls",
 			mm_atomic.LoadUint64(&m.GetFileCatalogMock.expectedInvocations), m.GetFileCatalogMock.expectedInvocationsOrigin, afterGetFileCatalogCounter)
+	}
+}
+
+type mArtifactPublicServiceClientMockGetObjectDownloadURL struct {
+	optional           bool
+	mock               *ArtifactPublicServiceClientMock
+	defaultExpectation *ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation
+	expectations       []*ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation
+
+	callArgs []*ArtifactPublicServiceClientMockGetObjectDownloadURLParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation specifies expectation struct of the ArtifactPublicServiceClient.GetObjectDownloadURL
+type ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation struct {
+	mock               *ArtifactPublicServiceClientMock
+	params             *ArtifactPublicServiceClientMockGetObjectDownloadURLParams
+	paramPtrs          *ArtifactPublicServiceClientMockGetObjectDownloadURLParamPtrs
+	expectationOrigins ArtifactPublicServiceClientMockGetObjectDownloadURLExpectationOrigins
+	results            *ArtifactPublicServiceClientMockGetObjectDownloadURLResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceClientMockGetObjectDownloadURLParams contains parameters of the ArtifactPublicServiceClient.GetObjectDownloadURL
+type ArtifactPublicServiceClientMockGetObjectDownloadURLParams struct {
+	ctx  context.Context
+	in   *mm_artifactv1alpha.GetObjectDownloadURLRequest
+	opts []grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockGetObjectDownloadURLParamPtrs contains pointers to parameters of the ArtifactPublicServiceClient.GetObjectDownloadURL
+type ArtifactPublicServiceClientMockGetObjectDownloadURLParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_artifactv1alpha.GetObjectDownloadURLRequest
+	opts *[]grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockGetObjectDownloadURLResults contains results of the ArtifactPublicServiceClient.GetObjectDownloadURL
+type ArtifactPublicServiceClientMockGetObjectDownloadURLResults struct {
+	gp1 *mm_artifactv1alpha.GetObjectDownloadURLResponse
+	err error
+}
+
+// ArtifactPublicServiceClientMockGetObjectDownloadURLOrigins contains origins of expectations of the ArtifactPublicServiceClient.GetObjectDownloadURL
+type ArtifactPublicServiceClientMockGetObjectDownloadURLExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) Optional() *mArtifactPublicServiceClientMockGetObjectDownloadURL {
+	mmGetObjectDownloadURL.optional = true
+	return mmGetObjectDownloadURL
+}
+
+// Expect sets up expected params for ArtifactPublicServiceClient.GetObjectDownloadURL
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) Expect(ctx context.Context, in *mm_artifactv1alpha.GetObjectDownloadURLRequest, opts ...grpc.CallOption) *mArtifactPublicServiceClientMockGetObjectDownloadURL {
+	if mmGetObjectDownloadURL.mock.funcGetObjectDownloadURL != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by Set")
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation == nil {
+		mmGetObjectDownloadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation{}
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation.paramPtrs != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by ExpectParams functions")
+	}
+
+	mmGetObjectDownloadURL.defaultExpectation.params = &ArtifactPublicServiceClientMockGetObjectDownloadURLParams{ctx, in, opts}
+	mmGetObjectDownloadURL.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetObjectDownloadURL.expectations {
+		if minimock.Equal(e.params, mmGetObjectDownloadURL.defaultExpectation.params) {
+			mmGetObjectDownloadURL.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetObjectDownloadURL.defaultExpectation.params)
+		}
+	}
+
+	return mmGetObjectDownloadURL
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceClient.GetObjectDownloadURL
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceClientMockGetObjectDownloadURL {
+	if mmGetObjectDownloadURL.mock.funcGetObjectDownloadURL != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by Set")
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation == nil {
+		mmGetObjectDownloadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation{}
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation.params != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by Expect")
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation.paramPtrs == nil {
+		mmGetObjectDownloadURL.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockGetObjectDownloadURLParamPtrs{}
+	}
+	mmGetObjectDownloadURL.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetObjectDownloadURL.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetObjectDownloadURL
+}
+
+// ExpectInParam2 sets up expected param in for ArtifactPublicServiceClient.GetObjectDownloadURL
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) ExpectInParam2(in *mm_artifactv1alpha.GetObjectDownloadURLRequest) *mArtifactPublicServiceClientMockGetObjectDownloadURL {
+	if mmGetObjectDownloadURL.mock.funcGetObjectDownloadURL != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by Set")
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation == nil {
+		mmGetObjectDownloadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation{}
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation.params != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by Expect")
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation.paramPtrs == nil {
+		mmGetObjectDownloadURL.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockGetObjectDownloadURLParamPtrs{}
+	}
+	mmGetObjectDownloadURL.defaultExpectation.paramPtrs.in = &in
+	mmGetObjectDownloadURL.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmGetObjectDownloadURL
+}
+
+// ExpectOptsParam3 sets up expected param opts for ArtifactPublicServiceClient.GetObjectDownloadURL
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) ExpectOptsParam3(opts ...grpc.CallOption) *mArtifactPublicServiceClientMockGetObjectDownloadURL {
+	if mmGetObjectDownloadURL.mock.funcGetObjectDownloadURL != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by Set")
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation == nil {
+		mmGetObjectDownloadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation{}
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation.params != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by Expect")
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation.paramPtrs == nil {
+		mmGetObjectDownloadURL.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockGetObjectDownloadURLParamPtrs{}
+	}
+	mmGetObjectDownloadURL.defaultExpectation.paramPtrs.opts = &opts
+	mmGetObjectDownloadURL.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmGetObjectDownloadURL
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceClient.GetObjectDownloadURL
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) Inspect(f func(ctx context.Context, in *mm_artifactv1alpha.GetObjectDownloadURLRequest, opts ...grpc.CallOption)) *mArtifactPublicServiceClientMockGetObjectDownloadURL {
+	if mmGetObjectDownloadURL.mock.inspectFuncGetObjectDownloadURL != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceClientMock.GetObjectDownloadURL")
+	}
+
+	mmGetObjectDownloadURL.mock.inspectFuncGetObjectDownloadURL = f
+
+	return mmGetObjectDownloadURL
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceClient.GetObjectDownloadURL
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) Return(gp1 *mm_artifactv1alpha.GetObjectDownloadURLResponse, err error) *ArtifactPublicServiceClientMock {
+	if mmGetObjectDownloadURL.mock.funcGetObjectDownloadURL != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by Set")
+	}
+
+	if mmGetObjectDownloadURL.defaultExpectation == nil {
+		mmGetObjectDownloadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation{mock: mmGetObjectDownloadURL.mock}
+	}
+	mmGetObjectDownloadURL.defaultExpectation.results = &ArtifactPublicServiceClientMockGetObjectDownloadURLResults{gp1, err}
+	mmGetObjectDownloadURL.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetObjectDownloadURL.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceClient.GetObjectDownloadURL method
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) Set(f func(ctx context.Context, in *mm_artifactv1alpha.GetObjectDownloadURLRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectDownloadURLResponse, err error)) *ArtifactPublicServiceClientMock {
+	if mmGetObjectDownloadURL.defaultExpectation != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceClient.GetObjectDownloadURL method")
+	}
+
+	if len(mmGetObjectDownloadURL.expectations) > 0 {
+		mmGetObjectDownloadURL.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceClient.GetObjectDownloadURL method")
+	}
+
+	mmGetObjectDownloadURL.mock.funcGetObjectDownloadURL = f
+	mmGetObjectDownloadURL.mock.funcGetObjectDownloadURLOrigin = minimock.CallerInfo(1)
+	return mmGetObjectDownloadURL.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceClient.GetObjectDownloadURL which will trigger the result defined by the following
+// Then helper
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) When(ctx context.Context, in *mm_artifactv1alpha.GetObjectDownloadURLRequest, opts ...grpc.CallOption) *ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation {
+	if mmGetObjectDownloadURL.mock.funcGetObjectDownloadURL != nil {
+		mmGetObjectDownloadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectDownloadURL mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation{
+		mock:               mmGetObjectDownloadURL.mock,
+		params:             &ArtifactPublicServiceClientMockGetObjectDownloadURLParams{ctx, in, opts},
+		expectationOrigins: ArtifactPublicServiceClientMockGetObjectDownloadURLExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetObjectDownloadURL.expectations = append(mmGetObjectDownloadURL.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceClient.GetObjectDownloadURL return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceClientMockGetObjectDownloadURLExpectation) Then(gp1 *mm_artifactv1alpha.GetObjectDownloadURLResponse, err error) *ArtifactPublicServiceClientMock {
+	e.results = &ArtifactPublicServiceClientMockGetObjectDownloadURLResults{gp1, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceClient.GetObjectDownloadURL should be invoked
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) Times(n uint64) *mArtifactPublicServiceClientMockGetObjectDownloadURL {
+	if n == 0 {
+		mmGetObjectDownloadURL.mock.t.Fatalf("Times of ArtifactPublicServiceClientMock.GetObjectDownloadURL mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetObjectDownloadURL.expectedInvocations, n)
+	mmGetObjectDownloadURL.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetObjectDownloadURL
+}
+
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) invocationsDone() bool {
+	if len(mmGetObjectDownloadURL.expectations) == 0 && mmGetObjectDownloadURL.defaultExpectation == nil && mmGetObjectDownloadURL.mock.funcGetObjectDownloadURL == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetObjectDownloadURL.mock.afterGetObjectDownloadURLCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetObjectDownloadURL.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetObjectDownloadURL implements mm_artifactv1alpha.ArtifactPublicServiceClient
+func (mmGetObjectDownloadURL *ArtifactPublicServiceClientMock) GetObjectDownloadURL(ctx context.Context, in *mm_artifactv1alpha.GetObjectDownloadURLRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectDownloadURLResponse, err error) {
+	mm_atomic.AddUint64(&mmGetObjectDownloadURL.beforeGetObjectDownloadURLCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetObjectDownloadURL.afterGetObjectDownloadURLCounter, 1)
+
+	mmGetObjectDownloadURL.t.Helper()
+
+	if mmGetObjectDownloadURL.inspectFuncGetObjectDownloadURL != nil {
+		mmGetObjectDownloadURL.inspectFuncGetObjectDownloadURL(ctx, in, opts...)
+	}
+
+	mm_params := ArtifactPublicServiceClientMockGetObjectDownloadURLParams{ctx, in, opts}
+
+	// Record call args
+	mmGetObjectDownloadURL.GetObjectDownloadURLMock.mutex.Lock()
+	mmGetObjectDownloadURL.GetObjectDownloadURLMock.callArgs = append(mmGetObjectDownloadURL.GetObjectDownloadURLMock.callArgs, &mm_params)
+	mmGetObjectDownloadURL.GetObjectDownloadURLMock.mutex.Unlock()
+
+	for _, e := range mmGetObjectDownloadURL.GetObjectDownloadURLMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.gp1, e.results.err
+		}
+	}
+
+	if mmGetObjectDownloadURL.GetObjectDownloadURLMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetObjectDownloadURL.GetObjectDownloadURLMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetObjectDownloadURL.GetObjectDownloadURLMock.defaultExpectation.params
+		mm_want_ptrs := mmGetObjectDownloadURL.GetObjectDownloadURLMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceClientMockGetObjectDownloadURLParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetObjectDownloadURL.t.Errorf("ArtifactPublicServiceClientMock.GetObjectDownloadURL got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetObjectDownloadURL.GetObjectDownloadURLMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmGetObjectDownloadURL.t.Errorf("ArtifactPublicServiceClientMock.GetObjectDownloadURL got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetObjectDownloadURL.GetObjectDownloadURLMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmGetObjectDownloadURL.t.Errorf("ArtifactPublicServiceClientMock.GetObjectDownloadURL got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetObjectDownloadURL.GetObjectDownloadURLMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetObjectDownloadURL.t.Errorf("ArtifactPublicServiceClientMock.GetObjectDownloadURL got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetObjectDownloadURL.GetObjectDownloadURLMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetObjectDownloadURL.GetObjectDownloadURLMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetObjectDownloadURL.t.Fatal("No results are set for the ArtifactPublicServiceClientMock.GetObjectDownloadURL")
+		}
+		return (*mm_results).gp1, (*mm_results).err
+	}
+	if mmGetObjectDownloadURL.funcGetObjectDownloadURL != nil {
+		return mmGetObjectDownloadURL.funcGetObjectDownloadURL(ctx, in, opts...)
+	}
+	mmGetObjectDownloadURL.t.Fatalf("Unexpected call to ArtifactPublicServiceClientMock.GetObjectDownloadURL. %v %v %v", ctx, in, opts)
+	return
+}
+
+// GetObjectDownloadURLAfterCounter returns a count of finished ArtifactPublicServiceClientMock.GetObjectDownloadURL invocations
+func (mmGetObjectDownloadURL *ArtifactPublicServiceClientMock) GetObjectDownloadURLAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetObjectDownloadURL.afterGetObjectDownloadURLCounter)
+}
+
+// GetObjectDownloadURLBeforeCounter returns a count of ArtifactPublicServiceClientMock.GetObjectDownloadURL invocations
+func (mmGetObjectDownloadURL *ArtifactPublicServiceClientMock) GetObjectDownloadURLBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetObjectDownloadURL.beforeGetObjectDownloadURLCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceClientMock.GetObjectDownloadURL.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetObjectDownloadURL *mArtifactPublicServiceClientMockGetObjectDownloadURL) Calls() []*ArtifactPublicServiceClientMockGetObjectDownloadURLParams {
+	mmGetObjectDownloadURL.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceClientMockGetObjectDownloadURLParams, len(mmGetObjectDownloadURL.callArgs))
+	copy(argCopy, mmGetObjectDownloadURL.callArgs)
+
+	mmGetObjectDownloadURL.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetObjectDownloadURLDone returns true if the count of the GetObjectDownloadURL invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceClientMock) MinimockGetObjectDownloadURLDone() bool {
+	if m.GetObjectDownloadURLMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetObjectDownloadURLMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetObjectDownloadURLMock.invocationsDone()
+}
+
+// MinimockGetObjectDownloadURLInspect logs each unmet expectation
+func (m *ArtifactPublicServiceClientMock) MinimockGetObjectDownloadURLInspect() {
+	for _, e := range m.GetObjectDownloadURLMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObjectDownloadURL at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetObjectDownloadURLCounter := mm_atomic.LoadUint64(&m.afterGetObjectDownloadURLCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetObjectDownloadURLMock.defaultExpectation != nil && afterGetObjectDownloadURLCounter < 1 {
+		if m.GetObjectDownloadURLMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObjectDownloadURL at\n%s", m.GetObjectDownloadURLMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObjectDownloadURL at\n%s with params: %#v", m.GetObjectDownloadURLMock.defaultExpectation.expectationOrigins.origin, *m.GetObjectDownloadURLMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetObjectDownloadURL != nil && afterGetObjectDownloadURLCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObjectDownloadURL at\n%s", m.funcGetObjectDownloadURLOrigin)
+	}
+
+	if !m.GetObjectDownloadURLMock.invocationsDone() && afterGetObjectDownloadURLCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.GetObjectDownloadURL at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetObjectDownloadURLMock.expectedInvocations), m.GetObjectDownloadURLMock.expectedInvocationsOrigin, afterGetObjectDownloadURLCounter)
+	}
+}
+
+type mArtifactPublicServiceClientMockGetObjectUploadURL struct {
+	optional           bool
+	mock               *ArtifactPublicServiceClientMock
+	defaultExpectation *ArtifactPublicServiceClientMockGetObjectUploadURLExpectation
+	expectations       []*ArtifactPublicServiceClientMockGetObjectUploadURLExpectation
+
+	callArgs []*ArtifactPublicServiceClientMockGetObjectUploadURLParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// ArtifactPublicServiceClientMockGetObjectUploadURLExpectation specifies expectation struct of the ArtifactPublicServiceClient.GetObjectUploadURL
+type ArtifactPublicServiceClientMockGetObjectUploadURLExpectation struct {
+	mock               *ArtifactPublicServiceClientMock
+	params             *ArtifactPublicServiceClientMockGetObjectUploadURLParams
+	paramPtrs          *ArtifactPublicServiceClientMockGetObjectUploadURLParamPtrs
+	expectationOrigins ArtifactPublicServiceClientMockGetObjectUploadURLExpectationOrigins
+	results            *ArtifactPublicServiceClientMockGetObjectUploadURLResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// ArtifactPublicServiceClientMockGetObjectUploadURLParams contains parameters of the ArtifactPublicServiceClient.GetObjectUploadURL
+type ArtifactPublicServiceClientMockGetObjectUploadURLParams struct {
+	ctx  context.Context
+	in   *mm_artifactv1alpha.GetObjectUploadURLRequest
+	opts []grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockGetObjectUploadURLParamPtrs contains pointers to parameters of the ArtifactPublicServiceClient.GetObjectUploadURL
+type ArtifactPublicServiceClientMockGetObjectUploadURLParamPtrs struct {
+	ctx  *context.Context
+	in   **mm_artifactv1alpha.GetObjectUploadURLRequest
+	opts *[]grpc.CallOption
+}
+
+// ArtifactPublicServiceClientMockGetObjectUploadURLResults contains results of the ArtifactPublicServiceClient.GetObjectUploadURL
+type ArtifactPublicServiceClientMockGetObjectUploadURLResults struct {
+	gp1 *mm_artifactv1alpha.GetObjectUploadURLResponse
+	err error
+}
+
+// ArtifactPublicServiceClientMockGetObjectUploadURLOrigins contains origins of expectations of the ArtifactPublicServiceClient.GetObjectUploadURL
+type ArtifactPublicServiceClientMockGetObjectUploadURLExpectationOrigins struct {
+	origin     string
+	originCtx  string
+	originIn   string
+	originOpts string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) Optional() *mArtifactPublicServiceClientMockGetObjectUploadURL {
+	mmGetObjectUploadURL.optional = true
+	return mmGetObjectUploadURL
+}
+
+// Expect sets up expected params for ArtifactPublicServiceClient.GetObjectUploadURL
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) Expect(ctx context.Context, in *mm_artifactv1alpha.GetObjectUploadURLRequest, opts ...grpc.CallOption) *mArtifactPublicServiceClientMockGetObjectUploadURL {
+	if mmGetObjectUploadURL.mock.funcGetObjectUploadURL != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by Set")
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation == nil {
+		mmGetObjectUploadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectUploadURLExpectation{}
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation.paramPtrs != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by ExpectParams functions")
+	}
+
+	mmGetObjectUploadURL.defaultExpectation.params = &ArtifactPublicServiceClientMockGetObjectUploadURLParams{ctx, in, opts}
+	mmGetObjectUploadURL.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetObjectUploadURL.expectations {
+		if minimock.Equal(e.params, mmGetObjectUploadURL.defaultExpectation.params) {
+			mmGetObjectUploadURL.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetObjectUploadURL.defaultExpectation.params)
+		}
+	}
+
+	return mmGetObjectUploadURL
+}
+
+// ExpectCtxParam1 sets up expected param ctx for ArtifactPublicServiceClient.GetObjectUploadURL
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) ExpectCtxParam1(ctx context.Context) *mArtifactPublicServiceClientMockGetObjectUploadURL {
+	if mmGetObjectUploadURL.mock.funcGetObjectUploadURL != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by Set")
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation == nil {
+		mmGetObjectUploadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectUploadURLExpectation{}
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation.params != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by Expect")
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation.paramPtrs == nil {
+		mmGetObjectUploadURL.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockGetObjectUploadURLParamPtrs{}
+	}
+	mmGetObjectUploadURL.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetObjectUploadURL.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetObjectUploadURL
+}
+
+// ExpectInParam2 sets up expected param in for ArtifactPublicServiceClient.GetObjectUploadURL
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) ExpectInParam2(in *mm_artifactv1alpha.GetObjectUploadURLRequest) *mArtifactPublicServiceClientMockGetObjectUploadURL {
+	if mmGetObjectUploadURL.mock.funcGetObjectUploadURL != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by Set")
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation == nil {
+		mmGetObjectUploadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectUploadURLExpectation{}
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation.params != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by Expect")
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation.paramPtrs == nil {
+		mmGetObjectUploadURL.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockGetObjectUploadURLParamPtrs{}
+	}
+	mmGetObjectUploadURL.defaultExpectation.paramPtrs.in = &in
+	mmGetObjectUploadURL.defaultExpectation.expectationOrigins.originIn = minimock.CallerInfo(1)
+
+	return mmGetObjectUploadURL
+}
+
+// ExpectOptsParam3 sets up expected param opts for ArtifactPublicServiceClient.GetObjectUploadURL
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) ExpectOptsParam3(opts ...grpc.CallOption) *mArtifactPublicServiceClientMockGetObjectUploadURL {
+	if mmGetObjectUploadURL.mock.funcGetObjectUploadURL != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by Set")
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation == nil {
+		mmGetObjectUploadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectUploadURLExpectation{}
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation.params != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by Expect")
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation.paramPtrs == nil {
+		mmGetObjectUploadURL.defaultExpectation.paramPtrs = &ArtifactPublicServiceClientMockGetObjectUploadURLParamPtrs{}
+	}
+	mmGetObjectUploadURL.defaultExpectation.paramPtrs.opts = &opts
+	mmGetObjectUploadURL.defaultExpectation.expectationOrigins.originOpts = minimock.CallerInfo(1)
+
+	return mmGetObjectUploadURL
+}
+
+// Inspect accepts an inspector function that has same arguments as the ArtifactPublicServiceClient.GetObjectUploadURL
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) Inspect(f func(ctx context.Context, in *mm_artifactv1alpha.GetObjectUploadURLRequest, opts ...grpc.CallOption)) *mArtifactPublicServiceClientMockGetObjectUploadURL {
+	if mmGetObjectUploadURL.mock.inspectFuncGetObjectUploadURL != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("Inspect function is already set for ArtifactPublicServiceClientMock.GetObjectUploadURL")
+	}
+
+	mmGetObjectUploadURL.mock.inspectFuncGetObjectUploadURL = f
+
+	return mmGetObjectUploadURL
+}
+
+// Return sets up results that will be returned by ArtifactPublicServiceClient.GetObjectUploadURL
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) Return(gp1 *mm_artifactv1alpha.GetObjectUploadURLResponse, err error) *ArtifactPublicServiceClientMock {
+	if mmGetObjectUploadURL.mock.funcGetObjectUploadURL != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by Set")
+	}
+
+	if mmGetObjectUploadURL.defaultExpectation == nil {
+		mmGetObjectUploadURL.defaultExpectation = &ArtifactPublicServiceClientMockGetObjectUploadURLExpectation{mock: mmGetObjectUploadURL.mock}
+	}
+	mmGetObjectUploadURL.defaultExpectation.results = &ArtifactPublicServiceClientMockGetObjectUploadURLResults{gp1, err}
+	mmGetObjectUploadURL.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetObjectUploadURL.mock
+}
+
+// Set uses given function f to mock the ArtifactPublicServiceClient.GetObjectUploadURL method
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) Set(f func(ctx context.Context, in *mm_artifactv1alpha.GetObjectUploadURLRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectUploadURLResponse, err error)) *ArtifactPublicServiceClientMock {
+	if mmGetObjectUploadURL.defaultExpectation != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("Default expectation is already set for the ArtifactPublicServiceClient.GetObjectUploadURL method")
+	}
+
+	if len(mmGetObjectUploadURL.expectations) > 0 {
+		mmGetObjectUploadURL.mock.t.Fatalf("Some expectations are already set for the ArtifactPublicServiceClient.GetObjectUploadURL method")
+	}
+
+	mmGetObjectUploadURL.mock.funcGetObjectUploadURL = f
+	mmGetObjectUploadURL.mock.funcGetObjectUploadURLOrigin = minimock.CallerInfo(1)
+	return mmGetObjectUploadURL.mock
+}
+
+// When sets expectation for the ArtifactPublicServiceClient.GetObjectUploadURL which will trigger the result defined by the following
+// Then helper
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) When(ctx context.Context, in *mm_artifactv1alpha.GetObjectUploadURLRequest, opts ...grpc.CallOption) *ArtifactPublicServiceClientMockGetObjectUploadURLExpectation {
+	if mmGetObjectUploadURL.mock.funcGetObjectUploadURL != nil {
+		mmGetObjectUploadURL.mock.t.Fatalf("ArtifactPublicServiceClientMock.GetObjectUploadURL mock is already set by Set")
+	}
+
+	expectation := &ArtifactPublicServiceClientMockGetObjectUploadURLExpectation{
+		mock:               mmGetObjectUploadURL.mock,
+		params:             &ArtifactPublicServiceClientMockGetObjectUploadURLParams{ctx, in, opts},
+		expectationOrigins: ArtifactPublicServiceClientMockGetObjectUploadURLExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetObjectUploadURL.expectations = append(mmGetObjectUploadURL.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ArtifactPublicServiceClient.GetObjectUploadURL return parameters for the expectation previously defined by the When method
+func (e *ArtifactPublicServiceClientMockGetObjectUploadURLExpectation) Then(gp1 *mm_artifactv1alpha.GetObjectUploadURLResponse, err error) *ArtifactPublicServiceClientMock {
+	e.results = &ArtifactPublicServiceClientMockGetObjectUploadURLResults{gp1, err}
+	return e.mock
+}
+
+// Times sets number of times ArtifactPublicServiceClient.GetObjectUploadURL should be invoked
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) Times(n uint64) *mArtifactPublicServiceClientMockGetObjectUploadURL {
+	if n == 0 {
+		mmGetObjectUploadURL.mock.t.Fatalf("Times of ArtifactPublicServiceClientMock.GetObjectUploadURL mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetObjectUploadURL.expectedInvocations, n)
+	mmGetObjectUploadURL.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetObjectUploadURL
+}
+
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) invocationsDone() bool {
+	if len(mmGetObjectUploadURL.expectations) == 0 && mmGetObjectUploadURL.defaultExpectation == nil && mmGetObjectUploadURL.mock.funcGetObjectUploadURL == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetObjectUploadURL.mock.afterGetObjectUploadURLCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetObjectUploadURL.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetObjectUploadURL implements mm_artifactv1alpha.ArtifactPublicServiceClient
+func (mmGetObjectUploadURL *ArtifactPublicServiceClientMock) GetObjectUploadURL(ctx context.Context, in *mm_artifactv1alpha.GetObjectUploadURLRequest, opts ...grpc.CallOption) (gp1 *mm_artifactv1alpha.GetObjectUploadURLResponse, err error) {
+	mm_atomic.AddUint64(&mmGetObjectUploadURL.beforeGetObjectUploadURLCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetObjectUploadURL.afterGetObjectUploadURLCounter, 1)
+
+	mmGetObjectUploadURL.t.Helper()
+
+	if mmGetObjectUploadURL.inspectFuncGetObjectUploadURL != nil {
+		mmGetObjectUploadURL.inspectFuncGetObjectUploadURL(ctx, in, opts...)
+	}
+
+	mm_params := ArtifactPublicServiceClientMockGetObjectUploadURLParams{ctx, in, opts}
+
+	// Record call args
+	mmGetObjectUploadURL.GetObjectUploadURLMock.mutex.Lock()
+	mmGetObjectUploadURL.GetObjectUploadURLMock.callArgs = append(mmGetObjectUploadURL.GetObjectUploadURLMock.callArgs, &mm_params)
+	mmGetObjectUploadURL.GetObjectUploadURLMock.mutex.Unlock()
+
+	for _, e := range mmGetObjectUploadURL.GetObjectUploadURLMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.gp1, e.results.err
+		}
+	}
+
+	if mmGetObjectUploadURL.GetObjectUploadURLMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetObjectUploadURL.GetObjectUploadURLMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetObjectUploadURL.GetObjectUploadURLMock.defaultExpectation.params
+		mm_want_ptrs := mmGetObjectUploadURL.GetObjectUploadURLMock.defaultExpectation.paramPtrs
+
+		mm_got := ArtifactPublicServiceClientMockGetObjectUploadURLParams{ctx, in, opts}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetObjectUploadURL.t.Errorf("ArtifactPublicServiceClientMock.GetObjectUploadURL got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetObjectUploadURL.GetObjectUploadURLMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.in != nil && !minimock.Equal(*mm_want_ptrs.in, mm_got.in) {
+				mmGetObjectUploadURL.t.Errorf("ArtifactPublicServiceClientMock.GetObjectUploadURL got unexpected parameter in, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetObjectUploadURL.GetObjectUploadURLMock.defaultExpectation.expectationOrigins.originIn, *mm_want_ptrs.in, mm_got.in, minimock.Diff(*mm_want_ptrs.in, mm_got.in))
+			}
+
+			if mm_want_ptrs.opts != nil && !minimock.Equal(*mm_want_ptrs.opts, mm_got.opts) {
+				mmGetObjectUploadURL.t.Errorf("ArtifactPublicServiceClientMock.GetObjectUploadURL got unexpected parameter opts, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetObjectUploadURL.GetObjectUploadURLMock.defaultExpectation.expectationOrigins.originOpts, *mm_want_ptrs.opts, mm_got.opts, minimock.Diff(*mm_want_ptrs.opts, mm_got.opts))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetObjectUploadURL.t.Errorf("ArtifactPublicServiceClientMock.GetObjectUploadURL got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetObjectUploadURL.GetObjectUploadURLMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetObjectUploadURL.GetObjectUploadURLMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetObjectUploadURL.t.Fatal("No results are set for the ArtifactPublicServiceClientMock.GetObjectUploadURL")
+		}
+		return (*mm_results).gp1, (*mm_results).err
+	}
+	if mmGetObjectUploadURL.funcGetObjectUploadURL != nil {
+		return mmGetObjectUploadURL.funcGetObjectUploadURL(ctx, in, opts...)
+	}
+	mmGetObjectUploadURL.t.Fatalf("Unexpected call to ArtifactPublicServiceClientMock.GetObjectUploadURL. %v %v %v", ctx, in, opts)
+	return
+}
+
+// GetObjectUploadURLAfterCounter returns a count of finished ArtifactPublicServiceClientMock.GetObjectUploadURL invocations
+func (mmGetObjectUploadURL *ArtifactPublicServiceClientMock) GetObjectUploadURLAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetObjectUploadURL.afterGetObjectUploadURLCounter)
+}
+
+// GetObjectUploadURLBeforeCounter returns a count of ArtifactPublicServiceClientMock.GetObjectUploadURL invocations
+func (mmGetObjectUploadURL *ArtifactPublicServiceClientMock) GetObjectUploadURLBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetObjectUploadURL.beforeGetObjectUploadURLCounter)
+}
+
+// Calls returns a list of arguments used in each call to ArtifactPublicServiceClientMock.GetObjectUploadURL.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetObjectUploadURL *mArtifactPublicServiceClientMockGetObjectUploadURL) Calls() []*ArtifactPublicServiceClientMockGetObjectUploadURLParams {
+	mmGetObjectUploadURL.mutex.RLock()
+
+	argCopy := make([]*ArtifactPublicServiceClientMockGetObjectUploadURLParams, len(mmGetObjectUploadURL.callArgs))
+	copy(argCopy, mmGetObjectUploadURL.callArgs)
+
+	mmGetObjectUploadURL.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetObjectUploadURLDone returns true if the count of the GetObjectUploadURL invocations corresponds
+// the number of defined expectations
+func (m *ArtifactPublicServiceClientMock) MinimockGetObjectUploadURLDone() bool {
+	if m.GetObjectUploadURLMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetObjectUploadURLMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetObjectUploadURLMock.invocationsDone()
+}
+
+// MinimockGetObjectUploadURLInspect logs each unmet expectation
+func (m *ArtifactPublicServiceClientMock) MinimockGetObjectUploadURLInspect() {
+	for _, e := range m.GetObjectUploadURLMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObjectUploadURL at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetObjectUploadURLCounter := mm_atomic.LoadUint64(&m.afterGetObjectUploadURLCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetObjectUploadURLMock.defaultExpectation != nil && afterGetObjectUploadURLCounter < 1 {
+		if m.GetObjectUploadURLMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObjectUploadURL at\n%s", m.GetObjectUploadURLMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObjectUploadURL at\n%s with params: %#v", m.GetObjectUploadURLMock.defaultExpectation.expectationOrigins.origin, *m.GetObjectUploadURLMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetObjectUploadURL != nil && afterGetObjectUploadURLCounter < 1 {
+		m.t.Errorf("Expected call to ArtifactPublicServiceClientMock.GetObjectUploadURL at\n%s", m.funcGetObjectUploadURLOrigin)
+	}
+
+	if !m.GetObjectUploadURLMock.invocationsDone() && afterGetObjectUploadURLCounter > 0 {
+		m.t.Errorf("Expected %d calls to ArtifactPublicServiceClientMock.GetObjectUploadURL at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetObjectUploadURLMock.expectedInvocations), m.GetObjectUploadURLMock.expectedInvocationsOrigin, afterGetObjectUploadURLCounter)
 	}
 }
 
@@ -6572,6 +7343,10 @@ func (m *ArtifactPublicServiceClientMock) MinimockFinish() {
 
 			m.MinimockGetFileCatalogInspect()
 
+			m.MinimockGetObjectDownloadURLInspect()
+
+			m.MinimockGetObjectUploadURLInspect()
+
 			m.MinimockGetSourceFileInspect()
 
 			m.MinimockListCatalogFilesInspect()
@@ -6624,6 +7399,8 @@ func (m *ArtifactPublicServiceClientMock) minimockDone() bool {
 		m.MinimockDeleteCatalogDone() &&
 		m.MinimockDeleteCatalogFileDone() &&
 		m.MinimockGetFileCatalogDone() &&
+		m.MinimockGetObjectDownloadURLDone() &&
+		m.MinimockGetObjectUploadURLDone() &&
 		m.MinimockGetSourceFileDone() &&
 		m.MinimockListCatalogFilesDone() &&
 		m.MinimockListCatalogRunsDone() &&

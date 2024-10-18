@@ -244,9 +244,11 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			runs, err := svc.ListPipelineRuns(ctxWithHeader, req, filtering.Filter{})
 			c.Assert(err, qt.IsNil)
 			if testCase.canView {
-				c.Check(len(runs.PipelineRuns), qt.Equals, 1)
+				c.Check(runs.PipelineRuns, qt.HasLen, 1)
+				c.Check(runs.PipelineRuns[0].RequesterId, qt.IsNotNil)
+				c.Check(*runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
 			} else {
-				c.Check(len(runs.PipelineRuns), qt.Equals, 0)
+				c.Check(runs.PipelineRuns, qt.HasLen, 0)
 			}
 		})
 	}
@@ -472,9 +474,11 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			runs, err := svc.ListPipelineRuns(ctxWithHeader, req, filtering.Filter{})
 			c.Assert(err, qt.IsNil)
 			if testCase.canView {
-				c.Check(len(runs.PipelineRuns), qt.Equals, 1)
+				c.Check(runs.PipelineRuns, qt.HasLen, 1)
+				c.Check(runs.PipelineRuns[0].RequesterId, qt.IsNotNil)
+				c.Check(*runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
 			} else {
-				c.Check(len(runs.PipelineRuns), qt.Equals, 0)
+				c.Check(runs.PipelineRuns, qt.HasLen, 0)
 			}
 		})
 	}
