@@ -365,7 +365,7 @@ Generate texts from input text prompts and chat history.
 | Prompt (required) | `prompt` | string | The prompt text |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
 | Prompt Images | `prompt-images` | array[string] | The prompt images |
-| [Chat history](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
+| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed |
 | Temperature | `temperature` | number | The temperature for sampling |
 | Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
@@ -432,8 +432,8 @@ Generate images from input text prompts.
 | Prompt (required) | `prompt` | string | The prompt text |
 | Samples | `samples` | integer | The number of generated samples, default is 1 |
 | Seed | `seed` | integer | The seed, default is 0 |
-| Aspect ratio | `negative-prompt` | string | Keywords of what you do not wish to see in the output image. |
-| Aspect ratio | `aspect-ratio` | string | Controls the aspect ratio of the generated image. Defaults to 1:1. |
+| Aspect Ratio | `negative-prompt` | string | Keywords of what you do not wish to see in the output image. |
+| Aspect Ratio | `aspect-ratio` | string | Controls the aspect ratio of the generated image. Defaults to 1:1. |
 </div>
 
 
@@ -461,7 +461,7 @@ Answer questions based on a prompt and an image.
 | Prompt (required) | `prompt` | string | The prompt text |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
 | Prompt Images | `prompt-images` | array[string] | The prompt images |
-| [Chat history](#visual-question-answering-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
+| [Chat History](#visual-question-answering-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed |
 | Temperature | `temperature` | number | The temperature for sampling |
 | Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
@@ -528,7 +528,7 @@ Generate texts from input text prompts and chat history.
 | Prompt (required) | `prompt` | string | The prompt text |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
 | Prompt Images | `prompt-images` | array[string] | The prompt images |
-| [Chat history](#chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
+| [Chat History](#chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed |
 | Temperature | `temperature` | number | The temperature for sampling |
 | Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |

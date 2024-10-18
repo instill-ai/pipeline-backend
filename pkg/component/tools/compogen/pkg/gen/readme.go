@@ -17,8 +17,6 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/russross/blackfriday/v2"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
@@ -274,7 +272,6 @@ func (p readmeParams) parseDefinition(d definition, s *objectSchema, tasks map[s
 }
 
 func parseREADMETasks(availableTasks []string, tasks map[string]task) ([]readmeTask, error) {
-
 	readmeTasks := make([]readmeTask, len(availableTasks))
 	for i, at := range availableTasks {
 		t, ok := tasks[at]
@@ -294,7 +291,7 @@ func parseREADMETasks(availableTasks []string, tasks map[string]task) ([]readmeT
 		rt.parseOneOfsProperties(t.Input.Properties)
 
 		if rt.Title = t.Title; rt.Title == "" {
-			rt.Title = titleCaseWithArticles(componentbase.TaskIDToTitle(at))
+			rt.Title = titleCase(componentbase.TaskIDToTitle(at))
 		}
 
 		readmeTasks[i] = rt
@@ -308,6 +305,8 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		return []resourceProperty{}
 	}
 
+	o.Title = titleCase(o.Title)
+
 	// We need a map first to set the Required property, then we'll
 	// transform it to a slice.
 	propMap := make(map[string]resourceProperty)
@@ -320,6 +319,9 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 			ID:       k,
 			property: op,
 		}
+
+		prop.Title = titleCase(prop.Title)
+
 		// If type is map, extend the type with the element type.
 		switch prop.Type {
 		case "array":
@@ -545,60 +547,6 @@ func enumValues(enum []string) string {
 	return result
 }
 
-// List of words to keep in uppercase
-var uppercaseWords = map[string]bool{
-	"ocr": true,
-	"url": true,
-}
-
-// List of words to keep in lowercase (articles, conjunctions, prepositions)
-var lowercaseWords = map[string]bool{
-	"a":    true,
-	"an":   true,
-	"the":  true,
-	"and":  true,
-	"or":   true,
-	"but":  true,
-	"nor":  true,
-	"for":  true,
-	"on":   true,
-	"in":   true,
-	"with": true,
-	"at":   true,
-	"by":   true,
-	"to":   true,
-}
-
-// titleCaseWithArticles keeps certain words (articles, conjunctions, prepositions) lowercase.
-func titleCaseWithArticles(s string) string {
-	// Create a Title case transformer
-	titleCaser := cases.Title(language.English)
-
-	// Replace dashes and underscores with spaces
-	cleaned := strings.ReplaceAll(strings.ReplaceAll(s, "-", " "), "_", " ")
-
-	// Split the string into words
-	words := strings.Fields(cleaned)
-
-	// Apply title case to each word
-	for i, word := range words {
-		lowerWord := strings.ToLower(word)
-		if uppercaseWords[lowerWord] {
-			// Keep the word uppercase if it's in the uppercaseWords list
-			words[i] = strings.ToUpper(word)
-		} else if i != 0 && lowercaseWords[lowerWord] {
-			// Keep the word lowercase if it's not the first word and is in the lowercaseWords list
-			words[i] = lowerWord
-		} else {
-			// Otherwise, apply title case
-			words[i] = titleCaser.String(word)
-		}
-	}
-
-	// Join the words with spaces to maintain spaces between words
-	return strings.Join(words, " ")
-}
-
 func anchorSetup(p interface{}) string {
 	switch prop := p.(type) {
 	case resourceProperty:
@@ -665,7 +613,13 @@ func insertHeaderByObjectKey(key string, taskOrString interface{}) string {
 		// Handle unexpected types, maybe return an error or use a default value
 		prefix = "unknown"
 	}
-	return fmt.Sprintf(`<h4 id="%s-%s">%s</h4>`, prefix, blackfriday.SanitizedAnchorName(key), titleCaseWithArticles(key))
+	return fmt.Sprintf(
+		`<h4 id="%s-%s">%s</h4>`,
+		prefix,
+		blackfriday.SanitizedAnchorName(key),
+		// Replace dashes and underscores with spaces, then title-case.
+		titleCase(strings.ReplaceAll(strings.ReplaceAll(key, "-", " "), "_", " ")),
+	)
 }
 
 func insertHeaderByConstValue(option objectSchema, taskOrString interface{}) string {

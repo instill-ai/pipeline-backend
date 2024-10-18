@@ -168,17 +168,17 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| PR id (optional) | `id` | integer | id of the PR |
-| PR number (optional) | `number` | integer | number of the PR |
-| PR state (optional) | `state` | string | state of the PR |
+| PR ID (optional) | `id` | integer | id of the PR |
+| PR Number (optional) | `number` | integer | number of the PR |
+| PR State (optional) | `state` | string | state of the PR |
 | PR Title (optional) | `title` | string | Title of the PR |
-| PR body (optional) | `body` | string | Body of the PR |
-| PR diff url (optional) | `diff-url` | string | url to the diff of the PR |
-| PR head (optional) | `head` | string | head commit of the PR (in SHA value) |
-| PR base (optional) | `base` | string | base commit of the PR (in SHA value) |
-| Number of PR comments (optional) | `comments-num` | integer | number of comments on the PR |
-| Number of PR commits (optional) | `commits-num` | integer | number of commits in the PR |
-| Number of PR review comments (optional) | `review-comments-num` | integer | number of review comments in the PR |
+| PR Body (optional) | `body` | string | Body of the PR |
+| PR Diff URL (optional) | `diff-url` | string | url to the diff of the PR |
+| PR Head (optional) | `head` | string | head commit of the PR (in SHA value) |
+| PR Base (optional) | `base` | string | base commit of the PR (in SHA value) |
+| Number of PR Comments (optional) | `comments-num` | integer | number of comments on the PR |
+| Number of PR Commits (optional) | `commits-num` | integer | number of commits in the PR |
+| Number of PR Review Comments (optional) | `review-comments-num` | integer | number of review comments in the PR |
 | [Commits](#get-pull-request-commits) (optional) | `commits` | array[object] | commits in the PR |
 </div>
 
@@ -246,8 +246,8 @@ Get a commit from a repository, given the commit SHA
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Commit SHA (optional) | `sha` | string | SHA of the commit |
-| Commit message (optional) | `message` | string | message of the commit |
-| [Commit stats](#get-commit-commit-stats) (optional) | `stats` | object | stats of changes |
+| Commit Message (optional) | `message` | string | message of the commit |
+| [Commit Stats](#get-commit-commit-stats) (optional) | `stats` | object | stats of changes |
 | [Files](#get-commit-files) (optional) | `files` | array[object] | files in the commit |
 </div>
 
@@ -389,18 +389,18 @@ The comment to be added
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Comment id (optional) | `id` | integer | ID of the comment |
+| Comment ID (optional) | `id` | integer | ID of the comment |
 | In Reply To (optional) | `in-reply-to-id` | integer | ID of the comment this comment is in reply to |
 | Commit SHA (optional) | `commitId` | string | SHA of the commit on which you want to comment |
-| Comment body (optional) | `body` | string | Body of the comment |
-| Comment path (optional) | `path` | string | Path of the file the comment is on |
-| Comment end line (optional) | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to. |
-| Comment start line (optional) | `start-line` | integer | The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field. |
-| Comment end side (optional) | `side` | string | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
-| Comment start side (optional) | `start-side` | string | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
-| Comment type (optional) | `subject-type` | string | Subject type of the comment, can be one of: line, file. Default is line |
-| Comment created at (optional) | `created-at` | string | Time the comment was created |
-| Comment updated at (optional) | `updated-at` | string | Time the comment was updated |
+| Comment Body (optional) | `body` | string | Body of the comment |
+| Comment Path (optional) | `path` | string | Path of the file the comment is on |
+| Comment End Line (optional) | `line` | integer | The line of the blob in the pull request diff that the comment applies to. For a multi-line comment, the last line of the range that your comment applies to. |
+| Comment Start Line (optional) | `start-line` | integer | The first line in the pull request diff that your multi-line comment applies to. Only multi-line comment needs to fill this field. |
+| Comment End Side (optional) | `side` | string | Side of the end line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
+| Comment Start Side (optional) | `start-side` | string | Side of the start line, can be one of: LEFT, RIGHT, side. LEFT is the left side of the diff (deletion), RIGHT is the right side of the diff (addition), and side is the comment on the PR as a whole. Default is side. |
+| Comment Type (optional) | `subject-type` | string | Subject type of the comment, can be one of: line, file. Default is line |
+| Comment Created At (optional) | `created-at` | string | Time the comment was created |
+| Comment Updated At (optional) | `updated-at` | string | Time the comment was updated |
 | [User](#create-review-comment-user) (optional) | `user` | object | User who created the comment |
 </div>
 
@@ -493,10 +493,10 @@ Get an issue. This can be a pull request or a general issue, and you can tell by
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Issue number (optional) | `number` | integer | Number of the issue |
-| Issue state (optional) | `state` | string | State of the issue |
-| Issue title (optional) | `title` | string | Title of the issue |
-| Issue body (optional) | `body` | string | Body of the issue |
+| Issue Number (optional) | `number` | integer | Number of the issue |
+| Issue State (optional) | `state` | string | State of the issue |
+| Issue Title (optional) | `title` | string | Title of the issue |
+| Issue Body (optional) | `body` | string | Body of the issue |
 | Assignee (optional) | `assignee` | string | Assignee of the issue |
 | Assignees (optional) | `assignees` | array[string] | Assignees of the issue |
 | Labels (optional) | `labels` | array[string] | Labels of the issue |
@@ -514,8 +514,8 @@ Create an issue
 | Task ID (required) | `task` | string | `TASK_CREATE_ISSUE` |
 | Owner (required) | `owner` | string | Owner of the repository |
 | Repository (required) | `repository` | string | Repository name |
-| Issue title (required) | `title` | string | Title of the issue |
-| Issue body (required) | `body` | string | Body of the issue |
+| Issue Title (required) | `title` | string | Title of the issue |
+| Issue Body (required) | `body` | string | Body of the issue |
 | Assignees | `assignees` | array[string] | Assignees of the issue |
 | Labels | `labels` | array[string] | Labels of the issue |
 </div>
@@ -529,10 +529,10 @@ Create an issue
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Issue number (optional) | `number` | integer | Number of the issue |
-| Issue state (optional) | `state` | string | State of the issue |
-| Issue title (optional) | `title` | string | Title of the issue |
-| Issue body (optional) | `body` | string | Body of the issue |
+| Issue Number (optional) | `number` | integer | Number of the issue |
+| Issue State (optional) | `state` | string | State of the issue |
+| Issue Title (optional) | `title` | string | Title of the issue |
+| Issue Body (optional) | `body` | string | Body of the issue |
 | Assignee (optional) | `assignee` | string | Assignee of the issue |
 | Assignees (optional) | `assignees` | array[string] | Assignees of the issue |
 | Labels (optional) | `labels` | array[string] | Labels of the issue |
