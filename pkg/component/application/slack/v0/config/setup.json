@@ -33,7 +33,7 @@
     "bot-token"
   ],
   "instillEditOnNodeFields": [
-    "token"
+    "bot-token"
   ],
   "title": "Slack Connection",
   "type": "object"
