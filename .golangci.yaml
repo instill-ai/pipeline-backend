@@ -4,4 +4,6 @@ linters:
 
 linters-settings:
   stylecheck:
+    checks: [ "all" ]
+  staticcheck:
     checks: [ "all", "-SA1019" ]

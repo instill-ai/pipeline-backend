@@ -8,6 +8,8 @@ import (
 	"image/jpeg"
 	"image/png"
 
+	"golang.org/x/image/webp"
+
 	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
@@ -22,6 +24,7 @@ func (Image) IsValue() {}
 const JPEG = "image/jpeg"
 const PNG = "image/png"
 const GIF = "image/gif"
+const WEBP = "image/webp"
 
 func NewImageFromBytes(b []byte, contentType, fileName string) (image *Image, err error) {
 	f, err := NewFileFromBytes(b, contentType, fileName)
@@ -64,6 +67,11 @@ func getImageShape(raw []byte, contentType string) (width, height int) {
 		if img, err = gif.Decode(bytes.NewReader(raw)); err != nil {
 			return
 		}
+	case WEBP:
+		if img, err = webp.Decode(bytes.NewReader(raw)); err != nil {
+			return
+		}
+
 	}
 	return img.Bounds().Dx(), img.Bounds().Dy()
 }
@@ -85,13 +93,15 @@ func (i *Image) Get(path string) (v value.Value, err error) {
 
 	// TODO: we use data-url as default format for now
 	case comparePath(path, ""):
-		return i.GetDataURL(i.ContentType)
+		return i.GetDataURL(PNG)
 	case comparePath(path, ".jpeg") || comparePath(path, ".jpg"):
 		return i.GetDataURL(JPEG)
 	case comparePath(path, ".png"):
 		return i.GetDataURL(PNG)
 	case comparePath(path, ".gif"):
 		return i.GetDataURL(GIF)
+	case comparePath(path, ".webp"):
+		return i.GetDataURL(WEBP)
 
 	case comparePath(path, ".base64"):
 		return i.GetBase64(i.ContentType)
@@ -101,6 +111,8 @@ func (i *Image) Get(path string) (v value.Value, err error) {
 		return i.GetBase64(PNG)
 	case comparePath(path, ".base64.gif"):
 		return i.GetBase64(GIF)
+	case comparePath(path, ".base64.webp"):
+		return i.GetBase64(WEBP)
 
 	case comparePath(path, ".data-url"):
 		return i.GetDataURL(i.ContentType)
@@ -110,6 +122,8 @@ func (i *Image) Get(path string) (v value.Value, err error) {
 		return i.GetDataURL(PNG)
 	case comparePath(path, ".data-url.gif"):
 		return i.GetDataURL(GIF)
+	case comparePath(path, ".data-url.webp"):
+		return i.GetDataURL(WEBP)
 
 	case comparePath(path, ".byte-array"):
 		return i.GetByteArray(i.ContentType)
@@ -119,6 +133,8 @@ func (i *Image) Get(path string) (v value.Value, err error) {
 		return i.GetByteArray(PNG)
 	case comparePath(path, ".byte-array.gif"):
 		return i.GetByteArray(GIF)
+	case comparePath(path, ".byte-array.webp"):
+		return i.GetByteArray(WEBP)
 
 	case comparePath(path, ".width"):
 		return i.GetWidth(), nil
