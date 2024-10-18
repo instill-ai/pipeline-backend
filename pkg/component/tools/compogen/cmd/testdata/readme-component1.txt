@@ -318,9 +318,9 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Api Key (required) | `api-key` | string | Fill in your Dummy API key  |
+| API Key (required) | `api-key` | string | Fill in your Dummy API key  |
 | [Authentication](#authentication) | `authentication` | object | Authentication method to use for the Dummy  |
-| Organization Id | `organization` | string | Specify which organization is used for the requests  |
+| Organization ID | `organization` | string | Specify which organization is used for the requests  |
 
 </div>
 
