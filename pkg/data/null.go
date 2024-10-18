@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type Null struct {
@@ -13,9 +15,9 @@ func NewNull() *Null {
 	return &Null{}
 }
 
-func (Null) isValue() {}
+func (Null) IsValue() {}
 
-func (n *Null) Get(path string) (v Value, err error) {
+func (n *Null) Get(path string) (v value.Value, err error) {
 	if path == "" {
 		return n, nil
 	}

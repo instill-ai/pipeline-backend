@@ -1,12 +1,16 @@
 package data
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+)
 
 type Audio struct {
 	File
 }
 
-func (Audio) isValue() {}
+func (Audio) IsValue() {}
 
 func NewAudioFromBytes(b []byte, contentType, fileName string) (audio *Audio, err error) {
 	f, err := NewFileFromBytes(b, contentType, fileName)
@@ -30,7 +34,7 @@ func newAudio(f *File) (audio *Audio, err error) {
 	}, nil
 }
 
-func (a *Audio) Get(path string) (v Value, err error) {
+func (a *Audio) Get(path string) (v value.Value, err error) {
 	v, err = a.File.Get(path)
 	if err == nil {
 		return

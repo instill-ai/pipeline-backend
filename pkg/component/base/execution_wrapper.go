@@ -17,6 +17,7 @@ type ExecutionWrapper struct {
 }
 
 type inputReader struct {
+	InputReader
 	schema string
 	input  *structpb.Struct
 }

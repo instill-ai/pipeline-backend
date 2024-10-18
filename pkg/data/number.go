@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type Number struct {
@@ -18,7 +20,7 @@ func NewNumberFromInteger(i int) *Number {
 	return &Number{Raw: float64(i)}
 }
 
-func (Number) isValue() {}
+func (Number) IsValue() {}
 
 func (n *Number) GetInteger() int {
 	return int(n.Raw)
@@ -28,7 +30,7 @@ func (n *Number) GetFloat() float64 {
 	return n.Raw
 }
 
-func (n *Number) Get(path string) (v Value, err error) {
+func (n *Number) Get(path string) (v value.Value, err error) {
 	if path == "" {
 		return n, nil
 	}

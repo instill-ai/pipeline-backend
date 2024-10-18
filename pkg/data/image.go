@@ -7,6 +7,8 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type Image struct {
@@ -15,7 +17,7 @@ type Image struct {
 	Height int
 }
 
-func (Image) isValue() {}
+func (Image) IsValue() {}
 
 const JPEG = "image/jpeg"
 const PNG = "image/png"
@@ -74,7 +76,7 @@ func (i *Image) GetHeight() *Number {
 	return NewNumberFromInteger(i.Height)
 }
 
-func (i *Image) Get(path string) (v Value, err error) {
+func (i *Image) Get(path string) (v value.Value, err error) {
 	v, err = i.File.Get(path)
 	if err == nil {
 		return

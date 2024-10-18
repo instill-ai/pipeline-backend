@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type Boolean struct {
@@ -14,13 +16,13 @@ func NewBoolean(b bool) *Boolean {
 	return &Boolean{Raw: b}
 }
 
-func (Boolean) isValue() {}
+func (Boolean) IsValue() {}
 
 func (b *Boolean) GetBoolean() bool {
 	return b.Raw
 }
 
-func (b *Boolean) Get(path string) (v Value, err error) {
+func (b *Boolean) Get(path string) (v value.Value, err error) {
 	if path == "" {
 		return b, nil
 	}

@@ -8,6 +8,8 @@ import (
 
 	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type File struct {
@@ -17,6 +19,8 @@ type File struct {
 	SourceURL   string
 	Cache       map[string][]byte
 }
+
+func (File) IsValue() {}
 
 func NewFileFromBytes(b []byte, contentType, fileName string) (bin *File, err error) {
 	if contentType == "" {
@@ -124,7 +128,7 @@ func (f *File) GetSourceURL() (t *String) {
 	return NewString(f.SourceURL)
 }
 
-func (f *File) Get(path string) (v Value, err error) {
+func (f *File) Get(path string) (v value.Value, err error) {
 	switch {
 	case comparePath(path, ".source-url"):
 		return f.GetSourceURL(), nil

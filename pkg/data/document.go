@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0"
-	//  "github.com/instill-ai/pipeline-backend/pkg/component/store"
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type Document struct {
@@ -19,7 +19,7 @@ const PPTX = "application/vnd.openxmlformats-officedocument.presentationml.prese
 const HTML = "text/html"
 const PDF = "application/pdf"
 
-func (Document) isValue() {}
+func (Document) IsValue() {}
 
 func NewDocumentFromBytes(b []byte, contentType, fileName string) (doc *Document, err error) {
 	f, err := NewFileFromBytes(b, contentType, fileName)
@@ -111,7 +111,7 @@ func (d *Document) GetPDF() (val *Document, err error) {
 	return NewDocumentFromURL(fmt.Sprintf("data:application/pdf;base64,%s", s))
 }
 
-func (d *Document) GetImages() (mp *Array, err error) {
+func (d *Document) GetImages() (mp Array, err error) {
 
 	pdf, err := d.GetPDF()
 	if err != nil {
@@ -130,12 +130,12 @@ func (d *Document) GetImages() (mp *Array, err error) {
 		return nil, err
 	}
 
-	images := NewArray(make([]Value, len(res.Images)))
+	images := make([]value.Value, len(res.Images))
 
 	for idx := range res.Images {
 
 		img := strings.Split(res.Images[idx], ",")[1]
-		images.Values[idx], err = NewImageFromURL(fmt.Sprintf("data:image/jpeg;filename=%s;base64,%s", res.Filenames[idx], img))
+		images[idx], err = NewImageFromURL(fmt.Sprintf("data:image/jpeg;filename=%s;base64,%s", res.Filenames[idx], img))
 		if err != nil {
 			return nil, fmt.Errorf("NewImageFromBytes: %w", err)
 		}
@@ -143,7 +143,7 @@ func (d *Document) GetImages() (mp *Array, err error) {
 	return images, nil
 }
 
-func (d *Document) Get(path string) (v Value, err error) {
+func (d *Document) Get(path string) (v value.Value, err error) {
 	v, err = d.File.Get(path)
 	if err == nil {
 		return

@@ -16,6 +16,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/x/errmsg"
@@ -159,7 +160,7 @@ func (d *dag) TopologicalSort() ([]datamodel.ComponentMap, error) {
 	return ans, nil
 }
 
-func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx int, path string) (data.Value, error) {
+func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx int, path string) (value.Value, error) {
 	v, err := wfm.Get(ctx, batchIdx, path)
 	if err != nil {
 		return nil, err
@@ -167,7 +168,7 @@ func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx i
 	return v, err
 }
 
-func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.WorkflowMemory, allowUnresolved bool) (data.Value, error) {
+func Render(ctx context.Context, template value.Value, batchIdx int, wfm memory.WorkflowMemory, allowUnresolved bool) (value.Value, error) {
 
 	switch input := template.(type) {
 	case *data.String:
@@ -232,12 +233,12 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 		}
 		return data.NewString(val), nil
 
-	case *data.Map:
+	case data.Map:
 		var err error
-		mp := data.NewMap(nil)
-		for k, v := range input.Fields {
+		mp := data.Map{}
+		for k, v := range input {
 			if _, isNull := v.(*data.Null); !isNull {
-				mp.Fields[k], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
+				mp[k], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
 				if err != nil {
 					return nil, err
 				}
@@ -245,11 +246,11 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 
 		}
 		return mp, nil
-	case *data.Array:
+	case data.Array:
 		var err error
-		arr := data.NewArray(make([]data.Value, len(input.Values)))
-		for i, v := range input.Values {
-			arr.Values[i], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
+		arr := make(data.Array, len(input))
+		for i, v := range input {
+			arr[i], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
 			if err != nil {
 				return nil, err
 			}

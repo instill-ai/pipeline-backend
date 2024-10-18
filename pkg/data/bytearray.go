@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type ByteArray struct {
@@ -15,13 +17,13 @@ func NewByteArray(b []byte) *ByteArray {
 	return &ByteArray{Raw: b}
 }
 
-func (ByteArray) isValue() {}
+func (ByteArray) IsValue() {}
 
 func (b *ByteArray) GetByteArray() []byte {
 	return b.Raw
 }
 
-func (b *ByteArray) Get(path string) (v Value, err error) {
+func (b *ByteArray) Get(path string) (v value.Value, err error) {
 	if path == "" {
 		return b, nil
 	}

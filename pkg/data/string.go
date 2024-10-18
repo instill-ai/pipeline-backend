@@ -4,13 +4,15 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type String struct {
 	Raw string
 }
 
-func (String) isValue() {}
+func (String) IsValue() {}
 
 func NewString(t string) *String {
 	return &String{Raw: t}
@@ -20,7 +22,7 @@ func (s *String) GetString() string {
 	return s.Raw
 }
 
-func (s *String) Get(path string) (v Value, err error) {
+func (s *String) Get(path string) (v value.Value, err error) {
 	if path == "" {
 		return s, nil
 	}
