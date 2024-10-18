@@ -16,8 +16,6 @@ It can carry out the following tasks:
 - [Retrieve](#retrieve)
 - [Ask](#ask)
 
-
-
 To use Artifact Component, you will need to set up the OpenAI API key for self-hosted deployment of Instill Core.
 You can do this by setting the `OPENAI_API_KEY` environment variable.
 Please refer to [configuring-the-embedding-feature](https://www.instill.tech/docs/core/configuration#configuring-the-embedding-feature)
@@ -71,7 +69,7 @@ Upload and process the files into chunks into Catalog
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string |  Catalog ID that you input in the Catalog  |
 | File | `file` | string |  base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog  |
-| File Name | `file-name` | string |  The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'  |
+| File Name | `file-name` | string |  Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.  |
 | Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace  |
 | Option | `option` | string |  Must be `"existing catalog"`   |
 </div>
@@ -85,7 +83,7 @@ Upload and process the files into chunks into Catalog
 | Catalog ID | `catalog-id` | string |  Catalog ID for new catalog you want to create  |
 | Description | `description` | string |  Description of the catalog  |
 | File | `file` | string |  base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML file to be uploaded into catalog  |
-| File Name | `file-name` | string |  The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'  |
+| File Name | `file-name` | string |  Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.  |
 | Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace  |
 | Option | `option` | string |  Must be `"create new catalog"`   |
 | Tags | `tags` | array |  Tags for the catalog  |
@@ -148,7 +146,7 @@ Upload and process the files into chunks into Catalog
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string |  Catalog ID that you input in the Catalog  |
-| File Names | `file-names` | array |  The names of the files, please remember to add the file extension in the end of file name. e.g. 'example.pdf'  |
+| File Names | `file-names` | array |  Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.  |
 | Files | `files` | array |  base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog  |
 | Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace  |
 | Option | `option` | string |  Must be `"existing catalog"`   |
@@ -162,7 +160,7 @@ Upload and process the files into chunks into Catalog
 | :--- | :--- | :--- | :--- |
 | Catalog ID | `catalog-id` | string |  Catalog ID for new catalog you want to create  |
 | Description | `description` | string |  Description of the catalog  |
-| File Names | `file-names` | array |  The names of the files, please remember to add the file extension in the end of file name. e.g. 'example.pdf'  |
+| File Names | `file-names` | array |  Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.  |
 | Files | `files` | array |  base64 encoded PDF/DOCX/DOC/PPTX/PPT/HTML files to be uploaded into catalog  |
 | Namespace | `namespace` | string |  Fill in your namespace, you can get namespace through the tab of switching namespace  |
 | Option | `option` | string |  Must be `"create new catalog"`   |

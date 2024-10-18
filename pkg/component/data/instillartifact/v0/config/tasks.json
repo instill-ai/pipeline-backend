@@ -184,7 +184,7 @@
                   "$ref": "#/$defs/file"
                 },
                 "file-name": {
-                  "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "description": "Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.",
                   "instillUIOrder": 2,
                   "instillAcceptFormats": [
                     "string"
@@ -243,7 +243,7 @@
                   "$ref": "#/$defs/file"
                 },
                 "file-name": {
-                  "description": "The name of the file, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "description": "Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.",
                   "instillUIOrder": 3,
                   "instillAcceptFormats": [
                     "string"
@@ -397,7 +397,7 @@
                   "$ref": "#/$defs/files"
                 },
                 "file-names": {
-                  "description": "The names of the files, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "description": "Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.",
                   "instillUIOrder": 2,
                   "instillAcceptFormats": [
                     "array:string"
@@ -458,7 +458,7 @@
                   "$ref": "#/$defs/files"
                 },
                 "file-names": {
-                  "description": "The names of the files, please remember to add the file extension in the end of file name. e.g. 'example.pdf'",
+                  "description": "Name of the file, including the extension (e.g. `example.pdf`). The length of this field is limited to 100 characters.",
                   "instillUIOrder": 3,
                   "instillAcceptFormats": [
                     "array:string"
