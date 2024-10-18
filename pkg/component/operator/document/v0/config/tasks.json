@@ -191,7 +191,7 @@
           "description": "Time taken to convert the document",
           "instillFormat": "number",
           "instillUIOrder": 2,
-          "title": "MSecs",
+          "title": "Milliseconds",
           "type": "number"
         },
         "filename": {
