@@ -274,7 +274,6 @@ func (p readmeParams) parseDefinition(d definition, s *objectSchema, tasks map[s
 }
 
 func parseREADMETasks(availableTasks []string, tasks map[string]task) ([]readmeTask, error) {
-
 	readmeTasks := make([]readmeTask, len(availableTasks))
 	for i, at := range availableTasks {
 		t, ok := tasks[at]
@@ -308,6 +307,8 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 		return []resourceProperty{}
 	}
 
+	o.Title = titleCaseWithArticles(o.Title)
+
 	// We need a map first to set the Required property, then we'll
 	// transform it to a slice.
 	propMap := make(map[string]resourceProperty)
@@ -320,6 +321,9 @@ func parseResourceProperties(o *objectSchema) []resourceProperty {
 			ID:       k,
 			property: op,
 		}
+
+		prop.Title = titleCaseWithArticles(prop.Title)
+
 		// If type is map, extend the type with the element type.
 		switch prop.Type {
 		case "array":

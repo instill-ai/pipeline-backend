@@ -258,7 +258,7 @@ This task is dummier than `TASK_DUMMY`.
 | :--- | :--- | :--- | :--- |
 | Elementum | `elementum` | string | Tellus elementum sagittis vitae et |
 | [Atem](#dummier-atem) | `atem` | object | This object should comply witht he format \{"tortor": "something", "arcu": "something else"\} |
-| Nullam non | `nullam_non` | number | Id faucibus nisl tincidunt eget nullam non |
+| Nullam Non | `nullam_non` | number | Id faucibus nisl tincidunt eget nullam non |
 | Errors (optional) | `errors` | array[string] | Error messages, if any, during the dummy process |
 | Meta (optional) | `context` | any | Free-form metadata |
 </div>
