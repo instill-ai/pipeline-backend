@@ -34,4 +34,3 @@ jobs:
           cd pkg/component/tools/compogen
           go mod tidy
           go test -mod=mod -race -cover ./...
-

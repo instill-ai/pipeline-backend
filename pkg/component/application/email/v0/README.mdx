@@ -8,7 +8,9 @@ description: "Learn about how to set up a VDP Email component https://github.com
 The Email component is an application component that allows users to get and send email from Mail Protocol.
 It can carry out the following tasks:
 - [Send Email](#send-email)
-- [Read Emails](#read-emails)You can connect to different email servers through the Email component.
+- [Read Emails](#read-emails)
+
+You can connect to different email servers through the Email component.
 Emails are fetched and sent using the IMAP and SMTP protocols, respectively. You can set the server address and port for each protocol in the component configuration.
 
 
@@ -16,9 +18,14 @@ Emails are fetched and sent using the IMAP and SMTP protocols, respectively. You
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/email/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/email/v0/config/tasks.json) files respectively.
+
+
+
 
 ## Setup
 
@@ -174,3 +181,5 @@ Take Gmail as an example, the mailbox names are following.
 #### Search From and Search To
 You need to input the exact same email address with `<` as a prefix and `>` as a suffix as the email you want to search for.
 For example, if you want to search for the email from `email@example.com`, you need to input `<email@example.com>`.
+
+
