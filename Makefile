@@ -31,50 +31,34 @@ dev:							## Run dev container
 		--name ${SERVICE_NAME} \
 		instill/${SERVICE_NAME}:dev >/dev/null 2>&1
 
-.PHONY: logs
-logs:							## Tail container logs with -n 10
-	@docker logs ${SERVICE_NAME} --follow --tail=10
-
-.PHONY: stop
-stop:							## Stop container
-	@docker stop -t 1 ${SERVICE_NAME}
+.PHONY: latest
+latest:							## Run latest container
+	@docker compose ls -q | grep -q "instill-core" && true || \
+		(echo "Error: Run \"make latest PROFILE=pipeline\" in vdp repository (https://github.com/instill-ai/instill-core) in your local machine first." && exit 1)
+	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
+		echo "Run latest container ${SERVICE_NAME} and ${SERVICE_NAME}-worker. To stop it, run \"make stop\"."
+	@docker run --network=instill-network \
+		--name ${SERVICE_NAME} \
+		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}
+	@docker run --network=instill-network \
+		--name ${SERVICE_NAME}-worker \
+		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
 
 .PHONY: rm
-rm:								## Remove container
-	@docker rm -f ${SERVICE_NAME}
-
-.PHONY: top
-top:							## Display all running service processes
-	@docker top ${SERVICE_NAME}
+rm:								## Remove all running containers
+	@docker rm -f ${SERVICE_NAME} ${SERVICE_NAME}-worker >/dev/null 2>&1
 
 .PHONY: build
-build:							## Build dev docker image
+build-dev:							## Build dev docker image
 	@docker build \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg K6_VERSION=${K6_VERSION} \
 		--build-arg XK6_VERSION=${XK6_VERSION} \
-		-f Dockerfile.dev  -t instill/${SERVICE_NAME}:dev .
+		-f Dockerfile.dev -t instill/${SERVICE_NAME}:dev .
 
-.PHONY: run-dev-services
-run-dev-services:							## Run test container with image built by Dockerfile
-	@docker compose ls -q | grep -q "instill-core" && true || \
-		(echo "Error: Run \"make latest PROFILE=pipeline\" in vdp repository (https://github.com/instill-ai/instill-core) in your local machine first." && exit 1)
-	@docker inspect --type container ${SERVICE_NAME} >/dev/null 2>&1 && echo "A container named ${SERVICE_NAME} is already running." || \
-		echo "Run dev container ${SERVICE_NAME}. To stop it, run \"make stop\"."
-	@docker run --network=instill-network \
-		--name ${SERVICE_NAME} \
-		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}
-	@docker run --network=instill-network \
-		--name pipeline-backend-worker \
-		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
-
-.PHONY: rm-test-container
-rm-test-container:
-	@docker rm -f ${SERVICE_NAME} ${SERVICE_NAME}-worker
-
-.PHONY: build-dev-image
-build-dev-image:							## Build test docker image with Dockerfile
+.PHONY: build-latest
+build-latest:							## Build latest docker image
 	@docker buildx build \
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \

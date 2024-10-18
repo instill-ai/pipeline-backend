@@ -1,4 +1,5 @@
-FROM --platform=$TARGETPLATFORM golang:1.22.5-alpine3.19 AS build
+ARG GOLANG_VERSION=1.22.5
+FROM golang:${GOLANG_VERSION}-alpine3.19 AS build
 
 RUN apk add --no-cache build-base leptonica-dev tesseract-ocr-dev musl-dev
 
@@ -60,7 +61,7 @@ ARG SERVICE_NAME
 
 WORKDIR /${SERVICE_NAME}
 
-ENV GODEBUG tlsrsakex=1
+ENV GODEBUG=tlsrsakex=1
 
 COPY --from=build --chown=nobody:nogroup /src/config ./config
 COPY --from=build --chown=nobody:nogroup /src/release-please ./release-please
