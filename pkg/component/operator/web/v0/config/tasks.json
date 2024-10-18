@@ -63,7 +63,7 @@
         },
         "max-k": {
           "default": 10,
-          "description": "Max-K specifies the maximum number of pages to return. If max-k is set to 0, all available pages will be returned, up to a maximum of 100. If max-k is set to a positive number, the result will include up to max-k pages, but no more than that.",
+          "description": "Max-K sets a limit on the number of pages to fetch. If Max-K is set to 0, all available pages will be fetched within the time limit of 120 seconds. If Max-K is a positive number, the fetch will return up to that many pages, but no more.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -72,14 +72,13 @@
             "value",
             "reference"
           ],
-          "maximum": 100,
           "minimum": 0,
           "title": "Max Number of Pages",
           "type": "integer"
         },
         "timeout": {
           "default": 1000,
-          "description": "The time to wait for the page to load in milliseconds. Min 0, Max 60000.",
+          "description": "The time to wait for a page to load in milliseconds. Min 0, Max 60000. Please notice the timeout here is set for each page rather than the whole crawl task.",
           "instillAcceptFormats": [
             "integer"
           ],
@@ -238,12 +237,31 @@
           "title": "URL",
           "type": "string"
         },
+        "scrape-method": {
+          "description": "Defines the method used for web scraping. Available options include 'http' for standard HTTP-based scraping and 'chrome-simulator' for scraping through a simulated Chrome browser environment.",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "enum": [
+            "http",
+            "chrome-simulator"
+          ],
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "default": "http",
+          "title": "Scrape Method",
+          "type": "string"
+        },
         "include-html": {
           "description": "Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true.",
           "instillAcceptFormats": [
             "boolean"
           ],
-          "instillUIOrder": 1,
+          "instillUIOrder": 2,
           "instillUpstreamTypes": [
             "value",
             "reference"
@@ -256,7 +274,7 @@
           "instillAcceptFormats": [
             "boolean"
           ],
-          "instillUIOrder": 2,
+          "instillUIOrder": 3,
           "instillUpstreamTypes": [
             "value",
             "reference"
@@ -269,7 +287,7 @@
           "instillAcceptFormats": [
             "array:string"
           ],
-          "instillUIOrder": 3,
+          "instillUIOrder": 4,
           "instillUpstreamTypes": [
             "value",
             "reference"
@@ -285,7 +303,7 @@
           "instillAcceptFormats": [
             "array:string"
           ],
-          "instillUIOrder": 4,
+          "instillUIOrder": 5,
           "instillUpstreamTypes": [
             "value",
             "reference"
@@ -298,11 +316,11 @@
         },
         "timeout": {
           "default": 1000,
-          "description": "The time to wait for the page to load in milliseconds. Min 0, Max 60000. Please set it as 0 if you only want to collect static content. Please notice that if the timeout is set a small value, the page may not be fully loaded.",
+          "description": "This parameter specifies the time to wait for a page to load, measured in milliseconds. The minimum value is 0, and the maximum value is 60,000. Please note that if you set a short timeout, the page may not fully load. Conversely, setting a long timeout could significantly increase the time it takes for the task to complete. This timeout setting applies only to the Chrome simulator.",
           "instillAcceptFormats": [
             "integer"
           ],
-          "instillUIOrder": 5,
+          "instillUIOrder": 6,
           "instillUpstreamTypes": [
             "value",
             "reference"
@@ -314,7 +332,8 @@
         }
       },
       "required": [
-        "url"
+        "url",
+        "scrape-method"
       ],
       "title": "Input",
       "type": "object"
