@@ -1,16 +1,111 @@
 {
-  "TASK_CHUNK_AUDIOS": {
-    "instillShortDescription": "Split audio file into chunks",
-    "input": {
-      "description": "Audio file to split",
-      "instillEditOnNodeFields": [
-        "audio",
-        "chunk-count"
+  "$defs": {
+    "segment": {
+      "properties": {
+        "start-time": {
+          "title": "Start Time",
+          "type": "number",
+          "description": "The number of seconds from the beginning of the audio file to the start of this segment.",
+          "instillFormat": "number",
+          "instillUIOrder": 0
+        },
+        "end-time": {
+          "title": "End Time",
+          "type": "number",
+          "description": "The number of seconds from the beginning of the audio file to the end of this segment.",
+          "instillFormat": "number",
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "start-time",
+        "end-time"
       ],
+      "title": "Segment",
+      "type": "object",
+      "description": "A time segment of audio data, defined by its start and end times in seconds."
+    }
+  },
+  "TASK_DETECT_ACTIVITY": {
+    "instillShortDescription": "Detect speech segments in audio data using Voice Activity Detection (VAD). This task processes the input audio to 16kHz mono format, identifies periods of human speech, and outputs time segments for each detected speech activity.",
+    "input": {
+      "description": "Input",
       "instillUIOrder": 0,
       "properties": {
         "audio": {
-          "description": "Base64 encoded audio file to be split",
+          "description": "Audio file to analyze for speech activity.",
+          "instillAcceptFormats": [
+            "audio/wav",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Audio",
+          "type": "string"
+        },
+        "min-silence-duration": {
+          "description": "Minimum duration of silence (in milliseconds) required to split speech segments. Longer values result in fewer, longer segments.",
+          "instillAcceptFormats": [
+            "integer",
+            "number"
+          ],
+          "instillUIOrder": 1,
+          "type": "integer",
+          "minimum": 0,
+          "title": "Minimum Silence Duration",
+          "default": 100
+        },
+        "speech-pad": {
+          "description": "Additional padding (in milliseconds) added to the start and end of each detected speech segment to prevent cutting off speech.",
+          "instillAcceptFormats": [
+            "integer",
+            "number"
+          ],
+          "instillUIOrder": 2,
+          "type": "integer",
+          "minimum": 0,
+          "title": "Speech Pad",
+          "default": 30
+        }
+      },
+      "required": [
+        "audio"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillUIOrder": 0,
+      "properties": {
+        "segments": {
+          "description": "Array of time segments representing detected speech activity. Each segment contains start and end times in seconds.",
+          "instillFormat": "array:object",
+          "instillUIOrder": 0,
+          "items": {
+            "$ref": "#/$defs/segment"
+          },
+          "title": "Segments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "segments"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SEGMENT": {
+    "instillShortDescription": "Segment audio data into pieces based on the provided time segments.",
+    "input": {
+      "description": "Input",
+      "instillUIOrder": 0,
+      "properties": {
+        "audio": {
+          "description": "Audio data to segment.",
           "instillAcceptFormats": [
             "audio/*",
             "application/octet-stream"
@@ -22,34 +117,31 @@
           "title": "Audio",
           "type": "string"
         },
-        "chunk-count": {
-          "description": "Number of chunks to equally split the audio into",
-          "instillAcceptFormats": [
-            "integer",
-            "number"
-          ],
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
+        "segments": {
+          "description": "A list of time segments of audio data.",
+          "instillFormat": "array:object",
           "instillUIOrder": 1,
-          "title": "Chunk count",
-          "type": "integer"
+          "items": {
+            "$ref": "#/$defs/segment"
+          },
+          "title": "Segments",
+          "type": "array"
         }
       },
       "required": [
         "audio",
-        "chunk-count"
+        "segments"
       ],
       "title": "Input",
       "type": "object"
     },
     "output": {
+      "description": "Output",
       "instillUIOrder": 0,
       "properties": {
-        "audios": {
-          "description": "A list of base64 encoded audios",
-          "instillFormat": "array:audio/wav",
+        "audio-segments": {
+          "description": "A list of segmented audio data.",
+          "instillFormat": "array:audio/*",
           "instillUIOrder": 0,
           "items": {
             "type": "string",
@@ -60,86 +152,7 @@
         }
       },
       "required": [
-        "audios"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_SLICE_AUDIO": {
-    "instillShortDescription": "Specify a time range to slice an audio file",
-    "input": {
-      "description": "Audio file to slice",
-      "instillEditOnNodeFields": [
-        "audio",
-        "start-time",
-        "end-time"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "audio": {
-          "description": "Base64 encoded audio file to be sliced",
-          "instillAcceptFormats": [
-            "audio/*",
-            "application/octet-stream"
-          ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
-          "title": "Audio",
-          "type": "string"
-        },
-        "start-time": {
-          "description": "Start time of the slice in seconds",
-          "instillAcceptFormats": [
-            "integer",
-            "number"
-          ],
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
-          "instillUIOrder": 1,
-          "title": "Start time",
-          "type": "integer"
-        },
-        "end-time": {
-          "description": "End time of the slice in seconds",
-          "instillAcceptFormats": [
-            "integer",
-            "number"
-          ],
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
-          "instillUIOrder": 2,
-          "title": "End time",
-          "type": "integer"
-        }
-      },
-      "required": [
-        "audio",
-        "start-time",
-        "end-time"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "instillUIOrder": 0,
-      "properties": {
-        "audio": {
-          "description": "Base64 encoded audio slice",
-          "instillFormat": "audio/wav",
-          "instillUIOrder": 0,
-          "title": "Audio",
-          "type": "string"
-        }
-      },
-      "required": [
-        "audio"
+        "audio-segments"
       ],
       "title": "Output",
       "type": "object"
