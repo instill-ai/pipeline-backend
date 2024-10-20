@@ -188,13 +188,20 @@ It can carry out the following tasks:
 - [Dummy](#dummy)
 - [Dummier](#dummier)
 
+
+
 ## Release Stage
 
 `Beta`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/dummy/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/pkg/component/blob/main/operator/dummy/v0/config/tasks.json) files respectively.
+
+
+
 
 
 
@@ -251,7 +258,7 @@ This task is dummier than `TASK_DUMMY`.
 | :--- | :--- | :--- | :--- |
 | Elementum | `elementum` | string | Tellus elementum sagittis vitae et |
 | [Atem](#dummier-atem) | `atem` | object | This object should comply witht he format \{"tortor": "something", "arcu": "something else"\} |
-| Nullam non | `nullam_non` | number | Id faucibus nisl tincidunt eget nullam non |
+| Nullam Non | `nullam_non` | number | Id faucibus nisl tincidunt eget nullam non |
 | Errors (optional) | `errors` | array[string] | Error messages, if any, during the dummy process |
 | Meta (optional) | `context` | any | Free-form metadata |
 </div>
@@ -269,6 +276,8 @@ This task is dummier than `TASK_DUMMY`.
 | Tincidunt tortor | `tortor` | string | Tincidunt tortor aliquam nulla |
 </div>
 </details>
+
+
 ## Final words
 
 Thanks for reaching this point! No one really reads documentation thoroughly (:

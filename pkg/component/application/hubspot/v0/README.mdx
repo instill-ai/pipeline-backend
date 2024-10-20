@@ -23,13 +23,20 @@ It can carry out the following tasks:
 - [Get Owner](#get-owner)
 - [Get All](#get-all)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/hubspot/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/hubspot/v0/config/tasks.json) files respectively.
+
+
+
 
 ## Setup
 
@@ -105,9 +112,9 @@ Create new contact
 | Job Title | `job-title` | string | Job title |
 | Lifecycle Stage | `lifecycle-stage` | string | Lifecycle stages are used to track how contacts or companies move forward in your process. Default format is in small letters, all words are combined. Example: salesqualifiedlead. However, remember to check internal value for custom fields. |
 | Lead Status | `lead-status` | string | The contact's sales, prospecting or outreach status. Default format is in capital letters, with _ as space. Example: IN_PROGRESS. However, remember to check internal value for custom fields. |
-| Create Object -> Deal Association using deal IDs | `create-deals-association` | array[string] | Existing deal IDs to be associated with the object |
-| Create Object -> Company Association using company IDs | `create-companies-association` | array[string] | Existing company IDs to be associated with the object |
-| Create Object -> Ticket Association using ticket IDs | `create-tickets-association` | array[string] | Existing ticket IDs to be associated with the object |
+| Create Object -> Deal Association Using Deal IDs | `create-deals-association` | array[string] | Existing deal IDs to be associated with the object |
+| Create Object -> Company Association Using Company IDs | `create-companies-association` | array[string] | Existing company IDs to be associated with the object |
+| Create Object -> Ticket Association Using Ticket IDs | `create-tickets-association` | array[string] | Existing ticket IDs to be associated with the object |
 </div>
 
 
@@ -170,7 +177,7 @@ Create new deal
 | Amount | `amount` | number | The total amount of the deal |
 | Deal Type | `deal-type` | string | The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal value for custom fields. |
 | Close Date | `close-date` | string | Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z |
-| Create Object -> Contact Association using contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
+| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
 </div>
 
 
@@ -202,7 +209,7 @@ Update existing deal
 | Amount | `amount` | number | The total amount of the deal |
 | Deal Type | `deal-type` | string | The type of deal. Default format is in small letters, all words are combined. Example: newbusiness. However, remember to check internal value for custom fields. |
 | Close Date | `close-date` | string | Date the deal was closed. Set automatically by HubSpot. Format is in ISO 8601. Example: 2024-07-01T11:47:40.388Z |
-| Create Object -> Contact Association using contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
+| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
 </div>
 
 
@@ -214,7 +221,7 @@ Update existing deal
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Updated By User ID | `updated-by-user-id` | string | User ID that updated the deal |
+| Updated by User ID | `updated-by-user-id` | string | User ID that updated the deal |
 | Updated At | `updated-at` | string | The time when the deal was updated |
 </div>
 
@@ -280,7 +287,7 @@ Create new company
 | Time Zone | `time-zone` | string | Time zone |
 | Annual Revenue | `annual-revenue` | number | Annual revenue |
 | Linkedin Page | `linkedin-page` | string | Linkedin page of the company |
-| Create Object -> Contact Association using contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
+| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
 </div>
 
 
@@ -345,7 +352,7 @@ Create new ticket
 | Categories | `categories` | array[string] | The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check internal value for custom fields. |
 | Priority | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
 | Source | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL |
-| Create Object -> Contact Association using contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
+| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
 </div>
 
 
@@ -377,7 +384,7 @@ Update existing ticket
 | Categories | `categories` | array[string] | The main reason customer reached out for help. Default format is in capital letters. Example: BILLING_ISSUE. However, remember to check internal value for custom fields. |
 | Priority | `priority` | string | The level of attention needed on the ticket. Default format is in capital letters. Example: MEDIUM. However, remember to check internal value for custom fields. |
 | Source | `source` | string | Channel where ticket was originally submitted. Default format is in capital letters. Example: EMAIL |
-| Create Object -> Contact Association using contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
+| Create Object -> Contact Association Using Contact IDs | `create-contacts-association` | array[string] | Existing contact IDs to be associated with the object |
 </div>
 
 
@@ -510,7 +517,7 @@ Get the object IDs associated with contact ID (contact->objects). If you are try
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Object ID Array  | `object-ids` | array[string] | An array of object ID associated with the contact |
+| Object ID Array | `object-ids` | array[string] | An array of object ID associated with the contact |
 | Object IDs Length | `object-ids-length` | integer | The number of object IDs |
 </div>
 
@@ -583,6 +590,8 @@ Get all the IDs for a specific object (e.g. all contact IDs)
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Object ID Array  | `object-ids` | array[string] | An array of object ID |
+| Object ID Array | `object-ids` | array[string] | An array of object ID |
 | Object IDs Length | `object-ids-length` | integer | The number of object IDs |
 </div>
+
+

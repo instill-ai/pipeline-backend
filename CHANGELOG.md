@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.43.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.1-beta...v0.43.2-beta) (2024-10-16)
+
+
+### Bug Fixes
+
+* fix InstillFormat validate function ([#745](https://github.com/instill-ai/pipeline-backend/issues/745)) ([b2e0705](https://github.com/instill-ai/pipeline-backend/commit/b2e070591c1d6795a70f27ac37a4b82629d2d6a3))
+
+## [0.43.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.0-beta...v0.43.1-beta) (2024-10-15)
+
+
+### Bug Fixes
+
+* **web:** fix bug ([#742](https://github.com/instill-ai/pipeline-backend/issues/742)) ([6dbaf6e](https://github.com/instill-ai/pipeline-backend/commit/6dbaf6ee1bcf26cea44ded69ecfe69d5495315a8))
+
+## [0.43.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.42.2-beta...v0.43.0-beta) (2024-10-15)
+
+
+### Features
+
+* **component:** implement instill app features ([#670](https://github.com/instill-ai/pipeline-backend/issues/670)) ([6def4ac](https://github.com/instill-ai/pipeline-backend/commit/6def4acac0148f5dfd873f477a05e70337389559))
+* **slack:** allow posting messages as user or bot ([#728](https://github.com/instill-ai/pipeline-backend/issues/728)) ([7f35ca5](https://github.com/instill-ai/pipeline-backend/commit/7f35ca5b3afd3f2ad6186eb0bbc2d214ec41572c))
+
+
+### Bug Fixes
+
+* hide preset pipelines in GET /pipelines endpoint ([#733](https://github.com/instill-ai/pipeline-backend/issues/733)) ([baa8919](https://github.com/instill-ai/pipeline-backend/commit/baa891931771a351280c19d430b0d7f6fd2d4b76))
+* remove redundant message in streaming ([#739](https://github.com/instill-ai/pipeline-backend/issues/739)) ([50ce029](https://github.com/instill-ai/pipeline-backend/commit/50ce0293d5805da1365a0fafa7e39f257ae83028))
+* **text:** filter out the empty chunk ([#734](https://github.com/instill-ai/pipeline-backend/issues/734)) ([4037ba6](https://github.com/instill-ai/pipeline-backend/commit/4037ba6657975bed24601a60457aa80661396198))
+* the InstillAcceptFormats doesn't works with collection component ([#732](https://github.com/instill-ai/pipeline-backend/issues/732)) ([3d1c053](https://github.com/instill-ai/pipeline-backend/commit/3d1c053685ba10ea50b61d5674547134482d11c7))
+
 ## [0.42.2-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.42.1-beta...v0.42.2-beta) (2024-10-08)
 
 

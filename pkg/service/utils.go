@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
@@ -14,7 +16,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -100,6 +101,7 @@ func (s *service) GetRscNamespace(ctx context.Context, namespaceID string) (reso
 func (s *service) convertPipelineRunToPB(run datamodel.PipelineRun) (*pipelinepb.PipelineRun, error) {
 	result := &pipelinepb.PipelineRun{
 		PipelineUid:     run.PipelineUID.String(),
+		PipelineId:      &run.Pipeline.ID,
 		PipelineRunUid:  run.PipelineTriggerUID.String(),
 		PipelineVersion: run.PipelineVersion,
 		Status:          runpb.RunStatus(run.Status),
@@ -158,4 +160,49 @@ func (s *service) convertComponentRunToPB(run datamodel.ComponentRun) (*pipeline
 // CanViewPrivateData - only with credit owner ns could users see their input/output data
 func CanViewPrivateData(namespace, requesterUID string) bool {
 	return namespace == requesterUID
+}
+
+func parseMetadataToStructArray(metadataMap map[string][]byte, key string) ([]*structpb.Struct, error) {
+	md, ok := metadataMap[key]
+	if !ok {
+		return nil, fmt.Errorf("key doesn't exist")
+	}
+
+	structArr := make([]*structpb.Struct, 0)
+	if err := json.Unmarshal(md, &structArr); err != nil {
+		return nil, err
+	}
+
+	return structArr, nil
+}
+
+func parseRecipeMetadata(ctx context.Context, metadataMap map[string][]byte, converter Converter, key string) (*structpb.Struct, *pipelinepb.DataSpecification, error) {
+	md, ok := metadataMap[key]
+	if !ok {
+		return nil, nil, fmt.Errorf("key doesn't exist")
+	}
+
+	r := make(map[string]any)
+	err := json.Unmarshal(md, &r)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pbStruct, err := structpb.NewStruct(r)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dbRecipe := &datamodel.Recipe{}
+	if err = json.Unmarshal(md, dbRecipe); err != nil {
+		return pbStruct, nil, err
+	}
+
+	if err = converter.IncludeDetailInRecipe(ctx, "", dbRecipe, false); err != nil {
+		return pbStruct, nil, err
+	}
+
+	// Some recipes cannot generate a DataSpecification, so we can ignore the error.
+	dataSpec, _ := converter.GeneratePipelineDataSpec(dbRecipe.Variable, dbRecipe.Output, dbRecipe.Component)
+	return pbStruct, dataSpec, nil
 }

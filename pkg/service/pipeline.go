@@ -39,12 +39,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/resource"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
-
-	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
-
 	"github.com/instill-ai/x/errmsg"
 
 	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
+	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
@@ -65,8 +63,8 @@ func (s *service) GetHubStats(ctx context.Context) (*pipelinepb.GetHubStatsRespo
 	}
 
 	return &pipelinepb.GetHubStatsResponse{
-		NumberOfPublicPipelines:   int32(hubStats.NumberOfPublicPipelines),
-		NumberOfFeaturedPipelines: int32(hubStats.NumberOfFeaturedPipelines),
+		NumberOfPublicPipelines:   hubStats.NumberOfPublicPipelines,
+		NumberOfFeaturedPipelines: hubStats.NumberOfFeaturedPipelines,
 	}, nil
 }
 
@@ -102,7 +100,12 @@ func (s *service) ListPipelines(ctx context.Context, pageSize int32, pageToken s
 		}
 	}
 
-	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view <= pipelinepb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true, order)
+	presetOrgResp, err := s.mgmtPrivateServiceClient.GetOrganizationAdmin(ctx, &mgmtpb.GetOrganizationAdminRequest{OrganizationId: constant.PresetNamespaceID})
+	if err != nil {
+		return nil, 0, "", err
+	}
+	presetNamespaceUID := uuid.FromStringOrNil(presetOrgResp.Organization.Uid)
+	dbPipelines, totalSize, nextPageToken, err := s.repository.ListPipelines(ctx, int64(pageSize), pageToken, view <= pipelinepb.Pipeline_VIEW_BASIC, filter, uidAllowList, showDeleted, true, order, presetNamespaceUID)
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -1736,255 +1739,4 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 
 	operation.Name = fmt.Sprintf("operations/%s", workflowExecutionInfo.Execution.WorkflowId)
 	return &operation, nil
-}
-
-func (s *service) ListPipelineRuns(ctx context.Context, req *pipelinepb.ListPipelineRunsRequest, filter filtering.Filter) (*pipelinepb.ListPipelineRunsResponse, error) {
-	ns, err := s.GetRscNamespace(ctx, req.GetNamespaceId())
-	if err != nil {
-		return nil, fmt.Errorf("invalid namespace: %w", err)
-	}
-
-	log, _ := logger.GetZapLogger(ctx)
-
-	dbPipeline, err := s.repository.GetNamespacePipelineByID(ctx, ns.Permalink(), req.GetPipelineId(), true, false)
-	if err != nil {
-		return nil, err
-	}
-
-	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
-	page := s.pageInRange(req.GetPage())
-	pageSize := s.pageSizeInRange(req.GetPageSize())
-
-	orderBy, err := ordering.ParseOrderBy(req)
-	if err != nil {
-		return nil, err
-	}
-
-	isOwner := dbPipeline.OwnerUID().String() == requesterUID
-
-	pipelineRuns, totalCount, err := s.repository.GetPaginatedPipelineRunsWithPermissions(ctx, requesterUID, dbPipeline.UID.String(),
-		page, pageSize, filter, orderBy, isOwner)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get pipeline runs: %w", err)
-	}
-
-	var referenceIDs []string
-	for _, pipelineRun := range pipelineRuns {
-		if CanViewPrivateData(pipelineRun.Namespace, requesterUID) {
-			for _, input := range pipelineRun.Inputs {
-				referenceIDs = append(referenceIDs, input.Name)
-			}
-			for _, output := range pipelineRun.Outputs {
-				referenceIDs = append(referenceIDs, output.Name)
-			}
-			for _, reference := range pipelineRun.RecipeSnapshot {
-				referenceIDs = append(referenceIDs, reference.Name)
-			}
-		}
-	}
-
-	log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
-	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
-	if err != nil {
-		log.Error("failed to get files from minio", zap.Error(err))
-		return nil, err
-	}
-
-	metadataMap := make(map[string][]byte)
-	for _, content := range fileContents {
-		metadataMap[content.Name] = content.Content
-	}
-
-	requesterIDMap := make(map[string]struct{})
-	for _, pipelineRun := range pipelineRuns {
-		requesterIDMap[pipelineRun.TriggeredBy] = struct{}{}
-	}
-
-	runnerMap := make(map[string]*string)
-	for requesterID := range requesterIDMap {
-		runner, err := s.mgmtPrivateServiceClient.CheckNamespaceByUIDAdmin(ctx, &mgmtpb.CheckNamespaceByUIDAdminRequest{Uid: requesterID})
-		if err != nil {
-			return nil, err
-		}
-		log.Info("CheckNamespaceByUIDAdmin finished", zap.String("RequesterUID", requesterID), zap.String("runnerId", runner.Id))
-		runnerMap[requesterID] = &runner.Id
-	}
-
-	// Convert datamodel.PipelineRun to pb.PipelineRun
-	pbPipelineRuns := make([]*pipelinepb.PipelineRun, len(pipelineRuns))
-	for i, run := range pipelineRuns {
-		pbRun, err := s.convertPipelineRunToPB(run)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert pipeline run: %w", err)
-		}
-		pbRun.RunnerId = runnerMap[run.TriggeredBy]
-
-		if CanViewPrivateData(run.Namespace, requesterUID) {
-			if len(run.Inputs) == 1 {
-				md, ok := metadataMap[run.Inputs[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load input metadata. pipeline UID: %s input reference ID: %s", run.PipelineUID.String(), run.Inputs[0].Name)
-				}
-				pbRun.Inputs = make([]*structpb.Struct, 0)
-				err = json.Unmarshal(md, &pbRun.Inputs)
-				if err != nil {
-					return nil, err
-				}
-
-			}
-			if len(run.Outputs) == 1 {
-				md, ok := metadataMap[run.Outputs[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load output metadata. pipeline UID: %s output reference ID: %s", run.PipelineUID.String(), run.Outputs[0].Name)
-				}
-				pbRun.Outputs = make([]*structpb.Struct, 0)
-				err = json.Unmarshal(md, &pbRun.Outputs)
-				if err != nil {
-					return nil, err
-				}
-			}
-			if len(run.RecipeSnapshot) == 1 {
-				md, ok := metadataMap[run.RecipeSnapshot[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load recipe metadata. pipeline UID: %s recipe reference ID: %s", run.PipelineUID.String(), run.RecipeSnapshot[0].Name)
-				}
-				r := make(map[string]any)
-				err = json.Unmarshal(md, &r)
-				if err != nil {
-					return nil, fmt.Errorf("failed to load recipe metadata. pipeline UID: %s recipe reference ID: %s", run.PipelineUID.String(), run.RecipeSnapshot[0].Name)
-				}
-				pbRun.RecipeSnapshot, err = structpb.NewStruct(r)
-				if err != nil {
-					return nil, err
-				}
-
-				dbRecipe := &datamodel.Recipe{}
-				err = json.Unmarshal(md, dbRecipe)
-				if err != nil {
-					return nil, fmt.Errorf("failed to load recipe metadata. pipeline UID: %s recipe reference ID: %s", run.PipelineUID.String(), run.RecipeSnapshot[0].Name)
-				}
-
-				err = s.converter.IncludeDetailInRecipe(ctx, "", dbRecipe, false)
-				if err != nil {
-					return nil, fmt.Errorf("failed to load recipe metadata. pipeline UID: %s recipe reference ID: %s", run.PipelineUID.String(), run.RecipeSnapshot[0].Name)
-				}
-				pbRun.DataSpecification, err = s.converter.GeneratePipelineDataSpec(dbRecipe.Variable, dbRecipe.Output, dbRecipe.Component)
-				if err != nil {
-					// Some recipes cannot generate a DataSpecification, so we
-					// can skip them.
-					pbRun.DataSpecification = nil
-				}
-
-			}
-		}
-
-		pbPipelineRuns[i] = pbRun
-	}
-
-	return &pipelinepb.ListPipelineRunsResponse{
-		PipelineRuns: pbPipelineRuns,
-		TotalSize:    int32(totalCount),
-		Page:         int32(page),
-		PageSize:     int32(pageSize),
-	}, nil
-}
-
-func (s *service) ListComponentRuns(ctx context.Context, req *pipelinepb.ListComponentRunsRequest, filter filtering.Filter) (*pipelinepb.ListComponentRunsResponse, error) {
-	page := s.pageInRange(req.GetPage())
-	pageSize := s.pageSizeInRange(req.GetPageSize())
-	requesterUID, _ := utils.GetRequesterUIDAndUserUID(ctx)
-
-	log, _ := logger.GetZapLogger(ctx)
-
-	orderBy, err := ordering.ParseOrderBy(req)
-	if err != nil {
-		return nil, err
-	}
-
-	dbPipelineRun, err := s.repository.GetPipelineRunByUID(ctx, uuid.FromStringOrNil(req.GetPipelineRunId()))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get pipeline run by run ID: %s. error: %s", req.GetPipelineRunId(), err.Error())
-	}
-	dbPipeline, err := s.repository.GetPipelineByUID(ctx, dbPipelineRun.PipelineUID, true, false)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get pipeline by UID: %s. error: %s", dbPipelineRun.PipelineUID.String(), err.Error())
-	}
-
-	isOwner := dbPipeline.OwnerUID().String() == requesterUID
-
-	if !isOwner && requesterUID != dbPipelineRun.Namespace {
-		return nil, fmt.Errorf("requester is not pipeline owner/credit owner. they are not allowed to view these component runs")
-	}
-
-	componentRuns, totalCount, err := s.repository.GetPaginatedComponentRunsByPipelineRunIDWithPermissions(ctx, req.GetPipelineRunId(), page, pageSize, filter, orderBy)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get component runs: %w", err)
-	}
-
-	var referenceIDs []string
-	for _, pipelineRun := range componentRuns {
-		if CanViewPrivateData(dbPipelineRun.Namespace, requesterUID) {
-			for _, input := range pipelineRun.Inputs {
-				referenceIDs = append(referenceIDs, input.Name)
-			}
-			for _, output := range pipelineRun.Outputs {
-				referenceIDs = append(referenceIDs, output.Name)
-			}
-		}
-	}
-
-	log.Info("start to get files from minio", zap.String("referenceIDs", strings.Join(referenceIDs, ",")))
-	fileContents, err := s.minioClient.GetFilesByPaths(ctx, referenceIDs)
-	if err != nil {
-		log.Error("failed to get files from minio", zap.Error(err))
-		return nil, err
-	}
-
-	metadataMap := make(map[string][]byte)
-	for _, content := range fileContents {
-		metadataMap[content.Name] = content.Content
-	}
-
-	// Convert datamodel.ComponentRun to pb.ComponentRun
-	pbComponentRuns := make([]*pipelinepb.ComponentRun, len(componentRuns))
-	for i, run := range componentRuns {
-		pbRun, err := s.convertComponentRunToPB(run)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert component run: %w", err)
-		}
-
-		if CanViewPrivateData(dbPipelineRun.Namespace, requesterUID) {
-			if len(run.Inputs) == 1 {
-				md, ok := metadataMap[run.Inputs[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load input metadata. component UID: %s input reference ID: %s", run.ComponentID, run.Inputs[0].Name)
-				}
-				pbRun.Inputs = make([]*structpb.Struct, 0)
-				err = json.Unmarshal(md, &pbRun.Inputs)
-				if err != nil {
-					return nil, err
-				}
-
-			}
-			if len(run.Outputs) == 1 {
-				md, ok := metadataMap[run.Outputs[0].Name]
-				if !ok {
-					return nil, fmt.Errorf("failed to load output metadata. component UID: %s output reference ID: %s", run.ComponentID, run.Outputs[0].Name)
-				}
-				pbRun.Outputs = make([]*structpb.Struct, 0)
-				err = json.Unmarshal(md, &pbRun.Outputs)
-				if err != nil {
-					return nil, err
-				}
-			}
-		}
-		pbComponentRuns[i] = pbRun
-	}
-
-	return &pipelinepb.ListComponentRunsResponse{
-		ComponentRuns: pbComponentRuns,
-		TotalSize:     int32(totalCount),
-		Page:          int32(page),
-		PageSize:      int32(pageSize),
-	}, nil
 }

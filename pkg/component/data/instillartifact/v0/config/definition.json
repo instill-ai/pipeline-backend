@@ -9,7 +9,7 @@
     "TASK_RETRIEVE",
     "TASK_ASK"
   ],
-  "documentationUrl": "https://www.instill.tech/docs/component/data/instillartifact",
+  "documentationUrl": "https://www.instill.tech/docs/component/data/instill-artifact",
   "icon": "assets/instill-artifact.svg",
   "id": "instill-artifact",
   "public": true,

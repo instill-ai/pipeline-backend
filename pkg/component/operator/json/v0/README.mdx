@@ -11,13 +11,20 @@ It can carry out the following tasks:
 - [Unmarshal](#unmarshal)
 - [jq](#jq)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/json/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/json/v0/config/tasks.json) files respectively.
+
+
+
 
 
 
@@ -44,7 +51,7 @@ Convert JSON to a string
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| JSON string | `string` | string | String representation of the JSON input |
+| JSON String | `string` | string | String representation of the JSON input |
 </div>
 
 ### Unmarshal
@@ -80,7 +87,7 @@ Process JSON through a `jq` command
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_JQ` |
-| JSON value | `json-value` | any | JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array). |
+| JSON Value | `json-value` | any | JSON entity to be processed by the filter. It can be any valid JSON datatype (e.g. number, string, hash, array). |
 | Filter (required) | `jq-filter` | string | Filter, in `jq` syntax, that will be applied to the JSON input |
 </div>
 
@@ -118,6 +125,8 @@ to access such fields in a `jq` filter is by wrapping the key in double quotes:
 | Input JSON | `jq` filter | Output |
 | :--- | :--- | :--- |
 | `[{"key-a": "value1"}, {"key-a": "value2"}]` | `.[] \| ."key-a"` | `["value1", "value2"]` |
+
+
 ## Example Recipes
 
 Recipe for the [Resume Screening](https://instill.tech/instill-ai/pipelines/structured-resume-screening/playground) pipeline.

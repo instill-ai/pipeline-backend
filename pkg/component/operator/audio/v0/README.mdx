@@ -10,13 +10,20 @@ It can carry out the following tasks:
 - [Chunk Audios](#chunk-audios)
 - [Slice Audio](#slice-audio)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/audio/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/audio/v0/config/tasks.json) files respectively.
+
+
+
 
 
 
@@ -32,7 +39,7 @@ Split audio file into chunks
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_CHUNK_AUDIOS` |
 | Audio (required) | `audio` | string | Base64 encoded audio file to be split |
-| Chunk count (required) | `chunk-count` | integer | Number of chunks to equally split the audio into |
+| Chunk Count (required) | `chunk-count` | integer | Number of chunks to equally split the audio into |
 </div>
 
 
@@ -57,8 +64,8 @@ Specify a time range to slice an audio file
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SLICE_AUDIO` |
 | Audio (required) | `audio` | string | Base64 encoded audio file to be sliced |
-| Start time (required) | `start-time` | integer | Start time of the slice in seconds |
-| End time (required) | `end-time` | integer | End time of the slice in seconds |
+| Start Time (required) | `start-time` | integer | Start time of the slice in seconds |
+| End Time (required) | `end-time` | integer | End time of the slice in seconds |
 </div>
 
 
@@ -72,6 +79,8 @@ Specify a time range to slice an audio file
 | :--- | :--- | :--- | :--- |
 | Audio | `audio` | string | Base64 encoded audio slice |
 </div>
+
+
 ## Example Recipes
 
 Recipe for the [Audio Transcription Generator](https://instill.tech/instill-ai/pipelines/audio-transcription/playground) pipeline.

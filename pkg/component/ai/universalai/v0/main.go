@@ -1,4 +1,4 @@
-//go:generate compogen readme ./config ./README.mdx
+//go:generate compogen readme ./config ./README.mdx --extraContents bottom=.compogen/bottom.mdx
 package universalai
 
 import (

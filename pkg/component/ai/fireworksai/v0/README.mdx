@@ -10,13 +10,20 @@ It can carry out the following tasks:
 - [Text Generation Chat](#text-generation-chat)
 - [Text Embeddings](#text-embeddings)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/fireworksai/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/fireworksai/v0/config/tasks.json) files respectively.
+
+
+
 
 ## Setup
 
@@ -54,7 +61,7 @@ Fireworks AI's text generation models (often called generative pre-trained trans
 | Prompt (required) | `prompt` | string | The prompt text |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant." |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: According to Fireworks AI documentation on 2024-07-24, the total number of images included in a single API request should not exceed 30, and all the images should be smaller than 5MB in size) |
-| [Chat history](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\} |
+| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\} |
 | Seed | `seed` | integer | The seed |
 | Temperature | `temperature` | number | The temperature for sampling |
 | Top K | `top-k` | integer | Integer to define the top tokens considered within the sample operation to create new text |
@@ -163,6 +170,8 @@ An embedding is a list of floating point numbers that captures semantic informat
 | Token Count | `tokens` | number | The token count used by Fireworks AI models |
 </div>
 </details>
+
+
 ## Example Recipes
 
 Recipe for the [Fireworks Chinese Content Writer](https://instill.tech/instill-ai/pipelines/fireworks-chinese-content-writer/playground) pipeline.

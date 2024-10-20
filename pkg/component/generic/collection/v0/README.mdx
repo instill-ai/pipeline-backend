@@ -12,14 +12,22 @@ It can carry out the following tasks:
 - [Union](#union)
 - [Intersection](#intersection)
 - [Difference](#difference)
+- [Concat](#concat)
+
+
 
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/generic/collection/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/generic/collection/v0/config/tasks.json) files respectively.
+
+
+
 
 
 
@@ -146,3 +154,100 @@ Find the difference between the two sets, i.e. `set-a` \ `set-b`, identifying th
 | :--- | :--- | :--- | :--- |
 | Array | `set` | array | The difference set. |
 </div>
+
+### Concat
+
+Concatenate the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CONCAT` |
+| Arrays (required) | `arrays` | array | The arrays to be concatenated. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Array | `array` | array | The concatenated arrays. |
+</div>
+
+
+## Example Recipes
+
+### Combine 2 arrays using `TASK_UNION` and `TASK_CONCAT`
+
+```yaml
+variable:
+  texts:
+    instill-format: array:string
+    title: Text
+  texts-2:
+    instill-format: array:string
+    title: Text
+
+component:
+
+# This component combines two arrays of strings in a union, ensuring that no duplicates are included.
+# Examples:
+# ["foo", "bar"], ["foo", "bat"] -> ["foo", "bar", "bat"]
+  union:
+    type: collection
+    input:
+      sets:
+        - ${variable.texts}
+        - ${variable.texts-2}
+    condition:
+    task: TASK_UNION
+
+# This component concatenates two arrays of strings.
+# Examples:
+# ["foo", "bar"], ["zot", "bat"] -> ["foo", "bar", "zot", "bat"]
+  concat:
+    type: collection
+    input:
+      arrays:
+        - ${variable.texts}
+        - ${variable.texts-2}
+    condition:
+    task: TASK_CONCAT
+
+output:
+  union-result:
+    title: Union Result
+    value: ${union.output.set}
+  concat-result:
+    title: Concat Result
+    value: ${concat.output.array}
+```
+
+
+### Use `TASK_ASSIGN` to create an object with `type` and `text` keys
+```yaml
+variable:
+  text:
+    instill-format: string
+    title: Text
+
+component:
+  text-object:
+    type: collection
+    input:
+      data:
+        type: text
+        text: ${variable.text}
+    condition:
+    task: TASK_ASSIGN
+
+output:
+  result:
+    title: Object
+    value: ${text-object.output.data}
+```

@@ -5,11 +5,13 @@ package mock
 import (
 	"context"
 	"sync"
+
 	mm_atomic "sync/atomic"
 	mm_time "time"
 
 	"github.com/gofrs/uuid"
 	"github.com/gojuno/minimock/v3"
+
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 )
 

@@ -15,13 +15,20 @@ It can carry out the following tasks:
 - [Create Table](#create-table)
 - [Drop Table](#drop-table)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/sql/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/sql/v0/config/tasks.json) files respectively.
+
+
+
 
 ## Setup
 
@@ -44,7 +51,7 @@ ${connection.<my-connection-id>}`.
 | Database Name (required) | `database-name` | string | Fill in the name of your database  |
 | Host (required) | `host` | string | Fill in the host of your database  |
 | Port (required) | `port` | number | Fill in the port of your database  |
-| [SSL/TLS](#ssl-tls) (required) | `ssl-tls` | object | Enable SSL/TLS  |
+| [SSL / TLS](#ssl-tls) (required) | `ssl-tls` | object | Enable SSL / TLS  |
 
 </div>
 
@@ -52,17 +59,17 @@ ${connection.<my-connection-id>}`.
 <details>
 <summary>The <code>ssl-tls</code> Object </summary>
 
-<h4 id="setup-ssl-tls">Ssl Tls</h4>
+<h4 id="setup-ssl-tls">SSL TLS</h4>
 
 `ssl-tls` must fulfill one of the following schemas:
 
-<h5 id="setup-no-ssl-tls"><code>No SSL/TLS</code></h5>
+<h5 id="setup-no-ssl-tls"><code>No SSL / TLS</code></h5>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| SSL/TLS Type | `ssl-tls-type` | string |  Must be `"NO TLS"`   |
+| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"NO TLS"`   |
 </div>
 
 <h5 id="setup-tls"><code>TLS</code></h5>
@@ -72,7 +79,7 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file  |
-| SSL/TLS Type | `ssl-tls-type` | string |  Must be `"TLS"`   |
+| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"TLS"`   |
 </div>
 
 <h5 id="setup-mtls"><code>mTLS</code></h5>
@@ -84,7 +91,7 @@ ${connection.<my-connection-id>}`.
 | CA Certificate | `ssl-tls-ca` | string |  Base64 encoded CA certificate file  |
 | Client Certificate | `ssl-tls-cert` | string |  Base64 encoded client certificate file  |
 | Client Key | `ssl-tls-key` | string |  Base64 encoded client key file  |
-| SSL/TLS Type | `ssl-tls-type` | string |  Must be `"mTLS"`   |
+| SSL / TLS Type | `ssl-tls-type` | string |  Must be `"mTLS"`   |
 </div>
 </details>
 
@@ -267,3 +274,5 @@ Drop a table in the database
 | :--- | :--- | :--- | :--- |
 | Status | `status` | string | Drop table status |
 </div>
+
+

@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert"
 )
 
 const batchSize = 100
@@ -15,8 +16,7 @@ const batchSize = 100
 // JQInputToKebabCaseConverter executes code along with the 19th database
 // schema revision.
 type JQInputToKebabCaseConverter struct {
-	DB     *gorm.DB
-	Logger *zap.Logger
+	convert.Basic
 }
 
 // Migrate updates the `TASK_JQ` input in the JSON operator to kebab-case.

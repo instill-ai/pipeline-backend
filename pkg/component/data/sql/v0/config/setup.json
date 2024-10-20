@@ -91,33 +91,33 @@
       "type": "number"
     },
     "ssl-tls": {
-      "description": "Enable SSL/TLS",
+      "description": "Enable SSL / TLS",
       "instillUIOrder": 6,
       "oneOf": [
         {
           "properties": {
             "ssl-tls-type": {
               "const": "NO TLS",
-              "description": "Choose the type of SSL/TLS",
+              "description": "Choose the type of SSL / TLS",
               "instillUIOrder": 0,
               "order": 0,
-              "title": "SSL/TLS Type",
+              "title": "SSL / TLS Type",
               "type": "string"
             }
           },
           "required": [
             "ssl-tls-type"
           ],
-          "title": "No SSL/TLS"
+          "title": "No SSL / TLS"
         },
         {
           "properties": {
             "ssl-tls-type": {
               "const": "TLS",
-              "description": "Choose the type of SSL/TLS",
+              "description": "Choose the type of SSL / TLS",
               "instillUIOrder": 0,
               "order": 0,
-              "title": "SSL/TLS Type",
+              "title": "SSL / TLS Type",
               "type": "string"
             },
             "ssl-tls-ca": {
@@ -145,10 +145,10 @@
           "properties": {
             "ssl-tls-type": {
               "const": "mTLS",
-              "description": "Choose the type of SSL/TLS",
+              "description": "Choose the type of SSL / TLS",
               "instillUIOrder": 0,
               "order": 0,
-              "title": "SSL/TLS Type",
+              "title": "SSL / TLS Type",
               "type": "string"
             },
             "ssl-tls-ca": {
@@ -204,7 +204,7 @@
         }
       ],
       "order": 6,
-      "title": "SSL/TLS",
+      "title": "SSL / TLS",
       "type": "object"
     }
   },

@@ -3,6 +3,7 @@ package migration
 import (
 	"context"
 
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000013"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000015"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000016"
@@ -12,6 +13,8 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000022"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000024"
 	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000029"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000031"
+	"github.com/instill-ai/pipeline-backend/pkg/db/migration/convert/convert000032"
 	"github.com/instill-ai/pipeline-backend/pkg/external"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 
@@ -36,9 +39,10 @@ func Migrate(version uint) error {
 
 	db := database.GetConnection().WithContext(ctx)
 	defer database.Close(db)
-	mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient(ctx)
-	if mgmtPrivateServiceClientConn != nil {
-		defer mgmtPrivateServiceClientConn.Close()
+
+	bc := convert.Basic{
+		DB:     db,
+		Logger: l,
 	}
 
 	switch version {
@@ -49,36 +53,29 @@ func Migrate(version uint) error {
 	case 16:
 		m = new(convert000016.Migration)
 	case 19:
-		m = &convert000019.JQInputToKebabCaseConverter{
-			DB:     db,
-			Logger: l,
-		}
+		m = &convert000019.JQInputToKebabCaseConverter{Basic: bc}
 	case 20:
+		mgmtPrivateServiceClient, mgmtPrivateServiceClientConn := external.InitMgmtPrivateServiceClient(ctx)
+		if mgmtPrivateServiceClientConn != nil {
+			defer mgmtPrivateServiceClientConn.Close()
+		}
+
 		m = &convert000020.NamespaceIDMigrator{
-			DB:         db,
-			Logger:     l,
+			Basic:      bc,
 			MgmtClient: mgmtPrivateServiceClient,
 		}
 	case 21:
-		m = &convert000021.ConvertToTextTaskConverter{
-			DB:     db,
-			Logger: l,
-		}
+		m = &convert000021.ConvertToTextTaskConverter{Basic: bc}
 	case 22:
-		m = &convert000022.ConvertWebsiteToWebConverter{
-			DB:     db,
-			Logger: l,
-		}
+		m = &convert000022.ConvertWebsiteToWebConverter{Basic: bc}
 	case 24:
-		m = &convert000024.ConvertToTextTaskConverter{
-			DB:     db,
-			Logger: l,
-		}
+		m = &convert000024.ConvertToTextTaskConverter{Basic: bc}
 	case 29:
-		m = &convert000029.ConvertToArtifactType{
-			DB:     db,
-			Logger: l,
-		}
+		m = &convert000029.ConvertToArtifactType{Basic: bc}
+	case 31:
+		m = &convert000031.SlackSetupConverter{Basic: bc}
+	case 32:
+		m = &convert000032.ConvertToWeb{Basic: bc}
 	default:
 		return nil
 	}

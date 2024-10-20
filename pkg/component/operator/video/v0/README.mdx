@@ -10,13 +10,20 @@ It can carry out the following tasks:
 - [Subsample Video](#subsample-video)
 - [Subsample Video Frames](#subsample-video-frames)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/video/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/video/v0/config/tasks.json) files respectively.
+
+
+
 
 
 
@@ -33,7 +40,7 @@ Subsample video into a new video
 | Task ID (required) | `task` | string | `TASK_SUBSAMPLE_VIDEO` |
 | Video (required) | `video` | string | Base64 encoded video |
 | FPS (required) | `fps` | number | Frames per second |
-| Start time | `start-time` | string | Start time in seconds, format is hh:mm:ss |
+| Start Time | `start-time` | string | Start time in seconds, format is hh:mm:ss |
 | Duration | `duration` | string | Duration in seconds, format is hh:mm:ss |
 </div>
 
@@ -60,7 +67,7 @@ Subsample video into frames
 | Task ID (required) | `task` | string | `TASK_SUBSAMPLE_VIDEO_FRAMES` |
 | Video (required) | `video` | string | Base64 encoded video |
 | FPS (required) | `fps` | number | Frames per second |
-| Start time | `start-time` | string | Start time in seconds, format is hh:mm:ss |
+| Start Time | `start-time` | string | Start time in seconds, format is hh:mm:ss |
 | Duration | `duration` | string | Duration in seconds, format is hh:mm:ss |
 </div>
 
@@ -75,3 +82,5 @@ Subsample video into frames
 | :--- | :--- | :--- | :--- |
 | Frames | `frames` | array[string] | Base64 encoded sub-sampled frames |
 </div>
+
+

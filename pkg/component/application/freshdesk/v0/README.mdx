@@ -23,13 +23,20 @@ It can carry out the following tasks:
 - [Get Group](#get-group)
 - [Get Skill](#get-skill)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/freshdesk/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/application/freshdesk/v0/config/tasks.json) files respectively.
+
+
+
 
 ## Setup
 
@@ -45,7 +52,7 @@ ${connection.<my-connection-id>}`.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| API key (required) | `api-key` | string | Fill in your Freshdesk API key. To find your key, go to profile settigs and on the right pane, you can get your key once you have completed the captcha verification.  |
+| API Key (required) | `api-key` | string | Fill in your Freshdesk API key. To find your key, go to profile settigs and on the right pane, you can get your key once you have completed the captcha verification.  |
 | Domain (required) | `domain` | string | Your Freshdesk domain. You can find this by going to Admin -> Search for "Portals" -> Portal URL. Your portal URL will look like "yourdomain.freshdesk.com". Please only input your domain and not the whole URL.  |
 
 </div>
@@ -627,3 +634,5 @@ Get skill using ID. This task will only work if you have admin privileges. Agent
 | Created At | `created-at` | string | Timestamp that denotes when the skill was created |
 | Updated At | `updated-at` | string | Timestamp that denotes when the skill was last updated |
 </div>
+
+

@@ -480,6 +480,7 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 	c.Check(got1.PipelineUID, qt.Equals, p.UID)
 	c.Check(got1.Status, qt.Equals, pipelineRun.Status)
 	c.Check(got1.Source, qt.Equals, pipelineRun.Source)
+	c.Check(got1.Pipeline.UID, qt.Equals, p.UID)
 
 	componentRun := &datamodel.ComponentRun{
 		PipelineTriggerUID: pipelineRun.PipelineTriggerUID,
@@ -616,5 +617,138 @@ func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
+	c := qt.New(t)
+	ctx := context.Background()
+
+	cache, _ := redismock.NewClientMock()
+
+	t0 := time.Now().UTC()
+
+	mockUIDs := make([]uuid.UUID, 5)
+	for i := range len(mockUIDs) {
+		mockUIDs[i] = uuid.Must(uuid.NewV4())
+	}
+	user1 := mockUIDs[0].String()
+	namespace1 := mockUIDs[1].String()
+	now := time.Now()
+
+	pipelineUID, ownerUID := mockUIDs[2], mockUIDs[3]
+	pipelineUID2 := mockUIDs[4]
+	ownerPermalink := "users/" + ownerUID.String()
+	pipelineID := "test"
+	pipelineID2 := "test2"
+
+	tx := db.Begin()
+	c.Cleanup(func() { tx.Rollback() })
+
+	repo := NewRepository(tx, cache)
+
+	p := &datamodel.Pipeline{
+		Owner: ownerPermalink,
+		ID:    pipelineID,
+		BaseDynamic: datamodel.BaseDynamic{
+			UID:        pipelineUID,
+			CreateTime: t0,
+			UpdateTime: t0,
+		},
+	}
+	err := repo.CreateNamespacePipeline(ctx, p)
+	c.Check(err, qt.IsNil)
+
+	p2 := &datamodel.Pipeline{
+		Owner: ownerPermalink,
+		ID:    pipelineID2,
+		BaseDynamic: datamodel.BaseDynamic{
+			UID:        pipelineUID2,
+			CreateTime: t0,
+			UpdateTime: t0,
+		},
+	}
+	err = repo.CreateNamespacePipeline(ctx, p2)
+	c.Check(err, qt.IsNil)
+
+	got, err := repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID, true, false)
+	c.Check(err, qt.IsNil)
+	c.Check(got.NumberOfRuns, qt.Equals, 0)
+	c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
+
+	got, err = repo.GetNamespacePipelineByID(ctx, ownerPermalink, pipelineID2, true, false)
+	c.Check(err, qt.IsNil)
+	c.Check(got.NumberOfRuns, qt.Equals, 0)
+	c.Check(got.LastRunTime.IsZero(), qt.IsTrue)
+
+	pipelineRun := &datamodel.PipelineRun{
+		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
+		PipelineUID:        p.UID,
+		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
+		TriggeredBy:        user1,
+		Namespace:          namespace1,
+		StartedTime:        now.Add(-1 * time.Hour),
+		TotalDuration:      null.IntFrom(42),
+		Components:         nil,
+	}
+
+	err = repo.UpsertPipelineRun(ctx, pipelineRun)
+	c.Check(err, qt.IsNil)
+
+	resp, _, err := repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
+		RequesterUID:   namespace1,
+		StartTimeBegin: now.Add(-3 * time.Hour),
+		StartTimeEnd:   now.Add(-2 * time.Hour),
+		Page:           0,
+		PageSize:       10,
+		Filter:         filtering.Filter{},
+		Order:          ordering.OrderBy{},
+	})
+	c.Check(err, qt.IsNil)
+	c.Check(resp, qt.HasLen, 0)
+
+	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
+		RequesterUID:   namespace1,
+		StartTimeBegin: now.Add(-2 * time.Hour),
+		StartTimeEnd:   now,
+		Page:           0,
+		PageSize:       10,
+		Filter:         filtering.Filter{},
+		Order:          ordering.OrderBy{},
+	})
+	c.Check(err, qt.IsNil)
+	c.Check(resp, qt.HasLen, 1)
+	c.Check(resp[0].PipelineTriggerUID, qt.Equals, pipelineRun.PipelineTriggerUID)
+	c.Check(resp[0].Pipeline.ID, qt.Equals, p.ID)
+
+	pipelineRun2 := &datamodel.PipelineRun{
+		PipelineTriggerUID: uuid.Must(uuid.NewV4()),
+		PipelineUID:        p2.UID,
+		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
+		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
+		TriggeredBy:        user1,
+		Namespace:          namespace1,
+		StartedTime:        now.Add(-1 * time.Hour),
+		TotalDuration:      null.IntFrom(42),
+		Components:         nil,
+	}
+
+	err = repo.UpsertPipelineRun(ctx, pipelineRun2)
+	c.Check(err, qt.IsNil)
+
+	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
+		RequesterUID:   namespace1,
+		StartTimeBegin: now.Add(-2 * time.Hour),
+		StartTimeEnd:   now,
+		Page:           0,
+		PageSize:       10,
+		Filter:         filtering.Filter{},
+		Order:          ordering.OrderBy{},
+	})
+	c.Check(err, qt.IsNil)
+	c.Check(resp, qt.HasLen, 2)
+	c.Check(resp[0].PipelineTriggerUID, qt.Equals, pipelineRun.PipelineTriggerUID)
+	c.Check(resp[0].Pipeline.ID, qt.Equals, p.ID)
+	c.Check(resp[1].PipelineTriggerUID, qt.Equals, pipelineRun2.PipelineTriggerUID)
+	c.Check(resp[1].Pipeline.ID, qt.Equals, p2.ID)
 }

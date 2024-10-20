@@ -11,7 +11,6 @@ func TestFirstToLower(t *testing.T) {
 
 	testcases := []struct {
 		in   string
-		mod  func(rune) rune
 		want string
 	}{
 		{in: "Hello world!", want: "hello world!"},
@@ -46,20 +45,31 @@ func TestComponentType_IndefiniteArticle(t *testing.T) {
 	}
 }
 
-func TestTitleCaseWithArticles(t *testing.T) {
+func TestTitleCase(t *testing.T) {
 	c := qt.New(t)
 
 	testcases := []struct {
 		in   string
-		mod  func(rune) rune
 		want string
 	}{
-		{in: "the-quick_brown fox jumps-over a-lazy_dog", want: "The Quick Brown Fox Jumps Over a Lazy Dog"},
+		{in: "the quick brown fox jumps over a lazy dog", want: "The Quick Brown Fox Jumps over a Lazy Dog"},
+		// Dashes are respected.
+		{in: "One-Time password", want: "One-Time Password"},
+		// Conjunctions are lowercase, acronyms are uppercase.
+		{in: "Number Of pr comments", want: "Number of PR Comments"},
+		// lowercase words are upcased at the beginning of the title.
+		{in: "A single sign", want: "A Single Sign"},
+		// lowercase words are upcased at the end of the title.
+		{in: "Updated At", want: "Updated At"},
+		// Pluralized acronyms are respected.
+		{in: "Agent IDs", want: "Agent IDs"},
+		// Respect special words.
+		{in: "Bot OAuth Token", want: "Bot OAuth Token"},
 	}
 
 	for _, tc := range testcases {
 		c.Run(tc.in, func(c *qt.C) {
-			got := titleCaseWithArticles(tc.in)
+			got := titleCase(tc.in)
 			c.Check(got, qt.Equals, tc.want)
 		})
 	}

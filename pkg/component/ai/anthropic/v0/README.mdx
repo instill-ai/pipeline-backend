@@ -9,13 +9,20 @@ The Anthropic component is an AI component that allows users to connect the AI m
 It can carry out the following tasks:
 - [Text Generation Chat](#text-generation-chat)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/anthropic/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/ai/anthropic/v0/config/tasks.json) files respectively.
+
+
+
 
 ## Setup
 
@@ -53,7 +60,7 @@ Anthropic's text generation models (often called generative pre-trained transfor
 | Prompt (required) | `prompt` | string | The prompt text |
 | System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is set using a generic message as "You are a helpful assistant." |
 | Prompt Images | `prompt-images` | array[string] | The prompt images (Note: The prompt images will be injected in the order they are provided to the 'prompt' message. Anthropic doesn't support sending images via image-url, use this field instead) |
-| [Chat history](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
+| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
 | Seed | `seed` | integer | The seed (Note: Not supported by Anthropic Models) |
 | Temperature | `temperature` | number | The temperature for sampling |
 | Top K | `top-k` | integer | Top k for sampling |
@@ -122,6 +129,8 @@ The image URL
 | Output Tokens | `output-tokens` | number | The output tokens used by Anthropic |
 </div>
 </details>
+
+
 ## Example Recipes
 
 Recipe for the [List GitHub Repo Issues](https://instill.tech/instill-ai/pipelines/github-demo/playground) pipeline.

@@ -1,12 +1,13 @@
-//go:generate compogen readme ./config ./README.mdx --extraContents TASK_SCRAPE_WEBPAGE=.compogen/scrape_webpage.mdx --extraContents bottom=.compogen/bottom.mdx
+//go:generate compogen readme ./config ./README.mdx --extraContents TASK_SCRAPE_PAGE=.compogen/scrape_page.mdx --extraContents bottom=.compogen/bottom.mdx
 package web
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
 	"io"
 	"sync"
+
+	_ "embed"
 
 	"github.com/PuerkitoBio/goquery"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -15,9 +16,9 @@ import (
 )
 
 const (
-	taskCrawlWebsite  = "TASK_CRAWL_WEBSITE"
+	taskCrawlSite     = "TASK_CRAWL_SITE"
+	taskScrapePage    = "TASK_SCRAPE_PAGE"
 	taskScrapeSitemap = "TASK_SCRAPE_SITEMAP"
-	taskScrapeWebpage = "TASK_SCRAPE_WEBPAGE"
 )
 
 var (
@@ -38,7 +39,7 @@ type execution struct {
 	base.ComponentExecution
 	execute               func(*structpb.Struct) (*structpb.Struct, error)
 	externalCaller        func(url string) (ioCloser io.ReadCloser, err error)
-	getDocAfterRequestURL func(url string, timeout int) (*goquery.Document, error)
+	getDocAfterRequestURL func(url string, timeout int, scrapeMethod string) (*goquery.Document, error)
 }
 
 func Init(bc base.Component) *component {
@@ -58,13 +59,13 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	}
 
 	switch x.Task {
-	case taskCrawlWebsite:
+	case taskCrawlSite:
 		e.execute = e.CrawlWebsite
 	case taskScrapeSitemap:
 		// To make mocking easier
 		e.externalCaller = scrapSitemapCaller
 		e.execute = e.ScrapeSitemap
-	case taskScrapeWebpage:
+	case taskScrapePage:
 		e.getDocAfterRequestURL = getDocAfterRequestURL
 		e.execute = e.ScrapeWebpage
 	default:
