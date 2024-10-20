@@ -13,9 +13,21 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
+type base64Audio string
+
 const (
-	taskChunkAudios string = "TASK_CHUNK_AUDIOS"
-	taskSliceAudio  string = "TASK_SLICE_AUDIO"
+	sampleRate = 16000
+	numChannel = 1
+)
+
+type segmentData struct {
+	StartTime float64 `json:"start-time"`
+	EndTime   float64 `json:"end-time"`
+}
+
+const (
+	taskDetectActivity = "TASK_DETECT_ACTIVITY"
+	taskSegment        = "TASK_SEGMENT"
 )
 
 var (
@@ -34,7 +46,7 @@ type component struct {
 type execution struct {
 	base.ComponentExecution
 
-	execute func(*structpb.Struct) (*structpb.Struct, error)
+	execute func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
 }
 
 func Init(bc base.Component) *component {
@@ -54,10 +66,10 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	e := &execution{ComponentExecution: x}
 
 	switch x.Task {
-	case taskChunkAudios:
-		e.execute = chunkAudios
-	case taskSliceAudio:
-		e.execute = sliceAudio
+	case taskDetectActivity:
+		e.execute = detectActivity
+	case taskSegment:
+		e.execute = segment
 	default:
 		return nil, fmt.Errorf("%s task is not supported", x.Task)
 	}
@@ -66,5 +78,5 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return base.SequentialExecutor(ctx, jobs, e.execute)
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
