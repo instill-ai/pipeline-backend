@@ -2,7 +2,8 @@
   "availableTasks": [
     "TASK_MARSHAL",
     "TASK_UNMARSHAL",
-    "TASK_JQ"
+    "TASK_JQ",
+    "TASK_EDIT_VALUES"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/operator/json",
@@ -19,3 +20,4 @@
   "description": "Manipulate and convert JSON entities",
   "releaseStage": "RELEASE_STAGE_ALPHA"
 }
+
