@@ -48,3 +48,55 @@ type textMessageContent struct {
 type imageURL struct {
 	URL string `key:"url"`
 }
+
+type taskSpeechRecognitionInput struct {
+	Audio       data.Audio `key:"audio"`
+	Model       string     `key:"model"`
+	Prompt      *string    `key:"prompt"`
+	Temperature *float32   `key:"temperature"`
+	Language    *string    `key:"language"`
+}
+
+type taskSpeechRecognitionOutput struct {
+	Text     string  `key:"text"`
+	Duration float32 `key:"duration"`
+}
+
+type taskTextToSpeechInput struct {
+	Text           string   `key:"text"`
+	Model          string   `key:"model"`
+	Voice          string   `key:"voice"`
+	ResponseFormat *string  `key:"response-format"`
+	Speed          *float32 `key:"speed"`
+}
+
+type taskTextToSpeechOutput struct {
+	Audio data.Audio `key:"audio"`
+}
+
+type taskTextToImageInput struct {
+	Prompt  string  `key:"prompt"`
+	Model   string  `key:"model"`
+	N       *int    `key:"n"`
+	Quality *string `key:"quality"`
+	Size    *string `key:"size"`
+	Style   *string `key:"style"`
+}
+
+type taskTextToImageOutput struct {
+	Results []imageGenerationsOutputResult `key:"results"`
+}
+
+type imageGenerationsOutputResult struct {
+	Image         data.Image `key:"image"`
+	RevisedPrompt string     `key:"revised-prompt"`
+}
+type taskTextEmbeddingsInput struct {
+	Text       string `key:"text"`
+	Model      string `key:"model"`
+	Dimensions int    `key:"dimensions"`
+}
+
+type taskTextEmbeddingsOutput struct {
+	Embedding []float32 `key:"embeddings"`
+}
