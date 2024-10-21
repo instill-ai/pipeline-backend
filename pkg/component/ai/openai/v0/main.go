@@ -14,8 +14,6 @@ import (
 
 	_ "embed"
 
-	"github.com/gabriel-vasile/mimetype"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -133,17 +131,11 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		}
 	}()
 
-	input, err := job.Input.Read(ctx)
-	if err != nil {
-		job.Error.Error(ctx, err)
-		return
-	}
-
 	switch e.Task {
 	case TextGenerationTask:
 		client.SetTimeout(30 * time.Minute)
-		inputStruct := TextCompletionInput{}
-		err := base.ConvertFromStructpb(input, &inputStruct)
+		inputStruct := taskTextGenerationInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -155,7 +147,20 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		if inputStruct.ChatHistory != nil {
 			for _, chat := range inputStruct.ChatHistory {
 				if chat.Role == "user" {
-					messages = append(messages, multiModalMessage{Role: chat.Role, Content: chat.Content})
+					cs := make([]Content, len(chat.Content))
+					for i, c := range chat.Content {
+						cs[i] = Content{
+							Type: c.Type,
+						}
+						if c.Type == "text" {
+							cs[i].Text = c.Text
+						} else {
+							cs[i].ImageURL = &ImageURL{
+								c.ImageURL.URL,
+							}
+						}
+					}
+					messages = append(messages, multiModalMessage{Role: chat.Role, Content: cs})
 				} else {
 					content := ""
 					for _, c := range chat.Content {
@@ -176,13 +181,12 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		userContents := []Content{}
 		userContents = append(userContents, Content{Type: "text", Text: &inputStruct.Prompt})
 		for _, image := range inputStruct.Images {
-			b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(image))
+			i, err := image.DataURI("image/png")
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return
 			}
-			url := fmt.Sprintf("data:%s;base64,%s", mimetype.Detect(b).String(), base.TrimBase64Mime(image))
-			userContents = append(userContents, Content{Type: "image_url", ImageURL: &ImageURL{URL: url}})
+			userContents = append(userContents, Content{Type: "image_url", ImageURL: &ImageURL{URL: i.String()}})
 		}
 		messages = append(messages, multiModalMessage{Role: "user", Content: userContents})
 
@@ -206,7 +210,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 				return
 			}
 
-			outputStruct := TextCompletionOutput{
+			outputStruct := taskTextGenerationOutput{
 				Texts: []string{},
 				Usage: usage(resp.Usage),
 			}
@@ -214,18 +218,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 				outputStruct.Texts = append(outputStruct.Texts, c.Message.Content)
 			}
 
-			outputJSON, err := json.Marshal(outputStruct)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			output := &structpb.Struct{}
-			err = protojson.Unmarshal(outputJSON, output)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			err = job.Output.Write(ctx, output)
+			err = job.Output.WriteData(ctx, outputStruct)
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return
@@ -294,7 +287,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			}
 			scanner := bufio.NewScanner(restyResp.RawResponse.Body)
 
-			outputStruct := TextCompletionOutput{}
+			outputStruct := taskTextGenerationOutput{}
 
 			u := usage{}
 			count := 0
@@ -311,18 +304,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 				// messages, we’re reducing the number of event streams by
 				// returning the response every ten iterations.
 				if count == 3 || res == "[DONE]" {
-					outputJSON, inErr := json.Marshal(outputStruct)
-					if inErr != nil {
-						job.Error.Error(ctx, inErr)
-						return
-					}
-					output := &structpb.Struct{}
-					inErr = protojson.Unmarshal(outputJSON, output)
-					if inErr != nil {
-						job.Error.Error(ctx, inErr)
-						return
-					}
-					err = job.Output.Write(ctx, output)
+					err = job.Output.WriteData(ctx, outputStruct)
 					if err != nil {
 						job.Error.Error(ctx, err)
 						return
@@ -362,18 +344,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			}
 
 			outputStruct.Usage = u
-			outputJSON, err := json.Marshal(outputStruct)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			output := &structpb.Struct{}
-			err = protojson.Unmarshal(outputJSON, output)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			err = job.Output.Write(ctx, output)
+			err = job.Output.WriteData(ctx, outputStruct)
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return
@@ -381,8 +352,13 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		}
 
 	case SpeechRecognitionTask:
+		input, err := job.Input.Read(ctx)
+		if err != nil {
+			job.Error.Error(ctx, err)
+			return
+		}
 		inputStruct := AudioTranscriptionInput{}
-		err := base.ConvertFromStructpb(input, &inputStruct)
+		err = base.ConvertFromStructpb(input, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 
@@ -429,8 +405,13 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		}
 
 	case TextToSpeechTask:
+		input, err := job.Input.Read(ctx)
+		if err != nil {
+			job.Error.Error(ctx, err)
+			return
+		}
 		inputStruct := TextToSpeechInput{}
-		err := base.ConvertFromStructpb(input, &inputStruct)
+		err = base.ConvertFromStructpb(input, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -467,9 +448,13 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		}
 
 	case TextToImageTask:
-
+		input, err := job.Input.Read(ctx)
+		if err != nil {
+			job.Error.Error(ctx, err)
+			return
+		}
 		inputStruct := ImagesGenerationInput{}
-		err := base.ConvertFromStructpb(input, &inputStruct)
+		err = base.ConvertFromStructpb(input, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
