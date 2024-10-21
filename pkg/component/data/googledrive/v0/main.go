@@ -46,7 +46,7 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
-	execute func(context.Context, *structpb.Struct) (*structpb.Struct, error)
+	execute func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
 
 	service IDriveService
 }
@@ -148,27 +148,7 @@ func getScopes(setup *structpb.Struct) []string {
 // Execute reads the input from the job, executes the task, and writes the output
 // to the job.
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	for _, job := range jobs {
-		input, err := job.Input.Read(ctx)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-
-		output, err := e.execute(ctx, input)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-
-		err = job.Output.Write(ctx, output)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-	}
-
-	return nil
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
 
 func (c *component) WithOAuthCredentials(s map[string]any) *component {
