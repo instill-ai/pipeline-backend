@@ -188,13 +188,13 @@ func fetchEmails(c *imapclient.Client, search Search) ([]Email, error) {
 		BodySection: []*imap.FetchItemBodySection{{}},
 	}
 
-	for i := 0; i < len(emails); i++ {
+	for i := 0; i < len(emails) - 1; i++ {
 		var seqSet imap.SeqSet
-		seqSet.AddNum(uint32(len(emails) - i))
+		seqSet.AddNum(uint32(len(emails) - i - 1))
 		go fetchEmail(c, search, seqSet, *fetchOptions, ch, errChan)
 	}
         index := 0
-	for i := 0; i < len(emails); i++ {
+	for i := 0; i < len(emails) - 1; i++ {
 		if err := <-errChan; err != nil {
 			return nil, err
 		}
