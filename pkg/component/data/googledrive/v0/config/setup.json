@@ -23,7 +23,9 @@
     "authUrl": "https://accounts.google.com/o/oauth2/auth",
     "accessUrl": "https://oauth2.googleapis.com/token",
     "scopes": [
-      "https://www.googleapis.com/auth/drive.readonly"
+      "https://www.googleapis.com/auth/drive.readonly",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
     ]
   },
   "title": "Google Drive Connection",
