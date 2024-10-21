@@ -16,10 +16,10 @@ import (
 )
 
 type SubsampleVideoInput struct {
-	Video     Video  `json:"video"`
-	Fps       int    `json:"fps"`
-	StartTime string `json:"start-time"`
-	Duration  string `json:"duration"`
+	Video     Video   `json:"video"`
+	Fps       float32 `json:"fps"`
+	StartTime string  `json:"start-time"`
+	Duration  string  `json:"duration"`
 }
 
 type SubsampleVideoOutput struct {
@@ -27,10 +27,10 @@ type SubsampleVideoOutput struct {
 }
 
 type SubsampleVideoFramesInput struct {
-	Video     Video  `json:"video"`
-	Fps       int    `json:"fps"`
-	StartTime string `json:"start-time"`
-	Duration  string `json:"duration"`
+	Video     Video   `json:"video"`
+	Fps       float32 `json:"fps"`
+	StartTime string  `json:"start-time"`
+	Duration  string  `json:"duration"`
 }
 
 type SubsampleVideoFramesOutput struct {
@@ -149,10 +149,16 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 	// with frame number rather than uuid as suffix.
 	outputPattern := random + "_frame_%08d.jpeg"
 
+	kwArgs, errArgs := getFramesKwArgs(inputStruct)
+	if errArgs != nil {
+		return nil, fmt.Errorf("unable to convert fps to float number: %s", errArgs)
+	}
+
 	err = ffmpeg.Input(tempInputFileName).
 		Output(outputPattern,
-			getFramesKwArgs(inputStruct),
+			kwArgs,
 		).
+		//.GlobalArgs("-report").OverWriteOutput().
 		Run()
 
 	if err != nil {
@@ -186,15 +192,21 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 	return base.ConvertToStructpb(output)
 }
 
-func getFramesKwArgs(inputStruct SubsampleVideoFramesInput) ffmpeg.KwArgs {
-	kwArgs := ffmpeg.KwArgs{"vf": "fps=" + fmt.Sprintf("%d", inputStruct.Fps)}
+func getFramesKwArgs(inputStruct SubsampleVideoFramesInput) (ffmpeg.KwArgs, error) {
+	// formattedFps, err := getFormattedFPS(string(inputStruct.Fps))
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	kwArgs := ffmpeg.KwArgs{"vf": "fps=" + fmt.Sprintf("%f", inputStruct.Fps)}
 	if inputStruct.StartTime != "" {
 		kwArgs["ss"] = inputStruct.StartTime
 	}
 	if inputStruct.Duration != "" {
 		kwArgs["t"] = inputStruct.Duration
 	}
-	return kwArgs
+	// kwArgs["loglevel"] = "warning"
+	return kwArgs, nil
 }
 
 func removeFiles(files []string) {
@@ -202,3 +214,25 @@ func removeFiles(files []string) {
 		os.Remove(file)
 	}
 }
+
+// func getFormattedFPS(fpsLiteral string) (float32, error) {
+// 	fps, err := strconv.ParseFloat(fpsLiteral, 32) // handles int and float inputs (30, 10, 0.5 etc)
+// 	if err != nil {
+// 		// to handle fraction inputs like 1/2, 1/4, 1/30
+// 		split := strings.Split(fpsLiteral, "/")
+// 		if len(split) != 2 {
+// 			return 0, errors.New("invalid fraction input")
+// 		}
+
+// 		numerator, errN := strconv.Atoi(split[0])
+// 		denominator, errD := strconv.Atoi(split[1])
+// 		if errN != nil || errD != nil {
+// 			return 0, errors.New("fraction numerator and denominator should be ints")
+// 		}
+
+// 		fps := float32(numerator) / float32(denominator)
+
+// 		return fps, nil
+// 	}
+// 	return float32(fps), nil
+// }
