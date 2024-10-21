@@ -8,6 +8,19 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
+// Package data provides functionality for marshaling and unmarshaling between
+// Go structs and a custom Map type that represents structured data.
+//
+// The main functions in this file are:
+//
+// - Unmarshal: Converts a Map value into a provided struct using `key` tags.
+// - Marshal: Converts a struct into a Map that represents the struct fields as
+// values.
+//
+// These functions use reflection to handle various types, including nested
+// structs, slices, maps, and custom types that implement the value.Value
+// interface.
+
 // Unmarshal converts a Map value into the provided struct s using `key` tags.
 func Unmarshal(d value.Value, s any) error {
 	v := reflect.ValueOf(s)
