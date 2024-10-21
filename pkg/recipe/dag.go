@@ -16,6 +16,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/x/errmsg"
@@ -159,7 +160,7 @@ func (d *dag) TopologicalSort() ([]datamodel.ComponentMap, error) {
 	return ans, nil
 }
 
-func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx int, path string) (data.Value, error) {
+func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx int, path string) (value.Value, error) {
 	v, err := wfm.Get(ctx, batchIdx, path)
 	if err != nil {
 		return nil, err
@@ -167,11 +168,10 @@ func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx i
 	return v, err
 }
 
-func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.WorkflowMemory, allowUnresolved bool) (data.Value, error) {
+func Render(ctx context.Context, template value.Value, batchIdx int, wfm memory.WorkflowMemory, allowUnresolved bool) (value.Value, error) {
 
-	switch input := template.(type) {
-	case *data.String:
-		s := input.GetString()
+	if input, ok := template.(data.ReferenceString); ok {
+		s := input.String()
 		if strings.HasPrefix(s, "${") && strings.HasSuffix(s, "}") && strings.Count(s, "${") == 1 {
 			s = s[2:]
 			s = s[:len(s)-1]
@@ -216,28 +216,18 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 				return nil, err
 			}
 
-			switch v := v.(type) {
-			case *data.String:
-				val += v.GetString()
-			case *data.Number:
-				val += strconv.FormatFloat(v.GetFloat(), 'f', -1, 64)
-			default:
-				b, err := json.Marshal(v)
-				if err != nil {
-					return nil, err
-				}
-				val += string(b)
+			if s, ok := v.(data.String); ok {
+				val += s.String()
 			}
 			s = s[endIdx+1:]
 		}
 		return data.NewString(val), nil
-
-	case *data.Map:
+	} else if input, ok := template.(data.Map); ok {
 		var err error
-		mp := data.NewMap(nil)
-		for k, v := range input.Fields {
-			if _, isNull := v.(*data.Null); !isNull {
-				mp.Fields[k], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
+		mp := data.Map{}
+		for k, v := range input {
+			if _, omittable := v.(data.OmittableField); !omittable {
+				mp[k], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
 				if err != nil {
 					return nil, err
 				}
@@ -245,18 +235,18 @@ func Render(ctx context.Context, template data.Value, batchIdx int, wfm memory.W
 
 		}
 		return mp, nil
-	case *data.Array:
+	} else if input, ok := template.(data.Array); ok {
 		var err error
-		arr := data.NewArray(make([]data.Value, len(input.Values)))
-		for i, v := range input.Values {
-			arr.Values[i], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
+		arr := make(data.Array, len(input))
+		for i, v := range input {
+			arr[i], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
 			if err != nil {
 				return nil, err
 			}
 		}
 		return arr, nil
-	default:
-		return input, nil
+	} else {
+		return template, nil
 	}
 }
 

@@ -7,6 +7,8 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+
+	"golang.org/x/image/webp"
 )
 
 func convertFile(raw []byte, sourceContentType, targetContentType string) (b []byte, err error) {
@@ -22,6 +24,10 @@ func convertFile(raw []byte, sourceContentType, targetContentType string) (b []b
 		}
 	case GIF:
 		if img, err = gif.Decode(bytes.NewReader(raw)); err != nil {
+			return
+		}
+	case WEBP:
+		if img, err = webp.Decode(bytes.NewReader(raw)); err != nil {
 			return
 		}
 	default:

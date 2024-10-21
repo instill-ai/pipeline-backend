@@ -9,7 +9,7 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 )
 
-func decodeDataURL(s string) (b []byte, contentType string, fileName string, err error) {
+func decodeDataURI(s string) (b []byte, contentType string, fileName string, err error) {
 	slices := strings.Split(s, ",")
 	if len(slices) == 1 {
 		b, err = base64.StdEncoding.DecodeString(s)
@@ -31,8 +31,8 @@ func decodeDataURL(s string) (b []byte, contentType string, fileName string, err
 	return
 }
 
-func encodeDataURL(b []byte, contentType, fileName string) (s string, err error) {
-	s = fmt.Sprintf("data:%s;filename=%s;base64,%s", contentType, fileName, base64.StdEncoding.EncodeToString(b))
+func encodeDataURI(b []byte, contentType string) (s string, err error) {
+	s = fmt.Sprintf("data:%s;base64,%s", contentType, base64.StdEncoding.EncodeToString(b))
 	return
 }
 

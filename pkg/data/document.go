@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0"
-	//  "github.com/instill-ai/pipeline-backend/pkg/component/store"
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
-type Document struct {
-	File
+type documentData struct {
+	fileData
 }
 
 const DOC = "application/msword"
@@ -19,9 +19,9 @@ const PPTX = "application/vnd.openxmlformats-officedocument.presentationml.prese
 const HTML = "text/html"
 const PDF = "application/pdf"
 
-func (Document) isValue() {}
+func (documentData) IsValue() {}
 
-func NewDocumentFromBytes(b []byte, contentType, fileName string) (doc *Document, err error) {
+func NewDocumentFromBytes(b []byte, contentType, fileName string) (doc *documentData, err error) {
 	f, err := NewFileFromBytes(b, contentType, fileName)
 	if err != nil {
 		return
@@ -29,7 +29,7 @@ func NewDocumentFromBytes(b []byte, contentType, fileName string) (doc *Document
 	return newDocument(f)
 }
 
-func NewDocumentFromURL(url string) (doc *Document, err error) {
+func NewDocumentFromURL(url string) (doc *documentData, err error) {
 	f, err := NewFileFromURL(url)
 	if err != nil {
 		return
@@ -37,41 +37,23 @@ func NewDocumentFromURL(url string) (doc *Document, err error) {
 	return newDocument(f)
 }
 
-func newDocument(f *File) (doc *Document, err error) {
-	return &Document{
-		File: *f,
+func newDocument(f *fileData) (doc *documentData, err error) {
+	return &documentData{
+		fileData: *f,
 	}, nil
 }
 
-func (d *Document) GetText() (val *String, err error) {
+func (d *documentData) Text() (val *stringData, err error) {
 
-	dataURL, err := d.GetDataURL(d.ContentType)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := document.ConvertToText(document.ConvertToTextInput{
-		Document: dataURL.GetString(),
-		Filename: d.FileName,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return NewString(res.Body), nil
-}
-
-func (d *Document) GetMarkdown() (val *String, err error) {
-
-	dataURL, err := d.GetDataURL(d.ContentType)
+	dataURI, err := d.DataURI(d.contentType)
 	if err != nil {
 		return nil, err
 	}
 
 	res, err := document.ConvertDocumentToMarkdown(
 		&document.ConvertDocumentToMarkdownInput{
-			Document: dataURL.GetString(),
-			Filename: d.FileName,
+			Document: dataURI.String(),
+			Filename: d.fileName,
 		}, document.GetMarkdownTransformer)
 	if err != nil {
 		return nil, err
@@ -80,15 +62,24 @@ func (d *Document) GetMarkdown() (val *String, err error) {
 	return NewString(res.Body), nil
 }
 
-func (d *Document) GetPDF() (val *Document, err error) {
+func (d *documentData) String() (val string) {
 
-	dataURL, err := d.GetDataURL(d.ContentType)
+	text, err := d.Text()
+	if err != nil {
+		return ""
+	}
+	return text.String()
+
+}
+
+func (d *documentData) PDF() (val *documentData, err error) {
+	dataURI, err := d.DataURI(d.contentType)
 	if err != nil {
 		return nil, err
 	}
 
 	ext := ""
-	switch d.ContentType {
+	switch d.contentType {
 	case DOC:
 		ext = "doc"
 	case DOCX:
@@ -103,7 +94,7 @@ func (d *Document) GetPDF() (val *Document, err error) {
 		return d, nil
 	}
 
-	s, err := document.ConvertToPDF(dataURL.GetString(), ext)
+	s, err := document.ConvertToPDF(dataURI.String(), ext)
 	if err != nil {
 		return nil, err
 	}
@@ -111,31 +102,31 @@ func (d *Document) GetPDF() (val *Document, err error) {
 	return NewDocumentFromURL(fmt.Sprintf("data:application/pdf;base64,%s", s))
 }
 
-func (d *Document) GetImages() (mp *Array, err error) {
+func (d *documentData) Images() (mp Array, err error) {
 
-	pdf, err := d.GetPDF()
+	pdf, err := d.PDF()
 	if err != nil {
 		return nil, err
 	}
 
-	dataURL, err := pdf.GetDataURL("application/pdf")
+	dataURI, err := pdf.DataURI("application/pdf")
 	if err != nil {
 		return nil, err
 	}
 	res, err := document.ConvertDocumentToImage(&document.ConvertDocumentToImagesInput{
-		Document: dataURL.GetString(),
-		Filename: d.FileName,
+		Document: dataURI.String(),
+		Filename: d.fileName,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	images := NewArray(make([]Value, len(res.Images)))
+	images := make([]value.Value, len(res.Images))
 
 	for idx := range res.Images {
 
 		img := strings.Split(res.Images[idx], ",")[1]
-		images.Values[idx], err = NewImageFromURL(fmt.Sprintf("data:image/jpeg;filename=%s;base64,%s", res.Filenames[idx], img))
+		images[idx], err = NewImageFromURL(fmt.Sprintf("data:image/jpeg;filename=%s;base64,%s", res.Filenames[idx], img))
 		if err != nil {
 			return nil, fmt.Errorf("NewImageFromBytes: %w", err)
 		}
@@ -143,26 +134,23 @@ func (d *Document) GetImages() (mp *Array, err error) {
 	return images, nil
 }
 
-func (d *Document) Get(path string) (v Value, err error) {
-	v, err = d.File.Get(path)
+func (d *documentData) Get(path string) (v value.Value, err error) {
+	v, err = d.fileData.Get(path)
 	if err == nil {
 		return
 	}
 	switch {
 	case comparePath(path, ""):
-		// TODO: we use data-url for now
-		return d.GetDataURL(d.ContentType)
+		return d, nil
 	case comparePath(path, ".text"):
-		return d.GetText()
-	case comparePath(path, ".markdown"):
-		return d.GetMarkdown()
+		return d.Text()
 	case comparePath(path, ".pdf"):
-		return d.GetPDF()
+		return d.PDF()
 	case comparePath(path, ".images"):
-		return d.GetImages()
+		return d.Images()
 	case matchPathPrefix(path, ".images"):
 		// TODO: we should only convert the required pages.
-		images, err := d.GetImages()
+		images, err := d.Images()
 		if err != nil {
 			return nil, err
 		}
@@ -173,11 +161,11 @@ func (d *Document) Get(path string) (v Value, err error) {
 		return images.Get(path)
 
 	case comparePath(path, ".base64"):
-		return d.GetBase64(d.ContentType)
-	case comparePath(path, ".data-url"):
-		return d.GetDataURL(d.ContentType)
+		return d.GetBase64(d.contentType)
+	case comparePath(path, ".data-uri"):
+		return d.DataURI(d.contentType)
 	case comparePath(path, ".byte-array"):
-		return d.GetByteArray(d.ContentType)
+		return d.Binary(d.contentType)
 	}
 	return nil, fmt.Errorf("wrong path")
 }

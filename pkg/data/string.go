@@ -4,30 +4,33 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
-type String struct {
+type stringData struct {
 	Raw string
 }
 
-func (String) isValue() {}
+func (stringData) IsValue()    {}
+func (stringData) Resolvable() {}
 
-func NewString(t string) *String {
-	return &String{Raw: t}
+func NewString(t string) *stringData {
+	return &stringData{Raw: t}
 }
 
-func (s *String) GetString() string {
+func (s *stringData) String() string {
 	return s.Raw
 }
 
-func (s *String) Get(path string) (v Value, err error) {
+func (s *stringData) Get(path string) (v value.Value, err error) {
 	if path == "" {
 		return s, nil
 	}
 	return nil, fmt.Errorf("wrong path %s for String", path)
 }
 
-func (s String) ToStructValue() (v *structpb.Value, err error) {
+func (s stringData) ToStructValue() (v *structpb.Value, err error) {
 	v = structpb.NewStringValue(s.Raw)
 	return
 }
