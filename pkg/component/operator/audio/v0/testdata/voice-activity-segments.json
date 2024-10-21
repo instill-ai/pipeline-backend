@@ -1,0 +1,64 @@
+{
+  "segments": [
+    {
+      "start-time": 1.66,
+      "end-time": 2.27
+    },
+    {
+      "start-time": 3.33,
+      "end-time": 3.39
+    },
+    {
+      "start-time": 3.55,
+      "end-time": 4.13
+    },
+    {
+      "start-time": 4.26,
+      "end-time": 4.32
+    },
+    {
+      "start-time": 4.74,
+      "end-time": 5.89
+    },
+    {
+      "start-time": 6.02,
+      "end-time": 6.21
+    },
+    {
+      "start-time": 6.75,
+      "end-time": 8.51
+    },
+    {
+      "start-time": 8.77,
+      "end-time": 9.15
+    },
+    {
+      "start-time": 9.34,
+      "end-time": 10.69
+    },
+    {
+      "start-time": 10.88,
+      "end-time": 11.58
+    },
+    {
+      "start-time": 12.93,
+      "end-time": 14.50
+    },
+    {
+      "start-time": 14.66,
+      "end-time": 14.98
+    },
+    {
+      "start-time": 15.94,
+      "end-time": 18.27
+    },
+    {
+      "start-time": 18.43,
+      "end-time": 18.50
+    },
+    {
+      "start-time": 18.88,
+      "end-time": 18.98
+    }
+  ]
+}

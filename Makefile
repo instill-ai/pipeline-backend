@@ -39,10 +39,10 @@ latest:							## Run latest container
 		echo "Run latest container ${SERVICE_NAME} and ${SERVICE_NAME}-worker. To stop it, run \"make stop\"."
 	@docker run --network=instill-network \
 		--name ${SERVICE_NAME} \
-		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}
+		-d instill/${SERVICE_NAME}:latest ./${SERVICE_NAME}
 	@docker run --network=instill-network \
 		--name ${SERVICE_NAME}-worker \
-		-d ${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
+		-d instill/${SERVICE_NAME}:latest ./${SERVICE_NAME}-worker
 
 .PHONY: rm
 rm:								## Remove all running containers
@@ -59,10 +59,10 @@ build-dev:							## Build dev docker image
 
 .PHONY: build-latest
 build-latest:							## Build latest docker image
-	@docker buildx build \
+	@docker build \
 		--build-arg GOLANG_VERSION=${GOLANG_VERSION} \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
-		-t pipeline-backend:latest .
+		-t instill/pipeline-backend:latest .
 
 .PHONY: go-gen
 go-gen:       					## Generate codes

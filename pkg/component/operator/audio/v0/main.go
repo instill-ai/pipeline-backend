@@ -13,11 +13,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-const (
-	taskChunkAudios string = "TASK_CHUNK_AUDIOS"
-	taskSliceAudio  string = "TASK_SLICE_AUDIO"
-)
-
 var (
 	//go:embed config/definition.json
 	definitionJSON []byte
@@ -34,7 +29,7 @@ type component struct {
 type execution struct {
 	base.ComponentExecution
 
-	execute func(*structpb.Struct) (*structpb.Struct, error)
+	execute func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
 }
 
 func Init(bc base.Component) *component {
@@ -54,10 +49,10 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	e := &execution{ComponentExecution: x}
 
 	switch x.Task {
-	case taskChunkAudios:
-		e.execute = chunkAudios
-	case taskSliceAudio:
-		e.execute = sliceAudio
+	case "TASK_DETECT_VOICE_ACTIVITY":
+		e.execute = detectVoiceActivity
+	case "TASK_EXTRACT_AUDIO_SEGMENTS":
+		e.execute = extractAudioSegments
 	default:
 		return nil, fmt.Errorf("%s task is not supported", x.Task)
 	}
@@ -66,5 +61,5 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return base.SequentialExecutor(ctx, jobs, e.execute)
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }

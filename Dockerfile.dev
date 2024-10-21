@@ -1,5 +1,5 @@
 ARG GOLANG_VERSION=1.22.5
-FROM golang:${GOLANG_VERSION}
+FROM golang:${GOLANG_VERSION}-bullseye
 
 ARG SERVICE_NAME
 
@@ -16,18 +16,42 @@ RUN apt update && \
     /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
     rm -rf /var/lib/apt/lists/*
 
+# Install ONNX Runtime (latest release)
+ENV ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
+RUN apt update && \
+    apt install -y wget jq && \
+    LATEST_VERSION=$(wget -qO- https://api.github.com/repos/microsoft/onnxruntime/releases/latest | jq -r .tag_name) && \
+    ONNX_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64" || echo "x64") && \
+    wget https://github.com/microsoft/onnxruntime/releases/download/${LATEST_VERSION}/onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz && \
+    tar -xzf onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz && \
+    mv onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v} ${ONNXRUNTIME_ROOT_PATH} && \
+    rm onnxruntime-linux-${ONNX_ARCH}-${LATEST_VERSION#v}.tgz && \
+    apt remove -y wget jq && \
+    apt autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set environment variables and create symlinks for ONNX Runtime
+ENV C_INCLUDE_PATH=${ONNXRUNTIME_ROOT_PATH}/include
+RUN ln -s ${ONNXRUNTIME_ROOT_PATH}/lib/libonnxruntime.so* /usr/lib/
+
+# tparse
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/mfridman/tparse@latest
+
 # air
 RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install github.com/cosmtrek/air@v1.49
 
 # k6
-RUN go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
-RUN xk6 build v${K6_VERSION} --with github.com/grafana/xk6-sql --output /usr/bin/k6
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
+RUN --mount=target=. --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg GOOS=$TARGETOS GOARCH=$TARGETARCH xk6 build v${K6_VERSION} --with github.com/grafana/xk6-sql --output /usr/bin/k6
 
 # -- set up Go
 
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
+
+# copy ONNX model
+COPY ./pkg/component/operator/audio/v0/model/silero_vad.onnx /${SERVICE_NAME}/pkg/component/operator/audio/v0/model/silero_vad.onnx
 
 RUN chown -R nobody:nogroup /go
 ENV GOCACHE=/go/.cache/go-build
