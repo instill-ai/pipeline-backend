@@ -36,6 +36,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/chroma/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/elasticsearch/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/googlecloudstorage/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/component/data/googledrive/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/instillartifact/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/milvus/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/data/mongodb/v0"
@@ -169,6 +170,18 @@ func Init(
 			// Numbers
 			conn := numbers.Init(baseComp)
 			conn = conn.WithNumbersSecret(secrets[conn.GetDefinitionID()])
+			compStore.Import(conn)
+		}
+
+		{
+			conn := googledrive.Init(baseComp)
+			conn = conn.WithOAuthCredentials(secrets["google"])
+			compStore.Import(conn)
+		}
+
+		{
+			conn := googledrive.Init(baseComp)
+			conn = conn.WithOAuthCredentials(secrets["google"])
 			compStore.Import(conn)
 		}
 
