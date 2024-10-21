@@ -12,20 +12,12 @@ const (
 	transcriptionsPath = "/v1/audio/transcriptions"
 )
 
-type AudioTranscriptionInput struct {
-	Audio       string   `json:"audio"`
-	Model       string   `json:"model"`
-	Prompt      *string  `json:"prompt,omitempty"`
-	Temperature *float64 `json:"temperature,omitempty"`
-	Language    *string  `json:"language,omitempty"`
-}
-
 type AudioTranscriptionReq struct {
 	File           []byte   `json:"file"`
 	Model          string   `json:"model"`
 	Prompt         *string  `json:"prompt,omitempty"`
 	Language       *string  `json:"language,omitempty"`
-	Temperature    *float64 `json:"temperature,omitempty"`
+	Temperature    *float32 `json:"temperature,omitempty"`
 	ResponseFormat string   `json:"response_format,omitempty"`
 }
 

@@ -4,7 +4,6 @@ package openai
 import (
 	"bufio"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,6 +17,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -352,27 +352,22 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		}
 
 	case SpeechRecognitionTask:
-		input, err := job.Input.Read(ctx)
+
+		inputStruct := taskSpeechRecognitionInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
 		}
-		inputStruct := AudioTranscriptionInput{}
-		err = base.ConvertFromStructpb(input, &inputStruct)
-		if err != nil {
-			job.Error.Error(ctx, err)
 
-			return
-		}
-
-		audioBytes, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(inputStruct.Audio))
+		audioBytes, err := inputStruct.Audio.Binary("audio/wav")
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
 		}
 
 		data, ct, err := getBytes(AudioTranscriptionReq{
-			File:        audioBytes,
+			File:        audioBytes.ByteArray(),
 			Model:       inputStruct.Model,
 			Prompt:      inputStruct.Prompt,
 			Language:    inputStruct.Language,
@@ -393,25 +388,18 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			return
 		}
 
-		output, err := base.ConvertToStructpb(resp)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
+		outputStruct := taskSpeechRecognitionOutput{
+			Text: resp.Text,
 		}
-		err = job.Output.Write(ctx, output)
+		err = job.Output.WriteData(ctx, outputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
 		}
 
 	case TextToSpeechTask:
-		input, err := job.Input.Read(ctx)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
-		}
-		inputStruct := TextToSpeechInput{}
-		err = base.ConvertFromStructpb(input, &inputStruct)
+		inputStruct := taskTextToSpeechInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -431,30 +419,26 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			return
 		}
 
-		audio := base64.StdEncoding.EncodeToString(resp.Body())
-		outputStruct := TextToSpeechOutput{
-			Audio: fmt.Sprintf("data:audio/wav;base64,%s", audio),
-		}
-
-		output, err := base.ConvertToStructpb(outputStruct)
+		audio, err := data.NewAudioFromBytes(resp.Body(), "audio/wav", "")
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
 		}
-		err = job.Output.Write(ctx, output)
+
+		outputStruct := taskTextToSpeechOutput{
+			Audio: audio,
+		}
+
+		err = job.Output.WriteData(ctx, outputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
 		}
 
 	case TextToImageTask:
-		input, err := job.Input.Read(ctx)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
-		}
-		inputStruct := ImagesGenerationInput{}
-		err = base.ConvertFromStructpb(input, &inputStruct)
+
+		inputStruct := taskTextToImageInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -476,23 +460,23 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			return
 		}
 
-		results := []ImageGenerationsOutputResult{}
-		for _, data := range resp.Data {
-			results = append(results, ImageGenerationsOutputResult{
-				Image:         fmt.Sprintf("data:image/webp;base64,%s", data.Image),
-				RevisedPrompt: data.RevisedPrompt,
+		results := []imageGenerationsOutputResult{}
+		for _, d := range resp.Data {
+			img, err := data.NewImageFromURL(fmt.Sprintf("data:image/webp;base64,%s", d.Image))
+			if err != nil {
+				job.Error.Error(ctx, err)
+				return
+			}
+			results = append(results, imageGenerationsOutputResult{
+				Image:         img,
+				RevisedPrompt: d.RevisedPrompt,
 			})
 		}
-		outputStruct := ImageGenerationsOutput{
+		outputStruct := taskTextToImageOutput{
 			Results: results,
 		}
 
-		output, err := base.ConvertToStructpb(outputStruct)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
-		}
-		err = job.Output.Write(ctx, output)
+		err = job.Output.WriteData(ctx, outputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -520,13 +504,8 @@ func (e *execution) executeEmbedding(ctx context.Context, client *httpclient.Cli
 	dimensions := 0
 	model := ""
 	for idx, job := range jobs {
-		input, err := job.Input.Read(ctx)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
-		}
-		inputStruct := TextEmbeddingsInput{}
-		err = base.ConvertFromStructpb(input, &inputStruct)
+		inputStruct := taskTextEmbeddingsInput{}
+		err := job.Input.ReadData(ctx, &inputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
@@ -568,15 +547,10 @@ func (e *execution) executeEmbedding(ctx context.Context, client *httpclient.Cli
 	}
 
 	for idx, job := range jobs {
-		outputStruct := TextEmbeddingsOutput{
+		outputStruct := taskTextEmbeddingsOutput{
 			Embedding: resp.Data[idx].Embedding,
 		}
-		output, err := base.ConvertToStructpb(outputStruct)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			return
-		}
-		err = job.Output.Write(ctx, output)
+		err := job.Output.WriteData(ctx, outputStruct)
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
