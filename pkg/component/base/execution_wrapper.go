@@ -17,15 +17,23 @@ type ExecutionWrapper struct {
 }
 
 type inputReader struct {
+	InputReader
 	schema string
 	input  *structpb.Struct
 }
 
-func NewInputReader(input *structpb.Struct, schema string) *inputReader {
+func NewInputReader(ir InputReader, input *structpb.Struct, schema string) *inputReader {
 	return &inputReader{
-		input:  input,
-		schema: schema,
+		InputReader: ir,
+		input:       input,
+		schema:      schema,
 	}
+}
+
+func (ir *inputReader) ReadData(ctx context.Context, input any) (err error) {
+	fmt.Println("Xxxxxx1", ir.InputReader)
+
+	return ir.InputReader.ReadData(ctx, input)
 }
 
 func (ir *inputReader) Read(ctx context.Context) (input *structpb.Struct, err error) {
@@ -100,7 +108,7 @@ func (e *ExecutionWrapper) Execute(ctx context.Context, jobs []*Job) (err error)
 	wrappedJobs := make([]*Job, len(validJobs))
 	for batchIdx, job := range validJobs {
 		wrappedJobs[batchIdx] = &Job{
-			Input:  NewInputReader(validInputs[batchIdx], e.GetTaskInputSchema()),
+			Input:  NewInputReader(job.Input, validInputs[batchIdx], e.GetTaskInputSchema()),
 			Output: NewOutputWriter(job.Output, e.GetTaskOutputSchema()),
 			Error:  job.Error,
 		}

@@ -36,9 +36,15 @@ type Job struct {
 }
 
 type InputReader interface {
+	ReadData(ctx context.Context, input any) (err error)
+
+	// Deprecated: structpb is not suitable for handling binary data. We will phase it out gradually.​
 	Read(ctx context.Context) (input *structpb.Struct, err error)
 }
 type OutputWriter interface {
+	WriteData(ctx context.Context, output any) (err error)
+
+	// Deprecated: structpb is not suitable for handling binary data. We will phase it out gradually.​
 	Write(ctx context.Context, output *structpb.Struct) (err error)
 }
 type ErrorHandler interface {

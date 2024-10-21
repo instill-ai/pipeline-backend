@@ -4,24 +4,27 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
-type Null struct {
+type nullData struct {
 }
 
-func NewNull() *Null {
-	return &Null{}
+func NewNull() *nullData {
+	return &nullData{}
 }
 
-func (Null) isValue() {}
+func (nullData) IsValue()   {}
+func (nullData) Omittable() {}
 
-func (n *Null) Get(path string) (v Value, err error) {
+func (n *nullData) Get(path string) (v value.Value, err error) {
 	if path == "" {
 		return n, nil
 	}
 	return nil, fmt.Errorf("wrong path %s for Null", path)
 }
 
-func (n Null) ToStructValue() (v *structpb.Value, err error) {
+func (n nullData) ToStructValue() (v *structpb.Value, err error) {
 	return structpb.NewNullValue(), nil
 }

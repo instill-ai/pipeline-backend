@@ -8,33 +8,38 @@ import (
 
 	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0"
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
-type File struct {
-	Raw         []byte
-	ContentType string
-	FileName    string
-	SourceURL   string
-	Cache       map[string][]byte
+type fileData struct {
+	raw         []byte
+	contentType string
+	fileName    string
+	sourceURL   string
+	cache       map[string][]byte
 }
 
-func NewFileFromBytes(b []byte, contentType, fileName string) (bin *File, err error) {
+func (fileData) IsValue() {}
+
+func NewFileFromBytes(b []byte, contentType, fileName string) (bin *fileData, err error) {
 	if contentType == "" {
 		contentType = strings.Split(mimetype.Detect(b).String(), ";")[0]
 	}
 	cache := map[string][]byte{}
 	cache[contentType] = b
-	return &File{
-		Raw:         b,
-		ContentType: contentType,
-		FileName:    fileName,
-		Cache:       cache,
+	return &fileData{
+		raw:         b,
+		contentType: contentType,
+		fileName:    fileName,
+		cache:       cache,
 	}, nil
 }
 
-func NewFileFromURL(url string) (bin *File, err error) {
+func NewFileFromURL(url string) (bin *fileData, err error) {
 	if strings.HasPrefix(url, "data:") {
-		return newFileFromDataURL(url)
+		return newFileFromDataURI(url)
 	}
 
 	resp, err := http.Get(url)
@@ -55,93 +60,112 @@ func NewFileFromURL(url string) (bin *File, err error) {
 	if err != nil {
 		return nil, err
 	}
-	bin.SourceURL = url
+	bin.sourceURL = url
 	return bin, nil
 }
 
-func newFileFromDataURL(url string) (bin *File, err error) {
-	b, contentType, fileName, err := decodeDataURL(url)
+func newFileFromDataURI(url string) (bin *fileData, err error) {
+	b, contentType, fileName, err := decodeDataURI(url)
 	if err != nil {
 		return
 	}
 	cache := map[string][]byte{}
 	cache[contentType] = b
-	return &File{
-		Raw:         b,
-		ContentType: contentType,
-		FileName:    fileName,
-		Cache:       cache,
+	return &fileData{
+		raw:         b,
+		contentType: contentType,
+		fileName:    fileName,
+		cache:       cache,
 	}, nil
 }
 
-func (f *File) GetByteArray(contentType string) (ba *ByteArray, err error) {
-	if c, ok := f.Cache[contentType]; ok {
+func (f *fileData) Binary(contentType string) (ba *byteArrayData, err error) {
+	if c, ok := f.cache[contentType]; ok {
 		return NewByteArray(c), nil
 	}
 
-	b, err := convertFile(f.Raw, f.ContentType, contentType)
+	b, err := convertFile(f.raw, f.contentType, contentType)
 	if err != nil {
-		return nil, fmt.Errorf("can not convert data from %s to %s", f.ContentType, contentType)
+		return nil, fmt.Errorf("can not convert data from %s to %s", f.contentType, contentType)
 	}
-	f.Cache[contentType] = b
+	f.cache[contentType] = b
 	return NewByteArray(b), nil
 }
 
-func (f *File) GetDataURL(contentType string) (url *String, err error) {
-	ba, err := f.GetByteArray(contentType)
+func (f *fileData) String() (val string) {
+
+	// TODO: Refactor to share implementation with Document format
+	dataURI, err := f.DataURI(f.contentType)
+	if err != nil {
+		return ""
+	}
+
+	res, err := document.ConvertDocumentToMarkdown(
+		&document.ConvertDocumentToMarkdownInput{
+			Document: dataURI.String(),
+			Filename: f.fileName,
+		}, document.GetMarkdownTransformer)
+	if err != nil {
+		return ""
+	}
+	return res.Body
+}
+
+func (f *fileData) DataURI(contentType string) (url *stringData, err error) {
+	ba, err := f.Binary(contentType)
 	if err != nil {
 		return
 	}
-	s, err := encodeDataURL(ba.GetByteArray(), contentType, f.FileName)
+	s, err := encodeDataURI(ba.ByteArray(), contentType)
 	if err != nil {
 		return
 	}
 	return NewString(s), nil
 }
 
-func (f *File) GetBase64(contentType string) (b64 *String, err error) {
-	ba, err := f.GetDataURL(contentType)
+func (f *fileData) GetBase64(contentType string) (b64 *stringData, err error) {
+	ba, err := f.DataURI(contentType)
 	if err != nil {
 		return
 	}
-	_, b64str, _ := strings.Cut(ba.GetString(), ",")
+	_, b64str, _ := strings.Cut(ba.String(), ",")
 	return NewString(b64str), nil
 }
 
-func (f *File) GetFileSize() (size *Number) {
-	return NewNumberFromInteger(len(f.Raw))
+func (f *fileData) FileSize() (size *numberData) {
+	return NewNumberFromInteger(len(f.raw))
 }
 
-func (f *File) GetContentType() (t *String) {
-	return NewString(f.ContentType)
+func (f *fileData) ContentType() (t *stringData) {
+	return NewString(f.contentType)
 }
 
-func (f *File) GetFileName() (t *String) {
-	return NewString(f.FileName)
+func (f *fileData) FileName() (t *stringData) {
+	return NewString(f.fileName)
 }
 
-func (f *File) GetSourceURL() (t *String) {
-	return NewString(f.SourceURL)
+func (f *fileData) SourceURL() (t *stringData) {
+	return NewString(f.sourceURL)
 }
 
-func (f *File) Get(path string) (v Value, err error) {
+func (f *fileData) Get(path string) (v value.Value, err error) {
 	switch {
 	case comparePath(path, ".source-url"):
-		return f.GetSourceURL(), nil
+		return f.SourceURL(), nil
 	case comparePath(path, ".filename"):
-		return f.GetFileName(), nil
+		return f.FileName(), nil
 	case comparePath(path, ".file-size"):
-		return f.GetFileSize(), nil
+		return f.FileSize(), nil
 	case comparePath(path, ".content-type"):
-		return f.GetContentType(), nil
+		return f.ContentType(), nil
 	}
 	return nil, fmt.Errorf("wrong path")
 }
 
-func (f File) ToStructValue() (v *structpb.Value, err error) {
-	d, err := f.GetDataURL(f.ContentType)
+func (f fileData) ToStructValue() (v *structpb.Value, err error) {
+	d, err := f.DataURI(f.contentType)
 	if err != nil {
 		return nil, err
 	}
-	return structpb.NewStringValue(d.GetString()), nil
+	return structpb.NewStringValue(d.String()), nil
 }

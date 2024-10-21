@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -60,16 +61,16 @@ type MemoryStore interface {
 }
 
 type WorkflowMemory interface {
-	Set(ctx context.Context, batchIdx int, key string, value data.Value) (err error)
-	Get(ctx context.Context, batchIdx int, path string) (value data.Value, err error)
+	Set(ctx context.Context, batchIdx int, key string, value value.Value) (err error)
+	Get(ctx context.Context, batchIdx int, path string) (value value.Value, err error)
 
 	InitComponent(ctx context.Context, batchIdx int, componentID string)
-	SetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType, value data.Value) (err error)
-	GetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType) (value data.Value, err error)
+	SetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType, value value.Value) (err error)
+	GetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType) (value value.Value, err error)
 	SetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType, value bool) (err error)
 	GetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType) (value bool, err error)
-	SetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType, value data.Value) (err error)
-	GetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType) (value data.Value, err error)
+	SetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType, value value.Value) (err error)
+	GetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType) (value value.Value, err error)
 	SetComponentErrorMessage(ctx context.Context, batchIdx int, componentID string, msg string) (err error)
 
 	EnableStreaming()
@@ -95,7 +96,7 @@ type memoryStore struct {
 type workflowMemory struct {
 	mu        sync.Mutex
 	ID        string
-	Data      []data.Value
+	Data      []value.Value
 	Recipe    *datamodel.Recipe
 	Streaming bool
 	channel   chan *Event
@@ -189,14 +190,14 @@ func NewMemoryStore() MemoryStore {
 }
 
 func (ms *memoryStore) NewWorkflowMemory(ctx context.Context, workflowID string, r *datamodel.Recipe, batchSize int) (workflow WorkflowMemory, err error) {
-	wfmData := make([]data.Value, batchSize)
+	wfmData := make([]value.Value, batchSize)
 	for idx := range batchSize {
-		m := data.NewMap(map[string]data.Value{
-			string(PipelineVariable):   data.NewMap(nil),
-			string(PipelineSecret):     data.NewMap(nil),
-			string(PipelineConnection): data.NewMap(nil),
-			string(PipelineOutput):     data.NewMap(nil),
-		})
+		m := data.Map{
+			string(PipelineVariable):   data.Map{},
+			string(PipelineSecret):     data.Map{},
+			string(PipelineConnection): data.Map{},
+			string(PipelineOutput):     data.Map{},
+		}
 
 		wfmData[idx] = m
 	}
@@ -252,37 +253,32 @@ func (wfm *workflowMemory) InitComponent(ctx context.Context, batchIdx int, comp
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	compMemory := data.NewMap(
-		map[string]data.Value{
-			string(ComponentDataInput):  data.NewMap(nil),
-			string(ComponentDataOutput): data.NewMap(nil),
-			string(ComponentDataSetup):  data.NewMap(nil),
-			string(ComponentDataError): data.NewMap(
-				map[string]data.Value{
-					"message": data.NewString(""),
-				},
-			),
-			string(ComponentDataStatus): data.NewMap(
-				map[string]data.Value{
-					"started":   data.NewBoolean(false),
-					"skipped":   data.NewBoolean(false),
-					"errored":   data.NewBoolean(false),
-					"completed": data.NewBoolean(false),
-				},
-			),
+	compMemory := data.Map{
+
+		string(ComponentDataInput):  data.Map{},
+		string(ComponentDataOutput): data.Map{},
+		string(ComponentDataSetup):  data.Map{},
+		string(ComponentDataError): data.Map{
+			"message": data.NewString(""),
 		},
-	)
-	wfm.Data[batchIdx].(*data.Map).Fields[componentID] = compMemory
+		string(ComponentDataStatus): data.Map{
+			"started":   data.NewBoolean(false),
+			"skipped":   data.NewBoolean(false),
+			"errored":   data.NewBoolean(false),
+			"completed": data.NewBoolean(false),
+		},
+	}
+	wfm.Data[batchIdx].(data.Map)[componentID] = compMemory
 }
 
-func (wfm *workflowMemory) SetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType, value data.Value) (err error) {
+func (wfm *workflowMemory) SetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType, value value.Value) (err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	if _, ok := wfm.Data[batchIdx].(*data.Map).Fields[componentID]; !ok {
+	if _, ok := wfm.Data[batchIdx].(data.Map)[componentID]; !ok {
 		return fmt.Errorf("component %s not exist", componentID)
 	}
-	wfm.Data[batchIdx].(*data.Map).Fields[componentID].(*data.Map).Fields[string(t)] = value
+	wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)[string(t)] = value
 
 	if t == ComponentDataInput {
 		if err := wfm.sendComponentEvent(ctx, batchIdx, componentID, ComponentInputUpdated); err != nil {
@@ -295,24 +291,24 @@ func (wfm *workflowMemory) SetComponentData(ctx context.Context, batchIdx int, c
 	}
 	return nil
 }
-func (wfm *workflowMemory) GetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType) (value data.Value, err error) {
+func (wfm *workflowMemory) GetComponentData(ctx context.Context, batchIdx int, componentID string, t ComponentDataType) (value value.Value, err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	if _, ok := wfm.Data[batchIdx].(*data.Map).Fields[componentID]; !ok {
+	if _, ok := wfm.Data[batchIdx].(data.Map)[componentID]; !ok {
 		return nil, fmt.Errorf("component %s not exist", componentID)
 	}
-	return wfm.Data[batchIdx].(*data.Map).Fields[componentID].(*data.Map).Fields[string(t)], nil
+	return wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)[string(t)], nil
 }
 
 func (wfm *workflowMemory) SetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType, value bool) (err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	if _, ok := wfm.Data[batchIdx].(*data.Map).Fields[componentID]; !ok {
+	if _, ok := wfm.Data[batchIdx].(data.Map)[componentID]; !ok {
 		return fmt.Errorf("component %s not exist", componentID)
 	}
-	wfm.Data[batchIdx].(*data.Map).Fields[componentID].(*data.Map).Fields["status"].(*data.Map).Fields[string(t)] = data.NewBoolean(value)
+	wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)["status"].(data.Map)[string(t)] = data.NewBoolean(value)
 
 	if err := wfm.sendComponentEvent(ctx, batchIdx, componentID, ComponentStatusUpdated); err != nil {
 		return err
@@ -324,10 +320,10 @@ func (wfm *workflowMemory) SetComponentErrorMessage(ctx context.Context, batchId
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	if _, ok := wfm.Data[batchIdx].(*data.Map).Fields[componentID]; !ok {
+	if _, ok := wfm.Data[batchIdx].(data.Map)[componentID]; !ok {
 		return fmt.Errorf("component %s not exist", componentID)
 	}
-	wfm.Data[batchIdx].(*data.Map).Fields[componentID].(*data.Map).Fields["error"].(*data.Map).Fields["message"] = data.NewString(msg)
+	wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)["error"].(data.Map)["message"] = data.NewString(msg)
 
 	if err := wfm.sendComponentEvent(ctx, batchIdx, componentID, ComponentErrorUpdated); err != nil {
 		return err
@@ -335,21 +331,21 @@ func (wfm *workflowMemory) SetComponentErrorMessage(ctx context.Context, batchId
 
 	return nil
 }
-func (wfm *workflowMemory) GetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType) (value bool, err error) {
+func (wfm *workflowMemory) GetComponentStatus(ctx context.Context, batchIdx int, componentID string, t ComponentStatusType) (v bool, err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	if _, ok := wfm.Data[batchIdx].(*data.Map).Fields[componentID]; !ok {
+	if _, ok := wfm.Data[batchIdx].(data.Map)[componentID]; !ok {
 		return false, fmt.Errorf("component %s not exist", componentID)
 	}
-	return wfm.Data[batchIdx].(*data.Map).Fields[componentID].(*data.Map).Fields["status"].(*data.Map).Fields[string(t)].(*data.Boolean).GetBoolean(), nil
+	return wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)["status"].(data.Map)[string(t)].(data.Boolean).Boolean(), nil
 }
 
-func (wfm *workflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType, value data.Value) (err error) {
+func (wfm *workflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType, value value.Value) (err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	wfm.Data[batchIdx].(*data.Map).Fields[string(t)] = value
+	wfm.Data[batchIdx].(data.Map)[string(t)] = value
 
 	if wfm.Streaming {
 		// TODO: simplify struct conversion
@@ -389,26 +385,26 @@ func (wfm *workflowMemory) SetPipelineData(ctx context.Context, batchIdx int, t 
 	return nil
 }
 
-func (wfm *workflowMemory) GetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType) (value data.Value, err error) {
+func (wfm *workflowMemory) GetPipelineData(ctx context.Context, batchIdx int, t PipelineDataType) (value value.Value, err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	if v, ok := wfm.Data[batchIdx].(*data.Map).Fields[string(t)]; !ok {
+	if v, ok := wfm.Data[batchIdx].(data.Map)[string(t)]; !ok {
 		return nil, fmt.Errorf("%s not exist", string(t))
 	} else {
 		return v, nil
 	}
 }
 
-func (wfm *workflowMemory) Set(ctx context.Context, batchIdx int, key string, value data.Value) (err error) {
+func (wfm *workflowMemory) Set(ctx context.Context, batchIdx int, key string, value value.Value) (err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
-	wfm.Data[batchIdx].(*data.Map).Fields[key] = value
+	wfm.Data[batchIdx].(data.Map)[key] = value
 	return nil
 }
 
-func (wfm *workflowMemory) Get(ctx context.Context, batchIdx int, path string) (memory data.Value, err error) {
+func (wfm *workflowMemory) Get(ctx context.Context, batchIdx int, path string) (memory value.Value, err error) {
 	wfm.mu.Lock()
 	defer wfm.mu.Unlock()
 
@@ -437,11 +433,11 @@ func (wfm *workflowMemory) GetRecipe() *datamodel.Recipe {
 
 func (wfm *workflowMemory) getComponentEventData(_ context.Context, batchIdx int, componentID string) ComponentEventData {
 	// TODO: simplify struct conversion
-	st := wfm.Data[batchIdx].(*data.Map).Fields[componentID].(*data.Map).Fields["status"].(*data.Map)
-	started := st.Fields[string(ComponentStatusStarted)].(*data.Boolean).GetBoolean()
-	skipped := st.Fields[string(ComponentStatusSkipped)].(*data.Boolean).GetBoolean()
-	errored := st.Fields[string(ComponentStatusErrored)].(*data.Boolean).GetBoolean()
-	completed := st.Fields[string(ComponentStatusCompleted)].(*data.Boolean).GetBoolean()
+	st := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)["status"].(data.Map)
+	started := st[string(ComponentStatusStarted)].(data.Boolean).Boolean()
+	skipped := st[string(ComponentStatusSkipped)].(data.Boolean).Boolean()
+	errored := st[string(ComponentStatusErrored)].(data.Boolean).Boolean()
+	completed := st[string(ComponentStatusCompleted)].(data.Boolean).Boolean()
 
 	return ComponentEventData{
 		UpdateTime:  time.Now(),
@@ -462,7 +458,7 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 		var event *Event
 		switch t {
 		case ComponentInputUpdated:
-			value := wfm.Data[batchIdx].(*data.Map).Fields[componentID].(*data.Map).Fields[string(ComponentDataInput)]
+			value := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)[string(ComponentDataInput)]
 
 			// TODO: simplify struct conversion
 			s, err := value.ToStructValue()
@@ -489,7 +485,7 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 
 		case ComponentOutputUpdated:
 
-			value := wfm.Data[batchIdx].(*data.Map).Fields[componentID].(*data.Map).Fields[string(ComponentDataOutput)]
+			value := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)[string(ComponentDataOutput)]
 
 			// TODO: simplify struct conversion
 			s, err := value.ToStructValue()
@@ -515,13 +511,13 @@ func (wfm *workflowMemory) sendComponentEvent(ctx context.Context, batchIdx int,
 			}
 
 		case ComponentErrorUpdated:
-			message := wfm.Data[batchIdx].(*data.Map).Fields[componentID].(*data.Map).Fields["error"].(*data.Map).Fields["message"].(*data.String)
+			message := wfm.Data[batchIdx].(data.Map)[componentID].(data.Map)["error"].(data.Map)["message"].(data.String)
 			event = &Event{
 				Event: string(ComponentErrorUpdated),
 				Data: ComponentErrorUpdatedEventData{
 					ComponentEventData: wfm.getComponentEventData(ctx, batchIdx, componentID),
 					Error: MessageError{
-						Message: message.GetString(),
+						Message: message.String(),
 					},
 				},
 			}

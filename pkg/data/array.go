@@ -4,24 +4,15 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
-type Array struct {
-	Values []Value
-}
+type Array []value.Value
 
-func NewArray(v []Value) (arr *Array) {
-	if v == nil {
-		v = []Value{}
-	}
-	return &Array{
-		Values: v,
-	}
-}
+func (Array) IsValue() {}
 
-func (Array) isValue() {}
-
-func (a *Array) Get(path string) (v Value, err error) {
+func (a Array) Get(path string) (v value.Value, err error) {
 	if path == "" {
 		return a, nil
 	}
@@ -33,15 +24,15 @@ func (a *Array) Get(path string) (v Value, err error) {
 	if err != nil {
 		return nil, err
 	}
-	if index >= len(a.Values) {
+	if index >= len(a) {
 		return nil, fmt.Errorf("path not found: %s", path)
 	}
 
-	return a.Values[index].Get(remainingPath)
+	return a[index].Get(remainingPath)
 }
 func (a Array) ToStructValue() (v *structpb.Value, err error) {
-	arr := &structpb.ListValue{Values: make([]*structpb.Value, len(a.Values))}
-	for idx, v := range a.Values {
+	arr := &structpb.ListValue{Values: make([]*structpb.Value, len(a))}
+	for idx, v := range a {
 		if v == nil {
 			arr.Values[idx] = structpb.NewNullValue()
 		} else {

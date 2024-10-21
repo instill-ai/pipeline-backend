@@ -5,30 +5,36 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
-type ByteArray struct {
+type byteArrayData struct {
 	Raw []byte
 }
 
-func NewByteArray(b []byte) *ByteArray {
-	return &ByteArray{Raw: b}
+func NewByteArray(b []byte) *byteArrayData {
+	return &byteArrayData{Raw: b}
 }
 
-func (ByteArray) isValue() {}
+func (byteArrayData) IsValue() {}
 
-func (b *ByteArray) GetByteArray() []byte {
+func (b *byteArrayData) ByteArray() []byte {
 	return b.Raw
 }
 
-func (b *ByteArray) Get(path string) (v Value, err error) {
+func (b *byteArrayData) String() (val string) {
+	return base64.StdEncoding.EncodeToString(b.Raw)
+}
+
+func (b *byteArrayData) Get(path string) (v value.Value, err error) {
 	if path == "" {
 		return b, nil
 	}
-	return nil, fmt.Errorf("wrong path %s for ByteArray", path)
+	return nil, fmt.Errorf("wrong path %s for byteArray", path)
 }
 
-func (b ByteArray) ToStructValue() (v *structpb.Value, err error) {
+func (b byteArrayData) ToStructValue() (v *structpb.Value, err error) {
 	v = structpb.NewStringValue(base64.StdEncoding.EncodeToString(b.Raw))
 	return
 }
