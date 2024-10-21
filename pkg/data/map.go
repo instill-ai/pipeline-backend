@@ -4,24 +4,15 @@ import (
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
-type Map struct {
-	Fields map[string]Value
-}
+type Map map[string]value.Value
 
-func NewMap(m map[string]Value) (mp *Map) {
-	if m == nil {
-		m = map[string]Value{}
-	}
-	return &Map{
-		Fields: m,
-	}
-}
+func (Map) IsValue() {}
 
-func (Map) isValue() {}
-
-func (m *Map) Get(path string) (v Value, err error) {
+func (m Map) Get(path string) (v value.Value, err error) {
 
 	if path == "" {
 		return m, nil
@@ -35,7 +26,7 @@ func (m *Map) Get(path string) (v Value, err error) {
 		return nil, err
 	}
 
-	if v, ok := m.Fields[key]; !ok {
+	if v, ok := m[key]; !ok {
 		return nil, fmt.Errorf("path not found: %s", path)
 	} else {
 		return v.Get(remainingPath)
@@ -44,10 +35,10 @@ func (m *Map) Get(path string) (v Value, err error) {
 
 func (m Map) ToStructValue() (v *structpb.Value, err error) {
 	mp := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
-	for k, v := range m.Fields {
+	for k, v := range m {
 		if v != nil {
 			switch v := v.(type) {
-			case *Null:
+			case *nullData:
 			default:
 				mp.Fields[k], err = v.ToStructValue()
 				if err != nil {
