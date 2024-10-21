@@ -133,16 +133,8 @@ func getConfigScopes() []string {
 		} `json:"instillOAuthConfig"`
 	}
 	var setup setupConfig
-	json.Unmarshal(setupJSON, &setup)
+	_ = json.Unmarshal(setupJSON, &setup)
 	return setup.InstillOAuthConfig.Scopes
-}
-
-// Need to get the scopes from the token.json that received from the OAuth2
-// Temporarily, it will be same as the scopes in setup.json.
-// So, we get it from setup.json first. Later, we will get it from token.json
-// after we confirm how we retrieve the scopes from token.json.
-func getScopes(setup *structpb.Struct) []string {
-	return getConfigScopes()
 }
 
 // Execute reads the input from the job, executes the task, and writes the output
@@ -151,6 +143,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
 
+// WithOAuthCredentials sets the OAuth credentials for the component.
 func (c *component) WithOAuthCredentials(s map[string]any) *component {
 	c.instillAICredentials = base.ReadFromGlobalConfig(cfgOAuthCredential, s)
 	return c

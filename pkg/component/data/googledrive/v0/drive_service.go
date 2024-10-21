@@ -102,6 +102,14 @@ func (d *driveService) readFolder(folderUID string, readContent bool) ([]*file, 
 }
 
 func convertDriveFileToComponentFile(driveFile *drive.File) *file {
+	// Google Drive API only can support downloading the binary data.
+	// So, when the file is not binary, we need to export the file as PDF/CSV first.
+	// To make Google Drive Component can seamlessly work with other components, we need to add the file extension to the file name.
+	fileExtension := exportFileExtension(driveFile.MimeType)
+	if fileExtension != "" {
+		driveFile.Name = driveFile.Name + exportFileExtension(driveFile.MimeType)
+	}
+
 	return &file{
 		ID:             driveFile.Id,
 		Name:           driveFile.Name,
