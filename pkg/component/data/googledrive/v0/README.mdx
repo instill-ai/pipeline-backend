@@ -10,13 +10,20 @@ It can carry out the following tasks:
 - [Read File](#read-file)
 - [Read Folder](#read-folder)
 
+
+
 ## Release Stage
 
 `Alpha`
 
+
+
 ## Configuration
 
 The component definition and tasks are defined in the [definition.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googledrive/v0/config/definition.json) and [tasks.json](https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/data/googledrive/v0/config/tasks.json) files respectively.
+
+
+
 
 ## Setup
 
@@ -82,7 +89,7 @@ Read a file content and metadata from Google Drive.
 | Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ` |
 | Name | `name` | string | Name of the file. |
 | Size | `size` | integer | Size of the file in bytes. |
-| Version | `version` | string | Version of the file. |
+| Version | `version` | integer | Version of the file. |
 | Web Content Link | `web-content-link` | string | Link for downloading the content of the file in a browser. |
 | Web View Link | `web-view-link` | string | Link for opening the file in a relevant Google editor or viewer in a browser. Usually, web view link is same as shared link. |
 </div>
@@ -130,8 +137,10 @@ Read metadata and content of files under the specified folder in Google Drive.
 | Modified time | `modified-time` | string | Time when the file was last modified. Format: `YYYY-MM-DDTHH:MM:SSZ` |
 | Name | `name` | string | Name of the file. |
 | Size | `size` | integer | Size of the file in bytes. |
-| Version | `version` | string | Version of the file. |
+| Version | `version` | integer | Version of the file. |
 | Web Content Link | `web-content-link` | string | Link for downloading the content of the file in a browser. |
 | Web View Link | `web-view-link` | string | Link for opening the file in a relevant Google editor or viewer in a browser. Usually, web view link is same as shared link. |
 </div>
 </details>
+
+

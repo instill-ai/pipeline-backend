@@ -18,12 +18,6 @@ type driveService struct {
 	service *drive.Service
 }
 
-// Google Drive API only can support downloading the binary data.
-// So, when the file is not binary, we need to export the file as PDF/CSV first.
-// For example:
-// Google Sheets -> Export as CSV
-// Google Slides -> Export as PDF
-// Google Docs -> Export as PDF
 func (d *driveService) readFile(fileUID string) (*file, error) {
 
 	srv := d.service
@@ -64,7 +58,11 @@ func (d *driveService) readFolder(folderUID string, readContent bool) ([]*file, 
 	for {
 		fileList, err := srv.Files.List().
 			Q(q).
-			Fields("id, name, createdTime, modifiedTime, size, mimeType, md5Checksum, version, webViewLink, webContentLink").
+			// To fetch file from shared drive, we need to set SupportsAllDrives to true.
+			SupportsAllDrives(true).
+			// To fetch file from shared drive, we need to set IncludeItemsFromAllDrives to true.
+			IncludeItemsFromAllDrives(true).
+			Fields("files(id, name, createdTime, modifiedTime, size, mimeType, md5Checksum, version, webViewLink, webContentLink)").
 			PageToken(pageToken).
 			Do()
 
@@ -118,6 +116,12 @@ func convertDriveFileToComponentFile(driveFile *drive.File) *file {
 	}
 }
 
+// Google Drive API only can support downloading the binary data.
+// So, when the file is not binary, we need to export the file as PDF/CSV first.
+// For example:
+// Google Sheets -> Export as CSV
+// Google Slides -> Export as PDF
+// Google Docs -> Export as PDF
 func readFileContent(srv *drive.Service, driveFile *drive.File) (string, error) {
 	exportFormat := exportFormat(driveFile)
 

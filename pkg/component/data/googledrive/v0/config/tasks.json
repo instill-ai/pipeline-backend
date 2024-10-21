@@ -66,7 +66,7 @@
           "instillFormat": "integer",
           "instillUIOrder": 8,
           "title": "Version",
-          "type": "string"
+          "type": "integer"
         },
         "web-view-link": {
           "description": "Link for opening the file in a relevant Google editor or viewer in a browser. Usually, web view link is same as shared link.",
