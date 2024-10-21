@@ -198,5 +198,47 @@
       "title": "Output",
       "type": "object"
     }
+  },
+  "TASK_EDIT_VALUES": {
+    "instillShortDescription": "Edit JSON values.",
+    "input": {
+      "data":{
+        "type":"object",
+        "description":"Original data, which can be a JSON object or array of objects."
+      },
+      "updates":{
+        "type":"array",
+        "description": "An array of objects specifing the value to be updated.",
+        "items":{
+          "type":"object",
+          "properties":{
+            "field":{
+              "type":"string",
+              "description":"The field in the original data whose value needs to be updated, supports nested paths if \"supportDotNotaion\" is true."
+            },
+            "newValue":{
+              "description": "The new value that will replace the current value at specific fields."
+            }
+          }
+        },
+        "supportDotNotaion":{
+          "type":"boolean",
+          "default":"true",
+          "description":"Determines whether to interpret the field as paths using dot notation. If false, field is treated as a literal key."
+        },
+        "conflictResolution":{
+          "type":"string",
+          "enum":["create","skip","error"],
+          "default": "skip",
+          "description": "Defines hot to handle cases where the field does not exist in the data."
+        }
+      }
+    },
+    "output": {
+      "data":{
+        "type": "object",
+        "description": "The modified data with the specified data updated."
+      }
+    }
   }
 }
