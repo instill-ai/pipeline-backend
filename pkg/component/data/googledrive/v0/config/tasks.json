@@ -19,7 +19,7 @@
           "type": "string"
         },
         "content": {
-          "description": "Content of the file.",
+          "description": "Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix.",
           "instillFormat": "string",
           "instillUIMultiline": true,
           "instillUIOrder": 2,
@@ -63,7 +63,7 @@
         },
         "version": {
           "description": "Version of the file.",
-          "instillFormat": "string",
+          "instillFormat": "integer",
           "instillUIOrder": 8,
           "title": "Version",
           "type": "string"

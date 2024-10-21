@@ -74,7 +74,7 @@ Read a file content and metadata from Google Drive.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Content | `content` | string | Content of the file. |
+| Content | `content` | string | Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix. |
 | Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ` |
 | ID | `id` | string | ID of the file. |
 | MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user. |
@@ -122,7 +122,7 @@ Read metadata and content of files under the specified folder in Google Drive.
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Content | `content` | string | Content of the file. |
+| Content | `content` | string | Base64 encoded content of the binary file without the `data:[MIME_TYPE];base64,` prefix. |
 | Created time | `created-time` | string | Time when the file was created. Format: `YYYY-MM-DDTHH:MM:SSZ` |
 | ID | `id` | string | ID of the file. |
 | MD5 checksum | `md5-checksum` | string | MD5 checksum of the file. This reflects every change made to the file on the server, even those not visible to the user. |
