@@ -123,6 +123,9 @@ func (e *ExecutionWrapper) Execute(ctx context.Context, jobs []*Job) (err error)
 
 }
 
+// SequentialExecutor executes the jobs sequentially.
+// We will migrate all the existing components to use ConcurrentExecutor.
+// The SequentialExecutor will be deprecated in the future.
 func SequentialExecutor(ctx context.Context, jobs []*Job, execute func(*structpb.Struct) (*structpb.Struct, error)) error {
 	// The execution takes an array of inputs and returns an array of outputs,
 	// processed sequentially.
@@ -149,6 +152,7 @@ func SequentialExecutor(ctx context.Context, jobs []*Job, execute func(*structpb
 	return nil
 }
 
+// ConcurrentExecutor executes the jobs concurrently.
 func ConcurrentExecutor(ctx context.Context, jobs []*Job, execute func(*structpb.Struct, *Job, context.Context) (*structpb.Struct, error)) error {
 	var wg sync.WaitGroup
 	wg.Add(len(jobs))
