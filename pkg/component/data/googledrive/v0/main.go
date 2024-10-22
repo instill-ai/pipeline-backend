@@ -17,6 +17,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/googledriveclient"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -48,7 +49,7 @@ type execution struct {
 	base.ComponentExecution
 	execute func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
 
-	service IDriveService
+	service googledriveclient.IDriveService
 }
 
 // Init returns an implementation of IComponent that interacts with Google Drive.
@@ -78,7 +79,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 	e := &execution{
 		ComponentExecution: x,
-		service:            &driveService{service: drive},
+		service:            &googledriveclient.DriveService{Service: drive},
 	}
 
 	switch x.Task {
