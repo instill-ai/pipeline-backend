@@ -44,7 +44,7 @@ $ make latest PROFILE=exclude-pipeline # launch all the dependent services excep
 ```sh
 $ cd $MY_WORKSPACE
 $ git clone https://github.com/instill-ai/pipeline-backend && cd pipeline-backend
-$ make build && make dev
+$ make build-dev && make dev
 ```
 
 Now, you have the Go project set up in the container, in which you can compile
