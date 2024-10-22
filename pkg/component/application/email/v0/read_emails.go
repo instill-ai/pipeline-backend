@@ -8,6 +8,7 @@ import (
 	"time"
 	"cmp"
 	"reflect"
+	"sort"
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
 	"github.com/emersion/go-message/mail"
@@ -181,33 +182,32 @@ func fetchEmails(c *imapclient.Client, search Search) ([]Email, error) {
 		return []Email{}, nil
 	}
 
-	emails := make([]Email, cmp.Or(search.Limit, EmailReadingDefaultCapacity) + 1)
+	emails := make([]Email, cmp.Or(search.Limit, EmailReadingDefaultCapacity))
 	ch := make(chan Email)
 	errChan := make(chan error)
 	fetchOptions := &imap.FetchOptions{
 		BodySection: []*imap.FetchItemBodySection{{}},
 	}
 
-	for i := 0; i < len(emails) - 1; i++ {
+	for i := 0; i < len(emails); i++ {
 		var seqSet imap.SeqSet
-		seqSet.AddNum(uint32(len(emails) - i - 1))
+		seqSet.AddNum(uint32(len(emails) - i))
 		go fetchEmail(c, search, seqSet, *fetchOptions, ch, errChan)
 	}
         index := 0
-	for i := 0; i < len(emails) - 1; i++ {
+	for i := 0; i < len(emails); i++ {
 		if err := <-errChan; err != nil {
 			return nil, err
 		}
-		emails[0] = <-ch
-		if (!reflect.DeepEqual(emails[0], Email{})) {
-			index++;
-			for j := index; j > 0; j-- {
-				emails[j] = emails[j - 1]
-			}
+		emails[index] = <-ch
+		if (!reflect.DeepEqual(emails[index], Email{})) {
+			index++ // ignore empty emails
 		}
 	}
 
-	return emails[1:index + 1], nil
+	return sort.Slice(emails[:index], func(i, j int) bool {
+		return strings.Compare(emails[i].Date, emails[j].Date) > 0
+	}), nil
 }
 
 func setEnvelope(email *Email, h mail.Header) {
