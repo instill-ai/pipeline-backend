@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"google.golang.org/api/drive/v3"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
@@ -48,11 +49,14 @@ func (e *execution) readFile(input *structpb.Struct, job *base.Job, ctx context.
 		return nil, fmt.Errorf("extract UID from Google Drive link: %w", err)
 	}
 
-	file, err := e.service.readFile(fileUID)
+	driveFile, content, err := e.service.ReadFile(fileUID)
 
 	if err != nil {
 		return nil, fmt.Errorf("read file from Google Drive: %w", err)
 	}
+
+	file := convertDriveFileToComponentFile(driveFile)
+	file.Content = *content
 
 	output := readFileOutput{
 		File: *file,
@@ -91,10 +95,20 @@ func (e *execution) readFolder(input *structpb.Struct, job *base.Job, ctx contex
 		return nil, fmt.Errorf("extract UID from Google Drive link: %w", err)
 	}
 
-	files, err := e.service.readFolder(folderUID, inputStruct.ReadContent)
+	driveFiles, contents, err := e.service.ReadFolder(folderUID, inputStruct.ReadContent)
 
 	if err != nil {
 		return nil, fmt.Errorf("read folder from Google Drive: %w", err)
+	}
+
+	files := make([]*file, len(driveFiles))
+
+	for i, driveFile := range driveFiles {
+		file := convertDriveFileToComponentFile(driveFile)
+		if inputStruct.ReadContent {
+			file.Content = *contents[i]
+		}
+		files[i] = file
 	}
 
 	output := readFolderOutput{
@@ -120,15 +134,13 @@ func (e *execution) readFolder(input *structpb.Struct, job *base.Job, ctx contex
 // So, it means the Google Form, Google Map and other types of links are not supported
 func extractUIDFromSharedLink(driveLink string) (string, error) {
 	patterns := map[string]string{
-		"file":         "/file/d/",
 		"folder":       "/drive/folders/",
+		"file":         "/file/d/",
 		"spreadsheet":  "/spreadsheets/d/",
 		"document":     "/document/d/",
 		"presentation": "/presentation/d/",
-		"colab":        "colab.research.google.com/drive/",
 	}
 
-	// Iterate over the patterns to find a match
 	for _, pattern := range patterns {
 		if strings.Contains(driveLink, pattern) {
 			parts := strings.Split(driveLink, pattern)
@@ -144,4 +156,45 @@ func extractUIDFromSharedLink(driveLink string) (string, error) {
 	}
 
 	return "", fmt.Errorf("unrecognized Google Drive link format")
+}
+
+func convertDriveFileToComponentFile(driveFile *drive.File) *file {
+	// Google Drive API only can support downloading the binary data.
+	// So, when the file is not binary, we need to export the file as PDF/CSV first.
+	// To make Google Drive Component can seamlessly work with other components, we need to add the file extension to the file name.
+	fileExtension := exportFileExtension(driveFile.MimeType)
+	if fileExtension != "" {
+		driveFile.Name = addFileExtension(driveFile.Name, fileExtension)
+	}
+
+	return &file{
+		ID:             driveFile.Id,
+		Name:           driveFile.Name,
+		CreatedTime:    driveFile.CreatedTime,
+		ModifiedTime:   driveFile.ModifiedTime,
+		Size:           driveFile.Size,
+		MimeType:       driveFile.MimeType,
+		Md5Checksum:    driveFile.Md5Checksum,
+		Version:        driveFile.Version,
+		WebViewLink:    driveFile.WebViewLink,
+		WebContentLink: driveFile.WebContentLink,
+	}
+}
+
+func exportFileExtension(mimeType string) string {
+	switch mimeType {
+	case "application/vnd.google-apps.spreadsheet":
+		return ".csv"
+	case "application/vnd.google-apps.presentation", "application/vnd.google-apps.document":
+		return ".pdf"
+	default:
+		return ""
+	}
+}
+
+func addFileExtension(fileName, Extension string) string {
+	if !strings.HasSuffix(fileName, Extension) {
+		return fileName + Extension
+	}
+	return fileName
 }
