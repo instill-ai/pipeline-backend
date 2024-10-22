@@ -23,6 +23,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"golang.org/x/image/draw"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -558,9 +560,13 @@ func (c *converter) ConvertPipelineToPB(ctx context.Context, dbPipelineOrigin *d
 		pbSharing.ShareCode.Code = dbPipeline.ShareCode
 	}
 
-	tags := []string{}
-	for _, t := range dbPipeline.Tags {
-		tags = append(tags, t.TagName)
+	tags := make([]string, len(dbPipeline.Tags))
+	for i, tag := range dbPipeline.TagNames() {
+		if slices.Contains(preserveTags, tag) {
+			tags[i] = cases.Title(language.English).String(tag)
+		} else {
+			tags[i] = tag
+		}
 	}
 
 	var pbRecipe *structpb.Struct
