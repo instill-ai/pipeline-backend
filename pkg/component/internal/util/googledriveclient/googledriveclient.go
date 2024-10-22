@@ -80,14 +80,8 @@ func (d *DriveService) ReadFolder(folderUID string, readContent bool) ([]*drive.
 		}
 	}
 
-	files := make([]*drive.File, 0, len(allFiles))
-
-	for i, f := range allFiles {
-		files[i] = f
-	}
-
 	if !readContent {
-		return files, nil, nil
+		return allFiles, nil, nil
 	}
 
 	contents := make([]*string, 0, len(allFiles))
@@ -102,7 +96,7 @@ func (d *DriveService) ReadFolder(folderUID string, readContent bool) ([]*drive.
 		contents[i] = &content
 	}
 
-	return files, contents, nil
+	return allFiles, contents, nil
 
 }
 
