@@ -34,6 +34,8 @@ var (
 	sharedFileLink     = fmt.Sprintf("https://drive.google.com/file/d/%s/view?usp=drivesdk", fakeID)
 	webViewFileLink    = fmt.Sprintf("https://drive.google.com/file/d/%s/view?usp=drivesdk", fakeID)
 	webContentFileLink = fmt.Sprintf("https://drive.google.com/uc?id=%s&export=download", fakeID)
+
+	sharedFolderLink = fmt.Sprintf("https://drive.google.com/drive/folders/%s?usp=drive_link", fakeID)
 )
 
 func Test_Execute_ReadFile(t *testing.T) {
@@ -49,6 +51,7 @@ func Test_Execute_ReadFile(t *testing.T) {
 		in            map[string]any
 		fakeDriveFile *drive.File
 		want          map[string]any
+		wantErr       string
 	}{
 		{
 			name: "ok - read CSV file with file extension",
@@ -213,6 +216,13 @@ func Test_Execute_ReadFile(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "nok - read file with invalid shared link",
+			in: map[string]any{
+				"shared-link": sharedFolderLink,
+			},
+			wantErr: "the input link is a folder link, please use the read-folder operation",
+		},
 	}
 
 	bc := base.Component{}
@@ -252,9 +262,11 @@ func Test_Execute_ReadFile(t *testing.T) {
 			fakeDriveFile := tc.fakeDriveFile
 			fakeContent := "fake content"
 
-			mockDriveService.ReadFileMock.
-				Expect(fakeID).
-				Return(fakeDriveFile, &fakeContent, nil)
+			if tc.wantErr == "" {
+				mockDriveService.ReadFileMock.
+					Expect(fakeID).
+					Return(fakeDriveFile, &fakeContent, nil)
+			}
 
 			pbIn, err := structpb.NewStruct(tc.in)
 			c.Assert(err, qt.IsNil)
@@ -272,7 +284,11 @@ func Test_Execute_ReadFile(t *testing.T) {
 			})
 
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-				c.Check(err, qt.IsNil)
+				if tc.wantErr != "" {
+					c.Check(err, qt.ErrorMatches, tc.wantErr)
+				} else {
+					c.Check(err, qt.IsNil)
+				}
 			})
 
 			err = exec.Execute(ctx, []*base.Job{job})
@@ -296,11 +312,12 @@ func Test_Execute_ReadFolder(t *testing.T) {
 		fakeDriveFiles []*drive.File
 		fakeContents   []*string
 		want           map[string]any
+		wantErr        string
 	}{
 		{
 			name: "ok - read folder with content",
 			in: map[string]any{
-				"shared-link":  sharedSheetLink,
+				"shared-link":  sharedFolderLink,
 				"read-content": true,
 			},
 			fakeDriveFiles: []*drive.File{
@@ -341,7 +358,7 @@ func Test_Execute_ReadFolder(t *testing.T) {
 		{
 			name: "ok - read folder without content",
 			in: map[string]any{
-				"shared-link":  sharedSheetLink,
+				"shared-link":  sharedFolderLink,
 				"read-content": false,
 			},
 			fakeDriveFiles: []*drive.File{
@@ -376,6 +393,14 @@ func Test_Execute_ReadFolder(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			name: "nok - read file",
+			in: map[string]any{
+				"shared-link":  sharedSheetLink,
+				"read-content": false,
+			},
+			wantErr: "the input link is not a folder link, please check the link",
 		},
 	}
 
@@ -419,9 +444,11 @@ func Test_Execute_ReadFolder(t *testing.T) {
 
 			readContent := tc.in["read-content"].(bool)
 
-			mockDriveService.ReadFolderMock.
-				Expect(fakeID, readContent).
-				Return(fakeDriveFiles, fakeContents, nil)
+			if tc.wantErr == "" {
+				mockDriveService.ReadFolderMock.
+					Expect(fakeID, readContent).
+					Return(fakeDriveFiles, fakeContents, nil)
+			}
 
 			pbIn, err := structpb.NewStruct(tc.in)
 			c.Assert(err, qt.IsNil)
@@ -439,7 +466,11 @@ func Test_Execute_ReadFolder(t *testing.T) {
 			})
 
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-				c.Check(err, qt.IsNil)
+				if tc.wantErr != "" {
+					c.Check(err, qt.ErrorMatches, tc.wantErr)
+				} else {
+					c.Check(err, qt.IsNil)
+				}
 			})
 
 			err = exec.Execute(ctx, []*base.Job{job})
