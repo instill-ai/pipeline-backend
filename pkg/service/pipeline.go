@@ -185,6 +185,25 @@ func (s *service) CreateNamespacePipeline(ctx context.Context, ns resource.Names
 	if err != nil {
 		return nil, err
 	}
+	toCreatedTags := pbPipeline.GetTags()
+	toBeCreatedTagNames := make([]string, 0, len(toCreatedTags))
+	for _, tag := range toCreatedTags {
+		tag = strings.ToLower(tag)
+		if !slices.Contains(preserveTags, tag) {
+			toBeCreatedTagNames = append(toBeCreatedTagNames, tag)
+		}
+	}
+
+	if len(toBeCreatedTagNames) > 0 {
+		err = s.repository.CreatePipelineTags(ctx, dbCreatedPipeline.UID, toBeCreatedTagNames)
+		if err != nil {
+			return nil, err
+		}
+		dbCreatedPipeline, err = s.repository.GetNamespacePipelineByID(ctx, ownerPermalink, dbPipeline.ID, false, true)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	pipeline, err := s.converter.ConvertPipelineToPB(ctx, dbCreatedPipeline, pipelinepb.Pipeline_VIEW_FULL, false, true)
 	if err != nil {
@@ -397,8 +416,14 @@ func (s *service) UpdateNamespacePipelineByID(ctx context.Context, ns resource.N
 	}
 
 	toUpdTags := toUpdPipeline.GetTags()
-
+	for i := range toUpdTags {
+		toUpdTags[i] = strings.ToLower(toUpdTags[i])
+	}
 	currentTags := existingPipeline.TagNames()
+	for i := range currentTags {
+		currentTags[i] = strings.ToLower(currentTags[i])
+	}
+
 	toBeCreatedTagNames := make([]string, 0, len(toUpdTags))
 	for _, tag := range toUpdTags {
 		if !slices.Contains(currentTags, tag) && !slices.Contains(preserveTags, tag) {
