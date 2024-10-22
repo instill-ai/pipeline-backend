@@ -7,10 +7,11 @@ import (
 	"os"
 	"testing"
 
-	qt "github.com/frankban/quicktest"
 	"github.com/gojuno/minimock/v3"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
