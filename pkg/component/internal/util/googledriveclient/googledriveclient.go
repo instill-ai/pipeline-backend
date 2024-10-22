@@ -1,4 +1,4 @@
-package googledrive
+package googledriveclient
 
 import (
 	"encoding/base64"
@@ -9,18 +9,22 @@ import (
 	"google.golang.org/api/drive/v3"
 )
 
+// IDriveService is an interface for interacting with Google Drive.
 type IDriveService interface {
-	readFile(fileUID string) (*file, error)
-	readFolder(folderUID string, readContent bool) ([]*file, error)
+	ReadFile(fileUID string) (*drive.File, *string, error)
+	ReadFolder(folderUID string, readContent bool) ([]*drive.File, []*string, error)
 }
 
-type driveService struct {
-	service *drive.Service
+// DriveService is a struct that implements IDriveService.
+type DriveService struct {
+	// Service is the Google Drive service.
+	Service *drive.Service
 }
 
-func (d *driveService) readFile(fileUID string) (*file, error) {
+// ReadFile reads a file from Google Drive and get the file content passed as base64.
+func (d *DriveService) ReadFile(fileUID string) (*drive.File, *string, error) {
 
-	srv := d.service
+	srv := d.Service
 
 	driveFile, err := srv.Files.Get(fileUID).
 		// We will need to confirm if we want to support all drives.
@@ -30,24 +34,21 @@ func (d *driveService) readFile(fileUID string) (*file, error) {
 		Do()
 
 	if err != nil {
-		return nil, fmt.Errorf("fetch fetch metadata of file: %w", err)
+		return nil, nil, fmt.Errorf("fetch fetch metadata of file: %w", err)
 	}
-
-	file := convertDriveFileToComponentFile(driveFile)
 
 	base64Content, err := readFileContent(srv, driveFile)
 
 	if err != nil {
-		return nil, fmt.Errorf("read file content: %w", err)
+		return nil, nil, fmt.Errorf("read file content: %w", err)
 	}
 
-	file.Content = base64Content
-
-	return file, nil
+	return driveFile, &base64Content, nil
 }
 
-func (d *driveService) readFolder(folderUID string, readContent bool) ([]*file, error) {
-	srv := d.service
+// ReadFolder reads a folder from Google Drive and get the files in the folder. If readContent is true, the file content will be passed as base64.
+func (d *DriveService) ReadFolder(folderUID string, readContent bool) ([]*drive.File, []*string, error) {
+	srv := d.Service
 
 	q := fmt.Sprintf("'%s' in parents", folderUID)
 
@@ -67,7 +68,7 @@ func (d *driveService) readFolder(folderUID string, readContent bool) ([]*file, 
 			Do()
 
 		if err != nil {
-			return nil, fmt.Errorf("fetch metadata of files: %w", err)
+			return nil, nil, fmt.Errorf("fetch metadata of files: %w", err)
 		}
 
 		allFiles = append(allFiles, fileList.Files...)
@@ -79,49 +80,30 @@ func (d *driveService) readFolder(folderUID string, readContent bool) ([]*file, 
 		}
 	}
 
-	files := make([]*file, 0, len(allFiles))
+	files := make([]*drive.File, 0, len(allFiles))
 
-	for _, f := range allFiles {
-		file := convertDriveFileToComponentFile(f)
+	for i, f := range allFiles {
+		files[i] = f
+	}
 
-		if readContent {
-			base64Content, err := readFileContent(srv, f)
+	if !readContent {
+		return files, nil, nil
+	}
 
-			if err != nil {
-				return nil, fmt.Errorf("read file content: %w", err)
-			}
+	contents := make([]*string, 0, len(allFiles))
 
-			file.Content = base64Content
+	for i, f := range allFiles {
+		content, err := readFileContent(srv, f)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("read file content: %w", err)
 		}
 
-		files = append(files, file)
+		contents[i] = &content
 	}
 
-	return files, nil
+	return files, contents, nil
 
-}
-
-func convertDriveFileToComponentFile(driveFile *drive.File) *file {
-	// Google Drive API only can support downloading the binary data.
-	// So, when the file is not binary, we need to export the file as PDF/CSV first.
-	// To make Google Drive Component can seamlessly work with other components, we need to add the file extension to the file name.
-	fileExtension := exportFileExtension(driveFile.MimeType)
-	if fileExtension != "" {
-		driveFile.Name = driveFile.Name + exportFileExtension(driveFile.MimeType)
-	}
-
-	return &file{
-		ID:             driveFile.Id,
-		Name:           driveFile.Name,
-		CreatedTime:    driveFile.CreatedTime,
-		ModifiedTime:   driveFile.ModifiedTime,
-		Size:           driveFile.Size,
-		MimeType:       driveFile.MimeType,
-		Md5Checksum:    driveFile.Md5Checksum,
-		Version:        driveFile.Version,
-		WebViewLink:    driveFile.WebViewLink,
-		WebContentLink: driveFile.WebContentLink,
-	}
 }
 
 // Google Drive API only can support downloading the binary data.
@@ -164,17 +146,6 @@ func exportFormat(file *drive.File) string {
 		return "text/csv"
 	case "application/vnd.google-apps.presentation", "application/vnd.google-apps.document":
 		return "application/pdf"
-	default:
-		return ""
-	}
-}
-
-func exportFileExtension(mimeType string) string {
-	switch mimeType {
-	case "application/vnd.google-apps.spreadsheet":
-		return ".csv"
-	case "application/vnd.google-apps.presentation", "application/vnd.google-apps.document":
-		return ".pdf"
 	default:
 		return ""
 	}
