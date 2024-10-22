@@ -86,14 +86,13 @@ func (d *DriveService) ReadFolder(folderUID string, readContent bool) ([]*drive.
 
 	contents := make([]*string, 0, len(allFiles))
 
-	for i, f := range allFiles {
+	for _, f := range allFiles {
 		content, err := readFileContent(srv, f)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("read file content: %w", err)
 		}
-
-		contents[i] = &content
+		contents = append(contents, &content)
 	}
 
 	return allFiles, contents, nil
