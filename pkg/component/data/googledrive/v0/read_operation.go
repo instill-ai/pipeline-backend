@@ -43,6 +43,10 @@ func (e *execution) readFile(input *structpb.Struct, job *base.Job, ctx context.
 		return nil, fmt.Errorf("convert input to struct: %w", err)
 	}
 
+	if isFolder(inputStruct.SharedLink) {
+		return nil, fmt.Errorf("the input link is a folder link, please use the read-folder operation")
+	}
+
 	fileUID, err := extractUIDFromSharedLink(inputStruct.SharedLink)
 
 	if err != nil {
@@ -87,6 +91,10 @@ func (e *execution) readFolder(input *structpb.Struct, job *base.Job, ctx contex
 
 	if err != nil {
 		return nil, fmt.Errorf("convert input to struct: %w", err)
+	}
+
+	if !isFolder(inputStruct.SharedLink) {
+		return nil, fmt.Errorf("the input link is not a folder link, please check the link")
 	}
 
 	folderUID, err := extractUIDFromSharedLink(inputStruct.SharedLink)
@@ -156,6 +164,10 @@ func extractUIDFromSharedLink(driveLink string) (string, error) {
 	}
 
 	return "", fmt.Errorf("unrecognized Google Drive link format")
+}
+
+func isFolder(link string) bool {
+	return strings.Contains(link, "/drive/folders/")
 }
 
 func convertDriveFileToComponentFile(driveFile *drive.File) *file {
