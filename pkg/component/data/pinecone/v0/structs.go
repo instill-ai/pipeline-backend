@@ -92,7 +92,7 @@ type rerankInput struct {
 	//ModelName string   `json:"model-name"`
 	Query     string   `json:"query"`
 	Documents []string `json:"documents"`
-	TopN      int      `json:"top_n"`
+	TopN      int      `json:"top-n"`
 }
 
 func (r *rerankInput) asRequest() *rerankReq {
