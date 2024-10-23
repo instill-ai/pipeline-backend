@@ -45,6 +45,10 @@ func (i *CrawlWebsiteInput) preset() {
 	if i.MaxK <= 0 {
 		// When the users set to 0, it means infinite.
 		// However, there is performance issue when we set it to infinite.
+		// The issue may come from the conflict of goruntine and colly library.
+		// We have not targeted the specific reason of the issue.
+		// We set 120 seconds as the timeout in CrawlSite function.
+		// After testing, we found that we can crawl around 8000 pages in 120 seconds.
 		// So, we set the default value to solve performance issue easily.
 		i.MaxK = 8000
 	}
@@ -85,9 +89,9 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 	// Wont be called if error occurs
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		mu.Lock()
+		defer mu.Unlock()
 
 		if ctx.Err() != nil {
-			mu.Unlock()
 			return
 		}
 
@@ -96,19 +100,16 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		// However, when K is big, the output length could be less than K.
 		// So, I set twice the MaxK to stop the scraping.
 		if len(pageLinks) >= inputStruct.MaxK*getPageTimes(inputStruct.MaxK) {
-			mu.Unlock()
 			return
 		}
 
 		link := e.Attr("href")
 
 		if util.InSlice(pageLinks, link) {
-			mu.Unlock()
 			return
 		}
 
 		pageLinks = append(pageLinks, link)
-		mu.Unlock()
 
 		_ = e.Request.Visit(link)
 	})
@@ -120,15 +121,13 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 
 	c.OnRequest(func(r *colly.Request) {
 		mu.Lock()
+		defer mu.Unlock()
 
 		// Before length of output page is over, we should always send request.
 		if (len(output.Pages) >= inputStruct.MaxK) || ctx.Err() != nil {
 			r.Abort()
-			mu.Unlock()
 			return
 		}
-
-		mu.Unlock()
 		// Set a random user agent to avoid being blocked by websites
 		r.Headers.Set("User-Agent", randomString())
 	})
@@ -157,20 +156,18 @@ func (e *execution) CrawlWebsite(input *structpb.Struct) (*structpb.Struct, erro
 		page.Title = title
 
 		mu.Lock()
+		defer mu.Unlock()
 		// If we do not set this condition, the length of output.Pages could be over the limit.
 		if len(output.Pages) < inputStruct.MaxK {
 			output.Pages = append(output.Pages, page)
 
 			// If the length of output.Pages is equal to MaxK, we should stop the scraping.
 			if len(output.Pages) == inputStruct.MaxK {
-				mu.Unlock()
 				cancel()
 				return
 			}
-			mu.Unlock()
 			return
 		}
-		mu.Unlock()
 		cancel()
 
 	})

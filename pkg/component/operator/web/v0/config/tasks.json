@@ -26,7 +26,7 @@
     }
   },
   "TASK_CRAWL_SITE": {
-    "instillShortDescription": "This task involves systematically navigating through a website, starting from a designated page (typically the homepage), and following internal links to discover and retrieve page titles and URLs. Note that this process only gathers links and titles from multiple pages; it does not extract the content of the pages themselves. If you need to collect specific content from individual pages, please use the [Scrape Page](#scrape-page) task instead.",
+    "instillShortDescription": "This task involves systematically navigating through a website, starting from a designated page (typically the homepage), and following internal links to discover and retrieve page titles and URLs. The process is limited to 120 seconds and only collects links and titles from multiple pages; it does not extract the content of the pages themselves. If you need to collect specific content from individual pages, please use the Scrape Page task instead.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
