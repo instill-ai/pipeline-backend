@@ -9,6 +9,7 @@ The Pinecone component is a data component that allows users to build and search
 It can carry out the following tasks:
 - [Query](#query)
 - [Upsert](#upsert)
+- [Rerank](#rerank)
 
 
 
@@ -40,7 +41,7 @@ ${connection.<my-connection-id>}`.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | API Key (required) | `api-key` | string | Fill in your Pinecone AI API key. You can create an api key in Pinecone Console.  |
-| Pinecone Base URL (required) | `url` | string | Fill in your Pinecone base URL. It is in the form.  |
+| Pinecone Index URL | `url` | string | Fill in your Pinecone index URL. It is in the form.  |
 
 </div>
 
@@ -123,7 +124,7 @@ Writes vectors into a namespace. If a new value is upserted for an existing vect
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Upserted Count | `upserted-count` | integer | Number of records modified or added. |
+| Upserted Count | `upserted-count` | integer | Number of records modified or added |
 </div>
 
 
