@@ -23,7 +23,7 @@ jobs:
           - 5432:5432
     steps:
       - name: Install operator dependencies
-        run: sudo apt-get update -y && sudo apt-get install poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice ffmpeg chromium qpdf -y
+        run: sudo apt-get update -y && sudo apt-get install poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice ffmpeg chromium-bsu qpdf -y
 
       - uses: actions/checkout@v3
         with:
