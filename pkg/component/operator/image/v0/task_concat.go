@@ -7,40 +7,27 @@ import (
 	"image/draw"
 	"math"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-type ConcatInput struct {
-	Images     []base64Image `json:"images"`
-	GridWidth  int           `json:"grid-width"`
-	GridHeight int           `json:"grid-height"`
-	Padding    int           `json:"padding"`
-}
-
-type ConcatOutput struct {
-	Image base64Image `json:"image"`
-}
-
-func concat(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func concat(ctx context.Context, job *base.Job) error {
 	// Parse input
-	var inputStruct ConcatInput
-	if err := base.ConvertFromStructpb(input, &inputStruct); err != nil {
-		return nil, fmt.Errorf("error converting input: %v", err)
+	var inputStruct concatInput
+	if err := job.Input.ReadData(ctx, &inputStruct); err != nil {
+		return err
 	}
 
 	// Check if images are provided
 	if len(inputStruct.Images) == 0 {
-		return nil, fmt.Errorf("no images provided")
+		return fmt.Errorf("no images provided")
 	}
 
 	// Decode images
 	images := make([]image.Image, len(inputStruct.Images))
-	for i, base64Img := range inputStruct.Images {
-		img, err := decodeBase64Image(string(base64Img))
+	for i, img := range inputStruct.Images {
+		img, err := decodeImage(img)
 		if err != nil {
-			return nil, fmt.Errorf("error decoding image %d: %v", i, err)
+			return err
 		}
 		images[i] = img
 	}
@@ -67,18 +54,20 @@ func concat(input *structpb.Struct, job *base.Job, ctx context.Context) (*struct
 		draw.Draw(output, image.Rect(x, y, x+imgWidth, y+imgHeight), img, image.Point{}, draw.Over)
 	}
 
-	// Encode output image
-	base64Output, err := encodeBase64Image(output)
+	imgData, err := encodeImage(output)
 	if err != nil {
-		return nil, fmt.Errorf("error encoding output image: %v", err)
+		return err
 	}
 
-	// Prepare output
-	outputStruct := ConcatOutput{
-		Image: base64Image(fmt.Sprintf("data:image/png;base64,%s", base64Output)),
+	outputData := concatOutput{
+		Image: imgData,
 	}
 
-	return base.ConvertToStructpb(outputStruct)
+	if err := job.Output.WriteData(ctx, outputData); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func determineGridDimensions(imageCount, gridWidth, gridHeight int) (int, int) {

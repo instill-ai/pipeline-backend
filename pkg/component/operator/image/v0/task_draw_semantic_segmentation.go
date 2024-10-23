@@ -9,24 +9,9 @@ import (
 	"strings"
 
 	"github.com/fogleman/gg"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
-
-type semanticSegmentationStuff struct {
-	Category string `json:"category"`
-	RLE      string `json:"rle"`
-}
-
-type drawSemanticSegmentationInput struct {
-	Image  base64Image                  `json:"image"`
-	Stuffs []*semanticSegmentationStuff `json:"stuffs"`
-}
-
-type drawSemanticSegmentationOutput struct {
-	Image base64Image `json:"image"`
-}
 
 func drawSemanticMask(img *image.RGBA, rle string, colorSeed int) error {
 	// Split the string by commas to get the individual number strings.
@@ -80,36 +65,37 @@ func drawSemanticMask(img *image.RGBA, rle string, colorSeed int) error {
 	return nil
 }
 
-func drawSemanticSegmentation(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
-
-	inputStruct := drawSemanticSegmentationInput{}
-
-	err := base.ConvertFromStructpb(input, &inputStruct)
-	if err != nil {
-		return nil, fmt.Errorf("error converting input to struct: %v", err)
+func drawSemanticSegmentation(ctx context.Context, job *base.Job) error {
+	var inputStruct drawSemanticSegmentationInput
+	if err := job.Input.ReadData(ctx, &inputStruct); err != nil {
+		return err
 	}
 
-	img, err := decodeBase64Image(string(inputStruct.Image))
+	img, err := decodeImage(inputStruct.Image)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding image: %v", err)
+		return err
 	}
 
 	imgRGBA := convertToRGBA(img)
 
 	for idx, stuff := range inputStruct.Stuffs {
 		if err := drawSemanticMask(imgRGBA, stuff.RLE, idx); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	base64Img, err := encodeBase64Image(imgRGBA)
+	imgData, err := encodeImage(imgRGBA)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	output := drawSemanticSegmentationOutput{
-		Image: base64Image(fmt.Sprintf("data:image/png;base64,%s", base64Img)),
+	outputData := drawSemanticSegmentationOutput{
+		Image: imgData,
 	}
 
-	return base.ConvertToStructpb(output)
+	if err := job.Output.WriteData(ctx, outputData); err != nil {
+		return err
+	}
+
+	return nil
 }
