@@ -1,7 +1,8 @@
 {
   "availableTasks": [
     "TASK_QUERY",
-    "TASK_UPSERT"
+    "TASK_UPSERT",
+    "TASK_RERANK"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/data/pinecone",
