@@ -88,13 +88,42 @@ func unmarshalString(v format.String, field reflect.Value) error {
 		}
 		return unmarshalString(v, field.Elem())
 	default:
-		if field.Type() == reflect.TypeOf(v) || field.Type() == reflect.TypeOf((*format.String)(nil)).Elem() {
+		switch field.Type() {
+
+		// If the string is a URL, create a file from the URL
+		case reflect.TypeOf((*format.Image)(nil)).Elem(),
+			reflect.TypeOf((*format.Audio)(nil)).Elem(),
+			reflect.TypeOf((*format.Video)(nil)).Elem(),
+			reflect.TypeOf((*format.Document)(nil)).Elem(),
+			reflect.TypeOf((*format.File)(nil)).Elem():
+			f, err := createFileFromURL(field.Type(), v.String())
+			if err == nil {
+				field.Set(reflect.ValueOf(f))
+				return nil
+			}
+		case reflect.TypeOf(v), reflect.TypeOf((*format.String)(nil)).Elem():
 			field.Set(reflect.ValueOf(v))
-		} else {
+		default:
 			return fmt.Errorf("cannot unmarshal String into %v", field.Type())
 		}
 	}
 	return nil
+}
+
+func createFileFromURL(t reflect.Type, url string) (format.Value, error) {
+	switch t {
+	case reflect.TypeOf((*format.Image)(nil)).Elem():
+		return NewImageFromURL(url)
+	case reflect.TypeOf((*format.Audio)(nil)).Elem():
+		return NewAudioFromURL(url)
+	case reflect.TypeOf((*format.Video)(nil)).Elem():
+		return NewVideoFromURL(url)
+	case reflect.TypeOf((*format.Document)(nil)).Elem():
+		return NewDocumentFromURL(url)
+	case reflect.TypeOf((*format.File)(nil)).Elem():
+		return NewFileFromURL(url)
+	}
+	return nil, fmt.Errorf("unsupported type: %v", t)
 }
 
 // unmarshalBoolean handles unmarshaling of Boolean values.
@@ -147,12 +176,8 @@ func unmarshalArray(v Array, field reflect.Value) error {
 	slice := reflect.MakeSlice(field.Type(), len(v), len(v))
 	for i, elem := range v {
 		elemValue := slice.Index(i)
-		if elemValue.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
-			elemValue.Set(reflect.ValueOf(elem))
-		} else {
-			if err := unmarshalValue(elem, elemValue); err != nil {
-				return fmt.Errorf("error unmarshaling array element %d: %w", i, err)
-			}
+		if err := unmarshalValue(elem, elemValue); err != nil {
+			return fmt.Errorf("error unmarshaling array element %d: %w", i, err)
 		}
 	}
 	field.Set(slice)
@@ -184,12 +209,8 @@ func unmarshalToReflectMap(v Map, field reflect.Value) error {
 		elemType := field.Type().Elem()
 		elemValue := reflect.New(elemType).Elem()
 
-		if elemType.Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
-			elemValue.Set(reflect.ValueOf(val))
-		} else {
-			if err := unmarshalValue(val, elemValue); err != nil {
-				return fmt.Errorf("error unmarshaling map value for key %s: %w", k, err)
-			}
+		if err := unmarshalValue(val, elemValue); err != nil {
+			return fmt.Errorf("error unmarshaling map value for key %s: %w", k, err)
 		}
 
 		mapValue.SetMapIndex(keyValue, elemValue)
