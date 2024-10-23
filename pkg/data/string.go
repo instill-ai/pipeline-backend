@@ -5,7 +5,8 @@ import (
 
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 )
 
 type stringData struct {
@@ -23,11 +24,11 @@ func (s *stringData) String() string {
 	return s.Raw
 }
 
-func (s *stringData) Get(path string) (v value.Value, err error) {
-	if path == "" {
+func (s *stringData) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
 		return s, nil
 	}
-	return nil, fmt.Errorf("wrong path %s for String", path)
+	return nil, fmt.Errorf("path not found: %s", p)
 }
 
 func (s stringData) ToStructValue() (v *structpb.Value, err error) {

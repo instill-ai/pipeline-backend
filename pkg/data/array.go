@@ -5,31 +5,33 @@ import (
 
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 )
 
-type Array []value.Value
+type Array []format.Value
 
 func (Array) IsValue() {}
 
-func (a Array) Get(path string) (v value.Value, err error) {
-	if path == "" {
+func (a Array) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
 		return a, nil
 	}
-	path, err = StandardizePath(path)
-	if err != nil {
-		return nil, err
-	}
-	index, remainingPath, err := trimFirstIndexFromPath(path)
-	if err != nil {
-		return nil, err
-	}
-	if index >= len(a) {
-		return nil, fmt.Errorf("path not found: %s", path)
-	}
 
-	return a[index].Get(remainingPath)
+	firstSeg, remainingPath, err := p.TrimFirst()
+	if err != nil {
+		return nil, err
+	}
+	if firstSeg.SegmentType == path.IndexSegment {
+		index := firstSeg.Index
+		if index >= len(a) {
+			return nil, fmt.Errorf("path not found: %s", p)
+		}
+		return a[index].Get(remainingPath)
+	}
+	return nil, fmt.Errorf("path not found: %s", p)
 }
+
 func (a Array) ToStructValue() (v *structpb.Value, err error) {
 	arr := &structpb.ListValue{Values: make([]*structpb.Value, len(a))}
 	for idx, v := range a {

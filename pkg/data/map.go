@@ -5,32 +5,32 @@ import (
 
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 )
 
-type Map map[string]value.Value
+type Map map[string]format.Value
 
 func (Map) IsValue() {}
 
-func (m Map) Get(path string) (v value.Value, err error) {
-
-	if path == "" {
+func (m Map) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
 		return m, nil
 	}
-	path, err = StandardizePath(path)
-	if err != nil {
-		return nil, err
-	}
-	key, remainingPath, err := trimFirstKeyFromPath(path)
+
+	firstSeg, remainingPath, err := p.TrimFirst()
 	if err != nil {
 		return nil, err
 	}
 
-	if v, ok := m[key]; !ok {
-		return nil, fmt.Errorf("path not found: %s", path)
-	} else {
-		return v.Get(remainingPath)
+	if firstSeg.SegmentType == path.KeySegment {
+		if v, ok := m[firstSeg.Key]; !ok {
+			return nil, fmt.Errorf("path not found: %s", p)
+		} else {
+			return v.Get(remainingPath)
+		}
 	}
+	return nil, fmt.Errorf("path not found: %s", p)
 }
 
 func (m Map) ToStructValue() (v *structpb.Value, err error) {

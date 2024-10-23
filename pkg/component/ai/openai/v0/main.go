@@ -69,7 +69,7 @@ func Init(bc base.Component) *component {
 
 // WithInstillCredentials loads Instill credentials into the component, which
 // can be used to configure it with globally defined parameters instead of with
-// user-defined credential values.
+// user-defined credential format.s.
 func (c *component) WithInstillCredentials(s map[string]any) *component {
 	c.instillAPIKey = base.ReadFromGlobalConfig(cfgAPIKey, s)
 	return c
@@ -93,7 +93,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 // resolveSetup checks whether the component is configured to use the Instill
 // credentials injected during initialization and, if so, returns a new setup
-// with the secret credential values.
+// with the secret credential format.s.
 func (c *component) resolveSetup(setup *structpb.Struct) (*structpb.Struct, bool, error) {
 	if setup == nil || setup.Fields == nil {
 		setup = &structpb.Struct{Fields: map[string]*structpb.Value{}}
@@ -181,7 +181,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 		userContents := []Content{}
 		userContents = append(userContents, Content{Type: "text", Text: &inputStruct.Prompt})
 		for _, image := range inputStruct.Images {
-			i, err := image.DataURI("image/png")
+			i, err := image.DataURI()
 			if err != nil {
 				job.Error.Error(ctx, err)
 				return
@@ -360,7 +360,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 			return
 		}
 
-		audioBytes, err := inputStruct.Audio.Binary("audio/wav")
+		audioBytes, err := inputStruct.Audio.Binary()
 		if err != nil {
 			job.Error.Error(ctx, err)
 			return
