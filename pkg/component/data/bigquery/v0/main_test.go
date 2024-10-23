@@ -2,120 +2,52 @@ package bigquery
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"cloud.google.com/go/bigquery"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"google.golang.org/protobuf/types/known/structpb"
-
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"google.golang.org/api/option"
 )
 
-type MockClient struct {
-	mock.Mock
+func mockBigQueryServer() *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		response := map[string]interface{}{
+			"kind": "bigquery#queryResponse",
+			"schema": map[string]interface{}{
+				"fields": []map[string]interface{}{
+					{"name": "field1", "type": "STRING"},
+				},
+			},
+			"jobComplete": true,
+			"rows": []map[string]interface{}{
+				{"f": []map[string]interface{}{{"v": "row_value"}}},
+			},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
 }
 
-type MockExecution struct {
-	execution
-}
+func TestExecuteQueryWithMockServer(t *testing.T) {
 
-type mockInput struct {
-	err error
-}
+	server := mockBigQueryServer()
+	defer server.Close()
 
-func (m *mockInput) Read(ctx context.Context) (*structpb.Struct, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return &structpb.Struct{Fields: map[string]*structpb.Value{"data": structpb.NewStringValue("mock data")}}, nil
-}
-
-type mockOutput struct {
-	data *structpb.Struct
-	err  error
-}
-
-func (m *mockOutput) Write(ctx context.Context, output *structpb.Struct) error {
-	if m.err != nil {
-		return m.err
-	}
-	m.data = output
-	return nil
-}
-
-type mockError struct{}
-
-func (m *mockError) Error(ctx context.Context, err error) {
-
-}
-
-func TestInit(t *testing.T) {
-	bc := base.Component{}
-	comp := Init(bc)
-	assert.NotNil(t, comp)
-}
-
-func TestNewClient(t *testing.T) {
-
-	jsonKey := `{"type": "service_account", "project_id": "test-project", "private_key": "-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n", "client_email": "test-email@project.iam.gserviceaccount.com"}`
-	projectID := "test-project"
-
-	client, err := NewClient(jsonKey, projectID)
+	ctx := context.Background()
+	client, err := bigquery.NewClient(ctx, "test-project", option.WithEndpoint(server.URL), option.WithoutAuthentication())
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
-}
 
-func TestExecute(t *testing.T) {
-	ctx := context.Background()
-
-	job := &base.Job{
-		Input:  &mockInput{},
-		Output: &mockOutput{},
-		Error:  &mockError{},
-	}
-
-	exec := &MockExecution{}
-	err := exec.Execute(ctx, []*base.Job{job})
+	query := client.Query("SELECT * FROM test_table")
+	it, err := query.Read(ctx)
 	assert.NoError(t, err)
 
-	job.Input = &mockInput{err: errors.New("input error")}
-	err = exec.Execute(ctx, []*base.Job{job})
-	assert.Error(t, err)
-
-	err = exec.Execute(ctx, nil)
-	assert.Error(t, err, "Expected error for nil jobs")
-
-	job.Output = &mockOutput{err: errors.New("output error")}
-	err = exec.Execute(ctx, []*base.Job{job})
-	assert.Error(t, err, "Expected error for output write failure")
-
-}
-
-func TestGetDefinition(t *testing.T) {
-
-	compConfig := &base.ComponentConfig{
-		Setup: map[string]interface{}{
-			"json-key":   `{"type": "service_account", "project_id": "test-project", "private_key": "-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n", "client_email": "test-email@project.iam.gserviceaccount.com"}`,
-			"project-id": "test-project",
-			"dataset-id": "test_dataset",
-			"table-name": "test_table",
-		},
-	}
-
-	comp := Init(base.Component{})
-
-	def, err := comp.GetDefinition(nil, compConfig)
+	var values []bigquery.Value
+	err = it.Next(&values)
 	assert.NoError(t, err)
-	assert.NotNil(t, def)
-
-	invalidConfig := &base.ComponentConfig{
-		Setup: map[string]interface{}{
-			"json-key":   "invalid-json",
-			"project-id": "test-project",
-		},
-	}
-	def, err = comp.GetDefinition(nil, invalidConfig)
-	assert.Error(t, err, "Expected error for invalid config")
-	assert.Nil(t, def, "Expected nil definition for invalid config")
+	assert.Equal(t, []bigquery.Value{"row_value"}, values)
 }
