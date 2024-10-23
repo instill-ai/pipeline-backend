@@ -149,16 +149,12 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 	// with frame number rather than uuid as suffix.
 	outputPattern := random + "_frame_%08d.jpeg"
 
-	kwArgs, errArgs := getFramesKwArgs(inputStruct)
-	if errArgs != nil {
-		return nil, fmt.Errorf("unable to convert fps to float number: %s", errArgs)
-	}
+	kwArgs := getFramesKwArgs(inputStruct)
 
 	err = ffmpeg.Input(tempInputFileName).
 		Output(outputPattern,
 			kwArgs,
 		).
-		//.GlobalArgs("-report").OverWriteOutput().
 		Run()
 
 	if err != nil {
@@ -192,12 +188,7 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 	return base.ConvertToStructpb(output)
 }
 
-func getFramesKwArgs(inputStruct SubsampleVideoFramesInput) (ffmpeg.KwArgs, error) {
-	// formattedFps, err := getFormattedFPS(string(inputStruct.Fps))
-	// if err != nil {
-	// 	return nil, err
-	// }
-
+func getFramesKwArgs(inputStruct SubsampleVideoFramesInput) ffmpeg.KwArgs {
 	kwArgs := ffmpeg.KwArgs{"vf": "fps=" + fmt.Sprintf("%f", inputStruct.Fps)}
 	if inputStruct.StartTime != "" {
 		kwArgs["ss"] = inputStruct.StartTime
@@ -205,8 +196,7 @@ func getFramesKwArgs(inputStruct SubsampleVideoFramesInput) (ffmpeg.KwArgs, erro
 	if inputStruct.Duration != "" {
 		kwArgs["t"] = inputStruct.Duration
 	}
-	// kwArgs["loglevel"] = "warning"
-	return kwArgs, nil
+	return kwArgs
 }
 
 func removeFiles(files []string) {
@@ -214,25 +204,3 @@ func removeFiles(files []string) {
 		os.Remove(file)
 	}
 }
-
-// func getFormattedFPS(fpsLiteral string) (float32, error) {
-// 	fps, err := strconv.ParseFloat(fpsLiteral, 32) // handles int and float inputs (30, 10, 0.5 etc)
-// 	if err != nil {
-// 		// to handle fraction inputs like 1/2, 1/4, 1/30
-// 		split := strings.Split(fpsLiteral, "/")
-// 		if len(split) != 2 {
-// 			return 0, errors.New("invalid fraction input")
-// 		}
-
-// 		numerator, errN := strconv.Atoi(split[0])
-// 		denominator, errD := strconv.Atoi(split[1])
-// 		if errN != nil || errD != nil {
-// 			return 0, errors.New("fraction numerator and denominator should be ints")
-// 		}
-
-// 		fps := float32(numerator) / float32(denominator)
-
-// 		return fps, nil
-// 	}
-// 	return float32(fps), nil
-// }
