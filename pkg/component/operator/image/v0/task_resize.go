@@ -5,38 +5,27 @@ import (
 	"fmt"
 	"image"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	nr "github.com/nfnt/resize"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
-type resizeInput struct {
-	Image  base64Image `json:"image"`
-	Width  int         `json:"width"`
-	Height int         `json:"height"`
-	Ratio  float64     `json:"ratio"`
-}
-
-type resizeOutput struct {
-	Image base64Image `json:"image"`
-}
-
-func resize(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func resize(ctx context.Context, job *base.Job) error {
+	// Parse input
 	var inputStruct resizeInput
-	if err := base.ConvertFromStructpb(input, &inputStruct); err != nil {
-		return nil, fmt.Errorf("error converting input to struct: %w", err)
+	if err := job.Input.ReadData(ctx, &inputStruct); err != nil {
+		return err
 	}
 
 	// Validate input parameters
 	if err := validateInputParams(inputStruct); err != nil {
-		return nil, err
+		return err
 	}
 
-	img, err := decodeBase64Image(string(inputStruct.Image))
+	// Decode image
+	img, err := decodeImage(inputStruct.Image)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding image: %w", err)
+		return fmt.Errorf("error decoding image: %v", err)
 	}
 
 	// Determine new dimensions
@@ -44,12 +33,12 @@ func resize(input *structpb.Struct, job *base.Job, ctx context.Context) (*struct
 
 	// Check if resizing is needed
 	if width == img.Bounds().Dx() && height == img.Bounds().Dy() {
-		return createOutput(img)
+		return createOutput(img, job, ctx)
 	}
 
 	// Resize the image
 	resizedImg := nr.Resize(uint(width), uint(height), img, nr.Lanczos3)
-	return createOutput(resizedImg)
+	return createOutput(resizedImg, job, ctx)
 }
 
 func validateInputParams(input resizeInput) error {
@@ -82,13 +71,20 @@ func calculateNewDimensions(input resizeInput, bounds image.Rectangle) (int, int
 	}
 }
 
-func createOutput(img image.Image) (*structpb.Struct, error) {
-	base64Img, err := encodeBase64Image(img)
+func createOutput(img image.Image, job *base.Job, ctx context.Context) error {
+
+	imgData, err := encodeImage(img)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	output := resizeOutput{
-		Image: base64Image(fmt.Sprintf("data:image/png;base64,%s", base64Img)),
+
+	outputData := resizeOutput{
+		Image: imgData,
 	}
-	return base.ConvertToStructpb(output)
+
+	if err := job.Output.WriteData(ctx, outputData); err != nil {
+		return err
+	}
+
+	return nil
 }

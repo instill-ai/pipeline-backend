@@ -7,56 +7,102 @@ import (
 
 	_ "embed"
 
-	"github.com/frankban/quicktest"
-	"google.golang.org/protobuf/types/known/structpb"
+	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 )
 
 //go:embed testdata/sem-seg-cityscape.json
 var semSegCityscapeJSON []byte
 
+//go:embed testdata/sem-seg-cityscape.jpeg
+var semSegCityscapeJPEG []byte
+
 // TestDrawSemanticSegmentation tests the drawSemanticSegmentation function
 func TestDrawSemanticSegmentation(t *testing.T) {
-	c := quicktest.New(t)
+	c := qt.New(t)
 
 	testCases := []struct {
 		name      string
+		inputJPEG []byte
 		inputJSON []byte
+
+		expectedError  string
+		expectedOutput bool
 	}{
 		{
-			name:      "Semantic Segmentation Cityscape",
-			inputJSON: semSegCityscapeJSON,
+			name:           "Semantic Segmentation Cityscape",
+			inputJPEG:      semSegCityscapeJPEG,
+			inputJSON:      semSegCityscapeJSON,
+			expectedOutput: true,
+		},
+		{
+			name:          "Invalid Image",
+			inputJPEG:     []byte("invalid image data"),
+			inputJSON:     semSegCityscapeJSON,
+			expectedError: "convert image: failed to decode source image: invalid JPEG format: missing SOI marker",
 		},
 	}
 
 	for _, tc := range testCases {
-		c.Run(tc.name, func(c *quicktest.C) {
-			inputData := &structpb.Struct{}
-			err := json.Unmarshal(tc.inputJSON, inputData)
-			c.Assert(err, quicktest.IsNil, quicktest.Commentf("Failed to unmarshal test data"))
+		c.Run(tc.name, func(c *qt.C) {
+			component := Init(base.Component{})
+			c.Assert(component, qt.IsNotNil)
 
-			bc := base.Component{}
-			component := Init(bc)
-
-			e, err := component.CreateExecution(base.ComponentExecution{
+			execution, err := component.CreateExecution(base.ComponentExecution{
 				Component: component,
 				Task:      "TASK_DRAW_SEMANTIC_SEGMENTATION",
 			})
-
-			c.Assert(err, quicktest.IsNil, quicktest.Commentf("drawSemanticSegmentation create execution returned an error"))
+			c.Assert(err, qt.IsNil)
+			c.Assert(execution, qt.IsNotNil)
 
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Expect(context.Background()).Return(inputData, nil)
-			ow.WriteMock.Times(1).Return(nil)
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				switch input := input.(type) {
+				case *drawSemanticSegmentationInput:
+					img, err := data.NewImageFromBytes(tc.inputJPEG, "image/jpeg", "test")
+					if err != nil {
+						return err
+					}
+					var segmentationResult struct {
+						Stuffs []*semanticSegmentationStuff `json:"stuffs"`
+					}
+					err = json.Unmarshal(tc.inputJSON, &segmentationResult)
+					if err != nil {
+						return err
+					}
+					*input = drawSemanticSegmentationInput{
+						Image:  img,
+						Stuffs: segmentationResult.Stuffs,
+					}
+				}
+				return nil
+			})
 
-			err = e.Execute(context.Background(), []*base.Job{job})
-			c.Assert(err, quicktest.IsNil, quicktest.Commentf("drawSemanticSegmentation returned an error"))
+			var capturedOutput any
+			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
+				capturedOutput = output
+				return nil
+			})
+			eh.ErrorMock.Set(func(ctx context.Context, err error) {
+				c.Assert(err, qt.ErrorMatches, tc.expectedError)
+			})
+			if tc.expectedError != "" {
+				ow.WriteDataMock.Optional()
+			} else {
+				eh.ErrorMock.Optional()
+			}
 
-			ir.MinimockFinish()
-			ow.MinimockFinish()
-			eh.MinimockFinish()
+			err = execution.Execute(context.Background(), []*base.Job{job})
+
+			if tc.expectedError == "" {
+				c.Assert(err, qt.IsNil)
+				output, ok := capturedOutput.(drawSemanticSegmentationOutput)
+				c.Assert(ok, qt.IsTrue)
+				c.Assert(output.Image, qt.Not(qt.IsNil))
+			}
 		})
 	}
 }

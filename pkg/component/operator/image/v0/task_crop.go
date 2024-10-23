@@ -7,24 +7,8 @@ import (
 	"image/color"
 	"math"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
-
-type cropInput struct {
-	Image        base64Image `json:"image"`
-	CornerRadius int         `json:"corner-radius"`
-	CircleRadius int         `json:"circle-radius"`
-	TopOffset    int         `json:"top-offset"`
-	RightOffset  int         `json:"right-offset"`
-	BottomOffset int         `json:"bottom-offset"`
-	LeftOffset   int         `json:"left-offset"`
-}
-
-type cropOutput struct {
-	Image base64Image `json:"image"`
-}
 
 func cropCornerRadius(img image.Image, radius int) image.Image {
 	bounds := img.Bounds()
@@ -82,17 +66,17 @@ func cropCircle(img image.Image, centerX, centerY, radius int) image.Image {
 	return result
 }
 
-func crop(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
-	inputStruct := cropInput{}
+func crop(ctx context.Context, job *base.Job) error {
 
-	err := base.ConvertFromStructpb(input, &inputStruct)
-	if err != nil {
-		return nil, fmt.Errorf("error converting input to struct: %v", err)
+	var inputStruct cropInput
+	if err := job.Input.ReadData(ctx, &inputStruct); err != nil {
+		return err
 	}
 
-	img, err := decodeBase64Image(string(inputStruct.Image))
+	// Decode image
+	img, err := decodeImage(inputStruct.Image)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding image: %v", err)
+		return err
 	}
 
 	bounds := img.Bounds()
@@ -106,7 +90,7 @@ func crop(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb
 	y2 := height - inputStruct.BottomOffset
 
 	if x1 < 0 || y1 < 0 || x2 > width || y2 > height || x1 >= x2 || y1 >= y2 {
-		return nil, fmt.Errorf("invalid crop dimensions")
+		return fmt.Errorf("invalid crop dimensions")
 	}
 
 	// Create a new image with the cropped dimensions
@@ -146,14 +130,18 @@ func crop(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb
 		croppedImg = cropCornerRadius(croppedImg, radius).(*image.RGBA)
 	}
 
-	base64Img, err := encodeBase64Image(croppedImg)
+	imgData, err := encodeImage(croppedImg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	output := cropOutput{
-		Image: base64Image(fmt.Sprintf("data:image/png;base64,%s", base64Img)),
+	outputData := cropOutput{
+		Image: imgData,
 	}
 
-	return base.ConvertToStructpb(output)
+	if err := job.Output.WriteData(ctx, outputData); err != nil {
+		return err
+	}
+
+	return nil
 }

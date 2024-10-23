@@ -10,8 +10,6 @@ import (
 	_ "image/gif"
 	_ "image/png"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
@@ -30,7 +28,7 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
-	execute func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
+	execute func(context.Context, *base.Job) error
 }
 
 func Init(bc base.Component) *component {
@@ -77,5 +75,5 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 // Execute executes the derived execution
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return base.ConcurrentExecutor(ctx, jobs, e.execute)
+	return base.ConcurrentDataExecutor(ctx, jobs, e.execute)
 }
