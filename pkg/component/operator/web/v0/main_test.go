@@ -2,6 +2,7 @@ package web
 
 import (
 	"io"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -113,6 +114,11 @@ func fakeHTTPRequests(urls []string, timeout int, scrapeMethod string) ([]*goque
 	output := []*goquery.Document{}
 
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+
+	if err != nil {
+		return nil, err
+	}
+	doc.Url, err = url.Parse("https://www.example.com")
 
 	if err != nil {
 		return nil, err

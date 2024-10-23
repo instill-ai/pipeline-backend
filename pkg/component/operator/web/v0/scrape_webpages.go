@@ -84,10 +84,10 @@ func (e *execution) ScrapeWebpages(input *structpb.Struct) (*structpb.Struct, er
 		return nil, fmt.Errorf("error getting HTML page doc: %v", err)
 	}
 
-	for i, doc := range docs {
+	for _, doc := range docs {
 		html := getRemovedTagsHTML(doc, inputStruct)
 
-		err = setOutput(&output, inputStruct, doc, html, i)
+		err = setOutput(&output, inputStruct, doc, html)
 
 	}
 
@@ -119,6 +119,12 @@ func getDocAfterRequestURL(urls []string, timeout int, scrapeMethod string) ([]*
 				errCh <- err
 				return
 			}
+			doc.Url, err = doc.Url.Parse(url)
+			if err != nil {
+				errCh <- err
+				return
+			}
+
 			docCh <- doc
 		}(url)
 	}
@@ -134,8 +140,10 @@ func getDocAfterRequestURL(urls []string, timeout int, scrapeMethod string) ([]*
 		docs = append(docs, doc)
 	}
 
+	// When pipeline combines crawler and scraper, there may be some urls not able to get the doc.
+	// To avoid the errors, we should return the docs that are able to be fetched and ignore the failed ones.
 	if len(errCh) > 0 {
-		return docs, <-errCh
+		log.Printf("get HTML page doc: %v", <-errCh)
 	}
 
 	return docs, nil
@@ -233,7 +241,7 @@ func buildTags(tags []string) string {
 	return tagsString
 }
 
-func setOutput(output *ScrapeWebpagesOutput, input ScrapeWebpagesInput, doc *goquery.Document, html string, idx int) error {
+func setOutput(output *ScrapeWebpagesOutput, input ScrapeWebpagesInput, doc *goquery.Document, html string) error {
 	plain := html2text.HTML2Text(html)
 
 	scrapedPage := ScrapedPage{}
@@ -243,7 +251,7 @@ func setOutput(output *ScrapeWebpagesOutput, input ScrapeWebpagesInput, doc *goq
 		scrapedPage.HTML = html
 	}
 
-	url := input.URLs[idx]
+	url := doc.Url.String()
 
 	markdown, err := getMarkdown(html, url)
 
