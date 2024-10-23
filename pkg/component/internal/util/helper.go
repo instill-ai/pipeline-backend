@@ -15,8 +15,6 @@ import (
 	"github.com/h2non/filetype"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
-
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
 
 func GetFileExt(fileData []byte) string {
@@ -98,7 +96,7 @@ func GetDomainFromURL(urlStr string) (string, error) {
 // DecodeBase64 takes a base64-encoded blob, trims the MIME type (if present)
 // and decodes the remaining bytes.
 func DecodeBase64(input string) ([]byte, error) {
-	return base64.StdEncoding.DecodeString(base.TrimBase64Mime(input))
+	return base64.StdEncoding.DecodeString(TrimBase64Mime(input))
 }
 
 func GetFileType(base64String, filename string) (string, error) {
@@ -246,13 +244,13 @@ func GetDataURL(base64Image string) string {
 		return base64Image
 	}
 
-	b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(base64Image))
+	b, err := base64.StdEncoding.DecodeString(TrimBase64Mime(base64Image))
 
 	if err != nil {
 		return base64Image
 	}
 
-	dataURL := fmt.Sprintf("data:%s;base64,%s", mimetype.Detect(b).String(), base.TrimBase64Mime(base64Image))
+	dataURL := fmt.Sprintf("data:%s;base64,%s", mimetype.Detect(b).String(), TrimBase64Mime(base64Image))
 
 	return dataURL
 }
@@ -303,4 +301,8 @@ func ExecutePythonCode(pythonCode string, params map[string]interface{}) ([]byte
 	}
 
 	return outputBytes, nil
+}
+func TrimBase64Mime(b64 string) string {
+	splitB64 := strings.Split(b64, ",")
+	return splitB64[len(splitB64)-1]
 }

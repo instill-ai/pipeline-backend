@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -54,7 +55,19 @@ func NewOutputWriter(ow OutputWriter, schema string) *outputWriter {
 		schema:       schema,
 	}
 }
+func (ow *outputWriter) WriteData(ctx context.Context, output any) (err error) {
+	outputMap, err := data.Marshal(output)
+	if err != nil {
+		return err
+	}
+	outputStructPB, err := outputMap.ToStructValue()
+	if err != nil {
+		return err
+	}
+	ow.output = outputStructPB.GetStructValue()
 
+	return ow.OutputWriter.WriteData(ctx, output)
+}
 func (ow *outputWriter) Write(ctx context.Context, output *structpb.Struct) (err error) {
 
 	if err := Validate(output, ow.schema, "output"); err != nil {
