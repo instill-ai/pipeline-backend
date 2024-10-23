@@ -13,6 +13,7 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 type SubsampleVideoInput struct {
@@ -54,7 +55,7 @@ func subsampleVideo(input *structpb.Struct) (*structpb.Struct, error) {
 
 	base64Video := string(inputStruct.Video)
 
-	videoBytes, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(base64Video))
+	videoBytes, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(base64Video))
 
 	if err != nil {
 		return nil, fmt.Errorf("error in decoding for inner: %s", err)
@@ -125,7 +126,7 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 
 	base64Video := string(inputStruct.Video)
 
-	videoBytes, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(base64Video))
+	videoBytes, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(base64Video))
 
 	if err != nil {
 		return nil, fmt.Errorf("error in decoding for inner: %s", err)

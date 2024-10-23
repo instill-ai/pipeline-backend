@@ -15,7 +15,6 @@ import (
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
@@ -82,7 +81,7 @@ type HTMLToMarkdownTransformer struct {
 
 func (t HTMLToMarkdownTransformer) Transform() (converterOutput, error) {
 
-	data, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(t.Base64EncodedText))
+	data, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(t.Base64EncodedText))
 	if err != nil {
 		return converterOutput{}, fmt.Errorf("failed to decode base64 to file: %w", err)
 	}
@@ -224,7 +223,7 @@ func (t CSVToMarkdownTransformer) Transform() (converterOutput, error) {
 }
 
 func writeDecodeToFile(base64Str string, file *os.File) error {
-	data, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(base64Str))
+	data, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(base64Str))
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
@@ -50,7 +49,7 @@ func ConvertDocumentToImage(inputStruct *ConvertDocumentToImagesTransformerInput
 			return nil, fmt.Errorf("failed to repair PDF: %w", err)
 		}
 	} else {
-		base64PDFWithoutMime = base.TrimBase64Mime(base64PDF)
+		base64PDFWithoutMime = util.TrimBase64Mime(base64PDF)
 	}
 
 	paramsJSON := map[string]interface{}{

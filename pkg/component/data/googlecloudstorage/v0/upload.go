@@ -7,13 +7,12 @@ import (
 
 	"cloud.google.com/go/iam"
 	"cloud.google.com/go/storage"
-
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 func uploadToGCS(client *storage.Client, bucketName, objectName, data string) error {
 	wc := client.Bucket(bucketName).Object(objectName).NewWriter(context.Background())
-	b, _ := base64.StdEncoding.DecodeString(base.TrimBase64Mime(data))
+	b, _ := base64.StdEncoding.DecodeString(util.TrimBase64Mime(data))
 	if _, err := io.Writer.Write(wc, b); err != nil {
 		return err
 	}

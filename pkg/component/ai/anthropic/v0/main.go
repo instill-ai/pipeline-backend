@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 const (
@@ -246,7 +247,7 @@ func (e *execution) generateText(in *structpb.Struct) (*structpb.Struct, error) 
 		}
 		image := content{
 			Type:   "image",
-			Source: &source{Type: "base64", MediaType: fmt.Sprintf("image/%s", extension), Data: base.TrimBase64Mime(image)},
+			Source: &source{Type: "base64", MediaType: fmt.Sprintf("image/%s", extension), Data: util.TrimBase64Mime(image)},
 		}
 		finalMessage.Content = append(finalMessage.Content, image)
 	}

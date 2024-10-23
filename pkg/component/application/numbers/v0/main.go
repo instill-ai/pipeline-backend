@@ -19,6 +19,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 const urlRegisterAsset = "https://api.numbersprotocol.io/api/v3/assets/"
@@ -224,7 +225,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 		}
 
 		for _, image := range inputStruct.Images {
-			imageBytes, err := b64.StdEncoding.DecodeString(base.TrimBase64Mime(image))
+			imageBytes, err := b64.StdEncoding.DecodeString(util.TrimBase64Mime(image))
 			if err != nil {
 				job.Error.Error(ctx, err)
 				continue

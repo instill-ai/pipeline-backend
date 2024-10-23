@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -65,7 +66,7 @@ func (s InstillAcceptFormatsSchema) Validate(ctx jsonschema.ValidationContext, v
 			// For other types, we assume they are Base64 strings and need to validate the Base64 encoding.
 			default:
 
-				b, err := base64.StdEncoding.DecodeString(TrimBase64Mime(v))
+				b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(v))
 				if err != nil {
 					return ctx.Error("instillAcceptFormats", "can not decode file")
 				}
@@ -127,7 +128,7 @@ func (s InstillFormatSchema) Validate(ctx jsonschema.ValidationContext, v interf
 		default:
 			mimeType := ""
 			if !strings.HasPrefix(v, "data:") {
-				b, err := base64.StdEncoding.DecodeString(TrimBase64Mime(v))
+				b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(v))
 				if err != nil {
 					return ctx.Error("instillFormat", "can not decode file")
 				}
@@ -213,11 +214,6 @@ func CompileInstillFormat(sch *structpb.Struct) error {
 
 	}
 	return nil
-}
-
-func TrimBase64Mime(b64 string) string {
-	splitB64 := strings.Split(b64, ",")
-	return splitB64[len(splitB64)-1]
 }
 
 // return the extension of the file from the base64 string, in the "jpeg" , "png" format, check with provided header
