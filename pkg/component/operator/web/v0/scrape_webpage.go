@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -17,10 +18,10 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
-// ScrapeWebpageInput defines the input of the scrape webpage task
-type ScrapeWebpageInput struct {
-	// URL: The URL of the webpage to scrape.
-	URL string `json:"url"`
+// ScrapeWebpagesInput defines the input of the scrape webpage task
+type ScrapeWebpagesInput struct {
+	// URLs: The URLs of the webpage to scrape.
+	URLs []string `json:"urls"`
 	// ScrapeMethod: The method to scrape the webpage. It can be "http" or "chromedp".
 	ScrapeMethod string `json:"scrape-method"`
 	// IncludeHTML: Whether to include the HTML content of the webpage.
@@ -35,17 +36,21 @@ type ScrapeWebpageInput struct {
 	Timeout int `json:"timeout,omitempty"`
 }
 
+// ScrapeWebpagesOutput defines the output of the scrape webpage task
+type ScrapeWebpagesOutput struct {
+	Pages []ScrapedPage `json:"pages"`
+}
 
-// ScrapeWebpageOutput defines the output of the scrape webpage task
-type ScrapeWebpageOutput struct {
+// ScrapedPage defines the struct of a webpage.
+type ScrapedPage struct {
 	// Content: The plain text content of the webpage.
-	Content     string   `json:"content"`
+	Content string `json:"content"`
 	// Markdown: The markdown content of the webpage.
-	Markdown    string   `json:"markdown"`
+	Markdown string `json:"markdown"`
 	// HTML: The HTML content of the webpage.
-	HTML        string   `json:"html"`
+	HTML string `json:"html"`
 	// Metadata: The metadata of the webpage.
-	Metadata    Metadata `json:"metadata"`
+	Metadata Metadata `json:"metadata"`
 	// LinksOnPage: The list of links on the webpage.
 	LinksOnPage []string `json:"links-on-page"`
 }
@@ -53,17 +58,17 @@ type ScrapeWebpageOutput struct {
 // Metadata defines the metadata of the webpage
 type Metadata struct {
 	// Title: The title of the webpage.
-	Title       string `json:"title"`
+	Title string `json:"title"`
 	// Description: The description of the webpage.
 	Description string `json:"description,omitempty"`
 	// SourceURL: The source URL of the webpage.
-	SourceURL   string `json:"source-url"`
+	SourceURL string `json:"source-url"`
 }
 
-// ScrapeWebpage scrapes the content of a webpage
-func (e *execution) ScrapeWebpage(input *structpb.Struct) (*structpb.Struct, error) {
+// ScrapeWebpages scrapes the objects of webpages
+func (e *execution) ScrapeWebpages(input *structpb.Struct) (*structpb.Struct, error) {
 
-	inputStruct := ScrapeWebpageInput{}
+	inputStruct := ScrapeWebpagesInput{}
 
 	err := base.ConvertFromStructpb(input, &inputStruct)
 
@@ -71,17 +76,20 @@ func (e *execution) ScrapeWebpage(input *structpb.Struct) (*structpb.Struct, err
 		return nil, fmt.Errorf("error converting input to struct: %v", err)
 	}
 
-	output := ScrapeWebpageOutput{}
+	output := ScrapeWebpagesOutput{}
 
-	doc, err := e.getDocAfterRequestURL(inputStruct.URL, inputStruct.Timeout, inputStruct.ScrapeMethod)
+	docs, err := e.getDocsAfterRequestURLs(inputStruct.URLs, inputStruct.Timeout, inputStruct.ScrapeMethod)
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting HTML page doc: %v", err)
 	}
 
-	html := getRemovedTagsHTML(doc, inputStruct)
+	for i, doc := range docs {
+		html := getRemovedTagsHTML(doc, inputStruct)
 
-	err = setOutput(&output, inputStruct, doc, html)
+		err = setOutput(&output, inputStruct, doc, html, i)
+
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("error setting output: %v", err)
@@ -91,12 +99,47 @@ func (e *execution) ScrapeWebpage(input *structpb.Struct) (*structpb.Struct, err
 
 }
 
-func getDocAfterRequestURL(url string, timeout int, scrapeMethod string) (*goquery.Document, error) {
+func getDocAfterRequestURL(urls []string, timeout int, scrapeMethod string) ([]*goquery.Document, error) {
+	var wg sync.WaitGroup
+	docCh := make(chan *goquery.Document, len(urls))
+	errCh := make(chan error, len(urls))
 
-	if scrapeMethod == "http" {
-		return httpRequest(url)
+	for _, url := range urls {
+		wg.Add(1)
+		go func(url string) {
+			defer wg.Done()
+			var doc *goquery.Document
+			var err error
+			if scrapeMethod == "http" {
+				doc, err = httpRequest(url)
+			} else {
+				doc, err = requestToWebpage(url, timeout)
+			}
+			if err != nil {
+				errCh <- err
+				return
+			}
+			docCh <- doc
+		}(url)
 	}
-	return requestToWebpage(url, timeout)
+
+	go func() {
+		wg.Wait()
+		close(docCh)
+		close(errCh)
+	}()
+
+	docs := []*goquery.Document{}
+	for doc := range docCh {
+		docs = append(docs, doc)
+	}
+
+	if len(errCh) > 0 {
+		return docs, <-errCh
+	}
+
+	return docs, nil
+
 }
 
 func httpRequest(url string) (*goquery.Document, error) {
@@ -190,21 +233,25 @@ func buildTags(tags []string) string {
 	return tagsString
 }
 
-func setOutput(output *ScrapeWebpageOutput, input ScrapeWebpageInput, doc *goquery.Document, html string) error {
+func setOutput(output *ScrapeWebpagesOutput, input ScrapeWebpagesInput, doc *goquery.Document, html string, idx int) error {
 	plain := html2text.HTML2Text(html)
 
-	output.Content = plain
+	scrapedPage := ScrapedPage{}
+
+	scrapedPage.Content = plain
 	if input.IncludeHTML {
-		output.HTML = html
+		scrapedPage.HTML = html
 	}
 
-	markdown, err := getMarkdown(html, input.URL)
+	url := input.URLs[idx]
+
+	markdown, err := getMarkdown(html, url)
 
 	if err != nil {
 		return fmt.Errorf("failed to get markdown: %v", err)
 	}
 
-	output.Markdown = markdown
+	scrapedPage.Markdown = markdown
 
 	title := util.ScrapeWebpageTitle(doc)
 	description := util.ScrapeWebpageDescription(doc)
@@ -212,17 +259,19 @@ func setOutput(output *ScrapeWebpageOutput, input ScrapeWebpageInput, doc *goque
 	metadata := Metadata{
 		Title:       title,
 		Description: description,
-		SourceURL:   input.URL,
+		SourceURL:   url,
 	}
-	output.Metadata = metadata
+	scrapedPage.Metadata = metadata
 
-	links, err := getAllLinksOnPage(doc, input.URL)
+	links, err := getAllLinksOnPage(doc, url)
 
 	if err != nil {
 		return fmt.Errorf("failed to get links on page: %v", err)
 	}
 
-	output.LinksOnPage = links
+	scrapedPage.LinksOnPage = links
+
+	output.Pages = append(output.Pages, scrapedPage)
 
 	return nil
 

@@ -16,15 +16,15 @@ type scrapeInput interface {
 	onlyIncludeTags() []string
 }
 
-func (i ScrapeWebpageInput) onlyMainContent() bool {
+func (i ScrapeWebpagesInput) onlyMainContent() bool {
 	return i.OnlyMainContent
 }
 
-func (i ScrapeWebpageInput) removeTags() []string {
+func (i ScrapeWebpagesInput) removeTags() []string {
 	return i.RemoveTags
 }
 
-func (i ScrapeWebpageInput) onlyIncludeTags() []string {
+func (i ScrapeWebpagesInput) onlyIncludeTags() []string {
 	return i.OnlyIncludeTags
 }
 

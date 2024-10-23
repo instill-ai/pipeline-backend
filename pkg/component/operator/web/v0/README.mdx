@@ -81,7 +81,7 @@ This task focuses on extracting specific data from targeted webpages by parsing 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Task ID (required) | `task` | string | `TASK_SCRAPE_PAGES` |
-| URL (required) | `urls` | string | The URLs to scrape the webpage contents. |
+| URLs (required) | `urls` | array[string] | The URLs to scrape the webpage contents. |
 | Scrape Method (required) | `scrape-method` | string | Defines the method used for web scraping. Available options include 'http' for standard HTTP-based scraping and 'chrome-simulator' for scraping through a simulated Chrome browser environment. |
 | Include HTML | `include-html` | boolean | Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true. |
 | Only Main Content | `only-main-content` | boolean | Only return the main content of the page by excluding the content of the tag of header, nav, footer. |

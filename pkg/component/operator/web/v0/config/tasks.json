@@ -227,15 +227,18 @@
         "urls": {
           "description": "The URLs to scrape the webpage contents.",
           "instillAcceptFormats": [
-            "string"
+            "array:string"
           ],
+          "items": {
+            "type": "string"
+          },
           "instillUIOrder": 0,
           "instillUpstreamTypes": [
             "value",
             "reference"
           ],
-          "title": "URL",
-          "type": "string"
+          "title": "URLs",
+          "type": "array"
         },
         "scrape-method": {
           "description": "Defines the method used for web scraping. Available options include 'http' for standard HTTP-based scraping and 'chrome-simulator' for scraping through a simulated Chrome browser environment.",
