@@ -69,7 +69,7 @@ func Init(bc base.Component) *component {
 
 // WithInstillCredentials loads Instill credentials into the component, which
 // can be used to configure it with globally defined parameters instead of with
-// user-defined credential format.s.
+// user-defined credential values.
 func (c *component) WithInstillCredentials(s map[string]any) *component {
 	c.instillAPIKey = base.ReadFromGlobalConfig(cfgAPIKey, s)
 	return c
@@ -93,7 +93,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 
 // resolveSetup checks whether the component is configured to use the Instill
 // credentials injected during initialization and, if so, returns a new setup
-// with the secret credential format.s.
+// with the secret credential values.
 func (c *component) resolveSetup(setup *structpb.Struct) (*structpb.Struct, bool, error) {
 	if setup == nil || setup.Fields == nil {
 		setup = &structpb.Struct{Fields: map[string]*structpb.Value{}}
