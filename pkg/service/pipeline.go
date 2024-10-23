@@ -725,12 +725,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		return err
 	}
 
-	sch, err := c.Compile("schema.json")
-
-	if err != nil {
-		return err
-	}
-
 	errors := []string{}
 
 	for idx, data := range pipelineData {
@@ -752,6 +746,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			switch s := m[k].(type) {
 			case string:
 				if instillFormatMap[k] != "string" {
+					// Skip the base64 decoding if the string is a URL
+					if strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://") {
+						continue
+					}
 					if !strings.HasPrefix(s, "data:") {
 						b, err := base64.StdEncoding.DecodeString(s)
 						if err != nil {
@@ -760,10 +758,15 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						mimeType := strings.Split(mimetype.Detect(b).String(), ";")[0]
 						vars.Fields[k] = structpb.NewStringValue(fmt.Sprintf("data:%s;base64,%s", mimeType, s))
 					}
+
 				}
 			case []string:
 				if instillFormatMap[k] != "array:string" {
 					for idx := range s {
+						// Skip the base64 decoding if the string is a URL
+						if strings.HasPrefix(s[idx], "http://") || strings.HasPrefix(s[idx], "https://") {
+							continue
+						}
 						if !strings.HasPrefix(s[idx], "data:") {
 							b, err := base64.StdEncoding.DecodeString(s[idx])
 							if err != nil {
@@ -778,17 +781,6 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			}
 		}
 
-		if err = sch.Validate(m); err != nil {
-			e := err.(*jsonschema.ValidationError)
-
-			for _, valErr := range e.DetailedOutput().Errors {
-				inputPath := fmt.Sprintf("%s/%d", "inputs", idx)
-				componentbase.FormatErrors(inputPath, valErr, &errors)
-				for _, subValErr := range valErr.Errors {
-					componentbase.FormatErrors(inputPath, subValErr, &errors)
-				}
-			}
-		}
 	}
 
 	if len(errors) > 0 {
