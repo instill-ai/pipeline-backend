@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
 // Package data provides functionality for marshaling and unmarshaling between
@@ -18,11 +18,11 @@ import (
 // values.
 //
 // These functions use reflection to handle various types, including nested
-// structs, slices, maps, and custom types that implement the value.Value
+// structs, slices, maps, and custom types that implement the format.Value
 // interface.
 
 // Unmarshal converts a Map value into the provided struct s using `key` tags.
-func Unmarshal(d value.Value, s any) error {
+func Unmarshal(d format.Value, s any) error {
 	v := reflect.ValueOf(s)
 	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Struct {
 		return errors.New("input must be a pointer to a struct")
@@ -56,21 +56,21 @@ func unmarshalStruct(m Map, v reflect.Value) error {
 }
 
 // unmarshalValue dispatches to type-specific unmarshal functions based on the value type.
-func unmarshalValue(val value.Value, field reflect.Value) error {
+func unmarshalValue(val format.Value, field reflect.Value) error {
 	switch v := val.(type) {
-	case File, Document, Image, Video, Audio:
+	case format.File, format.Document, format.Image, format.Video, format.Audio:
 		return unmarshalInterface(v, field)
-	case Boolean:
+	case format.Boolean:
 		return unmarshalBoolean(v, field)
-	case Number:
+	case format.Number:
 		return unmarshalNumber(v, field)
-	case String:
+	case format.String:
 		return unmarshalString(v, field)
 	case Array:
 		return unmarshalArray(v, field)
 	case Map:
 		return unmarshalMap(v, field)
-	case Null:
+	case format.Null:
 		return unmarshalNull(v, field)
 	default:
 		return fmt.Errorf("unsupported type: %T", val)
@@ -78,7 +78,7 @@ func unmarshalValue(val value.Value, field reflect.Value) error {
 }
 
 // unmarshalString handles unmarshaling of String values.
-func unmarshalString(v String, field reflect.Value) error {
+func unmarshalString(v format.String, field reflect.Value) error {
 	switch field.Kind() {
 	case reflect.String:
 		field.SetString(v.String())
@@ -88,7 +88,7 @@ func unmarshalString(v String, field reflect.Value) error {
 		}
 		return unmarshalString(v, field.Elem())
 	default:
-		if field.Type() == reflect.TypeOf(v) || field.Type() == reflect.TypeOf((*String)(nil)).Elem() {
+		if field.Type() == reflect.TypeOf(v) || field.Type() == reflect.TypeOf((*format.String)(nil)).Elem() {
 			field.Set(reflect.ValueOf(v))
 		} else {
 			return fmt.Errorf("cannot unmarshal String into %v", field.Type())
@@ -98,7 +98,7 @@ func unmarshalString(v String, field reflect.Value) error {
 }
 
 // unmarshalBoolean handles unmarshaling of Boolean values.
-func unmarshalBoolean(v Boolean, field reflect.Value) error {
+func unmarshalBoolean(v format.Boolean, field reflect.Value) error {
 	switch field.Kind() {
 	case reflect.Bool:
 		field.SetBool(v.Boolean())
@@ -108,7 +108,7 @@ func unmarshalBoolean(v Boolean, field reflect.Value) error {
 		}
 		return unmarshalBoolean(v, field.Elem())
 	default:
-		if field.Type() == reflect.TypeOf(v) || field.Type() == reflect.TypeOf((*Boolean)(nil)).Elem() {
+		if field.Type() == reflect.TypeOf(v) || field.Type() == reflect.TypeOf((*format.Boolean)(nil)).Elem() {
 			field.Set(reflect.ValueOf(v))
 		} else {
 			return fmt.Errorf("cannot unmarshal Boolean into %v", field.Type())
@@ -118,7 +118,7 @@ func unmarshalBoolean(v Boolean, field reflect.Value) error {
 }
 
 // unmarshalNumber handles unmarshaling of Number values.
-func unmarshalNumber(v Number, field reflect.Value) error {
+func unmarshalNumber(v format.Number, field reflect.Value) error {
 	switch field.Kind() {
 	case reflect.Float32, reflect.Float64:
 		field.SetFloat(v.Float64())
@@ -130,7 +130,7 @@ func unmarshalNumber(v Number, field reflect.Value) error {
 		}
 		return unmarshalNumber(v, field.Elem())
 	default:
-		if field.Type() == reflect.TypeOf(v) || field.Type() == reflect.TypeOf((*Number)(nil)).Elem() {
+		if field.Type() == reflect.TypeOf(v) || field.Type() == reflect.TypeOf((*format.Number)(nil)).Elem() {
 			field.Set(reflect.ValueOf(v))
 		} else {
 			return fmt.Errorf("cannot unmarshal Number into %v", field.Type())
@@ -147,7 +147,7 @@ func unmarshalArray(v Array, field reflect.Value) error {
 	slice := reflect.MakeSlice(field.Type(), len(v), len(v))
 	for i, elem := range v {
 		elemValue := slice.Index(i)
-		if elemValue.Type().Implements(reflect.TypeOf((*value.Value)(nil)).Elem()) {
+		if elemValue.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
 			elemValue.Set(reflect.ValueOf(elem))
 		} else {
 			if err := unmarshalValue(elem, elemValue); err != nil {
@@ -184,7 +184,7 @@ func unmarshalToReflectMap(v Map, field reflect.Value) error {
 		elemType := field.Type().Elem()
 		elemValue := reflect.New(elemType).Elem()
 
-		if elemType.Implements(reflect.TypeOf((*value.Value)(nil)).Elem()) {
+		if elemType.Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
 			elemValue.Set(reflect.ValueOf(val))
 		} else {
 			if err := unmarshalValue(val, elemValue); err != nil {
@@ -219,7 +219,7 @@ func unmarshalToStruct(v Map, field reflect.Value) error {
 }
 
 // unmarshalNull handles unmarshaling of Null values.
-func unmarshalNull(v Null, field reflect.Value) error {
+func unmarshalNull(v format.Null, field reflect.Value) error {
 	if field.Kind() == reflect.Ptr {
 		field.Set(reflect.Zero(field.Type()))
 		return nil
@@ -228,8 +228,8 @@ func unmarshalNull(v Null, field reflect.Value) error {
 }
 
 // unmarshalInterface handles unmarshaling of interface values.
-func unmarshalInterface(v value.Value, field reflect.Value) error {
-	if field.Type().Implements(reflect.TypeOf((*value.Value)(nil)).Elem()) {
+func unmarshalInterface(v format.Value, field reflect.Value) error {
+	if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
 		field.Set(reflect.ValueOf(v))
 		return nil
 	}
@@ -246,13 +246,13 @@ func getFieldName(field reflect.StructField) string {
 }
 
 // Marshal converts a struct into a Map that represents the struct fields as values.
-func Marshal(val any) (value.Value, error) {
+func Marshal(val any) (format.Value, error) {
 	v := reflect.ValueOf(val)
 	return marshalValue(v)
 }
 
 // marshalValue handles marshaling of different value types.
-func marshalValue(v reflect.Value) (value.Value, error) {
+func marshalValue(v reflect.Value) (format.Value, error) {
 	// Dereference pointer if necessary
 	for v.Kind() == reflect.Ptr {
 		if v.IsNil() {
@@ -278,7 +278,7 @@ func marshalValue(v reflect.Value) (value.Value, error) {
 		return NewString(v.String()), nil
 	default:
 		if v.CanInterface() {
-			if val, ok := v.Interface().(value.Value); ok {
+			if val, ok := v.Interface().(format.Value); ok {
 				return val, nil
 			}
 		}
@@ -325,7 +325,7 @@ func marshalMap(v reflect.Value) (Map, error) {
 			return nil, fmt.Errorf("error marshaling map key: %w", err)
 		}
 
-		stringKey, ok := marshaledKey.(String)
+		stringKey, ok := marshaledKey.(format.String)
 		if !ok {
 			return nil, fmt.Errorf("map key must be a string, got %T", marshaledKey)
 		}

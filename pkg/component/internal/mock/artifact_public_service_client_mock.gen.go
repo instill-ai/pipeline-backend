@@ -3,17 +3,14 @@
 package mock
 
 import (
-	"sync"
-
 	context "context"
+	"sync"
 	mm_atomic "sync/atomic"
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
-
-	grpc "google.golang.org/grpc"
-
 	mm_artifactv1alpha "github.com/instill-ai/protogen-go/artifact/artifact/v1alpha"
+	grpc "google.golang.org/grpc"
 )
 
 // ArtifactPublicServiceClientMock implements mm_artifactv1alpha.ArtifactPublicServiceClient

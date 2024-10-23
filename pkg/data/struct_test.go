@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	qt "github.com/frankban/quicktest"
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
 func TestUnmarshal(t *testing.T) {
@@ -12,11 +13,11 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Basic types", func(c *qt.C) {
 		type TestStruct struct {
-			StringField   String   `key:"string-field"`
-			NumberField   Number   `key:"number-field"`
-			BooleanField  Boolean  `key:"boolean-field"`
-			FloatField    float64  `key:"float-field"`
-			FloatPtrField *float64 `key:"float-ptr-field"`
+			StringField   format.String  `key:"string-field"`
+			NumberField   format.Number  `key:"number-field"`
+			BooleanField  format.Boolean `key:"boolean-field"`
+			FloatField    float64        `key:"float-field"`
+			FloatPtrField *float64       `key:"float-ptr-field"`
 		}
 
 		floatVal := 42.5
@@ -41,11 +42,11 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Nested struct", func(c *qt.C) {
 		type NestedStruct struct {
-			NestedField String `key:"nested-field"`
+			NestedField format.String `key:"nested-field"`
 		}
 
 		type TestStruct struct {
-			TopField     String        `key:"top-field"`
+			TopField     format.String `key:"top-field"`
 			NestedStruct NestedStruct  `key:"nested-struct"`
 			NestedPtr    *NestedStruct `key:"nested-ptr"`
 		}
@@ -71,9 +72,9 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Array", func(c *qt.C) {
 		type TestStruct struct {
-			ArrayField  Array    `key:"array-field"`
-			StringArray []String `key:"string-array"`
-			NumberArray []Number `key:"number-array"`
+			ArrayField  Array           `key:"array-field"`
+			StringArray []format.String `key:"string-array"`
+			NumberArray []format.Number `key:"number-array"`
 		}
 
 		input := Map{
@@ -87,9 +88,9 @@ func TestUnmarshal(t *testing.T) {
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(len(result.ArrayField), qt.Equals, 3)
-		c.Assert(result.ArrayField[0].(String).String(), qt.Equals, "one")
-		c.Assert(result.ArrayField[1].(String).String(), qt.Equals, "two")
-		c.Assert(result.ArrayField[2].(String).String(), qt.Equals, "three")
+		c.Assert(result.ArrayField[0].(format.String).String(), qt.Equals, "one")
+		c.Assert(result.ArrayField[1].(format.String).String(), qt.Equals, "two")
+		c.Assert(result.ArrayField[2].(format.String).String(), qt.Equals, "three")
 
 		c.Assert(len(result.StringArray), qt.Equals, 3)
 		c.Assert(result.StringArray[0].String(), qt.Equals, "a")
@@ -104,9 +105,9 @@ func TestUnmarshal(t *testing.T) {
 
 	c.Run("Map", func(c *qt.C) {
 		type TestStruct struct {
-			MapField  Map                    `key:"map-field"`
-			StringMap map[string]String      `key:"string-map"`
-			ValueMap  map[string]value.Value `key:"value-map"`
+			MapField  Map                      `key:"map-field"`
+			StringMap map[string]format.String `key:"string-map"`
+			ValueMap  map[string]format.Value  `key:"value-map"`
 		}
 
 		input := Map{
@@ -130,22 +131,22 @@ func TestUnmarshal(t *testing.T) {
 
 		c.Assert(err, qt.IsNil)
 		c.Assert(len(result.MapField), qt.Equals, 2)
-		c.Assert(result.MapField["key1"].(String).String(), qt.Equals, "value1")
-		c.Assert(result.MapField["key2"].(String).String(), qt.Equals, "value2")
+		c.Assert(result.MapField["key1"].(format.String).String(), qt.Equals, "value1")
+		c.Assert(result.MapField["key2"].(format.String).String(), qt.Equals, "value2")
 
 		c.Assert(len(result.StringMap), qt.Equals, 2)
 		c.Assert(result.StringMap["a"].String(), qt.Equals, "A")
 		c.Assert(result.StringMap["b"].String(), qt.Equals, "B")
 
 		c.Assert(len(result.ValueMap), qt.Equals, 3)
-		c.Assert(result.ValueMap["str"].(String).String(), qt.Equals, "string")
-		c.Assert(result.ValueMap["num"].(Number).Float64(), qt.Equals, 42.0)
-		c.Assert(result.ValueMap["bool"].(Boolean).Boolean(), qt.Equals, true)
+		c.Assert(result.ValueMap["str"].(format.String).String(), qt.Equals, "string")
+		c.Assert(result.ValueMap["num"].(format.Number).Float64(), qt.Equals, 42.0)
+		c.Assert(result.ValueMap["bool"].(format.Boolean).Boolean(), qt.Equals, true)
 	})
 
 	c.Run("Null", func(c *qt.C) {
 		type TestStruct struct {
-			NullField *String `key:"null-field"`
+			NullField *format.String `key:"null-field"`
 		}
 
 		input := Map{
@@ -185,9 +186,9 @@ func TestMarshal(t *testing.T) {
 
 	c.Run("Basic types", func(c *qt.C) {
 		input := struct {
-			StringField  String  `key:"string-field"`
-			NumberField  Number  `key:"number-field"`
-			BooleanField Boolean `key:"boolean-field"`
+			StringField  format.String  `key:"string-field"`
+			NumberField  format.Number  `key:"number-field"`
+			BooleanField format.Boolean `key:"boolean-field"`
 		}{
 			StringField:  NewString("test"),
 			NumberField:  NewNumberFromFloat(42.5),
@@ -199,21 +200,21 @@ func TestMarshal(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
 		c.Assert(ok, qt.IsTrue)
-		c.Assert(m["string-field"].(String).String(), qt.Equals, "test")
-		c.Assert(m["number-field"].(Number).Float64(), qt.Equals, 42.5)
-		c.Assert(m["boolean-field"].(Boolean).Boolean(), qt.Equals, true)
+		c.Assert(m["string-field"].(format.String).String(), qt.Equals, "test")
+		c.Assert(m["number-field"].(format.Number).Float64(), qt.Equals, 42.5)
+		c.Assert(m["boolean-field"].(format.Boolean).Boolean(), qt.Equals, true)
 	})
 
 	c.Run("Nested struct", func(c *qt.C) {
 		input := struct {
-			TopField     String `key:"top-field"`
+			TopField     format.String `key:"top-field"`
 			NestedStruct struct {
-				NestedField String `key:"nested-field"`
+				NestedField format.String `key:"nested-field"`
 			} `key:"nested-struct"`
 		}{
 			TopField: NewString("top"),
 			NestedStruct: struct {
-				NestedField String `key:"nested-field"`
+				NestedField format.String `key:"nested-field"`
 			}{
 				NestedField: NewString("nested"),
 			},
@@ -224,10 +225,10 @@ func TestMarshal(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
 		c.Assert(ok, qt.IsTrue)
-		c.Assert(m["top-field"].(String).String(), qt.Equals, "top")
+		c.Assert(m["top-field"].(format.String).String(), qt.Equals, "top")
 		nestedMap, ok := m["nested-struct"].(Map)
 		c.Assert(ok, qt.IsTrue)
-		c.Assert(nestedMap["nested-field"].(String).String(), qt.Equals, "nested")
+		c.Assert(nestedMap["nested-field"].(format.String).String(), qt.Equals, "nested")
 	})
 
 	c.Run("Array", func(c *qt.C) {
@@ -245,9 +246,9 @@ func TestMarshal(t *testing.T) {
 		arr, ok := m["array-field"].(Array)
 		c.Assert(ok, qt.IsTrue)
 		c.Assert(len(arr), qt.Equals, 3)
-		c.Assert(arr[0].(String).String(), qt.Equals, "one")
-		c.Assert(arr[1].(String).String(), qt.Equals, "two")
-		c.Assert(arr[2].(String).String(), qt.Equals, "three")
+		c.Assert(arr[0].(format.String).String(), qt.Equals, "one")
+		c.Assert(arr[1].(format.String).String(), qt.Equals, "two")
+		c.Assert(arr[2].(format.String).String(), qt.Equals, "three")
 	})
 
 	c.Run("Map", func(c *qt.C) {
@@ -268,13 +269,13 @@ func TestMarshal(t *testing.T) {
 		mapField, ok := m["map-field"].(Map)
 		c.Assert(ok, qt.IsTrue)
 		c.Assert(len(mapField), qt.Equals, 2)
-		c.Assert(mapField["key1"].(String).String(), qt.Equals, "value1")
-		c.Assert(mapField["key2"].(String).String(), qt.Equals, "value2")
+		c.Assert(mapField["key1"].(format.String).String(), qt.Equals, "value1")
+		c.Assert(mapField["key2"].(format.String).String(), qt.Equals, "value2")
 	})
 
 	c.Run("Null", func(c *qt.C) {
 		input := struct {
-			NullField *String `key:"null-field"`
+			NullField *format.String `key:"null-field"`
 		}{
 			NullField: nil,
 		}
@@ -290,8 +291,8 @@ func TestMarshal(t *testing.T) {
 	c.Run("Pointer fields", func(c *qt.C) {
 		floatVal := 42.5
 		input := struct {
-			FloatPtr  *float64 `key:"float-ptr"`
-			StringPtr String   `key:"string-ptr"`
+			FloatPtr  *float64      `key:"float-ptr"`
+			StringPtr format.String `key:"string-ptr"`
 		}{
 			FloatPtr:  &floatVal,
 			StringPtr: NewString("pointer string"),
@@ -302,27 +303,27 @@ func TestMarshal(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
 		c.Assert(ok, qt.IsTrue)
-		c.Assert(m["float-ptr"].(Number).Float64(), qt.Equals, 42.5)
-		c.Assert(m["string-ptr"].(String).String(), qt.Equals, "pointer string")
+		c.Assert(m["float-ptr"].(format.Number).Float64(), qt.Equals, 42.5)
+		c.Assert(m["string-ptr"].(format.String).String(), qt.Equals, "pointer string")
 	})
 
 	c.Run("Complex nested structure", func(c *qt.C) {
 		type NestedStruct struct {
-			NestedField String `key:"nested-field"`
+			NestedField format.String `key:"nested-field"`
 		}
 
 		input := struct {
-			Text    String                 `key:"text"`
-			Numbers []Number               `key:"numbers"`
-			Object  NestedStruct           `key:"object"`
-			TextMap map[string]value.Value `key:"text-map"`
+			Text    format.String           `key:"text"`
+			Numbers []format.Number         `key:"numbers"`
+			Object  NestedStruct            `key:"object"`
+			TextMap map[string]format.Value `key:"text-map"`
 		}{
 			Text:    NewString("example text"),
-			Numbers: []Number{NewNumberFromFloat(1), NewNumberFromFloat(2), NewNumberFromFloat(3)},
+			Numbers: []format.Number{NewNumberFromFloat(1), NewNumberFromFloat(2), NewNumberFromFloat(3)},
 			Object: NestedStruct{
 				NestedField: NewString("nested text"),
 			},
-			TextMap: map[string]value.Value{
+			TextMap: map[string]format.Value{
 				"key1": NewString("value1"),
 				"key2": NewNumberFromFloat(42),
 			},
@@ -333,22 +334,22 @@ func TestMarshal(t *testing.T) {
 		c.Assert(err, qt.IsNil)
 		m, ok := result.(Map)
 		c.Assert(ok, qt.IsTrue)
-		c.Assert(m["text"].(String).String(), qt.Equals, "example text")
+		c.Assert(m["text"].(format.String).String(), qt.Equals, "example text")
 
 		numbers, ok := m["numbers"].(Array)
 		c.Assert(ok, qt.IsTrue)
 		c.Assert(len(numbers), qt.Equals, 3)
-		c.Assert(numbers[0].(Number).Float64(), qt.Equals, 1.0)
-		c.Assert(numbers[1].(Number).Float64(), qt.Equals, 2.0)
-		c.Assert(numbers[2].(Number).Float64(), qt.Equals, 3.0)
+		c.Assert(numbers[0].(format.Number).Float64(), qt.Equals, 1.0)
+		c.Assert(numbers[1].(format.Number).Float64(), qt.Equals, 2.0)
+		c.Assert(numbers[2].(format.Number).Float64(), qt.Equals, 3.0)
 
 		object, ok := m["object"].(Map)
 		c.Assert(ok, qt.IsTrue)
-		c.Assert(object["nested-field"].(String).String(), qt.Equals, "nested text")
+		c.Assert(object["nested-field"].(format.String).String(), qt.Equals, "nested text")
 
 		textMap, ok := m["text-map"].(Map)
 		c.Assert(ok, qt.IsTrue)
-		c.Assert(textMap["key1"].(String).String(), qt.Equals, "value1")
-		c.Assert(textMap["key2"].(Number).Float64(), qt.Equals, 42.0)
+		c.Assert(textMap["key1"].(format.String).String(), qt.Equals, "value1")
+		c.Assert(textMap["key2"].(format.Number).Float64(), qt.Equals, 42.0)
 	})
 }

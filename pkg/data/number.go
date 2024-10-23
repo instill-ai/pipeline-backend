@@ -5,7 +5,8 @@ import (
 
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 )
 
 type numberData struct {
@@ -34,11 +35,11 @@ func (n *numberData) String() string {
 	return fmt.Sprintf("%f", n.Raw)
 }
 
-func (n *numberData) Get(path string) (v value.Value, err error) {
-	if path == "" {
+func (n *numberData) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
 		return n, nil
 	}
-	return nil, fmt.Errorf("wrong path %s for Number", path)
+	return nil, fmt.Errorf("path not found: %s", p)
 }
 
 func (n numberData) ToStructValue() (v *structpb.Value, err error) {

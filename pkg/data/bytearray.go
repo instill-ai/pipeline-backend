@@ -6,7 +6,8 @@ import (
 
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 )
 
 type byteArrayData struct {
@@ -27,11 +28,11 @@ func (b *byteArrayData) String() (val string) {
 	return base64.StdEncoding.EncodeToString(b.Raw)
 }
 
-func (b *byteArrayData) Get(path string) (v value.Value, err error) {
-	if path == "" {
+func (b *byteArrayData) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
 		return b, nil
 	}
-	return nil, fmt.Errorf("wrong path %s for byteArray", path)
+	return nil, fmt.Errorf("path not found: %s", p)
 }
 
 func (b byteArrayData) ToStructValue() (v *structpb.Value, err error) {
