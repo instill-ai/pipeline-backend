@@ -1,4 +1,4 @@
-//go:generate compogen readme ./config ./README.mdx --extraContents TASK_SCRAPE_PAGE=.compogen/scrape_page.mdx --extraContents bottom=.compogen/bottom.mdx
+//go:generate compogen readme ./config ./README.mdx --extraContents TASK_SCRAPE_PAGES=.compogen/scrape_page.mdx --extraContents bottom=.compogen/bottom.mdx
 package web
 
 import (
@@ -17,7 +17,7 @@ import (
 
 const (
 	taskCrawlSite     = "TASK_CRAWL_SITE"
-	taskScrapePage    = "TASK_SCRAPE_PAGE"
+	taskScrapePage    = "TASK_SCRAPE_PAGES"
 	taskScrapeSitemap = "TASK_SCRAPE_SITEMAP"
 )
 

@@ -2,43 +2,7 @@
 
 ## Example Recipes
 
+### TODO: Will add the sample when implementation is done
 ```yaml
-version: v1beta
 
-variable:
-  url:
-    title: url
-    instill-format: string
-
-component:
-  crawler:
-    type: web
-    input:
-      root-url: ${variable.url}
-      allowed-domains:
-      max-k: 10
-      timeout: 0
-      max-depth: 0
-    condition:
-    task: TASK_CRAWL_SITE
-
-  scraper:
-    type: web
-    input:
-      url: ${crawler.output.pages[0].link}
-      include-html: false
-      only-main-content: true
-      remove-tags:
-      only-include-tags:
-      timeout: 1000
-    condition:
-    task: TASK_SCRAPE_PAGE
-
-output:
-  markdown:
-    title: Markdown
-    value: ${scraper.output.markdown}
-  links:
-    title: links
-    value: ${scraper.output.links-on-page}
 ```

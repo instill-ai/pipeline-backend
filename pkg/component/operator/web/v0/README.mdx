@@ -8,7 +8,7 @@ description: "Learn about how to set up a VDP Web component https://github.com/i
 The Web component is an operator component that allows users to scrape websites.
 It can carry out the following tasks:
 - [Crawl Site](#crawl-site)
-- [Scrape Page](#scrape-page)
+- [Scrape Pages](#scrape-pages)
 - [Scrape Sitemap](#scrape-sitemap)
 
 
@@ -72,16 +72,16 @@ This task involves systematically navigating through a website, starting from a 
 </div>
 </details>
 
-### Scrape Page
+### Scrape Pages
 
-This task focuses on extracting specific data from a single targeted webpage by parsing its HTML structure. Unlike crawling, which navigates across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`. Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data.
+This task focuses on extracting specific data from targeted webpages by parsing its HTML structure. Unlike crawling, which navigates across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`. Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
 | Input | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_SCRAPE_PAGE` |
-| URL (required) | `url` | string | The URL to scrape the webpage contents. |
+| Task ID (required) | `task` | string | `TASK_SCRAPE_PAGES` |
+| URL (required) | `urls` | string | The URLs to scrape the webpage contents. |
 | Scrape Method (required) | `scrape-method` | string | Defines the method used for web scraping. Available options include 'http' for standard HTTP-based scraping and 'chrome-simulator' for scraping through a simulated Chrome browser environment. |
 | Include HTML | `include-html` | boolean | Indicate whether to include the raw HTML of the webpage in the output. If you want to include the raw HTML, set this to true. |
 | Only Main Content | `only-main-content` | boolean | Only return the main content of the page by excluding the content of the tag of header, nav, footer. |
@@ -99,17 +99,26 @@ This task focuses on extracting specific data from a single targeted webpage by 
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| Content | `content` | string | The scraped plain content without html tags of the webpage. |
-| Markdown | `markdown` | string | The scraped markdown of the webpage. |
-| HTML (optional) | `html` | string | The scraped html of the webpage. |
-| [Metadata](#scrape-page-metadata) (optional) | `metadata` | object | The metadata of the webpage. |
-| Links on Page (optional) | `links-on-page` | array[string] | The list of links on the webpage. |
+| [Pages](#scrape-pages-pages) | `pages` | array[object] | A list of page objects that have been scraped. |
 </div>
 
 <details>
-<summary> Output Objects in Scrape Page</summary>
+<summary> Output Objects in Scrape Pages</summary>
 
-<h4 id="scrape-page-metadata">Metadata</h4>
+<h4 id="scrape-pages-pages">Pages</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | The scraped plain content without html tags of the webpage. |
+| HTML | `html` | string | The scraped html of the webpage. |
+| Links on Page | `links-on-page` | array | The list of links on the webpage. |
+| Markdown | `markdown` | string | The scraped markdown of the webpage. |
+| [Metadata](#scrape-pages-metadata) | `metadata` | object | The metadata of the webpage. |
+</div>
+
+<h4 id="scrape-pages-metadata">Metadata</h4>
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -148,7 +157,7 @@ This task focuses on extracting specific data from a single targeted webpage by 
 
 
 #### About Dynamic Content
-`TASK_SCRAPE_PAGE` supports fetching dynamic content from web pages by simulating user behaviours, such as scrolling down. The initial implementation includes the following capabilities:
+`TASK_SCRAPE_PAGES` supports fetching dynamic content from web pages by simulating user behaviours, such as scrolling down. The initial implementation includes the following capabilities:
 
 Scrolling:
 - Mimics user scrolling down the page to load additional content dynamically.
@@ -158,7 +167,7 @@ Future enhancements will include additional user interactions, such as:
 - Taking Screenshots: Capture screenshots of the current view.
 - Keyboard Actions: Simulate key presses and other keyboard interactions.
 
-`TASK_SCRAPE_PAGE` aims to provide a robust framework for interacting with web pages and extracting dynamic content effectively.
+`TASK_SCRAPE_PAGES` aims to provide a robust framework for interacting with web pages and extracting dynamic content effectively.
 
 ### Scrape Sitemap
 
@@ -189,43 +198,7 @@ This task extracts data directly from a website’s sitemap. A sitemap is typica
 
 ## Example Recipes
 
+### TODO: Will add the sample when implementation is done
 ```yaml
-version: v1beta
 
-variable:
-  url:
-    title: url
-    instill-format: string
-
-component:
-  crawler:
-    type: web
-    input:
-      root-url: ${variable.url}
-      allowed-domains:
-      max-k: 10
-      timeout: 0
-      max-depth: 0
-    condition:
-    task: TASK_CRAWL_SITE
-
-  scraper:
-    type: web
-    input:
-      url: ${crawler.output.pages[0].link}
-      include-html: false
-      only-main-content: true
-      remove-tags:
-      only-include-tags:
-      timeout: 1000
-    condition:
-    task: TASK_SCRAPE_PAGE
-
-output:
-  markdown:
-    title: Markdown
-    value: ${scraper.output.markdown}
-  links:
-    title: links
-    value: ${scraper.output.links-on-page}
 ```

@@ -219,13 +219,13 @@
       "type": "object"
     }
   },
-  "TASK_SCRAPE_PAGE": {
-    "instillShortDescription": "This task focuses on extracting specific data from a single targeted webpage by parsing its HTML structure. Unlike crawling, which navigates across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`. Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data.",
+  "TASK_SCRAPE_PAGES": {
+    "instillShortDescription": "This task focuses on extracting specific data from targeted webpages by parsing its HTML structure. Unlike crawling, which navigates across multiple pages, scraping retrieves content only from the specified page. After scraping, the data can be further processed using a defined [jQuery](https://www.w3schools.com/jquery/jquery_syntax.asp) in a specified sequence. The sequence of jQuery filtering data will be executed in the order of `only-main-content`, `remove-tags`, and `only-include-tags`. Refer to the [jQuery Syntax Examples](#jquery-syntax-examples) for more details on how to filter and manipulate the data.",
     "input": {
       "instillUIOrder": 0,
       "properties": {
-        "url": {
-          "description": "The URL to scrape the webpage contents.",
+        "urls": {
+          "description": "The URLs to scrape the webpage contents.",
           "instillAcceptFormats": [
             "string"
           ],
@@ -332,7 +332,7 @@
         }
       },
       "required": [
-        "url",
+        "urls",
         "scrape-method"
       ],
       "title": "Input",
@@ -341,76 +341,91 @@
     "output": {
       "instillUIOrder": 0,
       "properties": {
-        "content": {
-          "description": "The scraped plain content without html tags of the webpage.",
-          "instillFormat": "string",
+        "pages": {
+          "description": "A list of page objects that have been scraped.",
+          "instillFormat": "array:object",
           "instillUIOrder": 0,
-          "title": "Content",
-          "type": "string"
-        },
-        "markdown": {
-          "description": "The scraped markdown of the webpage.",
-          "instillFormat": "string",
-          "instillUIOrder": 1,
-          "title": "Markdown",
-          "type": "string"
-        },
-        "html": {
-          "description": "The scraped html of the webpage.",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "title": "HTML",
-          "type": "string"
-        },
-        "metadata": {
-          "description": "The metadata of the webpage.",
-          "instillFormat": "object",
-          "instillUIOrder": 3,
-          "properties": {
-            "title": {
-              "description": "The title of the webpage.",
-              "instillFormat": "string",
-              "title": "Title",
-              "instillUIOrder": 0,
-              "type": "string"
-            },
-            "description": {
-              "description": "The description of the webpage.",
-              "instillFormat": "string",
-              "title": "Description",
-              "instillUIOrder": 1,
-              "type": "string"
-            },
-            "source-url": {
-              "description": "The source URL of the webpage.",
-              "instillFormat": "string",
-              "title": "Source URL",
-              "instillUIOrder": 2,
-              "type": "string"
-            }
-          },
-          "required": [
-            "title",
-            "source-url"
-          ],
-          "title": "Metadata",
-          "type": "object"
-        },
-        "links-on-page": {
-          "description": "The list of links on the webpage.",
-          "instillUIOrder": 4,
-          "instillFormat": "array:string",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "content": {
+                "description": "The scraped plain content without html tags of the webpage.",
+                "instillFormat": "string",
+                "instillUIOrder": 0,
+                "title": "Content",
+                "type": "string"
+              },
+              "markdown": {
+                "description": "The scraped markdown of the webpage.",
+                "instillFormat": "string",
+                "instillUIOrder": 1,
+                "title": "Markdown",
+                "type": "string"
+              },
+              "html": {
+                "description": "The scraped html of the webpage.",
+                "instillFormat": "string",
+                "instillUIMultiline": true,
+                "instillUIOrder": 2,
+                "title": "HTML",
+                "type": "string"
+              },
+              "metadata": {
+                "description": "The metadata of the webpage.",
+                "instillFormat": "object",
+                "instillUIOrder": 3,
+                "properties": {
+                  "title": {
+                    "description": "The title of the webpage.",
+                    "instillFormat": "string",
+                    "title": "Title",
+                    "instillUIOrder": 0,
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "The description of the webpage.",
+                    "instillFormat": "string",
+                    "title": "Description",
+                    "instillUIOrder": 1,
+                    "type": "string"
+                  },
+                  "source-url": {
+                    "description": "The source URL of the webpage.",
+                    "instillFormat": "string",
+                    "title": "Source URL",
+                    "instillUIOrder": 2,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title",
+                  "source-url"
+                ],
+                "title": "Metadata",
+                "type": "object"
+              },
+              "links-on-page": {
+                "description": "The list of links on the webpage.",
+                "instillUIOrder": 4,
+                "instillFormat": "array:string",
+                "items": {
+                  "type": "string"
+                },
+                "title": "Links on Page",
+                "type": "array"
+              }
+            },
+            "required": [
+              "content",
+              "markdown"
+            ]
           },
-          "title": "Links on Page",
+          "title": "Pages",
           "type": "array"
         }
       },
       "required": [
-        "content",
-        "markdown"
+        "pages"
       ],
       "title": "Output",
       "type": "object"
