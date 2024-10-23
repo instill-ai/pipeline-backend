@@ -9,14 +9,13 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 func RequiredToRepair(pdfBase64 string) bool {
 
 	paramsJSON := map[string]interface{}{
-		"PDF": base.TrimBase64Mime(pdfBase64),
+		"PDF": util.TrimBase64Mime(pdfBase64),
 	}
 
 	pythonCode := pdfTransformer + pdfChecker

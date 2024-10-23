@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 type converterOutput struct {
@@ -21,7 +21,7 @@ func convertPDFToMarkdownWithPDFPlumber(base64Text string, displayImageTag bool,
 
 	var pdfBase64 string
 	var err error
-	pdfBase64WithoutMime := base.TrimBase64Mime(base64Text)
+	pdfBase64WithoutMime := util.TrimBase64Mime(base64Text)
 	if RequiredToRepair(base64Text) {
 		pdfBase64, err = RepairPDF(pdfBase64WithoutMime)
 		if err != nil {

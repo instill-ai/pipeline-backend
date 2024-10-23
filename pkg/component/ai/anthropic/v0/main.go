@@ -17,6 +17,7 @@ import (
 	anthropicsdk "github.com/anthropics/anthropic-sdk-go"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 const (
@@ -286,7 +287,7 @@ func (e *execution) generateText(_ *structpb.Struct, job *base.Job, ctx context.
 			job.Error.Error(ctx, err)
 			return nil, fmt.Errorf("unsupported image extension, expected one of: %v , got %s", supportedImageExtensions, extension)
 		}
-		blocks = append(blocks, anthropicsdk.NewImageBlockBase64(fmt.Sprintf("image/%s", extension), base.TrimBase64Mime(image)))
+		blocks = append(blocks, anthropicsdk.NewImageBlockBase64(fmt.Sprintf("image/%s", extension), util.TrimBase64Mime(image)))
 	}
 	messages = append(messages, anthropicsdk.NewUserMessage(blocks...))
 	messageParams.Messages = anthropicsdk.F(messages)

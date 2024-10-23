@@ -9,6 +9,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v0"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
 	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 )
@@ -93,11 +94,11 @@ func (e *execution) executeTextGenerationChat(grpcClient modelPB.ModelPublicServ
 		userContents := []Content{}
 		userContents = append(userContents, Content{Type: "text", Text: inputStruct.Prompt})
 		for _, image := range inputStruct.PromptImages {
-			b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(image))
+			b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(image))
 			if err != nil {
 				return nil, err
 			}
-			url := fmt.Sprintf("data:%s;base64,%s", mimetype.Detect(b).String(), base.TrimBase64Mime(image))
+			url := fmt.Sprintf("data:%s;base64,%s", mimetype.Detect(b).String(), util.TrimBase64Mime(image))
 			userContents = append(userContents, Content{Type: "image-base64", ImageBase64: url})
 		}
 		messages = append(messages, Message{Role: "user", Content: userContents})

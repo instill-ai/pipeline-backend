@@ -14,7 +14,6 @@ import (
 
 	"code.sajari.com/docconv"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
@@ -146,7 +145,7 @@ func ConvertToText(input ConvertToTextTransformerInput) (ConvertToTextTransforme
 		return ConvertToTextTransformerOutput{}, err
 	}
 
-	b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(input.Document))
+	b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(input.Document))
 	if err != nil {
 		return ConvertToTextTransformerOutput{}, err
 	}
