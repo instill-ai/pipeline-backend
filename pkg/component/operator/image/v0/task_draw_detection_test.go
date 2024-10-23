@@ -96,6 +96,7 @@ func TestDrawDetection(t *testing.T) {
 			var capturedOutput any
 			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
 				capturedOutput = output
+				compareTestImage(c, output.(drawDetectionOutput).Image, "task_draw_detection")
 				return nil
 			})
 			eh.ErrorMock.Set(func(ctx context.Context, err error) {

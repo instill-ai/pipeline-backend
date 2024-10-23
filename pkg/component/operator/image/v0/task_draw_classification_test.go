@@ -86,6 +86,7 @@ func TestDrawClassification(t *testing.T) {
 			var capturedOutput any
 			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
 				capturedOutput = output
+				compareTestImage(c, output.(drawClassificationOutput).Image, "task_draw_classification")
 				return nil
 			})
 			eh.ErrorMock.Set(func(ctx context.Context, err error) {

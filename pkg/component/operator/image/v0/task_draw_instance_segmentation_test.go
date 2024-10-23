@@ -108,6 +108,7 @@ func TestDrawInstanceSegmentation(t *testing.T) {
 			var capturedOutput any
 			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
 				capturedOutput = output
+				compareTestImage(c, output.(drawInstanceSegmentationOutput).Image, "task_draw_instance_segmentation")
 				return nil
 			})
 			eh.ErrorMock.Set(func(ctx context.Context, err error) {

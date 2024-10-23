@@ -84,6 +84,7 @@ func TestDrawSemanticSegmentation(t *testing.T) {
 			var capturedOutput any
 			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
 				capturedOutput = output
+				compareTestImage(c, output.(drawSemanticSegmentationOutput).Image, "task_draw_semantic_segmentation")
 				return nil
 			})
 			eh.ErrorMock.Set(func(ctx context.Context, err error) {
