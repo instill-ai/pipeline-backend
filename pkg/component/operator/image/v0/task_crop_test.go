@@ -103,6 +103,7 @@ func TestCrop(t *testing.T) {
 			var capturedOutput any
 			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
 				capturedOutput = output
+				compareTestImage(c, output.(cropOutput).Image, "task_crop")
 				return nil
 			})
 			eh.ErrorMock.Set(func(ctx context.Context, err error) {

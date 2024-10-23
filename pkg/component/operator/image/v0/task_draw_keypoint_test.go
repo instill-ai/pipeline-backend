@@ -96,6 +96,7 @@ func TestDrawKeypoint(t *testing.T) {
 			var capturedOutput any
 			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
 				capturedOutput = output
+				compareTestImage(c, output.(drawKeypointOutput).Image, "task_draw_keypoint")
 				return nil
 			})
 			eh.ErrorMock.Set(func(ctx context.Context, err error) {
