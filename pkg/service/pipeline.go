@@ -692,12 +692,14 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 	var metadata []byte
 
 	instillFormatMap := map[string]string{}
+	defaultValueMap := map[string]any{}
 
 	schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
 	schStruct.Fields["type"] = structpb.NewStringValue("object")
 	for k, v := range r.Variable {
 		v.InstillFormat = utils.ConvertInstillFormat(v.InstillFormat)
 		instillFormatMap[k] = v.InstillFormat
+		defaultValueMap[k] = v.Default
 	}
 
 	b, _ := json.Marshal(r.Variable)
@@ -799,135 +801,238 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 	for idx, d := range pipelineData {
 
-		// TODO: refactor array parser
 		variable := data.Map{}
-		for k, v := range d.Variable.Fields {
+		for k := range instillFormatMap {
+			v := d.Variable.Fields[k]
 			if _, ok := instillFormatMap[k]; !ok {
 				continue
 			}
 			switch instillFormatMap[k] {
 			case "boolean":
-				variable[k] = data.NewBoolean(v.GetBoolValue())
+				if v == nil {
+					variable[k] = data.NewBoolean(defaultValueMap[k].(bool))
+				} else {
+					variable[k] = data.NewBoolean(v.GetBoolValue())
+				}
 			case "array:boolean":
-				array := make(data.Array, len(v.GetListValue().Values))
-				for idx, val := range v.GetListValue().Values {
-					array[idx] = data.NewBoolean(val.GetBoolValue())
+				if v == nil {
+					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					for idx, val := range defaultValueMap[k].([]any) {
+						array[idx] = data.NewBoolean(val.(bool))
+					}
+					variable[k] = array
+				} else {
+					array := make(data.Array, len(v.GetListValue().Values))
+					for idx, val := range v.GetListValue().Values {
+						array[idx] = data.NewBoolean(val.GetBoolValue())
+					}
+					variable[k] = array
 				}
-				variable[k] = array
 			case "string":
-				variable[k] = data.NewString(v.GetStringValue())
+				if v == nil {
+					variable[k] = data.NewString(defaultValueMap[k].(string))
+				} else {
+					variable[k] = data.NewString(v.GetStringValue())
+				}
 			case "array:string":
-				array := make(data.Array, len(v.GetListValue().Values))
-				for idx, val := range v.GetListValue().Values {
-					array[idx] = data.NewString(val.GetStringValue())
+				if v == nil {
+					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					for idx, val := range defaultValueMap[k].([]any) {
+						array[idx] = data.NewString(val.(string))
+					}
+					variable[k] = array
+				} else {
+					array := make(data.Array, len(v.GetListValue().Values))
+					for idx, val := range v.GetListValue().Values {
+						array[idx] = data.NewString(val.GetStringValue())
+					}
+					variable[k] = array
 				}
-				variable[k] = array
 			case "integer":
-				variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
+				if v == nil {
+					variable[k] = data.NewNumberFromFloat(defaultValueMap[k].(float64))
+				} else {
+					variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
+				}
 			case "array:integer":
-				array := make(data.Array, len(v.GetListValue().Values))
-				for idx, val := range v.GetListValue().Values {
-					array[idx] = data.NewNumberFromFloat(val.GetNumberValue())
+				if v == nil {
+					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					for idx, val := range defaultValueMap[k].([]any) {
+						array[idx] = data.NewNumberFromFloat(val.(float64))
+					}
+					variable[k] = array
+				} else {
+					array := make(data.Array, len(v.GetListValue().Values))
+					for idx, val := range v.GetListValue().Values {
+						array[idx] = data.NewNumberFromFloat(val.GetNumberValue())
+					}
+					variable[k] = array
 				}
-				variable[k] = array
 			case "number":
-				variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
-			case "array:number":
-				array := make(data.Array, len(v.GetListValue().Values))
-				for idx, val := range v.GetListValue().Values {
-					array[idx] = data.NewNumberFromFloat(val.GetNumberValue())
+				if v == nil {
+					variable[k] = data.NewNumberFromFloat(defaultValueMap[k].(float64))
+				} else {
+					variable[k] = data.NewNumberFromFloat(v.GetNumberValue())
 				}
-				variable[k] = array
+			case "array:number":
+				if v == nil {
+					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					for idx, val := range defaultValueMap[k].([]any) {
+						array[idx] = data.NewNumberFromFloat(val.(float64))
+					}
+					variable[k] = array
+				} else {
+					array := make(data.Array, len(v.GetListValue().Values))
+					for idx, val := range v.GetListValue().Values {
+						array[idx] = data.NewNumberFromFloat(val.GetNumberValue())
+					}
+					variable[k] = array
+				}
 			case "image", "image/*":
-				variable[k], err = data.NewImageFromURL(v.GetStringValue())
-				if err != nil {
-					return err
+				if v == nil {
+					variable[k] = data.NewString(defaultValueMap[k].(string))
+				} else {
+					variable[k], err = data.NewImageFromURL(v.GetStringValue())
+					if err != nil {
+						return err
+					}
 				}
 			case "array:image", "array:image/*":
-				array := make(data.Array, len(v.GetListValue().Values))
-				for idx, val := range v.GetListValue().Values {
-					array[idx], err = data.NewImageFromURL(val.GetStringValue())
+				if v == nil {
+					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					for idx, val := range defaultValueMap[k].([]any) {
+						array[idx] = data.NewString(val.(string))
+					}
+					variable[k] = array
+				} else {
+					array := make(data.Array, len(v.GetListValue().Values))
+					for idx, val := range v.GetListValue().Values {
+						array[idx], err = data.NewImageFromURL(val.GetStringValue())
+						if err != nil {
+							return err
+						}
+					}
+					variable[k] = array
+				}
+			case "audio", "audio/*":
+				if v == nil {
+					variable[k] = data.NewString(defaultValueMap[k].(string))
+				} else {
+					variable[k], err = data.NewAudioFromURL(v.GetStringValue())
 					if err != nil {
 						return err
 					}
-				}
-				variable[k] = array
-			case "audio", "audio/*":
-				variable[k], err = data.NewAudioFromURL(v.GetStringValue())
-				if err != nil {
-					return err
 				}
 			case "array:audio", "array:audio/*":
-				array := make(data.Array, len(v.GetListValue().Values))
-				for idx, val := range v.GetListValue().Values {
-					array[idx], err = data.NewAudioFromURL(val.GetStringValue())
+				if v == nil {
+					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					for idx, val := range defaultValueMap[k].([]any) {
+						array[idx] = data.NewString(val.(string))
+					}
+					variable[k] = array
+				} else {
+					array := make(data.Array, len(v.GetListValue().Values))
+					for idx, val := range v.GetListValue().Values {
+						array[idx], err = data.NewAudioFromURL(val.GetStringValue())
+						if err != nil {
+							return err
+						}
+					}
+					variable[k] = array
+				}
+			case "video", "video/*":
+				if v == nil {
+					variable[k] = data.NewString(defaultValueMap[k].(string))
+				} else {
+					variable[k], err = data.NewVideoFromURL(v.GetStringValue())
 					if err != nil {
 						return err
 					}
-				}
-				variable[k] = array
-			case "video", "video/*":
-				variable[k], err = data.NewVideoFromURL(v.GetStringValue())
-				if err != nil {
-					return err
 				}
 			case "array:video", "array:video/*":
-				array := make(data.Array, len(v.GetListValue().Values))
-
-				for idx, val := range v.GetListValue().Values {
-					array[idx], err = data.NewVideoFromURL(val.GetStringValue())
+				if v == nil {
+					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					for idx, val := range defaultValueMap[k].([]any) {
+						array[idx] = data.NewString(val.(string))
+					}
+					variable[k] = array
+				} else {
+					array := make(data.Array, len(v.GetListValue().Values))
+					for idx, val := range v.GetListValue().Values {
+						array[idx], err = data.NewVideoFromURL(val.GetStringValue())
+						if err != nil {
+							return err
+						}
+					}
+					variable[k] = array
+				}
+			case "document", "file", "*/*":
+				if v == nil {
+					variable[k] = data.NewString(defaultValueMap[k].(string))
+				} else {
+					variable[k], err = data.NewDocumentFromURL(v.GetStringValue())
 					if err != nil {
 						return err
 					}
-				}
-				variable[k] = array
-			case "document", "file", "*/*":
-				variable[k], err = data.NewDocumentFromURL(v.GetStringValue())
-				if err != nil {
-					return err
 				}
 			case "array:document", "array:file", "array:*/*":
-				array := make(data.Array, len(v.GetListValue().Values))
-				for idx, val := range v.GetListValue().Values {
-					array[idx], err = data.NewDocumentFromURL(val.GetStringValue())
-					if err != nil {
-						return err
+				if v == nil {
+					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					for idx, val := range defaultValueMap[k].([]any) {
+						array[idx] = data.NewString(val.(string))
 					}
+					variable[k] = array
+				} else {
+					array := make(data.Array, len(v.GetListValue().Values))
+					for idx, val := range v.GetListValue().Values {
+						array[idx], err = data.NewDocumentFromURL(val.GetStringValue())
+						if err != nil {
+							return err
+						}
+					}
+					variable[k] = array
 				}
-				variable[k] = array
 			case "semi-structured/*", "semi-structured/json", "json":
 
-				switch v.Kind.(type) {
-				case *structpb.Value_StructValue:
-					j := map[string]any{}
-					b, err := protojson.Marshal(v)
-					if err != nil {
-						return err
-					}
-					err = json.Unmarshal(b, &j)
-					if err != nil {
-						return err
-					}
-					jv, err := data.NewJSONValue(j)
+				if v == nil {
+					jv, err := data.NewJSONValue(defaultValueMap[k])
 					if err != nil {
 						return err
 					}
 					variable[k] = jv
-				case *structpb.Value_ListValue:
-					j := []any{}
-					b, err := protojson.Marshal(v)
-					if err != nil {
-						return err
+				} else {
+					switch v.Kind.(type) {
+					case *structpb.Value_StructValue:
+						j := map[string]any{}
+						b, err := protojson.Marshal(v)
+						if err != nil {
+							return err
+						}
+						err = json.Unmarshal(b, &j)
+						if err != nil {
+							return err
+						}
+						jv, err := data.NewJSONValue(j)
+						if err != nil {
+							return err
+						}
+						variable[k] = jv
+					case *structpb.Value_ListValue:
+						j := []any{}
+						b, err := protojson.Marshal(v)
+						if err != nil {
+							return err
+						}
+						err = json.Unmarshal(b, &j)
+						if err != nil {
+							return err
+						}
+						jv, err := data.NewJSONValue(j)
+						if err != nil {
+							return err
+						}
+						variable[k] = jv
 					}
-					err = json.Unmarshal(b, &j)
-					if err != nil {
-						return err
-					}
-					jv, err := data.NewJSONValue(j)
-					if err != nil {
-						return err
-					}
-					variable[k] = jv
 				}
 
 			}
