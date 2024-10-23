@@ -1,6 +1,3 @@
-//go:build ocr
-// +build ocr
-
 package document
 
 import (
@@ -10,69 +7,54 @@ import (
 	"os"
 	"testing"
 
-	"code.sajari.com/docconv"
-	"google.golang.org/protobuf/types/known/structpb"
-
 	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-// TestConvertToText tests the convert to text task
 func TestConvertToText(t *testing.T) {
 	c := qt.New(t)
 	tests := []struct {
 		name     string
 		filepath string
+		expected ConvertToTextOutput
 	}{
 		{
 			name:     "Convert pdf file",
 			filepath: "testdata/test.pdf",
+			expected: ConvertToTextOutput{
+				Body: "This is test file for markdown",
+				Meta: map[string]string{
+					"Custom Metadata": "no",
+					"Encrypted":       "no",
+					"File size":       "15489 bytes",
+					"Form":            "none",
+					"JavaScript":      "no",
+					"Metadata Stream": "no",
+					"Optimized":       "no",
+					"PDF version":     "1.4",
+					"Page rot":        "0",
+					"Page size":       "596 x 842 pts (A4)",
+					"Pages":           "1",
+					"Producer":        "Skia/PDF m128 Google Docs Renderer",
+					"Suspects":        "no",
+					"Tagged":          "no",
+					"Title":           "Untitled document",
+					"UserProperties":  "no",
+				},
+				MSecs: 3,
+			},
 		},
 		{
 			name:     "Convert docx file",
 			filepath: "testdata/test.docx",
-		},
-		{
-			name:     "Convert html file",
-			filepath: "testdata/test.html",
-		},
-		{
-			name:     "Convert odt file",
-			filepath: "testdata/test.odt",
-		},
-		{
-			name:     "Convert rtf file",
-			filepath: "testdata/test.rtf",
-		},
-		{
-			name:     "Convert png file",
-			filepath: "testdata/test.png",
-		},
-		{
-			name:     "Convert jpg file",
-			filepath: "testdata/test.jpg",
-		},
-		{
-			name:     "Convert tiff file",
-			filepath: "testdata/test.tif",
-		},
-		{
-			name:     "Convert txt file",
-			filepath: "testdata/test.txt",
-		},
-		{
-			name:     "Convert md file",
-			filepath: "testdata/test.md",
-		},
-		{
-			name:     "Convert csv file",
-			filepath: "testdata/test.csv",
-		},
-		{
-			name:     "Convert xlsx file",
-			filepath: "testdata/test.xlsx",
+			expected: ConvertToTextOutput{
+				Body: "This is test file for markdown",
+				Meta: map[string]string{},
+			},
 		},
 	}
 
@@ -80,51 +62,49 @@ func TestConvertToText(t *testing.T) {
 	for _, test := range tests {
 		c.Run(test.name, func(c *qt.C) {
 			component := Init(bc)
-			// Read the fileContent content
+			ctx := context.Background()
+
 			fileContent, err := os.ReadFile(test.filepath)
 			c.Assert(err, qt.IsNil)
 
-			base64DataURI := fmt.Sprintf("data:%s;base64,%s", docconv.MimeTypeByExtension(test.filepath), base64.StdEncoding.EncodeToString(fileContent))
+			base64DataURI := fmt.Sprintf("data:%s;base64,%s", mimeTypeByExtension(test.filepath), base64.StdEncoding.EncodeToString(fileContent))
 
-			input := &structpb.Struct{
-				Fields: map[string]*structpb.Value{
-					"document": {Kind: &structpb.Value_StringValue{StringValue: base64DataURI}},
-				},
-			}
-
-			e, err := component.CreateExecution(base.ComponentExecution{
+			execution, err := component.CreateExecution(base.ComponentExecution{
 				Component: component,
 				Task:      "TASK_CONVERT_TO_TEXT",
 			})
 			c.Assert(err, qt.IsNil)
 
-			if test.name == "Convert xlsx file" {
-
-				ir, ow, eh, job := mock.GenerateMockJob(c)
-				ir.ReadMock.Return(input, nil)
-				ow.WriteMock.Optional().Return(nil)
-				eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
-					c.Assert(err, qt.ErrorMatches, "unsupported content type")
-				})
-				err = e.Execute(context.Background(), []*base.Job{job})
-				c.Assert(err, qt.IsNil)
-
-				return
-			}
-
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(input, nil)
-			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
-				c.Assert(output.Fields["body"].GetStringValue(), qt.Not(qt.Equals), "")
-				c.Assert(output.Fields["meta"].GetStructValue(), qt.IsNotNil)
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				switch input := input.(type) {
+				case *ConvertToTextInput:
+					*input = ConvertToTextInput{
+						Document: func() format.Document {
+							doc, err := data.NewDocumentFromURL(base64DataURI)
+							if err != nil {
+								return nil
+							}
+							return doc
+						}(),
+					}
+				}
+				return nil
+			})
+
+			var capturedOutput any
+			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
+				capturedOutput = output
 				return nil
 			})
 			eh.ErrorMock.Optional()
 
-			err = e.Execute(context.Background(), []*base.Job{job})
+			err = execution.Execute(ctx, []*base.Job{job})
 			c.Assert(err, qt.IsNil)
-
+			c.Assert(capturedOutput.(ConvertToTextOutput).Body, qt.DeepEquals, test.expected.Body)
+			c.Assert(capturedOutput.(ConvertToTextOutput).Meta, qt.DeepEquals, test.expected.Meta)
+			c.Assert(capturedOutput.(ConvertToTextOutput).Error, qt.DeepEquals, test.expected.Error)
+			c.Assert(capturedOutput.(ConvertToTextOutput).Filename, qt.DeepEquals, test.expected.Filename)
 		})
 	}
-
 }

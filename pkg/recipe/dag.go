@@ -16,7 +16,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/x/errmsg"
@@ -160,7 +160,7 @@ func (d *dag) TopologicalSort() ([]datamodel.ComponentMap, error) {
 	return ans, nil
 }
 
-func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx int, path string) (value.Value, error) {
+func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx int, path string) (format.Value, error) {
 	v, err := wfm.Get(ctx, batchIdx, path)
 	if err != nil {
 		return nil, err
@@ -168,9 +168,8 @@ func resolveReference(ctx context.Context, wfm memory.WorkflowMemory, batchIdx i
 	return v, err
 }
 
-func Render(ctx context.Context, template value.Value, batchIdx int, wfm memory.WorkflowMemory, allowUnresolved bool) (value.Value, error) {
-
-	if input, ok := template.(data.ReferenceString); ok {
+func Render(ctx context.Context, template format.Value, batchIdx int, wfm memory.WorkflowMemory, allowUnresolved bool) (format.Value, error) {
+	if input, ok := template.(format.ReferenceString); ok {
 		s := input.String()
 		if strings.HasPrefix(s, "${") && strings.HasSuffix(s, "}") && strings.Count(s, "${") == 1 {
 			s = s[2:]
@@ -216,7 +215,7 @@ func Render(ctx context.Context, template value.Value, batchIdx int, wfm memory.
 				return nil, err
 			}
 
-			if s, ok := v.(data.String); ok {
+			if s, ok := v.(format.String); ok {
 				val += s.String()
 			}
 			s = s[endIdx+1:]
@@ -226,7 +225,7 @@ func Render(ctx context.Context, template value.Value, batchIdx int, wfm memory.
 		var err error
 		mp := data.Map{}
 		for k, v := range input {
-			if _, omittable := v.(data.OmittableField); !omittable {
+			if _, omittable := v.(format.OmittableField); !omittable {
 				mp[k], err = Render(ctx, v, batchIdx, wfm, allowUnresolved)
 				if err != nil {
 					return nil, err

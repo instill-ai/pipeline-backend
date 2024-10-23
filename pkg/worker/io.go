@@ -2,12 +2,11 @@ package worker
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data"
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/x/errmsg"
@@ -61,7 +60,7 @@ func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int) *
 	}
 }
 
-func (i *inputReader) read(ctx context.Context) (inputVal value.Value, err error) {
+func (i *inputReader) read(ctx context.Context) (inputVal format.Value, err error) {
 
 	inputTemplate, err := i.wfm.GetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInput)
 	if err != nil {
@@ -94,12 +93,10 @@ func (i *inputReader) Read(ctx context.Context) (inputStruct *structpb.Struct, e
 }
 
 func (i *inputReader) ReadData(ctx context.Context, input any) (err error) {
-	fmt.Println("Xxxxxx")
 	inputVal, err := i.read(ctx)
 	if err != nil {
 		return err
 	}
-	fmt.Println("inputVal", inputVal, input)
 	return data.Unmarshal(inputVal, input)
 }
 
@@ -138,7 +135,7 @@ func (o *outputWriter) Write(ctx context.Context, output *structpb.Struct) (err 
 	return o.write(ctx, val)
 }
 
-func (o *outputWriter) write(ctx context.Context, val value.Value) (err error) {
+func (o *outputWriter) write(ctx context.Context, val format.Value) (err error) {
 
 	if err := o.wfm.SetComponentData(ctx, o.originalIdx, o.compID, memory.ComponentDataOutput, val); err != nil {
 		return err

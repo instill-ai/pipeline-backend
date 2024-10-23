@@ -3,9 +3,9 @@ package data
 import (
 	"fmt"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 	"google.golang.org/protobuf/types/known/structpb"
-
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type booleanData struct {
@@ -29,11 +29,11 @@ func (b *booleanData) String() (val string) {
 	}
 }
 
-func (b *booleanData) Get(path string) (v value.Value, err error) {
-	if path == "" {
+func (b *booleanData) Get(p *path.Path) (v format.Value, err error) {
+	if p == nil || p.IsEmpty() {
 		return b, nil
 	}
-	return nil, fmt.Errorf("wrong path %s for boolean", path)
+	return nil, fmt.Errorf("path not found: %s", p)
 }
 
 func (b booleanData) ToStructValue() (v *structpb.Value, err error) {

@@ -13,7 +13,6 @@ import (
 	"image/jpeg"
 	"image/png"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -33,7 +32,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/acl"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
-	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/path"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
@@ -962,15 +961,15 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 			str = str[2:]
 			str = str[:len(str)-1]
 			str = strings.ReplaceAll(str, " ", "")
-			str, err = data.StandardizePath(str)
+			p, err := path.NewPath(str)
 			if err != nil {
-				break
+				return nil, err
 			}
-
-			str = str[1 : len(str)-1]
-			compID := ""
-			compID, str, _ = strings.Cut(str, "][")
-			compID = compID[1 : len(compID)-1] // remove ""
+			seg, remainingPath, err := p.TrimFirst()
+			if err != nil {
+				return nil, err
+			}
+			compID := seg.Key
 			upstreamCompID := ""
 			for id := range compsOrigin {
 				if id == compID {
@@ -983,15 +982,18 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 				if compID == constant.SegVariable {
 					walk = structpb.NewStructValue(dataInput)
 				} else {
-					seg := ""
-					seg, str, _ = strings.Cut(str, "][")
-					seg = seg[1 : len(seg)-1] // remove ""
+
+					seg, remainingPath, err = remainingPath.TrimFirst()
+					if err != nil {
+						return nil, err
+					}
+
 					comp := compsOrigin[upstreamCompID]
 
 					switch comp.Type {
 					case datamodel.Iterator:
 
-						if seg == constant.SegOutput {
+						if seg.Key == constant.SegOutput {
 							walk = structpb.NewStructValue(comp.DataSpecification.Output)
 						} else {
 							return nil, fmt.Errorf("generate pipeline data spec error")
@@ -1012,9 +1014,9 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 							return nil, fmt.Errorf("generate pipeline data spec error")
 						}
 
-						if seg == constant.SegOutput {
+						if seg.Key == constant.SegOutput {
 							walk = structpb.NewStructValue(output)
-						} else if seg == constant.SegInput {
+						} else if seg.Key == constant.SegInput {
 							walk = structpb.NewStructValue(input)
 						} else {
 							return nil, fmt.Errorf("generate pipeline data spec error")
@@ -1023,16 +1025,17 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 				}
 
 				for {
-					if len(str) == 0 {
+					if remainingPath == nil || remainingPath.IsEmpty() {
 						break
 					}
 
-					curr := ""
-					curr, str, _ = strings.Cut(str, "][")
+					seg, remainingPath, err = remainingPath.TrimFirst()
+					if err != nil {
+						return nil, err
+					}
 
-					if curr[0] == '"' && curr[len(curr)-1] == '"' {
-						curr = curr[1 : len(curr)-1] // remove ""
-
+					if seg.SegmentType == path.KeySegment {
+						curr := seg.Key
 						if _, ok := walk.GetStructValue().Fields["properties"]; ok {
 							if _, ok := walk.GetStructValue().Fields["properties"].GetStructValue().Fields[curr]; !ok {
 								break
@@ -1042,12 +1045,15 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 						}
 
 						walk = walk.GetStructValue().Fields["properties"].GetStructValue().Fields[curr]
-					} else {
-						_, err = strconv.Atoi(curr)
-						if err != nil {
-							break
-						}
+					} else if seg.SegmentType == path.IndexSegment {
 						walk = walk.GetStructValue().Fields["items"]
+					} else {
+						walk, _ = structpb.NewValue(map[string]interface{}{
+							"title":          v.Title,
+							"description":    v.Description,
+							"instillUIOrder": v.InstillUIOrder,
+							"instillFormat":  "json",
+						})
 					}
 
 				}
@@ -1060,6 +1066,9 @@ func (c *converter) GeneratePipelineDataSpec(variables map[string]*datamodel.Var
 						"type":           walk.GetStructValue().Fields["type"].GetStringValue(),
 						"instillFormat":  checkInstillFormat(instillFormat),
 					})
+					if err != nil {
+						return nil, err
+					}
 				}
 
 			} else {

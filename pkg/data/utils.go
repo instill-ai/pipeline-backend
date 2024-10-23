@@ -3,7 +3,6 @@ package data
 import (
 	"encoding/base64"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
@@ -50,50 +49,4 @@ func StandardizePath(path string) (newPath string, err error) {
 		}
 	}
 	return newPath, err
-}
-
-func trimFirstKeyFromPath(path string) (key, remainingPath string, err error) {
-	key, remainingPath, _ = strings.Cut(path, "]")
-	if strings.HasPrefix(key, "[\"") && strings.HasSuffix(key, "\"") {
-		return key[2 : len(key)-1], remainingPath, nil
-	}
-	return "", "", fmt.Errorf("can not parse key from path: %s", path)
-}
-
-func trimFirstIndexFromPath(path string) (index int, remainingPath string, err error) {
-	key, remainingPath, _ := strings.Cut(path, "]")
-	if strings.HasPrefix(key, "[") {
-		index, err := strconv.Atoi(key[1:])
-		if err == nil {
-			return index, remainingPath, nil
-		}
-
-	}
-	return 0, "", fmt.Errorf("can not parse index from path: %s", path)
-}
-
-func comparePath(path1, path2 string) bool {
-	var err error
-	path1, err = StandardizePath(path1)
-	if err != nil {
-		return false
-	}
-	path2, err = StandardizePath(path2)
-	if err != nil {
-		return false
-	}
-	return path1 == path2
-}
-
-func matchPathPrefix(path, prefix string) bool {
-	var err error
-	path, err = StandardizePath(path)
-	if err != nil {
-		return false
-	}
-	prefix, err = StandardizePath(prefix)
-	if err != nil {
-		return false
-	}
-	return strings.HasPrefix(path, prefix)
 }

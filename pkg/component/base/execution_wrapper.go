@@ -2,7 +2,6 @@ package base
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"google.golang.org/protobuf/types/known/structpb"
@@ -31,8 +30,6 @@ func NewInputReader(ir InputReader, input *structpb.Struct, schema string) *inpu
 }
 
 func (ir *inputReader) ReadData(ctx context.Context, input any) (err error) {
-	fmt.Println("Xxxxxx1", ir.InputReader)
-
 	return ir.InputReader.ReadData(ctx, input)
 }
 
@@ -185,10 +182,29 @@ func ConcurrentExecutor(ctx context.Context, jobs []*Job, execute func(*structpb
 	return nil
 }
 
-func recoverJobError(ctx context.Context, job *Job) {
-	if r := recover(); r != nil {
-		fmt.Printf("panic: %+v", r)
-		job.Error.Error(ctx, fmt.Errorf("panic: %+v", r))
-		return
+func ConcurrentDataExecutor(ctx context.Context, jobs []*Job, execute func(context.Context, *Job) error) error {
+	var wg sync.WaitGroup
+	wg.Add(len(jobs))
+	for _, job := range jobs {
+		go func() {
+			defer wg.Done()
+			defer recoverJobError(ctx, job)
+			err := execute(ctx, job)
+			if err != nil {
+				job.Error.Error(ctx, err)
+				return
+			}
+
+		}()
 	}
+	wg.Wait()
+	return nil
+}
+
+func recoverJobError(ctx context.Context, job *Job) {
+	// if r := recover(); r != nil {
+	// 	fmt.Printf("panic: %+v", r)
+	// 	job.Error.Error(ctx, fmt.Errorf("panic: %+v", r))
+	// 	return
+	// }
 }

@@ -23,7 +23,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
@@ -630,7 +630,7 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		useInput := param.Input != ""
 
 		var indexes []int
-		var elems []value.Value
+		var elems []format.Value
 		if useInput {
 			input, err := recipe.Render(ctx, data.NewString(param.Input), iter, wfm, false)
 			if err != nil {
@@ -689,27 +689,27 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 				} else if l == 3 {
 					withStep = true
 				}
-				start = renderedRangeParam.(data.Array)[0].(data.Number).Integer()
-				stop = renderedRangeParam.(data.Array)[1].(data.Number).Integer()
+				start = renderedRangeParam.(data.Array)[0].(format.Number).Integer()
+				stop = renderedRangeParam.(data.Array)[1].(format.Number).Integer()
 				if withStep {
-					step = renderedRangeParam.(data.Array)[2].(data.Number).Integer()
+					step = renderedRangeParam.(data.Array)[2].(format.Number).Integer()
 				}
 			} else {
 				if _, ok := renderedRangeParam.(data.Map)[rangeStart]; ok {
-					start = renderedRangeParam.(data.Map)[rangeStart].(data.Number).Integer()
+					start = renderedRangeParam.(data.Map)[rangeStart].(format.Number).Integer()
 				} else {
 					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, `start` is missing"), preIteratorActivityErrorType, param.ID)
 				}
 
 				if _, ok := renderedRangeParam.(data.Map)[rangeStop]; ok {
-					stop = renderedRangeParam.(data.Map)[rangeStop].(data.Number).Integer()
+					stop = renderedRangeParam.(data.Map)[rangeStop].(format.Number).Integer()
 				} else {
 					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, `stop` is missing"), preIteratorActivityErrorType, param.ID)
 				}
 
 				if _, ok := renderedRangeParam.(data.Map)[rangeStep]; ok {
 					withStep = true
-					step = renderedRangeParam.(data.Map)[rangeStep].(data.Number).Integer()
+					step = renderedRangeParam.(data.Map)[rangeStep].(format.Number).Integer()
 				}
 
 			}

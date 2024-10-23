@@ -8,7 +8,7 @@ import (
 
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/utils"
 )
 
@@ -38,12 +38,12 @@ const (
 // setIteratorIndex converts the iterator index identifier into a numeric
 // index. For example, it converts `${variable.array[i]}` into
 // `${variable.array[0]}`.
-func setIteratorIndex(v value.Value, identifier string, index int) value.Value {
+func setIteratorIndex(v format.Value, identifier string, index int) format.Value {
 	if identifier == "" {
 		identifier = defaultRangeIdentifier
 	}
 	switch v := v.(type) {
-	case data.String:
+	case format.String:
 		s := v.String()
 		val := ""
 		for {

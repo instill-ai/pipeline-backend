@@ -3,9 +3,8 @@ package data
 import (
 	"fmt"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"google.golang.org/protobuf/types/known/structpb"
-
-	"github.com/instill-ai/pipeline-backend/pkg/data/value"
 )
 
 type InstillFormat string
@@ -23,7 +22,7 @@ const (
 	FormatAudio     InstillFormat = "audio"
 )
 
-func NewValue(in any) (val value.Value, err error) {
+func NewValue(in any) (val format.Value, err error) {
 
 	switch in := in.(type) {
 	case nil:
@@ -59,7 +58,7 @@ func NewValue(in any) (val value.Value, err error) {
 	return nil, fmt.Errorf("NewValue error")
 }
 
-func NewJSONValue(in any) (val value.Value, err error) {
+func NewJSONValue(in any) (val format.Value, err error) {
 
 	switch in := in.(type) {
 	case bool:
@@ -95,7 +94,7 @@ func NewJSONValue(in any) (val value.Value, err error) {
 	return nil, fmt.Errorf("NewJSONValue error")
 }
 
-func NewValueFromStruct(in *structpb.Value) (val value.Value, err error) {
+func NewValueFromStruct(in *structpb.Value) (val format.Value, err error) {
 
 	if in == nil {
 		return NewNull(), nil

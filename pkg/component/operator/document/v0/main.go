@@ -8,9 +8,8 @@ import (
 
 	_ "embed"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
 )
 
 const (
@@ -26,19 +25,6 @@ var (
 	//go:embed config/tasks.json
 	tasksJSON []byte
 
-	//go:embed execution/task_convert_to_markdown.py
-	taskConvertToMarkdownExecution string
-	//go:embed pdf_to_markdown/pdf_transformer.py
-	pdfTransformer string
-	//go:embed pdf_to_markdown/page_image_processor.py
-	imageProcessor string
-
-	//go:embed execution/task_convert_to_images.py
-	taskConvertToImagesExecution string
-
-	//go:embed execution/pdf_checker.py
-	pdfChecker string
-
 	once sync.Once
 	comp *component
 )
@@ -49,11 +35,9 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
-	execute                func(*structpb.Struct) (*structpb.Struct, error)
-	getMarkdownTransformer MarkdownTransformerGetterFunc
+	execute                func(ctx context.Context, job *base.Job) error
+	getMarkdownTransformer transformer.MarkdownTransformerGetterFunc
 }
-
-type MarkdownTransformerGetterFunc func(fileExtension string, inputStruct *ConvertDocumentToMarkdownInput) (MarkdownTransformer, error)
 
 func Init(bc base.Component) *component {
 	once.Do(func() {
@@ -66,21 +50,37 @@ func Init(bc base.Component) *component {
 	return comp
 }
 
-func (e *execution) convertToText(input *structpb.Struct) (*structpb.Struct, error) {
+func (e *execution) convertToText(ctx context.Context, job *base.Job) error {
 	inputStruct := ConvertToTextInput{}
-	err := base.ConvertFromStructpb(input, &inputStruct)
+	err := job.Input.ReadData(ctx, &inputStruct)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	outputStruct, err := ConvertToText(inputStruct)
+
+	dataURI, err := inputStruct.Document.DataURI()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	output, err := base.ConvertToStructpb(outputStruct)
+	transformerInputStruct := transformer.ConvertToTextTransformerInput{
+		Document: dataURI.String(),
+		Filename: inputStruct.Filename,
+	}
+
+	transformerOutputStruct, err := transformer.ConvertToText(transformerInputStruct)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return output, nil
+
+	outputStruct := ConvertToTextOutput{
+		Body:     transformerOutputStruct.Body,
+		Filename: transformerOutputStruct.Filename,
+		Meta:     transformerOutputStruct.Meta,
+		MSecs:    transformerOutputStruct.MSecs,
+		Error:    transformerOutputStruct.Error,
+	}
+
+	err = job.Output.WriteData(ctx, outputStruct)
+	return err
 }
 
 // CreateExecution initializes a component executor that can be used in a
@@ -88,7 +88,7 @@ func (e *execution) convertToText(input *structpb.Struct) (*structpb.Struct, err
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
 	e := &execution{
 		ComponentExecution:     x,
-		getMarkdownTransformer: GetMarkdownTransformer,
+		getMarkdownTransformer: transformer.GetMarkdownTransformer,
 	}
 
 	switch x.Task {
@@ -106,5 +106,5 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return base.SequentialExecutor(ctx, jobs, e.execute)
+	return base.ConcurrentDataExecutor(ctx, jobs, e.execute)
 }
