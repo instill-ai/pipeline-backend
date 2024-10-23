@@ -94,18 +94,18 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| PR base | `base` | string | base commit of the PR (in SHA value) |
-| PR body | `body` | string | Body of the PR |
-| Number of PR comments | `comments-num` | integer | number of comments on the PR |
-| [Commits](#list-pull-requests-commits) | `commits` | array | commits in the PR |
-| Number of PR commits | `commits-num` | integer | number of commits in the PR |
-| PR diff url | `diff-url` | string | url to the diff of the PR |
-| PR head | `head` | string | head commit of the PR (in SHA value) |
-| PR id | `id` | integer | id of the PR |
-| PR number | `number` | integer | number of the PR |
-| Number of PR review comments | `review-comments-num` | integer | number of review comments in the PR |
-| PR state | `state` | string | state of the PR |
-| PR Title | `title` | string | Title of the PR |
+| PR base | `base` | string | Base commit of the PR (in SHA value). |
+| PR body | `body` | string | Body of the PR. |
+| Number of PR comments | `comments-num` | integer | Number of comments on the PR. |
+| [Commits](#list-pull-requests-commits) | `commits` | array | Commits in the PR. |
+| Number of PR commits | `commits-num` | integer | Number of commits in the PR. |
+| PR diff url | `diff-url` | string | URL to the diff of the PR. |
+| PR head | `head` | string | Head commit of the PR (in SHA value). |
+| PR id | `id` | integer | ID of the PR. |
+| PR number | `number` | integer | Number of the PR. |
+| Number of PR review comments | `review-comments-num` | integer | Number of review comments in the PR. |
+| PR state | `state` | string | State of the PR. |
+| PR Title | `title` | string | Title of the PR. |
 </div>
 
 <h4 id="list-pull-requests-commits">Commits</h4>
@@ -114,10 +114,10 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Files](#list-pull-requests-files) | `files` | array | files in the commit |
-| Commit message | `message` | string | message of the commit |
+| [Files](#list-pull-requests-files) | `files` | array | Files in the commit. |
+| Commit message | `message` | string | Message of the commit. |
 | Commit SHA | `sha` | string | SHA of the commit |
-| [Commit stats](#list-pull-requests-commit-stats) | `stats` | object | stats of changes |
+| [Commit stats](#list-pull-requests-commit-stats) | `stats` | object | Stats of changes. |
 </div>
 
 <h4 id="list-pull-requests-commit-stats">Commit Stats</h4>
@@ -126,9 +126,9 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Additions | `additions` | integer | number of additions in the commit |
-| Total changes | `changes` | integer | total number of changes in the commit |
-| Deletions | `deletions` | integer | number of deletions in the commit |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit |
+| Deletions | `deletions` | integer | Number of deletions in the commit |
 </div>
 
 <h4 id="list-pull-requests-files">Files</h4>
@@ -137,17 +137,17 @@ Get the list of all pull requests in a repository. Detailed information about ea
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Additions | `additions` | integer | number of additions in the commit |
-| Total changes | `changes` | integer | total number of changes in the commit |
-| Deletions | `deletions` | integer | number of deletions in the commit |
-| File name | `filename` | string | name of the file |
-| Patch | `patch` | string | patch of the file |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit |
+| Deletions | `deletions` | integer | Number of deletions in the commit |
+| File name | `filename` | string | Name of the file. |
+| Patch | `patch` | string | Patch of the file. |
 </div>
 </details>
 
 ### Get Pull Request
 
-Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided
+Get a pull request from a repository, given the PR number. This will default to the latest PR if no PR number is provided.
 
 <div class="markdown-col-no-wrap" data-col-1 data-col-2>
 
@@ -168,18 +168,18 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
-| PR ID (optional) | `id` | integer | id of the PR |
-| PR Number (optional) | `number` | integer | number of the PR |
-| PR State (optional) | `state` | string | state of the PR |
-| PR Title (optional) | `title` | string | Title of the PR |
-| PR Body (optional) | `body` | string | Body of the PR |
-| PR Diff URL (optional) | `diff-url` | string | url to the diff of the PR |
-| PR Head (optional) | `head` | string | head commit of the PR (in SHA value) |
-| PR Base (optional) | `base` | string | base commit of the PR (in SHA value) |
-| Number of PR Comments (optional) | `comments-num` | integer | number of comments on the PR |
-| Number of PR Commits (optional) | `commits-num` | integer | number of commits in the PR |
-| Number of PR Review Comments (optional) | `review-comments-num` | integer | number of review comments in the PR |
-| [Commits](#get-pull-request-commits) (optional) | `commits` | array[object] | commits in the PR |
+| PR ID (optional) | `id` | integer | ID of the PR. |
+| PR Number (optional) | `number` | integer | Number of the PR. |
+| PR State (optional) | `state` | string | State of the PR. |
+| PR Title (optional) | `title` | string | Title of the PR. |
+| PR Body (optional) | `body` | string | Body of the PR. |
+| PR Diff URL (optional) | `diff-url` | string | URL to the diff of the PR. |
+| PR Head (optional) | `head` | string | Head commit of the PR (in SHA value). |
+| PR Base (optional) | `base` | string | Base commit of the PR (in SHA value). |
+| Number of PR Comments (optional) | `comments-num` | integer | Number of comments on the PR. |
+| Number of PR Commits (optional) | `commits-num` | integer | Number of commits in the PR. |
+| Number of PR Review Comments (optional) | `review-comments-num` | integer | Number of review comments in the PR. |
+| [Commits](#get-pull-request-commits) (optional) | `commits` | array[object] | Commits in the PR. |
 </div>
 
 <details>
@@ -191,10 +191,10 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| [Files](#get-pull-request-files) | `files` | array | files in the commit |
-| Commit message | `message` | string | message of the commit |
+| [Files](#get-pull-request-files) | `files` | array | Files in the commit. |
+| Commit message | `message` | string | Message of the commit. |
 | Commit SHA | `sha` | string | SHA of the commit |
-| [Commit stats](#get-pull-request-commit-stats) | `stats` | object | stats of changes |
+| [Commit stats](#get-pull-request-commit-stats) | `stats` | object | Stats of changes. |
 </div>
 
 <h4 id="get-pull-request-commit-stats">Commit Stats</h4>
@@ -203,9 +203,9 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Additions | `additions` | integer | number of additions in the commit |
-| Total changes | `changes` | integer | total number of changes in the commit |
-| Deletions | `deletions` | integer | number of deletions in the commit |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit |
+| Deletions | `deletions` | integer | Number of deletions in the commit |
 </div>
 
 <h4 id="get-pull-request-files">Files</h4>
@@ -214,11 +214,11 @@ Get a pull request from a repository, given the PR number. This will default to 
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Additions | `additions` | integer | number of additions in the commit |
-| Total changes | `changes` | integer | total number of changes in the commit |
-| Deletions | `deletions` | integer | number of deletions in the commit |
-| File name | `filename` | string | name of the file |
-| Patch | `patch` | string | patch of the file |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit |
+| Deletions | `deletions` | integer | Number of deletions in the commit |
+| File name | `filename` | string | Name of the file. |
+| Patch | `patch` | string | Patch of the file. |
 </div>
 </details>
 
@@ -246,9 +246,9 @@ Get a commit from a repository, given the commit SHA
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Commit SHA (optional) | `sha` | string | SHA of the commit |
-| Commit Message (optional) | `message` | string | message of the commit |
-| [Commit Stats](#get-commit-commit-stats) (optional) | `stats` | object | stats of changes |
-| [Files](#get-commit-files) (optional) | `files` | array[object] | files in the commit |
+| Commit Message (optional) | `message` | string | Message of the commit. |
+| [Commit Stats](#get-commit-commit-stats) (optional) | `stats` | object | Stats of changes. |
+| [Files](#get-commit-files) (optional) | `files` | array[object] | Files in the commit. |
 </div>
 
 <details>
@@ -260,9 +260,9 @@ Get a commit from a repository, given the commit SHA
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Additions | `additions` | integer | number of additions in the commit |
-| Total changes | `changes` | integer | total number of changes in the commit |
-| Deletions | `deletions` | integer | number of deletions in the commit |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit |
+| Deletions | `deletions` | integer | Number of deletions in the commit |
 </div>
 
 <h4 id="get-commit-files">Files</h4>
@@ -271,11 +271,11 @@ Get a commit from a repository, given the commit SHA
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Additions | `additions` | integer | number of additions in the commit |
-| Total changes | `changes` | integer | total number of changes in the commit |
-| Deletions | `deletions` | integer | number of deletions in the commit |
-| File name | `filename` | string | name of the file |
-| Patch | `patch` | string | patch of the file |
+| Additions | `additions` | integer | Number of additions in the commit. |
+| Total changes | `changes` | integer | Total number of changes in the commit |
+| Deletions | `deletions` | integer | Number of deletions in the commit |
+| File name | `filename` | string | Name of the file. |
+| Patch | `patch` | string | Patch of the file. |
 </div>
 </details>
 
@@ -464,7 +464,7 @@ Get the list of all issues in a repository,This can be a pull request or a gener
 | Issue body | `body` | string | Body of the issue |
 | Is Pull Request | `is-pull-request` | boolean | Whether the issue is a pull request |
 | Labels | `labels` | array | Labels of the issue |
-| Issue number | `number` | integer | Number of the issue |
+| Issue Number | `number` | integer | Number of the issue |
 | Issue state | `state` | string | State of the issue |
 | Issue title | `title` | string | Title of the issue |
 </div>
