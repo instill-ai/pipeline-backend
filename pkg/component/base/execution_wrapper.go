@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"google.golang.org/protobuf/types/known/structpb"
@@ -202,9 +203,9 @@ func ConcurrentDataExecutor(ctx context.Context, jobs []*Job, execute func(conte
 }
 
 func recoverJobError(ctx context.Context, job *Job) {
-	// if r := recover(); r != nil {
-	// 	fmt.Printf("panic: %+v", r)
-	// 	job.Error.Error(ctx, fmt.Errorf("panic: %+v", r))
-	// 	return
-	// }
+	if r := recover(); r != nil {
+		fmt.Printf("panic: %+v", r)
+		job.Error.Error(ctx, fmt.Errorf("panic: %+v", r))
+		return
+	}
 }
