@@ -205,9 +205,9 @@ func fetchEmails(c *imapclient.Client, search Search) ([]Email, error) {
 		}
 	}
 
-	return sort.Slice(emails[:index], func(i, j int) bool {
-		return strings.Compare(emails[i].Date, emails[j].Date) > 0
-	}), nil
+	sort.Slice(emails[:index], func(i, j int) bool {return emails[i].Date > emails[j].Date})
+	
+	return emails[:index], nil
 }
 
 func setEnvelope(email *Email, h mail.Header) {
