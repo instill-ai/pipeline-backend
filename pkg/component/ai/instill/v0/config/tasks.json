@@ -1136,5 +1136,190 @@
         "data"
       ]
     }
+  },
+  "TASK_CLASSIFICATION": {
+    "title": "Classification",
+    "instillShortDescription": "This task focuses on analyzing and categorizing images into predefined groups based on their content. Utilizing advanced machine learning models, this task processes input images and assigns them to specific classes, helping users quickly identify and sort visual data. This capability is particularly valuable in various applications, such as organizing image databases, automating content moderation, or improving search functionalities within image repositories. By leveraging robust algorithms, the Classification task enhances efficiency and accuracy in identifying visual elements, patterns, and anomalies. Users can expect reliable results that streamline workflows and support decision-making processes. With a straightforward input format, this task allows for easy integration into existing systems, empowering users to harness the power of image classification in their projects. Whether for academic research, business intelligence, or creative endeavors, the Classification task serves as a vital tool for transforming images into actionable insights.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Classification Input",
+      "instillUIOrder": 0,
+      "description": "Defines the structure for submitting data to the classification task. It requires a data object containing the image or visual input to be classified. Optional parameters can be included to customize the classification process. This schema ensures that all necessary information is provided for accurate image categorization, facilitating efficient processing and reliable results.",
+      "instillShortDescription": "Schema for submitting images and parameters for classification tasks.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Input Data",
+          "instillUIOrder": 0,
+          "description": "Contains the input image or visual data for classification. It specifies the image format, either via a URL or as a base64 encoded string. This section ensures that the classification model receives the appropriate input, enhancing the accuracy and efficiency of the classification task.",
+          "instillShortDescription": "Input image or visual data for classification tasks via URL or base64.",
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.",
+                  "instillShortDescription": "Name of the model used for classification.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "instillUIOrder": 0,
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "description": "Contains the URL of the input image to be classified. This URL must point to a valid image resource for processing.",
+                  "instillShortDescription": "URL of the image for classification.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUIOrder": 2,
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "description": "Indicates the type of input being submitted, set to `image-url` for this option. This field is essential for the classification model to understand the format of the input data.",
+                  "instillShortDescription": "Type identifier for URL input.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "instillUIOrder": 1,
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.",
+                  "instillShortDescription": "Name of the model used for classification.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "instillUIOrder": 0,
+                  "type": "string"
+                },
+                "image-base64": {
+                  "title": "Input Image File",
+                  "description": "Contains the base64-encoded string of the input image file to be classified. This format allows for direct submission of image data without requiring an external URL.",
+                  "instillShortDescription": "Base64-encoded image file for classification.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "instillUIOrder": 2,
+                  "type": "string"
+                },
+                "type": {
+                  "title": "File",
+                  "description": "Indicates the type of input being submitted, set to `image-base64` for this option. This field helps the classification model to identify the format of the input data.",
+                  "instillShortDescription": "Type identifier for base64 input.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUIOrder": 1,
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "type": "object",
+          "required": [
+            "model"
+          ]
+        },
+        "parameter": {
+          "title": "Parameter",
+          "instillUIOrder": 1,
+          "description": "The parameter property allows for the inclusion of optional settings or configurations that may influence the classification process. While no specific properties are defined, this field enables users to customize the classification task as needed.",
+          "instillShortDescription": "Optional parameters for customizing the classification task.",
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Classification Output",
+      "description": "Describes the structure of the results returned after processing the classification task. It includes a data object that contains the classification results, such as the assigned categories or labels for the input images. Additionally, it provides metadata containing usage statistics related to the request, offering insights into the processing of the classification task. This schema ensures users receive clear and structured outputs for effective decision-making.",
+      "instillShortDescription": "Structure of classification results and associated usage statistics.",
+      "instillUIOrder": 1,
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Data",
+          "instillUIOrder": 0,
+          "description": "Contains the results of the classification task, including the predicted category and its associated confidence score. This structured output allows users to understand the model's classification decision and assess its reliability based on the score provided.",
+          "instillShortDescription": "Results of the classification, including predicted category and score.",
+          "type": "object",
+          "properties": {
+            "category": {
+              "description": "Represents the predicted category assigned to the input image. This field provides the model's classification result, helping users identify how the input is categorized.",
+              "instillShortDescription": "Predicted category for the input image.",
+              "instillFormat": "string",
+              "title": "Category",
+              "instillUIOrder": 0,
+              "type": "string"
+            },
+            "score": {
+              "description": "Indicates the confidence score associated with the predicted category, reflecting how certain the model is about its classification. A higher score signifies greater confidence in the assigned category.",
+              "instillShortDescription": "Confidence score of the predicted category.",
+              "instillFormat": "number",
+              "title": "Score",
+              "instillUIOrder": 1,
+              "type": "number"
+            }
+          },
+          "required": [
+            "category",
+            "score"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Contains additional information about the request, including usage statistics. This data provides context and insights regarding the classification process, helping users evaluate performance and resource consumption during the classification task.",
+          "instillShortDescription": "Additional information and usage statistics for the classification request.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Contains statistics related to the usage of the classification request. This field can provide insights into how resources were utilized during processing, although no specific properties are defined within it.",
+              "instillShortDescription": "Statistics on resource usage for the classification request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
   }
 }

@@ -11,6 +11,7 @@ It can carry out the following tasks:
 - [Chat](#chat)
 - [Completion](#completion)
 - [Text To Image](#text-to-image)
+- [Classification](#classification)
 
 
 
@@ -448,6 +449,90 @@ This section defines optional parameters that modify the behavior of the image g
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Usage](#text-to-image-usage) | `usage` | object | Tracks how resources were utilized during the request, offering insights into the performance and efficiency of the task. |
+</div>
+</details>
+
+### Classification
+
+This task focuses on analyzing and categorizing images into predefined groups based on their content. Utilizing advanced machine learning models, this task processes input images and assigns them to specific classes, helping users quickly identify and sort visual data. This capability is particularly valuable in various applications, such as organizing image databases, automating content moderation, or improving search functionalities within image repositories. By leveraging robust algorithms, the Classification task enhances efficiency and accuracy in identifying visual elements, patterns, and anomalies. Users can expect reliable results that streamline workflows and support decision-making processes. With a straightforward input format, this task allows for easy integration into existing systems, empowering users to harness the power of image classification in their projects. Whether for academic research, business intelligence, or creative endeavors, the Classification task serves as a vital tool for transforming images into actionable insights.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CLASSIFICATION` |
+| [Input Data](#classification-input-data) (required) | `data` | object | Contains the input image or visual data for classification. It specifies the image format, either via a URL or as a base64 encoded string. This section ensures that the classification model receives the appropriate input, enhancing the accuracy and efficiency of the classification task. |
+| [Parameter](#classification-parameter) | `parameter` | object | The parameter property allows for the inclusion of optional settings or configurations that may influence the classification process. While no specific properties are defined, this field enables users to customize the classification task as needed. |
+</div>
+
+
+<details>
+<summary> Input Objects in Classification</summary>
+
+</details>
+
+<details>
+<summary>The <code>data</code> Object </summary>
+
+<h4 id="classification-data">Data</h4>
+
+`data` must fulfill one of the following schemas:
+
+<h5 id="classification-image-url"><code>Image URL</code></h5>
+
+Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image URL | `image-url` | string |  Contains the URL of the input image to be classified. This URL must point to a valid image resource for processing.  |
+| Model Name | `model` | string |  Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.  |
+| URL | `type` | string |  Must be `"image-url"`   |
+</div>
+
+<h5 id="classification-image-base64"><code>Image Base64</code></h5>
+
+Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image File | `image-base64` | string |  Contains the base64-encoded string of the input image file to be classified. This format allows for direct submission of image data without requiring an external URL.  |
+| Model Name | `model` | string |  Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.  |
+| File | `type` | string |  Must be `"image-base64"`   |
+</div>
+</details>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Data](#classification-data) | `data` | object | Contains the results of the classification task, including the predicted category and its associated confidence score. This structured output allows users to understand the model's classification decision and assess its reliability based on the score provided. |
+| [Metadata](#classification-metadata) (optional) | `metadata` | object | Contains additional information about the request, including usage statistics. This data provides context and insights regarding the classification process, helping users evaluate performance and resource consumption during the classification task. |
+</div>
+
+<details>
+<summary> Output Objects in Classification</summary>
+
+<h4 id="classification-data">Data</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Category | `category` | string | Represents the predicted category assigned to the input image. This field provides the model's classification result, helping users identify how the input is categorized. |
+| Score | `score` | number | Indicates the confidence score associated with the predicted category, reflecting how certain the model is about its classification. A higher score signifies greater confidence in the assigned category. |
+</div>
+
+<h4 id="classification-metadata">Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Usage](#classification-usage) | `usage` | object | Contains statistics related to the usage of the classification request. This field can provide insights into how resources were utilized during processing, although no specific properties are defined within it. |
 </div>
 </details>
 

@@ -3,7 +3,8 @@
     "TASK_EMBEDDING",
     "TASK_CHAT",
     "TASK_COMPLETION",
-    "TASK_TEXT_TO_IMAGE"
+    "TASK_TEXT_TO_IMAGE",
+    "TASK_CLASSIFICATION"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/ai/instill-model",
