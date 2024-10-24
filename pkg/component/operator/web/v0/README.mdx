@@ -221,7 +221,6 @@ component:
     input:
       json-value: ${crawler.output.pages}
       jq-filter: .[] | ."link"
-      json-string:
     condition:
     task: TASK_JQ
 
