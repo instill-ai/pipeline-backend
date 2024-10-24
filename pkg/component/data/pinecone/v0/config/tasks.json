@@ -291,5 +291,97 @@
       "title": "Output",
       "type": "object"
     }
+  },
+  "TASK_RERANK": {
+    "instillShortDescription": "Rerank documents, such as text passages, according to their relevance to a query.",
+    "description": "Rerank documents, such as text passages, according to their relevance to a query. The input is a list of documents and a query. The output is a list of documents, sorted by relevance to the query.",
+    "input": {
+      "instillUIOrder": 0,
+      "properties": {
+        "query": {
+          "description": "The query to rerank the documents",
+          "instillAcceptFormats": [
+            "string"
+          ],
+          "instullUIMultiline": false,
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "value",
+            "reference",
+            "template"
+          ],
+          "title": "Query",
+          "type": "string"
+        },
+        "documents": {
+          "description": "The documents to rerank",
+          "instillUIOrder": 1,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Documents",
+          "type": "array"
+        },
+        "top-n": {
+          "description": "The number of results to return sorted by relevance. Defaults to the number of inputs.\n\n",
+          "instillAcceptFormats": [
+            "integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "value",
+            "reference"
+          ],
+          "title": "Top N",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query",
+        "documents"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "instillUIOrder": 0,
+      "properties": {
+        "documents": {
+          "description": "Reranked documents",
+          "instillFormat": "array:string",
+          "items": {
+            "instillFormat": "string",
+            "title": "Documents",
+            "type": "string"
+          },
+          "instillUIOrder": 0,
+          "title": "Reranked documents",
+          "type": "array"
+        },
+        "scores": {
+          "description": "The relevance score of the documents normalized between 0 and 1.",
+          "instillFormat": "array:number",
+          "items": {
+            "instillFormat": "number",
+            "title": "Score",
+            "type": "number"
+          },
+          "instillUIOrder": 1,
+          "title": "Scores",
+          "type": "array"
+        }
+      },
+      "required": [
+        "documents",
+        "scores"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
   }
 }
