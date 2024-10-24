@@ -258,6 +258,14 @@ func unmarshalNull(v format.Null, field reflect.Value) error {
 
 // unmarshalInterface handles unmarshaling of interface values.
 func unmarshalInterface(v format.Value, field reflect.Value) error {
+	if field.Kind() == reflect.String {
+		field.SetString(v.(format.String).String())
+		return nil
+	}
+	if field.Type() == reflect.TypeOf((*format.String)(nil)).Elem() {
+		field.SetString(v.(format.String).String())
+		return nil
+	}
 	if field.Type().Implements(reflect.TypeOf((*format.Value)(nil)).Elem()) {
 		field.Set(reflect.ValueOf(v))
 		return nil
