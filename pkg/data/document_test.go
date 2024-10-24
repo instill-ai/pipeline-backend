@@ -18,7 +18,7 @@ func TestNewDocumentFromBytes(t *testing.T) {
 		{"Valid PDF document", "sample2.pdf", "application/pdf"},
 		{"Valid TXT document", "sample2.txt", "text/plain"},
 		{"Valid DOCX document", "sample1.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
-		{"Invalid file type", "sample_640×426.png", ""},
+		{"Invalid file type", "sample_640_426.png", ""},
 	}
 
 	for _, tc := range testCases {
