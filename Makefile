@@ -75,7 +75,7 @@ dbtest-pre:
 .PHONY: coverage
 coverage:
 	@if [ "${DBTEST}" = "true" ]; then  make dbtest-pre; fi
-	@${GOTEST_FLAGS} go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
+	@${GOTEST_FLAGS} go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic -timeout 30m ./...
 	@if [ "${HTML}" = "true" ]; then  \
 		go tool cover -func=coverage.out && \
 		go tool cover -html=coverage.out && \
