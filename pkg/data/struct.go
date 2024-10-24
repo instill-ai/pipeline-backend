@@ -103,6 +103,8 @@ func unmarshalString(v format.String, field reflect.Value) error {
 			}
 		case reflect.TypeOf(v), reflect.TypeOf((*format.String)(nil)).Elem():
 			field.Set(reflect.ValueOf(v))
+		case reflect.TypeOf((*format.Value)(nil)).Elem():
+			field.Set(reflect.ValueOf(v))
 		default:
 			return fmt.Errorf("cannot unmarshal String into %v", field.Type())
 		}
@@ -137,9 +139,12 @@ func unmarshalBoolean(v format.Boolean, field reflect.Value) error {
 		}
 		return unmarshalBoolean(v, field.Elem())
 	default:
-		if field.Type() == reflect.TypeOf(v) || field.Type() == reflect.TypeOf((*format.Boolean)(nil)).Elem() {
+		switch field.Type() {
+		case reflect.TypeOf(v), reflect.TypeOf((*format.Boolean)(nil)).Elem():
 			field.Set(reflect.ValueOf(v))
-		} else {
+		case reflect.TypeOf((*format.Value)(nil)).Elem():
+			field.Set(reflect.ValueOf(v))
+		default:
 			return fmt.Errorf("cannot unmarshal Boolean into %v", field.Type())
 		}
 	}
@@ -159,9 +164,12 @@ func unmarshalNumber(v format.Number, field reflect.Value) error {
 		}
 		return unmarshalNumber(v, field.Elem())
 	default:
-		if field.Type() == reflect.TypeOf(v) || field.Type() == reflect.TypeOf((*format.Number)(nil)).Elem() {
+		switch field.Type() {
+		case reflect.TypeOf(v), reflect.TypeOf((*format.Number)(nil)).Elem():
 			field.Set(reflect.ValueOf(v))
-		} else {
+		case reflect.TypeOf((*format.Value)(nil)).Elem():
+			field.Set(reflect.ValueOf(v))
+		default:
 			return fmt.Errorf("cannot unmarshal Number into %v", field.Type())
 		}
 	}
