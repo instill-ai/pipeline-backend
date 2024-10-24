@@ -56,7 +56,7 @@ func TestNewImageFromURL(t *testing.T) {
 		name string
 		url  string
 	}{
-		{"Valid image URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/refs/heads/huitang/format/pkg/data/testdata/sample_640×426.png"},
+		{"Valid image URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/refs/heads/huitang/format/pkg/data/testdata/sample_640_426.png"},
 		{"Invalid URL", "https://invalid-url.com/image.png"},
 		{"Non-existent URL", "https://filesamples.com/samples/image/png/non_existent.png"},
 	}
@@ -144,10 +144,10 @@ func TestImageConvert(t *testing.T) {
 	}
 
 	c.Run("Invalid target format", func(c *qt.C) {
-		imageBytes, err := os.ReadFile("testdata/sample_640×426.png")
+		imageBytes, err := os.ReadFile("testdata/sample_640_426.png")
 		c.Assert(err, qt.IsNil)
 
-		image, err := NewImageFromBytes(imageBytes, "image/png", "sample_640×426.png")
+		image, err := NewImageFromBytes(imageBytes, "image/png", "sample_640_426.png")
 		c.Assert(err, qt.IsNil)
 
 		_, err = image.Convert("invalid_format")
