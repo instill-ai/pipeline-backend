@@ -19,9 +19,9 @@ func TestNewVideoFromBytes(t *testing.T) {
 		contentType string
 		expectError bool
 	}{
-		{"Valid MP4 video", "sample_640x360.mp4", "video/mp4", false},
-		{"Valid MOV video", "sample_640x360.mov", "video/mp4", false},
-		{"Valid WMV video", "sample_640x360.wmv", "video/mp4", false},
+		{"Valid MP4 video", "sample_640_360.mp4", "video/mp4", false},
+		{"Valid MOV video", "sample_640_360.mov", "video/mp4", false},
+		{"Valid WMV video", "sample_640_360.wmv", "video/mp4", false},
 		{"Invalid file type", "sample1.wav", "audio/wav", true},
 	}
 
@@ -66,7 +66,7 @@ func TestNewVideoFromURL(t *testing.T) {
 	c := qt.New(t)
 
 	c.Run("Valid video URL", func(c *qt.C) {
-		url := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/refs/heads/huitang/format/pkg/data/testdata/sample_640x360.mp4"
+		url := "https://raw.githubusercontent.com/instill-ai/pipeline-backend/refs/heads/huitang/format/pkg/data/testdata/sample_640_360.mp4"
 
 		video, err := NewVideoFromURL(url)
 
@@ -102,9 +102,9 @@ func TestVideoProperties(t *testing.T) {
 		duration    float64
 		frameRate   float64
 	}{
-		{"MP4 video", "sample_640x360.mp4", "video/mp4", 640, 360, 13.346, 30.0},
-		{"MOV video", "sample_640x360.mov", "video/quicktime", 640, 360, 13.346, 30.0},
-		{"WMV video", "sample_640x360.wmv", "video/x-ms-wmv", 640, 360, 13.346, 30.0},
+		{"MP4 video", "sample_640_360.mp4", "video/mp4", 640, 360, 13.346, 30.0},
+		{"MOV video", "sample_640_360.mov", "video/quicktime", 640, 360, 13.346, 30.0},
+		{"WMV video", "sample_640_360.wmv", "video/x-ms-wmv", 640, 360, 13.346, 30.0},
 	}
 
 	for _, tc := range testCases {
@@ -135,9 +135,9 @@ func TestVideoConvert(t *testing.T) {
 		contentType    string
 		expectedFormat string
 	}{
-		{"MP4 to WebM", "sample_640x360.mp4", "video/mp4", "video/webm"},
-		{"MOV to MP4", "sample_640x360.mov", "video/quicktime", "video/mp4"},
-		{"WMV to WebM", "sample_640x360.wmv", "video/x-ms-wmv", "video/webm"},
+		{"MP4 to WebM", "sample_640_360.mp4", "video/mp4", "video/webm"},
+		{"MOV to MP4", "sample_640_360.mov", "video/quicktime", "video/mp4"},
+		{"WMV to WebM", "sample_640_360.wmv", "video/x-ms-wmv", "video/webm"},
 	}
 
 	for _, tc := range testCases {
@@ -165,10 +165,10 @@ func TestVideoConvert(t *testing.T) {
 	}
 
 	c.Run("Invalid target format", func(c *qt.C) {
-		videoBytes, err := os.ReadFile(filepath.Join("testdata", "sample_640x360.mp4"))
+		videoBytes, err := os.ReadFile(filepath.Join("testdata", "sample_640_360.mp4"))
 		c.Assert(err, qt.IsNil)
 
-		video, err := NewVideoFromBytes(videoBytes, "video/mp4", "sample_640x360.mp4")
+		video, err := NewVideoFromBytes(videoBytes, "video/mp4", "sample_640_360.mp4")
 		c.Assert(err, qt.IsNil)
 
 		_, err = video.Convert("invalid_format")
