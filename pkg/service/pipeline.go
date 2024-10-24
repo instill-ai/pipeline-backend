@@ -865,7 +865,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				}
 			case "image", "image/*":
 				if v == nil {
-					variable[k] = data.NewString(defaultValueMap[k].(string))
+					variable[k], err = data.NewImageFromURL(defaultValueMap[k].(string))
+					if err != nil {
+						return err
+					}
 				} else {
 					variable[k], err = data.NewImageFromURL(v.GetStringValue())
 					if err != nil {
@@ -876,7 +879,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx] = data.NewString(val.(string))
+						array[idx], err = data.NewImageFromURL(val.(string))
+						if err != nil {
+							return err
+						}
 					}
 					variable[k] = array
 				} else {
@@ -891,7 +897,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				}
 			case "audio", "audio/*":
 				if v == nil {
-					variable[k] = data.NewString(defaultValueMap[k].(string))
+					variable[k], err = data.NewAudioFromURL(defaultValueMap[k].(string))
+					if err != nil {
+						return err
+					}
 				} else {
 					variable[k], err = data.NewAudioFromURL(v.GetStringValue())
 					if err != nil {
@@ -902,7 +911,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx] = data.NewString(val.(string))
+						array[idx], err = data.NewAudioFromURL(val.(string))
+						if err != nil {
+							return err
+						}
 					}
 					variable[k] = array
 				} else {
@@ -917,7 +929,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				}
 			case "video", "video/*":
 				if v == nil {
-					variable[k] = data.NewString(defaultValueMap[k].(string))
+					variable[k], err = data.NewVideoFromURL(defaultValueMap[k].(string))
+					if err != nil {
+						return err
+					}
 				} else {
 					variable[k], err = data.NewVideoFromURL(v.GetStringValue())
 					if err != nil {
@@ -928,7 +943,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx] = data.NewString(val.(string))
+						array[idx], err = data.NewVideoFromURL(val.(string))
+						if err != nil {
+							return err
+						}
 					}
 					variable[k] = array
 				} else {
@@ -944,7 +962,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 
 			case "document":
 				if v == nil {
-					variable[k] = data.NewString(defaultValueMap[k].(string))
+					variable[k], err = data.NewDocumentFromURL(defaultValueMap[k].(string))
+					if err != nil {
+						return err
+					}
 				} else {
 					variable[k], err = data.NewDocumentFromURL(v.GetStringValue())
 					if err != nil {
@@ -955,7 +976,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx] = data.NewString(val.(string))
+						array[idx], err = data.NewDocumentFromURL(val.(string))
+						if err != nil {
+							return err
+						}
 					}
 					variable[k] = array
 				} else {
@@ -970,7 +994,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				}
 			case "file", "*/*":
 				if v == nil {
-					variable[k] = data.NewString(defaultValueMap[k].(string))
+					variable[k], err = data.NewBinaryFromURL(defaultValueMap[k].(string))
+					if err != nil {
+						return err
+					}
 				} else {
 					variable[k], err = data.NewBinaryFromURL(v.GetStringValue())
 					if err != nil {
@@ -981,7 +1008,10 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
-						array[idx] = data.NewString(val.(string))
+						array[idx], err = data.NewBinaryFromURL(val.(string))
+						if err != nil {
+							return err
+						}
 					}
 					variable[k] = array
 				} else {
