@@ -123,7 +123,7 @@ func createFileFromURL(t reflect.Type, url string) (format.Value, error) {
 	case reflect.TypeOf((*format.Document)(nil)).Elem():
 		return NewDocumentFromURL(url)
 	case reflect.TypeOf((*format.File)(nil)).Elem():
-		return NewFileFromURL(url)
+		return NewBinaryFromURL(url)
 	}
 	return nil, fmt.Errorf("unsupported type: %v", t)
 }

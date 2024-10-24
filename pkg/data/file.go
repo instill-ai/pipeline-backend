@@ -2,12 +2,11 @@ package data
 
 import (
 	"fmt"
-	"io"
 	"mime"
-	"net/http"
 	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/go-resty/resty/v2"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
@@ -56,22 +55,19 @@ func convertURLToBytes(url string) (b []byte, contentType string, fileName strin
 		return convertDataURIToBytes(url)
 	}
 
-	resp, err := http.Get(url)
+	client := resty.New().SetRetryCount(3)
+	resp, err := client.R().Get(url)
 	if err != nil {
 		return nil, "", "", err
 	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, "", "", err
-	}
+	body := resp.Body()
 	contentType = ""
-	if headers, ok := resp.Header["Content-Type"]; ok && len(headers) > 0 {
-		contentType = headers[0]
+	if headers := resp.Header().Get("Content-Type"); headers != "" {
+		contentType = headers
 	}
 	fileName = ""
-	if headers, ok := resp.Header["Content-Disposition"]; ok && len(headers) > 0 {
-		if disposition := headers[0]; strings.HasPrefix(disposition, "attachment") {
+	if disposition := resp.Header().Get("Content-Disposition"); disposition != "" {
+		if strings.HasPrefix(disposition, "attachment") {
 			if _, params, err := mime.ParseMediaType(disposition); err == nil {
 				if fn, ok := params["filename"]; ok {
 					fileName = fn
