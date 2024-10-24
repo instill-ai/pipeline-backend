@@ -21,7 +21,7 @@ func TestNewAudioFromBytes(t *testing.T) {
 		{"Valid WAV audio", "sample1.wav", "audio/wav", 122.093},
 		{"Valid MP3 audio", "sample1.mp3", "audio/mpeg", 122.093},
 		{"Valid OGG audio", "sample1.ogg", "audio/ogg", 122.093},
-		{"Invalid file type", "sample_640×426.png", "", 0.0},
+		{"Invalid file type", "sample_640_426.png", "", 0.0},
 		{"Invalid audio format", "", "", 0.0},
 		{"Empty audio bytes", "", "", 0.0},
 	}
