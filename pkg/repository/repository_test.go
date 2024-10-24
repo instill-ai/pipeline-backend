@@ -463,7 +463,7 @@ func TestRepository_UpsertPipelineRun(t *testing.T) {
 		PipelineUID:        p.UID,
 		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
-		TriggeredBy:        ownerUID.String(),
+		RunnerUID:          ownerUID,
 		RecipeSnapshot: datamodel.JSONB{{
 			URL: minioURL,
 		}},
@@ -595,8 +595,8 @@ func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
 				PipelineUID:        p.UID,
 				Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 				Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
-				TriggeredBy:        testCase.runner,
-				Namespace:          testCase.runNamespace,
+				RunnerUID:          uuid.FromStringOrNil(testCase.runner),
+				RequesterUID:       uuid.FromStringOrNil(testCase.runNamespace),
 				RecipeSnapshot: datamodel.JSONB{{
 					URL: minioURL,
 				}},
@@ -619,7 +619,7 @@ func TestRepository_GetPaginatedPipelineRunsWithPermissions(t *testing.T) {
 	}
 }
 
-func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
+func TestRepository_GetPaginatedPipelineRunsByRequester(t *testing.T) {
 	c := qt.New(t)
 	ctx := context.Background()
 
@@ -631,8 +631,8 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 	for i := range len(mockUIDs) {
 		mockUIDs[i] = uuid.Must(uuid.NewV4())
 	}
-	user1 := mockUIDs[0].String()
-	namespace1 := mockUIDs[1].String()
+	user1 := mockUIDs[0]
+	namespace1 := mockUIDs[1]
 	now := time.Now()
 
 	pipelineUID, ownerUID := mockUIDs[2], mockUIDs[3]
@@ -685,8 +685,8 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 		PipelineUID:        p.UID,
 		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
-		TriggeredBy:        user1,
-		Namespace:          namespace1,
+		RunnerUID:          user1,
+		RequesterUID:       namespace1,
 		StartedTime:        now.Add(-1 * time.Hour),
 		TotalDuration:      null.IntFrom(42),
 		Components:         nil,
@@ -696,7 +696,7 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 	c.Check(err, qt.IsNil)
 
 	resp, _, err := repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
-		RequesterUID:   namespace1,
+		RequesterUID:   namespace1.String(),
 		StartTimeBegin: now.Add(-3 * time.Hour),
 		StartTimeEnd:   now.Add(-2 * time.Hour),
 		Page:           0,
@@ -708,7 +708,7 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 	c.Check(resp, qt.HasLen, 0)
 
 	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
-		RequesterUID:   namespace1,
+		RequesterUID:   namespace1.String(),
 		StartTimeBegin: now.Add(-2 * time.Hour),
 		StartTimeEnd:   now,
 		Page:           0,
@@ -726,8 +726,8 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 		PipelineUID:        p2.UID,
 		Status:             datamodel.RunStatus(runpb.RunStatus_RUN_STATUS_PROCESSING),
 		Source:             datamodel.RunSource(runpb.RunSource_RUN_SOURCE_API),
-		TriggeredBy:        user1,
-		Namespace:          namespace1,
+		RunnerUID:          user1,
+		RequesterUID:       namespace1,
 		StartedTime:        now.Add(-1 * time.Hour),
 		TotalDuration:      null.IntFrom(42),
 		Components:         nil,
@@ -737,7 +737,7 @@ func TestRepository_GetPaginatedPipelineRunsByCreditOwner(t *testing.T) {
 	c.Check(err, qt.IsNil)
 
 	resp, _, err = repo.GetPaginatedPipelineRunsByRequester(ctx, GetPipelineRunsByRequesterParams{
-		RequesterUID:   namespace1,
+		RequesterUID:   namespace1.String(),
 		StartTimeBegin: now.Add(-2 * time.Hour),
 		StartTimeEnd:   now,
 		Page:           0,
