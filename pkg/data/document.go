@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/operator/document/v0/transformer"
 	"github.com/instill-ai/pipeline-backend/pkg/data/format"
@@ -20,6 +21,7 @@ const XLS = "application/vnd.ms-excel"
 const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 const HTML = "text/html"
 const PLAIN = "text/plain"
+const TEXT = "text"
 const MARKDOWN = "text/markdown"
 const CSV = "text/csv"
 const PDF = "application/pdf"
@@ -54,14 +56,20 @@ func createDocumentData(b []byte, contentType, fileName string) (*documentData, 
 }
 
 func newDocument(f *fileData) (*documentData, error) {
-	supportedTypes := []string{DOC, DOCX, PPT, PPTX, XLS, XLSX, HTML, PDF, PLAIN, MARKDOWN, CSV}
+	supportedTypes := []string{DOC, DOCX, PPT, PPTX, XLS, XLSX, HTML, PDF, PLAIN, MARKDOWN, CSV, TEXT}
 	isSupported := false
 	for _, supportedType := range supportedTypes {
+		if strings.HasPrefix(f.contentType, TEXT) {
+			isSupported = true
+			break
+		}
 		if f.contentType == supportedType {
 			isSupported = true
 			break
 		}
 	}
+	fmt.Println()
+	fmt.Println(isSupported)
 	if !isSupported {
 		return nil, fmt.Errorf("unsupported document type: %s", f.contentType)
 	}
@@ -73,6 +81,10 @@ func newDocument(f *fileData) (*documentData, error) {
 }
 
 func (d *documentData) Text() (val format.String, err error) {
+
+	if strings.HasPrefix(d.contentType, TEXT) {
+		return NewString(string(d.raw)), nil
+	}
 	dataURI, err := d.DataURI()
 	if err != nil {
 		return nil, err

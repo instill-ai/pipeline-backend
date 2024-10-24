@@ -15,7 +15,6 @@ import (
 	"github.com/PaesslerAG/jsonpath"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gofrs/uuid"
-	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 	"go.temporal.io/api/enums/v1"
@@ -41,7 +40,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/worker"
 	"github.com/instill-ai/x/errmsg"
 
-	componentbase "github.com/instill-ai/pipeline-backend/pkg/component/base"
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
@@ -688,42 +686,12 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 		return ErrExceedMaxBatchSize
 	}
 
-	var metadata []byte
-
 	instillFormatMap := map[string]string{}
 	defaultValueMap := map[string]any{}
 
-	schStruct := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
-	schStruct.Fields["type"] = structpb.NewStringValue("object")
 	for k, v := range r.Variable {
-		v.InstillFormat = utils.ConvertInstillFormat(v.InstillFormat)
 		instillFormatMap[k] = v.InstillFormat
 		defaultValueMap[k] = v.Default
-	}
-
-	b, _ := json.Marshal(r.Variable)
-	properties := &structpb.Struct{}
-	_ = protojson.Unmarshal(b, properties)
-	schStruct.Fields["properties"] = structpb.NewStructValue(properties)
-	err := componentbase.CompileInstillAcceptFormats(schStruct)
-	if err != nil {
-		return err
-	}
-	err = componentbase.CompileInstillFormat(schStruct)
-	if err != nil {
-		return err
-	}
-	metadata, err = protojson.Marshal(schStruct)
-	if err != nil {
-		return err
-	}
-
-	c := jsonschema.NewCompiler()
-	c.RegisterExtension("instillAcceptFormats", componentbase.InstillAcceptFormatsMeta, componentbase.InstillAcceptFormatsCompiler{})
-	c.RegisterExtension("instillFormat", componentbase.InstillFormatMeta, componentbase.InstillFormatCompiler{})
-
-	if err := c.AddResource("schema.json", strings.NewReader(string(metadata))); err != nil {
-		return err
 	}
 
 	errors := []string{}
@@ -806,6 +774,13 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 			if _, ok := instillFormatMap[k]; !ok {
 				continue
 			}
+
+			if v == nil {
+				if d, ok := defaultValueMap[k]; !ok || d == nil {
+					return fmt.Errorf("%w: missing or invalid value for %s field \"%s\"", errdomain.ErrInvalidArgument, instillFormatMap[k], k)
+				}
+			}
+
 			switch instillFormatMap[k] {
 			case "boolean":
 				if v == nil {
@@ -965,7 +940,8 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					}
 					variable[k] = array
 				}
-			case "document", "file", "*/*":
+
+			case "document":
 				if v == nil {
 					variable[k] = data.NewString(defaultValueMap[k].(string))
 				} else {
@@ -974,7 +950,7 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 						return err
 					}
 				}
-			case "array:document", "array:file", "array:*/*":
+			case "array:document":
 				if v == nil {
 					array := make(data.Array, len(defaultValueMap[k].([]any)))
 					for idx, val := range defaultValueMap[k].([]any) {
@@ -985,6 +961,32 @@ func (s *service) preTriggerPipeline(ctx context.Context, ns resource.Namespace,
 					array := make(data.Array, len(v.GetListValue().Values))
 					for idx, val := range v.GetListValue().Values {
 						array[idx], err = data.NewDocumentFromURL(val.GetStringValue())
+						if err != nil {
+							return err
+						}
+					}
+					variable[k] = array
+				}
+			case "file", "*/*":
+				if v == nil {
+					variable[k] = data.NewString(defaultValueMap[k].(string))
+				} else {
+					variable[k], err = data.NewBinaryFromURL(v.GetStringValue())
+					if err != nil {
+						return err
+					}
+				}
+			case "array:file", "array:*/*":
+				if v == nil {
+					array := make(data.Array, len(defaultValueMap[k].([]any)))
+					for idx, val := range defaultValueMap[k].([]any) {
+						array[idx] = data.NewString(val.(string))
+					}
+					variable[k] = array
+				} else {
+					array := make(data.Array, len(v.GetListValue().Values))
+					for idx, val := range v.GetListValue().Values {
+						array[idx], err = data.NewBinaryFromURL(val.GetStringValue())
 						if err != nil {
 							return err
 						}
