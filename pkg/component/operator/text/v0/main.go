@@ -72,7 +72,7 @@ func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
 
 			var outputStruct ChunkTextOutput
 			if inputStruct.Strategy.Setting.ChunkMethod == "Markdown" {
-				outputStruct, err = chunkMarkdown(inputStruct)
+				outputStruct, err = ChunkMarkdown(inputStruct)
 			} else {
 				outputStruct, err = chunkText(inputStruct)
 			}

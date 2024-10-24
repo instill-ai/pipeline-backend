@@ -121,7 +121,7 @@ func TestChunkText(t *testing.T) {
 			var output ChunkTextOutput
 			err := error(nil)
 			if tc.input.Strategy.Setting.ChunkMethod == "Markdown" {
-				output, err = chunkMarkdown(tc.input)
+				output, err = ChunkMarkdown(tc.input)
 			} else {
 				output, err = chunkText(tc.input)
 			}
