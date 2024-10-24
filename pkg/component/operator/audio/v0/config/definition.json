@@ -1,7 +1,7 @@
 {
   "availableTasks": [
-    "TASK_CHUNK_AUDIOS",
-    "TASK_SLICE_AUDIO"
+    "TASK_DETECT_ACTIVITY",
+    "TASK_SEGMENT"
   ],
   "documentationUrl": "https://www.instill.tech/docs/component/operator/audio",
   "icon": "assets/audio.svg",
@@ -13,6 +13,6 @@
   "uid": "b5c75caa-9261-4757-bfbf-12e908f59f16",
   "version": "0.1.0",
   "sourceUrl": "https://github.com/instill-ai/pipeline-backend/blob/main/pkg/component/operator/audio/v0",
-  "description": "Extract and manipulate audio from different sources",
+  "description": "Operate audio data.",
   "releaseStage": "RELEASE_STAGE_ALPHA"
 }
