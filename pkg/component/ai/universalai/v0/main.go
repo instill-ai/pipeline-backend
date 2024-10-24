@@ -43,7 +43,7 @@ type execution struct {
 	base.ComponentExecution
 
 	usesInstillCredentials bool
-	execute                func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
+	execute                func(context.Context, *base.Job) error
 }
 
 // Init returns an initialized AI component.

@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 const (
@@ -111,7 +112,7 @@ func Encode(str string) string {
 }
 
 func Decode(str string) (string, error) {
-	b, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(str))
+	b, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(str))
 	if err != nil {
 		return str, err
 	}

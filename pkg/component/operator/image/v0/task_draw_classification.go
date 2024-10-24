@@ -2,27 +2,14 @@ package image
 
 import (
 	"context"
-	"fmt"
 	"image"
 	"image/color"
 
 	"github.com/fogleman/gg"
 	"golang.org/x/image/font/opentype"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 )
-
-type drawClassificationInput struct {
-	Image     base64Image `json:"image"`
-	Category  string      `json:"category"`
-	Score     float64     `json:"score"`
-	ShowScore bool        `json:"show-score"`
-}
-
-type drawClassificationOutput struct {
-	Image base64Image `json:"image"`
-}
 
 func drawImageLabel(img *image.RGBA, category string) error {
 
@@ -63,36 +50,37 @@ func drawImageLabel(img *image.RGBA, category string) error {
 	return nil
 }
 
-func drawClassification(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func drawClassification(ctx context.Context, job *base.Job) error {
 
-	inputStruct := drawClassificationInput{}
+	var inputStruct drawClassificationInput
+	if err := job.Input.ReadData(ctx, &inputStruct); err != nil {
+		return err
+	}
 
-	err := base.ConvertFromStructpb(input, &inputStruct)
+	img, err := decodeImage(inputStruct.Image)
 	if err != nil {
-		return nil, fmt.Errorf("error converting input to struct: %v", err)
+		return err
 	}
 
 	category := inputStruct.Category
-
-	img, err := decodeBase64Image(string(inputStruct.Image))
-	if err != nil {
-		return nil, fmt.Errorf("error decoding image: %v", err)
-	}
-
 	imgRGBA := convertToRGBA(img)
 
 	if err := drawImageLabel(imgRGBA, category); err != nil {
-		return nil, err
+		return err
 	}
 
-	base64Img, err := encodeBase64Image(imgRGBA)
+	imgData, err := encodeImage(imgRGBA)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	output := drawClassificationOutput{
-		Image: base64Image(fmt.Sprintf("data:image/png;base64,%s", base64Img)),
+	outputData := drawClassificationOutput{
+		Image: imgData,
 	}
 
-	return base.ConvertToStructpb(output)
+	if err := job.Output.WriteData(ctx, outputData); err != nil {
+		return err
+	}
+
+	return nil
 }

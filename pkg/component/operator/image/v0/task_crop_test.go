@@ -3,25 +3,20 @@ package image
 import (
 	"context"
 	"image"
+	"image/color"
 	"testing"
 
-	"github.com/frankban/quicktest"
+	qt "github.com/frankban/quicktest"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 )
 
 func TestCrop(t *testing.T) {
-	c := quicktest.New(t)
+	c := qt.New(t)
 
 	// Create a sample 100x100 image
-	img := image.NewRGBA(image.Rect(0, 0, 100, 100))
-	for y := 0; y < 100; y++ {
-		for x := 0; x < 100; x++ {
-			img.Set(x, y, image.White)
-		}
-	}
-	base64Img, err := encodeBase64Image(img)
-	c.Assert(err, quicktest.IsNil)
+	img := createTestImage(c, 100, 100, color.White)
 
 	testCases := []struct {
 		name           string
@@ -34,7 +29,7 @@ func TestCrop(t *testing.T) {
 		{
 			name: "Rectangular crop",
 			input: cropInput{
-				Image:        base64Image("data:image/png;base64," + base64Img),
+				Image:        img,
 				TopOffset:    10,
 				RightOffset:  20,
 				BottomOffset: 30,
@@ -46,7 +41,7 @@ func TestCrop(t *testing.T) {
 		{
 			name: "Circular crop",
 			input: cropInput{
-				Image:        base64Image("data:image/png;base64," + base64Img),
+				Image:        img,
 				CircleRadius: 25,
 			},
 			expectedWidth:  100,
@@ -56,7 +51,7 @@ func TestCrop(t *testing.T) {
 		{
 			name: "Corner radius crop",
 			input: cropInput{
-				Image:        base64Image("data:image/png;base64," + base64Img),
+				Image:        img,
 				CornerRadius: 20,
 			},
 			expectedWidth:  100,
@@ -66,7 +61,7 @@ func TestCrop(t *testing.T) {
 		{
 			name: "No crop (all offsets 0)",
 			input: cropInput{
-				Image: base64Image("data:image/png;base64," + base64Img),
+				Image: img,
 			},
 			expectedWidth:  100,
 			expectedHeight: 100,
@@ -74,7 +69,7 @@ func TestCrop(t *testing.T) {
 		{
 			name: "Invalid crop dimensions",
 			input: cropInput{
-				Image:        base64Image("data:image/png;base64," + base64Img),
+				Image:        img,
 				TopOffset:    50,
 				RightOffset:  50,
 				BottomOffset: 51,
@@ -85,31 +80,58 @@ func TestCrop(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		c.Run(tc.name, func(c *quicktest.C) {
-			inputStruct, err := base.ConvertToStructpb(tc.input)
-			c.Assert(err, quicktest.IsNil)
+		c.Run(tc.name, func(c *qt.C) {
+			component := Init(base.Component{})
+			c.Assert(component, qt.IsNotNil)
 
-			output, err := crop(inputStruct, nil, context.Background())
+			execution, err := component.CreateExecution(base.ComponentExecution{
+				Component: component,
+				Task:      "TASK_CROP",
+			})
+			c.Assert(err, qt.IsNil)
+			c.Assert(execution, qt.IsNotNil)
 
+			ir, ow, eh, job := mock.GenerateMockJob(c)
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				switch input := input.(type) {
+				case *cropInput:
+					*input = tc.input
+				}
+				return nil
+			})
+
+			var capturedOutput any
+			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
+				capturedOutput = output
+				compareTestImage(c, output.(cropOutput).Image, "task_crop")
+				return nil
+			})
+			eh.ErrorMock.Set(func(ctx context.Context, err error) {
+				c.Assert(err, qt.ErrorMatches, tc.expectedError)
+			})
 			if tc.expectedError != "" {
-				c.Assert(err, quicktest.ErrorMatches, tc.expectedError)
+				ow.WriteDataMock.Optional()
 			} else {
-				c.Assert(err, quicktest.IsNil)
+				eh.ErrorMock.Optional()
+			}
 
-				var croppedOutput cropOutput
-				err = base.ConvertFromStructpb(output, &croppedOutput)
-				c.Assert(err, quicktest.IsNil)
+			err = execution.Execute(context.Background(), []*base.Job{job})
 
-				// Decode the output image as PNG
-				decodedImg, err := decodeBase64Image(string(croppedOutput.Image)[22:]) // Remove "data:image/png;base64," prefix
-				c.Assert(err, quicktest.IsNil)
+			if tc.expectedError == "" {
+				c.Assert(err, qt.IsNil)
+				output, ok := capturedOutput.(cropOutput)
+				c.Assert(ok, qt.IsTrue)
+				c.Assert(output.Image, qt.Not(qt.IsNil))
 
-				// Check if the output image dimensions match the expected dimensions
-				c.Assert(decodedImg.Bounds().Dx(), quicktest.Equals, tc.expectedWidth)
-				c.Assert(decodedImg.Bounds().Dy(), quicktest.Equals, tc.expectedHeight)
+				// Check the dimensions of the output image
+				bounds := output.Image
+				c.Assert(bounds.Width().Integer(), qt.Equals, tc.expectedWidth)
+				c.Assert(bounds.Height().Integer(), qt.Equals, tc.expectedHeight)
 
 				// For circular and corner radius crop, check if corners are transparent
 				if tc.checkCorners {
+					decodedImg, err := decodeImage(output.Image)
+					c.Assert(err, qt.IsNil)
 					checkCornerTransparency(c, decodedImg)
 				}
 			}
@@ -117,7 +139,7 @@ func TestCrop(t *testing.T) {
 	}
 }
 
-func checkCornerTransparency(c *quicktest.C, img image.Image) {
+func checkCornerTransparency(c *qt.C, img image.Image) {
 	bounds := img.Bounds()
 	corners := []image.Point{
 		{X: bounds.Min.X, Y: bounds.Min.Y},
@@ -128,6 +150,6 @@ func checkCornerTransparency(c *quicktest.C, img image.Image) {
 
 	for _, corner := range corners {
 		_, _, _, a := img.At(corner.X, corner.Y).RGBA()
-		c.Assert(a, quicktest.Equals, uint32(0), quicktest.Commentf("Corner at (%d, %d) should be transparent", corner.X, corner.Y))
+		c.Assert(a, qt.Equals, uint32(0), qt.Commentf("Corner at (%d, %d) should be transparent", corner.X, corner.Y))
 	}
 }

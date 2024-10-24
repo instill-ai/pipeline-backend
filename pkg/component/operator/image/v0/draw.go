@@ -9,18 +9,6 @@ import (
 	"golang.org/x/image/font/opentype"
 )
 
-type boundingBox struct {
-	Top    int `json:"top"`
-	Left   int `json:"left"`
-	Width  int `json:"width"`
-	Height int `json:"height"`
-}
-
-// Size returns the area of the bounding box.
-func (b *boundingBox) Size() int {
-	return b.Width * b.Height
-}
-
 // Use the same color palette defined in yolov7: https://github.com/WongKinYiu/yolov7/blob/main/utils/plots.py#L449-L462
 var palette = []color.RGBA{
 	{255, 128, 0, 255},

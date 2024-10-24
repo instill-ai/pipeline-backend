@@ -10,38 +10,38 @@ import (
 )
 
 type ChunkTextInput struct {
-	Text     string   `json:"text"`
-	Strategy Strategy `json:"strategy"`
+	Text     string   `key:"text"`
+	Strategy Strategy `key:"strategy"`
 }
 
 type Strategy struct {
-	Setting Setting `json:"setting"`
+	Setting Setting `key:"setting"`
 }
 
 type Setting struct {
-	ChunkMethod       string   `json:"chunk-method,omitempty"`
-	ChunkSize         int      `json:"chunk-size,omitempty"`
-	ChunkOverlap      int      `json:"chunk-overlap,omitempty"`
-	ModelName         string   `json:"model-name,omitempty"`
-	AllowedSpecial    []string `json:"allowed-special,omitempty"`
-	DisallowedSpecial []string `json:"disallowed-special,omitempty"`
-	Separators        []string `json:"separators,omitempty"`
-	KeepSeparator     bool     `json:"keep-separator,omitempty"`
-	CodeBlocks        bool     `json:"code-blocks,omitempty"`
+	ChunkMethod       string   `key:"chunk-method"`
+	ChunkSize         int      `key:"chunk-size"`
+	ChunkOverlap      int      `key:"chunk-overlap"`
+	ModelName         string   `key:"model-name"`
+	AllowedSpecial    []string `key:"allowed-special"`
+	DisallowedSpecial []string `key:"disallowed-special"`
+	Separators        []string `key:"separators"`
+	KeepSeparator     bool     `key:"keep-separator"`
+	CodeBlocks        bool     `key:"code-blocks"`
 }
 
 type ChunkTextOutput struct {
-	ChunkNum         int         `json:"chunk-num"`
-	TextChunks       []TextChunk `json:"text-chunks"`
-	TokenCount       int         `json:"token-count"`
-	ChunksTokenCount int         `json:"chunks-token-count"`
+	ChunkNum         int         `key:"chunk-num"`
+	TextChunks       []TextChunk `key:"text-chunks"`
+	TokenCount       int         `key:"token-count"`
+	ChunksTokenCount int         `key:"chunks-token-count"`
 }
 
 type TextChunk struct {
-	Text          string `json:"text"`
-	StartPosition int    `json:"start-position"`
-	EndPosition   int    `json:"end-position"`
-	TokenCount    int    `json:"token-count"`
+	Text          string `key:"text"`
+	StartPosition int    `key:"start-position"`
+	EndPosition   int    `key:"end-position"`
+	TokenCount    int    `key:"token-count"`
 }
 
 func (s *Setting) SetDefault() {

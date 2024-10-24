@@ -1,20 +1,28 @@
 package data
 
 import (
-	"encoding/gob"
 	"fmt"
 
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-type Data map[string]Value
-type Value interface {
-	isValue()
-	ToStructValue() (v *structpb.Value, err error)
-	Get(path string) (v Value, err error)
-}
+type InstillFormat string
 
-func NewValue(in any) (val Value, err error) {
+const (
+	FormatNull      InstillFormat = "null"
+	FormatBoolean   InstillFormat = "boolean"
+	FormatString    InstillFormat = "string"
+	FormatNumber    InstillFormat = "number"
+	FormatByteArray InstillFormat = "byte-array"
+	FormatFile      InstillFormat = "file"
+	FormatDocument  InstillFormat = "document"
+	FormatImage     InstillFormat = "image"
+	FormatVideo     InstillFormat = "video"
+	FormatAudio     InstillFormat = "audio"
+)
+
+func NewValue(in any) (val format.Value, err error) {
 
 	switch in := in.(type) {
 	case nil:
@@ -28,18 +36,18 @@ func NewValue(in any) (val Value, err error) {
 	case string:
 		return NewString(in), nil
 	case []any:
-		arr := NewArray(make([]Value, len(in)))
+		arr := make(Array, len(in))
 		for i, item := range in {
-			arr.Values[i], err = NewValue(item)
+			arr[i], err = NewValue(item)
 			if err != nil {
 				return nil, err
 			}
 		}
 		return arr, nil
 	case map[string]any:
-		mp := NewMap(nil)
+		mp := make(Map)
 		for k, v := range in {
-			mp.Fields[k], err = NewValue(v)
+			mp[k], err = NewValue(v)
 			if err != nil {
 				return nil, err
 			}
@@ -50,7 +58,7 @@ func NewValue(in any) (val Value, err error) {
 	return nil, fmt.Errorf("NewValue error")
 }
 
-func NewJSONValue(in any) (val Value, err error) {
+func NewJSONValue(in any) (val format.Value, err error) {
 
 	switch in := in.(type) {
 	case bool:
@@ -62,18 +70,18 @@ func NewJSONValue(in any) (val Value, err error) {
 	case string:
 		return NewString(in), nil
 	case []any:
-		arr := NewArray(make([]Value, len(in)))
+		arr := make(Array, len(in))
 		for i, item := range in {
-			arr.Values[i], err = NewJSONValue(item)
+			arr[i], err = NewJSONValue(item)
 			if err != nil {
 				return nil, err
 			}
 		}
 		return arr, nil
 	case map[string]any:
-		mp := NewMap(nil)
+		mp := make(Map)
 		for k, v := range in {
-			mp.Fields[k], err = NewJSONValue(v)
+			mp[k], err = NewJSONValue(v)
 			if err != nil {
 				return nil, err
 			}
@@ -86,7 +94,7 @@ func NewJSONValue(in any) (val Value, err error) {
 	return nil, fmt.Errorf("NewJSONValue error")
 }
 
-func NewValueFromStruct(in *structpb.Value) (val Value, err error) {
+func NewValueFromStruct(in *structpb.Value) (val format.Value, err error) {
 
 	if in == nil {
 		return NewNull(), nil
@@ -102,19 +110,19 @@ func NewValueFromStruct(in *structpb.Value) (val Value, err error) {
 	case *structpb.Value_StringValue:
 		return NewString(in.StringValue), nil
 	case *structpb.Value_ListValue:
-		arr := NewArray(make([]Value, len(in.ListValue.Values)))
+		arr := make(Array, len(in.ListValue.Values))
 		for i, item := range in.ListValue.GetValues() {
-			arr.Values[i], err = NewValueFromStruct(item)
+			arr[i], err = NewValueFromStruct(item)
 			if err != nil {
 				return nil, err
 			}
 		}
 		return arr, nil
 	case *structpb.Value_StructValue:
-		mp := NewMap(nil)
+		mp := make(Map)
 		for k, v := range in.StructValue.GetFields() {
 
-			mp.Fields[k], err = NewValueFromStruct(v)
+			mp[k], err = NewValueFromStruct(v)
 			if err != nil {
 				return nil, err
 			}
@@ -123,19 +131,4 @@ func NewValueFromStruct(in *structpb.Value) (val Value, err error) {
 	}
 
 	return nil, fmt.Errorf("NewValueFromStruct error")
-}
-
-func init() {
-	gob.Register(&Map{})
-	gob.Register(&Array{})
-	gob.Register(&Null{})
-	gob.Register(&Boolean{})
-	gob.Register(&Number{})
-	gob.Register(&String{})
-	gob.Register(&ByteArray{})
-	gob.Register(&File{})
-	gob.Register(&Image{})
-	gob.Register(&Video{})
-	gob.Register(&Audio{})
-	gob.Register(&Document{})
 }

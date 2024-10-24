@@ -3,11 +3,13 @@ package worker
 import (
 	"context"
 
+	"google.golang.org/protobuf/types/known/structpb"
+
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/recipe"
 	"github.com/instill-ai/x/errmsg"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type setupReader struct {
@@ -58,19 +60,27 @@ func NewInputReader(wfm memory.WorkflowMemory, compID string, originalIdx int) *
 	}
 }
 
-func (i *inputReader) Read(ctx context.Context) (inputStruct *structpb.Struct, err error) {
+func (i *inputReader) read(ctx context.Context) (inputVal format.Value, err error) {
 
 	inputTemplate, err := i.wfm.GetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInput)
 	if err != nil {
 		return nil, err
 	}
 
-	inputVal, err := recipe.Render(ctx, inputTemplate, i.originalIdx, i.wfm, false)
+	inputVal, err = recipe.Render(ctx, inputTemplate, i.originalIdx, i.wfm, false)
 	if err != nil {
 		return nil, err
 	}
 
 	if err = i.wfm.SetComponentData(ctx, i.originalIdx, i.compID, memory.ComponentDataInput, inputVal); err != nil {
+		return nil, err
+	}
+	return inputVal, nil
+}
+
+func (i *inputReader) Read(ctx context.Context) (inputStruct *structpb.Struct, err error) {
+	inputVal, err := i.read(ctx)
+	if err != nil {
 		return nil, err
 	}
 
@@ -80,6 +90,14 @@ func (i *inputReader) Read(ctx context.Context) (inputStruct *structpb.Struct, e
 	}
 
 	return input.GetStructValue(), nil
+}
+
+func (i *inputReader) ReadData(ctx context.Context, input any) (err error) {
+	inputVal, err := i.read(ctx)
+	if err != nil {
+		return err
+	}
+	return data.Unmarshal(inputVal, input)
 }
 
 type outputWriter struct {
@@ -98,12 +116,27 @@ func NewOutputWriter(wfm memory.WorkflowMemory, compID string, originalIdx int, 
 	}
 }
 
+func (o *outputWriter) WriteData(ctx context.Context, output any) (err error) {
+
+	val, err := data.Marshal(output)
+	if err != nil {
+		return err
+	}
+
+	return o.write(ctx, val)
+}
+
 func (o *outputWriter) Write(ctx context.Context, output *structpb.Struct) (err error) {
 
 	val, err := data.NewValueFromStruct(structpb.NewStructValue(output))
 	if err != nil {
 		return err
 	}
+	return o.write(ctx, val)
+}
+
+func (o *outputWriter) write(ctx context.Context, val format.Value) (err error) {
+
 	if err := o.wfm.SetComponentData(ctx, o.originalIdx, o.compID, memory.ComponentDataOutput, val); err != nil {
 		return err
 	}

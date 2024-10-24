@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/frankban/quicktest"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
@@ -17,30 +16,24 @@ func TestOperator(t *testing.T) {
 	testcases := []struct {
 		name  string
 		task  string
-		input structpb.Struct
+		input ChunkTextInput
 	}{
 		{
 			name: "chunk texts",
 			task: "TASK_CHUNK_TEXT",
-			input: structpb.Struct{
-				Fields: map[string]*structpb.Value{
-					"text": {Kind: &structpb.Value_StringValue{StringValue: "Hello world. This is a test."}},
-					"strategy": {Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{
-						Fields: map[string]*structpb.Value{
-							"setting": {Kind: &structpb.Value_StructValue{StructValue: &structpb.Struct{
-								Fields: map[string]*structpb.Value{
-									"chunk-method": {Kind: &structpb.Value_StringValue{StringValue: "Token"}},
-								},
-							}}},
-						},
-					}}},
+			input: ChunkTextInput{
+				Text: "Hello world. This is a test.",
+				Strategy: Strategy{
+					Setting: Setting{
+						ChunkMethod: "Token",
+					},
 				},
 			},
 		},
 		{
 			name:  "error case",
 			task:  "FAKE_TASK",
-			input: structpb.Struct{},
+			input: ChunkTextInput{},
 		},
 	}
 	bc := base.Component{}
@@ -59,14 +52,20 @@ func TestOperator(t *testing.T) {
 			c.Assert(execution, quicktest.IsNotNil)
 
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(&tc.input, nil)
-			ow.WriteMock.Optional().Set(func(ctx context.Context, output *structpb.Struct) (err error) {
+			ir.ReadDataMock.Set(func(ctx context.Context, v interface{}) error {
+				*v.(*ChunkTextInput) = tc.input
+				return nil
+			})
+			ow.WriteDataMock.Optional().Set(func(ctx context.Context, output interface{}) error {
 				if tc.name == "error case" {
 					c.Assert(output, quicktest.IsNil)
-					return
+					return nil
 				}
 				return nil
 			})
+			if tc.name == "error case" {
+				ir.ReadDataMock.Optional()
+			}
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				if tc.name == "error case" {
 					c.Assert(err, quicktest.ErrorMatches, "not supported task: FAKE_TASK")

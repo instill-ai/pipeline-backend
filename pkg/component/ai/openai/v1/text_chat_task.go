@@ -23,21 +23,26 @@ const (
 	completionsPath = "/v1/chat/completions"
 )
 
-func (e *execution) ExecuteTextChat(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func (e *execution) ExecuteTextChat(ctx context.Context, job *base.Job) error {
 	inputStruct := ai.TextChatInput{}
 
-	if err := base.ConvertFromStructpb(input, &inputStruct); err != nil {
-		return nil, fmt.Errorf("failed to convert input to TextChatInput: %w", err)
+	input, err := job.Input.Read(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to read input: %w", err)
 	}
 
-	return ExecuteTextChat(inputStruct, e.client, job, ctx)
+	if err := base.ConvertFromStructpb(input, &inputStruct); err != nil {
+		return fmt.Errorf("failed to convert input to TextChatInput: %w", err)
+	}
+
+	return ExecuteTextChat(ctx, inputStruct, e.client, job)
 }
 
-func ExecuteTextChat(inputStruct ai.TextChatInput, client httpclient.IClient, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func ExecuteTextChat(ctx context.Context, inputStruct ai.TextChatInput, client httpclient.IClient, job *base.Job) error {
 
 	requester := ModelRequesterFactory(inputStruct, client)
 
-	return requester.SendChatRequest(job, ctx)
+	return requester.SendChatRequest(ctx, job)
 }
 
 func ModelRequesterFactory(input ai.TextChatInput, client httpclient.IClient) IChatModelRequester {
@@ -74,7 +79,7 @@ func ModelRequesterFactory(input ai.TextChatInput, client httpclient.IClient) IC
 }
 
 type IChatModelRequester interface {
-	SendChatRequest(*base.Job, context.Context) (*structpb.Struct, error)
+	SendChatRequest(context.Context, *base.Job) error
 }
 
 // o1-preview or o1-mini
@@ -84,7 +89,7 @@ type O1ModelRequester struct {
 }
 
 // When it supports streaming, the job and ctx will be used.
-func (r *O1ModelRequester) SendChatRequest(_ *base.Job, _ context.Context) (*structpb.Struct, error) {
+func (r *O1ModelRequester) SendChatRequest(ctx context.Context, job *base.Job) error {
 
 	input := r.Input
 	// Note: The o1-series models don't support streaming.
@@ -99,13 +104,17 @@ func (r *O1ModelRequester) SendChatRequest(_ *base.Job, _ context.Context) (*str
 
 	if resp, err := req.Post(completionsPath); err != nil {
 		errMsg := resp.Body()
-		return nil, fmt.Errorf("failed to send chat request: %w, %s", err, errMsg)
+		return fmt.Errorf("failed to send chat request: %w, %s", err, errMsg)
 	}
 
 	outputStruct := ai.TextChatOutput{}
 	setOutputStruct(&outputStruct, resp)
 
-	return base.ConvertToStructpb(outputStruct)
+	out, err := base.ConvertToStructpb(outputStruct)
+	if err != nil {
+		return err
+	}
+	return job.Output.Write(ctx, out)
 }
 
 // https://platform.openai.com/docs/api-reference/chat/create#chat-create-response_format
@@ -115,7 +124,7 @@ type SupportJSONOutputModelRequester struct {
 	Client httpclient.IClient
 }
 
-func (r *SupportJSONOutputModelRequester) SendChatRequest(job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func (r *SupportJSONOutputModelRequester) SendChatRequest(ctx context.Context, job *base.Job) error {
 
 	input := r.Input
 
@@ -127,10 +136,14 @@ func (r *SupportJSONOutputModelRequester) SendChatRequest(job *base.Job, ctx con
 	output, err := sendRequest(chatReq, r.Client, job, ctx)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return base.ConvertToStructpb(output)
+	out, err := base.ConvertToStructpb(output)
+	if err != nil {
+		return err
+	}
+	return job.Output.Write(ctx, out)
 }
 
 type ChatModelRequester struct {
@@ -138,7 +151,7 @@ type ChatModelRequester struct {
 	Client httpclient.IClient
 }
 
-func (r *ChatModelRequester) SendChatRequest(job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func (r *ChatModelRequester) SendChatRequest(ctx context.Context, job *base.Job) error {
 
 	input := r.Input
 
@@ -151,10 +164,14 @@ func (r *ChatModelRequester) SendChatRequest(job *base.Job, ctx context.Context)
 	output, err := sendRequest(chatReq, r.Client, job, ctx)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return base.ConvertToStructpb(output)
+	out, err := base.ConvertToStructpb(output)
+	if err != nil {
+		return err
+	}
+	return job.Output.Write(ctx, out)
 }
 
 func sendRequest(chatReq textChatReq, client httpclient.IClient, job *base.Job, ctx context.Context) (ai.TextChatOutput, error) {

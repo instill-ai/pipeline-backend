@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 )
 
 type ChunkAudiosInput struct {
@@ -52,7 +53,7 @@ func chunkAudios(input *structpb.Struct) (*structpb.Struct, error) {
 		return nil, err
 	}
 
-	buf, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(string(inputStruct.Audio)))
+	buf, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(string(inputStruct.Audio)))
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +111,7 @@ func sliceAudio(input *structpb.Struct) (*structpb.Struct, error) {
 		return nil, err
 	}
 
-	buf, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(string(inputStruct.Audio)))
+	buf, err := base64.StdEncoding.DecodeString(util.TrimBase64Mime(string(inputStruct.Audio)))
 	if err != nil {
 		return nil, err
 	}

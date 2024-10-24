@@ -2,25 +2,24 @@ package image
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"image"
 	"image/color"
 	"image/png"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/google/uuid"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 )
 
-// base64Image is a base64 encoded image
-type base64Image string
+func decodeImage(i format.Image) (image.Image, error) {
 
-func decodeBase64Image(base64Img string) (image.Image, error) {
-	imgBytes, err := base64.StdEncoding.DecodeString(base.TrimBase64Mime(base64Img))
+	binary, err := i.Binary()
 	if err != nil {
-		return nil, fmt.Errorf("error decoding base64 image: %v", err)
+		return nil, fmt.Errorf("error getting binary data for image: %v", err)
 	}
 
-	img, _, err := image.Decode(bytes.NewReader(imgBytes))
+	img, _, err := image.Decode(bytes.NewReader(binary.ByteArray()))
 	if err != nil {
 		return nil, fmt.Errorf("error decoding image: %v", err)
 	}
@@ -28,16 +27,18 @@ func decodeBase64Image(base64Img string) (image.Image, error) {
 	return img, nil
 }
 
-func encodeBase64Image(img image.Image) (string, error) {
+func encodeImage(img image.Image) (format.Image, error) {
 	buf := new(bytes.Buffer)
 	err := png.Encode(buf, img)
 	if err != nil {
-		return "", fmt.Errorf("error encoding image: %v", err)
+		return nil, fmt.Errorf("error encoding image: %v", err)
+	}
+	imgData, err := data.NewImageFromBytes(buf.Bytes(), "image/png", fmt.Sprintf("image-%s.png", uuid.New().String()))
+	if err != nil {
+		return nil, fmt.Errorf("error creating image data: %v", err)
 	}
 
-	base64ByteImg := base64.StdEncoding.EncodeToString(buf.Bytes())
-
-	return base64ByteImg, nil
+	return imgData, nil
 }
 
 func convertToRGBA(img image.Image) *image.RGBA {

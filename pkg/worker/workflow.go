@@ -23,6 +23,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/config"
 	"github.com/instill-ai/pipeline-backend/pkg/constant"
 	"github.com/instill-ai/pipeline-backend/pkg/data"
+	"github.com/instill-ai/pipeline-backend/pkg/data/format"
 	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
@@ -629,13 +630,13 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		useInput := param.Input != ""
 
 		var indexes []int
-		var elems []data.Value
+		var elems []format.Value
 		if useInput {
 			input, err := recipe.Render(ctx, data.NewString(param.Input), iter, wfm, false)
 			if err != nil {
 				return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
 			}
-			elems = input.(*data.Array).Values
+			elems = input.(data.Array)
 			indexes = make([]int, len(elems))
 		} else {
 
@@ -666,9 +667,9 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 			}
 			useArrayRange := false
 			switch rangeParam.(type) {
-			case *data.Array:
+			case data.Array:
 				useArrayRange = true
-			case *data.Map:
+			case data.Map:
 				useArrayRange = false
 			default:
 				return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error"), preIteratorActivityErrorType, param.ID)
@@ -683,32 +684,32 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 
 			withStep := false
 			if useArrayRange {
-				if l := len(rangeParam.(*data.Array).Values); l < 2 || l > 3 {
+				if l := len(rangeParam.(data.Array)); l < 2 || l > 3 {
 					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, must be in the form [start, stop[, step]]"), preIteratorActivityErrorType, param.ID)
 				} else if l == 3 {
 					withStep = true
 				}
-				start = renderedRangeParam.(*data.Array).Values[0].(*data.Number).GetInteger()
-				stop = renderedRangeParam.(*data.Array).Values[1].(*data.Number).GetInteger()
+				start = renderedRangeParam.(data.Array)[0].(format.Number).Integer()
+				stop = renderedRangeParam.(data.Array)[1].(format.Number).Integer()
 				if withStep {
-					step = renderedRangeParam.(*data.Array).Values[2].(*data.Number).GetInteger()
+					step = renderedRangeParam.(data.Array)[2].(format.Number).Integer()
 				}
 			} else {
-				if _, ok := renderedRangeParam.(*data.Map).Fields[rangeStart]; ok {
-					start = renderedRangeParam.(*data.Map).Fields[rangeStart].(*data.Number).GetInteger()
+				if _, ok := renderedRangeParam.(data.Map)[rangeStart]; ok {
+					start = renderedRangeParam.(data.Map)[rangeStart].(format.Number).Integer()
 				} else {
 					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, `start` is missing"), preIteratorActivityErrorType, param.ID)
 				}
 
-				if _, ok := renderedRangeParam.(*data.Map).Fields[rangeStop]; ok {
-					stop = renderedRangeParam.(*data.Map).Fields[rangeStop].(*data.Number).GetInteger()
+				if _, ok := renderedRangeParam.(data.Map)[rangeStop]; ok {
+					stop = renderedRangeParam.(data.Map)[rangeStop].(format.Number).Integer()
 				} else {
 					return nil, componentActivityError(ctx, wfm, fmt.Errorf("iterator range error, `stop` is missing"), preIteratorActivityErrorType, param.ID)
 				}
 
-				if _, ok := renderedRangeParam.(*data.Map).Fields[rangeStep]; ok {
+				if _, ok := renderedRangeParam.(data.Map)[rangeStep]; ok {
 					withStep = true
-					step = renderedRangeParam.(*data.Map).Fields[rangeStep].(*data.Number).GetInteger()
+					step = renderedRangeParam.(data.Map)[rangeStep].(format.Number).Integer()
 				}
 
 			}
@@ -759,11 +760,9 @@ func (w *worker) PreIteratorActivity(ctx context.Context, param *PreIteratorActi
 		// and stored in memory.
 		if useInput {
 			for e := range len(indexes) {
-				iteratorElem := data.NewMap(
-					map[string]data.Value{
-						"element": elems[e],
-					},
-				)
+				iteratorElem := data.Map{
+					"element": elems[e],
+				}
 				err = childWFM.Set(ctx, e, param.ID, iteratorElem)
 				if err != nil {
 					return nil, componentActivityError(ctx, wfm, err, preIteratorActivityErrorType, param.ID)
@@ -854,19 +853,19 @@ func (w *worker) PostIteratorActivity(ctx context.Context, param *PostIteratorAc
 			return componentActivityError(ctx, wfm, err, postIteratorActivityErrorType, param.ID)
 		}
 
-		output := data.NewMap(nil)
+		output := data.Map{}
 		for k, v := range param.OutputElements {
-			elemVals := data.NewArray(nil)
+			elemVals := data.Array{}
 
 			for elemIdx := range childWFM.GetBatchSize() {
 				elemVal, err := recipe.Render(ctx, data.NewString(v), elemIdx, childWFM, false)
 				if err != nil {
 					return componentActivityError(ctx, wfm, err, postIteratorActivityErrorType, param.ID)
 				}
-				elemVals.Values = append(elemVals.Values, elemVal)
+				elemVals = append(elemVals, elemVal)
 
 			}
-			output.Fields[k] = elemVals
+			output[k] = elemVals
 		}
 		if err = wfm.SetComponentData(ctx, iter, param.ID, memory.ComponentDataOutput, output); err != nil {
 			return componentActivityError(ctx, wfm, err, postIteratorActivityErrorType, param.ID)
@@ -981,7 +980,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		}
 	}
 
-	connections := data.NewMap(nil)
+	connections := data.Map{}
 	for _, comp := range triggerRecipe.Component {
 		if connRef, ok := comp.Setup.(string); ok {
 			connID, err := recipe.ConnectionIDFromReference(connRef)
@@ -989,7 +988,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 				return preTriggerErr(fmt.Errorf("resolving connection reference: %w", err))
 			}
 
-			if _, connAlreadyLoaded := connections.Fields[connID]; connAlreadyLoaded {
+			if _, connAlreadyLoaded := connections[connID]; connAlreadyLoaded {
 				continue
 			}
 
@@ -1017,7 +1016,7 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 				return preTriggerErr(fmt.Errorf("transforming connection setup to value: %w", err))
 			}
 
-			connections.Fields[connID] = setupVal
+			connections[connID] = setupVal
 		}
 	}
 
@@ -1028,8 +1027,8 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 		}
 
 		for _, secret := range nsSecrets {
-			if _, ok := pipelineSecrets.(*data.Map).Fields[secret.ID]; !ok {
-				pipelineSecrets.(*data.Map).Fields[secret.ID] = data.NewString(*secret.Value)
+			if _, ok := pipelineSecrets.(data.Map)[secret.ID]; !ok {
+				pipelineSecrets.(data.Map)[secret.ID] = data.NewString(*secret.Value)
 			}
 		}
 
@@ -1057,10 +1056,10 @@ func (w *worker) PreTriggerActivity(ctx context.Context, param *PreTriggerActivi
 				return preTriggerErr(fmt.Errorf("initializing pipeline setup memory: %w", err))
 			}
 		}
-		output := data.NewMap(nil)
+		output := data.Map{}
 
 		for key, o := range triggerRecipe.Output {
-			output.Fields[key] = data.NewString(o.Value)
+			output[key] = data.NewString(o.Value)
 		}
 		err = wfm.SetPipelineData(ctx, idx, memory.PipelineOutputTemplate, output)
 		if err != nil {

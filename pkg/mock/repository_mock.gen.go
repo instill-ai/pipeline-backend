@@ -5,21 +5,18 @@ package mock
 import (
 	"context"
 	"sync"
-
 	mm_atomic "sync/atomic"
 	mm_time "time"
 
 	"github.com/gofrs/uuid"
 	"github.com/gojuno/minimock/v3"
+	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
+	mm_repository "github.com/instill-ai/pipeline-backend/pkg/repository"
+	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-
-	"github.com/instill-ai/pipeline-backend/pkg/datamodel"
-
-	mm_repository "github.com/instill-ai/pipeline-backend/pkg/repository"
-	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
 // RepositoryMock implements mm_repository.Repository

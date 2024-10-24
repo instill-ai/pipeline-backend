@@ -6,6 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
 	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 )
@@ -28,7 +29,7 @@ func (e *execution) executeVisionTask(grpcClient modelPB.ModelPublicServiceClien
 	for _, input := range inputs {
 		i := &RequestWrapper{
 			Data: &VisionRequestData{
-				ImageBase64: base.TrimBase64Mime(input.Fields["image-base64"].GetStringValue()),
+				ImageBase64: util.TrimBase64Mime(input.Fields["image-base64"].GetStringValue()),
 				Type:        "image-base64",
 			},
 		}

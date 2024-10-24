@@ -8,14 +8,17 @@ import (
 	_ "embed"
 
 	"github.com/frankban/quicktest"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 )
 
 //go:embed testdata/cls-dog.json
 var clsDogJSON []byte
+
+//go:embed testdata/cls-dog.jpeg
+var clsDogJPEG []byte
 
 // TestDrawClassification tests the drawClassification function
 func TestDrawClassification(t *testing.T) {
@@ -23,40 +26,86 @@ func TestDrawClassification(t *testing.T) {
 
 	testCases := []struct {
 		name      string
+		inputJPEG []byte
 		inputJSON []byte
+
+		expectedError  string
+		expectedOutput bool
 	}{
 		{
-			name:      "Classification Dog",
-			inputJSON: clsDogJSON,
+			name:           "Classification Dog",
+			inputJPEG:      clsDogJPEG,
+			inputJSON:      clsDogJSON,
+			expectedOutput: true,
+		},
+		{
+			name:          "Invalid Image",
+			inputJPEG:     []byte("invalid image data"),
+			inputJSON:     nil,
+			expectedError: "convert image: failed to decode source image: invalid JPEG format: missing SOI marker",
 		},
 	}
 
 	for _, tc := range testCases {
 		c.Run(tc.name, func(c *quicktest.C) {
-			inputData := &structpb.Struct{}
-			err := json.Unmarshal(tc.inputJSON, inputData)
-			c.Assert(err, quicktest.IsNil, quicktest.Commentf("Failed to unmarshal test data"))
+			component := Init(base.Component{})
+			c.Assert(component, quicktest.IsNotNil)
 
-			bc := base.Component{}
-			component := Init(bc)
-
-			e, err := component.CreateExecution(base.ComponentExecution{
+			execution, err := component.CreateExecution(base.ComponentExecution{
 				Component: component,
 				Task:      "TASK_DRAW_CLASSIFICATION",
 			})
-
-			c.Assert(err, quicktest.IsNil, quicktest.Commentf("drawClassification create execution returned an error"))
+			c.Assert(err, quicktest.IsNil)
+			c.Assert(execution, quicktest.IsNotNil)
 
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Expect(context.Background()).Return(inputData, nil)
-			ow.WriteMock.Times(1).Return(nil)
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				switch input := input.(type) {
+				case *drawClassificationInput:
+					img, err := data.NewImageFromBytes(tc.inputJPEG, "image/jpeg", "test")
+					if err != nil {
+						return err
+					}
+					var classificationResult struct {
+						Category string  `json:"category"`
+						Score    float64 `json:"score"`
+					}
+					err = json.Unmarshal(tc.inputJSON, &classificationResult)
+					if err != nil {
+						return err
+					}
+					*input = drawClassificationInput{
+						Image:    img,
+						Category: classificationResult.Category,
+						Score:    classificationResult.Score,
+					}
+				}
+				return nil
+			})
 
-			err = e.Execute(context.Background(), []*base.Job{job})
-			c.Assert(err, quicktest.IsNil, quicktest.Commentf("drawClassification returned an error"))
+			var capturedOutput any
+			ow.WriteDataMock.Set(func(ctx context.Context, output any) error {
+				capturedOutput = output
+				compareTestImage(c, output.(drawClassificationOutput).Image, "task_draw_classification")
+				return nil
+			})
+			eh.ErrorMock.Set(func(ctx context.Context, err error) {
+				c.Assert(err, quicktest.ErrorMatches, tc.expectedError)
+			})
+			if tc.expectedError != "" {
+				ow.WriteDataMock.Optional()
+			} else {
+				eh.ErrorMock.Optional()
+			}
 
-			ir.MinimockFinish()
-			ow.MinimockFinish()
-			eh.MinimockFinish()
+			err = execution.Execute(context.Background(), []*base.Job{job})
+
+			if tc.expectedError == "" {
+				c.Assert(err, quicktest.IsNil)
+				output, ok := capturedOutput.(drawClassificationOutput)
+				c.Assert(ok, quicktest.IsTrue)
+				c.Assert(output.Image, quicktest.Not(quicktest.IsNil))
+			}
 		})
 	}
 }
