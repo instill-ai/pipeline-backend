@@ -8,30 +8,45 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	modelpb "github.com/instill-ai/protogen-go/model/model/v1alpha"
+	"github.com/instill-ai/pipeline-backend/pkg/component/ai"
+	"github.com/instill-ai/pipeline-backend/pkg/component/base"
+
+	modelPB "github.com/instill-ai/protogen-go/model/model/v1alpha"
 )
 
-func (e *execution) executeEmbedding(grpcClient modelpb.ModelPublicServiceClient, nsID string, modelID string, version string, inputs []*structpb.Struct) ([]*structpb.Struct, error) {
+func (e *execution) embedding(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+	var inputStruct ai.EmbeddingInput
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	err := base.ConvertFromStructpb(input, &inputStruct)
+
+	if err != nil {
+		return nil, fmt.Errorf("convert to defined struct: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 
 	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
 
-	res, err := grpcClient.TriggerNamespaceModel(ctx, &modelpb.TriggerNamespaceModelRequest{
-		NamespaceId: nsID,
-		ModelId:     modelID,
-		Version:     version,
-		TaskInputs:  inputs,
+	model := inputStruct.Data.Model
+	triggerInfo, err := getTriggerInfo(model)
+
+	if err != nil {
+		return nil, fmt.Errorf("getting trigger info: %w", err)
+	}
+
+	grpcClient := e.client
+
+	res, err := grpcClient.TriggerNamespaceModel(ctx, &modelPB.TriggerNamespaceModelRequest{
+		NamespaceId: triggerInfo.nsID,
+		ModelId:     triggerInfo.modelID,
+		Version:     triggerInfo.version,
+		TaskInputs:  []*structpb.Struct{input},
 	})
 
-	if err != nil || res == nil {
-		return nil, fmt.Errorf("error triggering model: %v", err)
+	if err != nil || res == nil || len(res.TaskOutputs) == 0 {
+		return nil, fmt.Errorf("triggering model: %v", err)
 	}
 
-	if len(res.TaskOutputs) > 0 {
-		return res.TaskOutputs, nil
-	}
-
-	return nil, fmt.Errorf("no output from model")
+	return res.TaskOutputs[0], nil
 }
