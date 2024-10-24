@@ -1173,7 +1173,7 @@ func (r *repository) GetPaginatedPipelineRunsWithPermissions(ctx context.Context
 	}
 
 	if !isOwner { // for a view ns without ownership, they could only view the logs in same ns
-		whereConditions = append(whereConditions, "namespace = ?")
+		whereConditions = append(whereConditions, "requester_uid = ?")
 		whereArgs = append(whereArgs, requesterUID)
 	}
 
@@ -1284,7 +1284,7 @@ func (r *repository) GetPaginatedPipelineRunsByRequester(ctx context.Context, pa
 	var pipelineRuns []datamodel.PipelineRun
 	var totalRows int64
 
-	whereConditions := []string{"namespace = ? and started_time >= ? and started_time <= ?"}
+	whereConditions := []string{"requester_uid = ? and started_time >= ? and started_time <= ?"}
 	whereArgs := []any{params.RequesterUID, params.StartTimeBegin, params.StartTimeEnd}
 
 	var expr *clause.Expr
