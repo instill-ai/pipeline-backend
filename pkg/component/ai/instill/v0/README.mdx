@@ -7,18 +7,8 @@ description: "Learn about how to set up a VDP Instill Model component https://gi
 
 The Instill Model component is an AI component that allows users to connect the AI models served on the Instill Model Platform.
 It can carry out the following tasks:
-- [Classification](#classification)
-- [Instance Segmentation](#instance-segmentation)
-- [Keypoint](#keypoint)
-- [Detection](#detection)
-- [OCR](#ocr)
-- [Semantic Segmentation](#semantic-segmentation)
-- [Text Generation](#text-generation)
-- [Text Generation Chat](#text-generation-chat)
-- [Text to Image](#text-to-image)
-- [Visual Question Answering](#visual-question-answering)
-- [Chat](#chat)
 - [Embedding](#embedding)
+- [Chat](#chat)
 
 
 
@@ -38,550 +28,6 @@ The component definition and tasks are defined in the [definition.json](https://
 
 
 ## Supported Tasks
-
-### Classification
-
-Classify images into predefined categories.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CLASSIFICATION` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Category | `category` | string | The predicted category of the input. |
-| Score | `score` | number | The confidence score of the predicted category of the input. |
-</div>
-
-### Instance Segmentation
-
-Detect, localize and delineate multiple objects in images.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_INSTANCE_SEGMENTATION` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Objects](#instance-segmentation-objects) | `objects` | array[object] | A list of detected instance bounding boxes. |
-</div>
-
-<details>
-<summary> Output Objects in Instance Segmentation</summary>
-
-<h4 id="instance-segmentation-objects">Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Bounding Box](#instance-segmentation-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
-| Category | `category` | string | The predicted category of the bounding box. |
-| RLE | `rle` | string | Run Length Encoding (RLE) of instance mask within the bounding box. |
-| Score | `score` | number | The confidence score of the predicted instance object. |
-</div>
-
-<h4 id="instance-segmentation-bounding-box">Bounding Box</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value |
-| Left | `left` | number | Bounding box left x-axis value |
-| Top | `top` | number | Bounding box top y-axis value |
-| Width | `width` | number | Bounding box width value |
-</div>
-</details>
-
-### Keypoint
-
-Detect and localize multiple keypoints of objects in images.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_KEYPOINT` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Objects](#keypoint-objects) | `objects` | array[object] | A list of keypoint objects, a keypoint object includes all the pre-defined keypoints of a detected object. |
-</div>
-
-<details>
-<summary> Output Objects in Keypoint</summary>
-
-<h4 id="keypoint-objects">Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Bounding Box](#keypoint-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
-| [Keypoints](#keypoint-keypoints) | `keypoints` | array | A keypoint group is composed of a list of pre-defined keypoints of a detected object. |
-| Score | `score` | number | The confidence score of the predicted object. |
-</div>
-
-<h4 id="keypoint-keypoints">Keypoints</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Visibility Score | `v` | number | visibility score of the keypoint. |
-| X Coordinate | `x` | number | x coordinate of the keypoint. |
-| Y Coordinate | `y` | number | y coordinate of the keypoint. |
-</div>
-
-<h4 id="keypoint-bounding-box">Bounding Box</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value |
-| Left | `left` | number | Bounding box left x-axis value |
-| Top | `top` | number | Bounding box top y-axis value |
-| Width | `width` | number | Bounding box width value |
-</div>
-</details>
-
-### Detection
-
-Detect and localize multiple objects in images.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_DETECTION` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Objects](#detection-objects) | `objects` | array[object] | A list of detected objects. |
-</div>
-
-<details>
-<summary> Output Objects in Detection</summary>
-
-<h4 id="detection-objects">Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Bounding box](#detection-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
-| Category | `category` | string | The predicted category of the bounding box. |
-| Score | `score` | number | The confidence score of the predicted category of the bounding box. |
-</div>
-
-<h4 id="detection-bounding-box">Bounding Box</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value |
-| Left | `left` | number | Bounding box left x-axis value |
-| Top | `top` | number | Bounding box top y-axis value |
-| Width | `width` | number | Bounding box width value |
-</div>
-</details>
-
-### OCR
-
-Detect and recognize text in images.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_OCR` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Objects](#ocr-objects) | `objects` | array[object] | A list of detected bounding boxes. |
-</div>
-
-<details>
-<summary> Output Objects in OCR</summary>
-
-<h4 id="ocr-objects">Objects</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Bounding Box](#ocr-bounding-box) | `bounding-box` | object | The detected bounding box in (left, top, width, height) format. |
-| Score | `score` | number | The confidence score of the predicted object. |
-| Text | `text` | string | Text string recognised per bounding box. |
-</div>
-
-<h4 id="ocr-bounding-box">Bounding Box</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Height | `height` | number | Bounding box height value |
-| Left | `left` | number | Bounding box left x-axis value |
-| Top | `top` | number | Bounding box top y-axis value |
-| Width | `width` | number | Bounding box width value |
-</div>
-</details>
-
-### Semantic Segmentation
-
-Classify image pixels into predefined categories.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_SEMANTIC_SEGMENTATION` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Image (required) | `image-base64` | string | Image base64 |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| [Stuffs](#semantic-segmentation-stuffs) | `stuffs` | array[object] | A list of RLE binary masks. |
-</div>
-
-<details>
-<summary> Output Objects in Semantic Segmentation</summary>
-
-<h4 id="semantic-segmentation-stuffs">Stuffs</h4>
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| Category | `category` | string | Category text string corresponding to each stuff mask. |
-| RLE | `rle` | string | Run Length Encoding (RLE) of each stuff mask within the image. |
-</div>
-</details>
-
-### Text Generation
-
-Generate texts from input text prompts.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_TEXT_GENERATION` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
-| Seed | `seed` | integer | The seed |
-| Temperature | `temperature` | number | The temperature for sampling |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Text |
-</div>
-
-### Text Generation Chat
-
-Generate texts from input text prompts and chat history.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_TEXT_GENERATION_CHAT` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
-| Prompt Images | `prompt-images` | array[string] | The prompt images |
-| [Chat History](#text-generation-chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
-| Seed | `seed` | integer | The seed |
-| Temperature | `temperature` | number | The temperature for sampling |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
-</div>
-
-
-<details>
-<summary> Input Objects in Text Generation Chat</summary>
-
-<h4 id="text-generation-chat-chat-history">Chat History</h4>
-
-Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Content](#text-generation-chat-content) | `content` | array | The message content  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
-</div>
-<h4 id="text-generation-chat-content">Content</h4>
-
-The message content
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Image URL](#text-generation-chat-image-url) | `image-url` | object | The image URL  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image-url`</li></ul></details>  |
-</div>
-<h4 id="text-generation-chat-image-url">Image URL</h4>
-
-The image URL
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Text |
-</div>
-
-### Text to Image
-
-Generate images from input text prompts.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_TEXT_TO_IMAGE` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| Samples | `samples` | integer | The number of generated samples, default is 1 |
-| Seed | `seed` | integer | The seed, default is 0 |
-| Aspect Ratio | `negative-prompt` | string | Keywords of what you do not wish to see in the output image. |
-| Aspect Ratio | `aspect-ratio` | string | Controls the aspect ratio of the generated image. Defaults to 1:1. |
-</div>
-
-
-
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Images | `images` | array[string] | Images |
-</div>
-
-### Visual Question Answering
-
-Answer questions based on a prompt and an image.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_VISUAL_QUESTION_ANSWERING` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
-| Prompt Images | `prompt-images` | array[string] | The prompt images |
-| [Chat History](#visual-question-answering-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
-| Seed | `seed` | integer | The seed |
-| Temperature | `temperature` | number | The temperature for sampling |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
-</div>
-
-
-<details>
-<summary> Input Objects in Visual Question Answering</summary>
-
-<h4 id="visual-question-answering-chat-history">Chat History</h4>
-
-Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Content](#visual-question-answering-content) | `content` | array | The message content  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
-</div>
-<h4 id="visual-question-answering-content">Content</h4>
-
-The message content
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Image URL](#visual-question-answering-image-url) | `image-url` | object | The image URL  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image-url`</li></ul></details>  |
-</div>
-<h4 id="visual-question-answering-image-url">Image URL</h4>
-
-The image URL
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Text |
-</div>
-
-### Chat
-
-Generate texts from input text prompts and chat history.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Input | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Task ID (required) | `task` | string | `TASK_CHAT` |
-| Model Name (required) | `model-name` | string | The Instill Model model to be used. |
-| Prompt (required) | `prompt` | string | The prompt text |
-| System Message | `system-message` | string | The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as "You are a helpful assistant." |
-| Prompt Images | `prompt-images` | array[string] | The prompt images |
-| [Chat History](#chat-chat-history) | `chat-history` | array[object] | Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}. |
-| Seed | `seed` | integer | The seed |
-| Temperature | `temperature` | number | The temperature for sampling |
-| Max New Tokens | `max-new-tokens` | integer | The maximum number of tokens for model to generate |
-</div>
-
-
-<details>
-<summary> Input Objects in Chat</summary>
-
-<h4 id="chat-chat-history">Chat History</h4>
-
-Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : \{"role": "The message role, i.e. 'system', 'user' or 'assistant'", "content": "message content"\}.
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Content](#chat-content) | `content` | array | The message content  |
-| Role | `role` | string | The message role, i.e. 'system', 'user' or 'assistant'  |
-</div>
-<h4 id="chat-content">Content</h4>
-
-The message content
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| [Image URL](#chat-image-url) | `image-url` | object | The image URL  |
-| Text | `text` | string | The text content.  |
-| Type | `type` | string | The type of the content part.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`text`</li><li>`image-url`</li></ul></details>  |
-</div>
-<h4 id="chat-image-url">Image URL</h4>
-
-The image URL
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Field | Field ID | Type | Note |
-| :--- | :--- | :--- | :--- |
-| URL | `url` | string | Either a URL of the image or the base64 encoded image data.  |
-</div>
-</details>
-
-
-
-<div class="markdown-col-no-wrap" data-col-1 data-col-2>
-
-| Output | ID | Type | Description |
-| :--- | :--- | :--- | :--- |
-| Text | `text` | string | Text |
-</div>
 
 ### Embedding
 
@@ -692,6 +138,127 @@ Input parameter.
 | Created | `created` | integer | The Unix timestamp (in seconds) of when the embedding was created. |
 | Index | `index` | integer | The index of the embedding vector in the array. |
 | Embedding Vector | `vector` | array | The embedding vector. |
+</div>
+</details>
+
+### Chat
+
+This task involves generating contextually relevant text responses based on input data, such as user queries or prompts. The generated responses include metadata like token usage, which can help track and calculate the cost of the operation. This metadata can also be useful for performance monitoring and analysis.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_CHAT` |
+| [Chat Data](#chat-chat-data) (required) | `data` | object | The data that will be passed to the chat model. This typically includes the messages exchanged between the user and the assistant, alongside any additional information to guide the conversation. |
+| [Input Parameter](#chat-input-parameter) | `parameter` | object | The parameters used to control how the model generates responses. These include settings for token limits, randomness, and the number of response choices. |
+</div>
+
+
+<details>
+<summary> Input Objects in Chat</summary>
+
+<h4 id="chat-chat-data">Chat Data</h4>
+
+The data that will be passed to the chat model. This typically includes the messages exchanged between the user and the assistant, alongside any additional information to guide the conversation.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Chat Messages](#chat-chat-messages) | `messages` | array | A collection of individual messages exchanged during the chat session. Each message includes content and other attributes like role and optional participant name.  |
+</div>
+<h4 id="chat-chat-messages">Chat Messages</h4>
+
+A collection of individual messages exchanged during the chat session. Each message includes content and other attributes like role and optional participant name.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Content](#chat-content) | `content` | array | The actual content of the message. It can be a text message, an image URL, or a base64 encoded image.  |
+| Name | `name` | string | An optional name for the participant sending the message. This can be used to distinguish between different users or assistants if there are multiple participants with the same role.  |
+| Role | `role` | string | Indicates the role of the message sender, such as 'user', 'assistant', or 'system'. This helps the model understand the context in which the message was sent.  <br/><details><summary><strong>Enum values</strong></summary><ul><li>`system`</li><li>`user`</li><li>`assistant`</li></ul></details>  |
+</div>
+<h4 id="chat-input-parameter">Input Parameter</h4>
+
+The parameters used to control how the model generates responses. These include settings for token limits, randomness, and the number of response choices.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Max New Tokens | `max-tokens` | integer | Defines the maximum number of tokens that the model can generate in response to a given input.  |
+| Number of Choices | `n` | integer | Determines how many different response options the model should generate for a single input. This allows the user to choose between multiple potential responses.  |
+| Seed | `seed` | integer | A random seed used for controlling the randomness of the model's output. Setting a seed can make the model's responses deterministic and reproducible.  |
+| Stream | `stream` | boolean | If set to true, the model will send tokens as they are generated in a streaming manner, rather than waiting for the entire response to be ready.  |
+| Temperature | `temperature` | number | A parameter that controls how random or creative the model's responses are. Higher values make the responses more diverse and creative, while lower values make them more focused and deterministic. The default value is 0.7.  |
+| Top P | `top-p` | number | An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Output Data](#chat-output-data) | `data` | object | This section defines the structure of the output data returned by the chat task. The output includes chat completion choices generated by the model along with metadata such as the reason for finishing, message content, and creation timestamp. Each generated response is structured as a choice that includes details about the model’s reasoning for ending the response generation, the message content, and the role of the message's author. |
+| [Output Metadata](#chat-output-metadata) (optional) | `metadata` | object | This section provides metadata about the task completion, including statistics on the usage of tokens. The metadata helps track how many tokens were used in generating the response and how many tokens were included in the input prompt. |
+</div>
+
+<details>
+<summary> Output Objects in Chat</summary>
+
+<h4 id="chat-output-data">Output Data</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Choices](#chat-choices) | `choices` | array | This is a list of all the possible chat completion choices generated by the model for a given input. Each choice represents a potential response the model can provide based on the input message. |
+</div>
+
+<h4 id="chat-choices">Choices</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Created | `created` | integer | The Unix timestamp (in seconds) indicating when the chat completion was generated. This timestamp can be used to track when the response was created. |
+| Finish Reason | `finish-reason` | string | The reason why the model stopped generating tokens for this particular response. It could indicate that the model finished the response naturally, or there could be another stopping criterion. |
+| Index | `index` | integer | The index or position of this choice in the list of possible responses. This helps to identify which option is being referred to in a set of choices. |
+| [Message](#chat-message) | `message` | object | The chat message generated by the model as a response to the input. This includes the text content and the role of the message sender (e.g., user, system, assistant). |
+</div>
+
+<h4 id="chat-message">Message</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | The actual text content of the generated message. This is what the model suggests as the response based on the given input. |
+| Role | `role` | string | The role of the entity that generated the message, such as 'system, 'user', or 'assistant'. This allows differentiation between who is sending the message. |
+</div>
+
+<h4 id="chat-output-metadata">Output Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Usage](#chat-usage) | `usage` | object | Provides information about the number of tokens involved in the request and the completion process. It includes prompt tokens, completion tokens, and the total number of tokens used. |
+</div>
+
+<h4 id="chat-usage">Usage</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Completion Tokens | `completion-tokens` | integer | The number of tokens generated in the response. This indicates how many tokens were used in the model's reply. |
+| Prompt Tokens | `prompt-tokens` | integer | The number of tokens that were in the input prompt. This counts how many tokens were consumed in processing the initial user query or input. |
+| Total Tokens | `total-tokens` | integer | The total number of tokens used in the entire request, which is the sum of prompt tokens and completion tokens. |
 </div>
 </details>
 
