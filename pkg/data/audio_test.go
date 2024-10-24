@@ -57,7 +57,7 @@ func TestNewAudioFromURL(t *testing.T) {
 		name string
 		url  string
 	}{
-		{"Valid audio URL", "https://filesamples.com/samples/audio/wav/sample1.wav"},
+		{"Valid audio URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/refs/heads/huitang/format/pkg/data/testdata/sample1.wav"},
 		{"Invalid URL", "https://invalid-url.com/audio.wav"},
 		{"Non-existent URL", "https://filesamples.com/samples/audio/wav/non_existent.wav"},
 	}

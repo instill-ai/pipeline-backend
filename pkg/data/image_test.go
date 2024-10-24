@@ -56,7 +56,7 @@ func TestNewImageFromURL(t *testing.T) {
 		name string
 		url  string
 	}{
-		{"Valid image URL", "https://filesamples.com/samples/image/png/sample_640×426.png"},
+		{"Valid image URL", "https://raw.githubusercontent.com/instill-ai/pipeline-backend/refs/heads/huitang/format/pkg/data/testdata/sample_640×426.png"},
 		{"Invalid URL", "https://invalid-url.com/image.png"},
 		{"Non-existent URL", "https://filesamples.com/samples/image/png/non_existent.png"},
 	}
