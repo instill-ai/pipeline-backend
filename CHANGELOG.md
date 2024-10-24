@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.45.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.44.0-beta...v0.45.0-beta) (2024-10-23)
+
+
+### Features
+
+* **run:** add requester id in list pipeline run response ([#770](https://github.com/instill-ai/pipeline-backend/issues/770)) ([a89a03d](https://github.com/instill-ai/pipeline-backend/commit/a89a03d2a9f4961831da88a25d7a2f6dd3bb3f73))
+
 ## [0.44.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.43.2-beta...v0.44.0-beta) (2024-10-22)
 
 

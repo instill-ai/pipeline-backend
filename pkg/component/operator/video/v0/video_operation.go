@@ -16,10 +16,10 @@ import (
 )
 
 type SubsampleVideoInput struct {
-	Video     Video  `json:"video"`
-	Fps       int    `json:"fps"`
-	StartTime string `json:"start-time"`
-	Duration  string `json:"duration"`
+	Video     Video   `json:"video"`
+	Fps       float32 `json:"fps"`
+	StartTime string  `json:"start-time"`
+	Duration  string  `json:"duration"`
 }
 
 type SubsampleVideoOutput struct {
@@ -27,10 +27,10 @@ type SubsampleVideoOutput struct {
 }
 
 type SubsampleVideoFramesInput struct {
-	Video     Video  `json:"video"`
-	Fps       int    `json:"fps"`
-	StartTime string `json:"start-time"`
-	Duration  string `json:"duration"`
+	Video     Video   `json:"video"`
+	Fps       float32 `json:"fps"`
+	StartTime string  `json:"start-time"`
+	Duration  string  `json:"duration"`
 }
 
 type SubsampleVideoFramesOutput struct {
@@ -149,9 +149,11 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 	// with frame number rather than uuid as suffix.
 	outputPattern := random + "_frame_%08d.jpeg"
 
+	kwArgs := getFramesKwArgs(inputStruct)
+
 	err = ffmpeg.Input(tempInputFileName).
 		Output(outputPattern,
-			getFramesKwArgs(inputStruct),
+			kwArgs,
 		).
 		Run()
 
@@ -187,7 +189,7 @@ func subsampleVideoFrames(input *structpb.Struct) (*structpb.Struct, error) {
 }
 
 func getFramesKwArgs(inputStruct SubsampleVideoFramesInput) ffmpeg.KwArgs {
-	kwArgs := ffmpeg.KwArgs{"vf": "fps=" + fmt.Sprintf("%d", inputStruct.Fps)}
+	kwArgs := ffmpeg.KwArgs{"vf": "fps=" + fmt.Sprintf("%f", inputStruct.Fps)}
 	if inputStruct.StartTime != "" {
 		kwArgs["ss"] = inputStruct.StartTime
 	}
