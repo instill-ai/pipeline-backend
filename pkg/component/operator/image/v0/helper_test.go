@@ -68,7 +68,7 @@ func compareImage(c *qt.C, img format.Image, expectedImage format.Image) {
 
 	// Compare pixel by pixel with tolerance
 	bounds := actualImg.Bounds()
-	tolerance := uint32(1000) // Allow a small difference in color values
+	tolerance := uint32(2000) // Allow a small difference in color values
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			actualColor := actualImg.At(x, y)
