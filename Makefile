@@ -48,7 +48,7 @@ latest:							## Run latest container
 rm:								## Remove all running containers
 	@docker rm -f ${SERVICE_NAME} ${SERVICE_NAME}-worker >/dev/null 2>&1
 
-.PHONY: build
+.PHONY: build-dev
 build-dev:							## Build dev docker image
 	@docker build \
 		--build-arg SERVICE_NAME=${SERVICE_NAME} \
