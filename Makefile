@@ -75,19 +75,36 @@ dbtest-pre:
 .PHONY: coverage
 coverage:
 	@if [ "${DBTEST}" = "true" ]; then  make dbtest-pre; fi
-	@${GOTEST_FLAGS} go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic -timeout 30m ./...
+	@docker run --rm \
+		-v $(PWD):/${SERVICE_NAME} \
+		-e GOTEST_FLAGS="${GOTEST_FLAGS}" \
+		--entrypoint= \
+		instill/${SERVICE_NAME}:dev \
+			go test -v -race ${GOTEST_TAGS} -coverpkg=./... -coverprofile=coverage.out -covermode=atomic -timeout 30m ./...
 	@if [ "${HTML}" = "true" ]; then  \
-		go tool cover -func=coverage.out && \
-		go tool cover -html=coverage.out && \
-		rm coverage.out; \
+		docker run --rm \
+			-v $(PWD):/${SERVICE_NAME} \
+			--entrypoint= \
+			instill/${SERVICE_NAME}:dev \
+				go tool cover -func=coverage.out && \
+				go tool cover -html=coverage.out && \
+				rm coverage.out \
 	fi
 
 .PHONY: test
 test:
 	@if [ "${OCR}" = "true" ]; then \
-		make test-ocr; \
+		docker run --rm \
+			-v $(PWD):/${SERVICE_NAME} \
+			--entrypoint= \
+			instill/${SERVICE_NAME}:dev \
+				make test-ocr; \
 	else \
-		go test -v ./... -json | tparse --notests --all; \
+		docker run --rm \
+			-v $(PWD):/${SERVICE_NAME} \
+			--entrypoint= \
+			instill/${SERVICE_NAME}:dev \
+				go test -v ./... -json | tparse --notests --all;  \
 	fi
 
 .PHONY: test-ocr
