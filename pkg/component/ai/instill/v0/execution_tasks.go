@@ -50,3 +50,40 @@ func (e *execution) embedding(input *structpb.Struct, job *base.Job, ctx context
 
 	return res.TaskOutputs[0], nil
 }
+
+func (e *execution) chat(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+	var inputStruct ai.TextChatInput
+
+	err := base.ConvertFromStructpb(input, &inputStruct)
+
+	if err != nil {
+		return nil, fmt.Errorf("convert to defined struct: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancel()
+
+	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(e.SystemVariables))
+
+	model := inputStruct.Data.Model
+	triggerInfo, err := getTriggerInfo(model)
+
+	if err != nil {
+		return nil, fmt.Errorf("getting trigger info: %w", err)
+	}
+
+	grpcClient := e.client
+
+	res, err := grpcClient.TriggerNamespaceModel(ctx, &modelPB.TriggerNamespaceModelRequest{
+		NamespaceId: triggerInfo.nsID,
+		ModelId:     triggerInfo.modelID,
+		Version:     triggerInfo.version,
+		TaskInputs:  []*structpb.Struct{input},
+	})
+
+	if err != nil || res == nil || len(res.TaskOutputs) == 0 {
+		return nil, fmt.Errorf("triggering model: %v", err)
+	}
+
+	return res.TaskOutputs[0], nil
+}
