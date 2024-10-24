@@ -1,17 +1,7 @@
 {
   "availableTasks": [
-    "TASK_CLASSIFICATION",
-    "TASK_INSTANCE_SEGMENTATION",
-    "TASK_KEYPOINT",
-    "TASK_DETECTION",
-    "TASK_OCR",
-    "TASK_SEMANTIC_SEGMENTATION",
-    "TASK_TEXT_GENERATION",
-    "TASK_TEXT_GENERATION_CHAT",
-    "TASK_TEXT_TO_IMAGE",
-    "TASK_VISUAL_QUESTION_ANSWERING",
-    "TASK_CHAT",
-    "TASK_EMBEDDING"
+    "TASK_EMBEDDING",
+    "TASK_CHAT"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/ai/instill-model",
