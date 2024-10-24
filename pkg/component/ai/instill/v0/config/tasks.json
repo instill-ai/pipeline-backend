@@ -942,5 +942,199 @@
         "data"
       ]
     }
+  },
+  "TASK_TEXT_TO_IMAGE": {
+    "title": "Text To Image",
+    "instillShortDescription": "This task allows users to generate detailed images based on textual descriptions. By providing a well-constructed prompt, users can influence various aspects of the generated image, such as composition, colors, and subjects. The model processes the input text to create an image that matches the description as closely as possible. Additional settings, such as controlling the aspect ratio, limiting unwanted elements via negative prompts, and specifying a seed for repeatability, provide flexibility in generating diverse results. This feature is ideal for visual content creation, creative brainstorming, and conceptual design, offering users the ability to convert ideas into visual representations quickly and efficiently. Whether for art, marketing, or prototyping, this task is a powerful tool for transforming words into visuals.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Text to Image Input",
+      "description": "The input schema defines the structure for providing data to this task. It includes the model and prompt to generate the image and optional parameters like aspect ratio, negative prompts, and more.",
+      "instillShortDescription": "The input schema defines the required model, prompt, and optional settings for generating an image.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Input Data",
+          "instillUIOrder": 0,
+          "description": "This object contains the necessary data for generating the image. It includes the selected model and the prompt describing the desired elements of the output image.",
+          "instillShortDescription": "The required data for generating an image, including the model and a detailed prompt.",
+          "type": "object",
+          "properties": {
+            "model": {
+              "description": "The model to be used for generating the image. Specify a model that fits your requirements for image generation.",
+              "instillShortDescription": "The model used for image generation.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 0,
+              "title": "Model Name",
+              "type": "string"
+            },
+            "prompt": {
+              "title": "Input Prompt",
+              "type": "string",
+              "description": "The textual description that will guide the image generation. A strong and detailed prompt leads to better results, clearly specifying subjects, colors, and other visual aspects.",
+              "instillShortDescription": "Descriptive text prompt for image generation.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 1
+            }
+          },
+          "required": [
+            "model",
+            "prompt"
+          ]
+        },
+        "parameter": {
+          "title": "Parameter",
+          "description": "This section defines optional parameters that modify the behavior of the image generation, such as aspect ratio, negative prompts, and the number of generated choices.",
+          "instillShortDescription": "Optional parameters that adjust the image generation process.",
+          "instillUIOrder": 1,
+          "type": "object",
+          "properties": {
+            "aspect-ratio": {
+              "title": "Aspect Ratio",
+              "type": "string",
+              "description": "Sets the aspect ratio for the generated image. Defaults to 1:1, but you can choose from other options like 16:9, 4:5, etc.",
+              "instillShortDescription": "Defines the image aspect ratio, defaulting to 1:1.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "default": "1:1",
+              "enum": [
+                "16:9",
+                "1:1",
+                "21:9",
+                "2:3",
+                "3:2",
+                "4:5",
+                "5:4",
+                "9:16",
+                "9:21"
+              ],
+              "instillUIOrder": 0
+            },
+            "negative-prompt": {
+              "title": "Negative Prompt",
+              "type": "string",
+              "description": "Keywords representing elements you do not want in the generated image, helping to refine the output.",
+              "instillShortDescription": "Keywords specifying what to exclude from the image.",
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "instillUIOrder": 1,
+              "default": ""
+            },
+            "n": {
+              "title": "Number of Choices",
+              "type": "integer",
+              "description": "The number of image samples to generate for each input prompt. Set the number based on the desired variety of outputs.",
+              "instillShortDescription": "Specifies how many image samples to generate for each prompt.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 2,
+              "default": 1
+            },
+            "seed": {
+              "title": "Seed",
+              "type": "integer",
+              "description": "A seed value controls the randomness of the output. Using the same seed will produce consistent results. The default value is 0.",
+              "instillShortDescription": "Controls the randomization of results. Default seed is 0.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "instillUIOrder": 3,
+              "default": 0
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chat Output",
+      "description": "The output schema defines the structure of the result, including the generated images and metadata such as usage statistics and reasons for stopping.",
+      "instillShortDescription": "Defines the output format, including generated images and metadata.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Data",
+          "instillUIOrder": 0,
+          "description": "The data section contains the core output of the image generation task. It includes all relevant information generated by the model, such as the list of created images and their associated metadata, providing a comprehensive result for each input prompt.",
+          "instillShortDescription": "Core output containing generated images and related metadata.",
+          "type": "object",
+          "properties": {
+            "choices": {
+              "title": "Choices",
+              "type": "array",
+              "description": "A list containing the generated image samples. Each object in the array includes the image (Base64 encoded) and the reason the generation stopped.",
+              "instillShortDescription": "List of generated images and reasons for stopping.",
+              "instillFormat": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "finish-reason": {
+                    "title": "Finish Reason",
+                    "type": "string",
+                    "description": "Indicates why the model stopped generating tokens, such as reaching success or filtering out inappropriate content.",
+                    "instillShortDescription": "Reason why the generation process stopped.",
+                    "instillFormat": "string",
+                    "enum": [
+                      "content_filtered",
+                      "success"
+                    ],
+                    "instillUIOrder": 0
+                  },
+                  "image": {
+                    "title": "Image",
+                    "type": "string",
+                    "description": "The generated image in Base64 format, ready for use or further processing.",
+                    "instillShortDescription": "The generated image encoded in Base64.",
+                    "instillFormat": "image/*",
+                    "instillUIOrder": 1
+                  }
+                },
+                "required": [
+                  "finish-reason",
+                  "image"
+                ]
+              },
+              "instillUIOrder": 0
+            }
+          },
+          "required": [
+            "choices"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Provides additional details about the image generation request, such as usage statistics and resource consumption.",
+          "instillShortDescription": "Additional information about the request, including usage data.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Tracks how resources were utilized during the request, offering insights into the performance and efficiency of the task.",
+              "instillShortDescription": "Details about resource usage during the image generation process.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
   }
 }

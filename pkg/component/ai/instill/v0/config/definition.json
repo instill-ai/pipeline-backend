@@ -2,7 +2,8 @@
   "availableTasks": [
     "TASK_EMBEDDING",
     "TASK_CHAT",
-    "TASK_COMPLETION"
+    "TASK_COMPLETION",
+    "TASK_TEXT_TO_IMAGE"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/ai/instill-model",
