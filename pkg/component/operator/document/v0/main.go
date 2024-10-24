@@ -106,5 +106,5 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 }
 
 func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-	return base.ConcurrentDataExecutor(ctx, jobs, e.execute)
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }

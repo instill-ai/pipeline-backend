@@ -13,40 +13,45 @@ import (
 	openaiv1 "github.com/instill-ai/pipeline-backend/pkg/component/ai/openai/v1"
 )
 
-func (e *execution) executeTextChat(input *structpb.Struct, job *base.Job, ctx context.Context) (*structpb.Struct, error) {
+func (e *execution) executeTextChat(ctx context.Context, job *base.Job) error {
 
 	x := e.ComponentExecution
 	model := getModel(x.GetSetup())
 
-	err := insertModel(input, model)
+	input, err := job.Input.Read(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = insertModel(input, model)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	inputStruct := ai.TextChatInput{}
 
 	if err := base.ConvertFromStructpb(input, &inputStruct); err != nil {
-		return nil, err
+		return err
 	}
 
 	vendor, ok := modelVendorMap[model]
 
 	if !ok {
-		return nil, fmt.Errorf("unsupported vendor for model: %s", model)
+		return fmt.Errorf("unsupported vendor for model: %s", model)
 	}
 
 	client, err := newClient(x.GetSetup(), x.GetLogger(), vendor)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	switch vendor {
 	case "openai":
-		return openaiv1.ExecuteTextChat(inputStruct, client.(*httpclient.Client), job, ctx)
+		return openaiv1.ExecuteTextChat(ctx, inputStruct, client.(*httpclient.Client), job)
 	default:
-		return nil, fmt.Errorf("unsupported vendor: %s", vendor)
+		return fmt.Errorf("unsupported vendor: %s", vendor)
 	}
 }
 
