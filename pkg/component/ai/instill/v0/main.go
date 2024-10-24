@@ -77,6 +77,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	switch x.Task {
 	case taskEmbedding:
 		e.execute = e.embedding
+	case taskChat:
+		e.execute = e.chat
 	default:
 		return nil, fmt.Errorf("task %s not supported", x.Task)
 	}

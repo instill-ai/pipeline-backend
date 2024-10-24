@@ -295,6 +295,16 @@
           "instillShortDescription": "The main input data for the chat task, such as the conversation content.",
           "type": "object",
           "properties": {
+            "model": {
+              "description": "The model to be used for generating chat responses. It should be `namespace/model-name/version`. i.e. `abrc/gpt-3/v0.1.0`. You can see the version from the Versions tab of Model page.",
+              "instillShortDescription": "The model to be used for generating chat responses.",
+              "instillUIOrder": 0,
+              "instillAcceptFormats": [
+                "string"
+              ],
+              "title": "Model Name",
+              "type": "string"
+            },
             "messages": {
               "description": "A collection of individual messages exchanged during the chat session. Each message includes content and other attributes like role and optional participant name.",
               "instillShortDescription": "The messages that make up the conversation. Each message has content and a role, such as 'user', 'assistant', or 'system'.",
@@ -440,7 +450,7 @@
                   "role"
                 ]
               },
-              "instillUIOrder": 0
+              "instillUIOrder": 1
             }
           },
           "required": [
