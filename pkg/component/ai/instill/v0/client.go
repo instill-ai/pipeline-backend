@@ -1,16 +1,12 @@
 package instill
 
 import (
-	"context"
 	"crypto/tls"
 	"strings"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
@@ -20,7 +16,7 @@ import (
 const maxPayloadSize int = 1024 * 1024 * 32
 
 // initModelPublicServiceClient initialises a ModelPublicServiceClient instance
-func initModelPublicServiceClient(serverURL string) (modelPB.ModelPublicServiceClient, *grpc.ClientConn) {
+func initModelPublicServiceClient(serverURL string) (modelPB.ModelPublicServiceClient, Connection) {
 	var clientDialOpts grpc.DialOption
 
 	if strings.HasPrefix(serverURL, "https://") {
@@ -36,23 +32,4 @@ func initModelPublicServiceClient(serverURL string) (modelPB.ModelPublicServiceC
 	}
 
 	return modelPB.NewModelPublicServiceClient(clientConn), clientConn
-}
-
-func trigger(gRPCClient modelPB.ModelPublicServiceClient, vars map[string]any, nsID string, modelID string, version string, taskInputs []*structpb.Struct) ([]*structpb.Struct, error) {
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
-
-	ctx = metadata.NewOutgoingContext(ctx, getRequestMetadata(vars))
-
-	res, err := gRPCClient.TriggerNamespaceModel(ctx, &modelPB.TriggerNamespaceModelRequest{
-		NamespaceId: nsID,
-		ModelId:     modelID,
-		Version:     version,
-		TaskInputs:  taskInputs,
-	})
-	if err != nil || res == nil {
-		return nil, err
-	}
-	return res.TaskOutputs, nil
 }

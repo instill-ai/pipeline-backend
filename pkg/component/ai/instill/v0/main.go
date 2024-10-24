@@ -14,7 +14,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/instill-ai/pipeline-backend/pkg/component/ai"
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util"
 
@@ -22,8 +21,10 @@ import (
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
 )
 
-// TODO: The Instill Model component will be refactored soon to align the data
-// structure with Instill Model.
+const (
+	taskEmbedding string = "TASK_EMBEDDING"
+	taskChat      string = "TASK_CHAT"
+)
 
 var (
 	//go:embed config/definition.json
@@ -40,8 +41,18 @@ type component struct {
 
 type execution struct {
 	base.ComponentExecution
+
+	execute    func(*structpb.Struct, *base.Job, context.Context) (*structpb.Struct, error)
+	client     modelPB.ModelPublicServiceClient
+	connection Connection
 }
 
+// Connection is the interface for the gRPC connection.
+type Connection interface {
+	Close() error
+}
+
+// Init initializes the component with the definition and tasks.
 func Init(bc base.Component) *component {
 	once.Do(func() {
 		comp = &component{Component: bc}
@@ -56,127 +67,27 @@ func Init(bc base.Component) *component {
 // CreateExecution initializes a component executor that can be used in a
 // pipeline trigger.
 func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution, error) {
-	return &execution{ComponentExecution: x}, nil
-}
+	e := &execution{ComponentExecution: x}
 
-func getModelServerURL(vars map[string]any) string {
-	if v, ok := vars["__MODEL_BACKEND"]; ok {
-		return v.(string)
-	}
-	return ""
-}
+	client, connection := initModelPublicServiceClient(getModelServerURL(e.SystemVariables))
 
-func getRequestMetadata(vars map[string]any) metadata.MD {
-	md := metadata.Pairs(
-		"Authorization", util.GetHeaderAuthorization(vars),
-		"Instill-User-Uid", util.GetInstillUserUID(vars),
-		"Instill-Auth-Type", "user",
-	)
+	e.client = client
+	e.connection = connection
 
-	if requester := util.GetInstillRequesterUID(vars); requester != "" {
-		md.Set("Instill-Requester-Uid", requester)
-	}
-
-	return md
-}
-
-func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
-
-	var err error
-	inputs := make([]*structpb.Struct, len(jobs))
-	for idx, job := range jobs {
-		inputs[idx], err = job.Input.Read(ctx)
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
-	}
-
-	if len(inputs) <= 0 || inputs[0] == nil {
-		return fmt.Errorf("invalid input")
-	}
-
-	// TODO, we should move this to CreateExecution
-	gRPCClient, gRPCCientConn := initModelPublicServiceClient(getModelServerURL(e.SystemVariables))
-	if gRPCCientConn != nil {
-		defer gRPCCientConn.Close()
-	}
-
-	var result []*structpb.Struct
-
-	// We will refactor the component soon to align the data structure with Instill Model.
-	// For now, we move out `TASK_EMBEDDING` to a separate section.
-	if e.Task == "TASK_EMBEDDING" {
-		var inputStruct ai.EmbeddingInput
-		err := base.ConvertFromStructpb(inputs[0], &inputStruct)
-		if err != nil {
-			return fmt.Errorf("convert to defined struct: %w", err)
-		}
-
-		model := inputStruct.Data.Model
-		modelNameSplits := strings.Split(model, "/")
-
-		nsID := modelNameSplits[0]
-		modelID := modelNameSplits[1]
-		version := modelNameSplits[2]
-
-		result, err = e.executeEmbedding(gRPCClient, nsID, modelID, version, inputs)
-
-		if err != nil {
-			return fmt.Errorf("execute embedding: %w", err)
-		}
-
-		for idx, job := range jobs {
-			err = job.Output.Write(ctx, result[idx])
-			if err != nil {
-				job.Error.Error(ctx, err)
-				continue
-			}
-		}
-		return nil
-	}
-
-	modelNameSplits := strings.Split(inputs[0].GetFields()["model-name"].GetStringValue(), "/")
-
-	nsID := modelNameSplits[0]
-	modelID := modelNameSplits[1]
-	version := modelNameSplits[2]
-
-	switch e.Task {
-	case "TASK_CLASSIFICATION":
-		result, err = e.executeVisionTask(gRPCClient, nsID, modelID, version, inputs)
-	case "TASK_DETECTION":
-		result, err = e.executeVisionTask(gRPCClient, nsID, modelID, version, inputs)
-	case "TASK_KEYPOINT":
-		result, err = e.executeVisionTask(gRPCClient, nsID, modelID, version, inputs)
-	case "TASK_OCR":
-		result, err = e.executeVisionTask(gRPCClient, nsID, modelID, version, inputs)
-	case "TASK_INSTANCE_SEGMENTATION":
-		result, err = e.executeVisionTask(gRPCClient, nsID, modelID, version, inputs)
-	case "TASK_SEMANTIC_SEGMENTATION":
-		result, err = e.executeVisionTask(gRPCClient, nsID, modelID, version, inputs)
-	case "TASK_TEXT_TO_IMAGE":
-		result, err = e.executeTextToImage(gRPCClient, nsID, modelID, version, inputs)
-	case "TASK_TEXT_GENERATION":
-		result, err = e.executeTextGeneration(gRPCClient, nsID, modelID, version, inputs)
-	case "TASK_TEXT_GENERATION_CHAT", "TASK_VISUAL_QUESTION_ANSWERING", "TASK_CHAT":
-		result, err = e.executeTextGenerationChat(gRPCClient, nsID, modelID, version, inputs)
+	switch x.Task {
+	case taskEmbedding:
+		e.execute = e.embedding
 	default:
-		return fmt.Errorf("unsupported task: %s", e.Task)
-	}
-	if err != nil {
-		return err
-	}
-	for idx, job := range jobs {
-		err = job.Output.Write(ctx, result[idx])
-		if err != nil {
-			job.Error.Error(ctx, err)
-			continue
-		}
+		return nil, fmt.Errorf("task %s not supported", x.Task)
 	}
 
-	return nil
+	return e, nil
+}
 
+// Execute runs the component with the given jobs.
+func (e *execution) Execute(ctx context.Context, jobs []*base.Job) error {
+	defer e.connection.Close()
+	return base.ConcurrentExecutor(ctx, jobs, e.execute)
 }
 
 func (c *component) Test(sysVars map[string]any, setup *structpb.Struct) error {
@@ -194,13 +105,6 @@ func (c *component) Test(sysVars map[string]any, setup *structpb.Struct) error {
 	}
 
 	return nil
-}
-
-type ModelsResp struct {
-	Models []struct {
-		Name string `json:"name"`
-		Task string `json:"task"`
-	} `json:"models"`
 }
 
 // Generate the `model_name` enum based on the task.
@@ -264,6 +168,27 @@ func (c *component) GetDefinition(sysVars map[string]any, compConfig *base.Compo
 	return def, nil
 }
 
+func getModelServerURL(vars map[string]any) string {
+	if v, ok := vars["__MODEL_BACKEND"]; ok {
+		return v.(string)
+	}
+	return ""
+}
+
+func getRequestMetadata(vars map[string]any) metadata.MD {
+	md := metadata.Pairs(
+		"Authorization", util.GetHeaderAuthorization(vars),
+		"Instill-User-Uid", util.GetInstillUserUID(vars),
+		"Instill-Auth-Type", "user",
+	)
+
+	if requester := util.GetInstillRequesterUID(vars); requester != "" {
+		md.Set("Instill-Requester-Uid", requester)
+	}
+
+	return md
+}
+
 func addModelEnum(compSpec map[string]*structpb.Value, modelName *structpb.ListValue) {
 	if compSpec == nil {
 		return
@@ -284,4 +209,22 @@ func addModelEnum(compSpec map[string]*structpb.Value, modelName *structpb.ListV
 			}
 		}
 	}
+}
+
+type triggerInfo struct {
+	nsID    string
+	modelID string
+	version string
+}
+
+func getTriggerInfo(model string) (*triggerInfo, error) {
+	modelNameSplits := strings.Split(model, "/")
+	if len(modelNameSplits) != 3 {
+		return nil, fmt.Errorf("model name should be in the format of <namespace>/<model>/<version>")
+	}
+	return &triggerInfo{
+		nsID:    modelNameSplits[0],
+		modelID: modelNameSplits[1],
+		version: modelNameSplits[2],
+	}, nil
 }
