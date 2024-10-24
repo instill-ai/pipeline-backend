@@ -1,582 +1,4 @@
 {
-  "$defs": {
-    "chat-message": {
-      "properties": {
-        "content": {
-          "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/multi-modal-content",
-          "description": "The message content",
-          "instillUIOrder": 1,
-          "title": "Content"
-        },
-        "role": {
-          "description": "The message role, i.e. 'system', 'user' or 'assistant'",
-          "instillFormat": "string",
-          "instillUIOrder": 0,
-          "title": "Role",
-          "type": "string"
-        }
-      },
-      "required": [
-        "role",
-        "content"
-      ],
-      "title": "Chat Message",
-      "type": "object"
-    },
-    "common": {
-      "description": "Input",
-      "instillEditOnNodeFields": [
-        "image-base64",
-        "model-name"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "image-base64": {
-          "description": "Image base64",
-          "instillAcceptFormats": [
-            "image/*"
-          ],
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
-          "title": "Image",
-          "type": "string"
-        },
-        "model-name": {
-          "description": "The Instill Model model to be used.",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Model Name",
-          "type": "string"
-        }
-      },
-      "required": [
-        "image-base64",
-        "model-name"
-      ],
-      "title": "Input",
-      "type": "object"
-    }
-  },
-  "TASK_CLASSIFICATION": {
-    "instillShortDescription": "Classify images into predefined categories.",
-    "input": {
-      "$ref": "#/$defs/common",
-      "type": "object"
-    },
-    "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/classification",
-      "description": "Output",
-      "instillUIOrder": 0,
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_DETECTION": {
-    "instillShortDescription": "Detect and localize multiple objects in images.",
-    "input": {
-      "$ref": "#/$defs/common",
-      "type": "object"
-    },
-    "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/detection",
-      "description": "Output",
-      "instillUIOrder": 0,
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_INSTANCE_SEGMENTATION": {
-    "instillShortDescription": "Detect, localize and delineate multiple objects in images.",
-    "input": {
-      "$ref": "#/$defs/common",
-      "type": "object"
-    },
-    "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/instance-segmentation",
-      "description": "Output",
-      "instillUIOrder": 0,
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_KEYPOINT": {
-    "instillShortDescription": "Detect and localize multiple keypoints of objects in images.",
-    "input": {
-      "$ref": "#/$defs/common",
-      "type": "object"
-    },
-    "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/keypoint",
-      "description": "Output",
-      "instillUIOrder": 0,
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_OCR": {
-    "instillShortDescription": "Detect and recognize text in images.",
-    "input": {
-      "$ref": "#/$defs/common",
-      "type": "object"
-    },
-    "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/ocr",
-      "description": "Output",
-      "instillUIOrder": 0,
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_SEMANTIC_SEGMENTATION": {
-    "instillShortDescription": "Classify image pixels into predefined categories.",
-    "input": {
-      "$ref": "#/$defs/common",
-      "type": "object"
-    },
-    "output": {
-      "$ref": "https://raw.githubusercontent.com/instill-ai/component/467caa4c05cf75d88e2036555529ecf6aa163b5c/resources/schemas/schema.json#/$defs/instill-types/semantic-segmentation",
-      "description": "Output",
-      "instillUIOrder": 0,
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_TEXT_GENERATION": {
-    "instillShortDescription": "Generate texts from input text prompts.",
-    "input": {
-      "description": "Input",
-      "instillEditOnNodeFields": [
-        "prompt",
-        "model-name"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "max-new-tokens": {
-          "default": 50,
-          "description": "The maximum number of tokens for model to generate",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Max New Tokens",
-          "type": "integer"
-        },
-        "model-name": {
-          "description": "The Instill Model model to be used.",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Model Name",
-          "type": "string"
-        },
-        "prompt": {
-          "description": "The prompt text",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Prompt",
-          "type": "string"
-        },
-        "seed": {
-          "description": "The seed",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Seed",
-          "type": "integer"
-        },
-        "system-message": {
-          "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\"",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillShortDescription": "The system message helps set the behavior of the assistant",
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "System Message",
-          "type": "string"
-        },
-        "temperature": {
-          "default": 0.7,
-          "description": "The temperature for sampling",
-          "instillAcceptFormats": [
-            "number"
-          ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Temperature",
-          "type": "number"
-        }
-      },
-      "required": [
-        "prompt",
-        "model-name"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output",
-      "instillEditOnNodeFields": [
-        "text"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "text": {
-          "description": "Text",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "title": "Text",
-          "type": "string"
-        }
-      },
-      "required": [
-        "text"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_TEXT_GENERATION_CHAT": {
-    "instillShortDescription": "Generate texts from input text prompts and chat history.",
-    "input": {
-      "description": "Input",
-      "instillEditOnNodeFields": [
-        "prompt",
-        "model-name"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "chat-history": {
-          "description": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
-          "instillAcceptFormats": [
-            "structured/chat-messages"
-          ],
-          "instillShortDescription": "Incorporate external chat history, specifically previous messages within the conversation. Please note that System Message will be ignored and will not have any effect when this field is populated. Each message should adhere to the format: : {\"role\": \"The message role, i.e. 'system', 'user' or 'assistant'\", \"content\": \"message content\"}.",
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
-          "items": {
-            "$ref": "#/$defs/chat-message"
-          },
-          "title": "Chat history",
-          "type": "array"
-        },
-        "max-new-tokens": {
-          "default": 50,
-          "description": "The maximum number of tokens for model to generate",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Max New Tokens",
-          "type": "integer"
-        },
-        "model-name": {
-          "description": "The Instill Model model to be used.",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Model Name",
-          "type": "string"
-        },
-        "prompt": {
-          "description": "The prompt text",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Prompt",
-          "type": "string"
-        },
-        "prompt-images": {
-          "description": "The prompt images",
-          "instillAcceptFormats": [
-            "array:image/*"
-          ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "title": "Prompt Images",
-          "type": "array"
-        },
-        "seed": {
-          "description": "The seed",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUIOrder": 4,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Seed",
-          "type": "integer"
-        },
-        "system-message": {
-          "default": "You are a helpful assistant.",
-          "description": "The system message helps set the behavior of the assistant. For example, you can modify the personality of the assistant or provide specific instructions about how it should behave throughout the conversation. By default, the model’s behavior is using a generic message as \"You are a helpful assistant.\"",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillShortDescription": "The system message helps set the behavior of the assistant",
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "System Message",
-          "type": "string"
-        },
-        "temperature": {
-          "default": 0.7,
-          "description": "The temperature for sampling",
-          "instillAcceptFormats": [
-            "number"
-          ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Temperature",
-          "type": "number"
-        }
-      },
-      "required": [
-        "prompt",
-        "model-name"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output",
-      "instillEditOnNodeFields": [
-        "text"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "text": {
-          "description": "Text",
-          "instillFormat": "string",
-          "instillUIMultiline": true,
-          "instillUIOrder": 0,
-          "title": "Text",
-          "type": "string"
-        }
-      },
-      "required": [
-        "text"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_TEXT_TO_IMAGE": {
-    "instillShortDescription": "Generate images from input text prompts.",
-    "input": {
-      "description": "Input",
-      "instillEditOnNodeFields": [
-        "prompt",
-        "model-name"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "model-name": {
-          "description": "The Instill Model model to be used.",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIOrder": 0,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Model Name",
-          "type": "string"
-        },
-        "prompt": {
-          "description": "The prompt text",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIMultiline": true,
-          "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "value",
-            "reference",
-            "template"
-          ],
-          "title": "Prompt",
-          "type": "string"
-        },
-        "samples": {
-          "description": "The number of generated samples, default is 1",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUIOrder": 5,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Samples",
-          "type": "integer"
-        },
-        "seed": {
-          "description": "The seed, default is 0",
-          "instillAcceptFormats": [
-            "integer"
-          ],
-          "instillUIOrder": 6,
-          "instillUpstreamTypes": [
-            "value",
-            "reference"
-          ],
-          "title": "Seed",
-          "type": "integer"
-        },
-        "negative-prompt": {
-          "title": "Aspect ratio",
-          "type": "string",
-          "description": "Keywords of what you do not wish to see in the output image.",
-          "instillShortDescription": "Keywords of what you do not wish to see in the output image.",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIOrder": 7
-        },
-        "aspect-ratio": {
-          "title": "Aspect ratio",
-          "type": "string",
-          "description": "Controls the aspect ratio of the generated image. Defaults to 1:1.",
-          "instillShortDescription": "Controls the aspect ratio of the generated image. Defaults to 1:1.",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIOrder": 8,
-          "default": "1:1",
-          "enum": [
-            "16:9",
-            "1:1",
-            "21:9",
-            "2:3",
-            "3:2",
-            "4:5",
-            "5:4",
-            "9:16",
-            "9:21"
-          ]
-        }
-      },
-      "required": [
-        "prompt",
-        "model-name"
-      ],
-      "title": "Input",
-      "type": "object"
-    },
-    "output": {
-      "description": "Output",
-      "instillEditOnNodeFields": [
-        "images"
-      ],
-      "instillUIOrder": 0,
-      "properties": {
-        "images": {
-          "description": "Images",
-          "instillUIOrder": 0,
-          "instillFormat": "array:image/jpeg",
-          "items": {
-            "instillFormat": "image/jpeg",
-            "title": "Image",
-            "type": "string"
-          },
-          "title": "Images",
-          "type": "array"
-        }
-      },
-      "required": [
-        "images"
-      ],
-      "title": "Output",
-      "type": "object"
-    }
-  },
-  "TASK_VISUAL_QUESTION_ANSWERING": {
-    "instillShortDescription": "Answer questions based on a prompt and an image.",
-    "$ref": "#/TASK_TEXT_GENERATION_CHAT"
-  },
-  "TASK_CHAT": {
-    "instillShortDescription": "Generate texts from input text prompts and chat history.",
-    "$ref": "#/TASK_TEXT_GENERATION_CHAT"
-  },
   "TASK_EMBEDDING": {
     "title": "Embedding",
     "instillShortDescription": "This task refers to the process of generating vector embeddings from input data, which can be text or images. This transformation converts the data into a dense, fixed-length numerical representation that captures the essential features of the original input. These embeddings are typically used in machine learning tasks to represent complex data in a more structured, simplified form.",
@@ -708,7 +130,6 @@
                 "required": [
                   "type"
                 ]
-
               },
               "description": "List of input data to be embedded.",
               "instillUIOrder": 1
@@ -851,6 +272,398 @@
           ],
           "instillUIOrder": 0,
           "title": "Data"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  "TASK_CHAT": {
+    "title": "Chat",
+    "instillShortDescription": "This task involves generating contextually relevant text responses based on input data, such as user queries or prompts. The generated responses include metadata like token usage, which can help track and calculate the cost of the operation. This metadata can also be useful for performance monitoring and analysis.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chat Input",
+      "description": "This is the schema for the input required to perform the chat task. It defines the structure of the data that must be provided, including the types of messages, roles, and optional parameters that guide the model's response generation.",
+      "instillShortDescription": "Input schema for the chat task, defining data format and necessary attributes.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Chat Data",
+          "description": "The data that will be passed to the chat model. This typically includes the messages exchanged between the user and the assistant, alongside any additional information to guide the conversation.",
+          "instillShortDescription": "The main input data for the chat task, such as the conversation content.",
+          "type": "object",
+          "properties": {
+            "messages": {
+              "description": "A collection of individual messages exchanged during the chat session. Each message includes content and other attributes like role and optional participant name.",
+              "instillShortDescription": "The messages that make up the conversation. Each message has content and a role, such as 'user', 'assistant', or 'system'.",
+              "title": "Chat Messages",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "description": "The actual content of the message. It can be a text message, an image URL, or a base64 encoded image.",
+                    "instillShortDescription": "The main content of the message, which can be text or image-based, and defines what the user or assistant is saying.",
+                    "title": "Content",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "title": "Text Message",
+                              "description": "A text-based message, which is the most common format for chat communication.",
+                              "instillShortDescription": "Plain text content of the message.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "instillUIOrder": 1
+                            },
+                            "type": {
+                              "title": "Text",
+                              "description": "Type of the message content. In this case, it is text.",
+                              "instillShortDescription": "Type of the message content. In this case, it is text.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "const": "text",
+                              "instillUIOrder": 0
+                            }
+                          },
+                          "required": [
+                            "text",
+                            "type"
+                          ],
+                          "title": "Text"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "image-url": {
+                              "title": "Image URL",
+                              "description": "A URL that links to an image that is being shared in the chat.",
+                              "instillShortDescription": "A message that shares an image through a URL link.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "instillUIOrder": 1
+                            },
+                            "type": {
+                              "title": "Image URL",
+                              "description": "Type of the message content. In this case, it is an image URL.",
+                              "instillShortDescription": "Type of the message content. In this case, it is an image URL.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "const": "image-url",
+                              "instillUIOrder": 0
+                            }
+                          },
+                          "required": [
+                            "image-url",
+                            "type"
+                          ],
+                          "title": "Image URL"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "image-base64": {
+                              "title": "Image Base64",
+                              "description": "An image encoded as a base64 string, allowing for the direct transfer of image data in the message.",
+                              "instillShortDescription": "A base64-encoded image message for directly embedding image content.",
+                              "instillAcceptFormats": [
+                                "image/*"
+                              ],
+                              "type": "string",
+                              "instillUIOrder": 1
+                            },
+                            "type": {
+                              "title": "Image File",
+                              "description": "Type of the message content. In this case, it is an image file.",
+                              "instillShortDescription": "Type of the message content. In this case, it is an image file.",
+                              "instillAcceptFormats": [
+                                "string"
+                              ],
+                              "type": "string",
+                              "const": "image-base64",
+                              "instillUIOrder": 0
+                            }
+                          },
+                          "required": [
+                            "image-base64",
+                            "type"
+                          ],
+                          "title": "Image Base64"
+                        }
+                      ],
+                      "required": []
+                    },
+                    "instillUIOrder": 0
+                  },
+                  "role": {
+                    "description": "Indicates the role of the message sender, such as 'user', 'assistant', or 'system'. This helps the model understand the context in which the message was sent.",
+                    "instillShortDescription": "The role of the message sender, such as 'user', 'assistant', or 'system'.",
+                    "instillAcceptFormats": [
+                      "string"
+                    ],
+                    "title": "Role",
+                    "type": "string",
+                    "enum": [
+                      "system",
+                      "user",
+                      "assistant"
+                    ],
+                    "instillUIOrder": 1
+                  },
+                  "name": {
+                    "description": "An optional name for the participant sending the message. This can be used to distinguish between different users or assistants if there are multiple participants with the same role.",
+                    "instillShortDescription": "An optional name for the participant sending the message.",
+                    "instillAcceptFormats": [
+                      "string"
+                    ],
+                    "title": "Name",
+                    "type": "string",
+                    "instillUIOrder": 2
+                  }
+                },
+                "required": [
+                  "content",
+                  "role"
+                ]
+              },
+              "instillUIOrder": 0
+            }
+          },
+          "required": [
+            "messages"
+          ],
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "description": "The parameters used to control how the model generates responses. These include settings for token limits, randomness, and the number of response choices.",
+          "instillShortDescription": "Parameters that control the model's response generation, such as token limits and randomness settings.",
+          "type": "object",
+          "properties": {
+            "max-tokens": {
+              "title": "Max New Tokens",
+              "type": "integer",
+              "description": "Defines the maximum number of tokens that the model can generate in response to a given input.",
+              "instillShortDescription": "The maximum number of tokens the model can generate in response to a single input message.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "default": 50,
+              "instillUIOrder": 0
+            },
+            "seed": {
+              "title": "Seed",
+              "type": "integer",
+              "description": "A random seed used for controlling the randomness of the model's output. Setting a seed can make the model's responses deterministic and reproducible.",
+              "instillShortDescription": "A random seed used to control the model's output randomness.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "default": 0,
+              "instillUIOrder": 1
+            },
+            "n": {
+              "title": "Number of Choices",
+              "type": "integer",
+              "description": "Determines how many different response options the model should generate for a single input. This allows the user to choose between multiple potential responses.",
+              "instillShortDescription": "The number of response choices the model should generate for a single input.",
+              "instillAcceptFormats": [
+                "integer"
+              ],
+              "default": 1,
+              "instillUIOrder": 2
+            },
+            "temperature": {
+              "title": "Temperature",
+              "type": "number",
+              "description": "A parameter that controls how random or creative the model's responses are. Higher values make the responses more diverse and creative, while lower values make them more focused and deterministic. The default value is 0.7.",
+              "instillShortDescription": "A parameter that controls the randomness of the model's responses. Higher values make the responses more diverse and creative.",
+              "instillAcceptFormats": [
+                "number"
+              ],
+              "default": 0.7,
+              "instillUIOrder": 3
+            },
+            "top-p": {
+              "title": "Top P",
+              "type": "number",
+              "description": "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both.",
+              "instillShortDescription": "An alternative to temperature sampling, where the model considers the top_p probability mass of tokens.",
+              "instillAcceptFormats": [
+                "number"
+              ],
+              "default": 1,
+              "instillUIOrder": 4
+            },
+            "stream": {
+              "title": "Stream",
+              "type": "boolean",
+              "description": "If set to true, the model will send tokens as they are generated in a streaming manner, rather than waiting for the entire response to be ready.",
+              "instillShortDescription": "If set to true, the model will send tokens as they are generated in a streaming manner.",
+              "instillAcceptFormats": [
+                "boolean"
+              ],
+              "default": false,
+              "instillUIOrder": 5
+            }
+          },
+          "required": [],
+          "instillUIOrder": 1,
+          "title": "Input Parameter"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chat output",
+      "description": "This defines the structure of the output returned by the model after processing the input. It includes the generated chat messages, metadata such as token usage, and other information about the response.",
+      "instillShortDescription": "This defines the structure of the output returned by the model after processing the input.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "This section defines the structure of the output data returned by the chat task. The output includes chat completion choices generated by the model along with metadata such as the reason for finishing, message content, and creation timestamp. Each generated response is structured as a choice that includes details about the model’s reasoning for ending the response generation, the message content, and the role of the message's author.",
+          "instillShortDescription": "This section defines the structure of the output data returned by the chat task.",
+          "type": "object",
+          "properties": {
+            "choices": {
+              "title": "Choices",
+              "type": "array",
+              "description": "This is a list of all the possible chat completion choices generated by the model for a given input. Each choice represents a potential response the model can provide based on the input message.",
+              "instillShortDescription": "A list of all the possible chat completion choices generated by the model for a given input.",
+              "instillFormat": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "finish-reason": {
+                    "title": "Finish Reason",
+                    "type": "string",
+                    "description": "The reason why the model stopped generating tokens for this particular response. It could indicate that the model finished the response naturally, or there could be another stopping criterion.",
+                    "instillShortDescription": "The reason why the model stopped generating tokens for this particular response.",
+                    "instillFormat": "string",
+                    "instillUIOrder": 0
+                  },
+                  "index": {
+                    "title": "Index",
+                    "type": "integer",
+                    "description": "The index or position of this choice in the list of possible responses. This helps to identify which option is being referred to in a set of choices.",
+                    "instillShortDescription": "The index or position of this choice in the list of possible responses.",
+                    "instillFormat": "integer",
+                    "instillUIOrder": 1
+                  },
+                  "message": {
+                    "title": "Message",
+                    "type": "object",
+                    "description": "The chat message generated by the model as a response to the input. This includes the text content and the role of the message sender (e.g., user, system, assistant).",
+                    "instillShortDescription": "The chat message generated by the model as a response to the input.",
+                    "properties": {
+                      "content": {
+                        "title": "Content",
+                        "type": "string",
+                        "description": "The actual text content of the generated message. This is what the model suggests as the response based on the given input.",
+                        "instillShortDescription": "The actual text content of the generated message.",
+                        "instillFormat": "string",
+                        "instillUIOrder": 0
+                      },
+                      "role": {
+                        "title": "Role",
+                        "type": "string",
+                        "description": "The role of the entity that generated the message, such as 'system, 'user', or 'assistant'. This allows differentiation between who is sending the message.",
+                        "instillShortDescription": "The role of the entity that generated the message.",
+                        "instillFormat": "string",
+                        "instillUIOrder": 1
+                      }
+                    },
+                    "required": [],
+                    "instillUIOrder": 2
+                  },
+                  "created": {
+                    "title": "Created",
+                    "type": "integer",
+                    "description": "The Unix timestamp (in seconds) indicating when the chat completion was generated. This timestamp can be used to track when the response was created.",
+                    "instillShortDescription": "The Unix timestamp indicating when the chat completion was generated.",
+                    "instillFormat": "integer",
+                    "instillUIOrder": 3
+                  }
+                },
+                "required": [
+                  "finish-reason",
+                  "index",
+                  "message",
+                  "created"
+                ]
+              },
+              "instillUIOrder": 0
+            }
+          },
+          "required": [
+            "choices"
+          ],
+          "instillUIOrder": 0,
+          "title": "Output Data"
+        },
+        "metadata": {
+          "description": "This section provides metadata about the task completion, including statistics on the usage of tokens. The metadata helps track how many tokens were used in generating the response and how many tokens were included in the input prompt.",
+          "instillShortDescription": "This section provides metadata about the task completion, including statistics on the usage of tokens.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "description": "Provides information about the number of tokens involved in the request and the completion process. It includes prompt tokens, completion tokens, and the total number of tokens used.",
+              "instillShortDescription": "Information about the number of tokens involved in the request and the completion process.",
+              "type": "object",
+              "properties": {
+                "completion-tokens": {
+                  "title": "Completion Tokens",
+                  "type": "integer",
+                  "description": "The number of tokens generated in the response. This indicates how many tokens were used in the model's reply.",
+                  "instillShortDescription": "The number of tokens generated in the response.",
+                  "instillFormat": "integer",
+                  "instillUIOrder": 0
+                },
+                "prompt-tokens": {
+                  "title": "Prompt Tokens",
+                  "type": "integer",
+                  "description": "The number of tokens that were in the input prompt. This counts how many tokens were consumed in processing the initial user query or input.",
+                  "instillShortDescription": "The number of tokens in the input prompt.",
+                  "instillFormat": "integer",
+                  "instillUIOrder": 1
+                },
+                "total-tokens": {
+                  "title": "Total Tokens",
+                  "type": "integer",
+                  "description": "The total number of tokens used in the entire request, which is the sum of prompt tokens and completion tokens.",
+                  "instillShortDescription": "The total number of tokens used in the entire request, which is the sum of prompt tokens and completion tokens.",
+                  "instillFormat": "integer",
+                  "instillUIOrder": 2
+                }
+              },
+              "required": [
+                "completion-tokens",
+                "prompt-tokens",
+                "total-tokens"
+              ],
+              "instillUIOrder": 0,
+              "title": "Usage"
+            }
+          },
+          "required": [],
+          "title": "Output Metadata",
+          "instillUIOrder": 1
         }
       },
       "required": [
