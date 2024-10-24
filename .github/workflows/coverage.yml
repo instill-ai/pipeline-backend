@@ -23,7 +23,12 @@ jobs:
           - 5432:5432
     steps:
       - name: Install operator dependencies
-        run: sudo apt-get update -y && sudo apt-get install poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice ffmpeg chromium-bsu qpdf -y
+        run: |
+          sudo apt update && \
+          sudo apt install -y python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice ffmpeg chromium-bsu qpdf && \
+          python3 -m venv /opt/venv && \
+          /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
+          sudo rm -rf /var/lib/apt/lists/*
 
       - uses: actions/checkout@v3
         with:
