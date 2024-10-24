@@ -17,9 +17,9 @@ func TestNewImageFromBytes(t *testing.T) {
 		width       int
 		height      int
 	}{
-		{"Valid PNG image", "sample_640×426.png", "image/png", 640, 426},
-		{"Valid JPEG image", "sample_640×426.jpeg", "image/jpeg", 640, 426},
-		{"Valid TIFF image", "sample_640×426.tiff", "image/tiff", 640, 426},
+		{"Valid PNG image", "sample_640_426.png", "image/png", 640, 426},
+		{"Valid JPEG image", "sample_640_426.jpeg", "image/jpeg", 640, 426},
+		{"Valid TIFF image", "sample_640_426.tiff", "image/tiff", 640, 426},
 		{"Invalid file type", "sample1.mp3", "", 0, 0},
 		{"Empty image bytes", "", "", 0, 0},
 	}
@@ -87,9 +87,9 @@ func TestImageProperties(t *testing.T) {
 		width       int
 		height      int
 	}{
-		{"PNG image", "sample_640×426.png", "image/png", 640, 426},
-		{"JPEG image", "sample_640×426.jpeg", "image/jpeg", 640, 426},
-		{"TIFF image", "sample_640×426.tiff", "image/tiff", 640, 426},
+		{"PNG image", "sample_640_426.png", "image/png", 640, 426},
+		{"JPEG image", "sample_640_426.jpeg", "image/jpeg", 640, 426},
+		{"TIFF image", "sample_640_426.tiff", "image/tiff", 640, 426},
 	}
 
 	for _, tc := range testCases {
@@ -116,9 +116,9 @@ func TestImageConvert(t *testing.T) {
 		contentType    string
 		expectedFormat string
 	}{
-		{"PNG to JPEG", "sample_640×426.png", "image/png", "image/jpeg"},
-		{"JPEG to TIFF", "sample_640×426.jpeg", "image/jpeg", "image/tiff"},
-		{"TIFF to JPEG", "sample_640×426.tiff", "image/tiff", "image/jpeg"},
+		{"PNG to JPEG", "sample_640_426.png", "image/png", "image/jpeg"},
+		{"JPEG to TIFF", "sample_640_426.jpeg", "image/jpeg", "image/tiff"},
+		{"TIFF to JPEG", "sample_640_426.tiff", "image/tiff", "image/jpeg"},
 	}
 
 	for _, tc := range testCases {
