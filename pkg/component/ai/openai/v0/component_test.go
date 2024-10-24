@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 
+	_ "embed"
+
 	"google.golang.org/protobuf/types/known/structpb"
 
 	qt "github.com/frankban/quicktest"
@@ -15,6 +17,7 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/component/base"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/mock"
 	"github.com/instill-ai/pipeline-backend/pkg/component/internal/util/httpclient"
+	"github.com/instill-ai/pipeline-backend/pkg/data"
 	"github.com/instill-ai/x/errmsg"
 )
 
@@ -28,6 +31,11 @@ const (
     "message": "Incorrect API key provided."
   }
 }`
+)
+
+var (
+	//go:embed testdata/sample1.wav
+	sample1Wav []byte
 )
 
 func TestComponent_Execute(t *testing.T) {
@@ -113,10 +121,22 @@ func TestComponent_Execute(t *testing.T) {
 			})
 			c.Assert(err, qt.IsNil)
 
-			pbIn := new(structpb.Struct)
 			ir, ow, eh, job := mock.GenerateMockJob(c)
-			ir.ReadMock.Return(pbIn, nil)
-			ow.WriteMock.Optional().Return(nil)
+			ir.ReadDataMock.Set(func(ctx context.Context, input any) error {
+				// Set up the input based on the task
+				switch tc.task {
+				case SpeechRecognitionTask:
+					input.(*taskSpeechRecognitionInput).Audio, err = data.NewAudioFromBytes(sample1Wav, "audio/wav", "sample1.wav")
+					c.Assert(err, qt.IsNil)
+				}
+				return nil
+			})
+
+			var capturedOutput any
+			ow.WriteDataMock.Optional().Set(func(ctx context.Context, output any) error {
+				capturedOutput = output
+				return nil
+			})
 
 			eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 				want := "OpenAI responded with a 401 status code. Incorrect API key provided."
@@ -125,7 +145,7 @@ func TestComponent_Execute(t *testing.T) {
 
 			err = x.Execute(ctx, []*base.Job{job})
 			c.Check(err, qt.IsNil)
-
+			c.Check(capturedOutput, qt.IsNil)
 		})
 	}
 
@@ -137,10 +157,16 @@ func TestComponent_Execute(t *testing.T) {
 		})
 		c.Assert(err, qt.IsNil)
 
-		pbIn := new(structpb.Struct)
 		ir, ow, eh, job := mock.GenerateMockJob(c)
-		ir.ReadMock.Return(pbIn, nil)
-		ow.WriteMock.Optional().Return(nil)
+		ir.ReadDataMock.Optional().Set(func(ctx context.Context, input any) error {
+			return nil
+		})
+
+		var capturedOutput any
+		ow.WriteDataMock.Optional().Set(func(ctx context.Context, output any) error {
+			capturedOutput = output
+			return nil
+		})
 
 		eh.ErrorMock.Optional().Set(func(ctx context.Context, err error) {
 			want := "FOOBAR task is not supported."
@@ -149,7 +175,7 @@ func TestComponent_Execute(t *testing.T) {
 
 		err = exec.Execute(ctx, []*base.Job{job})
 		c.Check(err, qt.IsNil)
-
+		c.Check(capturedOutput, qt.IsNil)
 	})
 }
 
