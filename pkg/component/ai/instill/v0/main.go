@@ -75,10 +75,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	e.connection = connection
 
 	switch x.Task {
-	case taskEmbedding:
-		e.execute = e.embedding
-	case taskChat:
-		e.execute = e.chat
+	case taskEmbedding, taskChat:
+		e.execute = e.trigger
 	default:
 		return nil, fmt.Errorf("task %s not supported", x.Task)
 	}
@@ -219,8 +217,20 @@ type triggerInfo struct {
 	version string
 }
 
-func getTriggerInfo(model string) (*triggerInfo, error) {
-	modelNameSplits := strings.Split(model, "/")
+func getTriggerInfo(input *structpb.Struct) (*triggerInfo, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input is nil")
+	}
+	data, ok := input.Fields["data"]
+	if !ok {
+		return nil, fmt.Errorf("data field not found")
+	}
+	model, ok := data.GetStructValue().Fields["model"]
+
+	if !ok {
+		return nil, fmt.Errorf("model field not found")
+	}
+	modelNameSplits := strings.Split(model.GetStringValue(), "/")
 	if len(modelNameSplits) != 3 {
 		return nil, fmt.Errorf("model name should be in the format of <namespace>/<model>/<version>")
 	}
