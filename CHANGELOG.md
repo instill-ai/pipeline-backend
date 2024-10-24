@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.46.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.45.0-beta...v0.46.0-beta) (2024-10-24)
+
+
+### Features
+
+* **component, video:** implemented fractional fps value - fps as number, and added some debugging flags for ffmpeg ([#765](https://github.com/instill-ai/pipeline-backend/issues/765)) ([8a93442](https://github.com/instill-ai/pipeline-backend/commit/8a934420a01c986181b1660d1c13178ff7e79105))
+
 ## [0.45.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.44.0-beta...v0.45.0-beta) (2024-10-23)
 
 
