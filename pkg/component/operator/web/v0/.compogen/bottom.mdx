@@ -1,5 +1,3 @@
-
-
 ## Example Recipes
 
 ```yaml
@@ -7,38 +5,50 @@ version: v1beta
 
 variable:
   url:
-    title: url
+    title: URL
     instill-format: string
 
 component:
   crawler:
     type: web
     input:
-      root-url: ${variable.url}
+      url: ${variable.url}
       allowed-domains:
-      max-k: 10
-      timeout: 0
+      max-k: 30
+      timeout: 1000
       max-depth: 0
     condition:
     task: TASK_CRAWL_SITE
 
+  json-filter:
+    type: json
+    input:
+      json-value: ${crawler.output.pages}
+      jq-filter: .[] | ."link"
+    condition:
+    task: TASK_JQ
+
   scraper:
     type: web
     input:
-      url: ${crawler.output.pages[0].link}
+      urls: ${json-filter.output.results}
+      scrape-method: http
       include-html: false
       only-main-content: true
       remove-tags:
       only-include-tags:
-      timeout: 1000
+      timeout: 0
     condition:
-    task: TASK_SCRAPE_PAGE
+    task: TASK_SCRAPE_PAGES
 
 output:
-  markdown:
-    title: Markdown
-    value: ${scraper.output.markdown}
+  pages:
+    title: Pages
+    value: ${crawler.output.pages}
   links:
-    title: links
-    value: ${scraper.output.links-on-page}
+    title: Links
+    value: ${json-filter.output.results}
+  scraper-pages:
+    title: Scraper Pages
+    value: ${scraper.output.pages}
 ```
