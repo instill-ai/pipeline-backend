@@ -1,7 +1,8 @@
 {
   "availableTasks": [
     "TASK_EMBEDDING",
-    "TASK_CHAT"
+    "TASK_CHAT",
+    "TASK_COMPLETION"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/ai/instill-model",

@@ -22,8 +22,16 @@ import (
 )
 
 const (
-	taskEmbedding string = "TASK_EMBEDDING"
-	taskChat      string = "TASK_CHAT"
+	taskEmbedding            string = "TASK_EMBEDDING"
+	taskChat                 string = "TASK_CHAT"
+	taskCompletion           string = "TASK_COMPLETION"
+	taskTextToImage          string = "TASK_TEXT_TO_IMAGE"
+	taskClassification       string = "TASK_CLASSIFICATION"
+	taskDetection            string = "TASK_DETECTION"
+	taskKeyPoint             string = "TASK_KEYPOINT"
+	taskOCR                  string = "TASK_OCR"
+	taskSemanticSegmentation string = "TASK_SEMANTIC_SEGMENTATION"
+	taskInstanceSegmentation string = "TASK_INSTANCE_SEGMENTATION"
 )
 
 var (
@@ -75,7 +83,7 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 	e.connection = connection
 
 	switch x.Task {
-	case taskEmbedding, taskChat:
+	case taskEmbedding, taskChat, taskCompletion, taskTextToImage, taskClassification, taskDetection, taskKeyPoint, taskOCR, taskSemanticSegmentation, taskInstanceSegmentation:
 		e.execute = e.trigger
 	default:
 		return nil, fmt.Errorf("task %s not supported", x.Task)

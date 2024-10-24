@@ -9,6 +9,7 @@ The Instill Model component is an AI component that allows users to connect the 
 It can carry out the following tasks:
 - [Embedding](#embedding)
 - [Chat](#chat)
+- [Completion](#completion)
 
 
 
@@ -260,6 +261,107 @@ The parameters used to control how the model generates responses. These include 
 | Completion Tokens | `completion-tokens` | integer | The number of tokens generated in the response. This indicates how many tokens were used in the model's reply. |
 | Prompt Tokens | `prompt-tokens` | integer | The number of tokens that were in the input prompt. This counts how many tokens were consumed in processing the initial user query or input. |
 | Total Tokens | `total-tokens` | integer | The total number of tokens used in the entire request, which is the sum of prompt tokens and completion tokens. |
+</div>
+</details>
+
+### Completion
+
+This task generates natural language responses based on a given input prompt. It uses a specified model to predict and create the most appropriate text, such as completing a sentence or generating an entire passage. Users can control the output by setting parameters like maximum tokens (length of the generated text), temperature (creativity level), top-p (nucleus sampling), and number of choices (how many responses to generate). The task supports dynamic input, including system messages that influence the tone or style of the completion, making it versatile for a wide range of applications, from casual text generation to structured outputs like technical documentation or creative writing.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_COMPLETION` |
+| [Data](#completion-data) (required) | `data` | object | Contains the model name and the prompt for generating a response. This section defines the input prompt and guides the model's behavior using the specified system message. |
+| [Parameter](#completion-parameter) | `parameter` | object | Optional settings to control the model’s behavior, including token limit, randomness, and response length. |
+</div>
+
+
+<details>
+<summary> Input Objects in Completion</summary>
+
+<h4 id="completion-data">Data</h4>
+
+Contains the model name and the prompt for generating a response. This section defines the input prompt and guides the model's behavior using the specified system message.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Model Name | `model` | string | Name of the model that generates the text response.  |
+| Input Prompt | `prompt` | string | The input text or query for which the model will generate a response.  |
+| System Message | `system-message` | string | A message sent by the system to guide the model's behavior, affecting tone, style, or other attributes.  |
+</div>
+<h4 id="completion-parameter">Parameter</h4>
+
+Optional settings to control the model’s behavior, including token limit, randomness, and response length.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Max New okens | `max-tokens` | integer | Specifies the maximum number of tokens the model is allowed to generate for the response.  |
+| Number of Choices | `n` | integer | Defines how many response choices the model should generate for each input prompt.  |
+| Seed | `seed` | integer | A random seed value used to influence the output. Default is 0, ensuring consistent behavior.  |
+| Stream | `stream` | boolean | When true, sends partial token data as it’s generated, instead of waiting for the entire response.  |
+| Temperature | `temperature` | number | Controls the randomness of the output. Higher values (closer to 1) make responses more diverse.  |
+| Top P | `top-p` | number | Nucleus sampling parameter. It considers only tokens within the cumulative top-p probability mass.  |
+</div>
+</details>
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Data](#completion-data) | `data` | object | Contains the generated responses and details like why the model stopped and when the response was generated. |
+| [Metadata](#completion-metadata) (optional) | `metadata` | object | Provides information on how many tokens were used in both the input prompt and the generated response. |
+</div>
+
+<details>
+<summary> Output Objects in Completion</summary>
+
+<h4 id="completion-data">Data</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Choices](#completion-choices) | `choices` | array | List of generated text responses, each with a reason for completion, index, content, and timestamp. |
+</div>
+
+<h4 id="completion-choices">Choices</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Content | `content` | string | The text output generated by the model as the response. |
+| Created | `created` | integer | Unix timestamp (in seconds) representing when the response was generated. |
+| Finish Reason | `finish-reason` | string | Describes why the model stopped generating tokens, such as reaching the limit or completing naturally. |
+| Index | `index` | integer | Indicates the position of this choice in the list of generated responses. |
+</div>
+
+<h4 id="completion-metadata">Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Usage](#completion-usage) | `usage` | object | Provides information on how many tokens were used in both the input prompt and the generated response. |
+</div>
+
+<h4 id="completion-usage">Usage</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Completion Tokens | `completion-tokens` | integer | The number of tokens used in generating the model's completion. |
+| Prompt Tokens | `prompt-tokens` | integer | The number of tokens in the original input prompt provided to the model. |
+| Total tokens | `total-tokens` | integer | The total number of tokens used, combining the prompt and the response. |
 </div>
 </details>
 
