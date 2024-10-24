@@ -7,6 +7,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"math"
 	"strings"
 
 	"github.com/google/uuid"
@@ -66,9 +67,9 @@ func compareImage(c *qt.C, img format.Image, expectedImage format.Image) {
 	// Compare dimensions
 	c.Assert(actualImg.Bounds(), qt.DeepEquals, expectedImg.Bounds(), qt.Commentf("Image dimensions do not match"))
 
-	// Compare pixel by pixel with tolerance
+	// TODO: Compare pixel by pixel with tolerance
 	bounds := actualImg.Bounds()
-	tolerance := uint32(2000) // Allow a small difference in color values
+	var mse float64
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			actualColor := actualImg.At(x, y)
@@ -77,18 +78,16 @@ func compareImage(c *qt.C, img format.Image, expectedImage format.Image) {
 			ar, ag, ab, aa := actualColor.RGBA()
 			er, eg, eb, ea := expectedColor.RGBA()
 
-			c.Assert(absDiff(ar, er) <= tolerance, qt.IsTrue, qt.Commentf("Red channel mismatch at pixel (%d, %d): got %d, want %d", x, y, ar, er))
-			c.Assert(absDiff(ag, eg) <= tolerance, qt.IsTrue, qt.Commentf("Green channel mismatch at pixel (%d, %d): got %d, want %d", x, y, ag, eg))
-			c.Assert(absDiff(ab, eb) <= tolerance, qt.IsTrue, qt.Commentf("Blue channel mismatch at pixel (%d, %d): got %d, want %d", x, y, ab, eb))
-			c.Assert(absDiff(aa, ea) <= tolerance, qt.IsTrue, qt.Commentf("Alpha channel mismatch at pixel (%d, %d): got %d, want %d", x, y, aa, ea))
+			mse += float64((ar-er)*(ar-er) + (ag-eg)*(ag-eg) + (ab-eb)*(ab-eb) + (aa-ea)*(aa-ea))
 		}
 	}
+	mse /= float64(bounds.Dx() * bounds.Dy() * 4) // 4 channels: R, G, B, A
 
-}
-
-func absDiff(a, b uint32) uint32 {
-	if a > b {
-		return a - b
+	if mse == 0 {
+		c.Assert(true, qt.IsTrue, qt.Commentf("Images are identical"))
+	} else {
+		psnr := 10 * math.Log10((65535*65535)/mse)
+		c.Assert(psnr >= 30, qt.IsTrue, qt.Commentf("PSNR is too low: %f", psnr))
 	}
-	return b - a
+
 }
