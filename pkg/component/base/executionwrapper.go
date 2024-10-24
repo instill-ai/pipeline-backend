@@ -168,35 +168,7 @@ func SequentialExecutor(ctx context.Context, jobs []*Job, execute func(*structpb
 	return nil
 }
 
-func ConcurrentExecutor(ctx context.Context, jobs []*Job, execute func(*structpb.Struct, *Job, context.Context) (*structpb.Struct, error)) error {
-	var wg sync.WaitGroup
-	wg.Add(len(jobs))
-	for _, job := range jobs {
-		go func() {
-			defer wg.Done()
-			defer recoverJobError(ctx, job)
-			input, err := job.Input.Read(ctx)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			output, err := execute(input, job, ctx)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-			err = job.Output.Write(ctx, output)
-			if err != nil {
-				job.Error.Error(ctx, err)
-				return
-			}
-		}()
-	}
-	wg.Wait()
-	return nil
-}
-
-func ConcurrentDataExecutor(ctx context.Context, jobs []*Job, execute func(context.Context, *Job) error) error {
+func ConcurrentExecutor(ctx context.Context, jobs []*Job, execute func(context.Context, *Job) error) error {
 	var wg sync.WaitGroup
 	wg.Add(len(jobs))
 	for _, job := range jobs {
