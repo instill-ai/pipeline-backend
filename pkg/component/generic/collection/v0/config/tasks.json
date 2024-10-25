@@ -399,6 +399,9 @@
         "group-size": {
           "description": "The size of each group.",
           "instillUIOrder": 1,
+          "instillAcceptFormats": [
+            "integer"
+          ],
           "instillUpstreamTypes": [
             "value",
             "reference",

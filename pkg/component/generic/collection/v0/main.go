@@ -24,6 +24,7 @@ const (
 	taskDifference   = "TASK_DIFFERENCE"
 	taskAppend       = "TASK_APPEND"
 	taskConcat       = "TASK_CONCAT"
+	taskSplit        = "TASK_SPLIT"
 )
 
 var (
@@ -76,6 +77,8 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		e.execute = e.append
 	case taskConcat:
 		e.execute = e.concat
+	case taskSplit:
+		e.execute = e.split
 	default:
 		return nil, errmsg.AddMessage(
 			fmt.Errorf("not supported task: %s", x.Task),
@@ -83,6 +86,29 @@ func (c *component) CreateExecution(x base.ComponentExecution) (base.IExecution,
 		)
 	}
 	return e, nil
+}
+
+func (e *execution) split(in *structpb.Struct) (*structpb.Struct, error) {
+	arr := in.Fields["array"].GetListValue().Values
+	size := int(in.Fields["group-size"].GetNumberValue())
+	groups := make([][]*structpb.Value, 0)
+
+	for i := 0; i < len(arr); i += size {
+		end := i + size
+		if end > len(arr) {
+			end = len(arr)
+		}
+		groups = append(groups, arr[i:end])
+	}
+
+	out := &structpb.Struct{Fields: make(map[string]*structpb.Value)}
+	out.Fields["arrays"] = structpb.NewListValue(&structpb.ListValue{Values: make([]*structpb.Value, len(groups))})
+
+	for idx, g := range groups {
+		out.Fields["arrays"].GetListValue().Values[idx] = structpb.NewListValue(&structpb.ListValue{Values: g})
+	}
+
+	return out, nil
 }
 
 func (e *execution) concat(in *structpb.Struct) (*structpb.Struct, error) {
