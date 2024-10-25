@@ -15,7 +15,7 @@
           "type": "object",
           "properties": {
             "model": {
-              "description": "The model to be used for generating embeddings. It should be `namespace/model-name/version`. i.e. `abrc/yolov7-stomata/v0.1.0`. You can see the version from the Versions tab of Model page.",
+              "description": "The model to be used for generating embeddings. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
               "instillShortDescription": "The model to be used.",
               "instillAcceptFormats": [
                 "string"
@@ -296,7 +296,7 @@
           "type": "object",
           "properties": {
             "model": {
-              "description": "The model to be used for generating chat responses. It should be `namespace/model-name/version`. i.e. `abrc/gpt-3/v0.1.0`. You can see the version from the Versions tab of Model page.",
+              "description": "The model to be used for generating chat responses. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
               "instillShortDescription": "The model to be used for generating chat responses.",
               "instillUIOrder": 0,
               "instillAcceptFormats": [
@@ -699,7 +699,7 @@
           "type": "object",
           "properties": {
             "model": {
-              "description": "Name of the model that generates the text response.",
+              "description": "Name of the model that generates the text response. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
               "instillShortDescription": "Specifies the model for text generation.",
               "instillAcceptFormats": [
                 "string"
@@ -961,7 +961,7 @@
           "type": "object",
           "properties": {
             "model": {
-              "description": "The model to be used for generating the image. Specify a model that fits your requirements for image generation.",
+              "description": "The model to be used for generating the image. Specify a model that fits your requirements for image generation. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
               "instillShortDescription": "The model used for image generation.",
               "instillAcceptFormats": [
                 "string"
@@ -1160,7 +1160,7 @@
               "title": "Image URL",
               "properties": {
                 "model": {
-                  "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.",
+                  "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Name of the model used for classification.",
                   "instillAcceptFormats": [
                     "string"
@@ -1203,7 +1203,7 @@
               "title": "Image Base64",
               "properties": {
                 "model": {
-                  "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.",
+                  "description": "Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Name of the model used for classification.",
                   "instillAcceptFormats": [
                     "string"
@@ -1343,7 +1343,7 @@
               "title": "Image URL",
               "properties": {
                 "model": {
-                  "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.",
+                  "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Name of the model used for detection.",
                   "instillAcceptFormats": [
                     "string"
@@ -1386,7 +1386,7 @@
               "title": "Image Base64",
               "properties": {
                 "model": {
-                  "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.",
+                  "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Name of the model used for detection.",
                   "instillAcceptFormats": [
                     "string"
@@ -1595,7 +1595,7 @@
               "properties": {
                 "model": {
                   "instillUIOrder": 0,
-                  "description": "Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task.",
+                  "description": "Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Model used for keypoint detection.",
                   "instillAcceptFormats": [
                     "string"
@@ -1637,7 +1637,7 @@
               "properties": {
                 "model": {
                   "instillUIOrder": 0,
-                  "description": "Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task.",
+                  "description": "Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Model used for keypoint detection.",
                   "instillAcceptFormats": [
                     "string"
@@ -1877,7 +1877,7 @@
               "properties": {
                 "model": {
                   "instillUIOrder": 0,
-                  "description": "Specifies the model for OCR. This model determines the approach and accuracy of the OCR task.",
+                  "description": "Specifies the model for OCR. This model determines the approach and accuracy of the OCR task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Model used for OCR.",
                   "instillAcceptFormats": [
                     "string"
@@ -1919,7 +1919,7 @@
               "properties": {
                 "model": {
                   "instillUIOrder": 0,
-                  "description": "Specifies the model for OCR. This model determines the approach and accuracy of the OCR task.",
+                  "description": "Specifies the model for OCR. This model determines the approach and accuracy of the OCR task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Model used for OCR.",
                   "instillAcceptFormats": [
                     "string"
@@ -2125,7 +2125,7 @@
               "properties": {
                 "model": {
                   "instillUIOrder": 0,
-                  "description": "Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task.",
+                  "description": "Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Model used for semantic segmentation.",
                   "instillAcceptFormats": [
                     "string"
@@ -2167,7 +2167,7 @@
               "properties": {
                 "model": {
                   "instillUIOrder": 0,
-                  "description": "Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task.",
+                  "description": "Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Model used for semantic segmentation.",
                   "instillAcceptFormats": [
                     "string"
@@ -2324,7 +2324,7 @@
               "properties": {
                 "model": {
                   "instillUIOrder": 0,
-                  "description": "Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task.",
+                  "description": "Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Model used for instance segmentation.",
                   "instillAcceptFormats": [
                     "string"
@@ -2366,7 +2366,7 @@
               "properties": {
                 "model": {
                   "instillUIOrder": 0,
-                  "description": "Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task.",
+                  "description": "Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.",
                   "instillShortDescription": "Model used for instance segmentation.",
                   "instillAcceptFormats": [
                     "string"

@@ -63,7 +63,7 @@ Input data.
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Embeddings](#embedding-embeddings) | `embeddings` | array | List of input data to be embedded.  |
-| Model | `model` | string | The model to be used for generating embeddings. It should be `namespace/model-name/version`. i.e. `abrc/yolov7-stomata/v0.1.0`. You can see the version from the Versions tab of Model page.  |
+| Model | `model` | string | The model to be used for generating embeddings. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 </div>
 <h4 id="embedding-parameter">Parameter</h4>
 
@@ -175,7 +175,7 @@ The data that will be passed to the chat model. This typically includes the mess
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Chat Messages](#chat-chat-messages) | `messages` | array | A collection of individual messages exchanged during the chat session. Each message includes content and other attributes like role and optional participant name.  |
-| Model Name | `model` | string | The model to be used for generating chat responses. It should be `namespace/model-name/version`. i.e. `abrc/gpt-3/v0.1.0`. You can see the version from the Versions tab of Model page.  |
+| Model Name | `model` | string | The model to be used for generating chat responses. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 </div>
 <h4 id="chat-chat-messages">Chat Messages</h4>
 
@@ -296,7 +296,7 @@ Contains the model name and the prompt for generating a response. This section d
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Model Name | `model` | string | Name of the model that generates the text response.  |
+| Model Name | `model` | string | Name of the model that generates the text response. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | Input Prompt | `prompt` | string | The input text or query for which the model will generate a response.  |
 | System Message | `system-message` | string | A message sent by the system to guide the model's behavior, affecting tone, style, or other attributes.  |
 </div>
@@ -397,7 +397,7 @@ This object contains the necessary data for generating the image. It includes th
 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
-| Model Name | `model` | string | The model to be used for generating the image. Specify a model that fits your requirements for image generation.  |
+| Model Name | `model` | string | The model to be used for generating the image. Specify a model that fits your requirements for image generation. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | Input Prompt | `prompt` | string | The textual description that will guide the image generation. A strong and detailed prompt leads to better results, clearly specifying subjects, colors, and other visual aspects.  |
 </div>
 <h4 id="text-to-image-parameter">Parameter</h4>
@@ -492,7 +492,7 @@ Specifies the classification model to be utilized for the task. This field must 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image URL | `image-url` | string |  Contains the URL of the input image to be classified. This URL must point to a valid image resource for processing.  |
-| Model Name | `model` | string |  Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.  |
+| Model Name | `model` | string |  Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | URL | `type` | string |  Must be `"image-url"`   |
 </div>
 
@@ -505,7 +505,7 @@ Specifies the classification model to be utilized for the task. This field must 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image File | `image-base64` | string |  Contains the base64-encoded string of the input image file to be classified. This format allows for direct submission of image data without requiring an external URL.  |
-| Model Name | `model` | string |  Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes.  |
+| Model Name | `model` | string |  Specifies the classification model to be utilized for the task. This field must contain a valid model name to ensure accurate classification outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | File | `type` | string |  Must be `"image-base64"`   |
 </div>
 </details>
@@ -576,7 +576,7 @@ Specifies the detection model to be utilized for the task. This field must conta
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image URL | `image-url` | string |  Contains the URL of the input image to be classified. This URL must point to a valid image resource for processing.  |
-| Model Name | `model` | string |  Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.  |
+| Model Name | `model` | string |  Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | URL | `type` | string |  Must be `"image-url"`   |
 </div>
 
@@ -589,7 +589,7 @@ Specifies the detection model to be utilized for the task. This field must conta
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image File | `image-base64` | string |  Contains the base64-encoded string of the input image file to be classified. This format allows for direct submission of image data without requiring an external URL.  |
-| Model Name | `model` | string |  Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.  |
+| Model Name | `model` | string |  Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | File | `type` | string |  Must be `"image-base64"`   |
 </div>
 </details>
@@ -680,7 +680,7 @@ Detects and localizes multiple keypoints within objects in images, providing pre
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image URL | `image-url` | string |  URL of the input image for keypoint detection. The image must be accessible online and compatible with the selected model.  |
-| Model Name | `model` | string |  Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task.  |
+| Model Name | `model` | string |  Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | URL | `type` | string |  Must be `"image-url"`   |
 </div>
 
@@ -691,7 +691,7 @@ Detects and localizes multiple keypoints within objects in images, providing pre
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image File | `image-base64` | string |  Base64-encoded string of the image file for keypoint detection. This format allows direct image data input.  |
-| Model Name | `model` | string |  Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task.  |
+| Model Name | `model` | string |  Specifies the model for keypoint detection. This model determines the approach and accuracy of the keypoint localization task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | Image File | `type` | string |  Must be `"image-base64"`   |
 </div>
 </details>
@@ -793,7 +793,7 @@ Optical Character Recognition (OCR) is a process that detects and extracts text 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image URL | `image-url` | string |  URL of the input image for OCR. The image must be accessible online and compatible with the selected model.  |
-| Model Name | `model` | string |  Specifies the model for OCR. This model determines the approach and accuracy of the OCR task.  |
+| Model Name | `model` | string |  Specifies the model for OCR. This model determines the approach and accuracy of the OCR task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | URL | `type` | string |  Must be `"image-url"`   |
 </div>
 
@@ -804,7 +804,7 @@ Optical Character Recognition (OCR) is a process that detects and extracts text 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image File | `image-base64` | string |  Base64-encoded string of the image file for OCR. This format allows direct image data input.  |
-| Model Name | `model` | string |  Specifies the model for OCR. This model determines the approach and accuracy of the OCR task.  |
+| Model Name | `model` | string |  Specifies the model for OCR. This model determines the approach and accuracy of the OCR task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | Image File | `type` | string |  Must be `"image-base64"`   |
 </div>
 </details>
@@ -895,7 +895,7 @@ This task involves classifying each pixel in an image into specific, predefined 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image URL | `image-url` | string |  URL of the input image for semantic segmentation. The image must be accessible online and compatible with the selected model.  |
-| Model Name | `model` | string |  Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task.  |
+| Model Name | `model` | string |  Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | URL | `type` | string |  Must be `"image-url"`   |
 </div>
 
@@ -906,7 +906,7 @@ This task involves classifying each pixel in an image into specific, predefined 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image File | `image-base64` | string |  Base64-encoded string of the image file for semantic segmentation. This format allows direct image data input.  |
-| Model Name | `model` | string |  Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task.  |
+| Model Name | `model` | string |  Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | Image File | `type` | string |  Must be `"image-base64"`   |
 </div>
 </details>
@@ -984,7 +984,7 @@ This task is a computer vision task that identifies and distinguishes multiple o
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image URL | `image-url` | string |  URL of the input image for instance segmentation. The image must be accessible online and compatible with the selected model.  |
-| Model Name | `model` | string |  Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task.  |
+| Model Name | `model` | string |  Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | URL | `type` | string |  Must be `"image-url"`   |
 </div>
 
@@ -995,7 +995,7 @@ This task is a computer vision task that identifies and distinguishes multiple o
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | Input Image File | `image-base64` | string |  Base64-encoded string of the image file for instance segmentation. This format allows direct image data input.  |
-| Model Name | `model` | string |  Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task.  |
+| Model Name | `model` | string |  Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task. It should be `namespace/model-name/version`. i.e. `admin/dummy-model/latest`. You can see the version from the Versions tab of Model page.  |
 | Image File | `type` | string |  Must be `"image-base64"`   |
 </div>
 </details>
