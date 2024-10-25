@@ -251,7 +251,7 @@ func main() {
 	ms := memory.NewMemoryStore()
 
 	// Initialize Minio client
-	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, &config.Config.Minio, logger)
+	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, &config.Config.Minio, logger, config.MetadataExpiryRules...)
 	if err != nil {
 		logger.Fatal("failed to create minio client", zap.Error(err))
 	}

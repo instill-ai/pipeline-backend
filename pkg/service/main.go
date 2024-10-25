@@ -88,6 +88,8 @@ type Service interface {
 	GetNamespaceConnection(context.Context, *pb.GetNamespaceConnectionRequest) (*pb.Connection, error)
 	ListNamespaceConnections(context.Context, *pb.ListNamespaceConnectionsRequest) (*pb.ListNamespaceConnectionsResponse, error)
 	ListPipelineIDsByConnectionID(context.Context, *pb.ListPipelineIDsByConnectionIDRequest) (*pb.ListPipelineIDsByConnectionIDResponse, error)
+
+	GetExpiryTagBySubscriptionPlan(context.Context, string) (string, error)
 }
 
 // TriggerResult defines a new type to encapsulate the stream data

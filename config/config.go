@@ -239,3 +239,14 @@ func ParseConfigFlag() string {
 
 	return *configPath
 }
+
+const (
+	FreePlanExpiryTag = "free-plan-expiry"
+)
+
+var MetadataExpiryRules = []miniox.ExpiryRule{
+	{
+		Tag:            FreePlanExpiryTag,
+		ExpirationDays: 3,
+	},
+}

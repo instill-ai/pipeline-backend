@@ -45,6 +45,7 @@ import (
 	errdomain "github.com/instill-ai/pipeline-backend/pkg/errors"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pipelinepb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	resourcex "github.com/instill-ai/x/resource"
 )
 
 var preserveTags = []string{"featured", "feature"}
@@ -1222,10 +1223,11 @@ func (s *service) triggerPipeline(
 		},
 	}
 
-	userUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderUserUIDKey))
-	requesterUID := uuid.FromStringOrNil(resource.GetRequestSingleHeader(ctx, constant.HeaderRequesterUIDKey))
-	if requesterUID.IsNil() {
-		requesterUID = userUID
+	requesterUID, userUID := resourcex.GetRequesterUIDAndUserUID(ctx)
+
+	expiryRuleTag, err := s.GetExpiryTagBySubscriptionPlan(ctx, requesterUID)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	we, err := s.temporalClient.ExecuteWorkflow(
@@ -1242,9 +1244,10 @@ func (s *service) triggerPipeline(
 				PipelineReleaseUID:   pipelineReleaseUID,
 				PipelineOwnerType:    ns.NsType,
 				PipelineOwnerUID:     ns.NsUID,
-				PipelineUserUID:      userUID,
-				PipelineRequesterUID: requesterUID,
+				PipelineUserUID:      uuid.FromStringOrNil(userUID),
+				PipelineRequesterUID: uuid.FromStringOrNil(requesterUID),
 				HeaderAuthorization:  resource.GetRequestSingleHeader(ctx, "authorization"),
+				ExpiryRuleTag:        expiryRuleTag,
 			},
 			Mode:      mgmtpb.Mode_MODE_SYNC,
 			WorkerUID: s.workerUID,
@@ -1764,4 +1767,8 @@ func (s *service) getOperationFromWorkflowInfo(ctx context.Context, workflowExec
 
 	operation.Name = fmt.Sprintf("operations/%s", workflowExecutionInfo.Execution.WorkflowId)
 	return &operation, nil
+}
+
+func (s *service) GetExpiryTagBySubscriptionPlan(ctx context.Context, requesterUID string) (string, error) {
+	return config.FreePlanExpiryTag, nil
 }

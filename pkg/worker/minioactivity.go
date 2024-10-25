@@ -41,10 +41,10 @@ func (w *worker) UploadInputsToMinioActivity(ctx context.Context, param *UploadI
 	objectName := fmt.Sprintf("pipeline-runs/input/%s.json", param.PipelineTriggerID)
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
-		FilePath:     objectName,
-		FileContent:  pipelineData,
-		FileMimeType: constant.ContentTypeJSON,
-		ExpiryGroup:  miniox.FreePlanExpiry,
+		FilePath:      objectName,
+		FileContent:   pipelineData,
+		FileMimeType:  constant.ContentTypeJSON,
+		ExpiryRuleTag: param.ExpiryRuleTag,
 	})
 	if err != nil {
 		log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
@@ -90,10 +90,10 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 	}
 
 	url, minioObjectInfo, err := w.minioClient.UploadFileBytes(ctx, log, &miniox.UploadFileBytesParam{
-		FilePath:     fmt.Sprintf("pipeline-runs/recipe/%s.json", param.PipelineTriggerID),
-		FileBytes:    b,
-		FileMimeType: constant.ContentTypeJSON,
-		ExpiryGroup:  miniox.FreePlanExpiry,
+		FilePath:      fmt.Sprintf("pipeline-runs/recipe/%s.json", param.PipelineTriggerID),
+		FileBytes:     b,
+		FileMimeType:  constant.ContentTypeJSON,
+		ExpiryRuleTag: param.ExpiryRuleTag,
 	},
 	)
 	if err != nil {
@@ -145,10 +145,10 @@ func (w *worker) UploadOutputsToMinioActivity(ctx context.Context, param *Upload
 	}
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
-		FilePath:     objectName,
-		FileContent:  outputStructs,
-		FileMimeType: constant.ContentTypeJSON,
-		ExpiryGroup:  miniox.FreePlanExpiry,
+		FilePath:      objectName,
+		FileContent:   outputStructs,
+		FileMimeType:  constant.ContentTypeJSON,
+		ExpiryRuleTag: param.ExpiryRuleTag,
 	})
 	if err != nil {
 		log.Error("failed to upload pipeline run inputs to minio", zap.Error(err))
@@ -200,10 +200,10 @@ func (w *worker) UploadComponentInputsActivity(ctx context.Context, param *Compo
 	objectName := fmt.Sprintf("component-runs/%s/input/%s.json", param.ID, pipelineTriggerID)
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
-		FilePath:     objectName,
-		FileContent:  compInputs,
-		FileMimeType: constant.ContentTypeJSON,
-		ExpiryGroup:  miniox.FreePlanExpiry,
+		FilePath:      objectName,
+		FileContent:   compInputs,
+		FileMimeType:  constant.ContentTypeJSON,
+		ExpiryRuleTag: param.SystemVariables.ExpiryRuleTag,
 	})
 	if err != nil {
 		log.Error("failed to upload component run inputs to minio", zap.Error(err))
@@ -253,10 +253,10 @@ func (w *worker) UploadComponentOutputsActivity(ctx context.Context, param *Comp
 	}
 
 	url, objectInfo, err := w.minioClient.UploadFile(ctx, log, &miniox.UploadFileParam{
-		FilePath:     objectName,
-		FileContent:  compOutputs,
-		FileMimeType: constant.ContentTypeJSON,
-		ExpiryGroup:  miniox.FreePlanExpiry,
+		FilePath:      objectName,
+		FileContent:   compOutputs,
+		FileMimeType:  constant.ContentTypeJSON,
+		ExpiryRuleTag: param.SystemVariables.ExpiryRuleTag,
 	})
 	if err != nil {
 		log.Error("failed to upload component run outputs to minio", zap.Error(err))
