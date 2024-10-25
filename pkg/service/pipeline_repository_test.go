@@ -31,6 +31,7 @@ import (
 	runpb "github.com/instill-ai/protogen-go/common/run/v1alpha"
 	mgmtpb "github.com/instill-ai/protogen-go/core/mgmt/v1beta"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	mockx "github.com/instill-ai/x/mock"
 )
 
 var db *gorm.DB
@@ -171,7 +172,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 		Owner: nil,
 	}, nil)
 
-	mockMinio := mock.NewMinioIMock(mc)
+	mockMinio := mockx.NewMinioIMock(mc)
 	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some errors"))
 
 	for i, testCase := range testCases {
@@ -245,8 +246,7 @@ func TestService_ListPipelineRuns(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			if testCase.canView {
 				c.Check(runs.PipelineRuns, qt.HasLen, 1)
-				c.Check(runs.PipelineRuns[0].RequesterId, qt.IsNotNil)
-				c.Check(*runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
+				c.Check(runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
 			} else {
 				c.Check(runs.PipelineRuns, qt.HasLen, 0)
 			}
@@ -397,7 +397,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 		Owner: nil,
 	}, nil)
 
-	mockMinio := mock.NewMinioIMock(mc)
+	mockMinio := mockx.NewMinioIMock(mc)
 	mockMinio.GetFilesByPathsMock.Return(nil, fmt.Errorf("some error happens"))
 
 	for i, testCase := range testCases {
@@ -475,8 +475,7 @@ func TestService_ListPipelineRuns_OrgResource(t *testing.T) {
 			c.Assert(err, qt.IsNil)
 			if testCase.canView {
 				c.Check(runs.PipelineRuns, qt.HasLen, 1)
-				c.Check(runs.PipelineRuns[0].RequesterId, qt.IsNotNil)
-				c.Check(*runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
+				c.Check(runs.PipelineRuns[0].RequesterId, qt.Equals, "test-user")
 			} else {
 				c.Check(runs.PipelineRuns, qt.HasLen, 0)
 			}

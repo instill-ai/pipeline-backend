@@ -84,6 +84,7 @@ func (w *worker) UploadRecipeToMinioActivity(ctx context.Context, param *UploadR
 
 	url, minioObjectInfo, err := w.minioClient.UploadFileBytes(
 		ctx,
+		log,
 		fmt.Sprintf("pipeline-runs/recipe/%s.json", param.PipelineTriggerID),
 		b,
 		constant.ContentTypeJSON,

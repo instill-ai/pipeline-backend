@@ -15,6 +15,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	componentstore "github.com/instill-ai/pipeline-backend/pkg/component/store"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 // Config - Global variable to export
@@ -34,7 +35,7 @@ type AppConfig struct {
 	OpenFGA         OpenFGAConfig         `koanf:"openfga"`
 	InstillCloud    InstillCloudConfig    `koanf:"instillcloud"`
 	ArtifactBackend ArtifactBackendConfig `koanf:"artifactbackend"`
-	Minio           MinioConfig           `koanf:"minio"`
+	Minio           miniox.Config         `koanf:"minio"`
 	AppBackend      AppBackendConfig      `koanf:"appbackend"`
 }
 
@@ -178,16 +179,6 @@ type ArtifactBackendConfig struct {
 		Cert string `koanf:"cert"`
 		Key  string `koanf:"key"`
 	}
-}
-
-// MinioConfig is the minio configuration.
-type MinioConfig struct {
-	Host       string `koanf:"host"`
-	Port       string `koanf:"port"`
-	RootUser   string `koanf:"rootuser"`
-	RootPwd    string `koanf:"rootpwd"`
-	BucketName string `koanf:"bucketname"`
-	Secure     bool   `koanf:"secure"` // Add this line for the Secure option
 }
 
 type AppBackendConfig struct {

@@ -45,7 +45,6 @@ import (
 	"github.com/instill-ai/pipeline-backend/pkg/logger"
 	"github.com/instill-ai/pipeline-backend/pkg/memory"
 	"github.com/instill-ai/pipeline-backend/pkg/middleware"
-	"github.com/instill-ai/pipeline-backend/pkg/minio"
 	"github.com/instill-ai/pipeline-backend/pkg/repository"
 	"github.com/instill-ai/pipeline-backend/pkg/service"
 	"github.com/instill-ai/pipeline-backend/pkg/usage"
@@ -57,6 +56,7 @@ import (
 	customotel "github.com/instill-ai/pipeline-backend/pkg/logger/otel"
 	pipelineworker "github.com/instill-ai/pipeline-backend/pkg/worker"
 	pb "github.com/instill-ai/protogen-go/vdp/pipeline/v1beta"
+	miniox "github.com/instill-ai/x/minio"
 )
 
 const gracefulShutdownWaitPeriod = 15 * time.Second
@@ -251,7 +251,7 @@ func main() {
 	ms := memory.NewMemoryStore()
 
 	// Initialize Minio client
-	minioClient, err := minio.NewMinioClientAndInitBucket(ctx, &config.Config.Minio)
+	minioClient, err := miniox.NewMinioClientAndInitBucket(ctx, &config.Config.Minio, logger)
 	if err != nil {
 		logger.Fatal("failed to create minio client", zap.Error(err))
 	}
