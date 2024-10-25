@@ -13,6 +13,7 @@ It can carry out the following tasks:
 - [Intersection](#intersection)
 - [Difference](#difference)
 - [Concat](#concat)
+- [Split](#split)
 
 
 
@@ -177,6 +178,31 @@ Concatenate the arrays. i.e. `[1, 2] + [3, 4] = [1, 2, 3, 4]`
 | Output | ID | Type | Description |
 | :--- | :--- | :--- | :--- |
 | Array | `array` | array | The concatenated arrays. |
+</div>
+
+### Split
+
+Split the array into an array of arrays with group size. i.e. `[1, 2, 3, 4, 5, 6]` with group size 2 = `[[1, 2], [3, 4], [5, 6]]`. If the array length is not divisible by the group size, the last group will have fewer elements.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SPLIT` |
+| Array (required) | `array` | array | The array to be split. |
+| Group Size (required) | `group-size` | integer | The size of each group. |
+</div>
+
+
+
+
+
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Arrays | `arrays` | array | The array of arrays with group size. |
 </div>
 
 
