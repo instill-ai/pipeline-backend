@@ -4,7 +4,8 @@
     "TASK_CHAT",
     "TASK_COMPLETION",
     "TASK_TEXT_TO_IMAGE",
-    "TASK_CLASSIFICATION"
+    "TASK_CLASSIFICATION",
+    "TASK_DETECTION"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/ai/instill-model",

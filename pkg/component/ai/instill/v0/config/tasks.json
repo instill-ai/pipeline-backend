@@ -1321,5 +1321,257 @@
         "data"
       ]
     }
+  },
+  "TASK_DETECTION": {
+    "title": "Detection",
+    "instillShortDescription": "This task focuses on identifying and localizing multiple objects within images, offering essential capabilities for various applications, from autonomous vehicles to surveillance systems. This task employs advanced algorithms to analyze visual data, accurately pinpointing the positions of objects and providing bounding boxes for each detected item. Users can leverage this functionality to enhance object recognition, improve inventory management, and facilitate real-time analysis in diverse environments. By accurately detecting and classifying objects, the system enables more informed decision-making and operational efficiency across industries. Whether it's distinguishing between pedestrians and vehicles or recognizing items on store shelves, the Detection task plays a critical role in computer vision applications, ensuring that machines can interpret and interact with their surroundings effectively. This capability not only optimizes workflows but also contributes to the development of smarter, safer systems in various sectors, including retail, transportation, and robotics.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Detection Input",
+      "description": "The schema for inputs required for the detection task. It defines the structure for both image URLs and base64-encoded images, ensuring accurate detection using a specified model.",
+      "instillShortDescription": "Schema defining inputs for the detection task, including image URLs and base64 images.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "Contains the data required for the detection process. It can include either an image URL or a base64-encoded image representation for detection.",
+          "instillShortDescription": "Contains input data for detection, either via URL or base64.",
+          "type": "object",
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.",
+                  "instillShortDescription": "Name of the model used for detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "instillUIOrder": 0,
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "description": "Contains the URL of the input image to be classified. This URL must point to a valid image resource for processing.",
+                  "instillShortDescription": "URL of the image for detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUIOrder": 2,
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "description": "Indicates the type of input being submitted, set to `image-url` for this option. This field is essential for the detection model to understand the format of the input data.",
+                  "instillShortDescription": "Type identifier for URL input.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "instillUIOrder": 1,
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "description": "Specifies the detection model to be utilized for the task. This field must contain a valid model name to ensure accurate detection outcomes.",
+                  "instillShortDescription": "Name of the model used for detection.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "instillUIOrder": 0,
+                  "type": "string"
+                },
+                "image-base64": {
+                  "title": "Input Image File",
+                  "description": "Contains the base64-encoded string of the input image file to be classified. This format allows for direct submission of image data without requiring an external URL.",
+                  "instillShortDescription": "Base64-encoded image file for detection.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "instillUIOrder": 2,
+                  "type": "string"
+                },
+                "type": {
+                  "title": "File",
+                  "description": "Indicates the type of input being submitted, set to `image-base64` for this option. This field helps the detection model to identify the format of the input data.",
+                  "instillShortDescription": "Type identifier for base64 input.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "instillUIOrder": 1,
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "description": "An object representing any additional parameters for the detection task. This section is currently empty but can be extended for future needs.",
+          "instillShortDescription": "Object for additional parameters related to the detection task.",
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "title": "Parameter",
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Detection Output",
+      "description": "Contains the results generated by the detection task, including a list of objects detected in the input image along with their details.",
+      "instillShortDescription": "Object containing results of the detection task, including detected objects.",
+      "type": "object",
+      "instillUIOrder": 1,
+      "properties": {
+        "data": {
+          "title": "Data",
+          "instillUIOrder": 0,
+          "description": "Contains the results generated by the detection task, including a list of objects detected in the input image along with their details.",
+          "instillShortDescription": "Object containing results of the detection task, including detected objects.",
+          "type": "object",
+          "properties": {
+            "objects": {
+              "description": "A list of objects detected in the input image, each with a bounding box, category, and confidence score indicating prediction accuracy.",
+              "instillShortDescription": "List of objects detected in the input image with bounding boxes and scores.",
+              "instillFormat": "array:structured/detection-object",
+              "items": {
+                "additionalProperties": false,
+                "instillFormat": "structured/detection-object",
+                "properties": {
+                  "bounding-box": {
+                    "title": "Bounding box",
+                    "description": "Defines the coordinates of the detected object in the format (left, top, width, height). This information specifies the location and size of the detected object.",
+                    "instillShortDescription": "Coordinates of the detected object's bounding box.",
+                    "instillFormat": "structured/bounding-box",
+                    "properties": {
+                      "height": {
+                        "description": "The height dimension of the detected bounding box, representing its vertical size within the image.",
+                        "instillShortDescription": "Vertical height of the bounding box.",
+                        "instillFormat": "number",
+                        "title": "Height",
+                        "instillUIOrder": 0,
+                        "type": "number"
+                      },
+                      "left": {
+                        "description": "The x-axis coordinate representing the left boundary of the bounding box in the image.",
+                        "instillShortDescription": "Left boundary x-axis coordinate of the bounding box.",
+                        "instillFormat": "number",
+                        "title": "Left",
+                        "instillUIOrder": 1,
+                        "type": "number"
+                      },
+                      "top": {
+                        "description": "The y-axis coordinate representing the top boundary of the bounding box in the image.",
+                        "instillShortDescription": "Top boundary y-axis coordinate of the bounding box.",
+                        "instillFormat": "number",
+                        "title": "Top",
+                        "instillUIOrder": 2,
+                        "type": "number"
+                      },
+                      "width": {
+                        "description": "The width dimension of the detected bounding box, representing its horizontal size within the image.",
+                        "instillShortDescription": "Horizontal width of the bounding box.",
+                        "instillFormat": "number",
+                        "title": "Width",
+                        "instillUIOrder": 3,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "instillUIOrder": 0,
+                    "type": "object"
+                  },
+                  "category": {
+                    "description": "Represents the predicted category assigned to the detected object, providing context about what the object is classified as.",
+                    "instillShortDescription": "Predicted category of the detected object.",
+                    "instillFormat": "string",
+                    "title": "Category",
+                    "instillUIOrder": 1,
+                    "type": "string"
+                  },
+                  "score": {
+                    "description": "The confidence score associated with the predicted category for the detected object, indicating the model's certainty about the classification.",
+                    "instillShortDescription": "Confidence score of the predicted category for the detected object.",
+                    "instillFormat": "number",
+                    "title": "Score",
+                    "instillUIOrder": 2,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "bounding-box",
+                  "category",
+                  "score"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "instillUIOrder": 0,
+              "title": "Objects",
+              "type": "array"
+            }
+          },
+          "required": [
+            "objects"
+          ]
+        },
+        "metadata": {
+          "description": "Contains metadata related to the detection task's output, providing insights into the request's processing and any relevant statistics.",
+          "instillShortDescription": "Metadata associated with the detection task's output.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "A section includes statistics on the resource usage for the request.",
+              "instillShortDescription": "Statistics regarding resource usage for the request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": [],
+          "instillUIOrder": 1,
+          "title": "Metadata"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
   }
 }
