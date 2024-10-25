@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.45.1-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.45.0-beta...v0.45.1-beta) (2024-10-25)
+
+
+### Features
+
+* **component, video:** implemented fractional fps value - fps as number, and added some debugging flags for ffmpeg ([#765](https://github.com/instill-ai/pipeline-backend/issues/765)) ([8a93442](https://github.com/instill-ai/pipeline-backend/commit/8a934420a01c986181b1660d1c13178ff7e79105))
+* **component:** add support for streaming in the Anthropic and Mistral components ([#781](https://github.com/instill-ai/pipeline-backend/issues/781)) ([66f15fe](https://github.com/instill-ai/pipeline-backend/commit/66f15fe935183bb79610cd397d259b95bd253a17))
+
+
+### Miscellaneous Chores
+
+* release v0.45.1-beta ([60a58bd](https://github.com/instill-ai/pipeline-backend/commit/60a58bde6c163e50dfa53c522187441ec098d043))
+
 ## [0.45.0-beta](https://github.com/instill-ai/pipeline-backend/compare/v0.44.0-beta...v0.45.0-beta) (2024-10-23)
 
 
