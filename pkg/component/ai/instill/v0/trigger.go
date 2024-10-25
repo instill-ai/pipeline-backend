@@ -34,8 +34,12 @@ func (e *execution) trigger(input *structpb.Struct, job *base.Job, ctx context.C
 		TaskInputs:  []*structpb.Struct{input},
 	})
 
-	if err != nil || res == nil || len(res.TaskOutputs) == 0 {
+	if err != nil {
 		return nil, fmt.Errorf("triggering model: %v", err)
+	}
+
+	if res == nil || len(res.TaskOutputs) == 0 {
+		return nil, fmt.Errorf("triggering model: get empty task outputs")
 	}
 
 	return res.TaskOutputs[0], nil
