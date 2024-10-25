@@ -21,10 +21,10 @@
       "description": "Please input the channel name and the date that we want to start to read",
       "instillUIOrder": 0,
       "properties": {
-        "channel-name": {
-          "description": "Channel name, as displayed on Slack",
+        "channel-names": {
+          "description": "Enter a partial or complete channel name to fetch conversations. For example, typing 'dev' retrieves conversations from all channels containing 'dev'.",
           "instillAcceptFormats": [
-            "string"
+            "array"
           ],
           "instillUIMultiline": true,
           "instillUIOrder": 0,
@@ -34,7 +34,10 @@
             "template"
           ],
           "title": "Channel Name",
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "start-to-read-date": {
           "description": "Date (in `YYYY-MM-DD` format) from which messages will start to be fetched",
