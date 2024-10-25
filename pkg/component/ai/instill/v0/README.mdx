@@ -15,6 +15,7 @@ It can carry out the following tasks:
 - [Detection](#detection)
 - [Keypoint](#keypoint)
 - [OCR](#ocr)
+- [Semantic Segmentation](#semantic-segmentation)
 
 
 
@@ -857,6 +858,95 @@ Optical Character Recognition (OCR) is a process that detects and extracts text 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Usage](#ocr-usage) | `usage` | object | Provides details on resource consumption, such as processing time and model-specific metrics for the OCR request. |
+</div>
+</details>
+
+### Semantic Segmentation
+
+This task involves classifying each pixel in an image into specific, predefined categories. This process enables detailed image analysis, allowing systems to differentiate between various elements within the visual data, such as objects, backgrounds, and other relevant features. Semantic segmentation is widely used in applications like autonomous driving, medical imaging, and image editing, where precise localization and identification of objects are essential. By providing pixel-level classification, this task enhances the understanding of image content, facilitating better decision-making in various AI-driven systems and technologies. It plays a crucial role in computer vision and machine learning applications.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_SEMANTIC_SEGMENTATION` |
+| [Data](#semantic-segmentation-data) (required) | `data` | object | Contains input data options, allowing for an image URL or a base64-encoded image file for semantic segmentation. Each input type requires model selection for processing. |
+| [Parameter](#semantic-segmentation-parameter) | `parameter` | object | This object contains configuration options that allow customization of the semantic segmentation task, such as adjusting thresholds or model settings. |
+</div>
+
+
+<details>
+<summary> Input Objects in Semantic Segmentation</summary>
+
+</details>
+
+<details>
+<summary>The <code>data</code> Object </summary>
+
+<h4 id="semantic-segmentation-data">Data</h4>
+
+`data` must fulfill one of the following schemas:
+
+<h5 id="semantic-segmentation-image-url"><code>Image URL</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image URL | `image-url` | string |  URL of the input image for semantic segmentation. The image must be accessible online and compatible with the selected model.  |
+| Model Name | `model` | string |  Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task.  |
+| URL | `type` | string |  Must be `"image-url"`   |
+</div>
+
+<h5 id="semantic-segmentation-image-base64"><code>Image Base64</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image File | `image-base64` | string |  Base64-encoded string of the image file for semantic segmentation. This format allows direct image data input.  |
+| Model Name | `model` | string |  Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task.  |
+| Image File | `type` | string |  Must be `"image-base64"`   |
+</div>
+</details>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Data](#semantic-segmentation-data) | `data` | object | Contains the output data of the semantic segmentation task, detailing the segmented areas through RLE masks. Each segment corresponds to a specific category, providing essential data for analyzing the results. |
+| [Metadata](#semantic-segmentation-metadata) (optional) | `metadata` | object | Contains additional information about the output, including statistics regarding the usage of the segmentation request. It helps track the performance and efficiency of the task. |
+</div>
+
+<details>
+<summary> Output Objects in Semantic Segmentation</summary>
+
+<h4 id="semantic-segmentation-data">Data</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Stuffs](#semantic-segmentation-stuffs) | `stuffs` | array | An list of RLE binary masks that represent different segments of the image. Each mask is linked to a category, enabling detailed analysis and understanding of the segmented regions. |
+</div>
+
+<h4 id="semantic-segmentation-stuffs">Stuffs</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Category | `category` | string | A text string representing the category associated with each RLE mask. This provides context for the segmentation, allowing identification of the object type within the image. |
+| RLE | `rle` | string | The Run Length Encoding (RLE) string that represents each segmented area within the image. RLE efficiently compresses the mask data, making it suitable for storage and transmission. |
+</div>
+
+<h4 id="semantic-segmentation-metadata">Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Usage](#semantic-segmentation-usage) | `usage` | object | Provides statistics related to the usage of the segmentation request. This information can be useful for monitoring and analyzing system performance and resource utilization. |
 </div>
 </details>
 

@@ -2103,5 +2103,204 @@
         "data"
       ]
     }
+  },
+  "TASK_SEMANTIC_SEGMENTATION": {
+    "title": "Semantic Segmentation",
+    "instillShortDescription": "This task involves classifying each pixel in an image into specific, predefined categories. This process enables detailed image analysis, allowing systems to differentiate between various elements within the visual data, such as objects, backgrounds, and other relevant features. Semantic segmentation is widely used in applications like autonomous driving, medical imaging, and image editing, where precise localization and identification of objects are essential. By providing pixel-level classification, this task enhances the understanding of image content, facilitating better decision-making in various AI-driven systems and technologies. It plays a crucial role in computer vision and machine learning applications.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Semantic Segmentation Input",
+      "description": "Defines the requirements for the semantic segmentation task, specifying how to provide input images, either through a direct URL or as a base64-encoded string. It includes necessary model information to ensure accurate processing.",
+      "instillShortDescription": "Defines requirements for providing input images for semantic segmentation.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Contains input data options, allowing for an image URL or a base64-encoded image file for semantic segmentation. Each input type requires model selection for processing.",
+          "instillShortDescription": "Input data, supporting either image URL or base64 encoding with model selection.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task.",
+                  "instillShortDescription": "Model used for semantic segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "instillUIOrder": 2,
+                  "description": "URL of the input image for semantic segmentation. The image must be accessible online and compatible with the selected model.",
+                  "instillShortDescription": "URL of the image for semantic segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "instillUIOrder": 1,
+                  "description": "Identifies the input type as an image URL, indicating the format for the semantic segmentation model.",
+                  "instillShortDescription": "Specifies image URL as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for semantic segmentation. This model determines the approach and accuracy of the semantic segmentation task.",
+                  "instillShortDescription": "Model used for semantic segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-base64": {
+                  "instillUIOrder": 2,
+                  "title": "Input Image File",
+                  "description": "Base64-encoded string of the image file for semantic segmentation. This format allows direct image data input.",
+                  "instillShortDescription": "Base64-encoded image file for semantic segmentation.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "instillUIOrder": 1,
+                  "title": "Image File",
+                  "description": "Identifies the input type as a base64-encoded image file, indicating the format for the semantic segmentation model.",
+                  "instillShortDescription": "Specifies base64 image as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "description": "This object contains configuration options that allow customization of the semantic segmentation task, such as adjusting thresholds or model settings.",
+          "instillShortDescription": "Configuration options for semantic segmentation.",
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "title": "Parameter",
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Semantic Segmentation Output",
+      "description": "Defines the results of the semantic segmentation task, including the segmented data and metadata. It contains information about segmented areas of an image, represented as RLE masks, along with their corresponding categories and usage statistics for the request.",
+      "instillShortDescription": "Schema for the results and metadata of the semantic segmentation task.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Data",
+          "instillUIOrder": 0,
+          "description": "Contains the output data of the semantic segmentation task, detailing the segmented areas through RLE masks. Each segment corresponds to a specific category, providing essential data for analyzing the results.",
+          "instillShortDescription": "Contains output data, including RLE masks and their categories.",
+          "type": "object",
+          "properties": {
+            "stuffs": {
+              "instillUIOrder": 0,
+              "description": "An list of RLE binary masks that represent different segments of the image. Each mask is linked to a category, enabling detailed analysis and understanding of the segmented regions.",
+              "instillShortDescription": "List of RLE binary masks representing segmented areas.",
+              "instillFormat": "array:structured/semantic-segmentation-stuff",
+              "items": {
+                "instillFormat": "structured/semantic-segmentation-stuff",
+                "properties": {
+                  "category": {
+                    "description": "A text string representing the category associated with each RLE mask. This provides context for the segmentation, allowing identification of the object type within the image.",
+                    "instillShortDescription": "Category associated with the RLE mask.",
+                    "instillUIOrder": 0,
+                    "instillFormat": "string",
+                    "title": "Category",
+                    "type": "string"
+                  },
+                  "rle": {
+                    "description": "The Run Length Encoding (RLE) string that represents each segmented area within the image. RLE efficiently compresses the mask data, making it suitable for storage and transmission.",
+                    "instillShortDescription": "Run Length Encoding (RLE) mask for the segmented area.",
+                    "instillUIOrder": 1,
+                    "instillFormat": "string",
+                    "title": "RLE",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "rle",
+                  "category"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "title": "Stuffs",
+              "type": "array"
+            }
+          },
+          "required": [
+            "stuffs"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Contains additional information about the output, including statistics regarding the usage of the segmentation request. It helps track the performance and efficiency of the task.",
+          "instillShortDescription": "Metadata about the segmentation output.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Provides statistics related to the usage of the segmentation request. This information can be useful for monitoring and analyzing system performance and resource utilization.",
+              "instillShortDescription": "Usage statistics for the request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
   }
 }
