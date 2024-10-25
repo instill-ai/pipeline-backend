@@ -1855,5 +1855,253 @@
         "data"
       ]
     }
+  },
+  "TASK_OCR": {
+    "title": "OCR",
+    "instillShortDescription": "Optical Character Recognition (OCR) is a process that detects and extracts text from images, transforming it into machine-readable data. This task analyzes visual information to locate and recognize text within various image types, such as scanned documents, photographs, or screenshots. OCR is valuable for digitizing printed or handwritten materials, enabling text searching, editing, and archiving. The task efficiently handles multiple languages and various font styles, ensuring accuracy across different formats. OCR applications include document management, data extraction, and accessibility enhancements, making it a key technology in automating text-based workflows.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OCR Input",
+      "description": "Defines data requirements for performing text extraction from images. This schema supports two input formats: an accessible image URL or a base64-encoded image file. Each format requires specifying a model that determines the OCR processing method and accuracy. Using an image URL enables easy access to web-hosted images, while base64 encoding allows for direct file input. Both options ensure flexible integration with various data sources, supporting OCR workflows effectively.",
+      "instillShortDescription": "Defines the input schema for OCR, supporting image URLs or base64-encoded images with model selection to configure processing.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Contains input data options, allowing for an image URL or a base64-encoded image file for OCR. Each input type requires model selection for processing.",
+          "instillShortDescription": "Input data, supporting either image URL or base64 encoding with model selection.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for OCR. This model determines the approach and accuracy of the OCR task.",
+                  "instillShortDescription": "Model used for OCR.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "instillUIOrder": 2,
+                  "description": "URL of the input image for OCR. The image must be accessible online and compatible with the selected model.",
+                  "instillShortDescription": "URL of the image for OCR.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "instillUIOrder": 1,
+                  "description": "Identifies the input type as an image URL, indicating the format for the OCR model.",
+                  "instillShortDescription": "Specifies image URL as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for OCR. This model determines the approach and accuracy of the OCR task.",
+                  "instillShortDescription": "Model used for OCR.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-base64": {
+                  "instillUIOrder": 2,
+                  "title": "Input Image File",
+                  "description": "Base64-encoded string of the image file for OCR. This format allows direct image data input.",
+                  "instillShortDescription": "Base64-encoded image file for OCR.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "instillUIOrder": 1,
+                  "title": "Image File",
+                  "description": "Identifies the input type as a base64-encoded image file, indicating the format for the OCR model.",
+                  "instillShortDescription": "Specifies base64 image as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "title": "Parameter",
+          "instillUIOrder": 1,
+          "description": "The parameter field is an optional object that allows you to provide specific configurations for the OCR task. Although empty by default, it can be populated with parameters that fine-tune processing or control the model’s behavior. These configurations can help adjust the output according to specific OCR requirements or performance optimizations.",
+          "instillShortDescription": "Optional settings for adjusting OCR task configurations.",
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OCR Output",
+      "description": "Defines the output structure of the OCR task, which includes detailed results about recognized text, confidence scores, and additional metadata regarding the processing of the task.",
+      "instillShortDescription": "Schema detailing the output results of the OCR task.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Data",
+          "instillUIOrder": 0,
+          "description": "Contains the structured output data of the OCR task, presenting a list of detected objects, each represented by a bounding box, recognized text, and associated confidence scores.",
+          "instillShortDescription": "Structured OCR output with recognized text and bounding boxes.",
+          "type": "object",
+          "properties": {
+            "objects": {
+              "instillUIOrder": 0,
+              "description": "A list of detected OCR objects, each specified by a bounding box, recognized text, and a confidence score.",
+              "instillShortDescription": "List of detected OCR objects with text and bounding boxes.",
+              "instillFormat": "array:structured/ocr-object",
+              "items": {
+                "instillFormat": "structured/ocr-object",
+                "properties": {
+                  "bounding-box": {
+                    "description": "The bounding box defining the outer limits of a detected object, including coordinates for spatial positioning.",
+                    "instillShortDescription": "Bounding box specifying detected object position.",
+                    "instillFormat": "structured/bounding-box",
+                    "properties": {
+                      "height": {
+                        "description": "Specifies the vertical dimension of the bounding box, representing its height in units of measurement.",
+                        "instillShortDescription": "Vertical height of the bounding box.",
+                        "instillUIOrder": 0,
+                        "instillFormat": "number",
+                        "title": "Height",
+                        "type": "number"
+                      },
+                      "left": {
+                        "description": "X-axis coordinate of the left edge of the bounding box, indicating its horizontal starting position.",
+                        "instillShortDescription": "X-axis coordinate of the left edge of the bounding box.",
+                        "instillFormat": "number",
+                        "instillUIOrder": 1,
+                        "title": "Left",
+                        "type": "number"
+                      },
+                      "top": {
+                        "description": "Y-axis coordinate of the top edge of the bounding box, representing its vertical starting position.",
+                        "instillShortDescription": "Y-axis position of the bounding box's top edge.",
+                        "instillUIOrder": 2,
+                        "instillFormat": "number",
+                        "title": "Top",
+                        "type": "number"
+                      },
+                      "width": {
+                        "description": "Horizontal dimension of the bounding box, indicating its width in units of measurement.",
+                        "instillShortDescription": "Horizontal width of the bounding box.",
+                        "instillUIOrder": 3,
+                        "instillFormat": "number",
+                        "title": "Width",
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "title": "Bounding Box",
+                    "instillUIOrder": 0,
+                    "type": "object"
+                  },
+                  "score": {
+                    "description": "Indicates the confidence level of the detected text, scored by the model to reflect recognition accuracy.",
+                    "instillShortDescription": "Confidence level of the recognized text.",
+                    "instillUIOrder": 2,
+                    "instillFormat": "number",
+                    "title": "Score",
+                    "type": "number"
+                  },
+                  "text": {
+                    "description": "The recognized text within each detected bounding box.",
+                    "instillShortDescription": "Recognized text within the bounding box.",
+                    "instillUIOrder": 1,
+                    "instillFormat": "string",
+                    "title": "Text",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "bounding-box",
+                  "text",
+                  "score"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "title": "Objects",
+              "type": "array"
+            }
+          },
+          "required": [
+            "objects"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Contains additional information on the OCR task, including performance metrics and system usage statistics for the request.",
+          "instillShortDescription": "Contains OCR task metadata and performance data.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Provides details on resource consumption, such as processing time and model-specific metrics for the OCR request.",
+              "instillShortDescription": "Resource usage statistics for the OCR task.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
   }
 }

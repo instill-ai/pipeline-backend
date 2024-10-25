@@ -14,6 +14,7 @@ It can carry out the following tasks:
 - [Classification](#classification)
 - [Detection](#detection)
 - [Keypoint](#keypoint)
+- [OCR](#ocr)
 
 
 
@@ -754,6 +755,108 @@ Detects and localizes multiple keypoints within objects in images, providing pre
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Usage](#keypoint-usage) | `usage` | object | Statistics detailing resource usage for the keypoint detection request, aiding in tracking and monitoring. |
+</div>
+</details>
+
+### OCR
+
+Optical Character Recognition (OCR) is a process that detects and extracts text from images, transforming it into machine-readable data. This task analyzes visual information to locate and recognize text within various image types, such as scanned documents, photographs, or screenshots. OCR is valuable for digitizing printed or handwritten materials, enabling text searching, editing, and archiving. The task efficiently handles multiple languages and various font styles, ensuring accuracy across different formats. OCR applications include document management, data extraction, and accessibility enhancements, making it a key technology in automating text-based workflows.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_OCR` |
+| [Data](#ocr-data) (required) | `data` | object | Contains input data options, allowing for an image URL or a base64-encoded image file for OCR. Each input type requires model selection for processing. |
+| [Parameter](#ocr-parameter) | `parameter` | object | The parameter field is an optional object that allows you to provide specific configurations for the OCR task. Although empty by default, it can be populated with parameters that fine-tune processing or control the model’s behavior. These configurations can help adjust the output according to specific OCR requirements or performance optimizations. |
+</div>
+
+
+<details>
+<summary> Input Objects in OCR</summary>
+
+</details>
+
+<details>
+<summary>The <code>data</code> Object </summary>
+
+<h4 id="ocr-data">Data</h4>
+
+`data` must fulfill one of the following schemas:
+
+<h5 id="ocr-image-url"><code>Image URL</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image URL | `image-url` | string |  URL of the input image for OCR. The image must be accessible online and compatible with the selected model.  |
+| Model Name | `model` | string |  Specifies the model for OCR. This model determines the approach and accuracy of the OCR task.  |
+| URL | `type` | string |  Must be `"image-url"`   |
+</div>
+
+<h5 id="ocr-image-base64"><code>Image Base64</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image File | `image-base64` | string |  Base64-encoded string of the image file for OCR. This format allows direct image data input.  |
+| Model Name | `model` | string |  Specifies the model for OCR. This model determines the approach and accuracy of the OCR task.  |
+| Image File | `type` | string |  Must be `"image-base64"`   |
+</div>
+</details>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Data](#ocr-data) | `data` | object | Contains the structured output data of the OCR task, presenting a list of detected objects, each represented by a bounding box, recognized text, and associated confidence scores. |
+| [Metadata](#ocr-metadata) (optional) | `metadata` | object | Contains additional information on the OCR task, including performance metrics and system usage statistics for the request. |
+</div>
+
+<details>
+<summary> Output Objects in OCR</summary>
+
+<h4 id="ocr-data">Data</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Objects](#ocr-objects) | `objects` | array | A list of detected OCR objects, each specified by a bounding box, recognized text, and a confidence score. |
+</div>
+
+<h4 id="ocr-objects">Objects</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Bounding Box](#ocr-bounding-box) | `bounding-box` | object | The bounding box defining the outer limits of a detected object, including coordinates for spatial positioning. |
+| Score | `score` | number | Indicates the confidence level of the detected text, scored by the model to reflect recognition accuracy. |
+| Text | `text` | string | The recognized text within each detected bounding box. |
+</div>
+
+<h4 id="ocr-bounding-box">Bounding Box</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Height | `height` | number | Specifies the vertical dimension of the bounding box, representing its height in units of measurement. |
+| Left | `left` | number | X-axis coordinate of the left edge of the bounding box, indicating its horizontal starting position. |
+| Top | `top` | number | Y-axis coordinate of the top edge of the bounding box, representing its vertical starting position. |
+| Width | `width` | number | Horizontal dimension of the bounding box, indicating its width in units of measurement. |
+</div>
+
+<h4 id="ocr-metadata">Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Usage](#ocr-usage) | `usage` | object | Provides details on resource consumption, such as processing time and model-specific metrics for the OCR request. |
 </div>
 </details>
 
