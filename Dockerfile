@@ -10,6 +10,14 @@ RUN apt-get update && apt-get install -y \
     libsoxr-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Install FFmpeg Static Build
+RUN FFMPEG_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "amd64") && \
+    wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz && \
+    tar xvf ffmpeg-release-${FFMPEG_ARCH}-static.tar.xz && \
+    mv ffmpeg-*-static/ffmpeg /usr/local/bin/ && \
+    mv ffmpeg-*-static/ffprobe /usr/local/bin/ && \
+    rm -rf ffmpeg-*
+
 # Install ONNX Runtime (latest release)
 ENV ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
 RUN apt update && \
@@ -45,12 +53,16 @@ FROM debian:bullseye-slim
 
 # Install Python, create virtual environment, and install pdfplumber
 RUN apt update && \
-    apt install -y curl python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice ffmpeg libsoxr-dev chromium qpdf && \
+    apt install -y curl wget xz-utils python3 python3-venv poppler-utils wv unrtf tidy tesseract-ocr libtesseract-dev libreoffice libsoxr-dev chromium qpdf && \
     python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install pdfplumber mistral-common tokenizers && \
     rm -rf /var/lib/apt/lists/*
 
-# copy ONNX runtime from build stage
+# Copy FFmpeg from build stage
+COPY --from=build --chown=nobody:nogroup /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
+COPY --from=build --chown=nobody:nogroup /usr/local/bin/ffprobe /usr/local/bin/ffprobe
+
+# Copy ONNX runtime from build stage
 ENV ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime
 COPY --from=build --chown=nobody:nogroup /usr/local/onnxruntime ${ONNXRUNTIME_ROOT_PATH}
 

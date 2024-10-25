@@ -1,16 +1,40 @@
 {
-  "TASK_SUBSAMPLE_VIDEO": {
-    "instillShortDescription": "Subsample video into a new video",
-    "input": {
-      "description": "Factor to be used for sub-sampling the video",
-      "instillEditOnNodeFields": [
-        "video",
-        "fps"
+  "$defs": {
+    "segment": {
+      "additionalProperties": false,
+      "properties": {
+        "start-time": {
+          "title": "Start Time",
+          "type": "number",
+          "description": "The number of seconds from the beginning of the audio file to the start of this segment.",
+          "instillFormat": "number",
+          "instillUIOrder": 0
+        },
+        "end-time": {
+          "title": "End Time",
+          "type": "number",
+          "description": "The number of seconds from the beginning of the audio file to the end of this segment.",
+          "instillFormat": "number",
+          "instillUIOrder": 1
+        }
+      },
+      "required": [
+        "start-time",
+        "end-time"
       ],
+      "title": "Segment",
+      "type": "object",
+      "description": "A time segment of audio data, defined by its start and end times in seconds."
+    }
+  },
+  "TASK_SEGMENT": {
+    "instillShortDescription": "Split a video into multiple shorter clips based on user-defined time segments. This task takes a video input and an optional list of time ranges, then produces an array of video segments corresponding to those ranges. Each segment becomes a separate video clip, enabling precise extraction of specific portions from the original content for targeted use or analysis.",
+    "input": {
+      "description": "Input",
       "instillUIOrder": 0,
       "properties": {
         "video": {
-          "description": "Base64 encoded video",
+          "description": "The source video file to be segmented. This video will be split into multiple clips based on the specified time segments.",
           "instillAcceptFormats": [
             "video/*",
             "application/octet-stream"
@@ -22,8 +46,97 @@
           "title": "Video",
           "type": "string"
         },
+        "segments": {
+          "description": "An array of time segments defining the portions of the video to be extracted. Each segment specifies a start and end time, and the task will create separate video clips for each of these segments. If not provided, the entire video will be treated as a single segment.",
+          "instillFormat": "array:object",
+          "instillUIOrder": 1,
+          "items": {
+            "$ref": "#/$defs/segment"
+          },
+          "title": "Segments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "video"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillUIOrder": 0,
+      "properties": {
+        "video-segments": {
+          "description": "An array of video clips resulting from the segmentation process. Each element in this array corresponds to one of the input segments and contains the video data for that specific time range from the original video.",
+          "instillFormat": "array:video/*",
+          "instillUIOrder": 0,
+          "items": {
+            "type": "string"
+          },
+          "title": "Videos",
+          "type": "array"
+        }
+      },
+      "required": [
+        "video-segments"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_SUBSAMPLE": {
+    "instillShortDescription": "Reduce video file size by adjusting frame rate, bitrate, and dimensions while maintaining visual content. This task optimizes storage and bandwidth requirements with minimal quality loss.",
+    "input": {
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "video"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "video": {
+          "description": "The source video file to be subsampled.",
+          "instillAcceptFormats": [
+            "video/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Video",
+          "type": "string"
+        },
+        "video-bitrate": {
+          "description": "The target video bitrate for the subsampled video, in bits per second. Controls the output video's data rate, affecting file size and quality. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height.",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillUIOrder": 2,
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Video Bitrate",
+          "type": "number"
+        },
+        "audio-bitrate": {
+          "description": "The target audio bitrate for the subsampled video, in bits per second. Controls the output video's audio data rate, affecting file size and quality. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height.",
+          "instillAcceptFormats": [
+            "number",
+            "integer"
+          ],
+          "instillUIOrder": 3,
+          "instillUpstreamTypes": [
+            "reference",
+            "value"
+          ],
+          "title": "Audio Bitrate",
+          "type": "number"
+        },
         "fps": {
-          "description": "Frames per second",
+          "description": "The target frame rate for the subsampled video, in frames per second. Determines the number of frames in the output video. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height.",
           "instillAcceptFormats": [
             "number",
             "integer"
@@ -36,45 +149,43 @@
           "title": "FPS",
           "type": "number"
         },
-        "start-time": {
-          "description": "Start time in seconds, format is hh:mm:ss",
+        "width": {
+          "description": "The width of the subsampled video, in pixels. Controls the output video's horizontal resolution. If only width is provided, height is auto-calculated to maintain aspect ratio. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height.",
           "instillAcceptFormats": [
-            "string"
+            "integer"
           ],
           "instillUIOrder": 2,
           "instillUpstreamTypes": [
-            "reference",
             "value"
           ],
-          "title": "Start time",
-          "type": "string"
+          "title": "Width",
+          "type": "integer"
         },
-        "duration": {
-          "description": "Duration in seconds, format is hh:mm:ss",
+        "height": {
+          "description": "The height of the subsampled video, in pixels. Controls the output video's vertical resolution. If only height is provided, width is auto-calculated to maintain aspect ratio. Must provide at least one of: video-bitrate, audio-bitrate, fps, width, or height.",
           "instillAcceptFormats": [
-            "string"
+            "integer"
           ],
           "instillUIOrder": 3,
           "instillUpstreamTypes": [
-            "reference",
             "value"
           ],
-          "title": "Duration",
-          "type": "string"
+          "title": "Height",
+          "type": "integer"
         }
       },
       "required": [
-        "video",
-        "fps"
+        "video"
       ],
       "title": "Input",
       "type": "object"
     },
     "output": {
+      "description": "Output",
       "instillUIOrder": 1,
       "properties": {
         "video": {
-          "description": "Base64 encoded sub-sampled video",
+          "description": "The subsampled video data, processed according to the specified input parameters. Maintains the content of the original video with potentially reduced file size due to changes in frame rate, bitrate, or dimensions.",
           "instillFormat": "video/*",
           "instillUIOrder": 0,
           "title": "Video",
@@ -88,10 +199,58 @@
       "type": "object"
     }
   },
-  "TASK_SUBSAMPLE_VIDEO_FRAMES": {
-    "instillShortDescription": "Subsample video into frames",
+  "TASK_EXTRACT_AUDIO": {
+    "instillShortDescription": "Extract the audio track from a video file, creating a standalone audio output. This task takes a video input and isolates its sound component, removing all visual elements. The resulting audio data is provided as a single output, suitable for further audio processing, analysis, or use in audio-only applications.",
     "input": {
-      "description": "Factor to be used for sub-sampling the video into frame",
+      "description": "Input",
+      "instillEditOnNodeFields": [
+        "video"
+      ],
+      "instillUIOrder": 0,
+      "properties": {
+        "video": {
+          "description": "The source video file from which the audio will be extracted. The video's visual content will be discarded, and only the audio track will be processed.",
+          "instillAcceptFormats": [
+            "video/*",
+            "application/octet-stream"
+          ],
+          "instillUIOrder": 0,
+          "instillUpstreamTypes": [
+            "reference"
+          ],
+          "title": "Video",
+          "type": "string"
+        }
+      },
+      "required": [
+        "video"
+      ],
+      "title": "Input",
+      "type": "object"
+    },
+    "output": {
+      "description": "Output",
+      "instillUIOrder": 1,
+      "properties": {
+        "audio": {
+          "description": "The extracted audio data from the input video. This is a standalone audio file containing only the sound component of the original video, with all visual elements removed. The audio format may vary depending on the original video's audio codec and the extraction process.",
+          "instillFormat": "audio/*",
+          "instillUIOrder": 0,
+          "title": "Audio",
+          "type": "string"
+        }
+      },
+      "required": [
+        "audio"
+      ],
+      "title": "Output",
+      "type": "object"
+    }
+  },
+  "TASK_EXTRACT_FRAMES": {
+    "instillShortDescription": "Extract image frames from a video at regular intervals or specified timestamps. This task takes a video input and either an interval value or a list of timestamps. It then produces an array of image frames corresponding to these specifications, allowing for precise capture of key moments or creation of a sequence of still images from the video content.",
+    "input": {
+      "description": "Input",
       "instillEditOnNodeFields": [
         "video",
         "fps"
@@ -99,7 +258,7 @@
       "instillUIOrder": 0,
       "properties": {
         "video": {
-          "description": "Base64 encoded video",
+          "description": "The source video file from which frames will be extracted.",
           "instillAcceptFormats": [
             "video/*",
             "application/octet-stream"
@@ -111,8 +270,8 @@
           "title": "Video",
           "type": "string"
         },
-        "fps": {
-          "description": "Frames per second",
+        "interval": {
+          "description": "The time interval between extracted frames, in seconds. If specified, frames will be extracted at regular intervals throughout the video. This parameter is mutually exclusive with `timestamps`.",
           "instillAcceptFormats": [
             "number",
             "integer"
@@ -122,48 +281,29 @@
             "reference",
             "value"
           ],
-          "title": "FPS",
+          "title": "Interval",
           "type": "number"
         },
-        "start-time": {
-          "description": "Start time in seconds, format is hh:mm:ss",
-          "instillAcceptFormats": [
-            "string"
-          ],
+        "timestamps": {
+          "description": "An array of specific timestamps (in seconds) at which to extract frames from the video. If provided, frames will be extracted only at these exact times. This parameter is mutually exclusive with `interval`.",
+          "instillFormat": "array:number",
           "instillUIOrder": 2,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
-          "title": "Start time",
-          "type": "string"
-        },
-        "duration": {
-          "description": "Duration in seconds, format is hh:mm:ss",
-          "instillAcceptFormats": [
-            "string"
-          ],
-          "instillUIOrder": 3,
-          "instillUpstreamTypes": [
-            "reference",
-            "value"
-          ],
-          "title": "Duration",
-          "type": "string"
+          "title": "Timestamps",
+          "type": "array"
         }
       },
       "required": [
-        "video",
-        "fps"
+        "video"
       ],
       "title": "Input",
       "type": "object"
     },
     "output": {
+      "description": "Output",
       "instillUIOrder": 1,
       "properties": {
         "frames": {
-          "description": "Base64 encoded sub-sampled frames",
+          "description": "Extracted video frames",
           "instillFormat": "array:image/*",
           "instillUIOrder": 0,
           "items": {

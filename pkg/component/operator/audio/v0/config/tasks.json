@@ -144,8 +144,7 @@
           "instillFormat": "array:audio/*",
           "instillUIOrder": 0,
           "items": {
-            "type": "string",
-            "title": "Audio"
+            "type": "string"
           },
           "title": "Audios",
           "type": "array"
