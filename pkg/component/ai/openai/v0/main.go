@@ -310,7 +310,7 @@ func (e *execution) worker(ctx context.Context, client *httpclient.Client, job *
 				// Note: Since we haven’t provided delta updates for the
 				// messages, we’re reducing the number of event streams by
 				// returning the response every ten iterations.
-				if count == 10 || res == "[DONE]" {
+				if count == 3 || res == "[DONE]" {
 					outputJSON, inErr := json.Marshal(outputStruct)
 					if inErr != nil {
 						job.Error.Error(ctx, inErr)
