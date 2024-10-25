@@ -8,7 +8,8 @@
     "TASK_DETECTION",
     "TASK_KEYPOINT",
     "TASK_OCR",
-    "TASK_SEMANTIC_SEGMENTATION"
+    "TASK_SEMANTIC_SEGMENTATION",
+    "TASK_INSTANCE_SEGMENTATION"
   ],
   "custom": false,
   "documentationUrl": "https://www.instill.tech/docs/component/ai/instill-model",

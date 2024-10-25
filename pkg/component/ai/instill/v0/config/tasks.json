@@ -2302,5 +2302,262 @@
         "data"
       ]
     }
+  },
+  "TASK_INSTANCE_SEGMENTATION": {
+    "title": "Instance Segmentation",
+    "instillShortDescription": "This task is a computer vision task that identifies and distinguishes multiple objects within an image. Unlike semantic segmentation, which groups pixels by category, instance segmentation outlines each object instance individually, even if objects belong to the same class. This provides detailed information on object locations, shapes, and boundaries, facilitating precise visual analysis and tracking for complex scenes.",
+    "input": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Instance Segmentation Input",
+      "description": "Defines options for providing input as an image URL or base64-encoded file. Both options require model selection to process the image accurately.",
+      "instillShortDescription": "Input schema for instance segmentation, supporting image URL or base64 encoding with model selection.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Contains input data options, allowing for an image URL or a base64-encoded image file for instance segmentation. Each input type requires model selection for processing.",
+          "instillShortDescription": "Input data, supporting either image URL or base64 encoding with model selection.",
+          "oneOf": [
+            {
+              "type": "object",
+              "title": "Image URL",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task.",
+                  "instillShortDescription": "Model used for instance segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-url": {
+                  "title": "Input Image URL",
+                  "instillUIOrder": 2,
+                  "description": "URL of the input image for instance segmentation. The image must be accessible online and compatible with the selected model.",
+                  "instillShortDescription": "URL of the image for instance segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "title": "URL",
+                  "instillUIOrder": 1,
+                  "description": "Identifies the input type as an image URL, indicating the format for the instance segmentation model.",
+                  "instillShortDescription": "Specifies image URL as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-url"
+                }
+              },
+              "required": [
+                "model",
+                "image-url",
+                "type"
+              ]
+            },
+            {
+              "type": "object",
+              "title": "Image Base64",
+              "properties": {
+                "model": {
+                  "instillUIOrder": 0,
+                  "description": "Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task.",
+                  "instillShortDescription": "Model used for instance segmentation.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "title": "Model Name",
+                  "type": "string"
+                },
+                "image-base64": {
+                  "instillUIOrder": 2,
+                  "title": "Input Image File",
+                  "description": "Base64-encoded string of the image file for instance segmentation. This format allows direct image data input.",
+                  "instillShortDescription": "Base64-encoded image file for instance segmentation.",
+                  "instillAcceptFormats": [
+                    "image/*"
+                  ],
+                  "type": "string"
+                },
+                "type": {
+                  "instillUIOrder": 1,
+                  "title": "Image File",
+                  "description": "Identifies the input type as a base64-encoded image file, indicating the format for the instance segmentation model.",
+                  "instillShortDescription": "Specifies base64 image as input type.",
+                  "instillAcceptFormats": [
+                    "string"
+                  ],
+                  "type": "string",
+                  "const": "image-base64"
+                }
+              },
+              "required": [
+                "model",
+                "image-base64",
+                "type"
+              ]
+            }
+          ],
+          "required": [
+            "model"
+          ],
+          "title": "Data",
+          "instillUIOrder": 0
+        },
+        "parameter": {
+          "title": "Parameter",
+          "instillUIOrder": 1,
+          "description": "Placeholder for additional input parameters, providing flexibility for task customization.",
+          "instillShortDescription": "Additional input parameter for customization.",
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    },
+    "output": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Instance Segmentation Output",
+      "description": "Schema for the instance segmentation output, detailing detected objects and metadata associated with each processed image.",
+      "instillShortDescription": "Schema for instance segmentation output, including detected objects and metadata.",
+      "type": "object",
+      "properties": {
+        "data": {
+          "title": "Data",
+          "instillUIOrder": 0,
+          "description": "Contains segmented instance data, including each detected object and its corresponding segmentation information.",
+          "instillShortDescription": "Segmentation data for each detected instance in the image.",
+          "type": "object",
+          "properties": {
+            "objects": {
+              "description": "List of detected instances in the image, with details on each object’s segmentation, category, and confidence score.",
+              "instillShortDescription": "List of detected instances with category and confidence data.",
+              "instillFormat": "array:structured/instance-segmentation-object",
+              "items": {
+                "instillFormat": "structured/instance-segmentation-object",
+                "properties": {
+                  "bounding-box": {
+                    "description": "The bounding box defining the outer limits of a detected object, including coordinates for spatial positioning.",
+                    "instillShortDescription": "Bounding box specifying detected object position.",
+                    "instillFormat": "structured/bounding-box",
+                    "properties": {
+                      "height": {
+                        "description": "Specifies the vertical dimension of the bounding box, representing its height in units of measurement.",
+                        "instillShortDescription": "Vertical height of the bounding box.",
+                        "instillUIOrder": 0,
+                        "instillFormat": "number",
+                        "title": "Height",
+                        "type": "number"
+                      },
+                      "left": {
+                        "description": "X-axis coordinate of the left edge of the bounding box, indicating its horizontal starting position.",
+                        "instillShortDescription": "X-axis coordinate of the left edge of the bounding box.",
+                        "instillFormat": "number",
+                        "instillUIOrder": 1,
+                        "title": "Left",
+                        "type": "number"
+                      },
+                      "top": {
+                        "description": "Y-axis coordinate of the top edge of the bounding box, representing its vertical starting position.",
+                        "instillShortDescription": "Y-axis position of the bounding box's top edge.",
+                        "instillUIOrder": 2,
+                        "instillFormat": "number",
+                        "title": "Top",
+                        "type": "number"
+                      },
+                      "width": {
+                        "description": "Horizontal dimension of the bounding box, indicating its width in units of measurement.",
+                        "instillShortDescription": "Horizontal width of the bounding box.",
+                        "instillUIOrder": 3,
+                        "instillFormat": "number",
+                        "title": "Width",
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "left",
+                      "top",
+                      "width",
+                      "height"
+                    ],
+                    "title": "Bounding Box",
+                    "instillUIOrder": 0,
+                    "type": "object"
+                  },
+                  "category": {
+                    "description": "Predicted category label for the detected instance, indicating the type of object recognized in the image.",
+                    "instillShortDescription": "Predicted category of the detected object.",
+                    "instillUIOrder": 1,
+                    "instillFormat": "string",
+                    "title": "Category",
+                    "type": "string"
+                  },
+                  "rle": {
+                    "description": "Run Length Encoding (RLE) format for the instance mask within the bounding box, used to store segmentation data efficiently.",
+                    "instillShortDescription": "RLE mask for the instance segmentation.",
+                    "instillUIOrder": 2,
+                    "instillFormat": "string",
+                    "title": "RLE",
+                    "type": "string"
+                  },
+                  "score": {
+                    "description": "Confidence score for the predicted object, indicating the model's certainty in identifying the instance.",
+                    "instillShortDescription": "Confidence score of the detected object.",
+                    "instillUIOrder": 3,
+                    "instillFormat": "number",
+                    "title": "Score",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "rle",
+                  "bounding-box",
+                  "category",
+                  "score"
+                ],
+                "title": "Object",
+                "type": "object"
+              },
+              "instillUIOrder": 0,
+              "title": "Objects",
+              "type": "array"
+            }
+          },
+          "required": [
+            "objects"
+          ]
+        },
+        "metadata": {
+          "title": "Metadata",
+          "instillUIOrder": 1,
+          "description": "Metadata accompanying the output, providing additional context like usage statistics for the segmentation request.",
+          "instillShortDescription": "Metadata and usage statistics for the segmentation task.",
+          "type": "object",
+          "properties": {
+            "usage": {
+              "title": "Usage",
+              "instillUIOrder": 0,
+              "description": "Data on the resource usage for the request, including processing time and resource allocation.",
+              "instillShortDescription": "Usage statistics for the request.",
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
   }
 }

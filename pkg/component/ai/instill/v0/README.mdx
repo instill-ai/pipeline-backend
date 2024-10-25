@@ -16,6 +16,7 @@ It can carry out the following tasks:
 - [Keypoint](#keypoint)
 - [OCR](#ocr)
 - [Semantic Segmentation](#semantic-segmentation)
+- [Instance Segmentation](#instance-segmentation)
 
 
 
@@ -947,6 +948,109 @@ This task involves classifying each pixel in an image into specific, predefined 
 | Field | Field ID | Type | Note |
 | :--- | :--- | :--- | :--- |
 | [Usage](#semantic-segmentation-usage) | `usage` | object | Provides statistics related to the usage of the segmentation request. This information can be useful for monitoring and analyzing system performance and resource utilization. |
+</div>
+</details>
+
+### Instance Segmentation
+
+This task is a computer vision task that identifies and distinguishes multiple objects within an image. Unlike semantic segmentation, which groups pixels by category, instance segmentation outlines each object instance individually, even if objects belong to the same class. This provides detailed information on object locations, shapes, and boundaries, facilitating precise visual analysis and tracking for complex scenes.
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Input | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| Task ID (required) | `task` | string | `TASK_INSTANCE_SEGMENTATION` |
+| [Data](#instance-segmentation-data) (required) | `data` | object | Contains input data options, allowing for an image URL or a base64-encoded image file for instance segmentation. Each input type requires model selection for processing. |
+| [Parameter](#instance-segmentation-parameter) | `parameter` | object | Placeholder for additional input parameters, providing flexibility for task customization. |
+</div>
+
+
+<details>
+<summary> Input Objects in Instance Segmentation</summary>
+
+</details>
+
+<details>
+<summary>The <code>data</code> Object </summary>
+
+<h4 id="instance-segmentation-data">Data</h4>
+
+`data` must fulfill one of the following schemas:
+
+<h5 id="instance-segmentation-image-url"><code>Image URL</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image URL | `image-url` | string |  URL of the input image for instance segmentation. The image must be accessible online and compatible with the selected model.  |
+| Model Name | `model` | string |  Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task.  |
+| URL | `type` | string |  Must be `"image-url"`   |
+</div>
+
+<h5 id="instance-segmentation-image-base64"><code>Image Base64</code></h5>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Input Image File | `image-base64` | string |  Base64-encoded string of the image file for instance segmentation. This format allows direct image data input.  |
+| Model Name | `model` | string |  Specifies the model for instance segmentation. This model determines the approach and accuracy of the instance segmentation task.  |
+| Image File | `type` | string |  Must be `"image-base64"`   |
+</div>
+</details>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Output | ID | Type | Description |
+| :--- | :--- | :--- | :--- |
+| [Data](#instance-segmentation-data) | `data` | object | Contains segmented instance data, including each detected object and its corresponding segmentation information. |
+| [Metadata](#instance-segmentation-metadata) (optional) | `metadata` | object | Metadata accompanying the output, providing additional context like usage statistics for the segmentation request. |
+</div>
+
+<details>
+<summary> Output Objects in Instance Segmentation</summary>
+
+<h4 id="instance-segmentation-data">Data</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Objects](#instance-segmentation-objects) | `objects` | array | List of detected instances in the image, with details on each object’s segmentation, category, and confidence score. |
+</div>
+
+<h4 id="instance-segmentation-objects">Objects</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Bounding Box](#instance-segmentation-bounding-box) | `bounding-box` | object | The bounding box defining the outer limits of a detected object, including coordinates for spatial positioning. |
+| Category | `category` | string | Predicted category label for the detected instance, indicating the type of object recognized in the image. |
+| RLE | `rle` | string | Run Length Encoding (RLE) format for the instance mask within the bounding box, used to store segmentation data efficiently. |
+| Score | `score` | number | Confidence score for the predicted object, indicating the model's certainty in identifying the instance. |
+</div>
+
+<h4 id="instance-segmentation-bounding-box">Bounding Box</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| Height | `height` | number | Specifies the vertical dimension of the bounding box, representing its height in units of measurement. |
+| Left | `left` | number | X-axis coordinate of the left edge of the bounding box, indicating its horizontal starting position. |
+| Top | `top` | number | Y-axis coordinate of the top edge of the bounding box, representing its vertical starting position. |
+| Width | `width` | number | Horizontal dimension of the bounding box, indicating its width in units of measurement. |
+</div>
+
+<h4 id="instance-segmentation-metadata">Metadata</h4>
+
+<div class="markdown-col-no-wrap" data-col-1 data-col-2>
+
+| Field | Field ID | Type | Note |
+| :--- | :--- | :--- | :--- |
+| [Usage](#instance-segmentation-usage) | `usage` | object | Data on the resource usage for the request, including processing time and resource allocation. |
 </div>
 </details>
 
