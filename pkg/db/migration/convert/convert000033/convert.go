@@ -2,7 +2,6 @@ package convert000033
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"go.uber.org/zap"
@@ -68,8 +67,6 @@ func (c *ConvertWebFields) migratePipeline() error {
 			if err != nil {
 				return fmt.Errorf("marshalling recipe: %w", err)
 			}
-
-			log.Printf("webComponentNames: %v", webComponentNames)
 
 			if len(webComponentNames) == 0 {
 				result := tx.Model(p).Where("uid = ?", p.UID).Update("recipe_yaml", string(recipeYAML))
