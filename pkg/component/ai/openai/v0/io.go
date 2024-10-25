@@ -100,5 +100,5 @@ type taskTextEmbeddingsInput struct {
 }
 
 type taskTextEmbeddingsOutput struct {
-	Embedding []float32 `key:"embeddings"`
+	Embedding []float32 `key:"embedding"`
 }
